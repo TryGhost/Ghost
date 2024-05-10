@@ -52,20 +52,23 @@ describe('Actor', function () {
         it('Creates a Follow activity', async function () {
             const actor = Actor.create({username: 'TestingFollow'});
 
-            const actorToFollow = new URI('https://activitypub.server/actor');
+            const actorToFollow = {
+                id: new URI('https://activitypub.server/actor'),
+                username: '@user@domain'
+            };
 
             actor.follow(actorToFollow);
 
             Actor.getActivitiesToSave(actor, function (activities) {
                 const followActivity = activities.find(activity => activity.type === 'Follow');
 
-                assert.equal(followActivity?.objectId.href, actorToFollow.href);
+                assert.equal(followActivity?.objectId.href, actorToFollow.id.href);
             });
 
             Actor.getEventsToDispatch(actor, function (events) {
                 const followActivityEvent: ActivityEvent = (events.find(event => (event as ActivityEvent).data.activity?.type === 'Follow') as ActivityEvent);
 
-                assert.equal(followActivityEvent.data.activity.objectId.href, actorToFollow.href);
+                assert.equal(followActivityEvent.data.activity.objectId.href, actorToFollow.id.href);
             });
         });
     });
@@ -80,13 +83,13 @@ describe('Actor', function () {
                 activity: new URI(`https://activitypub.server/activity`),
                 type: 'Follow',
                 actor: newFollower,
-                object: actor.actorId,
+                object: {id: actor.actorId},
                 to: actor.actorId
             });
 
             await actor.postToInbox(followActivity);
 
-            assert(actor.followers.find(follower => follower.href === newFollower.href));
+            assert(actor.followers.find(follower => follower.id.href === newFollower.href));
         });
     });
 });

@@ -17,30 +17,28 @@ export class ActivityPubService {
             throw new Error('Could not find default actor');
         }
 
-        const actorToFollow = new URI(json.id);
+        const actorToFollow = {
+            id: new URI(json.id),
+            username
+        };
 
         actor.follow(actorToFollow);
 
         await this.actors.save(actor);
     }
 
-    async getFollowing(): Promise<string[]> {
+    async getFollowing(): Promise<{id: string, username?: string}[]> {
         const actor = await this.actors.getOne('index');
 
         if (!actor) {
             throw new Error('Could not find default actor');
         }
 
-        return actor.following.map(x => x.href);
-    }
-
-    async getFollowers(): Promise<string[]> {
-        const actor = await this.actors.getOne('index');
-
-        if (!actor) {
-            throw new Error('Could not find default actor');
-        }
-
-        return actor.followers.map(x => x.href);
+        return actor.following.map((x) => {
+            return {
+                id: x.id.href,
+                username: x.username
+            };
+        });
     }
 }

@@ -5,7 +5,6 @@ import {ExampleRepositoryInMemory} from '../../db/in-memory/example.repository.i
 import {ActivityPubController} from '../../http/admin/controllers/activitypub.controller';
 import {ActivityPubService} from '../../core/activitypub/activitypub.service';
 import {WebFingerService} from '../../core/activitypub/webfinger.service';
-import {ActivityRepositoryInMemory} from '../../db/in-memory/activity.repository.in-memory';
 import {ActorRepositoryInMemory} from '../../db/in-memory/actor.repository.in-memory';
 
 @Module({

@@ -15,8 +15,8 @@ type ActorData = {
     privateKey: string;
     outbox: Activity[];
     inbox: Activity[];
-    following: URI[];
-    followers: URI[];
+    following: {id: URI, username?: string;}[];
+    followers: {id: URI;}[];
 };
 
 type CreateActorData = ActorData & {
@@ -69,17 +69,17 @@ export class Actor extends Entity<ActorData> {
         }
         if (activity.type === 'Accept') {
             // TODO: Check that the Accept is for a real Follow activity
-            this.attr.following.push(activity.actorId);
+            this.attr.following.push(activity.getObject());
         }
     }
 
-    async follow(actor: URI) {
+    async follow(actor: {id: URI, username: string;}) {
         const activity = new Activity({
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Follow',
             actor: this.actorId,
             object: actor,
-            to: actor
+            to: actor.id
         });
         this.doActivity(activity);
     }
@@ -88,13 +88,13 @@ export class Actor extends Entity<ActorData> {
         if (!activity.activityId) {
             throw new Error('Cannot accept Follow of anonymous activity');
         }
-        this.attr.followers.push(activity.actorId);
+        this.attr.followers.push({id: activity.actorId});
         const accept = new Activity({
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Accept',
             to: activity.actorId,
             actor: this.actorId,
-            object: activity.activityId
+            object: {id: activity.activityId}
         });
         this.doActivity(accept);
     }
@@ -119,7 +119,7 @@ export class Actor extends Entity<ActorData> {
             to: new URI(`https://www.w3.org/ns/activitystreams#Public`),
             type: 'Create',
             actor: this.actorId,
-            object: article.objectId
+            object: {id: article.objectId}
         });
         this.doActivity(activity);
     }

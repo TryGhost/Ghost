@@ -6,7 +6,8 @@ type ActivityData = {
     activity: URI | null;
     type: ActivityPub.ActivityType;
     actor: URI;
-    object: URI;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    object: {id: URI, [x: string]: any};
     to: URI | null;
 }
 
@@ -40,12 +41,16 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.type;
     }
 
+    getObject() {
+        return this.attr.object;
+    }
+
     get actorId() {
         return this.attr.actor;
     }
 
     get objectId() {
-        return this.attr.object;
+        return this.attr.object.id;
     }
 
     get activityId() {
@@ -72,7 +77,7 @@ export class Activity extends Entity<ActivityData> {
             activity: 'id' in json ? getURI(json.id) : null,
             type: parsed.type as ActivityPub.ActivityType,
             actor: getURI(parsed.actor),
-            object: getURI(parsed.object),
+            object: {id: getURI(parsed.object)},
             to: 'to' in json ? getURI(json.to) : null
         });
     }
