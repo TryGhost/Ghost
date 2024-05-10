@@ -12,6 +12,11 @@ interface Activity {
     siteData: SiteData;
 }
 
+type Following = {
+    id: string;
+    username?: string;
+}
+
 interface ObjectContent {
   type: string;
   name: string;
@@ -21,6 +26,7 @@ interface ObjectContent {
 
 const ActivityPubComponent: React.FC = () => {
     const [activities, setActivities] = useState<Activity[]>([]);
+    const [following, setFollowing] = useState<Following[]>([]);
     const site = useBrowseSite();
     const siteData = site.data?.site;
     const {updateRoute} = useRouting();
@@ -30,7 +36,7 @@ const ActivityPubComponent: React.FC = () => {
             try {
                 const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
                 // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/outbox/deadbeefdeadbeefdeadbeef');
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     setActivities(data.orderedItems);
@@ -43,6 +49,31 @@ const ActivityPubComponent: React.FC = () => {
         };
 
         fetchActivities();
+
+        // Clean up function if needed
+        return () => {
+            // Any clean-up code here
+        };
+    }, [siteData]);
+
+    useEffect(() => {
+        const fetchFollowing = async () => {
+            try {
+                const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/following/deadbeefdeadbeefdeadbeef`);
+                // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/outbox/deadbeefdeadbeefdeadbeef');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setFollowing(data);
+                } else {
+                    throw new Error('Failed to fetch following');
+                }
+            } catch (error) {
+                // console.error('Error fetching activities:', error);
+            }
+        };
+
+        fetchFollowing();
 
         // Clean up function if needed
         return () => {
@@ -79,18 +110,11 @@ const ActivityPubComponent: React.FC = () => {
                     <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
                         <Heading className='mb-3' level={5}>Following</Heading>
                         <ul>
-                            <li className='mb-4'>
-                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
-                            </li>
-                            <li className='mb-4'>
-                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
-                            </li>
-                            <li className='mb-4'>
-                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
-                            </li>
-                            <li className='mb-4'>
-                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
-                            </li>
+                            {following.slice().map(({username}) => {
+                                return (<li className='mb-4'>
+                                    <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
+                                </li>);
+                            })}
                         </ul>
                     </div>
                 </div>
