@@ -140,7 +140,12 @@ export default class PublishOptions {
 
     get mailgunIsConfigured() {
         return this.settings.mailgunIsConfigured
-            || this.config.mailgunIsConfigured;
+            || this.config.mailgunIsConfigured
+            || this.postmarkIsConfigured;
+    }
+
+    get postmarkIsConfigured() {
+        return this.settings.get('postmark_api_token') || !!this.config.bulkEmail?.postmark;
     }
 
     @action
