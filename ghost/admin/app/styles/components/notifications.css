@@ -14,9 +14,9 @@
 /* Base notification style */
 .gh-notification {
     position: relative;
-    display: flex;
     margin-top: 8px;
-    width: 272px;
+    min-width: 272px;
+    max-width: 320px;
     background: var(--white);
     border-radius: 8px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.28), 0px 100px 80px rgba(0, 0, 0, 0.0112458), 0px 41.7776px 33.4221px rgba(0, 0, 0, 0.0161557), 0px 22.3363px 17.869px rgba(0, 0, 0, 0.02), 0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0238443), 0px 6.6501px 5.32008px rgba(0, 0, 0, 0.0287542), 0px 2.76726px 2.21381px rgba(0, 0, 0, 0.04);
@@ -29,7 +29,7 @@
 
 @media (max-width: 1240px) {
     .gh-notification {
-        width: 232px;
+        min-width: 232px;
     }
 }
 
@@ -63,7 +63,7 @@
 
 .gh-notification-header {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 
 .gh-notification-title {
@@ -71,6 +71,10 @@
     margin-top: 1px;
     font-weight: 600;
     font-size: 1.4rem;
+}
+
+.gh-notification-details {
+    margin: -18px 16px 16px 42px;
 }
 
 .gh-notification p {

@@ -64,7 +64,7 @@ test.describe('User invitations', async () => {
         await modal.locator('input[value=author]').check();
         await modal.getByRole('button', {name: 'Send invitation now'}).click();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent/);
 
         await section.getByRole('tab', {name: 'Invited'}).click();
 

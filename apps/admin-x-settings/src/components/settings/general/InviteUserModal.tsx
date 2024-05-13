@@ -123,7 +123,8 @@ const InviteUserModal = NiceModal.create(() => {
             setSaveState('saved');
 
             showToast({
-                message: `Invitation successfully sent to ${email}`,
+                title: `Invitation successfully sent`,
+                message: `${email}`,
                 type: 'success'
             });
 
@@ -179,13 +180,17 @@ const InviteUserModal = NiceModal.create(() => {
         });
     });
 
+    if (!!errors.email) {
+        okLabel = 'Retry';
+    }
+
     return (
         <Modal
             afterClose={() => {
                 updateRoute('staff');
             }}
             cancelLabel=''
-            okColor={saveState === 'error' ? 'red' : 'black'}
+            okColor={saveState === 'error' || !!errors.email ? 'red' : 'black'}
             okLabel={okLabel}
             testId='invite-user-modal'
             title='Invite a new staff user'
