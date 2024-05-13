@@ -74,7 +74,7 @@ const InviteUserModal = NiceModal.create(() => {
     const roles = rolesQuery.data.roles;
     const assignableRoles = assignableRolesQuery.data.roles;
 
-    let okLabel = 'Send invitation now';
+    let okLabel = 'Send invitation';
     if (saveState === 'saving') {
         okLabel = 'Sending...';
     } else if (saveState === 'saved') {

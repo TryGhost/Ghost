@@ -38,7 +38,7 @@ test.describe('User invitations', async () => {
 
         // Validation failures
 
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Send invitation'}).click();
         await expect(modal).toContainText('Please enter a valid email address');
 
         // Reset error with keydown event
@@ -47,22 +47,22 @@ test.describe('User invitations', async () => {
 
         await modal.getByLabel('Email address').fill('test');
         await expect(modal).not.toContainText('Please enter a valid email address');
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Send invitation'}).click();
         await expect(modal).toContainText('Please enter a valid email address');
 
         await modal.getByLabel('Email address').fill('author@test.com');
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Retry'}).click();
         await expect(modal).toContainText('A user with that email address already exists.');
 
         await modal.getByLabel('Email address').fill('invitee@test.com');
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Retry'}).click();
         await expect(modal).toContainText('A user with that email address was already invited.');
 
         // Successful invitation
 
         await modal.getByLabel('Email address').fill('newuser@test.com');
         await modal.locator('input[value=author]').check();
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Retry'}).click();
 
         await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent/);
 
