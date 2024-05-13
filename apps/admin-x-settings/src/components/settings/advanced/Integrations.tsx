@@ -187,8 +187,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                                             title: 'Integration deleted',
                                             type: 'info',
                                             options: {
-                                                position: 'bottom-left',
-                                                duration: Infinity
+                                                position: 'bottom-left'
                                             }
                                         });
                                     } catch (e) {

@@ -104,7 +104,7 @@ export const showToast = ({
             <div>
                 {title && <span className='mt-px block text-md font-semibold leading-tighter tracking-[0.1px]'>{title}</span>}
                 {message &&
-                    <div className={title ? 'mt-2' : ''}>{message}</div>
+                    <div className={title ? 'mt-1' : ''}>{message}</div>
                 }
             </div>
         </Toast>
