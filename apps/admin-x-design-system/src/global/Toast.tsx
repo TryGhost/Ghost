@@ -50,7 +50,7 @@ const Toast: React.FC<ToastProps> = ({
     }
 
     const classNames = clsx(
-        'relative z-[90] mb-[14px] ml-[6px] flex min-w-[272px] items-start justify-between gap-3 rounded-lg bg-white p-4 text-sm text-black shadow-md-heavy',
+        'relative z-[90] mb-[14px] ml-[6px] flex min-w-[272px] items-start justify-between gap-3 rounded-lg bg-white p-4 text-sm text-black shadow-md-heavy dark:bg-grey-925 dark:text-white',
         props?.options?.position === 'top-center' ? 'max-w-[520px]' : 'max-w-[320px]',
         t.visible ? (props?.options?.position === 'top-center' ? 'animate-toaster-top-in' : 'animate-toaster-in') : 'animate-toaster-out'
     );
@@ -62,7 +62,7 @@ const Toast: React.FC<ToastProps> = ({
                     <div className='mt-px'><Icon className='grow' colorClass={iconColorClass} name={props.icon} size='sm' /></div> : props.icon)}
                 {children}
             </div>
-            <button className='absolute right-5 top-5 -mr-1.5 -mt-1.5 cursor-pointer p-2 text-grey-700 hover:text-black' type='button' onClick={() => {
+            <button className='absolute right-5 top-5 -mr-1.5 -mt-1.5 cursor-pointer rounded-full p-2 text-grey-700 hover:text-black dark:hover:text-white' type='button' onClick={() => {
                 toast.dismiss(t.id);
             }}>
                 <div>
@@ -104,7 +104,7 @@ export const showToast = ({
             <div>
                 {title && <span className='mt-px block text-md font-semibold leading-tighter tracking-[0.1px]'>{title}</span>}
                 {message &&
-                    <div className={`text-grey-900 ${title ? 'mt-1' : ''}`}>{message}</div>
+                    <div className={`text-grey-900 dark:text-grey-300 ${title ? 'mt-1' : ''}`}>{message}</div>
                 }
             </div>
         </Toast>

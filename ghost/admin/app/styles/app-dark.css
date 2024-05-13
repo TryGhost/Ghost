@@ -1031,6 +1031,10 @@ input:focus,
     background: var(--lightgrey);
 }
 
+.gh-notification-close:hover svg {
+    stroke: #FFF;
+}
+
 /* Opacity needed to display correctly in Safari */
 ::selection {
     background: rgba(88, 101, 116, 0.99);
@@ -1415,7 +1419,7 @@ Onboarding checklist: Share publication modal */
     opacity: .8;
 }
 
-.gh-share-links li a { 
+.gh-share-links li a {
     border: 1px solid #394047;
 }
 

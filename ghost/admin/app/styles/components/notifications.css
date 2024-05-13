@@ -136,9 +136,9 @@
     stroke-width: 2px;
 }
 
-.gh-notification-close:hover {
+/* .gh-notification-close:hover {
     background: rgba(255, 255, 255, 0.3);
-}
+} */
 
 .gh-notification-passive {
     animation: notification-fade-in-spring, fade-out;
