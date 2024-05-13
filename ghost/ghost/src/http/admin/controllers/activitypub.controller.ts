@@ -22,8 +22,9 @@ export class ActivityPubController {
         'Owner'
     ])
     @Post('follow/:username')
-    async follow(@Param('username') username: string): Promise<void> {
+    async follow(@Param('username') username: string): Promise<object> {
         await this.activitypub.follow(username);
+        return {};
     }
 
     @Roles([
