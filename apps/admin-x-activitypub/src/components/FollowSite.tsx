@@ -26,6 +26,7 @@ const FollowSite = NiceModal.create(() => {
             await mutation.mutateAsync(profileName);
             // If successful, set the success state to true
             setSuccess(true);
+            console.log('Successfully followed!');
             // Reset the input field
             setProfileName('');
             // Close the modal after a short delay
@@ -68,7 +69,7 @@ const FollowSite = NiceModal.create(() => {
                 {/* Display success message if the mutation was successful */}
                 {success && <p className="text-green-600">Followed successfully!</p>}
                 {/* Display error message if there was an error */}
-                {errorMessage && <p className="text-red-600">{error}</p>}
+                {errorMessage && <p className="text-red-600">{errorMessage}</p>}
             </div>
         </Modal>
     );
