@@ -5,8 +5,50 @@ import assert from 'node:assert';
 import {URI} from './uri.object';
 import {ActivityEvent} from './activity.event';
 import {Activity} from './activity.entity';
+import {Article} from './article.object';
+import ObjectID from 'bson-objectid';
 
 describe('Actor', function () {
+    describe('getters', function () {
+        describe('displayName', function () {
+            it('Uses displayName, but falls back to username', function () {
+                const hasDisplayName = Actor.create({
+                    username: 'username',
+                    displayName: 'displayName'
+                });
+
+                const doesnaeHaveDisplayName = Actor.create({
+                    username: 'username'
+                });
+
+                assert.equal(hasDisplayName.displayName, 'displayName');
+                assert.equal(doesnaeHaveDisplayName.displayName, 'username');
+            });
+        });
+    });
+
+    describe('#createArticle', function () {
+        it('Adds an activity to the outbox', function () {
+            const actor = Actor.create({username: 'username'});
+
+            const article = Article.fromPost({
+                id: new ObjectID(),
+                title: 'Post Title',
+                slug: 'post-slug',
+                html: '<p>Hello world</p>',
+                visibility: 'public'
+            });
+
+            actor.createArticle(article);
+
+            const found = actor.outbox.find((value) => {
+                return value.type === 'Create';
+            });
+
+            assert.ok(found);
+        });
+    });
+
     describe('#sign', function () {
         it('returns a request with a valid Signature header', async function () {
             const baseUrl = new URL('https://example.com/ap');
@@ -90,6 +132,61 @@ describe('Actor', function () {
             await actor.postToInbox(followActivity);
 
             assert(actor.followers.find(follower => follower.id.href === newFollower.href));
+        });
+
+        it('Throws if the Follow activity is anonymous', async function () {
+            const actor = Actor.create({username: 'TestingPostToInbox'});
+
+            const newFollower = new URI('https://activitypub.server/actor');
+
+            const followActivity = new Activity({
+                activity: null,
+                type: 'Follow',
+                actor: newFollower,
+                object: {id: actor.actorId},
+                to: actor.actorId
+            });
+
+            let error: unknown = null;
+            try {
+                await actor.postToInbox(followActivity);
+            } catch (err) {
+                error = err;
+            }
+
+            assert.ok(error);
+        });
+
+        it('Handles Accept activities', async function () {
+            const actor = Actor.create({username: 'TestingPostToInbox'});
+
+            const newFollower = new URI('https://activitypub.server/actor');
+
+            const activity = new Activity({
+                activity: null,
+                type: 'Accept',
+                actor: newFollower,
+                object: {
+                    id: newFollower
+                },
+                to: actor.actorId
+            });
+
+            await actor.postToInbox(activity);
+
+            assert(actor.following.find(follower => follower.id.href === newFollower.href));
+        });
+    });
+
+    describe('#toJSONLD', function () {
+        it('Returns valid JSONLD', async function () {
+            const actor = Actor.create({username: 'TestingJSONLD'});
+
+            const baseUrl = new URL('https://example.com');
+
+            const jsonld = actor.getJSONLD(baseUrl);
+
+            assert.ok(jsonld);
         });
     });
 });
