@@ -23,35 +23,32 @@ async function parse(path) {
     try {
         source = await fs.readFile(path, {encoding: 'utf8'});
     } catch (readError) {
-        const err = new errors.IncorrectUsageError();
-        err.message = tpl(messages.couldNotReadPackage);
-        err.context = path;
-        err.err = readError;
-
-        return Promise.reject(err);
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.couldNotReadPackage),
+            context: path,
+            err: readError
+        });
     }
 
     try {
         json = JSON.parse(source);
     } catch (parseError) {
-        const err = new errors.IncorrectUsageError();
-        err.message = tpl(messages.themeFileIsMalformed);
-        err.context = path;
-        err.err = parseError;
-        err.help = tpl(messages.willBeRequired, {url: 'https://ghost.org/docs/themes/'});
-
-        return Promise.reject(err);
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.themeFileIsMalformed),
+            context: path,
+            err: parseError,
+            help: tpl(messages.willBeRequired, {url: 'https://ghost.org/docs/themes/'})
+        });
     }
 
     const hasRequiredKeys = json.name && json.version;
 
     if (!hasRequiredKeys) {
-        const err = new errors.IncorrectUsageError();
-        err.message = tpl(messages.nameOrVersionMissing);
-        err.context = path;
-        err.help = tpl(messages.willBeRequired, {url: 'https://ghost.org/docs/themes/'});
-
-        return Promise.reject(err);
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.nameOrVersionMissing),
+            context: path,
+            help: tpl(messages.willBeRequired, {url: 'https://ghost.org/docs/themes/'})
+        });
     }
 
     return json;
