@@ -1,4 +1,7 @@
 const sinon = require('sinon');
+const assert = require('assert').strict;
+const errors = require('@tryghost/errors');
+
 const RouterController = require('../../../../lib/controllers/RouterController');
 
 describe('RouterController', function () {
@@ -84,6 +87,80 @@ describe('RouterController', function () {
             getPaymentLinkSpy.calledWith(sinon.match({
                 metadata: {offer: 'offer_123'}
             })).should.be.true();
+        });
+
+        describe('_getSubscriptionCheckoutData', function () {
+            it('returns a BadRequestError if both offerId and tierId are missing', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({body: {}});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected offerId or tierId, received none');
+                }
+            });
+
+            it('returns a BadRequestError if both offerId and tierId are provided', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'tier_123', offerId: 'offer_123'});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected offerId or tierId, received both');
+                }
+            });
+
+            it('returns a BadRequestError if tierId is provided wihout a cadence', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'tier_123'});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected cadence to be "month" or "year", received undefined');
+                }
+            });
+
+            it('returns a BadRequestError if tierId is provided wihout a valid cadence', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'tier_123', cadence: 'day'});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected cadence to be "month" or "year", received "day"');
+                }
+            });
         });
 
         afterEach(function () {
