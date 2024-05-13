@@ -66,7 +66,7 @@ module.exports = class PostmarkClient {
                     TrackOpens: message.track_opens,
                     Headers: [],
                     MessageStream: config.streamId,
-                    Tag: 'ghost-email'
+                    Tag: 'ghost-email|' + message.id
                 };
 
                 Object.keys(recipientData[recipient]).forEach((key) => {
@@ -86,8 +86,8 @@ module.exports = class PostmarkClient {
                     messageData.Metadata['email-id'] = message.id;
                 }
 
-                if (bulkEmailConfig?.mailgun?.tag) {
-                    messageData.Tag = bulkEmailConfig.mailgun.tag;
+                if (bulkEmailConfig?.postmark?.tag) {
+                    messageData.Tag = bulkEmailConfig.postmark.tag;
                 }
 
                 emailMessages.push(messageData);
@@ -118,20 +118,18 @@ module.exports = class PostmarkClient {
 
     /**
      * @param {ServerClient} postmarkInstance
-     * @param {Object} mailgunConfig
-     * @param {Object} mailgunOptions
+     * @param {Date} startTime
      */
-    async getEventsFromMailgun(postmarkInstance, mailgunConfig, mailgunOptions) {
-        const startTime = Date.now();
+    async getEventsFromPostmark(postmarkInstance, startTime) {
         try {
-            const page = await postmarkInstance.events.get(mailgunConfig.domain, mailgunOptions);
-            metrics.metric('mailgun-get-events', {
+            const page = await postmarkInstance.getMessageOpens();
+            metrics.metric('postmark-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
             return page;
         } catch (error) {
-            metrics.metric('mailgun-get-events', {
+            metrics.metric('postmark-get-events', {
                 value: Date.now() - startTime,
                 statusCode: error.status
             });
@@ -140,53 +138,35 @@ module.exports = class PostmarkClient {
     }
 
     /**
-     * Fetches events from Mailgun
-     * @param {Object} mailgunOptions
+     * Fetches events fromPostmark
+     * @param {Object} postmarkOptions
      * @param {Function} batchHandler
-     * @param {Object} options
-     * @param {Number} options.maxEvents Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      * @returns {Promise<void>}
      */
-    async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
-        const mailgunInstance = this.getInstance();
-        if (!mailgunInstance) {
-            logging.warn(`Mailgun is not configured`);
+    async fetchEvents(postmarkOptions, batchHandler) {
+        const postmarkInstance = this.getInstance();
+        if (!postmarkInstance) {
+            logging.warn(`Postmark is not configured`);
             return;
         }
 
-        debug(`fetchEvents: starting fetching first events page`);
-        const mailgunConfig = this.#getConfig();
-        const startDate = new Date();
+        const startDate = new Date(Date.now() - 5 * 60 * 1000);
+        const endDate = new Date();
 
         try {
-            let page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions);
+            let page = await this.getEventsFromPostmark(postmarkInstance, startDate);
+            const totalCount = page.TotalCount;
+            let currentOffset = 0;
 
-            // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
-            // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
-            let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-            debug(`fetchEvents: finished fetching first page with ${events.length} events`);
+            let events = (page?.Opens?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= endDate && e.timestamp >= startDate);
 
-            let eventCount = 0;
-            const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
-
-            while (events.length !== 0) {
+            while (totalCount > currentOffset && events.length) {
                 await batchHandler(events);
-                eventCount += events.length;
+                currentOffset += page.Opens.length;
 
-                if (eventCount >= maxEvents && (!beginTimestamp || !events[events.length - 1].timestamp || (events[events.length - 1].timestamp.getTime() > beginTimestamp))) {
-                    break;
-                }
+                page = await this.getEventsFromPostmark(postmarkInstance, startDate);
 
-                const nextPageId = page.pages.next.page;
-                debug(`fetchEvents: starting fetching next page ${nextPageId}`);
-                page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, {
-                    page: nextPageId,
-                    ...mailgunOptions
-                });
-
-                // We need to cap events at the time we started fetching them (see comment above)
-                events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-                debug(`fetchEvents: finished fetching next page with ${events.length} events`);
+                events = (page?.Opens?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= endDate && e.timestamp >= startDate);
             }
         } catch (error) {
             logging.error(error);
@@ -229,28 +209,16 @@ module.exports = class PostmarkClient {
     }
 
     normalizeEvent(event) {
-        const providerId = event?.message?.headers['message-id'];
-
-        if (!providerId && !(event['user-variables'] && event['user-variables']['email-id'])) {
-            logging.error('Received invalid event from Postmark');
-            logging.error(event);
-            return null;
-        }
-
         return {
-            id: event.id,
-            type: event.event,
-            severity: event.severity,
-            recipientEmail: event.recipient,
-            emailId: event['user-variables'] && event['user-variables']['email-id'],
-            providerId: providerId,
-            timestamp: new Date(event.timestamp * 1000),
+            id: event.MessageID,
+            type: event.RecordType,
+            severity: 'not-defined',
+            recipientEmail: event.Recipient,
+            emailId: event.Tag.split('|')[1] ?? null,
+            providerId: 'not-defined',
+            timestamp: new Date(event.ReceivedAt),
 
-            error: event['delivery-status'] && (typeof (event['delivery-status'].message || event['delivery-status'].description) === 'string') ? {
-                code: event['delivery-status'].code,
-                message: (event['delivery-status'].message || event['delivery-status'].description).substring(0, 2000),
-                enhancedCode: event['delivery-status']['enhanced-code']?.toString()?.substring(0, 50) ?? null
-            } : null
+            error: null
         };
     }
 
@@ -293,7 +261,7 @@ module.exports = class PostmarkClient {
     }
 
     /**
-     * Returns whether the Mailgun instance is configured via config/settings
+     * Returns whether the Postmark instance is configured via config/settings
      *
      * @returns {boolean}
      */
