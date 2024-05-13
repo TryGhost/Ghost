@@ -27,7 +27,7 @@
   "dependencies": {
     "@tryghost/debug": "0.1.29",
     "@tryghost/errors": "1.3.2",
-    "@tryghost/nql": "0.12.1",
+    "@tryghost/nql": "0.12.3",
     "@tryghost/tpl": "0.1.29",
     "lodash": "4.17.21"
   }
