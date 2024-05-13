@@ -23,7 +23,7 @@ const FollowSite = NiceModal.create(() => {
     const handleFollow = async () => {
         try {
             // Perform the mutation
-            await mutation.mutateAsync(profileName);
+            await mutation.mutateAsync({username: profileName});
             // If successful, set the success state to true
             setSuccess(true);
             console.log('Successfully followed!');
