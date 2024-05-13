@@ -35,7 +35,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     email: ({email}) => {
         const valid = validator.isEmail(email || '');
-        return valid ? '' : 'Please enter a valid email address';
+        return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
         const valid = !url || validator.isURL(url);
@@ -51,7 +51,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     website: ({website}) => {
         const valid = !website || (validator.isURL(website) && website.length <= 2000);
-        return valid ? '' : 'Website is not a valid url';
+        return valid ? '' : 'Enter a valid URL';
     },
     facebook: ({facebook}) => {
         try {
