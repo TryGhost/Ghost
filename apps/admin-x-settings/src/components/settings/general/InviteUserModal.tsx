@@ -131,15 +131,17 @@ const InviteUserModal = NiceModal.create(() => {
             updateRoute('staff?tab=invited');
         } catch (e) {
             setSaveState('error');
-            let message = (<span><strong>Your invitation failed to send.</strong><br/>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
+            let title = 'Failed to send invitation';
+            let message = (<span>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
             if (e instanceof APIError) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let data = e.data as any; // we have unknown data types in the APIError/error classes
                 if (data?.errors?.[0]?.type === 'EmailError') {
-                    message = (<span><strong>Your invitation failed to send</strong><br/>Please check your Mailgun configuration. If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a></span>);
+                    message = (<span>Check your Mailgun configuration.</span>);
                 }
             }
             showToast({
+                title,
                 message,
                 type: 'error'
             });
@@ -183,6 +185,7 @@ const InviteUserModal = NiceModal.create(() => {
                 updateRoute('staff');
             }}
             cancelLabel=''
+            okColor={saveState === 'error' ? 'red' : 'black'}
             okLabel={okLabel}
             testId='invite-user-modal'
             title='Invite a new staff user'

@@ -5,7 +5,7 @@
 .gh-notifications {
     position: absolute;
     bottom: 30px;
-    left: 30px;
+    left: 24px;
     z-index: 7000;
     display: flex;
     flex-direction: column;
@@ -16,8 +16,7 @@
     position: relative;
     display: flex;
     margin-top: 8px;
-    max-width: 320px;
-    min-width: 280px;
+    width: 272px;
     background: var(--white);
     border-radius: 8px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.28), 0px 100px 80px rgba(0, 0, 0, 0.0112458), 0px 41.7776px 33.4221px rgba(0, 0, 0, 0.0161557), 0px 22.3363px 17.869px rgba(0, 0, 0, 0.02), 0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0238443), 0px 6.6501px 5.32008px rgba(0, 0, 0, 0.0287542), 0px 2.76726px 2.21381px rgba(0, 0, 0, 0.04);
@@ -26,6 +25,12 @@
     line-height: 1.25em;
     opacity: 1.0;
     min-height: 44px;
+}
+
+@media (max-width: 1240px) {
+    .gh-notification {
+        width: 232px;
+    }
 }
 
 .gh-notification-icon {
