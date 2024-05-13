@@ -25,10 +25,7 @@ export class ActorRepositoryInMemory implements ActorRepository {
                 displayName: settingsCache.get('title'),
                 publicKey: settingsCache.get('ghost_public_key'),
                 privateKey: settingsCache.get('ghost_private_key'),
-                following: [{
-                    id: new URI('https://ghost.org'),
-                    username: '@index@ghost.org'
-                }]
+                following: []
             })
         ];
         this.domainEvents = domainEvents;
