@@ -641,7 +641,7 @@ const AddOfferModal = () => {
                 toast.remove();
                 showToast({
                     title: 'Can\'t save offer',
-                    type: 'error',
+                    type: 'info',
                     message: 'Make sure you filled all required fields'
                 });
                 return;
@@ -650,13 +650,7 @@ const AddOfferModal = () => {
             try {
                 if (await handleSave({force: true})) {
                     return;
-                } else {
-                    toast.remove();
-                    showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields correctly'
-                    });
-                };
+                }
             } catch (e) {
                 let message;
 
@@ -669,7 +663,7 @@ const AddOfferModal = () => {
                     showToast({
                         title: 'Can\'t save offer',
                         type: 'error',
-                        message: 'Please try again later'
+                        message: message || 'Please try again later'
                     });
                 }
             }

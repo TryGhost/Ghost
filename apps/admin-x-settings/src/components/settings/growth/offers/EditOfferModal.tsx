@@ -284,12 +284,6 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             try {
                 if (await handleSave({force: true})) {
                     return;
-                } else {
-                    toast.remove();
-                    showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields correctly'
-                    });
                 }
             } catch (e) {
                 let message;

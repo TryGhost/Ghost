@@ -16,7 +16,6 @@ import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
@@ -361,15 +360,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
-                toast.remove();
-
-                if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                    showToast({
-                        title: 'Can\'t save staff user',
-                        type: 'error',
-                        message: 'Make sure you filled all required fields'
-                    });
-                }
+                await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>
