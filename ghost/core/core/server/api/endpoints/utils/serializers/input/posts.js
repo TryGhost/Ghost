@@ -7,6 +7,7 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
 const sentry = require('../../../../../../shared/sentry');
@@ -16,11 +17,27 @@ const messages = {
     failedHtmlToLexical: 'Failed to convert HTML to Lexical'
 };
 
+// NOTE: This doesn't stop them from being FETCHED, just returned in the response. This causes
+//   the output serializer to remove them from the data object before returning.
 function removeSourceFormats(frame) {
     if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
         frame.options.formats = frame.options.formats.filter((format) => {
             return !['mobiledoc', 'lexical'].includes(format);
         });
+    }
+}
+
+// This removes the lexical and mobiledoc columns from the query. This is a performance improvement as we never intend
+//  to expose those columns in the content API and they are very large datasets to be passing around and de/serializing.
+function removeSourceColumns(frame) {
+    if (frame.options.columns) {
+        if (frame.options.columns.includes('mobiledoc') || frame.options.columns.includes('lexical')) {
+            frame.options.columns = frame.options.columns.filter((column) => {
+                return !['mobiledoc', 'lexical'].includes(column);
+            });
+        }
+    } else {
+        frame.options.columns = _.keys(_.omit(postsSchema, ['lexical','mobiledoc','@@UNIQUE_CONSTRAINTS@@']));
     }
 }
 
@@ -129,6 +146,7 @@ module.exports = {
         if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc or lexical
             removeSourceFormats(frame);
+            removeSourceColumns(frame);
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
