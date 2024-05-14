@@ -139,8 +139,9 @@ export default class PublishOptions {
     }
 
     get bulkEmailIsConfigured() {
-        return this.settings.mailgunIsConfigured
-            || this.config.mailgunIsConfigured;
+        return this.settings.bulkEmailIsConfigured
+            || this.config.mailgunIsConfigured
+            || this.config.postmarkIsConfigured;
     }
 
     @action
