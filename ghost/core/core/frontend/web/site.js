@@ -131,6 +131,9 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.staticTheme());
     debug('Static content done');
 
+    // site map - this should probably be refactored to be an internal app
+    sitemapHandler(siteApp);
+
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);
 
@@ -142,8 +145,6 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve robots.txt if not found in theme
     siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
 
-    // site map - this should probably be refactored to be an internal app
-    sitemapHandler(siteApp);
     debug('Internal apps done');
 
     // Add in all trailing slashes & remove uppercase
