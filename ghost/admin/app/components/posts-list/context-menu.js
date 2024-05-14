@@ -21,28 +21,28 @@ function tpl(str, data) {
 
 const messages = {
     deleted: {
-        single: '{Type} deleted successfully',
-        multiple: '{count} {type}s deleted successfully'
+        single: '{Type} deleted',
+        multiple: '{count} {type}s deleted'
     },
     unpublished: {
-        single: '{Type} successfully reverted to a draft',
-        multiple: '{count} {type}s successfully reverted to drafts'
+        single: '{Type} reverted to a draft',
+        multiple: '{count} {type}s reverted to drafts'
     },
     accessUpdated: {
-        single: '{Type} access successfully updated',
-        multiple: '{Type} access successfully updated for {count} {type}s'
+        single: '{Type} access updated',
+        multiple: '{Type} access updated for {count} {type}s'
     },
     tagsAdded: {
-        single: 'Tags added successfully',
-        multiple: 'Tags added successfully to {count} {type}s'
+        single: 'Tags added',
+        multiple: 'Tags added to {count} {type}s'
     },
     tagAdded: {
-        single: 'Tag added successfully',
-        multiple: 'Tag added successfully to {count} {type}s'
+        single: 'Tag added',
+        multiple: 'Tag added to {count} {type}s'
     },
     duplicated: {
-        single: '{Type} duplicated successfully',
-        multiple: '{count} {type}s duplicated successfully'
+        single: '{Type} duplicated',
+        multiple: '{count} {type}s duplicated'
     }
 };
 

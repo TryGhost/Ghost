@@ -169,7 +169,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
         let title = 'Upload successful';
         let prompt = <>
-            <strong>{uploadedTheme.name}</strong> uploaded successfully.
+            <strong>{uploadedTheme.name}</strong> uploaded
         </>;
 
         if (!uploadedTheme.active) {
@@ -184,7 +184,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
             title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
             prompt = <>
-                The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed but we detected some {hasErrors ? 'errors' : 'warnings'}.
             </>;
 
             if (!uploadedTheme.active) {
@@ -351,8 +351,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                         if (data?.themes[0]) {
                             await activateTheme(data.themes[0].name);
                             showToast({
+                                title: 'Theme activated',
                                 type: 'success',
-                                message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme.</div>
+                                message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>
                             });
                         }
                         confirmModal?.remove();

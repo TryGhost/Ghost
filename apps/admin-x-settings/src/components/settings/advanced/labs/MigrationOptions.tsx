@@ -65,7 +65,7 @@ const MigrationOptions: React.FC = () => {
                     await deleteAllContent(null);
                     showToast({
                         type: 'success',
-                        message: 'All content deleted from database.'
+                        title: 'All content deleted from database.'
                     });
                     modal?.remove();
                     await client.refetchQueries();

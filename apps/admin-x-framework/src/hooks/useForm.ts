@@ -85,6 +85,7 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
     // function to save the changed settings via API
     const handleSave = useCallback<SaveHandler>(async (options = {}) => {
         if (!validate()) {
+            setSaveState('error');
             return false;
         }
 
@@ -122,10 +123,26 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
         setSaveState('unsaved');
     }, []);
 
+    let okColor: ButtonColor = 'black';
+    if (saveState === 'saved') {
+        okColor = 'green';
+    } else if (saveState === 'error') {
+        okColor = 'red';
+    }
+
+    let okLabel = '';
+    if (saveState === 'saved') {
+        okLabel = 'Saved';
+    } else if (saveState === 'saving') {
+        okLabel = 'Saving...';
+    } else if (saveState === 'error') {
+        okLabel = 'Retry';
+    }
+
     const okProps: OkProps = {
         disabled: saveState === 'saving',
-        color: saveState === 'saved' ? 'green' : 'black',
-        label: saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : undefined)
+        color: okColor,
+        label: okLabel || undefined
     };
 
     return {

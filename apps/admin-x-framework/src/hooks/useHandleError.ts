@@ -46,17 +46,17 @@ const useHandleError = () => {
         } else if (error instanceof ValidationError && error.data?.errors[0]) {
             showToast({
                 message: error.data.errors[0].context || error.data.errors[0].message,
-                type: 'pageError'
+                type: 'error'
             });
         } else if (error instanceof APIError) {
             showToast({
                 message: error.message,
-                type: 'pageError'
+                type: 'error'
             });
         } else {
             showToast({
                 message: 'Something went wrong, please try again.',
-                type: 'pageError'
+                type: 'error'
             });
         }
     }, [sentryDSN]);

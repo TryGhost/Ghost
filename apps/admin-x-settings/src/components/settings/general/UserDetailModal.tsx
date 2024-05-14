@@ -16,7 +16,6 @@ import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
@@ -36,7 +35,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     email: ({email}) => {
         const valid = validator.isEmail(email || '');
-        return valid ? '' : 'Please enter a valid email address';
+        return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
         const valid = !url || validator.isURL(url);
@@ -52,7 +51,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     website: ({website}) => {
         const valid = !website || (validator.isURL(website) && website.length <= 2000);
-        return valid ? '' : 'Website is not a valid url';
+        return valid ? '' : 'Enter a valid URL';
     },
     facebook: ({facebook}) => {
         try {
@@ -192,7 +191,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     setFormState(() => updatedUserData);
                     modal?.remove();
                     showToast({
-                        message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                        title: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
                         type: 'success'
                     });
                 } catch (e) {
@@ -220,7 +219,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     mainModal?.remove();
                     navigateOnClose();
                     showToast({
-                        message: 'User deleted',
+                        title: 'User deleted',
                         type: 'success'
                     });
                 } catch (e) {
@@ -241,7 +240,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await makeOwner(user.id);
                     modal?.remove();
                     showToast({
-                        message: 'Ownership transferred',
+                        title: 'Ownership transferred',
                         type: 'success'
                     });
                 } catch (e) {
@@ -361,14 +360,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
-                toast.remove();
-
-                if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                    showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save user, please double check that you\'ve filled all mandatory fields.'
-                    });
-                }
+                await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>

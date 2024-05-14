@@ -52,8 +52,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         try {
             await activateTheme(theme.name);
             showToast({
+                title: 'Theme activated',
                 type: 'success',
-                message: <div><span className='capitalize'>{theme.name}</span> is now your active theme.</div>
+                message: <div><span className='capitalize'>{theme.name}</span> is now your active theme</div>
             });
         } catch (e) {
             handleError(e);

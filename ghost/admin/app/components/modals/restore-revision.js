@@ -40,7 +40,7 @@ export default class RestoreRevisionModal extends Component {
             updateTitle();
             updateEditor();
 
-            this.notifications.showNotification('Revision successfully restored.', {type: 'success'});
+            this.notifications.showNotification('Revision restored.', {type: 'success'});
 
             closePostHistoryModal();
 

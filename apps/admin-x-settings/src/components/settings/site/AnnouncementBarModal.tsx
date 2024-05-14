@@ -215,7 +215,7 @@ const AnnouncementBarModal: React.FC = () => {
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
-                    type: 'pageError',
+                    type: 'error',
                     message: 'An error occurred while saving your changes. Please try again.'
                 });
             }

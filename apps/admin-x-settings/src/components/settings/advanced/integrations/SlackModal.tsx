@@ -32,8 +32,8 @@ const SlackModal = NiceModal.create(() => {
         if (await handleSave()) {
             await testSlack(null);
             showToast({
-                message: 'Check your Slack channel for the test message',
-                type: 'neutral'
+                title: 'Check your Slack channel for the test message',
+                type: 'info'
             });
         }
     };

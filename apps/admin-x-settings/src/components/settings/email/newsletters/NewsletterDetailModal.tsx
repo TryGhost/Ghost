@@ -140,7 +140,7 @@ const Sidebar: React.FC<{
                         modal?.remove();
                         showToast({
                             type: 'success',
-                            message: 'Newsletter archived successfully'
+                            message: 'Newsletter archived'
                         });
                     } catch (e) {
                         handleError(e);
@@ -173,7 +173,7 @@ const Sidebar: React.FC<{
                     modal?.remove();
                     showToast({
                         type: 'success',
-                        message: 'Newsletter reactivated successfully'
+                        message: 'Newsletter reactivated'
                     });
                 }
             });
@@ -528,7 +528,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 showToast({
                     icon: 'email',
                     message: toastMessage,
-                    type: 'neutral'
+                    type: 'info'
                 });
             }
         },
@@ -581,12 +581,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };

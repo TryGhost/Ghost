@@ -100,7 +100,7 @@ test.describe('Slack integration', async () => {
         await slackModal.getByLabel('Username').fill('My site');
         await slackModal.getByRole('button', {name: 'Send test notification'}).click();
 
-        await expect(page.getByTestId('toast-neutral')).toHaveText(/Check your Slack channel for the test message/);
+        await expect(page.getByTestId('toast-info')).toHaveText(/Check your Slack channel for the test message/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [

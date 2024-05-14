@@ -15,7 +15,6 @@ import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
-import {capitalize} from '@ember/string';
 import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
@@ -1266,7 +1265,7 @@ export default class LexicalEditorController extends Controller {
         let actions, type, path;
 
         if (status === 'published' || status === 'scheduled') {
-            type = capitalize(this.get('post.displayName'));
+            type = this.get('post.displayName');
             path = this.get('post.url');
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }

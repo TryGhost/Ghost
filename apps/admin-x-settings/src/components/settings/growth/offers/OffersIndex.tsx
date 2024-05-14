@@ -212,8 +212,8 @@ export const OffersIndexModal = () => {
             onClick: () => {
                 if (paidActiveTiers.length === 0) {
                     showToast({
-                        type: 'neutral',
-                        message: 'You must have an active tier to create an offer.'
+                        type: 'info',
+                        title: 'You must have an active tier to create an offer.'
                     });
                 } else {
                     updateRoute('offers/new');

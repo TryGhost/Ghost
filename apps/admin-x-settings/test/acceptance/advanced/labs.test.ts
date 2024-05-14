@@ -24,7 +24,7 @@ test.describe('Labs', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/files/redirects.yml`);
 
-        await expect(page.getByTestId('toast-success')).toContainText('Redirects uploaded successfully');
+        await expect(page.getByTestId('toast-success')).toContainText('Redirects uploaded');
 
         expect(lastApiRequests.uploadRedirects).toBeTruthy();
 
@@ -56,7 +56,7 @@ test.describe('Labs', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/files/routes.yml`);
 
-        await expect(page.getByTestId('toast-success')).toContainText('Routes uploaded successfully');
+        await expect(page.getByTestId('toast-success')).toContainText('Routes uploaded');
 
         expect(lastApiRequests.uploadRoutes).toBeTruthy();
 

@@ -131,8 +131,8 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         } catch (e) {
             const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
             showToast({
-                type: 'pageError',
-                message
+                type: 'error',
+                title: message
             });
         }
 

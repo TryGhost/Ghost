@@ -1,10 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
-import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {numberWithCommas} from '../../../../utils/helpers';
-import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -78,14 +77,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         testId='add-newsletter-modal'
         title='Create newsletter'
         onOk={async () => {
-            toast.remove();
             if (await handleSave()) {
                 modal.remove();
-            } else {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
             }
         }}
     >
