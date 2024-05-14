@@ -30,7 +30,7 @@
   "devDependencies": {
     "c8": "9.1.0",
     "jsdom": "^24.0.0",
-    "mocha": "10.2.0",
+    "mocha": "10.4.0",
     "should": "13.2.3",
     "sinon": "17.0.1"
   },
