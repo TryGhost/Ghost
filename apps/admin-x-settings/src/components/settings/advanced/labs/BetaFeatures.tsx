@@ -32,7 +32,7 @@ const BetaFeatures: React.FC = () => {
                                 setRedirectsUploading(true);
                                 await uploadRedirects(file);
                                 showToast({
-                                    title: 'Redirects uploaded successfully',
+                                    title: 'Redirects uploaded',
                                     type: 'success'
                                 });
                             } catch (e) {
@@ -58,7 +58,7 @@ const BetaFeatures: React.FC = () => {
                                 await uploadRoutes(file);
                                 showToast({
                                     type: 'success',
-                                    title: 'Routes uploaded successfully'
+                                    title: 'Routes uploaded'
                                 });
                             } catch (e) {
                                 handleError(e);

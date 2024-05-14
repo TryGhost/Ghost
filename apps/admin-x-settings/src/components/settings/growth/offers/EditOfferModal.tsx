@@ -67,7 +67,7 @@ const Sidebar: React.FC<{
                                 modal?.remove();
                                 showToast({
                                     type: 'success',
-                                    title: 'Offer archived successfully'
+                                    title: 'Offer archived'
                                 });
                                 updateRoute('offers/edit');
                             } catch (e) {
@@ -88,7 +88,7 @@ const Sidebar: React.FC<{
                                 modal?.remove();
                                 showToast({
                                     type: 'success',
-                                    title: 'Offer reactivated successfully'
+                                    title: 'Offer reactivated'
                                 });
                                 updateRoute('offers/edit');
                             } catch (e) {

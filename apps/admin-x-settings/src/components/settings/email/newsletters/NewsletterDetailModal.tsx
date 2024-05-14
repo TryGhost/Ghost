@@ -140,7 +140,7 @@ const Sidebar: React.FC<{
                         modal?.remove();
                         showToast({
                             type: 'success',
-                            message: 'Newsletter archived successfully'
+                            message: 'Newsletter archived'
                         });
                     } catch (e) {
                         handleError(e);
@@ -173,7 +173,7 @@ const Sidebar: React.FC<{
                     modal?.remove();
                     showToast({
                         type: 'success',
-                        message: 'Newsletter reactivated successfully'
+                        message: 'Newsletter reactivated'
                     });
                 }
             });

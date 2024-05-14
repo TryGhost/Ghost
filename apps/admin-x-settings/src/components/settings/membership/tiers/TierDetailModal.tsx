@@ -154,7 +154,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     confirmModal?.remove();
                     showToast({
                         type: 'success',
-                        title: `Tier ${tier.active ? 'archived' : 'reactivated'} successfully`
+                        title: `Tier ${tier.active ? 'archived' : 'reactivated'}`
                     });
                 }
             });

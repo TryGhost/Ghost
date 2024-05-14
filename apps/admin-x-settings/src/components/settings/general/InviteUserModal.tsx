@@ -123,7 +123,7 @@ const InviteUserModal = NiceModal.create(() => {
             setSaveState('saved');
 
             showToast({
-                title: `Invitation successfully sent`,
+                title: `Invitation sent`,
                 message: `${email}`,
                 type: 'success'
             });

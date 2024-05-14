@@ -169,7 +169,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
         let title = 'Upload successful';
         let prompt = <>
-            <strong>{uploadedTheme.name}</strong> uploaded successfully.
+            <strong>{uploadedTheme.name}</strong> uploaded
         </>;
 
         if (!uploadedTheme.active) {
@@ -184,7 +184,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
             title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
             prompt = <>
-                The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed but we detected some {hasErrors ? 'errors' : 'warnings'}.
             </>;
 
             if (!uploadedTheme.active) {
