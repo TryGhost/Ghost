@@ -1,5 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
-import {Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
@@ -17,7 +17,7 @@ const FollowSite = NiceModal.create(() => {
 
     // State to manage the text field value
     const [profileName, setProfileName] = useState('');
-    const [success, setSuccess] = useState(false);
+    // const [success, setSuccess] = useState(false);
     const [errorMessage, setError] = useState(null);
 
     const handleFollow = async () => {
@@ -25,17 +25,15 @@ const FollowSite = NiceModal.create(() => {
             // Perform the mutation
             await mutation.mutateAsync({username: profileName});
             // If successful, set the success state to true
-            setSuccess(true);
-            console.log('Successfully followed!');
-            // Reset the input field
-            setProfileName('');
-            // Close the modal after a short delay
-            setTimeout(() => {
-                modal.remove();
-            }, 1000);
+            // setSuccess(true);
+            showToast({
+                message: 'Site followed',
+                type: 'success'
+            });
+            modal.remove();
         } catch (error) {
             // If there's an error, set the error state
-            setError(error.message);
+            setError(errorMessage);
         }
     };
 
@@ -45,7 +43,6 @@ const FollowSite = NiceModal.create(() => {
                 mutation.reset();
                 updateRoute('');
             }}
-            buttonsDisabled={!profileName || mutation.isLoading}
             cancelLabel='Cancel'
             okLabel='Follow'
             size='sm'
@@ -59,17 +56,14 @@ const FollowSite = NiceModal.create(() => {
         >
             <div className='mt-3 flex flex-col gap-4'>
                 <TextField
+                    autoFocus={true}
+                    error={Boolean(errorMessage)}
+                    hint={errorMessage}
                     placeholder='@username@hostname'
                     title='Profile name'
-                    // Set the value of the text field to the state variable
                     value={profileName}
-                    // Update the state variable when the text field changes
                     onChange={e => setProfileName(e.target.value)}
                 />
-                {/* Display success message if the mutation was successful */}
-                {success && <p className="text-green-600">Followed successfully!</p>}
-                {/* Display error message if there was an error */}
-                {errorMessage && <p className="text-red-600">{errorMessage}</p>}
             </div>
         </Modal>
     );
