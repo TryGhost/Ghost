@@ -19,25 +19,25 @@ const messages = {
 
 // NOTE: This doesn't stop them from being FETCHED, just returned in the response. This causes
 //   the output serializer to remove them from the data object before returning.
+//  Remove from both formats and columns to be safe.
 function removeSourceFormats(frame) {
     if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
         frame.options.formats = frame.options.formats.filter((format) => {
             return !['mobiledoc', 'lexical'].includes(format);
         });
     }
+    if (frame.options.columns?.includes('mobiledoc') || frame.options.columns?.includes('lexical')) {
+        frame.options.columns = frame.options.columns.filter((column) => {
+            return !['mobiledoc', 'lexical'].includes(column);
+        });
+    }
 }
 
 // This removes the lexical and mobiledoc columns from the query. This is a performance improvement as we never intend
 //  to expose those columns in the content API and they are very large datasets to be passing around and de/serializing.
-function removeSourceColumns(frame) {
-    if (frame.options.columns) {
-        if (frame.options.columns.includes('mobiledoc') || frame.options.columns.includes('lexical')) {
-            frame.options.columns = frame.options.columns.filter((column) => {
-                return !['mobiledoc', 'lexical'].includes(column);
-            });
-        }
-    } else {
-        frame.options.columns = _.keys(_.omit(postsSchema, ['lexical','mobiledoc','@@UNIQUE_CONSTRAINTS@@']));
+function addRawSelectAllButSourceColumns(frame) {
+    if (!frame.options.columns && !frame.options.selectRaw) {
+        frame.options.selectRaw = _.keys(_.omit(postsSchema, ['lexical','mobiledoc'])).join(',');
     }
 }
 
@@ -146,7 +146,8 @@ module.exports = {
         if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc or lexical
             removeSourceFormats(frame);
-            removeSourceColumns(frame);
+            addRawSelectAllButSourceColumns(frame);
+            // frame.options.selectRaw = 'canonical_url,codeinjection_foot,codeinjection_head,comment_id,created_at,created_by,custom_excerpt,custom_template,email_recipient_filter,feature_image,featured,html,id,locale,newsletter_id,plaintext,published_at,published_by,show_title_and_feature_image,slug,status,title,type,updated_at,updated_by,uuid,visibility';
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
