@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -96,6 +95,15 @@ module.exports = class PostmarkClient {
             startTime = Date.now();
             const response = await postmarkInstance.sendEmailBatch(emailMessages);
 
+            if (response[0].ErrorCode) {
+                throw new errors.EmailError({
+                    response,
+                    code: 'BULK_EMAIL_SEND_FAILED',
+                    message: `Error sending email`,
+                    context: response[0].Message
+                });
+            }
+
             logging.info(JSON.stringify(response));
 
             metrics.metric('postmark-send-mail', {
@@ -110,7 +118,7 @@ module.exports = class PostmarkClient {
             logging.error(error);
             metrics.metric('postmark-send-mail', {
                 value: Date.now() - startTime,
-                statusCode: error.status
+                statusCode: error.code
             });
             return Promise.reject({error, emailMessages});
         }
