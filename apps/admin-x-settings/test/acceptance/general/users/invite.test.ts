@@ -38,7 +38,7 @@ test.describe('User invitations', async () => {
 
         // Validation failures
 
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Send invitation'}).click();
         await expect(modal).toContainText('Please enter a valid email address');
 
         // Reset error with keydown event
@@ -47,24 +47,24 @@ test.describe('User invitations', async () => {
 
         await modal.getByLabel('Email address').fill('test');
         await expect(modal).not.toContainText('Please enter a valid email address');
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Send invitation'}).click();
         await expect(modal).toContainText('Please enter a valid email address');
 
         await modal.getByLabel('Email address').fill('author@test.com');
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Retry'}).click();
         await expect(modal).toContainText('A user with that email address already exists.');
 
         await modal.getByLabel('Email address').fill('invitee@test.com');
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Retry'}).click();
         await expect(modal).toContainText('A user with that email address was already invited.');
 
         // Successful invitation
 
         await modal.getByLabel('Email address').fill('newuser@test.com');
         await modal.locator('input[value=author]').check();
-        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await modal.getByRole('button', {name: 'Retry'}).click();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation sent/);
 
         await section.getByRole('tab', {name: 'Invited'}).click();
 
@@ -103,7 +103,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Resend'}).click();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent/);
 
         // Resending works by deleting and re-adding the invite
 
@@ -138,7 +138,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Revoke'}).click();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked/);
 
         expect(lastApiRequests.deleteInvite?.url).toMatch(new RegExp(`/invites/${responseFixtures.invites.invites[0].id}`));
     });

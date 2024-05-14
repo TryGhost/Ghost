@@ -34,14 +34,6 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         onSaveError: handleError,
         onValidate: (state) => {
             const newErrors = validateDescriptionForm(state);
-
-            if (Object.keys(newErrors).length !== 0) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t edit recommendation, please double check that you\'ve filled all mandatory fields correctly.'
-                });
-            }
-
             return newErrors;
         }
     });
@@ -63,13 +55,10 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                     try {
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
-                        showToast({
-                            message: 'Successfully deleted the recommendation',
-                            type: 'success'
-                        });
                     } catch (e) {
                         showToast({
-                            message: 'Failed to delete the recommendation. Please try again later.',
+                            title: 'Failed to delete the recommendation',
+                            message: 'Please try again later.',
                             type: 'error'
                         });
                         handleError(e, {withToast: false});
@@ -101,8 +90,9 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                 await handleSave({force: true});
             } catch (e) {
                 showToast({
-                    type: 'pageError',
-                    message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
+                    title: 'Something went wrong',
+                    type: 'error',
+                    message: 'Please try again later.'
                 });
             }
         }}

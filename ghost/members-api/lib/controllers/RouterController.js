@@ -204,7 +204,6 @@ module.exports = class RouterController {
      * @returns
      */
     async _getSubscriptionCheckoutData(body) {
-        const ghostPriceId = body.priceId;
         const tierId = body.tierId;
         const offerId = body.offerId;
 
@@ -213,33 +212,35 @@ module.exports = class RouterController {
         let offer;
 
         // Validate basic input
-        if (!ghostPriceId && !offerId && !tierId && !cadence) {
+        if (!offerId && !tierId) {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected offerId or tierId, received none');
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected offerId or tierId, received none'
             });
         }
 
-        if (offerId && (ghostPriceId || (tierId && cadence))) {
+        if (offerId && tierId) {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected offerId or tierId, received both');
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
-            });
-        }
-
-        if (ghostPriceId && tierId && cadence) {
-            throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected offerId or tierId, received both'
             });
         }
 
         if (tierId && !cadence) {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected cadence to be "month" or "year", received ', cadence);
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected cadence to be "month" or "year", received ' + cadence
             });
         }
 
-        if (cadence && cadence !== 'month' && cadence !== 'year') {
+        if (tierId && cadence && cadence !== 'month' && cadence !== 'year') {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected cadence to be "month" or "year", received ', cadence);
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected cadence to be "month" or "year", received "' + cadence + '"'
             });
         }
 
