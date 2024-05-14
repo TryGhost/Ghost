@@ -51,7 +51,7 @@
     "@tryghost/kg-clean-basic-html": "^4.0.4",
     "@tryghost/kg-markdown-html-renderer": "^7.0.3",
     "html-minifier": "^4.0.0",
-    "jsdom": "^23.0.0",
+    "jsdom": "^24.0.0",
     "lexical": "0.13.1",
     "lodash": "^4.17.21",
     "luxon": "^3.3.0"
