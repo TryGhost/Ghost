@@ -250,7 +250,7 @@ export default class PublishManagement extends Component {
             yield this.publishTask.perform({taskName: 'revertToDraftTask'});
 
             const postType = capitalize(this.args.post.displayName);
-            this.notifications.showNotification(`${postType} successfully reverted to a draft.`, {type: 'success'});
+            this.notifications.showNotification(`${postType} reverted to a draft.`, {type: 'success'});
 
             return true;
         } catch (e) {

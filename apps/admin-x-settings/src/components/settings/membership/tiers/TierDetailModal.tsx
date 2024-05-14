@@ -9,7 +9,6 @@ import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
     trial_days: string;
@@ -155,7 +154,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     confirmModal?.remove();
                     showToast({
                         type: 'success',
-                        message: `Tier ${tier.active ? 'archived' : 'reactivated'} successfully`
+                        title: `Tier ${tier.active ? 'archived' : 'reactivated'}`
                     });
                 }
             });
@@ -195,15 +194,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
         stickyFooter
         onOk={async () => {
-            toast.remove();
-
-            if (!await handleSave({fakeWhenUnchanged: true})) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save tier, please double check that you\'ve filled all mandatory fields.'
-                });
-                return;
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     >
         <div className='-mb-8 mt-8 flex items-start gap-8'>
