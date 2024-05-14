@@ -123,7 +123,16 @@ const ActivityPubComponent: React.FC = () => {
     );
 };
 
-const ObjectContentDisplay: React.FC<{actor: {id: string, username?: string;}, objectUrl: string }> = ({actor, objectUrl}) => {
+const ArticleBody: React.FC<{html: string}> = ({html}) => {
+    const dangerouslySetInnerHTML = {__html: html};
+    return (
+        <div className="mt mb-2 flex flex-row items-center gap-4 pr-4">
+            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-neutral-900 font-sans text-[16px] leading-normal [overflow-wrap:anywhere] dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
+        </div>
+    );
+};
+
+const ObjectContentDisplay: React.FC<{actor: string, objectUrl: string }> = ({actor, objectUrl}) => {
     const [objectContent, setObjectContent] = useState<ObjectContent | null>(null);
 
     useEffect(() => {
@@ -163,9 +172,10 @@ const ObjectContentDisplay: React.FC<{actor: {id: string, username?: string;}, o
                         <Heading className='mb-2' level={5}>{objectContent.name}</Heading>
                         <Icon className='mb-2 opacity-0 transition-opacity group-hover/article:opacity-100' colorClass='text-grey-500' name='arrow-top-right' size='sm' />
                     </div>
+                    <ArticleBody html={objectContent?.content} />
                     <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
                     {/* <p className='mb-2 text-grey-950'>{objectContent.url}</p> */}
-                    <p className='text-md font-medium text-grey-800'>{actor.username}</p>
+                    <p className='text-md font-medium text-grey-800'>{actor}</p>
                 </a>
             )}
         </>
