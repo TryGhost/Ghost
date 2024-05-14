@@ -33,7 +33,7 @@
     "@babel/plugin-syntax-import-assertions": "^7.20.0",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
-    "@prettier/sync": "^0.3.0",
+    "@prettier/sync": "^0.5.0",
     "@rollup/plugin-babel": "6.0.4",
     "c8": "9.1.0",
     "html-minifier": "^4.0.0",
