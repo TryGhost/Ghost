@@ -121,7 +121,7 @@
     "stylelint": "^16.0.0",
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3",
-    "vite": "4.3.8",
+    "vite": "4.5.3",
     "vite-plugin-svgr": "^4.0.0",
     "vitest": "1.2.1",
     "y-websocket": "^1.5.0",
