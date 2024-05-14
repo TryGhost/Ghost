@@ -57,15 +57,15 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver,
     const Icon = item.Icon;
 
     return (
-        <li className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
+        <li aria-selected={selected} className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} role="option" onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
             <span className="line-clamp-1 flex items-center gap-[.6rem]">
                 {Icon && <Icon className="size-[1.4rem] stroke-[1.5px]" />}
-                <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-${item.label}`}><HighlightedLabel /></span>
+                <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-label`}><HighlightedLabel /></span>
             </span>
-            {selected && item.metaText && (
-                <span className="flex shrink-0 items-center gap-1 text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-grey-500">
-                    {item.MetaIcon && <item.MetaIcon className="mb-[1px] size-3" />}
-                    <span>{item.metaText}</span>
+            {selected && (item.metaText || item.MetaIcon) && (
+                <span className="flex shrink-0 items-center gap-1 text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-grey-500" data-testid={`${dataTestId}-listOption-meta`}>
+                    <span title={item.metaIconTitle}>{item.MetaIcon && <item.MetaIcon className="mb-[1px] size-3" />}</span>
+                    {item.metaText && <span>{item.metaText}</span>}
                 </span>
             )}
         </li>
@@ -74,7 +74,7 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver,
 
 export function InputListGroup({dataTestId, group}) {
     return (
-        <li className="mb-0 mt-2 flex items-center justify-between border-t border-grey-200 px-4 pb-2 pt-3 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600 first-of-type:mt-0 first-of-type:border-t-0 dark:border-grey-900" data-test-id={`${dataTestId}-listGroup-${group.label}`}>{group.label}</li>
+        <li className="mb-0 mt-2 flex items-center justify-between border-t border-grey-200 px-4 pb-2 pt-3 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600 first-of-type:mt-0 first-of-type:border-t-0 dark:border-grey-900" data-testid={`${dataTestId}-listGroup`}>{group.label}</li>
     );
 }
 
@@ -141,7 +141,7 @@ export function InputListCopy({autoFocus, className, inputClassName, dataTestId,
                     onFocus={onFocus}
                 />
                 {showSuggestions &&
-                    <DropdownContainerCopy>
+                    <DropdownContainerCopy data-testid={`${dataTestId}-dropdown`}>
                         {isLoading && <InputListLoadingItem dataTestId={dataTestId}/>}
                         <KeyboardSelectionWithGroups
                             getGroup={getGroup}

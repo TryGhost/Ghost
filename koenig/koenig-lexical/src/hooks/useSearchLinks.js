@@ -41,7 +41,8 @@ function convertSearchResultsToListOptions(results) {
                 value: item.url,
                 Icon: item.Icon,
                 metaText: item.metaText,
-                MetaIcon: item.MetaIcon
+                MetaIcon: item.MetaIcon,
+                metaIconTitle: item.metaIconTitle
             };
         });
 

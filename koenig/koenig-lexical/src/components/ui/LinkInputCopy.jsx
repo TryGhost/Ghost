@@ -66,7 +66,7 @@ export function LinkInputCopy({href, update, cancel}) {
 
     const getGroup = (group) => {
         return (
-            <InputListGroup group={group} />
+            <InputListGroup dataTestId={testId} group={group} />
         );
     };
 

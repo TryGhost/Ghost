@@ -1,4 +1,5 @@
 import DarkModeToggle from './components/DarkModeToggle';
+import DollarIcon from './assets/icons/kg-dollar.svg?react';
 import FloatingButton from './components/FloatingButton';
 import InitialContentToggle from './components/InitialContentToggle';
 import LockIcon from './assets/icons/kg-lock.svg?react';
@@ -57,9 +58,10 @@ const defaultCardConfig = {
         if (!term) {
             return [
                 {label: 'Latest posts', key: 'latest-posts', items: [
-                    {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/', metaText: 'Public • 8 May 2024'},
-                    {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/', metaText: 'Paid members • 2 May 2024', MetaIcon: LockIcon},
-                    {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/', metaText: 'Members • 26 June 2024', MetaIcon: LockIcon}
+                    {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/', metaText: '8 May 2024', MetaIcon: LockIcon, metaIconTitle: 'Members only'},
+                    {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/', metaText: '2 May 2024', MetaIcon: DollarIcon, metaIconTitle: 'Specific tiers only'},
+                    {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/', metaText: '26 June 2024', MetaIcon: DollarIcon, metaIconTitle: 'Paid-members only'},
+                    {id: '4', groupName: 'Latest posts', title: 'Unveiling the Crisis of Plastic Pollution: Analyzing Its Profound Impact on the Environment', url: 'https://source.ghost.io/plastic-pollution-crisis-deepens/', metaText: '16 Aug 2023'}
                 ]}
             ];
         }

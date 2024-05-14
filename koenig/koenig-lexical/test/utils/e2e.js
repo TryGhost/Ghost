@@ -64,6 +64,7 @@ export async function assertHTML(
     page,
     expectedHtml,
     {
+        selector = 'div[contenteditable="true"]',
         ignoreClasses = true,
         ignoreInlineStyles = true,
         ignoreInnerSVG = true,
@@ -75,7 +76,7 @@ export async function assertHTML(
         ignoreCardCaptionContents = false
     } = {}
 ) {
-    const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
+    const actualHtml = await page.$eval(selector, e => e.innerHTML);
     const actual = prettifyHTML(actualHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
