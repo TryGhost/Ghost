@@ -106,7 +106,9 @@ export class HTTPSignature {
             .update(requestBody)
             .digest('base64');
 
-        const remoteDigest = requestHeaders.get('digest')?.split('SHA-256=')[1];
+        const parts = requestHeaders.get('digest')?.split('=');
+        parts?.shift();
+        const remoteDigest = parts?.join('=');
 
         return digest === remoteDigest;
     }
@@ -168,9 +170,24 @@ export class HTTPSignature {
             algorithm: 'rsa-sha256'
         };
         const url = new URL(request.url);
+        const requestHeaders = new Headers(request.headers);
+        if (!requestHeaders.has('host')) {
+            requestHeaders.set('host', url.host);
+        }
+        if (!requestHeaders.has('date')) {
+            requestHeaders.set('date', (new Date()).toUTCString());
+        }
+        if (request.method.toLowerCase() === 'post') {
+            const digest = crypto
+                .createHash(signatureData.algorithm)
+                .update(Buffer.from(await request.clone().text(), 'utf8'))
+                .digest('base64');
+
+            requestHeaders.set('digest', `${signatureData.algorithm}=${digest}`);
+        }
         const signatureString = this.generateSignatureString(
             signatureData,
-            request.headers,
+            requestHeaders,
             request.method,
             url.pathname
         );
@@ -180,14 +197,13 @@ export class HTTPSignature {
             .sign(privateKey)
             .toString('base64');
 
-        const newHeaders = new Headers(request.headers);
-        newHeaders.set(
+        requestHeaders.set(
             'Signature',
             `keyId="${keyId}",headers="${headers.join(' ')}",signature="${signature}",algorithm="${signatureData.algorithm}"`
         );
 
         return new Request(request, {
-            headers: newHeaders
+            headers: requestHeaders
         });
     }
 }
