@@ -25,7 +25,7 @@
     "@types/sinon": "^17.0.3",
     "c8": "8.0.1",
     "mocha": "10.2.0",
-    "reflect-metadata": "0.1.13",
+    "reflect-metadata": "0.2.2",
     "sinon": "^17.0.1",
     "ts-node": "10.9.2",
     "typescript": "5.4.5"
@@ -37,7 +37,7 @@
     "@tryghost/errors": "^1.2.27",
     "bson-objectid": "2.0.4",
     "express": "^4.18.2",
-    "reflect-metadata": "^0.1.14",
+    "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   }
 }
