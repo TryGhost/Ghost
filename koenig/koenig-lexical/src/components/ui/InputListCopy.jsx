@@ -63,8 +63,8 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver,
                 <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-label`}><HighlightedLabel /></span>
             </span>
             {selected && (item.metaText || item.MetaIcon) && (
-                <span className="flex shrink-0 items-center gap-1 text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-grey-500" data-testid={`${dataTestId}-listOption-meta`}>
-                    <span title={item.metaIconTitle}>{item.MetaIcon && <item.MetaIcon className="mb-[1px] size-3" />}</span>
+                <span className="flex shrink-0 items-center gap-[.6rem] text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-grey-500" data-testid={`${dataTestId}-listOption-meta`}>
+                    <span title={item.metaIconTitle}>{item.MetaIcon && <item.MetaIcon className="size-[1.4rem]" />}</span>
                     {item.metaText && <span>{item.metaText}</span>}
                 </span>
             )}
