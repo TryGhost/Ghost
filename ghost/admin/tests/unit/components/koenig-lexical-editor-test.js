@@ -20,37 +20,42 @@ describe('Unit: Component: koenig-lexical-editor', function () {
 
             expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.be.undefined;
+            expect(result.metaIconTitle).to.be.undefined;
         });
 
         it('handles public content', function () {
             decoratePostSearchResult(result, {membersEnabled: true, timezone: 'Etc/UTC'});
 
-            expect(result.metaText).to.equal('Public • 8 May 2024');
+            expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.be.undefined;
+            expect(result.metaIconTitle).to.be.undefined;
         });
 
         it('handles members content', function () {
             result.visibility = 'members';
             decoratePostSearchResult(result, {membersEnabled: true, timezone: 'Etc/UTC'});
 
-            expect(result.metaText).to.equal('Members • 8 May 2024');
+            expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.exist;
+            expect(result.metaIconTitle).to.equal('Members only');
         });
 
         it('handles paid members content', function () {
             result.visibility = 'paid';
             decoratePostSearchResult(result, {membersEnabled: true, timezone: 'Etc/UTC'});
 
-            expect(result.metaText).to.equal('Paid members • 8 May 2024');
+            expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.exist;
+            expect(result.metaIconTitle).to.equal('Paid-members only');
         });
 
         it('handles specific tiers content', function () {
             result.visibility = 'tiers';
             decoratePostSearchResult(result, {membersEnabled: true, timezone: 'Etc/UTC'});
 
-            expect(result.metaText).to.equal('Specific tiers • 8 May 2024');
+            expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.exist;
+            expect(result.metaIconTitle).to.equal('Specific tiers only');
         });
 
         it('handles unknown visibility', function () {
@@ -59,6 +64,7 @@ describe('Unit: Component: koenig-lexical-editor', function () {
 
             expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.be.undefined;
+            expect(result.metaIconTitle).to.be.undefined;
         });
     });
 });
