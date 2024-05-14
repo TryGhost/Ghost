@@ -103,7 +103,6 @@ module.exports = class PostmarkClient {
                     context: response[0].Message
                 });
             }
-
             logging.info(JSON.stringify(response));
 
             metrics.metric('postmark-send-mail', {
@@ -158,6 +157,7 @@ module.exports = class PostmarkClient {
             return;
         }
 
+        logging.info('[Postmark Client] Fetching events for the last 5 minutes...');
         const startDate = new Date(Date.now() - 5 * 60 * 1000);
         const endDate = new Date();
 
@@ -170,6 +170,7 @@ module.exports = class PostmarkClient {
 
             while (totalCount > currentOffset && events.length) {
                 await batchHandler(events);
+                logging.info('[Postmark Client] Processed ' + events.length + ' events');
                 currentOffset += page.Opens.length;
 
                 page = await this.getEventsFromPostmark(postmarkInstance, startDate);
@@ -219,11 +220,11 @@ module.exports = class PostmarkClient {
     normalizeEvent(event) {
         return {
             id: event.MessageID,
-            type: event.RecordType,
-            severity: 'not-defined',
+            type: 'opened',
+            severity: 'permanent',
             recipientEmail: event.Recipient,
             emailId: event.Tag.split('|')[1] ?? null,
-            providerId: 'not-defined',
+            providerId: event.MessageID,
             timestamp: new Date(event.ReceivedAt),
 
             error: null
