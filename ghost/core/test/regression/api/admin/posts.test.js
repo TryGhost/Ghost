@@ -53,7 +53,7 @@ describe('Posts API', function () {
                         'post',
                         null,
                         null,
-                        ['mobiledoc', 'id', 'title', 'html']
+                        ['id', 'title', 'html']
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -84,7 +84,7 @@ describe('Posts API', function () {
                         'post',
                         null,
                         null,
-                        ['mobiledoc', 'plaintext', 'id', 'title', 'html', 'authors', 'tags', 'primary_tag', 'email']
+                        ['id', 'title', 'html', 'authors', 'tags', 'primary_tag', 'email']
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
