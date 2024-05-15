@@ -16,6 +16,35 @@ export class JSONLDService {
         return actor?.getJSONLD(this.url);
     }
 
+    async getFollowing(owner: ObjectID) {
+        const actor = await this.repository.getOne(owner);
+        if (!actor) {
+            return null;
+        }
+        return {
+            '@context': 'https://www.w3.org/ns/activitystreams',
+            id: actor.followingCollectionId.getValue(this.url),
+            summary: `Following collection for ${actor.username}`,
+            type: 'Collection',
+            totalItems: actor.following.length,
+            items: actor.following.map(item => ({id: item.id.getValue(this.url), username: item.username}))
+        };
+    }
+
+    async getFollowers(owner: ObjectID) {
+        const actor = await this.repository.getOne(owner);
+        if (!actor) {
+            return null;
+        }
+        return {
+            '@context': 'https://www.w3.org/ns/activitystreams',
+            id: actor.followersCollectionId.getValue(this.url),
+            summary: `Followers collection for ${actor.username}`,
+            type: 'Collection',
+            totalItems: actor.followers.length,
+            items: actor.followers.map(item => item.id.getValue(this.url))
+        };
+    }
     async getOutbox(owner: ObjectID) {
         const actor = await this.repository.getOne(owner);
         if (!actor) {
