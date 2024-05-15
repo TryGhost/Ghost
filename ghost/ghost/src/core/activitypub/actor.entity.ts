@@ -148,7 +148,7 @@ export class Actor extends Entity<ActorData> {
     createArticle(article: Article) {
         const activity = new Activity({
             activity: new URI(`activity/${new ObjectID().toHexString()}`),
-            to: new URI(`https://www.w3.org/ns/activitystreams#Public`),
+            to: this.followersCollectionId,
             type: 'Create',
             actor: this.actorId,
             object: {id: article.objectId}
