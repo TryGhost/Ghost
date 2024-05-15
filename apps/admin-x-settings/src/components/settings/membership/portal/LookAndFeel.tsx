@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
@@ -53,7 +54,11 @@ const LookAndFeel: React.FC<{
             updateSetting('portal_button_icon', imageUrl);
             setUploadedIcon(imageUrl);
         } catch (e) {
-            handleError(e);
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
         }
     };
 

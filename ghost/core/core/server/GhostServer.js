@@ -67,7 +67,7 @@ class GhostServer {
      * Starts the ghost server listening on the configured port.
      * Requires an express app to be passed in
      *
-     * @param  {Object} rootApp - Required express app instance.
+     * @param  {import('express').Application} rootApp - Required express app instance.
      * @return {Promise} Resolves once Ghost has started
      */
     start(rootApp) {

@@ -1,4 +1,4 @@
-import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame} from '../utils/e2e';
+import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame, mockAdminAuthFrame204} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 const admin = MOCKED_SITE_URL + '/ghost/';
@@ -34,8 +34,11 @@ test.describe('Auth Frame', async () => {
         await expect(iframeElement).toHaveCount(1);
     });
 
-    test('has no admin options', async ({page}) => {
+    test('has no admin options when not signed in to Ghost admin', async ({page}) => {
+        await mockAdminAuthFrame204({page, admin});
+
         const mockedApi = new MockedApi({});
+
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });

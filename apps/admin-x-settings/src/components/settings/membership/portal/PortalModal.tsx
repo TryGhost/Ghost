@@ -5,7 +5,7 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import {ConfirmationModal, PreviewModalContent, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -95,7 +95,7 @@ const PortalModal: React.FC = () => {
                 let prompt = 'There was an error verifying your email address. Please try again.';
 
                 if (e?.message === 'Token expired') {
-                    prompt = 'The verification link has expired. Please try again.';
+                    prompt = 'Verification link has expired.';
                 }
                 NiceModal.show(ConfirmationModal, {
                     title: 'Error verifying support address',
@@ -229,12 +229,7 @@ const PortalModal: React.FC = () => {
         testId='portal-modal'
         title='Portal'
         onOk={async () => {
-            if (Object.values(errors).filter(Boolean).length) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save settings, please double check that you\'ve filled all mandatory fields.'
-                });
-            } else {
+            if (!Object.values(errors).filter(Boolean).length) {
                 await handleSave({force: true});
             }
         }}

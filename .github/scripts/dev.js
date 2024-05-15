@@ -66,7 +66,7 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings';
+const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
@@ -77,7 +77,7 @@ const COMMANDS_ADMINX = [{
 }, {
     name: 'adminX',
     command: `nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
-    cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
+    cwd: path.resolve(__dirname, '../../apps/admin-x-settings', '../../apps/admin-x-activitypub'),
     prefixColor: '#C35831',
     env: {}
 }];

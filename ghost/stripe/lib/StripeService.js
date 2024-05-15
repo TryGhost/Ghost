@@ -7,13 +7,14 @@ const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 
 module.exports = class StripeService {
     constructor({
+        labs,
         membersService,
         donationService,
         staffService,
         StripeWebhook,
         models
     }) {
-        const api = new StripeAPI();
+        const api = new StripeAPI({labs});
         const webhookManager = new WebhookManager({
             StripeWebhook,
             api

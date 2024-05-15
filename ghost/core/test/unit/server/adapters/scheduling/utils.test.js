@@ -30,7 +30,7 @@ describe('Scheduling: utils', function () {
             }).catch(done);
         });
 
-        it('create good adapter', function (done) {
+        it('create good adapter from custom file', function (done) {
             scope.adapter = schedulingPath + 'another-scheduler.js';
 
             configUtils.set({

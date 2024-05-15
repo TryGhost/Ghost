@@ -382,6 +382,46 @@ async function initServices() {
 }
 
 /**
+ * Set up an dependencies that need to be injected into NestJS
+ */
+async function initNestDependencies() {
+    debug('Begin: initNestDependencies');
+    const GhostNestApp = require('@tryghost/ghost');
+    const providers = [];
+    const urlUtils = require('./shared/url-utils');
+    const activityPubBaseUrl = new URL('activitypub', urlUtils.urlFor('home', true));
+    providers.push({
+        provide: 'logger',
+        useValue: require('@tryghost/logging')
+    }, {
+        provide: 'SessionService',
+        useValue: require('./server/services/auth/session').sessionService
+    }, {
+        provide: 'AdminAuthenticationService',
+        useValue: require('./server/services/auth/api-key').admin
+    }, {
+        provide: 'DomainEvents',
+        useValue: require('@tryghost/domain-events')
+    }, {
+        provide: 'ActivityPubBaseURL',
+        useValue: activityPubBaseUrl
+    }, {
+        provide: 'SettingsCache',
+        useValue: require('./shared/settings-cache')
+    }, {
+        provide: 'knex',
+        useValue: require('./server/data/db').knex
+    }, {
+        provide: 'UrlUtils',
+        useValue: require('./shared/url-utils')
+    });
+    for (const provider of providers) {
+        GhostNestApp.addProvider(provider);
+    }
+    debug('End: initNestDependencies');
+}
+
+/**
  * Kick off recurring jobs and background services
  * These are things that happen on boot, but we don't need to wait for them to finish
  * Later, this might be a service hook
@@ -528,6 +568,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         }
 
         await initServices({config});
+        await initNestDependencies();
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

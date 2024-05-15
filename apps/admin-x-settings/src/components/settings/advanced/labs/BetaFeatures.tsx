@@ -16,6 +16,10 @@ const BetaFeatures: React.FC = () => {
     return (
         <List titleSeparator={false}>
             <LabItem
+                action={<FeatureToggle flag="additionalPaymentMethods" />}
+                detail={<>Enable support for PayPal, iDEAL, WeChat Pay and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                title='Additional payment methods' />
+            <LabItem
                 action={<FeatureToggle flag='i18n' />}
                 detail={<>Translate your membership flows into your publication language (<a className='text-green' href="https://github.com/TryGhost/Ghost/tree/main/ghost/i18n/locales" rel="noopener noreferrer" target="_blank">supported languages</a>). Don’t see yours? <a className='text-green' href="https://forum.ghost.org/t/help-translate-ghost-beta/37461" rel="noopener noreferrer" target="_blank">Get involved</a></>}
                 title='Portal translation' />
@@ -28,8 +32,8 @@ const BetaFeatures: React.FC = () => {
                                 setRedirectsUploading(true);
                                 await uploadRedirects(file);
                                 showToast({
-                                    type: 'success',
-                                    message: 'Redirects uploaded successfully'
+                                    title: 'Redirects uploaded',
+                                    type: 'success'
                                 });
                             } catch (e) {
                                 handleError(e);
@@ -54,7 +58,7 @@ const BetaFeatures: React.FC = () => {
                                 await uploadRoutes(file);
                                 showToast({
                                     type: 'success',
-                                    message: 'Routes uploaded successfully'
+                                    title: 'Routes uploaded'
                                 });
                             } catch (e) {
                                 handleError(e);

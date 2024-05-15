@@ -76,6 +76,7 @@ const ReplyToEmailField: React.FC<{
         <TextField
             error={Boolean(errors.sender_reply_to)}
             hint={errors.sender_reply_to}
+            maxLength={191}
             placeholder={newsletterAddress || ''}
             title="Reply-to email"
             value={senderReplyTo}
@@ -139,7 +140,7 @@ const Sidebar: React.FC<{
                         modal?.remove();
                         showToast({
                             type: 'success',
-                            message: 'Newsletter archived successfully'
+                            message: 'Newsletter archived'
                         });
                     } catch (e) {
                         handleError(e);
@@ -172,7 +173,7 @@ const Sidebar: React.FC<{
                     modal?.remove();
                     showToast({
                         type: 'success',
-                        message: 'Newsletter reactivated successfully'
+                        message: 'Newsletter reactivated'
                     });
                 }
             });
@@ -201,6 +202,7 @@ const Sidebar: React.FC<{
                 <TextField
                     error={Boolean(errors.sender_email)}
                     hint={errors.sender_email}
+                    maxLength={191}
                     placeholder={defaultEmailAddress}
                     title="Sender email address"
                     value={newsletter.sender_email || ''}
@@ -226,16 +228,17 @@ const Sidebar: React.FC<{
                     <TextField
                         error={Boolean(errors.name)}
                         hint={errors.name}
+                        maxLength={191}
                         placeholder="Weekly Roundup"
                         title="Name"
                         value={newsletter.name || ''}
                         onChange={e => updateNewsletter({name: e.target.value})}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                    <TextArea maxLength={2000} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                    <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                 </Form>
@@ -525,7 +528,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 showToast({
                     icon: 'email',
                     message: toastMessage,
-                    type: 'neutral'
+                    type: 'info'
                 });
             }
         },
@@ -578,12 +581,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };

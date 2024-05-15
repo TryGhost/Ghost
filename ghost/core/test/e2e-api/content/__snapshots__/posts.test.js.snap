@@ -4909,3 +4909,21 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
   ],
 }
 `;
+
+exports[`Posts Content API Errors upon invalid filter value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "ER_WRONG_VALUE",
+      "context": "Invalid value select count(distinct posts.id) as aggregate from \`posts\` where (\`posts\`.\`status\` = 'published' and (\`posts\`.\`published_at\` < '1715091791890' and \`posts\`.\`type\` = 'post')) - Incorrect DATETIME value: '1715091791890'",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot list posts.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;

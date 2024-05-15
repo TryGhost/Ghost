@@ -272,7 +272,7 @@ describe('Batch sending tests', function () {
         ]);
     });
 
-    it('Splits recipients in free and paid batch when including paid member only content', async function () {
+    it('Splits recipients in free and paid batch when including different paid and free member content', async function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidAndFreeMemberOnly // = different content for paid and free members
         }, null, [
@@ -574,6 +574,11 @@ describe('Batch sending tests', function () {
 
                 if (href.includes('/unsubscribe/?uuid')) {
                     assert(href.includes('?uuid=' + memberUuid), 'Subscribe link need to contain uuid, got ' + href);
+                    continue;
+                }
+
+                if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
+                    assert(!href.includes('?m=' + memberUuid), 'Powererd by Ghost link should not be tracked');
                     continue;
                 }
 

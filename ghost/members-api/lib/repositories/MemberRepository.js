@@ -548,6 +548,14 @@ module.exports = class MemberRepository {
 
         for (const productId of productsToAdd) {
             const product = await this._productRepository.get({id: productId}, sharedOptions);
+            if (!product) {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.productNotFound, {
+                        id: productId
+                    })
+                });
+            }
+
             if (product.get('active') !== true) {
                 throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
             }
@@ -1025,9 +1033,21 @@ module.exports = class MemberRepository {
 
             return 'inactive';
         };
-
         let eventData = {};
-        if (model) {
+
+        const shouldBeDeleted = subscription.metadata && !!subscription.metadata.ghost_migrated_to && subscription.status === 'canceled';
+        if (shouldBeDeleted) {
+            logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
+
+            if (model) {
+                // Delete all paid subscription events manually for this subscription
+                // This is the only related event without a foreign key constraint
+                await this._MemberPaidSubscriptionEvent.query().where('subscription_id', model.id).delete().transacting(options.transacting);
+
+                // Delete the subscription in the database because we don't want to show it in the UI or in our data calculations
+                await model.destroy(options);
+            }
+        } else if (model) {
             // CASE: Offer is already mapped against sub, don't overwrite it with NULL
             // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
             if (!subscriptionData.offer_id) {
@@ -1133,7 +1153,7 @@ module.exports = class MemberRepository {
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
         const oldMemberProducts = member.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
-        if (this.isActiveSubscriptionStatus(subscription.status)) {
+        if (!shouldBeDeleted && this.isActiveSubscriptionStatus(subscription.status)) {
             if (this.isComplimentarySubscription(subscription)) {
                 status = 'comped';
             } else {

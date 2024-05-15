@@ -1,0 +1,85 @@
+<div class="gh-onboarding-wrapper" data-test-dashboard="onboarding-checklist">
+    <div class="gh-onboarding-header">
+        {{#if (feature "nightShift")}}
+            <div class="gh-onboarding-ghost-logo-wrapper">
+                <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px;" class="gh-onboarding-ghost-logo--dark" {{autoplay}}>
+                    <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
+                </video>
+                <div class="gh-onboarding-ghost-logo-overlay"></div>
+            </div>
+        {{else}}
+            <div class="gh-onboarding-ghost-logo-wrapper">
+                <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px;" class="gh-onboarding-ghost-logo--light" {{autoplay}}>
+                    <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+                </video>
+            </div>
+        {{/if}}
+
+        {{#if this.onboarding.allStepsCompleted}}
+            <h2 class="gh-canvas-title">You’re all set.</h2>
+        {{else}}
+            <h2 class="gh-canvas-title">Let’s get started!</h2>
+            <p>Welcome! It’s time to set up {{get-setting "title"}}.</p>
+        {{/if}}
+    </div>
+
+    <div class="gh-onboarding-items">
+        <div>
+            {{!-- Step 1 --}}
+            <div class="gh-onboarding-item gh-onboarding-item--completed">
+                <Dashboard::Onboarding::Step
+                    @icon="rocket"
+                    @title="Start a new Ghost publication"
+                    @complete={{true}}
+                />
+            </div>
+            {{!-- Step 2 --}}
+            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" id="ob-customize-design" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
+                <Dashboard::Onboarding::Step
+                    @icon="brush"
+                    @title="Customize your design"
+                    @description="Craft a look that reflects your brand and style."
+                    @complete={{is-onboarding-step-completed "customize-design"}}
+                />
+            </LinkTo>
+            {{!-- Step 3 --}}
+            <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item {{onboarding-step-class "first-post"}}" id="ob-first-post" {{on "click" (fn this.onboarding.markStepCompleted "first-post")}}>
+                <Dashboard::Onboarding::Step
+                    @icon="writing"
+                    @title="Explore the editor"
+                    @description="Get to know a writing experience you'll love."
+                    @complete={{is-onboarding-step-completed "first-post"}}
+                />
+            </LinkTo>
+            {{!-- Step 4 --}}
+            <LinkTo @route="members" class="gh-onboarding-item {{onboarding-step-class "build-audience"}}" id="ob-build-audience" {{on "click" (fn this.onboarding.markStepCompleted "build-audience")}}>
+                <Dashboard::Onboarding::Step
+                    @icon="member-add"
+                    @title="Build your audience"
+                    @description="Add members and grow your readership."
+                    @complete={{is-onboarding-step-completed "build-audience"}}
+                />
+            </LinkTo>
+            {{!-- Step 5 --}}
+            <div role="button" {{on "click" this.openShareModal}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}" id="ob-share-publication">
+                <Dashboard::Onboarding::Step
+                    @icon="megaphone"
+                    @title="Share your publication"
+                    @description="Expand your reach on social media."
+                    @complete={{is-onboarding-step-completed "share-publication"}}
+                    role="presentation"
+                />
+            </div>
+        </div>
+    </div>
+
+    {{#if this.onboarding.allStepsCompleted}}
+        <a href="#" class="gh-onboarding-explore-dashboard" id="ob-completed" {{on "click" this.onboarding.completeChecklist}}>Explore your dashboard</a>
+    {{/if}}
+
+    <p class="gh-onboarding-help">More questions? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" id="ob-help-center" target="_blank" rel="noopener noreferrer">Help Center</a>.</p>
+
+    {{#unless this.onboarding.allStepsCompleted}}
+        <a href="#" class="gh-onboarding-skip" id="ob-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
+    {{/unless}}
+</div>

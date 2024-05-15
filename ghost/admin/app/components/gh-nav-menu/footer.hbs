@@ -100,7 +100,7 @@
         </div>
         <div class="flex items-center pe-all">
             {{#if (or (gh-user-can-admin this.session.user) this.session.user.isEditor)}}
-                <LinkTo class="gh-nav-bottom-tabicon" @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
+                <LinkTo class="gh-nav-bottom-tabicon" @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings" title="Settings (CTRL/⌘ + ,)"}}</LinkTo>
             {{/if}}
             <div class="nightshift-toggle-container">
                 <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{action (toggle "nightShift" this.feature)}}>

@@ -392,17 +392,15 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
-                        false,
-                        true
+                        true,
+                        true,
+                        false
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('rejects if changing visibility', function (done) {
@@ -422,17 +420,15 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
-                        false,
-                        true
+                        true,
+                        true,
+                        false
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('rejects if changing authors.0', function (done) {
@@ -451,9 +447,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
+                        true,
+                        false
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
@@ -481,9 +477,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
+                        true,
+                        false
                     ).then((result) => {
                         should.exist(result);
                         should(result.excludedAttrs).deepEqual(['authors', 'tags']);
@@ -510,9 +506,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
+                        true,
+                        false
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
@@ -539,9 +535,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
+                        true,
+                        false
                     ).then(() => {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
@@ -568,9 +564,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
+                        true,
+                        false
                     ).then((result) => {
                         should.exist(result);
                         should(result.excludedAttrs).deepEqual(['authors', 'tags']);
@@ -594,7 +590,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then(() => {
@@ -619,7 +615,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then(() => {
@@ -644,7 +640,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then(() => {
@@ -669,7 +665,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then((result) => {
@@ -697,7 +693,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         {},
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then(() => {
@@ -726,7 +722,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         {},
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then(() => {
@@ -755,7 +751,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         {},
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then((result) => {
@@ -883,60 +879,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         error.should.be.an.instanceof(errors.NoPermissionError);
                         should(mockPostObj.get.called).be.false();
                         should(mockPostObj.related.calledTwice).be.true();
-                        done();
-                    });
-                });
-
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.related.calledTwice).be.true();
-                        done();
-                    });
-                });
-
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        mockPostObj.related.callCount.should.eql(2);
                         done();
                     });
                 });

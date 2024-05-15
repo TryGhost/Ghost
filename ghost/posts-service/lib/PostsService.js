@@ -12,6 +12,8 @@ const {
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
 } = require('@tryghost/post-events');
+const GhostNestApp = require('@tryghost/ghost');
+const {default: ObjectID} = require('bson-objectid');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -108,7 +110,7 @@ class PostsService {
 
     /**
      *
-     * @param {any} frame
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @param {object} [options]
      * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
      * @returns
@@ -204,6 +206,13 @@ class PostsService {
         if (this.isSet('collections')) {
             if (frame?.original?.query?.include?.includes('collections') || frame.data.posts[0].collections) {
                 dto.collections = await this.collectionsService.getCollectionsForPost(model.id);
+            }
+        }
+
+        if (this.isSet('ActivityPub')) {
+            if (model.previous('status') !== model.get('status') && model.get('status') === 'published') {
+                const activityService = await GhostNestApp.resolve('ActivityService');
+                await activityService.createArticleForPost(ObjectID.createFromHexString(model.id));
             }
         }
 

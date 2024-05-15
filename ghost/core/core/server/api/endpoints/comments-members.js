@@ -2,7 +2,8 @@ const commentsService = require('../../services/comments');
 const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
 const UNSAFE_ATTRS = ['status'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'comments',
 
     browse: {
@@ -143,8 +144,8 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return commentsService.controller.destroy(frame);
+        query() {
+            return commentsService.controller.destroy();
         }
     },
 
@@ -207,3 +208,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

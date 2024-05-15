@@ -1,12 +1,20 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:pages');
-const mobiledoc = require('../../../../../lib/mobiledoc');
+const {ValidationError} = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
+const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
+const sentry = require('../../../../../../shared/sentry');
+
+const messages = {
+    failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
+    failedHtmlToLexical: 'Failed to convert HTML to Lexical'
+};
 
 function removeSourceFormats(frame) {
     if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
@@ -136,7 +144,17 @@ module.exports = {
                 if (process.env.CI) {
                     console.time('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
                 }
-                frame.data.pages[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
+
+                try {
+                    frame.data.pages[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
+                } catch (err) {
+                    sentry.captureException(err);
+                    throw new ValidationError({
+                        message: tpl(messages.failedHtmlToMobiledoc),
+                        err
+                    });
+                }
+
                 if (process.env.CI) {
                     console.timeEnd('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
                 }
@@ -146,7 +164,17 @@ module.exports = {
                 if (process.env.CI) {
                     console.time('htmlToLexicalConverter (page)'); // eslint-disable-line no-console
                 }
-                frame.data.pages[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
+
+                try {
+                    frame.data.pages[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
+                } catch (err) {
+                    sentry.captureException(err);
+                    throw new ValidationError({
+                        message: tpl(messages.failedHtmlToLexical),
+                        err
+                    });
+                }
+
                 if (process.env.CI) {
                     console.timeEnd('htmlToLexicalConverter (page)'); // eslint-disable-line no-console
                 }

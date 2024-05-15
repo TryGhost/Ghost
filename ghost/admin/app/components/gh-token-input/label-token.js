@@ -6,5 +6,5 @@ import {attributeBindings, classNames} from '@ember-decorators/component';
 @attributeBindings('title')
 @classNames('label-token')
 export default class LabelToken extends DraggableObject {
-    title = 'Label';
+    title = this.name ?? 'Label';
 }

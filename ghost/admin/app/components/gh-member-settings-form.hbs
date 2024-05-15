@@ -115,7 +115,7 @@
                                 <div class="gh-tier-card-price">
                                     <div class="flex items-start">
                                         <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
-                                        <span class="amount">{{sub.price.nonDecimalAmount}}</span>
+                                        <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
                                     </div>
                                     <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
                                 </div>

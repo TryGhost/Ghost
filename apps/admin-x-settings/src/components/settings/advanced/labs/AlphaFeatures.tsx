@@ -20,7 +20,7 @@ const features = [{
     description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
     flag: 'websockets'
 },{
-    title: 'Stripe Automatic Tax',
+    title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 },{
@@ -52,9 +52,21 @@ const features = [{
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
 },{
-    title: 'New email addresses',
-    description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
-    flag: 'newEmailAddresses'
+    title: 'Onboarding checklist',
+    description: 'Onboarding checklist that helps new customers get started',
+    flag: 'onboardingChecklist'
+},{
+    title: 'NestJS Playground',
+    description: 'Wires up the Ghost NestJS App to the Admin API',
+    flag: 'NestPlayground'
+},{
+    title: 'Internal Linking (private beta)',
+    description: 'Adds internal URL search to editor link inputs',
+    flag: 'internalLinking'
+},{
+    title: 'ActivityPub',
+    description: '(Highly) Experimental support for ActivityPub.',
+    flag: 'ActivityPub'
 }];
 
 const AlphaFeatures: React.FC = () => {

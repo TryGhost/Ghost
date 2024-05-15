@@ -25,11 +25,11 @@ const forPost = (attrs, options) => {
             }
 
             if (relation === 'author' && attrs.author) {
-                attrs.author = forUser(attrs.author, options);
+                attrs.author = forUser(attrs.author);
             }
 
             if (relation === 'authors' && attrs.authors) {
-                attrs.authors = attrs.authors.map(author => forUser(author, options));
+                attrs.authors = attrs.authors.map(author => forUser(author));
             }
         });
     }

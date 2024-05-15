@@ -314,10 +314,12 @@ test.describe('Publishing', () => {
             await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
 
             // save
-            await adminPage.locator('[data-test-button="publish-save"]').first().click();
+            const saveButton = await adminPage.locator('[data-test-button="publish-save"]').first();
+            await expect(saveButton).toHaveText('Update');
+            await saveButton.click();
+            await expect(saveButton).toHaveText('Updated');
 
             // check front-end has new text after reloading
-            await frontendPage.waitForTimeout(300); // let save go through
             await frontendPage.reload();
             await expect(publishedBody).toContainText('This is some updated text.');
             await expect(publishedHeader).toContainText('Jan 7, 2022');
@@ -328,7 +330,7 @@ test.describe('Publishing', () => {
 
     test.describe('Schedule post', () => {
         // Post should be published to web and sent as a newsletter at the scheduled time
-        test('Publish and Email', async ({sharedPage}) => {
+        test('Scheduled Publish and Email', async ({sharedPage}) => {
             const postData = {
                 // This title should be unique
                 title: 'Scheduled post publish+email test',
@@ -362,7 +364,7 @@ test.describe('Publishing', () => {
         });
 
         // Post should be published to web only at the scheduled time
-        test('Publish only', async ({sharedPage}) => {
+        test('Scheduled Publish only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled post test',
                 body: 'This is my scheduled post body.'
@@ -392,7 +394,7 @@ test.describe('Publishing', () => {
         });
 
         // Post should be published to web only at the scheduled time
-        test('Email only', async ({sharedPage}) => {
+        test('Scheduled Email only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled email only test',
                 body: 'This is my scheduled post body.'
@@ -642,5 +644,41 @@ test.describe('Updating post access', () => {
         await expect(
             page.locator('[data-test-setting="email-recipients"] [data-test-setting-title]')
         ).toContainText(/\d+\s* subscriber/m);
+    });
+});
+
+test.describe('Deleting a post', () => {
+    test('Delete a saved post', async ({page}) => {
+        await page.goto('/ghost');
+
+        await createPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
+
+        await expect(page.locator('[data-test-editor-post-status]')).toContainText('Draft - Saved');
+
+        await openPostSettingsMenu(page);
+
+        await page.locator('[data-test-button="delete-post"]').click();
+
+        await page.locator('[data-test-button="delete-post-confirm"]').click();
+        
+        await expect(
+            page.locator('[data-test-screen-title]')
+        ).toContainText('Posts');
+    });
+
+    test('Delete a post with unsaved changes', async ({page}) => {
+        await page.goto('/ghost');
+
+        await createPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
+
+        await openPostSettingsMenu(page);
+
+        await page.locator('[data-test-button="delete-post"]').click();
+
+        await page.locator('[data-test-button="delete-post-confirm"]').click();
+        
+        await expect(
+            page.locator('[data-test-screen-title]')
+        ).toContainText('Posts');
     });
 });

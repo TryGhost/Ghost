@@ -41,7 +41,7 @@ export const singleSiteTier = [
     getFreeProduct({
         name: 'Free',
         description: 'Free tier description',
-        numOfBenefits: 0
+        numOfBenefits: 1
     })
     ,
     getProductData({

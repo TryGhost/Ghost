@@ -15,7 +15,6 @@ import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
-import {capitalize} from '@ember/string';
 import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
@@ -112,6 +111,7 @@ export default class LexicalEditorController extends Controller {
     @service notifications;
     @service router;
     @service slugGenerator;
+    @service search;
     @service session;
     @service settings;
     @service ui;
@@ -887,9 +887,12 @@ export default class LexicalEditorController extends Controller {
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
+
         if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
             yield this.store.query('collection', {limit: 'all'});
         }
+
+        this.search.refreshContentTask.perform();
         this.syncMobiledocSnippets();
     }
 
@@ -1059,8 +1062,8 @@ export default class LexicalEditorController extends Controller {
         let deletedWithoutChanges = state.isDeleted
                 && (state.isSaving || !state.hasDirtyAttributes);
 
-        // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes) {
+        // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted) {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
@@ -1262,7 +1265,7 @@ export default class LexicalEditorController extends Controller {
         let actions, type, path;
 
         if (status === 'published' || status === 'scheduled') {
-            type = capitalize(this.get('post.displayName'));
+            type = this.get('post.displayName');
             path = this.get('post.url');
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }

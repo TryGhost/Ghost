@@ -127,6 +127,9 @@ const Select: React.FC<SelectProps> = ({
                     document.activeElement.blur();
                 }
                 setFocusState(false);
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
             }
         };
 

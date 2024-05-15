@@ -128,7 +128,7 @@ test.describe('User actions', async () => {
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
 
         await expect(page.getByTestId('toast-success')).toHaveText(/User deleted/);
-        await expect(activeTab.getByTestId('user-list-item')).toHaveCount(0);
+        await expect(activeTab.getByTestId('user-tabview')).toHaveCount(0);
 
         expect(lastApiRequests.deleteUser?.url).toMatch(new RegExp(`/users/${authorUser.id}`));
     });

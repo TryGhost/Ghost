@@ -116,9 +116,14 @@
                                                     {{/if}}
                                                 ></td>
                                             </tr>
-                                            {{#if post.feature_image_caption }}
+
+                                             {{#if post.feature_image_caption }}
                                                 <tr>
-                                                    <td class="feature-image-caption" align="center">{{{post.feature_image_caption}}}</td>
+                                                    <td align="center">
+                                                        <div class="feature-image-caption">
+                                                            {{{post.feature_image_caption}}}
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             {{/if}}
                                         {{/if}}
@@ -212,7 +217,7 @@
 
                                         {{#if showBadge }}
                                             <tr>
-                                                <td class="footer-powered"><a href="https://ghost.org/"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
+                                                <td class="footer-powered"><a href="https://ghost.org/?via=pbg-newsletter"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
                                             </tr>
                                         {{/if}}
                                     </table>

@@ -21,8 +21,8 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 try {
                     await deleteAllContent(null);
                     showToast({
-                        type: 'success',
-                        message: 'All content deleted from database.'
+                        title: 'All content deleted from database.',
+                        type: 'success'
                     });
                     modal?.remove();
                     await client.refetchQueries();
