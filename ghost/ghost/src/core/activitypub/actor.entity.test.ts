@@ -175,6 +175,7 @@ describe('Actor', function () {
             await actor.postToInbox(activity);
 
             assert(actor.following.find(follower => follower.id.href === newFollower.href));
+            assert(actor.following.find(follower => follower.username === '@index@activitypub.server'));
         });
     });
 
