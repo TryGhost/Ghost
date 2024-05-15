@@ -70,8 +70,9 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
-            return postsService.browsePosts(frame.options);
+        async query(frame) {
+            frame.options.columns = ['id','uuid','title','slug','featured','type','status','locale','visibility','email_recipient_filter','created_at','created_by','updated_at','updated_by','published_at','published_by','newsletter_id','show_title_and_feature_image'];
+            return await postsService.browsePosts(frame.options);
         }
     },
 
