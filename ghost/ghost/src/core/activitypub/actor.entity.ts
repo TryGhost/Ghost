@@ -24,6 +24,39 @@ type CreateActorData = ActorData & {
 };
 
 export class Actor extends Entity<ActorData> {
+    private getURI(input: string): URI {
+        const id = this.id.toHexString();
+        return new URI(input.replace(':id', id));
+    }
+
+    get actorId() {
+        return this.getURI('actor/:id');
+    }
+
+    get publicKeyId() {
+        return this.getURI('actor/:id#main-key');
+    }
+
+    get inboxId() {
+        return this.getURI('inbox/:id');
+    }
+
+    get outboxId() {
+        return this.getURI('outbox/:id');
+    }
+
+    get followingCollectionId() {
+        return this.getURI('following/:id');
+    }
+
+    get followersCollectionId() {
+        return this.getURI('followers/:id');
+    }
+
+    get featuredCollectionId() {
+        return this.getURI('featured/:id');
+    }
+
     get username() {
         return this.attr.username;
     }
@@ -45,10 +78,6 @@ export class Actor extends Entity<ActorData> {
 
     get followers() {
         return this.attr.followers;
-    }
-
-    get actorId() {
-        return new URI(`actor/${this.id.toHexString()}`);
     }
 
     async sign(request: Request, baseUrl: URL): Promise<Request> {
@@ -131,14 +160,6 @@ export class Actor extends Entity<ActorData> {
         if (!url.href.endsWith('/')) {
             url.href += '/';
         }
-        const id = this.id.toHexString();
-        const actor = new URL(`actor/${id}`, url.href);
-        const publicKey = new URL(`actor/${id}#main-key`, url.href);
-        const inbox = new URL(`inbox/${id}`, url.href);
-        const outbox = new URL(`outbox/${id}`, url.href);
-        const following = new URL(`following/${id}`, url.href);
-        const followers = new URL(`followers/${id}`, url.href);
-        const featured = new URL(`featured/${id}`, url.href);
 
         return {
             '@context': [
@@ -169,11 +190,11 @@ export class Actor extends Entity<ActorData> {
                 }
             ],
             type: 'Person',
-            id: actor.href,
+            id: this.actorId.getValue(url),
             name: this.displayName, // Full name
             preferredUsername: this.username, // Username
             summary: 'The bio for the actor', // Bio
-            url: actor.href, // Profile URL
+            url: this.actorId.getValue(url), // Profile URL
             icon: '', // Avatar
             image: '', // Header image
             published: '1970-01-01T00:00:00Z', // When profile was created
@@ -186,15 +207,15 @@ export class Actor extends Entity<ActorData> {
             }],
 
             // Collections
-            following: following.href,
-            followers: followers.href,
-            inbox: inbox.href,
-            outbox: outbox.href,
-            featured: featured.href,
+            following: this.followingCollectionId.getValue(url),
+            followers: this.followersCollectionId.getValue(url),
+            inbox: this.inboxId.getValue(url),
+            outbox: this.outboxId.getValue(url),
+            featured: this.featuredCollectionId.getValue(url),
 
             publicKey: {
-                id: publicKey.href,
-                owner: actor.href,
+                id: this.publicKeyId.getValue(url),
+                owner: this.actorId.getValue(url),
                 publicKeyPem: this.attr.publicKey
             }
         };
