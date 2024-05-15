@@ -6,6 +6,14 @@ module.exports = {
     ],
     rules: {
         // disable file naming rule in favor or dotted notation e.g. `snippets.service.ts`
-        'ghost/filenames/match-exported-class': [0, null, true]
+        'ghost/filenames/match-exported-class': [0, null, true],
+        '@typescript-eslint/no-unused-vars': [
+            'error',
+            {
+                argsIgnorePattern: '^_',
+                varsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_'
+            }
+        ]
     }
 };
