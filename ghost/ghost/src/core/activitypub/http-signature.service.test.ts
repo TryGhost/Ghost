@@ -1,4 +1,5 @@
 import assert from 'assert';
+import crypto from 'crypto';
 import {HTTPSignature} from './http-signature.service';
 
 describe('HTTPSignature', function () {
@@ -48,6 +49,52 @@ describe('HTTPSignature', function () {
             const expected = true;
 
             assert.equal(actual, expected, 'The signature should have been validated');
+        });
+    });
+
+    describe('#sign', function () {
+        it('Can sign a request that does not have explicit Date or Host headers', async function () {
+            const keypair = crypto.generateKeyPairSync('rsa', {
+                modulusLength: 512
+            });
+            const request = new Request('https://example.com:2368/blah');
+            const signed = await HTTPSignature.sign(request, new URL('https://keyid.com'), keypair.privateKey);
+
+            assert.ok(signed);
+        });
+
+        it('Can sign a post request which is valid', async function () {
+            const keypair = crypto.generateKeyPairSync('rsa', {
+                modulusLength: 512
+            });
+            class MockHTTPSignature extends HTTPSignature {
+                protected static async getPublicKey() {
+                    return keypair.publicKey;
+                }
+            }
+
+            const request = new Request('https://example.com:2368/blah', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/ld+json'
+                },
+                body: JSON.stringify({
+                    id: 'https://mastodon.social/users/testingshtuff',
+                    type: 'Accept',
+                    actor: 'https://mastodon.social/users/testingshtuff',
+                    object: 'https://mastodon.social/79f89120-fd13-43e8-aa6d-3bd03652cfad'
+                })
+            });
+
+            const signed = await MockHTTPSignature.sign(request, new URL('https://keyid.com'), keypair.privateKey);
+
+            assert.ok(signed);
+
+            const url = new URL(signed.url);
+            const body = Buffer.from(await signed.text());
+            const result = await MockHTTPSignature.validate(signed.method, url.pathname, signed.headers, body);
+
+            assert.equal(result, true);
         });
     });
 });

@@ -1,6 +1,7 @@
 import ObjectID from 'bson-objectid';
 import {ActivityPub} from './types';
 import {Post} from './post.repository';
+import {URI} from './uri.object';
 
 type ArticleData = {
     id: ObjectID
@@ -11,6 +12,10 @@ type ArticleData = {
 
 export class Article {
     constructor(private readonly attr: ArticleData) {}
+
+    get objectId() {
+        return new URI(`article/${this.attr.id.toHexString()}`);
+    }
 
     getJSONLD(url: URL): ActivityPub.Article & ActivityPub.RootObject {
         if (!url.href.endsWith('/')) {
