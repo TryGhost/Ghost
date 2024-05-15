@@ -17,20 +17,4 @@ describe('ActivityPubController', function () {
             assert((mockActivityPubService.follow as Sinon.SinonStub).calledWith('@egg@ghost.org'));
         });
     });
-
-    describe('#getFollowing', function () {
-        it('Calls getFollowing on the ActivityPubService and returns the result', async function () {
-            const mockActivityPubService = {
-                follow: Sinon.stub().resolves(),
-                getFollowing: Sinon.stub().resolves([])
-            } as unknown as ActivityPubService;
-            const controller = new ActivityPubController(mockActivityPubService);
-
-            const result = await controller.getFollowing();
-
-            assert((mockActivityPubService.getFollowing as Sinon.SinonStub).called);
-            const returnValue = await (mockActivityPubService.getFollowing as Sinon.SinonStub).returnValues[0];
-            assert.equal(result, returnValue);
-        });
-    });
 });

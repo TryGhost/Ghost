@@ -99,6 +99,12 @@ describe('ActivityPubController', function () {
             .expect(200);
     });
 
+    it('Can handle requests to get the followers', async function () {
+        await request(app.getHttpServer())
+            .get('/activitypub/followers/deadbeefdeadbeefdeadbeef')
+            .expect(200);
+    });
+
     it('Can handle requests to get an article', async function () {
         await request(app.getHttpServer())
             .get('/activitypub/article/deadbeefdeadbeefdeadbeef')

@@ -1,6 +1,5 @@
 import {
     Controller,
-    Get,
     Param,
     Post,
     UseGuards,
@@ -25,15 +24,5 @@ export class ActivityPubController {
     async follow(@Param('username') username: string): Promise<object> {
         await this.activitypub.follow(username);
         return {};
-    }
-
-    @Roles([
-        'Owner'
-    ])
-    @Get('following')
-    async getFollowing(): Promise<{id: string, username?: string;}[]> {
-        const followers = await this.activitypub.getFollowing();
-
-        return followers;
     }
 }
