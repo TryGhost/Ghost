@@ -64,6 +64,7 @@ export class WebFingerService {
             throw new Error('Subject does not match - not jumping thru hoops');
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const self = json.links.find((link: any) => link.rel === 'self');
 
         const selfRes = await fetch(self.href, {
@@ -74,6 +75,7 @@ export class WebFingerService {
 
         const data = await selfRes.json();
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return data as any;
     }
 }
