@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Heading, Icon, Page, ViewContainer} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, Page, ViewContainer} from '@tryghost/admin-x-design-system';
 import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -35,7 +35,9 @@ const ActivityPubComponent: React.FC = () => {
         const fetchActivities = async () => {
             try {
                 const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
-                // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/outbox/deadbeefdeadbeefdeadbeef');
+                // const response = await fetch(`https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
+                // console.log('Fetching activities from:', 'https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef');
+                console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/outbox/deadbeefdeadbeefdeadbeef');
 
                 if (response.ok) {
                     const data = await response.json();
@@ -116,6 +118,7 @@ const ActivityPubComponent: React.FC = () => {
                                 </li>);
                             })}
                         </ul>
+                        <Button label='View static article' onClick={() => updateRoute('/view')}/>
                     </div>
                 </div>
             </ViewContainer>
