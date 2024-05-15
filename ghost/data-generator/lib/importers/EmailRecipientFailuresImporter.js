@@ -53,7 +53,7 @@ class EmailRecipientFailuresImporter extends TableImporter {
         const error = faker.helpers.arrayElement(errors);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             email_id: this.model.email_id,
             member_id: this.model.member_id,
             email_recipient_id: this.model.id,

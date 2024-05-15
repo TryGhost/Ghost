@@ -7,7 +7,7 @@
                 <div class="gh-nav-menu-details-sitetitle">{{this.config.blogTitle}}</div>
             </div>
             <div class="gh-nav-menu-search">
-                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}}><span>{{svg-jar "search"}}</span></button>
+                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}} data-test-button="search"><span>{{svg-jar "search"}}</span></button>
             </div>
         </header>
     {{/unless}}
@@ -100,28 +100,32 @@
                         <li class="relative">
                             {{#if (eq this.router.currentRouteName "members.index")}}
                                 <LinkTo @route="members" @current-when="members member member.new" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
-                                    {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
-                                    {{/unless}}
+                                    {{#let (members-count-fetcher) as |count|}}
+                                        {{#unless count.isLoading}}
+                                            <span class="gh-nav-member-count">{{format-number count.count}}</span>
+                                        {{/unless}}
+                                    {{/let}}
                                 </LinkTo>
                             {{else}}
                                 <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Members
-                                    {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
-                                    {{/unless}}
+                                    {{#let (members-count-fetcher) as |count|}}
+                                        {{#unless count.isLoading}}
+                                            <span class="gh-nav-member-count">{{format-number count.count}}</span>
+                                        {{/unless}}
+                                    {{/let}}
                                 </LinkTo>
                             {{/if}}
                         </li>
 
-                        {{#if this.settings.paidMembersEnabled}}
-                            <li>
-                                <LinkTo @route="offers" @current-when="offers offer offer.new" @alt="Offers" data-test-nav="offers">{{svg-jar "percentage"}}Offers</LinkTo>
-                            </li>
-                        {{/if}}
                     {{/if}}
                     {{#if (feature "adminXDemo")}}
                         <li>
                             <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>
+                        </li>
+                    {{/if}}
+                    {{#if (feature "ActivityPub")}}
+                        <li>
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub Demo</LinkTo>
                         </li>
                     {{/if}}
                 </ul>

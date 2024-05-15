@@ -71,6 +71,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     feature: service(),
     ghostPaths: service(),
     clock: service(),
+    search: service(),
     settings: service(),
     membersUtils: service(),
 
@@ -439,5 +440,18 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtBlogTZ = this.publishedAtBlogTZ;
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
+    },
+
+    // when a published post is updated, unpublished, or deleted we expire the search content cache
+    save() {
+        const [oldStatus] = this.changedAttributes().status || [];
+
+        return this._super(...arguments).then((res) => {
+            if (this.status === 'published' || oldStatus === 'published') {
+                this.search.expireContent();
+            }
+
+            return res;
+        });
     }
 });

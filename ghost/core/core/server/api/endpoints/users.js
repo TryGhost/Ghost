@@ -73,7 +73,8 @@ function shouldInvalidateCacheAfterChange(model) {
     return false;
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'users',
 
     browse: {
@@ -170,7 +171,9 @@ module.exports = {
                         }));
                     }
 
-                    this.headers.cacheInvalidate = shouldInvalidateCacheAfterChange(model);
+                    if (shouldInvalidateCacheAfterChange(model)) {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
+                    }
 
                     return model;
                 });
@@ -285,3 +288,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

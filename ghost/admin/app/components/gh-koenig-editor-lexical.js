@@ -44,10 +44,15 @@ export default class GhKoenigEditorReactComponent extends Component {
         // mouseup/click event can occur outside of the initially clicked card, in
         // which case we don't want to then "re-focus" the editor and cause unexpected
         // selection changes
-        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
-        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+        let skipFocus = false;
+        for (const elem of (event.path || event.composedPath())) {
+            if (elem.matches?.('[data-lexical-decorator], [data-kg-slash-menu]')) {
+                skipFocus = true;
+                break;
+            }
+        }
 
-        if (clickedOnDecorator || clickedOnSlashMenu) {
+        if (skipFocus) {
             this.skipFocusEditor = true;
         }
     }

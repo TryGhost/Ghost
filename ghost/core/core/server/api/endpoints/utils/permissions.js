@@ -12,7 +12,7 @@ const messages = {
  * @description Handle requests, which need authentication.
  *
  * @param {Object} apiConfig - Docname & method of API ctrl
- * @param {Object} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  * @return {Promise}
  */
 const nonePublicAuth = (apiConfig, frame) => {
@@ -81,7 +81,7 @@ module.exports = {
      * @description Handle permission stage for API.
      *
      * @param {Object} apiConfig - Docname & method of target ctrl.
-     * @param {Object} frame
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
     handle(apiConfig, frame) {

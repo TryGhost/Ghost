@@ -281,7 +281,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('tag-design').returns(true);
             });
 
-            it('will return correct view for a tag', function () {
+            it('will return correct view for a tag when template exists', function () {
                 const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
                 should.exist(view);
                 view.should.eql('tag-design');
@@ -430,28 +430,6 @@ describe('templates', function () {
             stubs.getTemplateForEntry.called.should.be.false();
             stubs.getTemplateForEntries.called.should.be.false();
             stubs.getTemplateForError.called.should.be.false();
-        });
-
-        it('calls pickTemplate for custom routes', function () {
-            res.routerOptions = {
-                type: 'custom',
-                templates: 'test',
-                defaultTemplate: 'path/to/local/test.hbs'
-            };
-
-            // Call setTemplate
-            templates.setTemplate(req, res, data);
-
-            // should be testFromPickTemplate
-            res._template.should.eql('testFromPickTemplate');
-
-            // Only pickTemplate got called
-            stubs.pickTemplate.called.should.be.true();
-            stubs.getTemplateForEntry.called.should.be.false();
-            stubs.getTemplateForEntries.called.should.be.false();
-            stubs.getTemplateForError.called.should.be.false();
-
-            stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs').should.be.true();
         });
 
         it('calls pickTemplate for custom routes', function () {

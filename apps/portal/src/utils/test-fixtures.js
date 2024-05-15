@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars*/
-import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
+import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getNewsletterData} from './fixtures-generator';
 
 export const transformTierFixture = [
     getFreeProduct({
@@ -24,11 +24,24 @@ export const transformTierFixture = [
     })
 ];
 
+export const newsletters = [
+    getNewsletterData({
+        name: 'Newsletter 1',
+        description: 'Newsletter 1 description',
+        sort_order: 1
+    }),
+    getNewsletterData({
+        name: 'Newsletter 2',
+        description: 'Newsletter 2 description',
+        sort_order: 2
+    })
+];
+
 export const singleSiteTier = [
     getFreeProduct({
         name: 'Free',
         description: 'Free tier description',
-        numOfBenefits: 0
+        numOfBenefits: 1
     })
     ,
     getProductData({
@@ -163,7 +176,8 @@ export const site = {
         onlyFreePlanWithoutStripe: {
             ...baseSingleTierSite,
             portal_plans: ['free'],
-            is_stripe_configured: false
+            is_stripe_configured: false,
+            newsletters: newsletters
         },
         membersInviteOnly: {
             ...baseSingleTierSite,
@@ -213,7 +227,8 @@ export const member = {
         subscriptions: [],
         paid: false,
         avatarImage: '',
-        subscribed: true
+        subscribed: true,
+        newsletters: []
     }),
     altFree: getMemberData({
         name: 'Jimmie Larson',
@@ -301,7 +316,19 @@ export const member = {
                 currentPeriodEnd: '2021-06-05T11:42:40.000Z'
             })
         ]
+    }),
+    subbedToNewsletter: getMemberData({
+        newsletters: newsletters,
+        enable_comment_notifications: true
     })
 };
-/* eslint-enable no-unused-vars*/
 
+export const memberWithNewsletter = {
+    uuid: member.free.uuid,
+    email: member.free.email,
+    name: member.free.name,
+    newsletters: newsletters,
+    enable_comment_notifications: true,
+    status: 'free'
+};
+/* eslint-enable no-unused-vars*/

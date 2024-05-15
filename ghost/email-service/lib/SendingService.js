@@ -88,6 +88,7 @@ class SendingService {
     */
     async send({post, newsletter, segment, members, emailId}, options) {
         const cacheId = emailId + '-' + (segment ?? 'null');
+        const isTestEmail = options.isTestEmail ?? false;
 
         /**
          * @type {EmailBody | null}
@@ -114,7 +115,7 @@ class SendingService {
 
         const recipients = this.buildRecipients(members, emailBody.replacements);
         return await this.#emailProvider.send({
-            subject: this.#emailRenderer.getSubject(post),
+            subject: this.#emailRenderer.getSubject(post, isTestEmail),
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
             html: emailBody.html,

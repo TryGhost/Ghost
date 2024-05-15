@@ -761,12 +761,19 @@ describe('Batch Sending Service', function () {
                 return Promise.resolve(callCount === 12 ? false : true);
             });
             const batches = new Array(101).fill(0).map(() => createModel({}));
+
+            /**
+             * !! WARNING !!
+             * If the error message is changed that it no longer contains the word 'partially',
+             * we'll also need the frontend logic in ghost/admin/app/components/editor/modals/publish-flow/complete-with-email-error.js
+             */
             await assert.rejects(service.sendBatches({
                 email: createModel({}),
                 batches,
                 post: createModel({}),
                 newsletter: createModel({})
-            }), /was only partially sent/);
+            }), /was only partially sent/); // do not change without reading the warning above
+
             sinon.assert.callCount(sendBatch, 101);
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
             assert.deepEqual(sendBatches, batches);

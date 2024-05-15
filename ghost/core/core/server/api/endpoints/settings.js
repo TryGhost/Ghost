@@ -21,7 +21,8 @@ async function getStripeConnectData(frame) {
     }
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'settings',
 
     browse: {
@@ -122,7 +123,7 @@ module.exports = {
 
     edit: {
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         permissions: {
             unsafeAttrsObject(frame) {
@@ -134,10 +135,8 @@ module.exports = {
 
             let result = await settingsBREADService.edit(frame.data.settings, frame.options, stripeConnectData);
 
-            if (_.isEmpty(result)) {
-                this.headers.cacheInvalidate = false;
-            } else {
-                this.headers.cacheInvalidate = true;
+            if (!_.isEmpty(result)) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
             }
 
             // We need to return all settings here, because we have calculated settings that might change
@@ -181,3 +180,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

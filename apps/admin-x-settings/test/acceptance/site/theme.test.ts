@@ -53,7 +53,7 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: 'Install Headline'}).click();
 
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/successfully installed/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/installed/);
 
         await page.getByRole('button', {name: 'Activate'}).click();
 

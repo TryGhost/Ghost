@@ -2,12 +2,17 @@ const sinon = require('sinon');
 const should = require('should');
 const rewire = require('rewire');
 const StripeAPI = rewire('../../../lib/StripeAPI');
-const api = new StripeAPI();
 
 describe('StripeAPI', function () {
     const mockCustomerEmail = 'foo@example.com';
     const mockCustomerId = 'cust_mock_123456';
     const mockCustomerName = 'Example Customer';
+    let mockLabs = {
+        isSet() {
+            return false;
+        }
+    };
+    const api = new StripeAPI({labs: mockLabs});
 
     let mockStripe;
 
@@ -20,6 +25,7 @@ describe('StripeAPI', function () {
                     }
                 }
             };
+            sinon.stub(mockLabs, 'isSet');
             const mockStripeConstructor = sinon.stub().returns(mockStripe);
             StripeAPI.__set__('Stripe', mockStripeConstructor);
             api.configure({
@@ -35,15 +41,21 @@ describe('StripeAPI', function () {
             sinon.restore();
         });
 
-        it('sends success_url and cancel_url', async function () {
+        it('Sends card as payment method if labs flag not enabled', async function () {
             await api.createCheckoutSession('priceId', null, {});
 
-            should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.success_url);
-            should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
+            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, ['card']);
         });
 
-        it('createCheckoutSetupSession sends success_url and cancel_url', async function () {
-            await api.createCheckoutSetupSession('priceId', {});
+        it('Sends no payment methods if labs flag is enabled', async function () {
+            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(true);
+            await api.createCheckoutSession('priceId', null, {});
+
+            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, undefined);
+        });
+
+        it('sends success_url and cancel_url', async function () {
+            await api.createCheckoutSession('priceId', null, {});
 
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.success_url);
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
@@ -140,6 +152,53 @@ describe('StripeAPI', function () {
             should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
             should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, 'cust_mock_123456');
+        });
+    });
+
+    describe('createCheckoutSetupSession', function () {
+        beforeEach(function () {
+            mockStripe = {
+                checkout: {
+                    sessions: {
+                        create: sinon.stub().resolves()
+                    }
+                }
+            };
+            sinon.stub(mockLabs, 'isSet');
+            const mockStripeConstructor = sinon.stub().returns(mockStripe);
+            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: ''
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('createCheckoutSetupSession sends success_url and cancel_url', async function () {
+            await api.createCheckoutSetupSession('priceId', {});
+
+            should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.success_url);
+            should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
+        });
+
+        it('createCheckoutSetupSession does not send currency if additionalPaymentMethods flag is off', async function () {
+            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(false);
+            await api.createCheckoutSetupSession('priceId', {currency: 'usd'});
+
+            should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);
+        });
+
+        it('createCheckoutSetupSession sends currency if additionalPaymentMethods flag is on', async function () {
+            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(true);
+            await api.createCheckoutSetupSession('priceId', {currency: 'usd'});
+
+            should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.currency, 'usd');
         });
     });
 

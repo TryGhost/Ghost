@@ -130,6 +130,52 @@ describe('Media API', function () {
             res.body.errors[0].message.should.match(/select a valid media file/gi);
             sinon.assert.calledOnce(loggingStub);
         });
+
+        it('Errors when media request body is broken', async function () {
+            // Manually construct a broken request body
+
+            // Note: still using png mime type here but it doesn't matter because we're sending an invalid
+            // request body anyway
+            const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+            const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
+
+            // eslint-disable-next-line no-undef
+            const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, blob.size / 2)], {
+                type: 'multipart/form-data; boundary=boundary'
+            })).text();
+
+            sinon.stub(logging, 'error');
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Content-Type', 'multipart/form-data; boundary=boundary')
+                .send(brokenDataBlob)
+                .expect(400);
+
+            res.body.errors[0].message.should.match(/The request could not be understood./gi);
+        });
+
+        it('Errors when media request body is broken #2', async function () {
+            // Manually construct a broken request body
+
+            // Note: still using png mime type here but it doesn't matter because we're sending an invalid
+            // request body anyway
+            const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+
+            // Note: this differs from above test by not including the boundary at the end of the payload
+            const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
+
+            // eslint-disable-next-line no-undef
+            const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, blob.size / 2)], {
+                type: 'multipart/form-data; boundary=boundary'
+            })).text();
+
+            sinon.stub(logging, 'error');
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Content-Type', 'multipart/form-data; boundary=boundary')
+                .send(brokenDataBlob)
+                .expect(400);
+
+            res.body.errors[0].message.should.match(/The request could not be understood./gi);
+        });
     });
 
     describe('media/thumbnail/upload', function () {

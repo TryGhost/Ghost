@@ -554,7 +554,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Can filter by signup attribution', async function () {
+    it('Can filter by conversion attribution', async function () {
         await agent
             .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
@@ -1626,6 +1626,29 @@ describe('Members API', function () {
         // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
         should.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
         should.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
+    });
+
+    it('Cannot add unknown tiers to a member', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[0].id;
+        const unknownProductId = 'blahblahid';
+
+        sinon.stub(logging, 'error');
+
+        await agent
+            .put(`/members/${memberId}/`)
+            .body({
+                members: [{
+                    tiers: [{
+                        id: unknownProductId
+                    }]
+                }]
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
     });
 
     it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {

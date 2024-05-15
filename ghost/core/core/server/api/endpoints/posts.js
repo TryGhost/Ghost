@@ -38,7 +38,8 @@ function getCacheHeaderFromEventString(event, dto) {
     }
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'posts',
     browse: {
         headers: {
@@ -167,10 +168,8 @@ module.exports = {
         query(frame) {
             return models.Post.add(frame.data.posts[0], frame.options)
                 .then((model) => {
-                    if (model.get('status') !== 'published') {
-                        this.headers.cacheInvalidate = false;
-                    } else {
-                        this.headers.cacheInvalidate = true;
+                    if (model.get('status') === 'published') {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
 
                     return model;
@@ -216,7 +215,12 @@ module.exports = {
         async query(frame) {
             let model = await postsService.editPost(frame, {
                 eventHandler: (event, dto) => {
-                    this.headers.cacheInvalidate = getCacheHeaderFromEventString(event, dto);
+                    const cacheInvalidate = getCacheHeaderFromEventString(event, dto);
+                    if (cacheInvalidate === true) {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
+                    } else if (cacheInvalidate?.value) {
+                        frame.setHeader('X-Cache-Invalidate', cacheInvalidate.value);
+                    }
                 }
             });
 
@@ -324,3 +328,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

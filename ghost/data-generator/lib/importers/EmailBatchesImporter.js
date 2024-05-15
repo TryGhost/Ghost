@@ -25,7 +25,7 @@ class EmailBatchesImporter extends TableImporter {
         latestUpdatedDate.setHours(latestUpdatedDate.getHours() + 1);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             email_id: this.model.id,
             provider_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.datatype.hexadecimal({length: 16, prefix: '', case: 'lower'})}@m.example.com`,
             status: 'submitted', // TODO: introduce failures

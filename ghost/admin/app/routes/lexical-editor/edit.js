@@ -37,7 +37,7 @@ export default class EditRoute extends AuthenticatedRoute {
         const records = await this.store.query(modelName, query);
         let post = records.firstObject;
 
-        // CASE: Post is in mobiledoc — convert to lexical or redirect
+        // CASE: Post is in mobiledoc — convert to lexical
         if (post.mobiledoc) {
             post = await post.save({adapterOptions: {convertToLexical: 1}});
         }

@@ -20,6 +20,9 @@ export default (function viteConfig() {
                     // @TODO: Remove this when @tryghost/nql is updated
                     mingo: resolve(__dirname, '../../node_modules/mingo/dist/mingo.js')
                 }
+            },
+            optimizeDeps: {
+                include: ['@tryghost/kg-unsplash-selector']
             }
         }
     });

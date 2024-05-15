@@ -31,7 +31,7 @@ function authFrameMain() {
         }
 
         if (!d) {
-            return
+            return;
         }
         const data: {uid: string, action: string} = d;
 
@@ -72,6 +72,14 @@ export async function mockAdminAuthFrame({admin, page}) {
         await route.fulfill({
             status: 200,
             body: `<html><head><meta charset="UTF-8" /></head><body><script>${authFrameMain.toString()}; authFrameMain();</script></body></html>`
+        });
+    });
+}
+
+export async function mockAdminAuthFrame204({admin, page}) {
+    await page.route(admin + 'auth-frame/', async (route) => {
+        await route.fulfill({
+            status: 204
         });
     });
 }
@@ -126,10 +134,23 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
         document.body.appendChild(scriptTag);
     }, {url, options});
 
+    const commentsFrameSelector = 'iframe[title="comments-frame"]';
+
     await page.waitForSelector('iframe');
 
+    // wait for data to be loaded because our tests expect it
+    const iframeElement = await page.locator(commentsFrameSelector).elementHandle();
+    if (!iframeElement) {
+        throw new Error('iframe not found');
+    }
+    const iframe = await iframeElement.contentFrame();
+    if (!iframe) {
+        throw new Error('iframe contentFrame not found');
+    }
+    await iframe.waitForSelector('[data-loaded="true"]');
+
     return {
-        frame: page.frameLocator('iframe[title="comments-frame"]')
+        frame: page.frameLocator(commentsFrameSelector)
     };
 }
 

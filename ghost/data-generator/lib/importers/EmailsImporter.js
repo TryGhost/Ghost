@@ -13,15 +13,20 @@ class EmailsImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const posts = await this.transaction.select('id', 'title', 'published_at').from('posts').where('type', 'post');
+        if (quantity === 0) {
+            return;
+        }
+
+        const posts = await this.transaction.select('id', 'title', 'published_at').from('posts').where('type', 'post').where('status', 'published').orderBy('published_at', 'desc');
         this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
         this.membersSubscribeEvents = await this.transaction.select('id', 'newsletter_id', 'created_at').from('members_subscribe_events');
 
-        await this.importForEach(posts, quantity ? quantity / posts.length : 1);
+        // Only generate emails for last 25% of posts, and only generate emails for 50% of those
+        await this.importForEach(posts.slice(0, Math.ceil(posts.length / 4)), quantity ? quantity / posts.length : 0.5);
     }
 
     generate() {
-        const id = faker.database.mongodbObjectId();
+        const id = this.fastFakeObjectId();
 
         let newsletter;
         if (this.newsletters.length === 0) {

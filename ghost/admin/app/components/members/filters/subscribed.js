@@ -39,7 +39,7 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
                 const comparator = flt.$and || flt.$or; // $or for legacy filter backwards compatibility
 
                 if (!comparator || comparator.length !== 2) {
-                    const filter = flt.yg || flt;
+                    const filter = flt;
                     if (filter && filter.email_disabled !== undefined) {
                         if (filter.email_disabled) {
                             return {

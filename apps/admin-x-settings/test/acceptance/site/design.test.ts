@@ -129,6 +129,7 @@ test.describe('Design settings', async () => {
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
         await modal.getByLabel('Site description').fill('new description');
+        await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         // set timeout of 500ms to wait for the debounce
         await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Save'}).click();
@@ -220,7 +221,7 @@ test.describe('Design settings', async () => {
         await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'})).toBeHidden();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
-        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+        expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
     test('Custom theme setting visibility', async ({page}) => {

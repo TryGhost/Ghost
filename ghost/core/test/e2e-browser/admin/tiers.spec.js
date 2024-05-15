@@ -23,19 +23,16 @@ test.describe('Admin', () => {
                 monthlyPrice: 5,
                 yearlyPrice: 50
             });
-            const offerName = await createOffer(sharedPage, {
+            const {offerName} = await createOffer(sharedPage, {
                 name: 'Get 5% Off!',
                 tierName,
-                offerType: 'discount',
-                amount: 5
+                offerType: 'freeTrial',
+                amount: 14
             });
 
-            await test.step('Check that offers and tiers are available on Offers page', async () => {
-                await sharedPage.locator('[data-test-nav="offers"]').click();
-                await sharedPage.waitForSelector('[data-test-offers-list]');
-                await expect(sharedPage.locator('[data-test-offers-list]')).toContainText(tierName);
-                await expect(sharedPage.locator('[data-test-offers-list]')).toContainText(offerName);
-            });
+            await sharedPage.goto('/ghost/');
+            await sharedPage.goto('/ghost/#/settings/offers');
+            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
         });
 
         test('Can create additional Tier', async ({sharedPage}) => {

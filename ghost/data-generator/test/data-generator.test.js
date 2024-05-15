@@ -13,6 +13,8 @@ const DataGenerator = require('../index');
 
 const schema = require('../../core/core/server/data/schema');
 
+const schemaTables = schema.tables;
+
 describe('Data Generator', function () {
     let db;
 
@@ -76,7 +78,8 @@ describe('Data Generator', function () {
         const dataGenerator = new DataGenerator({
             eventsOnly: false,
             knex: db,
-            schema: schema,
+            schema,
+            schemaTables,
             logger: {
                 info: () => { },
                 ok: () => { }

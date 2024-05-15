@@ -9,6 +9,7 @@ const supertest = require('supertest');
 const cheerio = require('cheerio');
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
+const {DateTime} = require('luxon');
 let request;
 
 function assertCorrectFrontendHeaders(res) {
@@ -90,8 +91,23 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(assertCorrectFrontendHeaders);
     });
 
+    it('should render scheduled email-only posts', async function () {
+        const scheduledEmail = await testUtils.fixtures.insertPosts([{
+            title: 'test newsletter',
+            status: 'scheduled',
+            published_at: DateTime.now().plus({days: 1}).toISODate(),
+            posts_meta: {
+                email_only: true
+            }
+        }]);
+
+        await request.get(`/p/${scheduledEmail[0].get('uuid')}/`)
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
     it('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
-        // difficult to build a sent newsletter using the data generator
         const emailedPost = await testUtils.fixtures.insertPosts([{
             title: 'test newsletter',
             status: 'sent',

@@ -1,6 +1,12 @@
+const path = require('path');
 const debug = require('@tryghost/debug')('services:routing:renderer:renderer');
+const {IncorrectUsageError} = require('@tryghost/errors');
 const setContext = require('./context');
 const templates = require('./templates');
+const tpl = require('@tryghost/tpl');
+const messages = {
+    couldNotReadFile: 'Could not read file {file}'
+};
 
 /**
  * @description Helper function to finally render the data.
@@ -26,5 +32,17 @@ module.exports = function renderer(req, res, data) {
     }
 
     // Render Call
-    res.render(res._template, data);
+    res.render(res._template, data, function (err, html) {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                return req.next(
+                    new IncorrectUsageError({
+                        message: tpl(messages.couldNotReadFile, {file: path.basename(err.path)})
+                    })
+                );
+            }
+            return req.next(err);
+        }
+        res.send(html);
+    });
 };

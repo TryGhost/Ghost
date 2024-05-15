@@ -27,7 +27,7 @@ class LabelsImporter extends TableImporter {
     generate() {
         const name = this.generateName();
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             name: name,
             slug: `${slugify(name)}`,
             created_at: dateToDatabaseString(blogStartDate),

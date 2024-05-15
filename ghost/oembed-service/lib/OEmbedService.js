@@ -10,6 +10,7 @@ const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
     unknownProvider: 'No provider found for supplied URL.',
+    unableToFetchOembed: 'Unable to fetch requested embed.',
     unauthorized: 'URL contains a private resource.'
 };
 
@@ -26,10 +27,10 @@ const findUrlWithProvider = (url) => {
     // providers list is not always up to date with scheme or www vs non-www
     let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
     let testUrls = [
-        `http://${baseUrl}`,
         `https://${baseUrl}`,
-        `http://www.${baseUrl}`,
-        `https://www.${baseUrl}`
+        `https://www.${baseUrl}`,
+        `http://${baseUrl}`,
+        `http://www.${baseUrl}`
     ];
 
     for (let testUrl of testUrls) {
@@ -101,15 +102,17 @@ class OEmbedService {
         try {
             return await extract(url);
         } catch (err) {
-            if (err.message === 'Request failed with error code 401') {
-                throw new errors.UnauthorizedError({
-                    message: messages.unauthorized
-                });
-            } else {
-                throw new errors.InternalServerError({
-                    message: err.message
+            if (err.message === 'Request failed with error code 401' || err.message === 'Request failed with error code 403') {
+                throw new errors.ValidationError({
+                    message: tpl(messages.unableToFetchOembed),
+                    context: messages.unauthorized
                 });
             }
+
+            throw new errors.ValidationError({
+                message: tpl(messages.unableToFetchOembed),
+                context: err.message
+            });
         }
     }
 
@@ -257,6 +260,15 @@ class OEmbedService {
                 message: tpl(messages.insufficientMetadata),
                 context: url
             });
+        }
+
+        if (metadata.icon) {
+            try {
+                await this.externalRequest.head(metadata.icon);
+            } catch (err) {
+                metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+                logging.error(err);
+            }
         }
 
         return {

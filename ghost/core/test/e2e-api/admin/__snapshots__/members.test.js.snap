@@ -1790,22 +1790,20 @@ exports[`Members API Can add and send a signup confirmation email 3: [html 1] 1`
 `;
 
 exports[`Members API Can add and send a signup confirmation email 4: [text 1] 1`] = `
-"
-                        Hey there,
+"Hey there,
 
-                        Tap the link below to complete the signup process for Ghost's Test Site, and be automatically signed in:
+Tap the link below to complete the signup process for Ghost's Test Site, and be automatically signed in:
 
-                        http://127.0.0.1:2369/members/?token=REPLACED_TOKEN&action=signup
+http://127.0.0.1:2369/members/?token=REPLACED_TOKEN&action=signup
 
-                        For your security, the link will expire in 24 hours time.
+For your security, the link will expire in 24 hours time.
 
-                        See you soon!
+See you soon!
 
-                        ---
+---
 
-                        Sent to member_getting_confirmation@test.com
-                        If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you.
-                        "
+Sent to member_getting_confirmation@test.com
+If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you."
 `;
 
 exports[`Members API Can add and send a signup confirmation email 5: [metadata 1] 1`] = `
@@ -5415,6 +5413,24 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Cannot add unknown tiers to a member 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Could not find Product blahblahid",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Request not understood error, cannot edit member.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
 }
 `;
 

@@ -15,7 +15,8 @@ const webhooksService = getWebhooksServiceInstance({
     WebhookModel: models.Webhook
 });
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'webhooks',
 
     add: {
@@ -133,3 +134,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

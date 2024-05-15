@@ -5,6 +5,7 @@ const {blogStartDate: startTime} = require('../utils/blog-info');
 const generateEvents = require('../utils/event-generator');
 const {luck} = require('../utils/random');
 const dateToDatabaseString = require('../utils/database-date');
+const debug = require('@tryghost/debug')('MembersImporter');
 
 class MembersImporter extends TableImporter {
     static table = 'members';
@@ -19,6 +20,8 @@ class MembersImporter extends TableImporter {
     }
 
     async import(quantity = this.defaultQuantity) {
+        const generateNow = Date.now();
+
         this.timestamps = generateEvents({
             shape: 'ease-in',
             trend: 'positive',
@@ -26,6 +29,7 @@ class MembersImporter extends TableImporter {
             startTime,
             endTime: new Date()
         }).sort();
+        debug(`${this.name} generated ${this.timestamps.length} timestamps in ${Date.now() - generateNow}ms`);
 
         await super.import(quantity);
     }
@@ -62,17 +66,17 @@ class MembersImporter extends TableImporter {
     }
 
     generate() {
-        const id = faker.database.mongodbObjectId();
+        const id = this.fastFakeObjectId();
         // Use name from American locale to reflect an English-speaking audience
         const name = `${americanFaker.name.firstName()} ${americanFaker.name.lastName()}`;
-        const timestamp = this.timestamps.shift();
+        const timestamp = this.timestamps.pop();
 
         return {
             id,
             uuid: faker.datatype.uuid(),
             transient_id: faker.datatype.uuid(),
             email: `${name.replace(' ', '.').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}${faker.datatype.number({min: 0, max: 999999})}@example.com`,
-            status: luck(5) ? 'comped' : luck(25) ? 'paid' : 'free',
+            status: luck(5) ? 'comped' : luck(15) ? 'paid' : 'free',
             name: name,
             expertise: luck(30) ? faker.name.jobTitle() : undefined,
             geolocation: JSON.stringify({

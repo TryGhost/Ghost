@@ -93,7 +93,7 @@ export default class MembersCountCacheService extends Service {
         }
 
         try {
-            const result = yield this.store.query('member', {...query, limit: 1, page: 1});
+            const result = yield this.store.query('member', {...query, order: 'id', limit: 1, page: 1});
             return result.meta.pagination.total;
         } catch (e) {
             console.error(e); // eslint-disable-line

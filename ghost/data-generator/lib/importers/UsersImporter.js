@@ -16,7 +16,7 @@ class UsersImporter extends TableImporter {
     async generate() {
         const name = `${faker.name.firstName()} ${faker.name.lastName()}`;
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             name: name,
             slug: slugify(name),
             password: await security.password.hash(faker.color.human()),

@@ -51,6 +51,21 @@ describe('UNIT: sentry', function () {
             assert.equal(initArgs[0].environment, 'testing', 'should be the testing env');
             assert.ok(initArgs[0].hasOwnProperty('beforeSend'), 'should have a beforeSend function');
         });
+
+        it('initialises sentry with the correct environment', function () {
+            const env = 'staging';
+
+            configUtils.set({
+                PRO_ENV: env
+            });
+
+            delete require.cache[require.resolve('../../../core/shared/sentry')];
+            require('../../../core/shared/sentry');
+
+            const initArgs = Sentry.init.getCall(1).args;
+
+            assert.equal(initArgs[0].environment, env, 'should be the correct env');
+        });
     });
 
     describe('beforeSend', function () {
@@ -138,6 +153,32 @@ describe('UNIT: sentry', function () {
             };
 
             assert.deepEqual(result, expected);
+        });
+    });
+
+    describe('beforeSendTransaction', function () {
+        it('filters transactions based on an allow list', function () {
+            sentry = require('../../../core/shared/sentry');
+
+            const beforeSendTransaction = sentry. beforeSendTransaction;
+
+            const allowedTransactions = [
+                {transaction: 'GET /ghost/api/settings'},
+                {transaction: 'PUT /members/api/member'},
+                {transaction: 'POST /ghost/api/tiers'},
+                {transaction: 'DELETE /members/api/member'},
+                {transaction: 'GET /'},
+                {transaction: 'GET /:slug/options(edit)?/'},
+                {transaction: 'GET /author/:slug'},
+                {transaction: 'GET /tag/:slug'}
+            ];
+
+            allowedTransactions.forEach((transaction) => {
+                assert.equal(beforeSendTransaction(transaction), transaction);
+            });
+
+            assert.equal(beforeSendTransaction({transaction: 'GET /foo/bar'}), null);
+            assert.equal(beforeSendTransaction({transaction: 'Some other transaction'}), null);
         });
     });
 });

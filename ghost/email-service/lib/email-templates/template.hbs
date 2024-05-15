@@ -85,15 +85,6 @@
                                                         <tr>
                                                             <td height="20" class="{{classes.meta}}" style="padding: 0;">
                                                                 By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
-                                                                {{#if newsletter.showCommentCta}}
-                                                                    <a href="{{post.commentUrl}}" class="comment-link" valign="middle">
-                                                                        {{#if backgroundIsDark}}
-                                                                            • <img src="https://static.ghost.org/v5.0.0/images/comment-icon-darkmode.png" border="0" width="16" height="16" alt="Comment">
-                                                                        {{else}}
-                                                                            • <img src="https://static.ghost.org/v5.0.0/images/comment-icon.png" border="0" width="16" height="16" alt="Comment">
-                                                                        {{/if}}
-                                                                    </a>
-                                                                {{/if}}
                                                             </td>
                                                             <td class="{{classes.meta}} view-online desktop">
                                                                 <a href="{{post.url}}" class="view-online-link">View in browser</a>
@@ -221,7 +212,7 @@
 
                                         {{#if showBadge }}
                                             <tr>
-                                                <td class="footer-powered"><a href="https://ghost.org/"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
+                                                <td class="footer-powered"><a href="https://ghost.org/?via=pbg-newsletter"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
                                             </tr>
                                         {{/if}}
                                     </table>

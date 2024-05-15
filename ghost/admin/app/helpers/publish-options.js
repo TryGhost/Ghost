@@ -9,6 +9,7 @@ export default class PublishOptionsResource extends Resource {
     @service session;
     @service settings;
     @service store;
+    @service membersCountCache;
 
     @inject config;
 
@@ -35,7 +36,7 @@ export default class PublishOptionsResource extends Resource {
     }
 
     _createPublishOptions(post) {
-        const {config, limit, settings, store} = this;
+        const {config, limit, settings, store, membersCountCache} = this;
 
         return new PublishOptions({
             config,
@@ -43,6 +44,7 @@ export default class PublishOptionsResource extends Resource {
             post,
             settings,
             store,
+            membersCountCache,
             user: this.session.user
         });
     }

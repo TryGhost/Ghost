@@ -51,7 +51,6 @@ export const ProductsSectionStyles = () => {
             height: 100% !important;
             width: 50%;
             border-radius: 999px;
-            color: var(--grey7);
             background: transparent;
             font-size: 1.5rem;
         }
@@ -80,13 +79,8 @@ export const ProductsSectionStyles = () => {
         }
 
         .gh-portal-maximum-discount {
-            font-size: 1.4rem;
             font-weight: 400;
             margin-left: 4px;
-            margin-bottom: -1px;
-        }
-
-        .gh-portal-btn.active .gh-portal-maximum-discount {
             opacity: 0.5;
         }
 
@@ -895,7 +889,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                     }}
                 >
                     {t('Yearly')}
-                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(Save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
+                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
                 </button>
             </div>
         </div>
@@ -953,6 +947,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
 
     const isComplimentary = isComplimentaryMember({member});
+    const hasOnlyFree = hasOnlyFreeProduct({site});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -961,10 +956,6 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     useEffect(() => {
         onPlanSelect(null, selectedPrice.id);
     }, [selectedPrice.id, onPlanSelect]);
-
-    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
-        return null;
-    }
 
     if (products.length === 0) {
         if (isComplimentary) {
@@ -993,7 +984,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         }}>
             <section className={className}>
 
-                {(!(hasOnlyFreeProduct({site})) ?
+                {(!(hasOnlyFree) ?
                     <ProductPriceSwitch
                         products={products}
                         selectedInterval={activeInterval}

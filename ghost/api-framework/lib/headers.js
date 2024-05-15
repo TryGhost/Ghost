@@ -99,8 +99,8 @@ module.exports = {
      *
      * @param {Object} result - API response
      * @param {Object} apiConfigHeaders
-     * @param {Object} frame
-     * @return {Promise}
+     * @param {import('@tryghost/api-framework').Frame} frame
+     * @return {Promise<object>}
      */
     async get(result, apiConfigHeaders = {}, frame) {
         let headers = {};
@@ -146,6 +146,10 @@ module.exports = {
 
             Object.assign(headers, locationHeader);
         }
+
+        const headersFromFrame = frame.getHeaders();
+
+        Object.assign(headers, headersFromFrame);
 
         debug(headers);
         return headers;

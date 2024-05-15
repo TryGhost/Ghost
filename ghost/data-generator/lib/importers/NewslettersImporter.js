@@ -24,7 +24,7 @@ class NewslettersImporter extends TableImporter {
         weekAfter.setDate(weekAfter.getDate() + 7);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             uuid: faker.datatype.uuid(),
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,

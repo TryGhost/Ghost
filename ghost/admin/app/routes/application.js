@@ -183,9 +183,14 @@ export default Route.extend(ShortcutsRoute, {
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
                 beforeSend,
-                // TransitionAborted errors surface from normal application behaviour
-                // - https://github.com/emberjs/ember.js/issues/12505
-                ignoreErrors: [/^TransitionAborted$/]
+                ignoreErrors: [
+                    // TransitionAborted errors surface from normal application behaviour
+                    // - https://github.com/emberjs/ember.js/issues/12505
+                    /^TransitionAborted$/,
+                    // ResizeObserver loop errors occur often from extensions and
+                    // embedded content, generally harmless and not useful to report
+                    /^ResizeObserver loop completed with undelivered notifications/
+                ]
             };
             if (this.config.sentry_env === 'development') {
                 sentryConfig.integrations = [new Debug()];

@@ -30,7 +30,7 @@ class MembersProductsImporter extends TableImporter {
 
     generate() {
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: this.model.id,
             product_id: this.getProduct().id,
             sort_order: 0,

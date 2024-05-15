@@ -34,7 +34,7 @@ const DEFAULT_CSV_HEADER_MAPPING = {
  * @property {Function} getTimezone - function returning currently configured timezone
  * @property {() => Object} getMembersRepository - member model access instance for data access and manipulation
  * @property {() => Promise<import('@tryghost/tiers/lib/Tier')>} getDefaultTier - async function returning default Member Tier
- * @property {() => Promise<import('@tryghost/tiers/lib/Tier')>} getTierByName - async function returning Member Tier by name
+ * @property {(string) => Promise<import('@tryghost/tiers/lib/Tier')>} getTierByName - async function returning Member Tier by name
  * @property {Function} sendEmail - function sending an email
  * @property {(string) => boolean} isSet - Method checking if specific feature is enabled
  * @property {({job, offloaded, name}) => void} addJob - Method registering an async job
@@ -176,6 +176,14 @@ module.exports = class MembersCSVImporter {
                     // and do not re-subscribe them
                     if (!existingNewsletters.length && memberValues.subscribed) {
                         memberValues.subscribed = false;
+                    }
+
+                    // Don't overwrite name or note if they are blank in the file
+                    if (!row.name) {
+                        memberValues.name = existingMember.name;
+                    }
+                    if (!row.note) {
+                        memberValues.note = existingMember.note;
                     }
 
                     member = await membersRepository.update({

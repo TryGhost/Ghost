@@ -17,7 +17,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tryghost/content-api": "1.11.19",
+    "@tryghost/content-api": "1.11.21",
     "flexsearch": "0.7.21",
     "react": "17.0.2",
     "react-dom": "17.0.2"
@@ -86,7 +86,7 @@
     "@testing-library/react": "12.1.5",
     "@vitejs/plugin-react": "4.2.1",
     "nock": "13.3.3",
-    "vite": "4.5.1",
+    "vite": "4.5.3",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"
   }

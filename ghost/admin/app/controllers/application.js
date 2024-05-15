@@ -27,6 +27,10 @@ export default class ApplicationController extends Controller {
         return this.config.clientExtensions?.script;
     }
 
+    get cacheBuster() {
+        return Date.now();
+    }
+
     get showNavMenu() {
         let {router, session, ui} = this;
 

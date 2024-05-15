@@ -235,6 +235,14 @@ class ImportManager {
                     help: tpl(messages.invalidZipFileNameEncodingHelp),
                     code: 'INVALID_ZIP_FILE_NAME_ENCODING'
                 });
+            } else if (
+                err.message.includes('end of central directory record signature not found')
+                || err.message.includes('invalid comment length')
+            ) { // This comes from Yauzl when the zip is invalid
+                throw new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.invalidZipFileNameEncoding),
+                    code: 'INVALID_ZIP_FILE'
+                });
             }
             throw err;
         }

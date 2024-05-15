@@ -35,7 +35,7 @@ class PostsTagsImporter extends TableImporter {
         this.notIndex.push(tagIndex);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             post_id: this.model.id,
             tag_id: this.tags[tagIndex].id,
             sort_order: sortOrder

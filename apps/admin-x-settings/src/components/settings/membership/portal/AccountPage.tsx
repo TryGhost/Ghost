@@ -21,6 +21,8 @@ const AccountPage: React.FC<{
         if (!supportAddress) {
             setError('members_support_address', 'Please enter an email address');
             return;
+        } else {
+            setError('members_support_address', '');
         }
 
         let settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;

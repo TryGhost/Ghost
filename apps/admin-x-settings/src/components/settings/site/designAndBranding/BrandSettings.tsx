@@ -1,6 +1,7 @@
 import React, {useRef, useState} from 'react';
-import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
+import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -39,6 +40,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                 <TextField
                     key='site-description'
                     hint='Used in your theme, meta data and search results'
+                    maxLength={200}
                     title='Site description'
                     value={siteDescription}
                     onChange={(event) => {
@@ -76,7 +78,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                                 try {
                                     updateSetting('icon', getImageUrl(await uploadImage({file})));
                                 } catch (e) {
-                                    handleError(e);
+                                    const error = e as APIError;
+                                    if (error.response!.status === 415) {
+                                        error.message = 'Unsupported file type';
+                                    }
+                                    handleError(error);
                                 }
                             }}
                         >
@@ -98,7 +104,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             try {
                                 updateSetting('logo', getImageUrl(await uploadImage({file})));
                             } catch (e) {
-                                handleError(e);
+                                const error = e as APIError;
+                                if (error.response!.status === 415) {
+                                    error.message = 'Unsupported file type';
+                                }
+                                handleError(error);
                             }
                         }}
                     >
@@ -129,14 +139,18 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                                 })
                             }
                         }
-                        unsplashButtonClassName='!top-1 !right-1'
+                        unsplashButtonClassName='!top-1 !right-1 z-50'
                         unsplashEnabled={unsplashEnabled}
                         onDelete={() => updateSetting('cover_image', null)}
-                        onUpload={async (file) => {
+                        onUpload={async (file: any) => {
                             try {
                                 updateSetting('cover_image', getImageUrl(await uploadImage({file})));
                             } catch (e) {
-                                handleError(e);
+                                const error = e as APIError;
+                                if (error.response!.status === 415) {
+                                    error.message = 'Unsupported file type';
+                                }
+                                handleError(error);
                             }
                         }}
                     >
@@ -144,10 +158,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     </ImageUpload>
                     {
                         showUnsplash && unsplashConfig && unsplashEnabled && (
-                            <UnsplashSearchModal
-                                unsplashConf={{
-                                    defaultHeaders: unsplashConfig
-                                }}
+                            <UnsplashSelector
+                                unsplashProviderConfig={unsplashConfig}
                                 onClose={() => {
                                     setShowUnsplash(false);
                                 }}

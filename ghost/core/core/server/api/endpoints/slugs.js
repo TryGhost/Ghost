@@ -12,11 +12,12 @@ const allowedTypes = {
     user: models.User
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'slugs',
     generate: {
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         options: [
             'include',
@@ -52,3 +53,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

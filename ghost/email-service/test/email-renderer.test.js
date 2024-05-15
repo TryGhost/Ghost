@@ -662,6 +662,18 @@ describe('Email renderer', function () {
             let response = emailRenderer.getSubject(post);
             response.should.equal('Sample Post');
         });
+
+        it('adds [TEST] prefix for test emails', function () {
+            const post = createModel({
+                posts_meta: createModel({
+                    email_subject: ''
+                }),
+                title: 'Sample Post',
+                loaded: ['posts_meta']
+            });
+            let response = emailRenderer.getSubject(post, true);
+            response.should.equal('[TEST] Sample Post');
+        });
     });
 
     describe('getFromAddress', function () {
@@ -1375,7 +1387,7 @@ describe('Email renderer', function () {
             assert.doesNotMatch(response.html, /is-dark-background/);
         });
 
-        it('replaces all links except the unsubscribe and feedback links', async function () {
+        it('replaces all links except the unsubscribe, feedback and powered by Ghost links', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 header_image: null,
@@ -1412,6 +1424,8 @@ describe('Email renderer', function () {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
                     href.should.containEql('%%{uuid}%%');
+                } else if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
+                    href.should.not.containEql('tracked-link.com');
                 } else {
                     href.should.containEql('tracked-link.com');
                     href.should.containEql('m=%%{uuid}%%');
@@ -1432,7 +1446,7 @@ describe('Email renderer', function () {
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
+                `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
 
             // Check uuid in replacements
@@ -1487,7 +1501,7 @@ describe('Email renderer', function () {
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
                 '%%{unsubscribe_url}%%',
-                'https://ghost.org/'
+                'https://ghost.org/?via=pbg-newsletter'
             ]);
         });
 
@@ -1524,6 +1538,8 @@ describe('Email renderer', function () {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
                     href.should.containEql('%%{uuid}%%');
+                } else if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
+                    href.should.not.containEql('tracked-link.com');
                 } else {
                     href.should.containEql('tracked-link.com');
                     href.should.containEql('m=%%{uuid}%%');
@@ -1542,7 +1558,7 @@ describe('Email renderer', function () {
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
+                `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
 
             // Check uuid in replacements

@@ -1,10 +1,8 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
-import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TierDetailPreviewProps {
@@ -70,8 +68,6 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
 
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier}) => {
     const [showingYearly, setShowingYearly] = useState(false);
-    const {localSettings} = useSettingGroup();
-    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
     const name = tier?.name || '';
     const description = tier?.description || '';
@@ -80,8 +76,10 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     const currencySymbol = currency ? getSymbol(currency) : '$';
     const benefits = tier?.benefits || [];
 
-    const monthlyPrice = currencyToDecimal(tier?.monthly_price || 0);
-    const yearlyPrice = currencyToDecimal(tier?.yearly_price || 0);
+    const defaultMonthlyPrice = isFreeTier ? 0 : 500;
+    const defaultYearlyPrice = isFreeTier ? 0 : 5000;
+    const monthlyPrice = currencyToDecimal(tier?.monthly_price ?? defaultMonthlyPrice);
+    const yearlyPrice = currencyToDecimal(tier?.yearly_price ?? defaultYearlyPrice);
     const yearlyDiscount = tier?.monthly_price && tier?.yearly_price
         ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
         : 0;
@@ -98,9 +96,9 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
             <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
                 <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
                     <div className="min-h-[56px] w-full">
-                        <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || 'Bronze'}</h4>
+                        <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || (isFreeTier ? 'Free' : 'Bronze')}</h4>
                         <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
-                            <div className={`flex flex-wrap text-black ${!yearlyPrice && !monthlyPrice && !isFreeTier && 'opacity-30'}`}>
+                            <div className={`flex flex-wrap text-black ${((showingYearly && tier?.yearly_price === undefined) || (!showingYearly && tier?.monthly_price === undefined)) && !isFreeTier ? 'opacity-30' : ''}`}>
                                 <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
                                 <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? numberWithCommas(yearlyPrice) : numberWithCommas(monthlyPrice)}</span>
                                 {!isFreeTier && <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>}
@@ -111,7 +109,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                     </div>
                     <div className="flex-column flex w-full flex-1">
                         <div className="flex-1">
-                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content')}</div>
+                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview` : 'Full access to premium content')}</div>
                             <TierBenefits benefits={benefits} />
                         </div>
                     </div>

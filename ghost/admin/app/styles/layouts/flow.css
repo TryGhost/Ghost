@@ -269,10 +269,12 @@
 
 .gh-flow-content .main-error,
 .gh-setup .gh-flow-content .main-error {
-    margin-top: 8px;
-    color: var(--midgrey);
+    margin-top: 16px;
+    color: var(--red);
     font-size: 1.35rem;
+    line-height: 1.5;
     text-align: center;
+    text-wrap: balance;
 }
 
 .gh-setup .gh-flow-form .gh-btn-red,
