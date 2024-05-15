@@ -12,7 +12,8 @@ const integrationsService = getIntegrationsServiceInstance({
     ApiKeyModel: models.ApiKey
 });
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'integrations',
     browse: {
         headers: {
@@ -163,3 +164,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

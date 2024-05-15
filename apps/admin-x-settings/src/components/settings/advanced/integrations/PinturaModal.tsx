@@ -62,7 +62,7 @@ const PinturaModal = NiceModal.create(() => {
 
             showToast({
                 type: 'success',
-                message: `Pintura ${form} uploaded successfully`
+                title: `Pintura ${form} uploaded`
             });
         } catch (e) {
             setUploadingState({js: false, css: false});

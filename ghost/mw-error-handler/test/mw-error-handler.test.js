@@ -103,7 +103,7 @@ describe('Prepare Error', function () {
         });
     });
 
-    it('Correctly prepares a mysql2 error', function (done) {
+    it('Correctly prepares a known ER_WRONG_VALUE mysql2 error', function (done) {
         let error = new Error('select anything from anywhere where something = anything;');
 
         error.stack += '\n';
@@ -115,13 +115,36 @@ describe('Prepare Error', function () {
         prepareError(error, {}, {
             set: () => {}
         }, (err) => {
+            assert.equal(err.statusCode, 422);
+            assert.equal(err.name, 'ValidationError');
+            assert.equal(err.message, 'Invalid value');
+            assert.equal(err.code, 'ER_WRONG_VALUE');
+            assert.equal(err.sqlErrorCode, 'ER_WRONG_VALUE');
+            assert.equal(err.sql, 'select anything from anywhere where something = anything;');
+            assert.equal(err.sqlMessage, 'Incorrect DATETIME value: 3234234234');
+            done();
+        });
+    });
+
+    it('Correctly prepares an unknown mysql2 error', function (done) {
+        let error = new Error('select anything from anywhere where something = anything;');
+
+        error.stack += '\n';
+        error.stack += path.join('node_modules', 'mysql2', 'lib');
+        error.code = 'ER_BAD_FIELD_ERROR';
+        error.sql = 'select anything from anywhere where something = anything;';
+        error.sqlMessage = 'Incorrect value: erororoor';
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
             assert.equal(err.statusCode, 500);
             assert.equal(err.name, 'InternalServerError');
             assert.equal(err.message, 'An unexpected error occurred, please try again.');
             assert.equal(err.code, 'UNEXPECTED_ERROR');
-            assert.equal(err.sqlErrorCode, 'ER_WRONG_VALUE');
+            assert.equal(err.sqlErrorCode, 'ER_BAD_FIELD_ERROR');
             assert.equal(err.sql, 'select anything from anywhere where something = anything;');
-            assert.equal(err.sqlMessage, 'Incorrect DATETIME value: 3234234234');
+            assert.equal(err.sqlMessage, 'Incorrect value: erororoor');
             done();
         });
     });

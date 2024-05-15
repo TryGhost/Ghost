@@ -62,8 +62,8 @@ const single = name => function singleUploadFunction(req, res, next) {
 
     singleUpload(req, res, (err) => {
         if (err) {
-            // Multer or Dicer errors are usually caused by invalid file uploads
-            if (err instanceof multer.MulterError || err.stack?.includes('dicer')) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
                 return next(new errors.BadRequestError({
                     err
                 }));
@@ -105,8 +105,8 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
 
     mediaUpload(req, res, (err) => {
         if (err) {
-            // Multer or Dicer errors are usually caused by invalid file uploads
-            if (err instanceof multer.MulterError || err.stack?.includes('dicer')) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
                 return next(new errors.BadRequestError({
                     err
                 }));

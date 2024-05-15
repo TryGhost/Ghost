@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.82.6",
+  "version": "5.82.9",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -39,17 +39,17 @@
     "@embroider/macros": "1.13.4",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.112.1",
-    "@sentry/integrations": "7.112.1",
+    "@sentry/ember": "7.114.0",
+    "@sentry/integrations": "7.114.0",
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.90",
-    "@tryghost/kg-clean-basic-html": "4.0.4",
+    "@tryghost/kg-clean-basic-html": "4.0.6",
     "@tryghost/kg-converters": "1.0.1",
-    "@tryghost/koenig-lexical": "1.1.9",
+    "@tryghost/koenig-lexical": "1.1.13",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
-    "@tryghost/nql": "0.12.1",
+    "@tryghost/nql": "0.12.3",
     "@tryghost/nql-lang": "0.6.1",
     "@tryghost/string": "0.2.12",
     "@tryghost/timezone-data": "0.4.3",
@@ -113,7 +113,7 @@
     "ember-simple-auth": "5.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
-    "ember-svg-jar": "2.4.7",
+    "ember-svg-jar": "2.4.9",
     "ember-template-lint": "5.11.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
@@ -141,7 +141,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
-    "semver": "7.6.0",
+    "semver": "7.6.2",
     "testem": "3.13.0",
     "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
@@ -171,7 +171,7 @@
   "dependencies": {
     "jose": "4.15.5",
     "path-browserify": "1.0.1",
-    "webpack": "5.90.2"
+    "webpack": "5.91.0"
   },
   "nx": {
     "targets": {

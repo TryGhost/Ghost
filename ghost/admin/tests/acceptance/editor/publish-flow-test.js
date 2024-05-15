@@ -51,6 +51,18 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal').to.not.exist;
     });
 
+    it('populates search index when opening', async function () {
+        await loginAsRole('Administrator', this.server);
+
+        const search = this.owner.lookup('service:search');
+        expect(search.isContentStale).to.be.true;
+
+        const post = this.server.create('post', {status: 'draft'});
+        await visit(`/editor/post/${post.id}`);
+
+        expect(search.isContentStale).to.be.false;
+    });
+
     it('handles timezones correctly when scheduling');
 
     // email unavailable state occurs when

@@ -6,7 +6,8 @@ const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../adapters/storage');
 const config = require('../../../shared/config');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'images',
     upload: {
         statusCode: 201,
@@ -80,3 +81,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

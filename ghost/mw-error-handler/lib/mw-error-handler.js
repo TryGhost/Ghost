@@ -9,6 +9,7 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     genericError: 'An unexpected error occurred, please try again.',
+    invalidValue: 'Invalid value',
     pageNotFound: 'Page not found',
     resourceNotFound: 'Resource not found',
     methodNotAcceptableVersionAhead: {
@@ -92,12 +93,21 @@ module.exports.prepareError = function prepareError(err, req, res, next) {
         } else if (isDependencyInStack('mysql2', err)) {
             // we don't want to return raw database errors to our users
             err.sqlErrorCode = err.code;
-            err = new errors.InternalServerError({
-                err: err,
-                message: tpl(messages.genericError),
-                statusCode: err.statusCode,
-                code: 'UNEXPECTED_ERROR'
-            });
+
+            if (err.code === 'ER_WRONG_VALUE') {
+                err = new errors.ValidationError({
+                    message: tpl(messages.invalidValue),
+                    context: err.message,
+                    err
+                });
+            } else {
+                err = new errors.InternalServerError({
+                    err: err,
+                    message: tpl(messages.genericError),
+                    statusCode: err.statusCode,
+                    code: 'UNEXPECTED_ERROR'
+                });
+            }
         // For everything else, create a generic 500 error, with context set to the original error message
         } else {
             err = new errors.InternalServerError({

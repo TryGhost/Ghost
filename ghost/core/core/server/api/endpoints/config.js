@@ -1,6 +1,7 @@
 const publicConfig = require('../../services/public-config');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'config',
 
     read: {
@@ -13,3 +14,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

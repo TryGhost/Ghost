@@ -23,6 +23,12 @@ const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value,
     };
 });
 
+/**
+ *
+ * @param {import('@tryghost/api-framework').Frame} frame
+ * @param {object} options
+ * @returns {object}
+ */
 function generateOptionsData(frame, options) {
     return options.reduce((memo, option) => {
         let value = frame.options?.[option];
@@ -52,7 +58,9 @@ function generateAuthData(frame) {
         };
     }
 }
-module.exports = {
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'posts',
 
     browse: {
@@ -172,3 +180,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

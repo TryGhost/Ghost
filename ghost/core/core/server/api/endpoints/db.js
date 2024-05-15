@@ -8,7 +8,8 @@ const {pool} = require('@tryghost/promise');
 const models = require('../../models');
 const settingsCache = require('../../../shared/settings-cache');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'db',
 
     backupContent: {
@@ -173,3 +174,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

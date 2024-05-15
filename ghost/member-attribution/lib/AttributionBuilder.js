@@ -94,7 +94,7 @@ class Attribution {
         }
 
         // Fetch model
-        const model = await this.#urlTranslator.getResourceById(this.id, this.type, {absolute: true});
+        const model = await this.#urlTranslator.getResourceById(this.id, this.type);
         return this.getResource(model);
     }
 }

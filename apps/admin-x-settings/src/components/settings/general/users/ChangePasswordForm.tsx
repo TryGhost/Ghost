@@ -218,8 +218,8 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                     } catch (e) {
                         setSaveState('');
                         showToast({
-                            type: 'pageError',
-                            message: e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`
+                            type: 'error',
+                            title: e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`
                         });
                         handleError(e, {withToast: false});
                     }

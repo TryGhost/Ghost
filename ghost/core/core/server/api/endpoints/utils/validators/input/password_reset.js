@@ -25,7 +25,7 @@ module.exports = {
     generateResetToken(apiConfig, frame) {
         debug('generateResetToken');
 
-        const email = frame.data.password_reset[0].email;
+        const email = frame.data.password_reset?.[0]?.email;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
             throw new errors.BadRequestError({
