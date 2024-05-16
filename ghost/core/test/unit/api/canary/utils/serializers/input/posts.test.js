@@ -146,7 +146,6 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 frame.options.columns.should.eql(['id', 'visibility']);
             });
                 
-
             it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
                 const apiConfig = {};
                 const frame = {
