@@ -37,7 +37,7 @@
     "@lexical/list": "0.13.1",
     "@lexical/rich-text": "0.13.1",
     "@lexical/utils": "0.13.1",
-    "@tryghost/kg-default-nodes": "^1.0.13",
+    "@tryghost/kg-default-nodes": "1.0.13",
     "lexical": "0.13.1"
   }
 }
