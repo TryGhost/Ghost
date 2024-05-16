@@ -7,8 +7,8 @@ interface Activity {
     id: string;
     type: string;
     summary: string;
-    actor: string;
-    object: string;
+    actor: object;
+    object: object;
     siteData: SiteData;
 }
 
@@ -126,8 +126,8 @@ const ActivityPubComponent: React.FC = () => {
                                 {/* <p className='text-grey-700'>Activity Type: {activity.type}</p>
                                 <p className='text-grey-700'>Summary: {activity.summary}</p>
                                 <p className='text-grey-700'>Actor: {activity.actor}</p> */}
-                                
-                                <ObjectContentDisplay actor={activity.actor} objectUrl={activity.object} />
+
+                                <ObjectContentDisplay actor={activity.actor} object={activity.object} />
                             </li>
                         ))}
                     </ul>
@@ -167,54 +167,42 @@ const ArticleBody: React.FC<{html: string}> = ({html}) => {
     );
 };
 
-const ObjectContentDisplay: React.FC<{actor: string, objectUrl: string }> = ({actor, objectUrl}) => {
-    const [objectContent, setObjectContent] = useState<ObjectContent | null>(null);
-
-    useEffect(() => {
-        const fetchObjectContent = async () => {
-            try {
-                const response = await fetch(objectUrl);
-                if (response.ok) {
-                    const data = await response.json();
-                    setObjectContent(data);
-                } else {
-                    throw new Error('Failed to fetch object content');
-                }
-            } catch (error) {
-                // console.error('Error fetching object content:', error);
-            }
-        };
-
-        fetchObjectContent();
-
-        // Clean up function if needed
-        return () => {
-            // Any clean-up code here
-        };
-    }, [objectUrl]);
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ObjectContentDisplay: React.FC<{actor: any, object: any }> = ({actor, object}) => {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(objectContent?.content || '', 'text/html');
+    const doc = parser.parseFromString(object.content || '', 'text/html');
 
     const plainTextContent = doc.body.textContent;
 
     return (
         <>
-            {objectContent && (
-                <a className='border-1 group/article flex flex-col items-start justify-between border-b border-b-grey-200 py-5' href={`${objectContent.url}`} rel="noopener noreferrer" target="_blank">
+            {object && (
+                <a className='border-1 group/article flex flex-col items-start justify-between border-b border-b-grey-200 py-5' href={`${object.url}`} rel="noopener noreferrer" target="_blank">
                     {/* <p className='mb-2 text-grey-700'>Object Type: {objectContent.type}</p> */}
                     <div className='flex w-full justify-between gap-4'>
-                        <Heading className='mb-2' level={5}>{objectContent.name}</Heading>
+                        <Heading className='mb-2' level={5}>{object.name}</Heading>
                         <Icon className='mb-2 opacity-0 transition-opacity group-hover/article:opacity-100' colorClass='text-grey-500' name='arrow-top-right' size='sm' />
                     </div>
-                    <ArticleBody html={objectContent?.content} />
+                    <ArticleBody html={object.content} />
                     <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
                     {/* <p className='mb-2 text-grey-950'>{objectContent.url}</p> */}
-                    <p className='text-md font-medium text-grey-800'>{actor}</p>
+                    <p className='text-md font-medium text-grey-800'>{getUsername(actor)}</p>
                 </a>
             )}
         </>
     );
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getUsername(actor: any) {
+    if (!actor.preferredUsername || !actor.id) {
+        return '@unknown@unknown';
+    }
+    try {
+        return `@${actor.preferredUsername}@${(new URL(actor.id)).hostname}`;
+    } catch (err) {
+        return '@unknown@unknown';
+    }
+}
 
 export default ActivityPubComponent;
