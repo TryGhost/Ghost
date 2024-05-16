@@ -32,8 +32,12 @@ export const KoenigSnippetPlugin = () => {
                         $insertGeneratedNodes(editor, nodes, selection);
 
                         if (lastNode && $isKoenigCard(lastNode) && !lastNode.getNextSibling()) {
-                            const paragraph = $createParagraphNode();
-                            lastNode.getTopLevelElementOrThrow().insertAfter(paragraph);
+                            try {
+                                const paragraph = $createParagraphNode();
+                                lastNode.getTopLevelElementOrThrow().insertAfter(paragraph);
+                            } catch (e) {
+                                console.log(e);  // eslint-disable-line
+                            }
                         }
                     });
                     return true;

@@ -2,7 +2,6 @@ import {useState} from 'react';
 
 function getSnippetsFromStorage() {
     const snippetsStr = localStorage.getItem('snippets');
-
     return snippetsStr ? JSON.parse(snippetsStr) : [];
 }
 
@@ -12,7 +11,6 @@ function updateSnippetsInStorage(snippetsArr = []) {
 
 export const useSnippets = () => {
     const [snippets, setSnippets] = useState(getSnippetsFromStorage());
-
     function createSnippet({name, value}) {
         const updatedSnippets = [...snippets];
         const snippetIndexForReplace = snippets.findIndex(item => item.name === name);
