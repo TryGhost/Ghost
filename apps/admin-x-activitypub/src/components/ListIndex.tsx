@@ -66,7 +66,7 @@ const ActivityPubComponent: React.FC = () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setFollowing(data);
+                    setFollowing(data.items);
                 } else {
                     throw new Error('Failed to fetch following');
                 }
