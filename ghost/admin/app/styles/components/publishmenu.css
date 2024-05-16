@@ -99,17 +99,16 @@
 
 .gh-date-time-picker-timezone {
     font-size: 1.1rem;
-    font-weight: 300;
-    color: color-mod(var(--midgrey) l(+17%));
+    color: var(--midgrey);
     margin-left: -30px;
 }
 
 .gh-date-time-picker-error {
     display: block;
+    padding-top: 4px;
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 300;
-    color: var(--red);
+    color: var(--red-d1);
 }
 
 .gh-publish-send-to {
