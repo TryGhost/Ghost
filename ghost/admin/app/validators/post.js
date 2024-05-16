@@ -190,12 +190,12 @@ export default BaseValidator.create({
 
             // draft/published must be in past
             if ((status === 'draft' || status === 'published') && publishedAtBlogTZ.isSameOrAfter(now)) {
-                model.errors.add('publishedAtBlogDate', 'Must be in the past');
+                model.errors.add('publishedAtBlogDate', 'Please choose a past date and time.');
                 this.invalidate();
 
             // scheduled must be in the future when first scheduling
             } else if ((model.changedAttributes().status || model.changedAttributes().publishedAtUTC) && status === 'scheduled' && !isInFuture) {
-                model.errors.add('publishedAtBlogDate', 'Must be in the future');
+                model.errors.add('publishedAtBlogDate', 'Please choose a future date and time.');
                 this.invalidate();
             }
         }
