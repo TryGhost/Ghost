@@ -110,7 +110,10 @@ export class Actor extends Entity<ActorData> {
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Follow',
             actor: this.actorId,
-            object: actor,
+            object: {
+                ...actor,
+                type: 'Person'
+            },
             to: actor.id
         });
         this.doActivity(activity);
@@ -126,7 +129,10 @@ export class Actor extends Entity<ActorData> {
             type: 'Accept',
             to: activity.actorId,
             actor: this.actorId,
-            object: {id: activity.activityId}
+            object: {
+                id: activity.activityId,
+                type: 'Follow'
+            }
         });
         this.doActivity(accept);
     }
@@ -151,7 +157,10 @@ export class Actor extends Entity<ActorData> {
             to: this.followersCollectionId,
             type: 'Create',
             actor: this.actorId,
-            object: {id: article.objectId}
+            object: {
+                id: article.objectId,
+                type: 'Article'
+            }
         });
         this.doActivity(activity);
     }

@@ -6,8 +6,12 @@ type ActivityData = {
     activity: URI | null;
     type: ActivityPub.ActivityType;
     actor: URI;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    object: {id: URI, [x: string]: any};
+    object: {
+        id: URI;
+        type: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [x: string]: any;
+    };
     to: URI | null;
 }
 
@@ -58,6 +62,7 @@ export class Activity extends Entity<ActivityData> {
     }
 
     getJSONLD(url: URL): ActivityPub.Activity {
+        const object = this.getObject();
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
             id: this.activityId?.getValue(url) || null,
@@ -67,7 +72,10 @@ export class Activity extends Entity<ActivityData> {
                 id: this.actorId.getValue(url),
                 username: `@index@${this.actorId.hostname}`
             },
-            object: this.objectId.getValue(url),
+            object: {
+                ...object,
+                id: this.objectId.getValue(url)
+            },
             to: this.attr.to?.getValue(url) || null
         };
     }
@@ -81,7 +89,10 @@ export class Activity extends Entity<ActivityData> {
             activity: 'id' in json ? getURI(json.id) : null,
             type: parsed.type as ActivityPub.ActivityType,
             actor: getURI(parsed.actor),
-            object: {id: getURI(parsed.object)},
+            object: {
+                id: getURI(parsed.object),
+                type: 'Unknown'
+            },
             to: 'to' in json ? getURI(json.to) : null
         });
     }

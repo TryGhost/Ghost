@@ -125,7 +125,10 @@ describe('Actor', function () {
                 activity: new URI(`https://activitypub.server/activity`),
                 type: 'Follow',
                 actor: newFollower,
-                object: {id: actor.actorId},
+                object: {
+                    id: actor.actorId,
+                    type: 'Person'
+                },
                 to: actor.actorId
             });
 
@@ -143,7 +146,10 @@ describe('Actor', function () {
                 activity: null,
                 type: 'Follow',
                 actor: newFollower,
-                object: {id: actor.actorId},
+                object: {
+                    id: actor.actorId,
+                    type: 'Person'
+                },
                 to: actor.actorId
             });
 
@@ -167,7 +173,8 @@ describe('Actor', function () {
                 type: 'Accept',
                 actor: newFollower,
                 object: {
-                    id: newFollower
+                    id: newFollower,
+                    type: 'Person'
                 },
                 to: actor.actorId
             });
