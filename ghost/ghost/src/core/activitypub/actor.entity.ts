@@ -109,7 +109,7 @@ export class Actor extends Entity<ActorData> {
         const activity = new Activity({
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Follow',
-            actor: this.actorId,
+            actor: this,
             object: {
                 ...actor,
                 type: 'Person'
@@ -128,7 +128,7 @@ export class Actor extends Entity<ActorData> {
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Accept',
             to: activity.actorId,
-            actor: this.actorId,
+            actor: this,
             object: {
                 id: activity.activityId,
                 type: 'Follow'
