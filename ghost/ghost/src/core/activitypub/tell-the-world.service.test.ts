@@ -27,6 +27,7 @@ describe('TheWorld', function () {
                 activity: null,
                 actor: actor.actorId,
                 object: {
+                    type: 'Person',
                     id: toFollow
                 },
                 to: toFollow
