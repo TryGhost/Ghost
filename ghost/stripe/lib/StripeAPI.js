@@ -475,7 +475,6 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
-            customer_update: this._config.enableAutomaticTax ? {address: 'auto'} : {},
             metadata,
             discounts,
             /*
@@ -496,6 +495,10 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer = customerId;
         } else {
             stripeSessionOptions.customer_email = customerEmail;
+        }
+
+        if (customerId && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
         }
 
         // @ts-ignore
@@ -527,7 +530,6 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
-            customer_update: this._config.enableAutomaticTax ? {address: 'auto'} : {},
             metadata,
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
@@ -547,6 +549,10 @@ module.exports = class StripeAPI {
                 quantity: 1
             }]
         };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
