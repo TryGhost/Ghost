@@ -6,5 +6,4 @@ module.exports = {
     serveFavicon: require('./serve-favicon'),
     servePublicFile: require('./serve-public-file'),
     staticTheme: require('./static-theme'),
-    conditionalMemberSessionMiddleware: require('./members-session-handler')
 };
