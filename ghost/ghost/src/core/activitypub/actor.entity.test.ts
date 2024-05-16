@@ -25,6 +25,21 @@ describe('Actor', function () {
                 assert.equal(doesnaeHaveDisplayName.displayName, 'username');
             });
         });
+
+        describe('actorId', function () {
+            it('Correctly returns the actor url', function () {
+                const actor = Actor.create({username: 'testing'});
+                const idString = actor.id.toHexString();
+                const actorId = actor.actorId;
+
+                const baseUrl = new URL('https://domain.tld/base');
+
+                assert.equal(
+                    actorId.getValue(baseUrl),
+                    `https://domain.tld/base/actor/${idString}`
+                );
+            });
+        });
     });
 
     describe('#createArticle', function () {
