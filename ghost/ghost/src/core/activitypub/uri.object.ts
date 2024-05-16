@@ -6,6 +6,7 @@ export class URI extends URL {
     }
 
     getValue(url: URL) {
-        return this.href.replace(URI.BASE_URL.href, url.href);
+        const replaceValue = url.href.endsWith('/') ? url.href : url.href + '/';
+        return this.href.replace(URI.BASE_URL.href, replaceValue);
     }
 }
