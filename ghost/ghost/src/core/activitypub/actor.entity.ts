@@ -156,7 +156,7 @@ export class Actor extends Entity<ActorData> {
             activity: new URI(`activity/${new ObjectID().toHexString()}`),
             to: this.followersCollectionId,
             type: 'Create',
-            actor: this.actorId,
+            actor: this,
             object: article
         });
         this.doActivity(activity);
