@@ -1,4 +1,5 @@
 import ObjectID from 'bson-objectid';
+import {URI} from './uri.object';
 
 export type Post = {
     id: ObjectID;
@@ -6,6 +7,11 @@ export type Post = {
     slug: string;
     html: string;
     visibility: string;
+    featuredImage: URI | null;
+    url: URI;
+    publishedAt: Date | null;
+    authors: string[];
+    excerpt: string;
 };
 
 export interface PostRepository {
