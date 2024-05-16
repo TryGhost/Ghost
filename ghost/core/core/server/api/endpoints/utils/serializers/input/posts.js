@@ -149,8 +149,8 @@ module.exports = {
          */
         if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc or lexical
-            removeSourceFormats(frame);
-            selectAllAllowedColumns(frame);
+            removeSourceFormats(frame); // remove from the format field
+            selectAllAllowedColumns(frame); // remove from any specified column or selectRaw options
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
