@@ -103,6 +103,12 @@ describe('ActivityPubController', function () {
             .expect(200);
     });
 
+    it('Can handle requests to get the inbox', async function () {
+        await request(app.getHttpServer())
+            .get('/activitypub/inbox/deadbeefdeadbeefdeadbeef')
+            .expect(200);
+    });
+
     it('Can handle requests to get the following', async function () {
         await request(app.getHttpServer())
             .get('/activitypub/following/deadbeefdeadbeefdeadbeef')
