@@ -50,8 +50,11 @@ export namespace ActivityPub {
         type: 'Article';
         name: string;
         content: string;
-        url: string;
-        attributedTo: string | object[];
+        url?: string;
+        attributedTo?: string | object[];
+        image?: string;
+        published?: string;
+        preview?: {type: string, content: string};
     };
 
     export type Link = string | {

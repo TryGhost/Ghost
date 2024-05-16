@@ -7,7 +7,11 @@ type ArticleData = {
     id: ObjectID
     name: string
     content: string
-    url: URL
+    url: URI
+    image: URI | null
+    published: Date | null
+    attributedTo: {type: string, name: string}[]
+    preview: {type: string, content: string}
 };
 
 export class Article {
@@ -30,8 +34,11 @@ export class Article {
             id: id.href,
             name: this.attr.name,
             content: this.attr.content,
-            url: this.attr.url.href,
-            attributedTo: url.href
+            url: this.attr.url.getValue(url),
+            image: this.attr.image?.getValue(url),
+            published: this.attr.published?.toISOString(),
+            attributedTo: this.attr.attributedTo,
+            preview: this.attr.preview
         };
     }
 
@@ -40,7 +47,17 @@ export class Article {
             id: post.id,
             name: post.title,
             content: post.html,
-            url: new URL(`/posts/${post.slug}`, 'https://example.com')
+            url: post.url,
+            image: post.featuredImage,
+            published: post.publishedAt,
+            attributedTo: post.authors.map(name => ({
+                type: 'Person',
+                name
+            })),
+            preview: {
+                type: 'Note',
+                content: post.excerpt
+            }
         });
     }
 }

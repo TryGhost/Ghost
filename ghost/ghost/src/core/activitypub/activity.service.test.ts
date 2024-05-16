@@ -2,6 +2,7 @@ import ObjectID from 'bson-objectid';
 import {ActivityService} from './activity.service';
 import {Actor} from './actor.entity';
 import assert from 'assert';
+import {URI} from './uri.object';
 
 describe('ActivityService', function () {
     describe('#createArticleForPost', function () {
@@ -20,7 +21,12 @@ describe('ActivityService', function () {
                         title: 'Testing',
                         slug: 'testing',
                         html: '<p> Testing stuff.. </p>',
-                        visibility: 'public'
+                        visibility: 'public',
+                        authors: ['Mr Bean'],
+                        publishedAt: new Date(),
+                        featuredImage: null,
+                        excerpt: 'Small text',
+                        url: new URI('blah')
                     };
                 }
             };
@@ -53,7 +59,12 @@ describe('ActivityService', function () {
                         title: 'Testing',
                         slug: 'testing',
                         html: '<p> Testing stuff.. </p>',
-                        visibility: 'private'
+                        visibility: 'private',
+                        authors: ['Mr Bean'],
+                        publishedAt: new Date(),
+                        featuredImage: null,
+                        excerpt: 'Small text',
+                        url: new URI('blah')
                     };
                 }
             };
@@ -110,7 +121,12 @@ describe('ActivityService', function () {
                         title: 'Testing',
                         slug: 'testing',
                         html: '<p> Testing stuff.. </p>',
-                        visibility: 'private'
+                        visibility: 'private',
+                        authors: ['Mr Bean'],
+                        publishedAt: new Date(),
+                        featuredImage: null,
+                        excerpt: 'Small text',
+                        url: new URI('blah')
                     };
                 }
             };
