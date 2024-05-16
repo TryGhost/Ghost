@@ -144,7 +144,10 @@ describe('Actor', function () {
             const followActivity = new Activity({
                 activity: new URI(`https://activitypub.server/activity`),
                 type: 'Follow',
-                actor: newFollower,
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
                 object: {
                     id: actor.actorId,
                     type: 'Person'
@@ -165,7 +168,10 @@ describe('Actor', function () {
             const followActivity = new Activity({
                 activity: null,
                 type: 'Follow',
-                actor: newFollower,
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
                 object: {
                     id: actor.actorId,
                     type: 'Person'
@@ -191,7 +197,10 @@ describe('Actor', function () {
             const activity = new Activity({
                 activity: null,
                 type: 'Accept',
-                actor: newFollower,
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
                 object: {
                     id: newFollower,
                     type: 'Person'

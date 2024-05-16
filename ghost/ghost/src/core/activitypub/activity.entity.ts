@@ -7,7 +7,12 @@ import {URI} from './uri.object';
 type ActivityData = {
     activity: URI | null;
     type: ActivityPub.ActivityType;
-    actor: Actor | URI;
+    actor: {
+        id: URI;
+        type: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [x: string]: any;
+    } | Actor;
     object: {
         id: URI;
         type: string;
@@ -58,18 +63,14 @@ export class Activity extends Entity<ActivityData> {
         if (this.attr.actor instanceof Actor) {
             return this.attr.actor.getJSONLD(url);
         }
-        return {
-            type: 'Person',
-            id: this.attr.actor.getValue(url),
-            preferredUsername: 'index'
-        };
+        return this.attr.actor;
     }
 
     get actorId() {
         if (this.attr.actor instanceof Actor) {
             return this.attr.actor.actorId;
         }
-        return this.attr.actor;
+        return this.attr.actor.id;
     }
 
     get objectId() {
@@ -90,7 +91,10 @@ export class Activity extends Entity<ActivityData> {
             '@context': 'https://www.w3.org/ns/activitystreams',
             id: this.activityId?.getValue(url) || null,
             type: this.attr.type,
-            actor: actor,
+            actor: {
+                ...actor,
+                id: this.actorId.getValue(url)
+            },
             object: {
                 ...object,
                 id: this.objectId.getValue(url)
@@ -105,12 +109,17 @@ export class Activity extends Entity<ActivityData> {
             throw new Error(`Unknown type ${parsed.type}`);
         }
         return new Activity({
-            activity: 'id' in json ? getURI(json.id) : null,
+            activity: 'id' in json && typeof json.id === 'string' ? getURI(json.id) : null,
             type: parsed.type as ActivityPub.ActivityType,
-            actor: getURI(parsed.actor),
+            actor: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...(parsed.actor as any),
+                id: getURI(parsed.actor)
+            },
             object: {
-                id: getURI(parsed.object),
-                type: 'Unknown'
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...(parsed.object as any),
+                id: getURI(parsed.object)
             },
             to: 'to' in json ? getURI(json.to) : null
         });
