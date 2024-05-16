@@ -36,7 +36,12 @@ describe('Actor', function () {
                 title: 'Post Title',
                 slug: 'post-slug',
                 html: '<p>Hello world</p>',
-                visibility: 'public'
+                visibility: 'public',
+                url: new URI(''),
+                authors: ['Mr Burns'],
+                featuredImage: null,
+                publishedAt: null,
+                excerpt: 'Hey'
             });
 
             actor.createArticle(article);

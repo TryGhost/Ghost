@@ -14,6 +14,7 @@ import {TheWorld} from '../../../core/activitypub/tell-the-world.service';
 import DomainEvents from '@tryghost/domain-events';
 import {NestApplication} from '@nestjs/core';
 import ObjectID from 'bson-objectid';
+import {URI} from '../../../core/activitypub/uri.object';
 
 describe('ActivityPubController', function () {
     let app: NestApplication;
@@ -58,7 +59,12 @@ describe('ActivityPubController', function () {
                                 title: 'Testing',
                                 slug: 'testing',
                                 html: '<p> testing </p>',
-                                visibility: 'public'
+                                visibility: 'public',
+                                authors: ['Mr Roach'],
+                                url: new URI('roachie'),
+                                publishedAt: new Date(),
+                                featuredImage: null,
+                                excerpt: 'testing...'
                             };
                         }
                     }
