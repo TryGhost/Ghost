@@ -1,4 +1,5 @@
 import {Entity} from '../../common/entity.base';
+import {Actor} from './actor.entity';
 import {Article} from './article.object';
 import {ActivityPub} from './types';
 import {URI} from './uri.object';
@@ -6,7 +7,7 @@ import {URI} from './uri.object';
 type ActivityData = {
     activity: URI | null;
     type: ActivityPub.ActivityType;
-    actor: URI;
+    actor: Actor | URI;
     object: {
         id: URI;
         type: string;
@@ -53,7 +54,21 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.object;
     }
 
+    getActor(url: URL) {
+        if (this.attr.actor instanceof Actor) {
+            return this.attr.actor.getJSONLD(url);
+        }
+        return {
+            type: 'Person',
+            id: this.attr.actor.getValue(url),
+            preferredUsername: 'index'
+        };
+    }
+
     get actorId() {
+        if (this.attr.actor instanceof Actor) {
+            return this.attr.actor.actorId;
+        }
         return this.attr.actor;
     }
 
@@ -70,15 +85,12 @@ export class Activity extends Entity<ActivityData> {
 
     getJSONLD(url: URL): ActivityPub.Activity {
         const object = this.getObject(url);
+        const actor = this.getActor(url);
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
             id: this.activityId?.getValue(url) || null,
             type: this.attr.type,
-            actor: {
-                type: 'Person',
-                id: this.actorId.getValue(url),
-                username: `@index@${this.actorId.hostname}`
-            },
+            actor: actor,
             object: {
                 ...object,
                 id: this.objectId.getValue(url)
