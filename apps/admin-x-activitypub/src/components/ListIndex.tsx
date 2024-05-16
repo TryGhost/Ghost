@@ -121,7 +121,7 @@ const ActivityPubComponent: React.FC = () => {
                                 </div>
                             </div>
                         </li>
-                        {activities.slice().reverse().map(activity => (
+                        {activities.slice().reverse().map(activity => (activity.type === 'Create' && activity.object.type === 'Article' ?
                             <li key={activity.id}>
                                 {/* <p className='text-grey-700'>Activity Type: {activity.type}</p>
                                 <p className='text-grey-700'>Summary: {activity.summary}</p>
@@ -129,7 +129,7 @@ const ActivityPubComponent: React.FC = () => {
 
                                 <ObjectContentDisplay actor={activity.actor} object={activity.object} />
                             </li>
-                        ))}
+                            : null))}
                     </ul>
                     <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
                         <ul>
