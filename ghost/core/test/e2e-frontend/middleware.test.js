@@ -3,79 +3,92 @@ const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const membersService = require('../../core/server/services/members');
+
 describe('Middleware Execution', function () {
-    let memberSessionSpy;
+    let loadMemberSessionMiddlewareSpy;
     let request;
 
     before(async function () {
-        memberSessionSpy = sinon.spy(membersService.middleware, 'loadMemberSession');
-        await testUtils.startGhost();
+        loadMemberSessionMiddlewareSpy = sinon.spy(membersService.middleware, 'loadMemberSession');
+
+        // Ensure we do a forced start so that spy is in place when the server starts
+        await testUtils.startGhost({forceStart: true});
+
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    afterEach(function () {
-        memberSessionSpy.resetHistory();
-    });
-
-    after(function () {
+    after(async function () {
         sinon.restore();
+
+        await testUtils.stopGhost();
     });
 
-    // Add your specific route tests here
-    describe('loadMemberSession', function () {
-        it('should call middleware on home route', async function () {
-            await request.get('/');
-            sinon.assert.calledOnce(memberSessionSpy);
+    afterEach(function () {
+        loadMemberSessionMiddlewareSpy.resetHistory();
+    });
+
+    describe('Loading a member session', function () {
+        describe('Page with member content', function () {
+            it('should load member session on home route', async function () {
+                await request.get('/');
+                sinon.assert.calledOnce(loadMemberSessionMiddlewareSpy);
+            });
+
+            it('should load member session on post route', async function () {
+                await request.get('/welcome/');
+                sinon.assert.calledOnce(loadMemberSessionMiddlewareSpy);
+            });
         });
 
-        it('should call middleware on post route', async function () {
-            await request.get('/welcome/');
-            sinon.assert.calledOnce(memberSessionSpy);
+        describe('Sitemap', function () {
+            it('should not load member session on sitemap route', async function () {
+                await request.get('/sitemap.xml');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
+
+            it('should not load member session on sitemap-pages route', async function () {
+                await request.get('/sitemap-pages.xml');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
+
+            it('should not load member session on sitemap-posts route', async function () {
+                await request.get('/sitemap-posts.xml');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
+
+            it('should not load member session on sitemap-tags route', async function () {
+                await request.get('/sitemap-tags.xml');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
+
+            it('should not load member session on sitemap-authors route', async function () {
+                await request.get('/sitemap-authors.xml');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
         });
 
-        it('should not call middleware on sitemap route', async function () {
-            await request.get('/sitemap.xml');
-            sinon.assert.notCalled(memberSessionSpy);
+        describe('Recommendations', function () {
+            it('should not load member session on recommendations route', async function () {
+                await request.get('/.well-known/recommendations.json');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
         });
 
-        it('should not call middleware on sitemap-pages route', async function () {
-            await request.get('/sitemap-pages.xml');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
+        describe('Static assets', function () {
+            it('should not load member session on fonts route', async function () {
+                await request.get('/assets/fonts/inter-roman.woff2');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
 
-        it('should not call middleware on sitemap-posts route', async function () {
-            await request.get('/sitemap-posts.xml');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
+            it('should not load member session on source.js route', async function () {
+                await request.get('/assets/built/source.js');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
 
-        it('should not call middleware on sitemap-tags route', async function () {
-            await request.get('/sitemap-tags.xml');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
-
-        it('should not call middleware on sitemap-authors route', async function () {
-            await request.get('/sitemap-authors.xml');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
-
-        it('should not call middleware on recommendations route', async function () {
-            await request.get('/.well-known/recommendations.json');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
-
-        it('should not call middleware on fonts route', async function () {
-            await request.get('/assets/fonts/inter-roman.woff2');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
-
-        it('should not call middleware on source.js route', async function () {
-            await request.get('/assets/built/source.js');
-            sinon.assert.notCalled(memberSessionSpy);
-        });
-
-        it('should not call middleware on screen.js route', async function () {
-            await request.get('/assets/built/screen.css');
-            sinon.assert.notCalled(memberSessionSpy);
+            it('should not load member session on screen.css route', async function () {
+                await request.get('/assets/built/screen.css');
+                sinon.assert.notCalled(loadMemberSessionMiddlewareSpy);
+            });
         });
     });
 });
