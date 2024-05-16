@@ -157,10 +157,7 @@ export class Actor extends Entity<ActorData> {
             to: this.followersCollectionId,
             type: 'Create',
             actor: this.actorId,
-            object: {
-                id: article.objectId,
-                type: 'Article'
-            }
+            object: article
         });
         this.doActivity(activity);
     }

@@ -1,4 +1,5 @@
 import {Entity} from '../../common/entity.base';
+import {Article} from './article.object';
 import {ActivityPub} from './types';
 import {URI} from './uri.object';
 
@@ -11,7 +12,7 @@ type ActivityData = {
         type: string;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [x: string]: any;
-    };
+    } | Article;
     to: URI | null;
 }
 
@@ -45,7 +46,10 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.type;
     }
 
-    getObject() {
+    getObject(url: URL) {
+        if (this.attr.object instanceof Article) {
+            return this.attr.object.getJSONLD(url);
+        }
         return this.attr.object;
     }
 
@@ -54,6 +58,9 @@ export class Activity extends Entity<ActivityData> {
     }
 
     get objectId() {
+        if (this.attr.object instanceof Article) {
+            return this.attr.object.objectId;
+        }
         return this.attr.object.id;
     }
 
@@ -62,7 +69,7 @@ export class Activity extends Entity<ActivityData> {
     }
 
     getJSONLD(url: URL): ActivityPub.Activity {
-        const object = this.getObject();
+        const object = this.getObject(url);
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
             id: this.activityId?.getValue(url) || null,
