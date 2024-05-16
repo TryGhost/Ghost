@@ -497,7 +497,7 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer_email = customerEmail;
         }
 
-        if (customer && this._config.enableAutomaticTax) {
+        if (customerId && this._config.enableAutomaticTax) {
             stripeSessionOptions.customer_update = {address: 'auto'};
         }
 

@@ -391,6 +391,27 @@ describe('StripeAPI', function () {
                 });
                 should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
             });
+
+            it('createCheckoutSession does not add customer_update if automatic tax flag is disabled', async function () {
+                const mockCustomer = {
+                    id: mockCustomerId,
+                    customer_email: mockCustomerEmail,
+                    name: 'Example Customer'
+                };
+                // set enableAutomaticTax: false
+                api.configure({
+                    checkoutSessionSuccessUrl: '/success',
+                    checkoutSessionCancelUrl: '/cancel',
+                    checkoutSetupSessionSuccessUrl: '/setup-success',
+                    checkoutSetupSessionCancelUrl: '/setup-cancel',
+                    secretKey: '',
+                    enableAutomaticTax: false
+                });
+                await api.createCheckoutSession('priceId', mockCustomer, {
+                    trialDays: null
+                });
+                should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
+            });
         });
     });
 });
