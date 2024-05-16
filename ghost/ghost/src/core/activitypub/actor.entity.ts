@@ -68,6 +68,10 @@ export class Actor extends Entity<ActorData> {
         return this.username;
     }
 
+    get inbox() {
+        return this.attr.inbox;
+    }
+
     get outbox() {
         return this.attr.outbox;
     }

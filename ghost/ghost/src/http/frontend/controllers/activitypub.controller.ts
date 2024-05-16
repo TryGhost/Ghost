@@ -27,6 +27,17 @@ export class ActivityPubController {
     @Header('Cache-Control', 'no-store')
     @Header('Content-Type', 'application/activity+json')
     @Roles(['Anon'])
+    @Get('inbox/:owner')
+    async getInbox(@Param('owner') owner: unknown) {
+        if (typeof owner !== 'string') {
+            throw new Error('Bad Request');
+        }
+        return this.service.getInbox(ObjectID.createFromHexString(owner));
+    }
+
+    @Header('Cache-Control', 'no-store')
+    @Header('Content-Type', 'application/activity+json')
+    @Roles(['Anon'])
     @Post('inbox/:owner')
     async handleActivity(
         @Param('owner') owner: unknown,
