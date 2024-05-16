@@ -22,6 +22,10 @@ describe('ActivityPubController', function () {
             controllers: [ActivityPubController],
             providers: [
                 {
+                    provide: 'logger',
+                    useValue: console
+                },
+                {
                     provide: 'ActivityPubBaseURL',
                     useValue: new URL('https://example.com')
                 },
