@@ -45,6 +45,23 @@ export class JSONLDService {
             items: actor.followers.map(item => item.id.getValue(this.url))
         };
     }
+
+    async getInbox(owner: ObjectID) {
+        const actor = await this.repository.getOne(owner);
+        if (!actor) {
+            return null;
+        }
+        const json = actor.getJSONLD(this.url);
+        return {
+            '@context': 'https://www.w3.org/ns/activitystreams',
+            id: json.inbox,
+            summary: `Inbox for ${actor.username}`,
+            type: 'OrderedCollection',
+            totalItems: actor.inbox.length,
+            orderedItems: actor.inbox.map(activity => activity.getJSONLD(this.url))
+        };
+    }
+
     async getOutbox(owner: ObjectID) {
         const actor = await this.repository.getOne(owner);
         if (!actor) {
