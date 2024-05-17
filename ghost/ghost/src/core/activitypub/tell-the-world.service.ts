@@ -4,7 +4,8 @@ import {Actor} from './actor.entity';
 
 export class TheWorld {
     constructor(
-        @Inject('ActivityPubBaseURL') private readonly url: URL
+        @Inject('ActivityPubBaseURL') private readonly url: URL,
+        @Inject('logger') private readonly logger: Console
     ) {}
 
     async deliverActivity(activity: Activity, actor: Actor): Promise<void> {
@@ -14,6 +15,26 @@ export class TheWorld {
             if ('inbox' in data && typeof data.inbox === 'string') {
                 const inbox = new URL(data.inbox);
                 await this.sendActivity(inbox, activity, actor);
+            }
+
+            if ('type' in data && data.type === 'Collection') {
+                if ('items' in data && Array.isArray(data.items)) {
+                    for (const item of data.items) {
+                        let url;
+                        if (typeof item === 'string') {
+                            url = new URL(item);
+                        } else if ('id' in item && typeof item.id === 'string') {
+                            url = new URL(item.id);
+                        }
+                        if (url) {
+                            const fetchedActor = await this.fetchForActor(url.href, actor);
+                            if ('inbox' in fetchedActor && typeof fetchedActor.inbox === 'string') {
+                                const inbox = new URL(fetchedActor.inbox);
+                                await this.sendActivity(inbox, activity, actor);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -27,7 +48,11 @@ export class TheWorld {
             body: JSON.stringify(activity.getJSONLD(this.url))
         });
         const signedRequest = await from.sign(request, this.url);
-        await fetch(signedRequest);
+        try {
+            await fetch(signedRequest);
+        } catch (err) {
+            this.logger.error(err);
+        }
     }
 
     private async getRecipients(activity: Activity): Promise<URL[]>{

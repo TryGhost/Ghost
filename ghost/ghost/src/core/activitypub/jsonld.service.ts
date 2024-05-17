@@ -16,6 +16,52 @@ export class JSONLDService {
         return actor?.getJSONLD(this.url);
     }
 
+    async getFollowing(owner: ObjectID) {
+        const actor = await this.repository.getOne(owner);
+        if (!actor) {
+            return null;
+        }
+        return {
+            '@context': 'https://www.w3.org/ns/activitystreams',
+            id: actor.followingCollectionId.getValue(this.url),
+            summary: `Following collection for ${actor.username}`,
+            type: 'Collection',
+            totalItems: actor.following.length,
+            items: actor.following.map(item => ({id: item.id.getValue(this.url), username: item.username}))
+        };
+    }
+
+    async getFollowers(owner: ObjectID) {
+        const actor = await this.repository.getOne(owner);
+        if (!actor) {
+            return null;
+        }
+        return {
+            '@context': 'https://www.w3.org/ns/activitystreams',
+            id: actor.followersCollectionId.getValue(this.url),
+            summary: `Followers collection for ${actor.username}`,
+            type: 'Collection',
+            totalItems: actor.followers.length,
+            items: actor.followers.map(item => item.id.getValue(this.url))
+        };
+    }
+
+    async getInbox(owner: ObjectID) {
+        const actor = await this.repository.getOne(owner);
+        if (!actor) {
+            return null;
+        }
+        const json = actor.getJSONLD(this.url);
+        return {
+            '@context': 'https://www.w3.org/ns/activitystreams',
+            id: json.inbox,
+            summary: `Inbox for ${actor.username}`,
+            type: 'OrderedCollection',
+            totalItems: actor.inbox.length,
+            orderedItems: actor.inbox.map(activity => activity.getJSONLD(this.url))
+        };
+    }
+
     async getOutbox(owner: ObjectID) {
         const actor = await this.repository.getOne(owner);
         if (!actor) {

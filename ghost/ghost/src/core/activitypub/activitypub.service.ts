@@ -26,19 +26,4 @@ export class ActivityPubService {
 
         await this.actors.save(actor);
     }
-
-    async getFollowing(): Promise<{id: string, username?: string}[]> {
-        const actor = await this.actors.getOne('index');
-
-        if (!actor) {
-            throw new Error('Could not find default actor');
-        }
-
-        return actor.following.map((x) => {
-            return {
-                id: x.id.href,
-                username: x.username
-            };
-        });
-    }
 }
