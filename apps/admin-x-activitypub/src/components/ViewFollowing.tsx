@@ -1,12 +1,20 @@
 import NiceModal from '@ebay/nice-modal-react';
-import {Avatar, Button, List, ListItem, Modal, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
+import {Following} from './ListIndex.tsx';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-const ViewFollowing = NiceModal.create(() => {
+interface ViewFollowingModalProps {
+    following: Following[],
+    animate?: boolean
+}
+
+const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> = ({following, animate}) => {
     const {updateRoute} = useRouting();
     // const modal = NiceModal.useModal();
     const mutation = useFollow();
+
+    // console.log(following);
 
     return (
         <Modal
@@ -44,6 +52,6 @@ const ViewFollowing = NiceModal.create(() => {
             </div>
         </Modal>
     );
-});
+};
 
-export default ViewFollowing;
+export default NiceModal.create(ViewFollowingModal);
