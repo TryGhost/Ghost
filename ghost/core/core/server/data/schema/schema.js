@@ -1099,5 +1099,14 @@ module.exports = {
         recommendation_id: {type: 'string', maxlength: 24, nullable: false, references: 'recommendations.id', unique: false, cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', unique: false, setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    prototype_activitypub: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        url: {type: 'string', maxlength: 255, nullable: false, unique: true},
+        type: {type: 'string', maxlength: 24, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false},
+        data: {type: 'json', nullable: false},
+        internal: {type: 'boolean', nullable: false, defaultTo: false}
     }
 };

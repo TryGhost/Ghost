@@ -96,7 +96,8 @@ describe('Exporter', function () {
                 'temp_mail_events',
                 'tokens',
                 'users',
-                'webhooks'
+                'webhooks',
+                'prototype_activitypub'
             ];
 
             should.exist(exportData);

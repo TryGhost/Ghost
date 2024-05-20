@@ -39,6 +39,9 @@ const VALID_KEYS = {
         'maxlength',
         'nullable',
         'validations'
+    ],
+    json: [
+        'nullable'
     ]
 };
 
