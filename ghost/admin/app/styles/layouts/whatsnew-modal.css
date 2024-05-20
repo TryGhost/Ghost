@@ -7,6 +7,13 @@
     border-radius: 8px !important;
 }
 
+@media (max-height: 960px) {
+    .fullscreen-modal-whatsnew,
+    .fullscreen-modal-whatsnew-featured {
+        max-height: calc(100vh - 80px);
+    }
+}
+
 .fullscreen-modal-whatsnew {
     max-width: 640px !important;
 }

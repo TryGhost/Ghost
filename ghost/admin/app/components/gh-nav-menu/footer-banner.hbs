@@ -19,6 +19,9 @@
                 <span class="gh-sidebar-banner-subhead">What's new?</span>
             </div>
             <p class="gh-sidebar-banner-msg">{{entry.title}}</p>
+            {{#if entry.custom_excerpt}}
+                <p class="gh-sidebar-banner-details">{{entry.custom_excerpt}}</p>
+            {{/if}}
         </button>
     </div>
     {{/let}}

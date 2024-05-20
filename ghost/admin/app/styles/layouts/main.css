@@ -2228,14 +2228,14 @@ section.gh-ds h2 {
 .gh-sidebar-banner-head {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 6px;
     margin-top: 2px;
 }
 
 .gh-sidebar-banner-subhead {
     font-size: 13px;
-    color: var(--midlightgrey);
+    color: var(--midgrey);
     font-weight: 400;
 }
 
@@ -2245,6 +2245,17 @@ section.gh-ds h2 {
     margin-top: -2px;
     margin-bottom: 0;
     font-size: 1.4rem;
+}
+
+.gh-sidebar-banner-details {
+    line-height: 1.4em;
+    font-size: 1.35rem;
+    margin: 5px 0 0;
+    color: var(--darkgrey);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .gh-sidebar-banner-msg + .gh-sidebar-banner-button {
