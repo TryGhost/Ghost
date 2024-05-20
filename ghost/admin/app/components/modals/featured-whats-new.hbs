@@ -2,14 +2,14 @@
     {{#let (get this.whatsNew.entries "0") as |entry|}}
         <div>
             {{#if entry.feature_image}}
-                <img class="mb5" src={{entry.feature_image}} alt="Feature image">
+                <img class="mb5" src={{entry.feature_image}} alt={{entry.title}}>
             {{/if}}
             <h2>{{entry.title}}</h2>
             {{#if entry.custom_excerpt}}
                 <p>{{entry.custom_excerpt}}</p>
             {{/if}}
             <div class="flex justify-end">
-                <button {{on "click" (fn this.closeFeaturedWhatsNew)}} class="mr-2" type="button">Dismiss</button>
+                <button {{on "click" this.closeFeaturedWhatsNew}} class="mr-2" type="button">Dismiss</button>
                 <a href="{{entry.url}}" class="gh-btn"><span>Read on &rarr;</span></a>
             </div>
         </div>

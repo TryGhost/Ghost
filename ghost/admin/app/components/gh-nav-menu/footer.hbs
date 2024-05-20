@@ -52,7 +52,7 @@
                             <li class="divider" role="separator"></li>
                         {{else}}
                             <li>
-                                <button class="dropdown-item" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" (fn this.openWhatsNew)}}>
+                                <button class="dropdown-item" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" this.openWhatsNew}}>
                                     What's new?
                                     {{#if this.whatsNew.hasNew}}
                                         <div class="flex-grow-1 flex justify-end">{{svg-jar "sparkle-fill" class="gh-whatsnew-banner-icon"}}</div>
