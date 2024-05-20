@@ -16,7 +16,9 @@ type ActorData = {
     outbox: Activity[];
     inbox: Activity[];
     following: {id: URI, username?: string;}[];
-    followers: {id: URI;}[];
+    followers: {id: URI;}[],
+    featured: {id: URI;}[],
+    internal: boolean;
 };
 
 type CreateActorData = ActorData & {
@@ -82,6 +84,18 @@ export class Actor extends Entity<ActorData> {
 
     get followers() {
         return this.attr.followers;
+    }
+
+    get featured() {
+        return this.attr.featured;
+    }
+
+    get privateKey() {
+        return this.attr.privateKey;
+    }
+
+    get publicKey() {
+        return this.attr.publicKey;
     }
 
     async sign(request: Request, baseUrl: URL): Promise<Request> {
@@ -256,7 +270,9 @@ export class Actor extends Entity<ActorData> {
             outbox: data.outbox || [],
             inbox: data.inbox || [],
             followers: data.followers || [],
-            following: data.following || []
+            following: data.following || [],
+            featured: data.featured || [],
+            internal: data.internal || false
         });
     }
 }
