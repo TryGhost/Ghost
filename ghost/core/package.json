@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.114.0",
+    "@sentry/node": "7.116.0",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -225,7 +225,7 @@
     "yjs": "13.6.15"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.114.0",
+    "@sentry/profiling-node": "7.116.0",
     "@tryghost/html-to-mobiledoc": "3.0.7",
     "sqlite3": "5.1.7"
   },
