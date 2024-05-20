@@ -2239,7 +2239,7 @@ section.gh-ds h2 {
     font-weight: 400;
 }
 
-.gh-sidebar-banner-msg {
+.gh-sidebar-banner a .gh-sidebar-banner-msg {
     line-height: 1.4em;
     font-weight: 600;
     margin-top: -2px;
