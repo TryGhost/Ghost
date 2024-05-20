@@ -1,7 +1,7 @@
 <div class="modal-content">
-    {{#let this.whatsNew.entries.firstObject as |entry|}}
+    {{#let (get this.whatsNew.entries "0") as |entry|}}
         {{#if entry.feature_image}}
-            <img class="gh-whatsnew-featured-feature-image mb5" src={{entry.feature_image}}>
+            <img class="gh-whatsnew-featured-feature-image mb5" src={{entry.feature_image}} alt="Feature image — {{entry.title}}">
         {{/if}}
 
         <section class="gh-whatsnew-featured-container">

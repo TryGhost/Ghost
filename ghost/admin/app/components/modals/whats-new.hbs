@@ -4,7 +4,7 @@
         {{#each this.whatsNew.entries as |entry|}}
             <a class="gh-whatsnew-modal-entry" href={{entry.url}} target="_blank" rel="noopener noreferrer">
                 {{#if entry.feature_image}}
-                    <img class="gh-whatsnew-modal-entry-featureimage" src={{entry.feature_image}}>
+                    <img class="gh-whatsnew-modal-entry-featureimage" src={{entry.feature_image}} alt="Feature image — {{entry.title}}">
                 {{/if}}
                 <div class="gh-whatsnew-modal-entrycontent">
                     <h2>{{entry.title}}</h2>
