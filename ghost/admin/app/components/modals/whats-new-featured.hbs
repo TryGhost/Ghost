@@ -5,7 +5,7 @@
         {{/if}}
 
         <section class="gh-whatsnew-featured-container">
-            <div class="gh-whatsnew-featured-subhead">What's new?<span class="gh-whatsnew-featured-date">/ {{moment-format entry.published_at "DD MMMM YYYY"}}</span></div>
+            <div class="gh-whatsnew-featured-subhead">What's new?<span class="gh-whatsnew-featured-date"> &mdash; {{moment-format entry.published_at "DD MMMM YYYY"}}</span></div>
             <h2 class="gh-whasnew-featured-title">{{entry.title}}</h2>
 
             {{#if entry.custom_excerpt}}
