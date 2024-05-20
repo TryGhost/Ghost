@@ -18493,10 +18493,10 @@ html-to-text@8.2.1:
     minimist "^1.2.6"
     selderee "^0.6.0"
 
-html-validate@8.18.2:
-  version "8.18.2"
-  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.18.2.tgz#6ef239d8cdbeac03b007852e8b9c7cd5901816f0"
-  integrity sha512-X/ahjDnTZe1VjoPz+w7zGe5I5/os8PLQ+c5C9ak6etV0nNK9gPbwbGaP9BQoSQuQx0mszw5khDjP1ffnXx+1OA==
+html-validate@8.19.0:
+  version "8.19.0"
+  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.19.0.tgz#883ead722f7f846af1111aa0e262bd98bcbacff6"
+  integrity sha512-VGdoPUPW1OX4xKh0dq3c+npLdOK6EHLgubPfPVYuLOxKEwEOGH/HgRtCSfGXRcdgSHrkQpUXB1kdBSyTJSU6NA==
   dependencies:
     "@babel/code-frame" "^7.10.0"
     "@html-validate/stylish" "^4.1.0"
