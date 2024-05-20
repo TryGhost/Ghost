@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import WhatsNewFeatured from '../modals/whats-new-featured';
 import envConfig from 'ghost-admin/config/environment';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
@@ -83,7 +82,8 @@ export default class FooterBanner extends Component {
     }
 
     @action
-    openWhatsNewFeatured() {
-        return this.modals.open(WhatsNewFeatured);
+    openFeaturedWhatsNew(href) {
+        window.open(href, '_blank');
+        this.whatsNew.seen();
     }
 }
