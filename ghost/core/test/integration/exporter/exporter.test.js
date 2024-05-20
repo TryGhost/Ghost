@@ -97,7 +97,8 @@ describe('Exporter', function () {
                 'tokens',
                 'users',
                 'webhooks',
-                'prototype_activitypub'
+                'prototype_activitypub',
+                'prototype_activitypub_actors_keys'
             ];
 
             should.exist(exportData);

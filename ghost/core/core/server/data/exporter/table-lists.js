@@ -54,7 +54,8 @@ const BACKUP_TABLES = [
     'recommendations',
     'recommendation_click_events',
     'recommendation_subscribe_events',
-    'prototype_activitypub'
+    'prototype_activitypub',
+    'prototype_activitypub_actors_keys'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

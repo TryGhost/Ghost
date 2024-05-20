@@ -1108,5 +1108,13 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: false},
         data: {type: 'json', nullable: false},
         internal: {type: 'boolean', nullable: false, defaultTo: false}
+    },
+    prototype_activitypub_actors_keys: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        actor_id: {type: 'string', maxlength: 255, nullable: false, references: 'prototype_activitypub.id', cascadeDelete: true},
+        private_key: {type: 'string', maxlength: 2000, nullable: false},
+        public_key: {type: 'string', maxlength: 2000, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false}
     }
 };
