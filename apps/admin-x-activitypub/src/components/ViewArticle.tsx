@@ -16,7 +16,7 @@ interface ViewArticleProps {
 //     );
 // };
 
-const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
+const ViewArticle: React.FC<ViewArticleProps> = ({onBackToList}) => {
     const {updateRoute} = useRouting();
 
     // console.log(object);

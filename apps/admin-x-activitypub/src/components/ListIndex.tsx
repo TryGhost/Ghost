@@ -103,18 +103,6 @@ const ActivityPubComponent: React.FC = () => {
         setArticleContent(null);
     };
 
-    // console.log('Following:', following);
-    // console.log('Following length:', following.length);
-    // const {route} = useRouting();
-
-    // const ViewFollowing = () => {
-    //     NiceModal.show(ViewFollowing, {
-    //         pathName: route,
-    //         animate: false,
-    //         following: following
-    //     });
-    // };
-
     return (
         <Page>
             {!articleContent ? (

@@ -9,7 +9,7 @@ interface ViewFollowingModalProps {
     animate?: boolean
 }
 
-const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> = ({following, animate}) => {
+const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> = ({}) => {
     const {updateRoute} = useRouting();
     // const modal = NiceModal.useModal();
     const mutation = useFollow();
