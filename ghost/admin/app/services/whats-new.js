@@ -72,7 +72,7 @@ export default Service.extend({
                 let user = yield this.session.user;
                 this.set('_user', user);
 
-                this.response = yield fetch('http://localhost:2368/content/files/2024/04/fake-changelog.json');
+                this.response = yield fetch('https://ghost.org/changelog.json');
                 if (!this.response.ok) {
                     // eslint-disable-next-line
                     return console.error('Failed to fetch changelog', {response});
