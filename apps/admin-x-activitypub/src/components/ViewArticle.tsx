@@ -3,6 +3,7 @@ import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-sys
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ViewArticleProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     object: any,
     onBackToList: () => void;
 }

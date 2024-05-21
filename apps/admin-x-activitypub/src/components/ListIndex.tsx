@@ -28,6 +28,7 @@ export type Following = {
 // }
 
 interface ViewArticleProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     object: any,
     onBackToList: () => void;
 }
@@ -95,6 +96,7 @@ const ActivityPubComponent: React.FC = () => {
 
     const [articleContent, setArticleContent] = useState<string | null>(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleViewContent = (content: any) => {
         setArticleContent(content);
     };
@@ -160,11 +162,27 @@ const ActivityPubComponent: React.FC = () => {
 const ArticleBody: React.FC<{html: string}> = ({html}) => {
     // const dangerouslySetInnerHTML = {__html: html};
     // const cssFile = '../index.css';
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+
+    const cssContent = `<style>
+  </style><link rel="stylesheet" type="text/css" href="${siteData?.url.replace(/\/$/, '')}/src/styles/index.css" />`;
+
+    const htmlContent = `
+  <html>
+  <head>
+      ${cssContent}
+  </head>
+  <body>
+      ${html}
+  </body>
+  </html>
+`;
 
     return (
         <iframe
             height="100%"
-            srcDoc={html}
+            srcDoc={htmlContent}
             title="Embedded Content"
             width="100%"
         >
@@ -195,7 +213,7 @@ const ObjectContentDisplay: React.FC<{actor: any, object: any }> = ({actor, obje
                 <div className='border-1 group/article flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5'>
                     <div className='mb-3 flex w-full items-center gap-2'>
                         <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
-                        <span className='text-base font-semibold'>{actor.name}</span>
+                        <span className='gh-wn-entry text-base font-semibold'>{actor.name}</span>
                         <span className='ml-auto text-md text-grey-800'>{getUsername(actor)}</span>
                     </div>
                     <div className='grid w-full grid-cols-[auto_170px]'>
