@@ -1,12 +1,19 @@
 <div class="gh-nav-bottom">
     {{#if this.hasThemeErrors}}
-    <button type="button" class="gh-footer-toast gh-theme-error-toast" {{on "click" (fn this.openThemeErrors null)}}>
-        <span class="gh-footer-toast-title gh-notification-title">Your theme contains errors</span>
-        <span class="gh-footer-toast-p">Some functionality on your site may be limited &rarr;</span>
-    </button>
+    <div class="gh-sidebar-banner gh-error-banner">
+        <button class="gh-sidebar-banner-container" type="button" {{on "click" (fn this.openThemeErrors null)}}>
+            <div>
+                {{svg-jar "warning-fill" class="gh-sidebar-banner-icon"}}
+            </div>
+            <div>
+                <span class="gh-sidebar-banner-subhead">Your theme has errors</span>
+                <p class="gh-sidebar-banner-msg">Some functionality on your site may be limited &rarr;</p>
+            </div>
+        </button>
+    </div>
     {{/if}}
 
-    <GhReferralInvite @hasThemeErrors={{this.hasThemeErrors}} />
+    <GhNavMenu::FooterBanner @hasThemeErrors={{this.hasThemeErrors}} />
 
     <div class="flex items-center justify-between">
         <div class="pe-all">
@@ -14,7 +21,7 @@
                 <dropdown.Trigger class="outline-0 pointer">
                     <div class="flex-auto flex items-center">
                         <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
-                            {{#if this.whatsNew.hasNew}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
+                            {{#if (and this.whatsNew.hasNew (not this.whatsNew.hasNewFeatured))}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
                         </div>
                         {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
                     </div>
@@ -45,12 +52,12 @@
                             <li class="divider" role="separator"></li>
                         {{else}}
                             <li>
-                                <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
+                                <button class="dropdown-item" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" this.openWhatsNew}}>
                                     What's new?
                                     {{#if this.whatsNew.hasNew}}
                                         <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
                                     {{/if}}
-                                </LinkTo>
+                                </button>
                             </li>
                         {{/if}}
 

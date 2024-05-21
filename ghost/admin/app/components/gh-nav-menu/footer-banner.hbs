@@ -1,0 +1,28 @@
+{{#if this.showReferralInvite}}
+    <div class="gh-sidebar-banner gh-referral-toast">
+        <button class="gh-sidebar-banner-close" type="button" {{on "click" this.dismissReferralInvite}}>&#xd7;</button>
+        <a href="https://referrals.ghost.org/?ref=admin" target="_blank" rel="noopener noreferrer">
+            <strong>You qualify for our invite-only referral program.</strong>
+            <p class="gh-footer-toast-p">Refer people to Ghost and earn a <strong>30% share</strong> of the subscription revenue, every single month.</p>
+            <div class="gh-btn gh-btn-black gh-sidebar-banner-button" type="button"><span>Find out more &rarr;</span></div>
+        </a>
+    </div>
+{{/if}}
+
+{{#if (and this.showWhatsNew this.whatsNew.hasNew)}}
+    {{#let (get this.whatsNew.entries "0") as |entry|}}
+    <div class="gh-sidebar-banner gh-whatsnew-toast">
+        <button class="gh-sidebar-banner-close" type="button" {{on "click" this.dismissWhatsNewToast}}>&#xd7;</button>
+        <a class="gh-sidebar-banner-container" href={{entry.url}} target="_blank" rel="noopener noreferrer" {{on "click" (fn this.openFeaturedWhatsNew entry.url)}}>
+            <div class="gh-sidebar-banner-head">
+                {{svg-jar "sparkle-fill" class="gh-sidebar-banner-icon gh-whatsnew-banner-icon"}}
+                <span class="gh-sidebar-banner-subhead">What's new?</span>
+            </div>
+            <div class="gh-sidebar-banner-msg">{{entry.title}}</div>
+            {{#if entry.custom_excerpt}}
+                <div class="gh-sidebar-banner-details">{{entry.custom_excerpt}}</div>
+            {{/if}}
+        </a>
+    </div>
+    {{/let}}
+{{/if}}

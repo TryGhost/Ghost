@@ -18,7 +18,7 @@
             <div class="gh-nav-top">
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (gh-user-can-admin this.session.user)}}
-                    <li class="relative">
+                    <li class="relative gh-nav-list-home">
                         <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
                     </li>
                     {{/if}}
