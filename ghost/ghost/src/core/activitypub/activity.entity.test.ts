@@ -85,5 +85,30 @@ describe('Activity', function () {
 
             assert.deepEqual(created.getJSONLD(baseUrl), input);
         });
+
+        it('Can create an activity', function () {
+            const actor = Actor.create({username: 'testing'});
+            const article = Article.fromPost({
+                id: new ObjectID(),
+                title: 'My Title',
+                slug: 'my-title',
+                html: '<p> big boi contents </p>',
+                excerpt: 'lil contents',
+                authors: ['Jeremy Paxman'],
+                url: new URI('blah'),
+                publishedAt: new Date(),
+                featuredImage: null,
+                visibility: 'public'
+            });
+
+            const created = Activity.create({
+                type: 'Create',
+                actor: actor,
+                object: article,
+                to: new URI('bloo')
+            });
+
+            assert.equal(created.type, 'Create');
+        });
     });
 });

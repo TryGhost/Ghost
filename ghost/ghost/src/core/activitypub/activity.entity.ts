@@ -1,4 +1,5 @@
 import {Entity} from '../../common/entity.base';
+import ObjectID from 'bson-objectid';
 import {Actor} from './actor.entity';
 import {Article} from './article.object';
 import {ActivityPub} from './types';
@@ -21,6 +22,10 @@ type ActivityData = {
     } | Article;
     to: URI | null;
 }
+
+type CreateActivityData = ActivityData & {
+    id? : ObjectID
+};
 
 function getURI(input: unknown) {
     if (input instanceof URI) {
@@ -84,6 +89,10 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.activity;
     }
 
+    get to() {
+        return this.attr.to;
+    }
+
     getJSONLD(url: URL): ActivityPub.Activity {
         const object = this.getObject(url);
         const actor = this.getActor(url);
@@ -122,6 +131,38 @@ export class Activity extends Entity<ActivityData> {
                 id: getURI(parsed.object)
             },
             to: 'to' in json ? getURI(json.to) : null
+        });
+    }
+
+    static create(data: Partial<CreateActivityData>) {
+        if (!data.actor) {
+            throw new Error('Missing actor');
+        }
+
+        if (!data.object) {
+            throw new Error('Missing object');
+        }
+
+        const actor = data.actor instanceof Actor
+            ? data.actor
+            : {
+                ...(data.actor as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+                id: getURI(data.actor.id)
+            };
+        const obj = data.object instanceof Article
+            ? data.object
+            : {
+                ...(data.object as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+                id: getURI(data.object.id)
+            };
+
+        return new Activity({
+            id: data.id instanceof ObjectID ? data.id : new ObjectID(),
+            activity: data.activity ? getURI(data.activity) : null,
+            type: data.type || 'Create',
+            actor: actor,
+            object: obj,
+            to: data.to ? getURI(data.to) : null
         });
     }
 }
