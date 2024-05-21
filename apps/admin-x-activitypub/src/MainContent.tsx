@@ -6,7 +6,7 @@ const MainContent = () => {
     const {route} = useRouting();
 
     if (route === 'view') {
-        return <ViewArticle />;
+        return <ViewArticle object={{}} onBackToList={() => {}}/>;
     } else {
         return <ActivityPubComponent />;
     }

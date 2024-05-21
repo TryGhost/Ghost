@@ -62,6 +62,7 @@ const FollowSite = NiceModal.create(() => {
                     placeholder='@username@hostname'
                     title='Profile name'
                     value={profileName}
+                    data-test-new-follower
                     onChange={e => setProfileName(e.target.value)}
                 />
             </div>
