@@ -21,10 +21,12 @@ type ActivityData = {
         [x: string]: any;
     } | Article;
     to: URI | null;
+    updatedAt?: Date;
 }
 
 type CreateActivityData = ActivityData & {
-    id? : ObjectID
+    id? : ObjectID,
+    createdAt: Date;
 };
 
 function getURI(input: unknown) {
@@ -156,13 +158,40 @@ export class Activity extends Entity<ActivityData> {
                 id: getURI(data.object.id)
             };
 
+        const createdAt = validateDate(data.createdAt);
+        const updatedAt = validateDate(data.updatedAt);
+
         return new Activity({
             id: data.id instanceof ObjectID ? data.id : new ObjectID(),
             activity: data.activity ? getURI(data.activity) : null,
             type: data.type || 'Create',
             actor: actor,
             object: obj,
-            to: data.to ? getURI(data.to) : null
+            to: data.to ? getURI(data.to) : null,
+            updatedAt,
+            createdAt
         });
     }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function validateDate(value: any): Date {
+    let date: Date;
+
+    if (!value) {
+        return new Date();
+    }
+
+    if (value instanceof Date) {
+        return value;
+    } else if (value) {
+        date = new Date(value);
+        if (isNaN(date.valueOf())) {
+            throw new Error('Invalid Date');
+        }
+    } else {
+        date = new Date();
+    }
+
+    return date;
 }

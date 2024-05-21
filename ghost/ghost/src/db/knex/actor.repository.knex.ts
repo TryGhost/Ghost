@@ -58,7 +58,10 @@ export class ActorRepositoryKnex implements ActorRepository {
                 id: new URI(feature.id)
             })) || [],
             inbox: model.data.inbox.map(activity => Activity.create(activity)) || [],
-            outbox: model.data.outbox.map(activity => Activity.create(activity)) || []
+            outbox: model.data.outbox.map(activity => Activity.create(activity)) || [],
+            internal: model.internal,
+            createdAt: new Date(model.created_at),
+            updatedAt: new Date(model.updated_at)
         });
     }
 
@@ -105,7 +108,6 @@ export class ActorRepositoryKnex implements ActorRepository {
             outbox: actor.outbox
         };
 
-        const date = this.knex.raw('CURRENT_TIMESTAMP');
         const id = actor.id;
         const url = actor.actorId.toString();
         const existingActor = await this.getOne(id || actor?.username);
@@ -117,8 +119,8 @@ export class ActorRepositoryKnex implements ActorRepository {
                     type: 'Person',
                     url,
                     data: JSON.stringify(data),
-                    created_at: date,
-                    updated_at: date
+                    created_at: actor.createdAt || new Date(),
+                    updated_at: actor.updatedAt || new Date()
                 });
         } else {
             // TODO: ensure we don't accidentally overwrite data
@@ -126,7 +128,7 @@ export class ActorRepositoryKnex implements ActorRepository {
                 .where('id', id.toHexString())
                 .update({
                     data: JSON.stringify(data),
-                    updated_at: date
+                    updated_at: actor.updatedAt || new Date()
                 });
         }
         Actor.getActivitiesToSave(actor, (/* activities */) => {

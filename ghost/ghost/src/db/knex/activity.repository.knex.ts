@@ -29,7 +29,9 @@ export class ActivityRepositoryKnex implements ActivityRepository {
             type: model.type,
             actor,
             object,
-            to: new URI(model.data.to)
+            to: new URI(model.data.to),
+            createdAt: new Date(model.created_at),
+            updatedAt: new Date(model.updated_at)
         });
     }
 
@@ -45,7 +47,6 @@ export class ActivityRepositoryKnex implements ActivityRepository {
     }
 
     async save(activity: Activity) {
-        const date = this.knex.raw('CURRENT_TIMESTAMP');
         const data = {
             actor: activity.getActor,
             object: activity.getObject,
@@ -59,8 +60,8 @@ export class ActivityRepositoryKnex implements ActivityRepository {
                 activity: activity.activityId?.href,
                 type: activity.type,
                 data: JSON.stringify(data),
-                created_at: date,
-                updated_at: date
+                created_at: activity.createdAt || new Date(),
+                updated_at: activity.updatedAt || new Date()
             });
     }
 };
