@@ -19,10 +19,12 @@ type ActorData = {
     followers: {id: URI;}[],
     featured: {id: URI;}[],
     internal: boolean;
+    updatedAt?: Date;
 };
 
 type CreateActorData = ActorData & {
-    id? : ObjectID
+    id? : ObjectID,
+    createdAt: Date;
 };
 
 export class Actor extends Entity<ActorData> {
@@ -257,6 +259,9 @@ export class Actor extends Entity<ActorData> {
                 .toString();
         }
 
+        const createdAt = validateDate(data.createdAt);
+        const updatedAt = validateDate(data.updatedAt);
+
         return new Actor({
             id: data.id instanceof ObjectID ? data.id : undefined,
             username: data.username,
@@ -268,7 +273,31 @@ export class Actor extends Entity<ActorData> {
             followers: data.followers || [],
             following: data.following || [],
             featured: data.featured || [],
-            internal: data.internal || false
+            internal: data.internal || false,
+            createdAt,
+            updatedAt
         });
     }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function validateDate(value: any): Date {
+    let date: Date;
+
+    if (!value) {
+        return new Date();
+    }
+
+    if (value instanceof Date) {
+        return value;
+    } else if (value) {
+        date = new Date(value);
+        if (isNaN(date.valueOf())) {
+            throw new Error('Invalid Date');
+        }
+    } else {
+        date = new Date();
+    }
+
+    return date;
 }
