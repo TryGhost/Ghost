@@ -73,6 +73,12 @@
     box-shadow: 0px -7px 15px -10px rgba(0, 0, 0, 0.15);
 }
 
+@media (max-width: 900px) {
+    .gh-whatsnew-modal-footer {
+        bottom: -10px;
+    }
+}
+
 .gh-whatsnew-modal {
     display: flex;
     flex-direction: column;
