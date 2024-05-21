@@ -15,11 +15,11 @@ export class ActivityRepositoryKnex implements ActivityRepository {
     private async dbToActivity(model: ActivityPub.ActivityPubActivityDBData) {
         const actor = model.data.actor ? Actor.create({username: model.data.actor.username}) : undefined;
         const object = model.data.object
-            ?  {
+            ? {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ...model.data.object,
                 id: new URI(model.data.object.id),
-                type: model.data.object.type,
+                type: model.data.object.type
             }
             : undefined;
 
