@@ -5,27 +5,11 @@ import {Actor} from '../../core/activitypub/actor.entity';
 import {SettingsCache} from '../../common/types/settings-cache.type';
 import {URI} from '../../core/activitypub/uri.object';
 import {Activity} from '../../core/activitypub/activity.entity';
+import {ActivityPub} from '../../core/activitypub/types';
 
 interface DomainEvents {
     dispatch(event: unknown): void
 }
-
-type DBRowData = {
-    id: string;
-    type: string;
-    url: string;
-    data: {
-        username: string;
-        displayName: string;
-        following: {id: string, username?: string;}[];
-        followers: {id: string}[];
-        features: {id: string}[];
-        inbox: object[];
-        outbox: object[];
-    };
-    created_at: string;
-    updated_at: string;
-};
 
 export class ActorRepositoryKnex implements ActorRepository {
     private readonly domainEvents: DomainEvents;
@@ -56,7 +40,7 @@ export class ActorRepositoryKnex implements ActorRepository {
         this.save(this.#defaultActor);
     }
 
-    private async dbToActor(model: DBRowData) {
+    private async dbToActor(model: ActivityPub.ActivityPubActorDBData) {
         return Actor.create({
             id: ObjectID.createFromHexString(model.id),
             username: model.data.username,
@@ -66,15 +50,15 @@ export class ActorRepositoryKnex implements ActorRepository {
             following: model.data.following.map(following => ({
                 id: new URI(following.id),
                 username: following.username || undefined
-            })) || null,
+            })) || [],
             followers: model.data.followers.map(follower => ({
                 id: new URI(follower.id)
-            })) || null,
-            featured: model.data.features.map(feature => ({
+            })) || [],
+            featured: model.data.featured.map(feature => ({
                 id: new URI(feature.id)
-            })) || null,
-            inbox: model.data.inbox.map(activity => Activity.create(activity)) || null,
-            outbox: model.data.outbox.map(activity => Activity.create(activity)) || null
+            })) || [],
+            inbox: model.data.inbox.map(activity => Activity.create(activity)) || [],
+            outbox: model.data.outbox.map(activity => Activity.create(activity)) || []
         });
     }
 
