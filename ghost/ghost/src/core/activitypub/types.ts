@@ -76,4 +76,47 @@ export namespace ActivityPub {
         object: Link | ActivityPub.Object;
         to: Link | Actor | null;
     }
+
+    type ActorDBData = {
+        username: string;
+        displayName: string;
+        following: {id: string, username?: string;}[];
+        followers: {id: string}[],
+        featured: {id: string}[],
+        inbox: object[];
+        outbox: object[];
+    }
+
+    type ActivityDBData = {
+        actor: {
+            id: string;
+            type: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            [x: string]: any;
+        } | ActorDBData;
+        object: {
+            id: string;
+            type: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            [x: string]: any;
+        };
+        to: string;
+    }
+
+    export type ActivityPubDbData = {
+        id: string;
+        type: ActivityType;
+        url: string;
+        created_at: string;
+        updated_at: string;
+        internal: boolean;
+    };
+
+    export type ActivityPubActorDBData = ActivityPubDbData & {
+        data: ActorDBData;
+    };
+
+    export type ActivityPubActivityDBData = ActivityPubDbData & {
+        data: ActivityDBData;
+    };
 }
