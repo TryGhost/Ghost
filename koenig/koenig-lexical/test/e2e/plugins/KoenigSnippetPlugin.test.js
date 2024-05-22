@@ -34,7 +34,6 @@ test.describe('Snippet Plugin', async function () {
         await page.keyboard.type('/snippet');
         await page.keyboard.press('Enter');
         await page.waitForSelector('[data-kg-card="image"]');
-        await page.pause();
         expect(await page.$('[data-kg-card="image"]')).not.toBeNull();
     });
 });
