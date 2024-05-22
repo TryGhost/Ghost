@@ -2,8 +2,6 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
 import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-// import {formatRelativeTime} from '../utils/helpers';
-// import ViewArticle from './ViewArticle';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface Activity {
@@ -101,10 +99,12 @@ const ActivityPubComponent: React.FC = () => {
     }, [siteData?.url]);
 
     const [articleContent, setArticleContent] = useState<string | null>(null);
+    const [articleActor, setArticleActor] = useState<string | null>(null);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleViewContent = (content: any) => {
+    const handleViewContent = (content: any, actor: any) => {
         setArticleContent(content);
+        setArticleActor(actor);
     };
 
     const handleBackToList = () => {
@@ -115,7 +115,6 @@ const ActivityPubComponent: React.FC = () => {
         <Page>
             {!articleContent ? (
                 <ViewContainer
-                // actions={dummyActions}
                     primaryAction={{
                         title: 'Follow',
                         onClick: () => {
@@ -131,13 +130,19 @@ const ActivityPubComponent: React.FC = () => {
                         <ul className='col-span-4 flex flex-col'>
                             {activities.slice().reverse().map(activity => (
                                 activity.type === 'Create' && activity.object.type === 'Article' ?
-                                    <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object)}>
+                                    <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
                                         <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
                                     </li>
                                     : null
                             ))}
                         </ul>
                         <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
+                            <div className='grid grid-cols-2 gap-4'>
+                                <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                                </div>
+                            </div>
                             <ul data-test-following>
                                 {following.slice().map(({username}) => {
                                     return (<li className='mb-4'>
@@ -145,22 +150,12 @@ const ActivityPubComponent: React.FC = () => {
                                     </li>);
                                 })}
                             </ul>
-                            <div className='grid grid-cols-2 gap-4'>
-                                <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                                </div>
-                                {/* <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                                    <span className='text-3xl font-bold leading-none'>12</span>
-                                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900'>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                                </div> */}
-                            </div>
                         </div>
                     </div>
                 </ViewContainer>
 
             ) : (
-                <ViewArticle object={articleContent} onBackToList={handleBackToList} />
+                <ViewArticle actor={articleActor} object={articleContent} onBackToList={handleBackToList} />
             )}
 
         </Page>
@@ -6104,6 +6099,7 @@ p.kg-collection-card-post-excerpt {
         <iframe
             className='h-[calc(100vh_-_3vmin_-_4.8rem_-_2px)]'
             height="100%"
+            id="gh-ap-article-iframe"
             srcDoc={htmlContent}
             title="Embedded Content"
             width="100%"
@@ -6123,11 +6119,8 @@ const ObjectContentDisplay: React.FC<{actor: any, object: any }> = ({actor, obje
     const doc = parser.parseFromString(object.content || '', 'text/html');
 
     const plainTextContent = doc.body.textContent;
-    // const timestamp = new Date(object.published).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'});
     const timestamp =
         new Date(object.published).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object.published).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
-
-    // const timestamp = formatRelativeTime(new Date(object.published));
 
     return (
         <>
@@ -6135,19 +6128,19 @@ const ObjectContentDisplay: React.FC<{actor: any, object: any }> = ({actor, obje
                 <div className='border-1 group/article flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
                     <div className='mb-3 flex w-full items-center gap-2'>
                         <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
-                        <span className='text-base font-semibold'>{actor.name}</span>
-                        <span className='ml-auto text-md text-grey-800'>{getUsername(actor)}</span>
+                        <span className='line-clamp-1 text-base font-semibold'>{actor.name}</span>
+                        <span className='ml-auto line-clamp-1 text-md text-grey-800'>{getUsername(actor)}</span>
                     </div>
-                    <div className='grid w-full grid-cols-[auto_170px]'>
+                    <div className='grid w-full grid-cols-[auto_170px] gap-4'>
                         <div className='flex flex-col'>
                             <div className='flex w-full justify-between gap-4'>
-                                <Heading className='mb-2' level={5} data-test-activity-heading>{object.name}</Heading>
+                                <Heading className='mb-2 line-clamp-2' level={5} data-test-activity-heading>{object.name}</Heading>
                             </div>
                             <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
                             <p className='mt-auto text-md text-grey-800'>{timestamp}</p>
                         </div>
-                        <div>
-                            <img className='h-[120px] rounded object-cover' src={object.image}/>
+                        <div className='relative min-w-[33%] grow'>
+                            <img className='absolute h-full w-full rounded object-cover' src={object.image}/>
                         </div>
                     </div>
                 </div>

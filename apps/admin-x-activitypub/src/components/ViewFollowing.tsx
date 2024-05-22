@@ -14,8 +14,6 @@ const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> 
     // const modal = NiceModal.useModal();
     const mutation = useFollow();
 
-    // console.log(following);
-
     return (
         <Modal
             afterClose={() => {
