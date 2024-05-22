@@ -79,6 +79,7 @@ export namespace ActivityPub {
 
     type ActorDBData = {
         username: string;
+        type: string;
         displayName: string;
         following: {id: string, username?: string;}[];
         followers: {id: string}[],
@@ -93,13 +94,13 @@ export namespace ActivityPub {
             type: string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             [x: string]: any;
-        } | ActorDBData;
+        } | ActorDBData & {id: string};
         object: {
             id: string;
             type: string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             [x: string]: any;
-        };
+        } | Article & {id: string};
         to: string;
     }
 
