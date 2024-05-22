@@ -49,7 +49,7 @@ const ActivityPubComponent: React.FC = () => {
                 const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/inbox/deadbeefdeadbeefdeadbeef`);
                 // const response = await fetch(`https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
                 // console.log('Fetching activities from:', 'https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef');
-                console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/inbox/deadbeefdeadbeefdeadbeef');
+                // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/inbox/deadbeefdeadbeefdeadbeef');
 
                 if (response.ok) {
                     const data = await response.json();
@@ -174,6 +174,7 @@ const ArticleBody: React.FC<{html: string}> = ({html}) => {
     const siteData = site.data?.site;
 
     const cssContent = `<style>
+    
   </style><link rel="stylesheet" type="text/css" href="${siteData?.url.replace(/\/$/, '')}/assets/styles/reader.css" />`;
 
     const htmlContent = `
