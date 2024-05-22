@@ -51,8 +51,9 @@ test.describe('ListIndex', async () => {
         await articleBtn.click();
 
         // article is expanded
-        const articleHeading = await page.locator('[data-test-article-heading]').textContent();
-        await expect(articleHeading).toEqual('Testing ActivityPub');
+        const frameLocator = page.frameLocator('#gh-ap-article-iframe');
+        const textElement = await frameLocator.locator('[data-test-article-heading]').innerText();
+        expect(textElement).toContain('Testing ActivityPub');
 
         // go back to list
         const backBtn = await page.locator('[data-test-back-button]');
