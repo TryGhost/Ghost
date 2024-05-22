@@ -105,4 +105,11 @@ export class ActivityPubController {
         }
         return this.service.getArticle(ObjectID.createFromHexString(id));
     }
+
+    @Header('Cache-Control', 'no-store')
+    @Roles(['Anon'])
+    @Get('testing')
+    async testing() {
+        return {testing: 'It works!'};
+    }
 }
