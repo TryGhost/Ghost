@@ -119,8 +119,9 @@ describe('post.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         webhookMockReceiver = mockManager.mockWebhookRequests();
+        await mockManager.mockActivityPub();
     });
 
     afterEach(function () {

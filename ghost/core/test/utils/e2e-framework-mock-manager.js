@@ -138,6 +138,12 @@ const mockMailgun = (customStubbedSend) => {
     });
 };
 
+const mockActivityPub = async () => {
+    const GhostNestApp = require('@tryghost/ghost');
+    let activityService = await GhostNestApp.resolve('ActivityService');
+    sinon.stub(activityService, 'createArticleForPost').resolves();
+};
+
 const mockWebhookRequests = () => {
     mocks.webhookMockReceiver = new WebhookMockReceiver({snapshotManager});
 
@@ -295,6 +301,7 @@ module.exports = {
     mockSlack,
     allowStripe,
     mockMailgun,
+    mockActivityPub,
     mockLabsEnabled,
     mockLabsDisabled,
     mockWebhookRequests,

@@ -125,6 +125,7 @@ describe('Email addresses', function () {
     beforeEach(async function () {
         emailMockReceiver = mockManager.mockMail();
         mockManager.mockMailgun();
+        await mockManager.mockActivityPub();
         mockLabsDisabled('newEmailAddresses');
 
         configureSite({

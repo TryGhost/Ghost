@@ -14,9 +14,10 @@ describe('Click Tracking', function () {
         await agent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
+       await mockManager.mockActivityPub();
     });
 
     afterEach(function () {

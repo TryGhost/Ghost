@@ -121,6 +121,10 @@ describe('Posts API', function () {
         }
     });
 
+    beforeEach(async function () {
+        await mockManager.mockActivityPub();
+    });
+
     afterEach(async function () {
         // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
         await models.Base.knex.raw('update posts set html = "<p>Testing</p>" where type = \'page\'');
@@ -877,7 +881,7 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
-                
+
             const convertedPost = conversionResponse.body.posts[0];
             const expectedConvertedLexical = convertedPost.lexical;
             await agent

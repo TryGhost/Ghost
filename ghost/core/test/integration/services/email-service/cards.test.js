@@ -64,9 +64,10 @@ function createLexicalJson(cards = []) {
 let agent;
 
 describe('Can send cards via email', function () {
-    beforeEach(function () {
+    beforeEach(async function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
+        await mockManager.mockActivityPub();
     });
 
     afterEach(async function () {

@@ -89,7 +89,7 @@ describe('Batch sending tests', function () {
     let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
     let ghostServer;
 
-    beforeEach(function () {
+    beforeEach(async function () {
         configUtils.set('bulkEmail:batchSize', 100);
         stubbedSend = sinon.fake.resolves({
             id: 'stubbed-email-id'
@@ -100,6 +100,7 @@ describe('Batch sending tests', function () {
             return stubbedSend.call(this, ...arguments);
         });
         mockManager.mockStripe();
+        await mockManager.mockActivityPub();
     });
 
     afterEach(async function () {
