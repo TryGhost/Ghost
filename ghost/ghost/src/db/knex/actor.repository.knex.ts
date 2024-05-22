@@ -104,8 +104,8 @@ export class ActorRepositoryKnex implements ActorRepository {
     }
 
     async save(actor: Actor) {
-        const inbox = actor.inbox instanceof Activity ? actor.inbox.map(activity => activity.toJSON()) : actor.inbox;
-        const outbox = actor.outbox instanceof Activity ? actor.outbox.map(activity => activity.toJSON()) : actor.outbox;
+        const inbox = actor.inbox instanceof Activity ? actor.inbox.map(activity => activity.getJSON()) : actor.inbox;
+        const outbox = actor.outbox instanceof Activity ? actor.outbox.map(activity => activity.getJSON()) : actor.outbox;
 
         const data = {
             username: actor.username,
@@ -129,7 +129,7 @@ export class ActorRepositoryKnex implements ActorRepository {
                     url,
                     data: JSON.stringify(data),
                     created_at: actor.createdAt || new Date(),
-                    updated_at: actor.updatedAt || new Date()
+                    internal: actor.internal || false
                 });
         } else {
             // TODO: ensure we don't accidentally overwrite data

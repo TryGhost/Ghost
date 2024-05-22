@@ -42,6 +42,19 @@ export class Article {
         };
     }
 
+    getJSON(): object {
+        return {
+            id: this.attr.id.toHexString(),
+            name: this.attr.name,
+            content: this.attr.content,
+            url: this.attr.url.href,
+            image: this.attr.image?.href,
+            published: this.attr.published?.toISOString(),
+            attributedTo: this.attr.attributedTo,
+            preview: this.attr.preview
+        };
+    }
+
     static fromPost(post: Post) {
         return new Article({
             id: post.id,

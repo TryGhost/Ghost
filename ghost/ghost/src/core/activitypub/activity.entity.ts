@@ -95,13 +95,13 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.to;
     }
 
-    toJSON(): object {
+    getJSON(): object {
         return {
-            id: this.attr.id,
+            id: this.attr.id?.toHexString(),
             type: this.attr.type,
-            actor: this.attr.actor,
-            object: this.attr.object,
-            to: this.attr.to
+            actor: this.attr.actor && this.attr.actor instanceof Actor ? this.attr.actor.getJSON() : this.attr.actor,
+            object: this.attr.object && this.attr.object instanceof Article ? this.attr.object.getJSON() : this.attr.object,
+            to: this.attr.to ? this.attr.to.href : null
         };
     }
 

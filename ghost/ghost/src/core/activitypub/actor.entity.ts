@@ -96,6 +96,35 @@ export class Actor extends Entity<ActorData> {
         return this.attr.publicKey;
     }
 
+    get internal() {
+        return this.attr.internal;
+    }
+
+    getJSON() {
+        return {
+            id: this.id?.toHexString(),
+            username: this.username,
+            displayName: this.displayName,
+            publicKey: this.publicKey,
+            privateKey: this.attr.privateKey,
+            outbox: this.outbox && this.outbox instanceof Activity ? this.outbox.getJSON() : this.outbox,
+            inbox: this.inbox && this.inbox instanceof Activity ? this.inbox.getJSON() : this.inbox,
+            following: this.following ? this.following.map(following => ({
+                id: following.id.href,
+                username: following?.username
+            })) : [],
+            followers: this.followers ? this.followers.map(follower => ({
+                id: follower.id.href
+            })) : [],
+            featured: this.featured ? this.featured.map(featured => ({
+                id: featured.id.href
+            })) : [],
+            internal: this.internal,
+            updatedAt: this.updatedAt,
+            createdAt: this.createdAt
+        };
+    }
+
     async sign(request: Request, baseUrl: URL): Promise<Request> {
         const keyId = new URL(this.getJSONLD(baseUrl).publicKey.id);
         const key = crypto.createPrivateKey(this.attr.privateKey);
