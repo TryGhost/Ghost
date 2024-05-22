@@ -62,6 +62,6 @@ export const twitterHandleToUrl = (handle: string) => `https://x.com/${handle.re
 
 export const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi)?.[1] || null;
 export const twitterUrlToHandle = (url: string) => {
-    const handle = url.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^/]*)/)?.[1];
+    const handle = url.match(/(?:https:\/\/)(?:x\.com)\/(?:#!\/)?@?([^/]*)/)?.[1];
     return handle ? `@${handle}` : null;
 };
