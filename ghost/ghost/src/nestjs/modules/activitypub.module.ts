@@ -1,5 +1,5 @@
 import {Global, Module} from '@nestjs/common';
-import {ActorRepositoryInMemory} from '../../db/in-memory/actor.repository.in-memory';
+import {ActorRepositoryKnex} from '../../db/knex/actor.repository.knex';
 import {ActivityPubController} from '../../http/frontend/controllers/activitypub.controller';
 import {WebFingerService} from '../../core/activitypub/webfinger.service';
 import {JSONLDService} from '../../core/activitypub/jsonld.service';
@@ -8,7 +8,7 @@ import {ActivityService} from '../../core/activitypub/activity.service';
 import {KnexPostRepository} from '../../db/knex/post.repository.knex';
 import {HTTPSignature} from '../../core/activitypub/http-signature.service';
 import {InboxService} from '../../core/activitypub/inbox.service';
-import {ActivityRepositoryInMemory} from '../../db/in-memory/activity.repository.in-memory';
+import {ActivityRepositoryKnex} from '../../db/knex/activity.repository.knex';
 import {ActivityListener} from '../../listeners/activity.listener';
 import {TheWorld} from '../../core/activitypub/tell-the-world.service';
 import {ActivityPubService} from '../../core/activitypub/activitypub.service';
@@ -20,7 +20,7 @@ import {ActivityPubService} from '../../core/activitypub/activitypub.service';
     providers: [
         {
             provide: 'ActorRepository',
-            useClass: ActorRepositoryInMemory
+            useClass: ActorRepositoryKnex
         },
         {
             provide: 'ActivityService',
@@ -32,7 +32,7 @@ import {ActivityPubService} from '../../core/activitypub/activitypub.service';
         },
         {
             provide: 'ActivityRepository',
-            useClass: ActivityRepositoryInMemory
+            useClass: ActivityRepositoryKnex
         },
         WebFingerService,
         JSONLDService,
