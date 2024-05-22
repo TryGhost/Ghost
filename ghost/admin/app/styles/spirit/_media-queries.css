@@ -1,0 +1,28 @@
+/*
+
+  The media queries can be referenced like so:
+
+  @media (--breakpoint-not-small) {
+    .medium-and-larger-specific-style {
+      background-color: red;
+    }
+  }
+
+  @media (--breakpoint-medium) {
+    .medium-screen-specific-style {
+      background-color: red;
+    }
+  }
+
+  @media (--breakpoint-large) {
+    .large-and-larger-screen-specific-style {
+      background-color: red;
+    }
+  }
+
+*/
+
+/* Media Queries */
+@custom-media --breakpoint-not-small screen and (min-width: 700px);
+@custom-media --breakpoint-medium screen and (min-width: 700px) and (max-width: 1080px);
+@custom-media --breakpoint-large screen and (min-width: 1080px);

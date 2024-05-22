@@ -1,0 +1,12 @@
+<svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>no-data-subscription</title>
+  <defs>
+    <style>
+      .cls-1{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <rect class="cls-1" x="11.25" y="14.25" width="12" height="9" rx="1.5" ry="1.5"/>
+  <path class="cls-1" d="M11.25 17.25h12m-6 3h3"/>
+  <circle class="cls-1" cx="7.5" cy="4.875" r="4.125"/>
+  <path class="cls-1" d="M.75 17.25a6.753 6.753 0 0 1 9.75-6.05"/>
+</svg>

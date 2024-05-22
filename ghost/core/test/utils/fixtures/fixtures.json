@@ -1,0 +1,1197 @@
+{
+    "models": [
+        {
+            "name": "Collection",
+            "entries": [
+                {
+                    "title":            "Latest",
+                    "slug":             "latest",
+                    "description":      "All posts",
+                    "type":             "automatic",
+                    "filter":           ""
+                },
+                {
+                    "title":            "Featured",
+                    "slug":             "featured",
+                    "description":      "Featured posts",
+                    "type":             "automatic",
+                    "filter":           "featured:true"
+                }
+            ]
+        },
+        {
+            "name": "Product",
+            "entries": [
+                {
+                    "name":             "Default Product",
+                    "slug":             "default-product",
+                    "type":             "paid",
+                    "active":           true,
+                    "visibility":       "public",
+                    "currency":         "usd",
+                    "monthly_price":    500,
+                    "yearly_price":     5000
+                },
+                {
+                    "name":             "Free",
+                    "slug":             "free",
+                    "type":             "free",
+                    "active":           true,
+                    "visibility":       "public"
+                }
+            ]
+        },
+        {
+            "name": "Newsletter",
+            "entries": [
+                {
+                    "name":             "Default Newsletter",
+                    "slug":             "default-newsletter"
+                }
+            ]
+        },
+        {
+            "name": "Tag",
+            "entries": [
+                {
+                    "id":               "6194d3ce51e2700162531a70",
+                    "name":             "Getting Started",
+                    "slug":             "getting-started",
+                    "description":      null,
+                    "parent_id":        null,
+                    "meta_title":       null,
+                    "meta_description": null
+                }
+            ]
+        },
+        {
+            "name": "Role",
+            "entries": [
+                {
+                    "name": "Administrator",
+                    "description": "Administrators"
+                },
+                {
+                    "name": "Editor",
+                    "description": "Editors"
+                },
+                {
+                    "name": "Author",
+                    "description": "Authors"
+                },
+                {
+                    "name": "Contributor",
+                    "description": "Contributors"
+                },
+                {
+                    "name": "Owner",
+                    "description": "Blog Owner"
+                },
+                {
+                    "name": "Admin Integration",
+                    "description": "External Apps"
+                },
+                {
+                    "name": "Ghost Explore Integration",
+                    "description": "Internal Integration for the Ghost Explore directory"
+                },
+                {
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Internal Integration for the Self-Serve migration tool"
+                },
+                {
+                    "name": "DB Backup Integration",
+                    "description": "Internal DB Backup Client"
+                },
+                {
+                    "name": "Scheduler Integration",
+                    "description": "Internal Scheduler Client"
+                }
+            ]
+        },
+        {
+            "name": "Permission",
+            "entries": [
+                {
+                    "name": "Read explore data",
+                    "action_type": "read",
+                    "object_type": "explore"
+                },
+                {
+                    "name": "Export database",
+                    "action_type": "exportContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Import database",
+                    "action_type": "importContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Delete all content",
+                    "action_type": "deleteAllContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Send mail",
+                    "action_type": "send",
+                    "object_type": "mail"
+                },
+                {
+                    "name": "Browse notifications",
+                    "action_type": "browse",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Read newsletters",
+                    "action_type": "read",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Add notifications",
+                    "action_type": "add",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Delete notifications",
+                    "action_type": "destroy",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Browse posts",
+                    "action_type": "browse",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Read posts",
+                    "action_type": "read",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Edit posts",
+                    "action_type": "edit",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Add posts",
+                    "action_type": "add",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Delete posts",
+                    "action_type": "destroy",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Browse settings",
+                    "action_type": "browse",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Read settings",
+                    "action_type": "read",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Edit settings",
+                    "action_type": "edit",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Generate slugs",
+                    "action_type": "generate",
+                    "object_type": "slug"
+                },
+                {
+                    "name": "Browse tags",
+                    "action_type": "browse",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Read tags",
+                    "action_type": "read",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Edit tags",
+                    "action_type": "edit",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Add tags",
+                    "action_type": "add",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Delete tags",
+                    "action_type": "destroy",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Browse themes",
+                    "action_type": "browse",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Edit themes",
+                    "action_type": "edit",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Activate themes",
+                    "action_type": "activate",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "View active theme details",
+                    "action_type": "readActive",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Upload themes",
+                    "action_type": "add",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Download themes",
+                    "action_type": "read",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Delete themes",
+                    "action_type": "destroy",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Browse users",
+                    "action_type": "browse",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Read users",
+                    "action_type": "read",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Edit users",
+                    "action_type": "edit",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Add users",
+                    "action_type": "add",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Delete users",
+                    "action_type": "destroy",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Assign a role",
+                    "action_type": "assign",
+                    "object_type": "role"
+                },
+                {
+                    "name": "Browse roles",
+                    "action_type": "browse",
+                    "object_type": "role"
+                },
+                {
+                    "name": "Browse invites",
+                    "action_type": "browse",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Read invites",
+                    "action_type": "read",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Edit invites",
+                    "action_type": "edit",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Add invites",
+                    "action_type": "add",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Delete invites",
+                    "action_type": "destroy",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Download redirects",
+                    "action_type": "download",
+                    "object_type": "redirect"
+                },
+                {
+                    "name": "Upload redirects",
+                    "action_type": "upload",
+                    "object_type": "redirect"
+                },
+                {
+                    "name": "Add webhooks",
+                    "action_type": "add",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Edit webhooks",
+                    "action_type": "edit",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Delete webhooks",
+                    "action_type": "destroy",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Browse integrations",
+                    "action_type": "browse",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Read integrations",
+                    "action_type": "read",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Edit integrations",
+                    "action_type": "edit",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Add integrations",
+                    "action_type": "add",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Delete integrations",
+                    "action_type": "destroy",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Browse API keys",
+                    "action_type": "browse",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Read API keys",
+                    "action_type": "read",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Edit API keys",
+                    "action_type": "edit",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Add API keys",
+                    "action_type": "add",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Delete API keys",
+                    "action_type": "destroy",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Browse Actions",
+                    "action_type": "browse",
+                    "object_type": "action"
+                },
+                {
+                    "name": "Browse Members",
+                    "action_type": "browse",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Read Members",
+                    "action_type": "read",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Edit Members",
+                    "action_type": "edit",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Add Members",
+                    "action_type": "add",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Delete Members",
+                    "action_type": "destroy",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Browse Products",
+                    "action_type": "browse",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Read Products",
+                    "action_type": "read",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Edit Products",
+                    "action_type": "edit",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Add Products",
+                    "action_type": "add",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Delete Products",
+                    "action_type": "destroy",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Publish posts",
+                    "action_type": "publish",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Backup database",
+                    "action_type": "backupContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Email preview",
+                    "action_type": "read",
+                    "object_type": "email_preview"
+                },
+                {
+                    "name": "Send test email",
+                    "action_type": "sendTestEmail",
+                    "object_type": "email_preview"
+                },
+                {
+                    "name": "Browse emails",
+                    "action_type": "browse",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Read emails",
+                    "action_type": "read",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Retry emails",
+                    "action_type": "retry",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Browse labels",
+                    "action_type": "browse",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Read labels",
+                    "action_type": "read",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Edit labels",
+                    "action_type": "edit",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Add labels",
+                    "action_type": "add",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Delete labels",
+                    "action_type": "destroy",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Read member signin urls",
+                    "action_type": "read",
+                    "object_type": "member_signin_url"
+                },
+                {
+                    "name": "Read identities",
+                    "action_type": "read",
+                    "object_type": "identity"
+                },
+                {
+                    "name": "Auth Stripe Connect for Members",
+                    "action_type": "auth",
+                    "object_type": "members_stripe_connect"
+                },
+                {
+                    "name": "Browse snippets",
+                    "action_type": "browse",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Read snippets",
+                    "action_type": "read",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Edit snippets",
+                    "action_type": "edit",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Add snippets",
+                    "action_type": "add",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Delete snippets",
+                    "action_type": "destroy",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Browse offers",
+                    "action_type": "browse",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Read offers",
+                    "action_type": "read",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Edit offers",
+                    "action_type": "edit",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Add offers",
+                    "action_type": "add",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Reset all passwords",
+                    "action_type": "resetAllPasswords",
+                    "object_type": "authentication"
+                },
+                {
+                    "name": "Browse custom theme settings",
+                    "action_type": "browse",
+                    "object_type": "custom_theme_setting"
+                },
+                {
+                    "name": "Edit custom theme settings",
+                    "action_type": "edit",
+                    "object_type": "custom_theme_setting"
+                },
+                {
+                    "name": "Browse newsletters",
+                    "action_type": "browse",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Add newsletters",
+                    "action_type": "add",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Edit newsletters",
+                    "action_type": "edit",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Browse comments",
+                    "action_type": "browse",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Read comments",
+                    "action_type": "read",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Edit comments",
+                    "action_type": "edit",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Add comments",
+                    "action_type": "add",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Delete comments",
+                    "action_type": "destroy",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Moderate comments",
+                    "action_type": "moderate",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Like comments",
+                    "action_type": "like",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Unlike comments",
+                    "action_type": "unlike",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Report comments",
+                    "action_type": "report",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Browse links",
+                    "action_type": "browse",
+                    "object_type": "link"
+                },
+                {
+                    "name": "Edit links",
+                    "action_type": "edit",
+                    "object_type": "link"
+                },
+                {
+                    "name": "Browse mentions",
+                    "action_type": "browse",
+                    "object_type": "mention"
+                },
+                {
+                    "name": "Browse collections",
+                    "action_type": "browse",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Read collections",
+                    "action_type": "read",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Edit collections",
+                    "action_type": "edit",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Add collections",
+                    "action_type": "add",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Delete collections",
+                    "action_type": "destroy",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Browse recommendations",
+                    "action_type": "browse",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Read recommendations",
+                    "action_type": "read",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Edit recommendations",
+                    "action_type": "edit",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Add recommendations",
+                    "action_type": "add",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Delete recommendations",
+                    "action_type": "destroy",
+                    "object_type": "recommendation"
+                }
+            ]
+        },
+        {
+            "name": "User",
+            "entries": [
+                {
+                    "id": 1,
+                    "name": "Ghost",
+                    "email": "ghost@example.com",
+                    "free_member_signup_notification": true,
+                    "paid_subscription_started_notificaton": true,
+                    "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "recommendation_notifications": true,
+                    "milestone_notifications": true,
+                    "donation_notifications": true,
+                    "status": "inactive",
+                    "roles": []
+                },
+                {
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "name": "Ghost",
+                    "email": "ghost-author@example.com",
+                    "status": "active",
+                    "roles": ["Contributor"],
+                    "twitter": "ghost",
+                    "facebook": "ghost",
+                    "free_member_signup_notification": true,
+                    "paid_subscription_started_notification": true,
+                    "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "recommendation_notifications": true,
+                    "milestone_notifications": true,
+                    "donation_notifications": true,
+                    "location": "The Internet",
+                    "website": "https://ghost.org",
+                    "bio": "You can delete this user to remove all the welcome posts",
+                    "profile_image": "https://static.ghost.org/v4.0.0/images/ghost-user.png"
+                }
+            ]
+        },
+        {
+            "name": "Post",
+            "entries": [
+                {
+                    "id": "6194d3ce51e2700162531a71",
+                    "title": "Setting up apps and custom integrations",
+                    "slug": "integrations",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/integrations-icons.png\",\"cardWidth\":\"full\"}],[\"markdown\",{\"markdown\":\"<script src=\\\"https://zapier.com/apps/embed/widget.js?services=Ghost,-shortcm,-hubspot,-sendpulse,-noticeable,-aweber,-icontact,-facebook-pages,-github,-medium,-slack,-mailchimp,-activecampaign,-twitter,-discourse&container,-convertkit,-drip,-airtable=true&limit=5\\\"></script>\\n\"}],[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/iawriter-integration.png\",\"width\":2244,\"height\":936}]],\"markups\":[[\"a\",[\"href\",\"https://ghost.org/integrations/\"]],[\"strong\"]],\"sections\":[[1,\"p\",[[0,[],0,\"It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations. \"]]],[1,\"p\",[[0,[],0,\"Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our \"],[0,[0],1,\"integrations library\"],[0,[],0,\" has got it all covered with hundreds of integration tutorials.\"]]],[1,\"p\",[[0,[],0,\"Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app and pasting it into Ghost. Our integration tutorials are used by creators of all kinds to get apps and integrations up and running in no time — no technical knowledge required.\"]]],[10,0],[1,\"h2\",[[0,[],0,\"Zapier\"]]],[1,\"p\",[[0,[],0,\"Zapier is a no-code tool that allows you to build powerful automations, and our official integration allows you to connect your Ghost site to more than 1,000 external services.\"]]],[1,\"blockquote\",[[0,[1],1,\"Example\"],[0,[],0,\": When someone new subscribes to a newsletter on a Ghost site (Trigger) then the contact information is automatically pushed into MailChimp (Action).\"]]],[1,\"p\",[[0,[1],1,\"Here's a few of the most popular automation templates:\"],[0,[],0,\" \"]]],[10,1],[1,\"h2\",[[0,[],0,\"Custom integrations\"]]],[1,\"p\",[[0,[],0,\"For more advanced automation, it's possible to create custom Ghost integrations with dedicated API keys from the Integrations page within Ghost Admin. \"]]],[10,2],[1,\"p\",[[0,[],0,\"These custom integrations allow you to use the Ghost API without needing to write code, and create powerful workflows such as sending content from your favorite desktop editor into Ghost as a new draft.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a72",
+                    "title": "How to grow your business around an audience",
+                    "slug": "grow",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}],[\"soft-return\",\"\",{}]],\"cards\":[[\"hr\",{}]],\"markups\":[[\"strong\"],[\"a\",[\"href\",\"https://ghost.org/pricing/\"]],[\"em\"],[\"a\",[\"href\",\"https://ghost.org/blog/how-to-create-a-newsletter/\"]],[\"a\",[\"href\",\"https://ghost.org/blog/membership-sites/\"]],[\"a\",[\"href\",\"https://newsletterguide.org/\"]],[\"a\",[\"href\",\"https://ghost.org/blog/find-your-niche-creator-economy/\"]],[\"a\",[\"href\",\"https://ghost.org/blog/newsletter-referral-programs/\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"As you grow, you'll probably want to start inviting team members and collaborators to your site. Ghost has a number of different user roles for your team:\"]]],[1,\"p\",[[0,[0],1,\"Contributors\"],[1,[],0,0],[0,[],0,\"This is the base user level in Ghost. Contributors can create and edit their own draft posts, but they are unable to edit drafts of others or publish posts. Contributors are \"],[0,[0],1,\"untrusted\"],[0,[],0,\" users with the most basic access to your publication.\"]]],[1,\"p\",[[0,[0],1,\"Authors\"],[1,[],0,1],[0,[],0,\"Authors are the 2nd user level in Ghost. Authors can write, edit and publish their own posts. Authors are \"],[0,[0],1,\"trusted\"],[0,[],0,\" users. If you don't trust users to be allowed to publish their own posts, they should be set as Contributors.\"]]],[1,\"p\",[[0,[0],1,\"Editors\"],[1,[],0,2],[0,[],0,\"Editors are the 3rd user level in Ghost. Editors can do everything that an Author can do, but they can also edit and publish the posts of others - as well as their own. Editors can also invite new Contributors & Authors to the site.\"]]],[1,\"p\",[[0,[0],1,\"Administrators\"],[1,[],0,3],[0,[],0,\"The top user level in Ghost is Administrator. Again, administrators can do everything that Authors and Editors can do, but they can also edit all site settings and data, not just content. Additionally, administrators have full access to invite, manage or remove any other user of the site.\"],[1,[],0,4],[1,[],0,5],[0,[0],1,\"The Owner\"],[1,[],0,6],[0,[],0,\"There is only ever one owner of a Ghost site. The owner is a special user which has all the same permissions as an Administrator, but with two exceptions: The Owner can never be deleted. And in some circumstances the owner will have access to additional special settings if applicable. For example: billing details, if using \"],[0,[1,0],2,\"Ghost(Pro)\"],[0,[],0,\".\"]]],[1,\"blockquote\",[[0,[2],1,\"Ask all of your users to fill out their user profiles, including bio and social links. These will populate rich structured data for posts and generally create more opportunities for themes to fully populate their design.\"]]],[10,0],[1,\"p\",[[0,[],0,\"If you're looking for insights, tips and reference materials to expand your content business, here's 5 top resources to get you started:\"]]],[3,\"ul\",[[[0,[3,0],2,\"How to create a premium newsletter (+ some case studies)\"],[0,[0],1,\" \"],[0,[],0,\" \"],[1,[],0,7],[0,[],0,\"Learn how others run successful paid email newsletter products\"]],[[0,[0,4],2,\"The ultimate guide to membership websites for creators\"],[1,[],0,8],[0,[],0,\"Tips to help you build, launch and grow your new membership business\"]],[[0,[0,5],2,\"The Newsletter Guide\"],[1,[],0,9],[0,[],0,\"A 201 guide for taking your newsletters to the next level\"]],[[0,[6,0],2,\"The proven way to find your niche, explained\"],[1,[],0,10],[0,[],0,\"Find the overlap and find a monetizable niche that gets noticed\"]],[[0,[0,7],2,\"Should you launch a referral program? \"],[1,[],0,11],[0,[],0,\"Strategies for building a sustainable referral growth machine\"]]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a73",
+                    "title": "Selling premium memberships with recurring revenue",
+                    "slug": "sell",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/thebrowser.jpg\",\"width\":1600,\"height\":2000,\"href\":\"https://thebrowser.com\",\"caption\":\"The Browser has over 10,000 paying subscribers\"}],[\"paywall\",{}]],\"markups\":[[\"a\",[\"href\",\"https://stripe.com\"]],[\"strong\"],[\"a\",[\"href\",\"https://stratechery.com\"]],[\"a\",[\"href\",\"https://www.theinformation.com\"]],[\"a\",[\"href\",\"https://thebrowser.com\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.\"]]],[1,\"p\",[[0,[],0,\"Connect your \"],[0,[0],1,\"Stripe\"],[0,[],0,\" account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.\"]]],[1,\"p\",[[0,[],0,\"Ghost takes \"],[0,[1],1,\"0% payment fees\"],[0,[],0,\", so everything you make is yours to keep!\"]]],[1,\"p\",[[0,[],0,\"Using subscriptions, you can build an independent media business like \"],[0,[2],1,\"Stratechery\"],[0,[],0,\", \"],[0,[3],1,\"The Information\"],[0,[],0,\", or \"],[0,[4],1,\"The Browser\"],[0,[],0,\".\"]]],[1,\"p\",[[0,[],0,\"The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.\"]]],[10,0],[1,\"p\",[[0,[],0,\"Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...\"]]],[10,1],[1,\"p\",[[0,[],0,\"Hold back some of the best bits for paying members only! \"]]],[1,\"p\",[[0,[],0,\"The \"],[0,[1],1,\"Public preview\"],[0,[],0,\" card allows to create a divide between how much of your post should be available as a public free-preview, and how much should be restricted based on the post access level.\"]]],[1,\"p\",[[0,[],0,\"These last paragraphs are only visible on the site if you're logged in as a paying member. To test this out, you can connect a Stripe account, create a member account for yourself, and give yourself a complimentary premium plan.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "paid",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a74",
+                    "title": "Building your audience with subscriber signups",
+                    "slug": "portal",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/portalsettings.png\",\"width\":2924,\"height\":1810,\"cardWidth\":\"wide\"}],[\"hr\",{}]],\"markups\":[[\"em\"],[\"a\",[\"href\",\"#/portal\"]],[\"a\",[\"href\",\"__GHOST_URL__/sell/\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"What sets Ghost apart from other products is that you can publish content and grow your audience using the same platform. Rather than just endlessly posting and hoping someone is listening, you can track real signups against your work and have them subscribe to be notified of future posts. The feature that makes all this possible is called \"],[0,[0],1,\"Portal\"],[0,[],0,\".\"]]],[1,\"p\",[[0,[],0,\"Portal is an embedded interface for your audience to sign up to your site. It works on every Ghost site, with every theme, and for any type of publisher. \"]]],[1,\"p\",[[0,[],0,\"You can customize the design, content and settings of Portal to suit your site, whether you just want people to sign up to your newsletter — or you're running a full premium publication with user sign-ins and private content.\"]]],[10,0],[1,\"p\",[[0,[],0,\"Once people sign up to your site, they'll receive an email confirmation with a link to click. The link acts as an automatic sign-in, so subscribers will be automatically signed-in to your site when they click on it. There are a couple of interesting angles to this:\"]]],[1,\"p\",[[0,[],0,\"Because subscribers are automatically able to sign in and out of your site as registered members: You can (optionally) restrict access to posts and pages depending on whether people are signed-in or not. So if you want to publish some posts for free, but keep some really great stuff for members-only, this can be a great draw to encourage people to sign up!\"]]],[1,\"p\",[[0,[],0,\"Ghost members sign in using email authentication links, so there are no passwords for people to set or forget. You can turn any list of email subscribers into a database of registered members who can sign in to your site. Like magic.\"]]],[1,\"p\",[[0,[],0,\"Portal makes all of this possible, and it appears by default as a floating button in the bottom-right corner of your site. When people are logged out, clicking it will open a sign-up/sign-in window. When members are logged in, clicking the Portal button will open the account menu where they can edit their name, email, and subscription settings.\"]]],[1,\"p\",[[0,[],0,\"The floating Portal button is completely optional. If you prefer, you can add manual links to your content, navigation, or theme to trigger it instead.\"]]],[1,\"p\",[[0,[],0,\"Like this! \"],[0,[1],1,\"Sign up here\"]]],[10,1],[1,\"p\",[[0,[],0,\"As you start to grow your registered audience, you'll be able to get a sense of who you're publishing \"],[0,[0],1,\"for\"],[0,[],0,\" and where those people are coming \"],[0,[0],1,\"from\"],[0,[],0,\". Best of all: You'll have a straightforward, reliable way to connect with people who enjoy your work.\"]]],[1,\"p\",[[0,[],0,\"Social networks go in and out of fashion all the time. Email addresses are timeless.\"]]],[1,\"p\",[[0,[],0,\"Growing your audience is valuable no matter what type of site you run, but if your content \"],[0,[0],1,\"is\"],[0,[],0,\" your business, then you might also be interested in \"],[0,[2],1,\"setting up premium subscriptions\"],[0,[],0,\".\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a75",
+                    "title": "Writing and managing content in Ghost, an advanced guide",
+                    "slug": "write",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/editor.png\",\"width\":3182,\"height\":1500,\"cardWidth\":\"wide\",\"caption\":\"The Ghost editor. Also available in dark-mode, for late night writing sessions.\"}],[\"bookmark\",{\"type\":\"bookmark\",\"url\":\"https://opensubscriptionplatforms.com/\",\"metadata\":{\"url\":\"https://opensubscriptionplatforms.com\",\"title\":\"Open Subscription Platforms\",\"description\":\"A shared movement for independent subscription data.\",\"author\":null,\"publisher\":\"Open Subscription Platforms\",\"thumbnail\":\"https://opensubscriptionplatforms.com/images/osp-card.png\",\"icon\":\"https://opensubscriptionplatforms.com/images/favicon.png\"}}],[\"embed\",{\"url\":\"https://www.youtube.com/watch?v=hmH3XMlms8E\",\"html\":\"<iframe width=\\\"200\\\" height=\\\"113\\\" src=\\\"https://www.youtube.com/embed/hmH3XMlms8E?feature=oembed\\\" frameborder=\\\"0\\\" allow=\\\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\\\" allowfullscreen></iframe>\",\"type\":\"video\",\"metadata\":{\"title\":\"\\\"VELA\\\" Episode 1 of 4 | John John Florence\",\"author_name\":\"John John Florence\",\"author_url\":\"https://www.youtube.com/c/JJF\",\"height\":113,\"width\":200,\"version\":\"1.0\",\"provider_name\":\"YouTube\",\"provider_url\":\"https://www.youtube.com/\",\"thumbnail_height\":360,\"thumbnail_width\":480,\"thumbnail_url\":\"https://i.ytimg.com/vi/hmH3XMlms8E/hqdefault.jpg\"}}],[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/andreas-selter-xSMqGH7gi6o-unsplash.jpg\",\"width\":6000,\"height\":4000,\"cardWidth\":\"full\",\"caption\":\"\"}],[\"gallery\",{\"images\":[{\"fileName\":\"andreas-selter-e4yK8QQlZa0-unsplash.jpg\",\"row\":0,\"width\":4572,\"height\":3048,\"src\":\"https://static.ghost.org/v4.0.0/images/andreas-selter-e4yK8QQlZa0-unsplash.jpg\"},{\"fileName\":\"steve-carter-Ixp4YhCKZkI-unsplash.jpg\",\"row\":0,\"width\":4032,\"height\":2268,\"src\":\"https://static.ghost.org/v4.0.0/images/steve-carter-Ixp4YhCKZkI-unsplash.jpg\"}],\"caption\":\"\"}],[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/lukasz-szmigiel-jFCViYFYcus-unsplash.jpg\",\"width\":2560,\"height\":1705,\"cardWidth\":\"wide\"}],[\"gallery\",{\"images\":[{\"fileName\":\"jd-mason-hPiEFq6-Eto-unsplash.jpg\",\"row\":0,\"width\":5184,\"height\":3888,\"src\":\"https://static.ghost.org/v4.0.0/images/jd-mason-hPiEFq6-Eto-unsplash.jpg\"},{\"fileName\":\"jp-valery-OBpOP9GVH9U-unsplash.jpg\",\"row\":0,\"width\":5472,\"height\":3648,\"src\":\"https://static.ghost.org/v4.0.0/images/jp-valery-OBpOP9GVH9U-unsplash.jpg\"}],\"caption\":\"Peaceful places\"}],[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/createsnippet.png\",\"width\":2282,\"height\":1272,\"cardWidth\":\"wide\"}],[\"hr\",{}],[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/preview.png\",\"width\":3166,\"height\":2224,\"cardWidth\":\"wide\"}],[\"hr\",{}]],\"markups\":[[\"em\"],[\"code\"]],\"sections\":[[1,\"p\",[[0,[],0,\"Ghost comes with a best-in-class editor which does its very best to get out of the way, and let you focus on your content. Don't let its minimal looks fool you, though, beneath the surface lies a powerful editing toolset designed to accommodate the extensive needs of modern creators.\"]]],[1,\"p\",[[0,[],0,\"For many, the base canvas of the Ghost editor will feel familiar. You can start writing as you would expect, highlight content to access the toolbar you would expect, and generally use all of the keyboard shortcuts you would expect.\"]]],[1,\"p\",[[0,[],0,\"Our main focus in building the Ghost editor is to try and make as many things that you hope/expect might work: actually work. \"]]],[3,\"ul\",[[[0,[],0,\"You can copy and paste raw content from web pages, and Ghost will do its best to correctly preserve the formatting. \"]],[[0,[],0,\"Pasting an image from your clipboard will upload inline.\"]],[[0,[],0,\"Pasting a social media URL will automatically create an embed.\"]],[[0,[],0,\"Highlight a word in the editor and paste a URL from your clipboard on top: Ghost will turn it into a link.\"]],[[0,[],0,\"You can also paste (or write!) Markdown and Ghost will usually be able to auto-convert it into fully editable, formatted content.\"]]]],[10,0],[1,\"p\",[[0,[],0,\"The goal, as much as possible, is for things to work so that you don't have to \"],[0,[0],1,\"think\"],[0,[],0,\" so much about the editor. You won't find any disastrous \\\"block builders\\\" here, where you have to open 6 submenus and choose from 18 different but identical alignment options. That's not what Ghost is about.\"]]],[1,\"p\",[[0,[],0,\"What you will find though, is dynamic cards which allow you to embed rich media into your posts and create beautifully laid out stories.\"]]],[1,\"h2\",[[0,[],0,\"Using cards\"]]],[1,\"p\",[[0,[],0,\"You can insert dynamic cards inside post content using the \"],[0,[1],1,\"+\"],[0,[],0,\" button, which appears on new lines, or by typing \"],[0,[1],1,\"/\"],[0,[],0,\" on a new line to trigger the card menu. Many of the choices are simple and intuitive, like bookmark cards, which allow you to create rich links with embedded structured data:\"]]],[10,1],[1,\"p\",[[0,[],0,\"or embed cards which make it easy to insert content you want to share with your audience, from external services:\"]]],[10,2],[1,\"p\",[[0,[],0,\"But, dig a little deeper, and you'll also find more advanced cards, like one that only shows up in email newsletters (great for personalized introductions) and a comprehensive set of specialized cards for different types of images and galleries.\"]]],[1,\"blockquote\",[[0,[],0,\"Once you  start mixing text and image cards creatively, the whole narrative of the story changes. Suddenly, you're working in a new format.\"]]],[10,3],[1,\"p\",[[0,[],0,\"As it turns out, sometimes pictures and a thousand words go together really well. Telling people a great story often has much more impact if they can feel, even for a moment, as though they were right there with you.\"]]],[10,4],[10,5],[10,6],[1,\"p\",[[0,[],0,\"Galleries and image cards can be combined in so many different ways — the only limit is your imagination.\"]]],[1,\"h2\",[[0,[],0,\"Build workflows with snippets\"]]],[1,\"p\",[[0,[],0,\"One of the most powerful features of the Ghost editor is the ability to create and re-use content snippets. If you've ever used an email client with a concept of \"],[0,[0],1,\"saved replies\"],[0,[],0,\" then this will be immediately intuitive.\"]]],[1,\"p\",[[0,[],0,\"To create a snippet, select a piece of content in the editor that you'd like to re-use in future, then click on the snippet icon in the toolbar. Give your snippet a name, and you're all done. Now your snippet will be available from within the card menu, or you can search for it directly using the \"],[0,[1],1,\"/\"],[0,[],0,\" command.\"]]],[1,\"p\",[[0,[],0,\"This works really well for saving images you might want to use often, like a company logo or team photo, links to resources you find yourself often linking to, or introductions and passages that you want to remember.\"]]],[10,7],[1,\"p\",[[0,[],0,\"You can even build entire post templates or outlines to create a quick, re-usable workflow for publishing over time. Or build custom design elements for your post with an HTML card, and use a snippet to insert it.\"]]],[1,\"p\",[[0,[],0,\"Once you get a few useful snippets set up, it's difficult to go back to the old way of diving through media libraries and trawling for that one thing you know you used somewhere that one time.\"]]],[10,8],[1,\"h2\",[[0,[],0,\"Publishing and newsletters the easy way\"]]],[1,\"p\",[[0,[],0,\"When you're ready to publish, Ghost makes it as simple as possible to deliver your new post to all your existing members. Just hit the \"],[0,[0],1,\"Preview\"],[0,[],0,\" link and you'll get a chance to see what your content looks like on Web, Mobile, Email and Social.\"]]],[10,9],[1,\"p\",[[0,[],0,\"You can send yourself a test newsletter to make sure everything looks good in your email client, and then hit the \"],[0,[0],1,\"Publish\"],[0,[],0,\" button to decide who to deliver it to.\"]]],[1,\"p\",[[0,[],0,\"Ghost comes with a streamlined, optimized email newsletter template that has settings built-in for you to customize the colors and typography. We've spent countless hours refining the template to make sure it works great across all email clients, and performs well for email deliverability.\"]]],[1,\"p\",[[0,[],0,\"So, you don't need to fight the awful process of building a custom email template from scratch. It's all done already!\"]]],[10,10],[1,\"p\",[[0,[],0,\"The Ghost editor is powerful enough to do whatever you want it to do. With a little exploration, you'll be up and running in no time.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a76",
+                    "title": "Customizing your brand and design settings",
+                    "slug": "design",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/brandsettings.png\",\"width\":3456,\"height\":2338,\"cardWidth\":\"wide\",\"caption\":\"Ghost Admin → Settings → Branding\"}],[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/themesettings.png\",\"width\":3208,\"height\":1618,\"cardWidth\":\"wide\",\"caption\":\"Ghost Admin → Settings → Theme\"}],[\"code\",{\"code\":\"{{#post}}\\n<article class=\\\"article {{post_class}}\\\">\\n\\n    <h1>{{title}}</h1>\\n    \\n    {{#if feature_image}}\\n    \\t<img src=\\\"{{feature_image}}\\\" alt=\\\"Feature image\\\" />\\n    {{/if}}\\n    \\n    {{content}}\\n\\n</article>\\n{{/post}}\",\"language\":\"handlebars\",\"caption\":\"A snippet from a post template\"}]],\"markups\":[[\"a\",[\"href\",\"__GHOST_URL__/welcome/\"]],[\"strong\"],[\"em\"],[\"a\",[\"href\",\"https://ghost.org/themes/\"]],[\"a\",[\"href\",\"https://github.com/tryghost/casper/\"]],[\"a\",[\"href\",\"https://ghost.org/docs/themes/\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"As discussed in the \"],[0,[0],1,\"introduction\"],[0,[],0,\" post, one of the best things about Ghost is just how much you can customize to turn your site into something unique. Everything about your layout and design can be changed, so you're not stuck with yet another clone of a social network profile.\"]]],[1,\"p\",[[0,[],0,\"How far you want to go with customization is completely up to you, there's no right or wrong approach! The majority of people use one of Ghost's built-in themes to get started, and then progress to something more bespoke later on as their site grows. \"]]],[1,\"p\",[[0,[],0,\"The best way to get started is with Ghost's branding settings, where you can set up colors, images and logos to fit with your brand.\"]]],[10,0],[1,\"p\",[[0,[],0,\"Any Ghost theme that's up to date and compatible with Ghost 4.0 and higher will reflect your branding settings in the preview window, so you can see what your site will look like as you experiment with different options.\"]]],[1,\"p\",[[0,[],0,\"When selecting an accent color, try to choose something which will contrast well with white text. Many themes will use your accent color as the background for buttons, headers and navigational elements. Vibrant colors with a darker hue tend to work best, as a general rule.\"]]],[1,\"h2\",[[0,[],0,\"Installing Ghost themes\"]]],[1,\"p\",[[0,[],0,\"By default, new sites are created with Ghost's friendly publication theme, called Casper. Everything in Casper is optimized to work for the most common types of blog, newsletter and publication that people create with Ghost — so it's a perfect place to start.\"]]],[1,\"p\",[[0,[],0,\"However, there are hundreds of different themes available to install, so you can pick out a look and feel that suits you best.\"]]],[10,1],[1,\"p\",[[0,[],0,\"Inside Ghost's theme settings you'll find 4 more official themes that can be directly installed and activated. Each theme is suited to slightly different use-cases.\"]]],[3,\"ul\",[[[0,[1],1,\"Casper\"],[0,[],0,\" \"],[0,[2],1,\"(default)\"],[0,[],0,\" — Made for all sorts of blogs and newsletters\"]],[[0,[1],1,\"Edition\"],[0,[],0,\" — A beautiful minimal template for newsletter authors\"]],[[0,[1],1,\"Alto\"],[0,[],0,\" — A slick news/magazine style design for creators\"]],[[0,[1],1,\"London\"],[0,[],0,\" — A light photography theme with a bold grid\"]],[[0,[1],1,\"Ease\"],[0,[],0,\" — A library theme for organizing large content archives\"]]]],[1,\"p\",[[0,[],0,\"And if none of those feel quite right, head on over to the \"],[0,[3],1,\"Ghost Marketplace\"],[0,[],0,\", where you'll find a huge variety of both free and premium themes.\"]]],[1,\"h2\",[[0,[],0,\"Building something custom\"]]],[1,\"p\",[[0,[],0,\"Finally, if you want something completely bespoke for your site, you can always build a custom theme from scratch and upload it to your site.\"]]],[1,\"p\",[[0,[],0,\"Ghost's theming template files are very easy to work with, and can be picked up in the space of a few hours by anyone who has just a little bit of knowledge of HTML and CSS. Templates from other platforms can also be ported to Ghost with relatively little effort.\"]]],[1,\"p\",[[0,[],0,\"If you want to take a quick look at the theme syntax to see what it's like, you can \"],[0,[4],1,\"browse through the files of the default Casper theme\"],[0,[],0,\". We've added tons of inline code comments to make it easy to learn, and the structure is very readable.\"]]],[10,2],[1,\"p\",[[0,[],0,\"See? Not that scary! But still completely optional. \"]]],[1,\"p\",[[0,[],0,\"If you're interested in creating your own Ghost theme, check out our extensive \"],[0,[5],1,\"theme documentation\"],[0,[],0,\" for a full guide to all the different template variables and helpers which are available.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a77",
+                    "title": "Start here for a quick overview of everything you need to know",
+                    "slug": "welcome",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"hr\",{}],[\"hr\",{}]],\"markups\":[[\"strong\"],[\"a\",[\"href\",\"__GHOST_URL__/design/\"]],[\"a\",[\"href\",\"__GHOST_URL__/write/\"]],[\"a\",[\"href\",\"__GHOST_URL__/portal/\"]],[\"a\",[\"href\",\"__GHOST_URL__/sell/\"]],[\"a\",[\"href\",\"__GHOST_URL__/grow/\"]],[\"a\",[\"href\",\"__GHOST_URL__/integrations/\"]],[\"a\",[\"href\",\"https://ghost.org/blog/\"]],[\"a\",[\"href\",\"https://ghost.org/pricing/\"]],[\"em\"],[\"a\",[\"href\",\"https://forum.ghost.org\"]]],\"sections\":[[1,\"p\",[[0,[0],1,\"Hey there\"],[0,[],0,\", welcome to your new home on the web! \"]]],[1,\"p\",[[0,[],0,\"Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work. \"]]],[1,\"p\",[[0,[],0,\"Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation, logos and settings — so you can set your site up just how you like it. No technical knowledge required.\"]]],[1,\"p\",[[0,[],0,\"If you're feeling a little more adventurous, there's really no limit to what's possible. With just a little bit of HTML and CSS you can modify or build your very own theme from scratch, or connect to Zapier to explore advanced integrations. Advanced developers can go even further and build entirely custom workflows using the Ghost API.\"]]],[1,\"p\",[[0,[],0,\"This level of customization means that Ghost grows with you. It's easy to get started, but there's always another level of what's possible. So, you won't find yourself outgrowing the app in a few months time and wishing you'd chosen something more powerful!\"]]],[10,0],[1,\"p\",[[0,[],0,\"For now, you're probably just wondering what to do first. To help get you going as quickly as possible, we've populated your site with starter content (like this post!) covering all the key concepts and features of the product.\"]]],[1,\"p\",[[0,[],0,\"You'll find an outline of all the different topics below, with links to each section so you can explore the parts that interest you most.\"]]],[1,\"p\",[[0,[],0,\"Once you're ready to begin publishing and want to clear out these starter posts, you can delete the \\\"Ghost\\\" staff user. Deleting an author will automatically remove all of their posts, leaving you with a clean blank canvas.\"]]],[1,\"h2\",[[0,[],0,\"Your guide to Ghost\"]]],[3,\"ul\",[[[0,[1],1,\"Customizing your brand and site settings\"]],[[0,[2],1,\"Writing & managing content, an advanced guide for creators\"]],[[0,[3],1,\"Building your audience with subscriber signups\"]],[[0,[4],1,\"Selling premium memberships with recurring revenue\"]],[[0,[5],1,\"How to grow your business around an audience\"]],[[0,[6],1,\"Setting up custom integrations and apps\"]]]],[1,\"p\",[[0,[],0,\"If you get through all those and you're hungry for more, you can find an extensive library of content for creators over on \"],[0,[7],1,\"the Ghost blog\"],[0,[],0,\".\"]]],[10,1],[1,\"h2\",[[0,[],0,\"Getting help\"]]],[1,\"p\",[[0,[],0,\"If you need help, \"],[0,[8],1,\"Ghost(Pro)\"],[0,[],0,\" customers can always reach our full-time support team by clicking on the \"],[0,[9],1,\"Ghost(Pro)\"],[0,[],0,\" link inside their admin panel.\"]]],[1,\"p\",[[0,[],0,\"If you're a developer working with the codebase in a self-managed install, check out our \"],[0,[10],1,\"developer community forum\"],[0,[],0,\" to chat with other users.\"]]],[1,\"p\",[[0,[],0,\"Have fun!\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a78",
+                    "title": "About this site",
+                    "slug": "about",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[[\"strong\"],[\"code\"]],\"sections\":[[1,\"p\",[[0,[],0,\"Unlike posts, pages in Ghost don't appear in the main feed. They're separate, individual pages which only show up when you link to them. Great for content which is important, but separate from your usual posts.\"]]],[1,\"p\",[[0,[],0,\"An about page is a great example of one you might want to set up early on so people can find out more about you, and what you do. Why should people subscribe to your site and become a member? Details help!\"]]],[1,\"blockquote\",[[0,[0],1,\"Tip: \"],[0,[],0,\"If you're reading any post or page on your site and you notice something you want to edit, you can add \"],[0,[1],1,\"/edit\"],[0,[],0,\" to the end of the URL – and you'll be taken directly to the Ghost editor.\"]]],[1,\"p\",[[0,[],0,\"Now tell the world what your site is all about.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": null,
+                    "featured": false,
+                    "type": "page",
+                    "status": "published",
+                    "visibility": "public",
+                    "custom_excerpt": null,
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a79",
+                    "title": "Contact",
+                    "slug": "contact",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"https://static.ghost.org/v4.0.0/images/integrations.png\",\"width\":2944,\"height\":1716,\"href\":\"https://ghost.org/integrations/?tag=forms\"}]],\"markups\":[[\"a\",[\"href\",\"https://twitter.com/ghost\"]],[\"a\",[\"href\",\"https://www.facebook.com/ghost\"]],[\"a\",[\"href\",\"https://instagram.com/ghost\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"If you want to set up a contact page for people to be able to reach out to you, the simplest way is to set up a simple page like this and list the different ways people can reach out to you.\"]]],[1,\"h3\",[[0,[],0,\"For example, here's how to reach us!\"]]],[3,\"ul\",[[[0,[0],1,\"@Ghost\"],[0,[],0,\" on Twitter\"]],[[0,[1],1,\"@Ghost\"],[0,[],0,\" on Facebook\"]],[[0,[2],1,\"@Ghost\"],[0,[],0,\" on Instagram\"]]]],[1,\"p\",[[0,[],0,\"If you prefer to use a contact form, almost all of the great embedded form services work great with Ghost and are easy to set up:\"]]],[10,0],[1,\"p\",[]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": null,
+                    "featured": false,
+                    "type": "page",
+                    "status": "published",
+                    "visibility": "public",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a7a",
+                    "title": "Privacy",
+                    "slug": "privacy",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[],\"sections\":[[1,\"p\",[[0,[],0,\"Wondering how Ghost fares when it comes to privacy and GDPR rules? Good news: Ghost does not use any tracking cookies of any kind.\"]]],[1,\"p\",[[0,[],0,\"You can integrate any products, services, ads or integrations with Ghost yourself if you want to, but it's always a good idea to disclose how subscriber data will be used by putting together a privacy page.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": null,
+                    "featured": false,
+                    "type": "page",
+                    "status": "published",
+                    "visibility": "public",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                },
+                {
+                    "id": "6194d3ce51e2700162531a7b",
+                    "title": "Contribute",
+                    "slug": "contribute",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[[\"a\",[\"href\",\"https://github.com/tryghost\"]],[\"a\",[\"href\",\"https://github.com/sponsors/TryGhost\"]],[\"a\",[\"href\",\"https://opencollective.com/ghost\"]],[\"strong\"]],\"sections\":[[1,\"p\",[[0,[],0,\"Oh hey, you clicked every link of our starter content and even clicked this small link in the footer! If you like Ghost and you're enjoying the product so far, we'd hugely appreciate your support in any way you care to show it.\"]]],[1,\"p\",[[0,[],0,\"Ghost is a non-profit organization, and we give away all our intellectual property as open source software. If you believe in what we do, there are a number of ways you can give us a hand, and we hugely appreciate all of them:\"]]],[3,\"ul\",[[[0,[],0,\"Contribute code via \"],[0,[0],1,\"GitHub\"]],[[0,[],0,\"Contribute financially via \"],[0,[1],1,\"GitHub Sponsors\"]],[[0,[],0,\"Contribute financially via \"],[0,[2],1,\"Open Collective\"]],[[0,[],0,\"Contribute reviews via \"],[0,[3],1,\"writing a blog post\"]],[[0,[],0,\"Contribute good vibes via \"],[0,[3],1,\"telling your friends\"],[0,[],0,\" about us\"]]]],[1,\"p\",[[0,[],0,\"Thanks for checking us out!\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": null,
+                    "featured": false,
+                    "type": "page",
+                    "status": "published",
+                    "visibility": "public",
+                    "created_by": "5951f5fca366002ebd5dbef7",
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": [{
+                        "id": "5951f5fca366002ebd5dbef7"
+                    }]
+                }
+            ]
+        },
+        {
+            "name": "Integration",
+            "entries": [
+                {
+                    "slug": "zapier",
+                    "name": "Zapier",
+                    "description": "Built-in Zapier integration",
+                    "type": "builtin",
+                    "api_keys": [{"type": "admin"}]
+                },
+                {
+                    "slug": "ghost-explore",
+                    "name": "Ghost Explore",
+                    "description": "Built-in Ghost Explore integration",
+                    "type": "core",
+                    "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
+                },
+                {
+                    "slug": "self-serve-migration",
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Core Self-Serve Migration integration",
+                    "type": "core",
+                    "api_keys": [
+                        {
+                            "type": "admin",
+                            "role": "Self-Serve Migration Integration"
+                        }
+                    ]
+                },
+                {
+                    "slug": "ghost-backup",
+                    "name": "Ghost Backup",
+                    "description": "Internal DB Backup integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "DB Backup Integration"}]
+                },
+                {
+                    "slug": "ghost-scheduler",
+                    "name": "Ghost Scheduler",
+                    "description": "Internal Scheduler integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "Scheduler Integration"}]
+                },
+                {
+                    "slug": "ghost-internal-frontend",
+                    "name": "Ghost Internal Frontend",
+                    "description": "Internal frontend integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "content"}]
+                }
+            ]
+        }
+    ],
+    "relations": [
+        {
+            "from": {
+                "model": "Role",
+                "match": "name",
+                "relation": "permissions"
+            },
+            "to": {
+                "model": "Permission",
+                "match": ["object_type", "action_type"]
+            },
+            "entries": {
+                "Administrator": {
+                    "db": "all",
+                    "mail": "all",
+                    "notification": "all",
+                    "post": "all",
+                    "setting": "all",
+                    "slug": "all",
+                    "tag": "all",
+                    "theme": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "redirect": "all",
+                    "webhook": "all",
+                    "integration": "all",
+                    "api_key": "all",
+                    "action": "all",
+                    "member": "all",
+                    "product": "all",
+                    "label": "all",
+                    "email_preview": "all",
+                    "email": "all",
+                    "member_signin_url": "read",
+                    "snippet": "all",
+                    "custom_theme_setting": "all",
+                    "offer": "all",
+                    "authentication": "resetAllPasswords",
+                    "members_stripe_connect": "auth",
+                    "newsletter": "all",
+                    "explore": "read",
+                    "comment": "all",
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all",
+                    "recommendation": "all"
+                },
+                "DB Backup Integration": {
+                    "db": "all"
+                },
+                "Scheduler Integration": {
+                    "post": "publish"
+                },
+                "Ghost Explore Integration": {
+                    "explore": "read"
+                },
+                "Self-Serve Migration Integration": {
+                    "db": "importContent",
+                    "member": "add",
+                    "tag": "read"
+                },
+                "Admin Integration": {
+                    "mail": "all",
+                    "notification": "all",
+                    "post": "all",
+                    "setting": "all",
+                    "slug": "all",
+                    "tag": "all",
+                    "theme": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "redirect": "all",
+                    "webhook": "all",
+                    "action": "all",
+                    "member": "all",
+                    "label": "all",
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "product": ["browse", "read", "add", "edit"],
+                    "offer": ["browse", "read", "add", "edit"],
+                    "newsletter": ["browse", "read", "add", "edit"],
+                    "explore": "read",
+                    "comment": "all",
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all",
+                    "recommendation": "all"
+                },
+                "Editor": {
+                    "notification": "all",
+                    "post": "all",
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "label": ["browse", "read"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": "all",
+                    "recommendation": ["browse", "read"]
+                },
+                "Author": {
+                    "post": ["browse", "read", "edit", "add", "destroy"],
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": ["browse", "read", "add"],
+                    "user": ["browse", "read"],
+                    "role": ["browse"],
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "read",
+                    "email": "read",
+                    "snippet": ["browse", "read"],
+                    "label": ["browse", "read"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": ["browse", "read", "add"],
+                    "recommendation": ["browse", "read"]
+                },
+                "Contributor": {
+                    "post": ["browse", "read", "edit", "add", "destroy"],
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": ["browse", "read"],
+                    "user": ["browse", "read"],
+                    "role": ["browse"],
+                    "theme": ["browse"],
+                    "email_preview": "read",
+                    "email": "read",
+                    "snippet": ["browse", "read"],
+                    "collection": ["browse", "read"],
+                    "recommendation": ["browse", "read"]
+                }
+            }
+        },
+        {
+            "from": {
+                "model": "Post",
+                "match": "slug",
+                "relation": "tags"
+            },
+            "to": {
+                "model": "Tag",
+                "match": "name"
+            },
+            "entries": {
+                "integrations": ["Getting Started"],
+                "grow": ["Getting Started"],
+                "design": ["Getting Started"],
+                "write": ["Getting Started"],
+                "welcome": ["Getting Started"],
+                "portal": ["Getting Started"],
+                "sell": ["Getting Started"]
+            }
+        },
+        {
+            "from": {
+                "model": "Collection",
+                "match": "slug",
+                "relation": "posts"
+            },
+            "to": {
+                "model": "Post",
+                "match": "slug"
+            },
+            "entries": {
+                "latest": {
+                    "integrations": "integrations",
+                    "grow": "grow",
+                    "sell": "sell",
+                    "portal": "portal",
+                    "write": "write",
+                    "design": "design",
+                    "welcome": "welcome"
+                }
+            }
+        },
+        {
+            "from": {
+                "model": "User",
+                "match": "id",
+                "relation": "roles"
+            },
+            "to": {
+                "model": "Role",
+                "match": "name"
+            },
+            "entries": {
+                "1": ["Owner"]
+            }
+        }
+    ]
+}

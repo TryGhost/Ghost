@@ -1,0 +1,69 @@
+{{!-- template-lint-disable no-invalid-interactive --}}
+<div {{on "mouseover" this.onMouseover}} {{on "mouseleave" this.onMouseleave}} data-test-editor-post-status ...attributes>
+    {{#if (and this.isSaving @post.isDraft)}}
+        Saving...
+    {{else if @post.isSent}}
+        {{#if @post.didEmailFail }}
+            <span class="newsletter-failed">Failed to send newsletter. </span>
+            <button
+                type="button"
+                class="gh-retry-trigger"
+                {{on "click" @publishManagement.openPublishFlow}}
+                disabled={{@publishManagement.publishOptions.isLoading}}
+            >
+                <span>Retry now</span>
+            </button>
+        {{else}}
+            <button type="button" {{on "click" @openUpdateFlow}} class="gh-editor-post-status-btn">Sent</button>
+            to {{gh-pluralize @post.email.emailCount "member"}}
+        {{/if}}
+    {{else if (and @post.emailOnly @post.isScheduled)}}
+        Scheduled
+        {{#if this.isHovered}}
+            <time datetime="{{@post.publishedAtUTC}}" class="ml1 green-d1" data-test-schedule-countdown>
+                to be sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} @newsletter={{@post.newsletter}} />
+                {{this.scheduledTime}}
+            </time>
+        {{/if}}
+    {{else if (or @post.isPublished @post.pastScheduledTime)}}
+        <a href={{@post.url}} class="view-post {{if (eq @post.email.status "failed") "newsletter-failed" ""}}" target="_blank" rel="noopener noreferrer">
+            Published 
+            {{#unless @post.email}}
+                {{svg-jar "arrow-top-right" title="View post"}}
+            {{/unless}}
+        </a>
+        {{#if (or (eq @post.email.status "submitting") (eq @post.email.status "submitting"))}}
+            and sending to {{gh-pluralize @post.email.emailCount "member"}}
+        {{else if (eq @post.email.status "submitted")}}
+            and sent to {{gh-pluralize @post.email.emailCount "member"}}
+        {{else if (eq @post.email.status "failed")}}
+            <span class="newsletter-failed">
+                but failed to send newsletter.
+            </span>
+            <button
+                type="button"
+                class="gh-retry-trigger"
+                {{on "click" @publishManagement.openPublishFlow}}
+                disabled={{@publishManagement.publishOptions.isLoading}}
+            >
+                <span>View details</span>
+            </button>
+        {{/if}}
+    {{else if @post.isScheduled}}
+        <time datetime="{{@post.publishedAtUTC}}" class="ml1 green-d1" data-test-schedule-countdown>
+            Scheduled
+            {{#if this.isHovered}}
+                to be published
+                {{#if (and @post.newsletter (not @post.email))}}
+                    and sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} @newsletter={{@post.newsletter}} />
+                {{/if}}
+                {{this.scheduledTime}}
+            {{/if}}
+        </time>
+    {{else if @post.isNew}}
+        New
+    {{else}}
+        Draft
+        {{unless @hasDirtyAttributes "- Saved"}}
+    {{/if}}
+</div>

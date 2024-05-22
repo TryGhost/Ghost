@@ -1,0 +1,120 @@
+<div class="gh-main-section prototype-control-panel" {{did-insert this.onInsert}}>
+    <h4 class="gh-main-section-header small bn">Prototype control panel</h4>
+
+    <div class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Enable fake data</h4>
+                    <p class="gh-expandable-description">
+                        Replace real data with mocked data to test the dashboard
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch">
+                        <Input @type="checkbox" @checked={{this.enabled}} />
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        {{#if this.enabled}}
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Emulated state</h4>
+                        <p class="gh-expandable-description">
+                            Choose a state you want to emulate for this site
+                        </p>
+                    </div>
+                    <div>
+                        <PowerSelect
+                            @selected={{this.selectedStateOption}}
+                            @options={{this.stateOptions}}
+                            @searchEnabled={{false}}
+                            @onChange={{this.onStateChange}}
+                            @triggerComponent={{component "gh-power-select/trigger"}}
+                            @triggerClass="gh-contentfilter-menu-trigger"
+                            @dropdownClass="gh-contentfilter-menu-dropdown"
+                            @matchTriggerWidth={{false}}
+                            as |option|
+                        >
+                            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                        </PowerSelect>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Newsletters enabled</h4>
+                        <p class="gh-expandable-description">
+                            All email related charts shown
+                        </p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch">
+                            <Input @type="checkbox" @checked={{this.mockNewslettersEnabled}} />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Members enabled</h4>
+                        <p class="gh-expandable-description">
+                            Setting subscription access to other value than 'Nobody'
+                        </p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch">
+                            <Input @type="checkbox" @checked={{this.mockMembersEnabled}} />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {{#if this.mockMembersEnabled}}
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Has paid tiers and Stripe connected</h4>
+                            <p class="gh-expandable-description">
+                                Paid memberships
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <label class="switch">
+                                <Input @type="checkbox" @checked={{this.mockPaidTiers}} />
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Has multiple paid tiers</h4>
+                            <p class="gh-expandable-description">
+                                Adds the ability to show paid mix per tier
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <label class="switch">
+                                <Input @type="checkbox" @checked={{this.mockMultipleTiers}} />
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        {{/if}}
+    </div>
+</div>

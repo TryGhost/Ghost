@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>discount-bubble</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <path class="a" d="M22.125 12a3.491 3.491 0 0 0-2.356-3.338 3.6 3.6 0 0 0-.61-4.087 3.286 3.286 0 0 0-3.941-.632 3.341 3.341 0 0 0-6.436 0 3.288 3.288 0 0 0-3.942.632 3.6 3.6 0 0 0-.609 4.087 3.542 3.542 0 0 0 0 6.675 3.6 3.6 0 0 0 .609 4.087 3.288 3.288 0 0 0 3.942.633 3.341 3.341 0 0 0 6.436 0 3.286 3.286 0 0 0 3.941-.633 3.6 3.6 0 0 0 .61-4.087A3.49 3.49 0 0 0 22.125 12Zm-13.5 3.75 7.5-7.5"/>
+  <circle class="a" cx="9.375" cy="9" r="1.5"/>
+  <circle class="a" cx="15.375" cy="15" r="1.5"/>
+</svg>

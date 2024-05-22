@@ -1,0 +1,68 @@
+.kg-callout-card,
+.kg-callout-card * {
+    box-sizing: border-box;
+}
+
+.kg-callout-card {
+    display: flex;
+    padding: 1.2em 1.6em;
+    border-radius: 3px;
+}
+
+.kg-callout-card-grey {
+    background: rgba(124, 139, 154, 0.13);
+}
+
+.kg-callout-card-white {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
+}
+
+.kg-callout-card-blue {
+    background: rgba(33, 172, 232, 0.12);
+}
+
+.kg-callout-card-green {
+    background: rgba(52, 183, 67, 0.12);
+}
+
+.kg-callout-card-yellow {
+    background: rgba(240, 165, 15, 0.13);
+}
+
+.kg-callout-card-red {
+    background: rgba(209, 46, 46, 0.11);
+}
+
+.kg-callout-card-pink {
+    background: rgba(225, 71, 174, 0.11);
+}
+
+.kg-callout-card-purple {
+    background: rgba(135, 85, 236, 0.12);
+}
+
+.kg-callout-card-accent {
+    background: var(--ghost-accent-color);
+    color: #fff;
+}
+
+.kg-callout-card.kg-callout-card-accent a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.kg-callout-card div.kg-callout-emoji {
+    padding-right: .8em;
+    line-height: 1.25em;
+    font-size: 1.15em;
+}
+
+.kg-callout-card div.kg-callout-text {
+    font-size: .95em;
+    line-height: 1.5em;
+}
+
+.kg-callout-card + .kg-callout-card {
+    margin-top: 1em;
+}

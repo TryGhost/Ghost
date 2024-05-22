@@ -1,0 +1,131 @@
+{
+    "paths": {
+        "appRoot": ".",
+        "corePath": "core/",
+        "adminAssets": "core/built/admin",
+        "helperTemplates": "core/frontend/helpers/tpl/",
+        "defaultViews": "core/server/views/",
+        "defaultRouteSettings": "core/server/services/route-settings/",
+        "internalAppPath": "core/frontend/apps/",
+        "internalAdaptersPath": "core/server/adapters/",
+        "migrationPath": "core/server/data/migrations",
+        "publicFilePath": "core/frontend/public"
+    },
+    "apps": {
+        "internal": [
+            "private-blogging",
+            "amp"
+        ]
+    },
+    "slugs": {
+        "protected": ["ghost", "rss", "amp"]
+    },
+    "uploads": {
+        "members": {
+            "extensions": [".csv"],
+            "contentTypes": ["text/csv", "application/csv", "application/octet-stream", "application/vnd.ms-excel"]
+        },
+        "images": {
+            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
+            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
+        },
+        "media": {
+            "extensions": [".mp4",".webm", ".ogv", ".mp3", ".wav", ".ogg", ".m4a"],
+            "contentTypes": [
+                "video/mp4",
+                "video/webm",
+                "video/ogg",
+                "audio/mpeg",
+                "audio/vnd.wav",
+                "audio/wave",
+                "audio/wav",
+                "audio/x-wav",
+                "audio/ogg",
+                "audio/mp4",
+                "audio/x-m4a"
+            ]
+        },
+        "files": {
+            "extensions": [
+                ".pdf",
+                ".json",
+                ".jsonld",
+                ".odp",
+                ".ods",
+                ".odt",
+                ".ppt",
+                ".pptx",
+                ".rtf",
+                ".txt",
+                ".xls",
+                ".xlsx",
+                ".xml"
+            ],
+            "contentTypes": [
+                "application/pdf",
+                "application/json",
+                "application/ld+json",
+                "application/vnd.oasis.opendocument.presentation",
+                "application/vnd.oasis.opendocument.spreadsheet",
+                "application/vnd.oasis.opendocument.text",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "application/rtf",
+                "text/plain",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/xml",
+                "application/atom+xml"
+            ]
+        },
+        "thumbnails": {
+            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
+            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
+        },
+        "icons": {
+            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
+            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
+        },
+        "db": {
+            "extensions": [".json", ".zip"],
+            "contentTypes": ["text/plain", "application/octet-stream", "application/json", "application/zip", "application/x-zip-compressed"]
+        },
+        "themes": {
+            "extensions": [".zip"],
+            "contentTypes": ["application/zip", "application/x-zip-compressed", "application/octet-stream"]
+        },
+        "redirects": {
+            "extensions": [".json", ".yaml"],
+            "contentTypes": ["text/plain", "text/yaml", "application/octet-stream", "application/json", "application/yaml", "application/x-yaml"]
+        },
+        "routes": {
+            "extensions": [".yaml"],
+            "contentTypes": ["text/plain", "text/yaml", "application/octet-stream", "application/yaml", "application/x-yaml"]
+        }
+    },
+    "times": {
+        "cannotScheduleAPostBeforeInMinutes": -2,
+        "publishAPostBySchedulerToleranceInMinutes": 5,
+        "getImageSizeTimeoutInMS": 5000
+    },
+    "maintenance": {
+        "enabled": false
+    },
+    "imageOptimization": {
+        "defaultMaxWidth": 2000,
+        "contentImageSizes": {
+            "w600": {"width": 600},
+            "w1000": {"width": 1000},
+            "w1600": {"width": 1600},
+            "w2400": {"width": 2400}
+        },
+        "internalImageSizes": {
+            "icon": {"width": 256, "height": 256},
+            "signup-form-icon": {"width": 192, "height": 192},
+            "email-header-image": {"width": 1200},
+            "email-latest-posts-image": {"width": 200, "height": 200},
+            "email-latest-posts-image-mobile": {"width": 1200, "height": 960},
+            "social-image": {"width": 1200}
+        }
+    }
+}

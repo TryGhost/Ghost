@@ -1,0 +1,26 @@
+{
+  "all": true,
+  "check-coverage": true,
+  "reporter": [
+    "html-spa",
+    "text-summary",
+    "cobertura"
+  ],
+  "reportsDir": "./coverage-e2e",
+  "statements": 80,
+  "branches": 82,
+  "functions": 81,
+  "lines": 80,
+  "include": [
+    "core/{*.js,frontend,server,shared}"
+  ],
+  "exclude": [
+    "core/frontend/src/**",
+    "core/frontend/public/**",
+    "core/frontend/helpers/**",
+    "core/server/data/migrations/**",
+    "core/server/data/schema/schema.js",
+    "!core/server/data/migrations/utils.js",
+    "core/server/web/api/testmode/**"
+  ]
+}

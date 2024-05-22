@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        {{#if error}}
+            Unsubscribe Failed
+        {{else}}
+            Successfully Unsubscribed
+        {{/if}}
+    </title>
+    <link rel="stylesheet" href="{{asset "public/ghost.css" hasMinFile="true"}}" />
+</head>
+<body>
+    <div class="gh-app">
+        <div class="gh-viewport">
+            <main class="gh-main" role="main">
+                <div class="gh-flow">
+                    <div class="gh-flow-content-wrap">
+                        {{#if @site.icon}}
+                            <img class="site-icon" src="{{img_url @site.icon absolute="true"}}" layout="fixed">
+                        {{/if}}
+                        <section class="gh-flow-content unsubscribe">
+                            {{#if error}}
+                                <h1>Unsubscribe failed.</h1>
+                                <p>{{error}}</p>
+                            {{else if member}}
+                                <h1>Successfully unsubscribed.</h1>
+                                <p>
+                                    <span class="gh-flow-em">{{member.email}}</span> will no longer receive this newsletter.
+                                    {{#match member.status "!=" "free"}}
+                                        This will not cancel your paid subscription{{#if @site.title}} to {{@site.title}}{{/if}}.
+                                    {{/match}}
+                                </p>
+                            {{/if}}
+                        </section>
+                        <div class="unsubscribe-footer">
+                            {{#unless error}}
+                                <p>Didn't mean to do this? Manage your account <a href="{{@site.url}}/#/portal/account">here</a>.</p>
+                            {{/unless}}
+                            {{#if @site.title}}
+                                <a href="{{@site.url}}">{{@site.title}}</a>
+                            {{else}}
+                                <a href="{{@site.url}}">Visit site</a>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

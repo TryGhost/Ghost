@@ -1,0 +1,46 @@
+/*
+
+   Media Query Extensions:
+     -ns = not-small
+     -m  = medium
+     -l  = large
+
+*/
+
+.normal             { font-weight: 300; }
+.b, b, strong       { font-weight: 700; }
+
+.fw1     { font-weight: 100; }
+.fw3    { font-weight: 300; }
+.fw4    { font-weight: 400; }
+.fw5    { font-weight: 500; }
+.fw6      { font-weight: 600; }
+.fw7      { font-weight: 700; }
+
+
+@media (--breakpoint-not-small) {
+    .fw1-ns     { font-weight: 100; }
+    .fw3-ns    { font-weight: 300; }
+    .fw4-ns    { font-weight: 400; }
+    .fw5-ns    { font-weight: 500; }
+    .fw6-ns      { font-weight: 600; }
+    .fw7-ns      { font-weight: 700; }
+}
+
+@media (--breakpoint-medium) {
+    .fw1-m     { font-weight: 100; }
+    .fw3-m    { font-weight: 300; }
+    .fw4-m    { font-weight: 400; }
+    .fw5-m    { font-weight: 500; }
+    .fw6-m      { font-weight: 600; }
+    .fw7-m      { font-weight: 700; }
+}
+
+@media (--breakpoint-large) {
+    .fw1-l     { font-weight: 100; }
+    .fw3-l    { font-weight: 300; }
+    .fw4-l    { font-weight: 400; }
+    .fw5-l    { font-weight: 500; }
+    .fw6-l      { font-weight: 600; }
+    .fw7-l      { font-weight: 700; }
+}

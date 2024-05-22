@@ -1,0 +1,4 @@
+email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,labels
+valid2@email.com,"good name",,true,not_boolean,,2019-10-30T14:52:08.000Z,more-labels
+invalid_email_value,"good name",,true,false,,2019-10-30T14:52:08.000Z,more-labels
+invalid2@email.com�,"good name",,true,false,,2019-10-30T14:52:08.000Z,more-labels

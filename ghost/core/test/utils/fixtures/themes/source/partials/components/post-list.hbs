@@ -1,0 +1,114 @@
+{{!--
+    Parameters:
+    * feed (index, home, archive, recent)
+    * postFeedStyle (list, grid)
+    * showTitle (true, false)
+    * showSidebar (true, false)
+--}}
+
+<section class="gh-container is-{{#match postFeedStyle "List"}}list{{else}}grid{{/match}}{{#if showSidebar}} has-sidebar{{/if}}{{#unless @custom.show_images_in_feed}} no-image{{/unless}} gh-outer">
+    <div class="gh-container-inner gh-inner">
+        
+        {{#if showTitle}}
+            <h2 class="gh-container-title">
+                {{#unless title}}Latest{{else}}{{title}}{{/unless}}
+            </h2>
+        {{/if}}
+
+        <main class="gh-main">
+            <div class="gh-feed">
+
+                {{!-- Homepage --}}
+                {{#match feed "home"}}
+                    {{#match @custom.header_style "Highlight"}}
+                        {{#if @custom.show_featured_posts}}
+                            {{#match posts.length ">=" 4}}
+                                {{#get "posts" include="authors" limit="16"}}
+                                    {{#foreach posts from="5" limit="12"}}
+                                        {{> "post-card" lazyLoad=true}}
+                                    {{/foreach}}
+                                {{/get}}
+                            {{/match}}
+                        {{else}}
+                            {{#match posts.length ">=" 10}}
+                                {{#get "posts" include="authors" limit="22"}}
+                                    {{#foreach posts from="11" limit="12"}}
+                                        {{> "post-card" lazyLoad=true}}
+                                    {{/foreach}}
+                                {{/get}}
+                            {{/match}}
+                        {{/if}}
+                    {{else match @custom.header_style "Magazine"}}
+                        {{#match posts.length ">=" 7}}
+                            {{#get "posts" include="authors" limit="19"}}
+                                {{#foreach posts from="8" limit="12"}}
+                                    {{> "post-card" lazyLoad=true}}
+                                {{/foreach}}
+                            {{/get}}
+                        {{/match}}
+                    {{else}}
+                        {{#get "posts" include="authors" limit="12"}}
+                            {{#foreach posts}}
+                                {{> "post-card" lazyLoad=true}}
+                            {{/foreach}}
+                        {{/get}}
+                    {{/match}}
+                {{/match}}
+
+                {{!-- All posts --}}
+                {{#match feed "index"}}
+                    {{#match pagination.page 2}}
+                        {{#get "posts" include="authors" limit=@config.posts_per_page as |recent|}}
+                            {{#foreach recent}}
+                                {{> "post-card"}}
+                            {{/foreach}}
+                        {{/get}}
+                    {{/match}}
+                    {{#foreach posts}}
+                        {{> "post-card" lazyLoad=true}}
+                    {{/foreach}}
+                {{/match}}
+
+                {{!-- Tag and author pages --}}
+                {{#match feed "archive"}}
+                    {{#foreach posts}}
+                        {{> "post-card" lazyLoad=true}}
+                    {{/foreach}}
+                {{/match}}
+
+            </div>
+        </main>
+
+        {{#if showSidebar}}
+            <aside class="gh-sidebar">
+                <section class="gh-about">
+                    {{#if @site.icon}}
+                        <img class="gh-about-icon" src="{{@site.icon}}" alt="{{@site.title}}" loading="lazy">
+                    {{/if}}
+                    <h3 class="gh-about-title is-title">{{@site.title}}</h3>
+                    {{#if @site.description}}
+                        <p class="gh-about-description is-body">{{@site.description}}</p>
+                    {{/if}}
+                    {{#if @site.members_enabled}}
+                        {{#unless @member}}
+                            <button class="gh-button" data-portal="signup">Subscribe</button>
+                        {{else}}
+                            {{#if @site.paid_members_enabled}}
+                                {{#unless @member.paid}}
+                                    <button class="gh-button" data-portal="upgrade">Upgrade</button>
+                                {{/unless}}
+                            {{/if}}
+                        {{/unless}}
+                    {{/if}}
+                </section>
+            </aside>
+        {{/if}}
+
+        {{#match pagination.pages ">" 1}}
+            <div class="gh-more is-title">
+                <a href="/page/2">See all {{> "icons/arrow"}}</a>
+            </div>
+        {{/match}}
+
+    </div>
+</section>

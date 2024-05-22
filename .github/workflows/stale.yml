@@ -1,0 +1,28 @@
+name: 'Close stale issues and PRs'
+on:
+  schedule:
+    - cron: '0 * * * *'
+jobs:
+  stale:
+    if: github.repository_owner == 'TryGhost'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v8
+        with:
+          stale-issue-message: |
+            Our bot has automatically marked this issue as stale because there has not been any activity here in some time.
+
+            The issue will be closed soon if there are no further updates, however we ask that you do not post comments to keep the issue open if you are not actively working on a PR.
+
+            We keep the issue list minimal so we can keep focus on the most pressing issues. Closed issues can always be reopened if a new contributor is found. Thank you for understanding 🙂
+          stale-pr-message: |
+            Our bot has automatically marked this PR as stale because there has not been any activity here in some time.
+
+            If we’ve missed reviewing your PR & you’re still interested in working on it, please let us know. Otherwise this PR will be closed shortly, but can always be reopened later. Thank you for understanding 🙂
+          exempt-issue-labels: 'feature,pinned'
+          exempt-pr-labels: 'feature,pinned'
+          days-before-stale: 120
+          days-before-pr-stale: -1
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+          close-issue-reason: 'not_planned'

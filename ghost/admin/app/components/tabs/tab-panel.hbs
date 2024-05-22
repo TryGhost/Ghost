@@ -1,0 +1,11 @@
+<div
+    id="{{this.tabId}}-panel"
+    role="tabpanel"
+    tabindex="0"
+    aria-labelledby="{{this.tabId}}"
+    class="tab-panel {{if this.isSelectedTab "tab-panel-selected" }}"
+>
+    {{#if (or this.isSelectedTab @forceRender)}}
+        {{yield}}
+    {{/if}}
+</div>

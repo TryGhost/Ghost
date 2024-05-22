@@ -1,0 +1,860 @@
+<div
+    class="settings-menu-container {{if (or (eq this.subview "codeinjection") (eq this.subview "meta-data") (eq this.subview "twitter-data") (eq this.subview "facebook-data")) "settings-menu-container-wide"}}"
+    {{did-insert this.setSidebarWidthFromElement}}
+    {{did-update this.setSidebarWidthFromElement this.isViewingSubview}}
+>
+    <div id="entry-controls">
+        <div class="settings-menu settings-menu-pane settings-menu-pane-main">
+            <div class="settings-menu-header">
+                <h4>{{capitalize this.post.displayName}} settings</h4>
+            </div>
+            <div class="settings-menu-content">
+                <form aria-label="Post settings">
+                    <section class="gh-post-settings">
+                        <div class="form-group">
+                            <label for="url">{{capitalize this.post.displayName}} URL</label>
+                            {{!-- new posts don't have a preview link --}}
+                            {{#unless this.post.isNew}}
+                                {{#if (or this.post.isPublished this.post.isSent)}}
+                                <a class="post-view-link" target="_blank" href="{{this.post.url}}" rel="noopener noreferrer">
+                                    View {{this.post.displayName}} {{svg-jar "arrow-top-right"}}
+                                </a>
+                                {{else if this.post.isScheduled}}
+                                <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}" rel="noopener noreferrer">
+                                    Preview {{svg-jar "arrow-top-right"}}
+                                </a>
+                                {{/if}}
+                            {{/unless}}
+
+                            <div class="gh-input-icon gh-icon-link">
+                                {{svg-jar "link"}}
+                                <GhTextInput
+                                    @class="post-setting-slug"
+                                    @id="url"
+                                    @name="post-setting-slug"
+                                    @value={{readonly this.slugValue}}
+                                    @input={{action (mut this.slugValue) value="target.value"}}
+                                    @focus-out={{action "updateSlug" this.slugValue}}
+                                    @stopEnterKeyDownPropagation={{true}} />
+                            </div>
+                            {{#if this.post.isSent}}
+                                <GhUrlPreview @prefix="email" @slug={{this.uuidValue}} @tagName="p" @classNames="description" />
+                            {{else}}
+                                <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                            {{/if}}
+                        </div>
+
+                        <div class="form-group">
+                            {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
+                                <label>Publish date</label>
+                            {{else}}
+                                <label>Scheduled date</label>
+                            {{/if}}
+                            <GhDateTimePicker
+                                @date={{this.post.publishedAtBlogDate}}
+                                @time={{this.post.publishedAtBlogTime}}
+                                @setDate={{action "setPublishedAtBlogDate"}}
+                                @setTime={{action "setPublishedAtBlogTime"}}
+                                @errors={{this.post.errors}}
+                                @dateErrorProperty="publishedAtBlogDate"
+                                @timeErrorProperty="publishedAtBlogTime"
+                                @maxDate="now"
+                                @disabled={{this.post.isScheduled}}
+                                @isActive={{not this.isViewingSubview}}
+                            />
+                            {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
+                            <p>Use the publish menu to re-schedule</p>
+                            {{/unless}}
+                        </div>
+
+                        {{#unless this.session.user.isContributor}}
+                        <div class="form-group">
+                            <label for="tag-input">Tags</label>
+                            <GhPsmTagsInput @post={{this.post}} @triggerId="tag-input" />
+                        </div>
+                        {{/unless}}
+
+                        {{#if this.showVisibilityInput}}
+                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
+                                <label for="visibility-input">{{capitalize @post.displayName}} access</label>
+                                <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
+                            </GhFormGroup>
+
+                            {{#if (eq this.post.visibility "tiers")}}
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" class="nt3" data-test-visibility-segment-select>
+                                    <GhPostSettingsMenu::VisibilitySegmentSelect
+                                        @tiers={{this.post.tiers}}
+                                        @onChange={{action "setVisibility"}}
+                                        @renderInPlace={{true}}
+                                        @hideOptionsWhenAllSelected={{true}}
+                                    />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="tiers" data-test-error="tiers" />
+                                </GhFormGroup>
+                            {{/if}}
+                        {{/if}}
+
+
+                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
+                            <label for="custom-excerpt">Excerpt</label>
+                            <GhTextarea
+                                @class="post-setting-custom-excerpt"
+                                @id="custom-excerpt"
+                                @name="post-setting-custom-excerpt"
+                                @value={{readonly this.customExcerptScratch}}
+                                @input={{action (mut this.customExcerptScratch) value="target.value"}}
+                                @focus-out={{action "setCustomExcerpt" this.customExcerptScratch}}
+                                @stopEnterKeyDownPropagation="true"
+                                data-test-field="custom-excerpt"
+                            />
+                            <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
+                        </GhFormGroup>
+
+                        {{#unless this.session.user.isAuthorOrContributor}}
+                            <GhFormGroup class="for-select mb8" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
+                                <label for="author-list">Authors</label>
+                                <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
+                                <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
+                            </GhFormGroup>
+                        {{/unless}}
+
+                        <GhPsmTemplateSelect
+                            @post={{this.post}}
+                            @onTemplateSelect={{action (mut this.post.customTemplate)}} />
+                    </section>
+
+                    <ul class="nav-list">
+                        {{#if (and this.post.isPage this.post.lexical)}}
+                            <li class="nav-list-item">
+                                <div class="for-switch x-small">
+                                    <label class="switch">
+                                        <span>
+                                            <Icons::EyeOpenClose class="feature" @closed={{not this.post.showTitleAndFeatureImage}} />
+                                            Show title and feature image
+                                        </span>
+                                        <div class="gh-toggle-featured">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.post.showTitleAndFeatureImage}}
+                                                class="gh-input post-settings-featured"
+                                                {{on "change" this.toggleShowTitleAndFeatureImage}}
+                                                data-test-checkbox="hide-title-and-feature-image"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </div>
+                                    </label>
+                                    {{#liquid-if (and (not this.post.showTitleAndFeatureImage) this.themeMissingShowTitleAndFeatureImage)}}
+                                        <div class="nav-list-item-notification">
+                                            Uh-oh. Looks like your theme doesn't support this feature.
+                                            <a href="https://ghost.org/docs/themes/helpers/">Learn more</a>
+                                        </div>
+                                    {{/liquid-if}}
+                                </div>
+                            </li>
+                        {{/if}}
+                        {{#unless this.session.user.isAuthorOrContributor}}
+                            <li class="nav-list-item">
+                                <div class="for-switch x-small">
+                                    <label class="switch" for="featured" {{action "toggleFeatured" bubbles="false"}}>
+                                        <span>
+                                            {{#if this.post.featured}}
+                                                {{svg-jar "star-fill" class="feature"}}
+                                            {{else}}
+                                                {{svg-jar "star" class="feature"}}
+                                            {{/if}}
+                                            Feature this {{this.post.displayName}}
+                                        </span>
+                                        <span class="gh-toggle-featured">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.post.featured}}
+                                                class="gh-input post-settings-featured"
+                                                onclick={{action (mut this.post.featured) value="target.checked"}}
+                                                data-test-checkbox="featured"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </li>
+                        {{/unless}}
+                        {{#if this.canViewPostHistory}}
+                            <li class="nav-list-item">
+                                <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
+                                    <span>{{svg-jar "history" class="history"}} {{capitalize this.post.displayName}} history</span>
+                                </button>
+                                {{svg-jar "arrow-right" class="arrow-right"}}
+                            </li>
+                        {{/if}}
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
+                                <span>{{svg-jar "brackets"}} Code injection</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
+                                <span>{{svg-jar "google-icon"}} Meta data</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
+                                <span>{{svg-jar "x-logo"}} X card</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
+                                <span>{{svg-jar "social-facebook"}} Facebook card</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "keyboard-shortcuts"}} data-test-button="keyboard-shortcuts">
+                                <span>{{svg-jar "keyboard"}} Keyboard shortcuts</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                    </ul>
+                </form>
+                {{#unless this.post.isNew}}
+                    <div class="settings-menu-delete-button">
+                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}} data-test-button="delete-post">
+                            <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
+                        </button>
+                    </div>
+                {{/unless}}
+            </div>{{! .settings-menu-content }}
+        </div>{{! .post-settings-menu }}
+
+        {{#if this.isViewingSubview}}
+        <div class="settings-menu settings-menu-pane {{if (or (eq this.subview "codeinjection") (eq this.subview "meta-data") (eq this.subview "twitter-data") (eq this.subview "facebook-data")) "settings-menu-pane-wide"}}">
+            <div class="active">
+                    {{#if (eq this.subview "keyboard-shortcuts")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Close Facebook card panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Keyboard shortcuts</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content keyboard-shortcuts">
+                            <form class="gh-post-settings">
+                                <GhFormGroup>
+                                    <label>Formatting</label>
+                                    <div class="gh-shortcut">
+                                        <div><strong>Bold</strong></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">B</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><em>Emphasize</em></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">I</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><u>Underline</u></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">U</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><s>Strike through</s></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">U</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><mark>Highlight</mark></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">H</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div class="link">Link</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">K</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div class="code">Inline code</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">K</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>List</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key mono">L</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Ordered list</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">L</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Quote</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key mono">Q</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>H2</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">2</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>H3</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">3</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+
+                                <GhFormGroup>
+                                    <label>Editing</label>
+                                    <div class="gh-shortcut">
+                                        <div>Toggle card edit mode</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Paste without formatting</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">V</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Indent</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">tab</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Unindent</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">tab</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Line break</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Undo</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">Z</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Redo</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">Z</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+
+                                <GhFormGroup>
+                                    <label>Application</label>
+                                    <div class="gh-shortcut">
+                                        <div>Save</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">S</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Preview</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">P</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Publish</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">P</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+
+                                <GhFormGroup>
+                                    <label>Inserting</label>
+                                    <div class="gh-shortcut">
+                                        <div>Code block</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">```</span>
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Language code block</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">```html</span>
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Emoji</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">:emoji_name:</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Image</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/image</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Markdown</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/md</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>HTML</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/html</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Gallery</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/gallery</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Divider</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">---</span>
+                                            <span class="gh-key mono clear">or</span>
+                                            <span class="gh-key mono">/hr</span>
+
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Bookmark</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/bookmark [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Public preview</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/paywall</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Button</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/button</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Callout</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/callout</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Toggle</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/toggle</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Video</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/video</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Audio</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/audio</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>File</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/file</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Product</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/product</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Header</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/header</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>GIF</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/gif</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Signup</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/signup</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>YouTube</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/youtube [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>X (formerly Twitter)</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/twitter [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Unsplash</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/unsplash</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Vimeo</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/vimeo [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>CodePen</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/codepen [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Spotify</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/spotify [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>SoundCloud</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/soundcloud [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Other embed</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/embed [url]</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+                            </form>
+                        </div>
+                    {{/if}}
+
+
+
+                    {{#if (eq this.subview "meta-data")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Close meta data panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Meta data</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Meta data settings">
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
+                                    <label for="meta-title">Meta title</label>
+                                    <GhTextInput
+                                        @class="post-setting-meta-title"
+                                        @id="meta-title"
+                                        @name="post-setting-meta-title"
+                                        @placeholder={{this.seoTitle}}
+                                        @value={{readonly this.metaTitleScratch}}
+                                        @input={{action (mut this.metaTitleScratch) value="target.value"}}
+                                        @focus-out={{action "setMetaTitle" this.metaTitleScratch}}
+                                        @stopEnterKeyDownPropagation={{true}}
+                                        data-test-field="meta-title" />
+                                    <p>Recommended: <b>60</b> characters. You’ve used {{gh-count-down-characters this.metaTitleScratch 60}}</p>
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="meta-title" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaDescription">
+                                    <label for="meta-description">Meta description</label>
+                                    <GhTextarea
+                                        @class="post-setting-meta-description"
+                                        @id="meta-description"
+                                        @name="post-setting-meta-description"
+                                        @placeholder={{truncate this.seoDescription 150}}
+                                        @value={{readonly this.metaDescriptionScratch}}
+                                        @input={{action (mut this.metaDescriptionScratch) value="target.value"}}
+                                        @focus-out={{action "setMetaDescription" this.metaDescriptionScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        data-test-field="meta-description" />
+                                    <p>Recommended: <b>145</b> characters. You’ve used {{gh-count-down-characters this.metaDescriptionScratch 145}}</p>
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="meta-description" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="canonicalUrl">
+                                    <label for="canonicalUrl">Canonical URL</label>
+                                    <GhTextInput
+                                        @class="post-setting-canonicalUrl"
+                                        @name="post-setting-canonicalUrl"
+                                        @placeholder={{this.post.url}}
+                                        @value={{readonly this.canonicalUrlScratch}}
+                                        @input={{action (mut this.canonicalUrlScratch) value="target.value"}}
+                                        @focus-out={{action "setCanonicalUrl" this.canonicalUrlScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        data-test-field="canonicalUrl" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="canonicalUrl" />
+                                </GhFormGroup>
+
+                                <div class="form-group">
+                                    <label>Search Engine Result Preview</label>
+                                    <div class="gh-seo-container">
+                                        <div class="gh-seo-preview">
+                                            <div class="flex mb7">
+                                                {{svg-jar "google"}}
+                                                <div class="gh-seo-search-bar">{{svg-jar "google-search"}}</div>
+                                            </div>
+                                            <div class="gh-seo-preview-link">{{this.seoURL}}</div>
+                                            <div class="gh-seo-preview-title">{{truncate this.seoTitle 60}}</div>
+                                            <div class="gh-seo-preview-desc">{{moment-format (now) "DD MMM YYYY"}} — {{#if this.seoDescription}}{{truncate this.seoDescription 149}}{{else}}Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.{{/if}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq this.subview "twitter-data")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Close Twitter card panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>X card</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Twitter card settings">
+                                <GhImageUploaderWithPreview
+                                    @image={{this.post.twitterImage}}
+                                    @text="Add X image"
+                                    @allowUnsplash={{true}}
+                                    @update={{action "setTwitterImage"}}
+                                    @remove={{action "clearTwitterImage"}}
+                                />
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterTitle">
+                                    <label for="twitter-title">X title</label>
+                                    <GhTextInput
+                                        @class="post-setting-twitter-title"
+                                        @id="twitter-title"
+                                        @name="post-setting-twitter-title"
+                                        @placeholder={{truncate this.twitterTitle 40}}
+                                        @value={{readonly this.twitterTitleScratch}}
+                                        @input={{action (mut this.twitterTitleScratch) value="target.value"}}
+                                        @focus-out={{action "setTwitterTitle" this.twitterTitleScratch}}
+                                        @stopEnterKeyDownPropagation={{true}}
+                                        data-test-field="twitter-title" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="twitterTitle" data-test-error="twitter-title" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterDescription">
+                                    <label for="twitter-description">X description</label>
+                                    <GhTextarea
+                                        @class="post-setting-twitter-description"
+                                        @id="twitter-description"
+                                        @name="post-setting-twitter-description"
+                                        @placeholder={{truncate this.twitterDescription 150}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        @value={{readonly this.twitterDescriptionScratch}}
+                                        @input={{action (mut this.twitterDescriptionScratch) value="target.value"}}
+                                        @focus-out={{action "setTwitterDescription" this.twitterDescriptionScratch}}
+                                        data-test-field="twitter-description" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="twitterDescription" data-test-error="twitter-description" />
+                                </GhFormGroup>
+
+                                <div class="form-group">
+                                    <label>X preview</label>
+                                    <div class="gh-social-twitter-post-preview">
+                                        {{#if this.twitterImage}}
+                                            <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
+                                        {{/if}}
+                                        <div class="gh-social-twitter-preview-content">
+                                            <div class="gh-social-twitter-preview-title">{{this.twitterTitle}}</div>
+                                            <div class="gh-social-twitter-preview-desc">{{truncate this.twitterDescription}}</div>
+                                            <div class="gh-social-twitter-preview-meta">
+                                                {{svg-jar "twitter-link"}}
+                                                {{this.config.blogDomain}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq this.subview "facebook-data")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Close Facebook card panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Facebook card</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Facebook card settings">
+                                <GhImageUploaderWithPreview
+                                    @image={{this.post.ogImage}}
+                                    @text="Add Facebook image"
+                                    @allowUnsplash={{true}}
+                                    @update={{action "setOgImage"}}
+                                    @remove={{action "clearOgImage"}}
+                                />
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="ogTitle">
+                                    <label for="og-title">Facebook title</label>
+                                    <GhTextInput
+                                        @class="post-setting-og-title"
+                                        @id="og-title"
+                                        @name="post-setting-og-title"
+                                        @placeholder={{truncate this.facebookTitle 40}}
+                                        @value={{readonly this.ogTitleScratch}}
+                                        @input={{action (mut this.ogTitleScratch) value="target.value"}}
+                                        @focus-out={{action "setOgTitle" this.ogTitleScratch}}
+                                        @stopEnterKeyDownPropagation={{true}}
+                                        data-test-field="og-title" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="ogTitle" data-test-error="og-title" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="ogDescription">
+                                    <label for="og-description">Facebook description</label>
+                                    <GhTextarea
+                                        @class="post-setting-og-description"
+                                        @id="og-description" @name="post-setting-og-description"
+                                        @placeholder={{truncate this.facebookDescription 150}}
+                                        @value={{readonly this.ogDescriptionScratch}}
+                                        @input={{action (mut this.ogDescriptionScratch) value="target.value"}}
+                                        @focus-out={{action "setOgDescription" this.ogDescriptionScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        data-test-field="og-description" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="ogDescription" data-test-error="og-description" />
+                                </GhFormGroup>
+
+                                <div class="form-group">
+                                    <label>Facebook preview</label>
+                                    <div class="gh-social-og-preview no-container">
+                                        {{#if this.facebookImage}}
+                                            <div class="gh-social-og-preview-image" style={{background-image-style this.facebookImage}}></div>
+                                        {{/if}}
+                                        <div class="gh-social-og-preview-bookmark">
+                                            {{!-- Ensures description is hidden if title exceeds one line --}}
+                                            <div class="gh-social-og-preview-content">
+                                                <div class="gh-social-og-preview-meta">
+                                                    {{this.config.blogDomain}}
+                                                </div>
+                                                <div class="gh-social-og-preview-title">{{truncate this.facebookTitle}}</div>
+                                                <div class="gh-social-og-preview-desc">{{truncate this.facebookDescription}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq this.subview "codeinjection")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Close code injection panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Code injection</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content settings-menu-content-codeinjection">
+                            <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Code injection settings">
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionHead">
+                                    <label for="codeinjection-head">{{capitalize this.post.displayName}} header <code>\{{ghost_head}}</code></label>
+                                    <GhCmEditor @value={{this.codeinjectionHeadScratch}}
+                                        @id="post-setting-codeinjection-head"
+                                        @class="post-setting-codeinjection"
+                                        @name="post-setting-codeinjection-head"
+                                        @focusOut={{action "setHeaderInjection" this.codeinjectionHeadScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        @update={{action (mut this.codeinjectionHeadScratch)}}
+                                        data-test-field="codeinjection-head" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="codeinjectionHead" data-test-error="codeinjection-head" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionFoot">
+                                    <label for="codeinjection-foot">{{capitalize this.post.displayName}} footer <code>\{{ghost_foot}}</code></label>
+                                    <GhCmEditor @value={{this.codeinjectionFootScratch}}
+                                        @id="post-setting-codeinjection-foot"
+                                        @class="post-setting-codeinjection"
+                                        @name="post-setting-codeinjection-foot"
+                                        @focusOut={{action "setFooterInjection" this.codeinjectionFootScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        @update={{action (mut this.codeinjectionFootScratch)}}
+                                        data-test-field="codeinjection-foot" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="codeinjectionFoot" data-test-error="codeinjection-foot" />
+                                </GhFormGroup>
+                            </form>
+                        </div>
+                    {{/if}}
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if this.showPostHistory}}
+            <GhFullscreenModal
+                @modal="post-history"
+                @model={{hash
+                    post=this.post
+                    editorAPI=this.editorAPI
+                    toggleSettingsMenu=this.toggleSettingsMenu
+                }}
+                @close={{this.closePostHistory}}
+                @modifier="total-overlay post-history" />
+        {{/if}}
+    </div>
+</div>

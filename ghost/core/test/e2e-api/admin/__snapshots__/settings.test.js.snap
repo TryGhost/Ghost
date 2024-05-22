@@ -1,0 +1,6167 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Settings API Browse Can request all settings 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": "Ghost",
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "en",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Etc/UTC",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": "",
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"Home\\",\\"url\\":\\"/\\"},{\\"label\\":\\"About\\",\\"url\\":\\"/about/\\"},{\\"label\\":\\"Collection\\",\\"url\\":\\"/tag/getting-started/\\"},{\\"label\\":\\"Author\\",\\"url\\":\\"/author/ghost/\\"},{\\"label\\":\\"Portal\\",\\"url\\":\\"/portal/\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": null,
+    },
+    Object {
+      "key": "meta_description",
+      "value": null,
+    },
+    Object {
+      "key": "og_image",
+      "value": null,
+    },
+    Object {
+      "key": "og_title",
+      "value": null,
+    },
+    Object {
+      "key": "og_description",
+      "value": null,
+    },
+    Object {
+      "key": "twitter_image",
+      "value": null,
+    },
+    Object {
+      "key": "twitter_title",
+      "value": null,
+    },
+    Object {
+      "key": "twitter_description",
+      "value": null,
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "Ghost",
+    },
+    Object {
+      "key": "unsplash",
+      "value": true,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": null,
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Browse Can request all settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Browse Can request settings by group 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "filters": Object {
+      "group": "theme",
+    },
+  },
+  "settings": Array [
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Browse Can request settings by group 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "91",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Browse Requesting core settings by group ignores the parameter and returns no settings 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "filters": Object {
+      "group": "core",
+    },
+  },
+  "settings": Array [],
+}
+`;
+
+exports[`Settings API Browse Requesting core settings by group ignores the parameter and returns no settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "51",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit [LEGACY] editing members_support_address triggers email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "members_support_address",
+    ],
+  },
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit [LEGACY] editing members_support_address triggers email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit Can edit a setting 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4591",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit cannot edit uneditable settings 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit cannot edit uneditable settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit does not trigger email verification flow if members_support_address remains the same 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "support@example.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit does not trigger email verification flow if members_support_address remains the same 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit editing members_support_address triggers email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "members_support_address",
+    ],
+  },
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit editing members_support_address triggers email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_background value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Please enter a valid announcement background value",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit setting.",
+      "property": "announcement_background",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_background value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "295",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_visibility value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Please enter a valid announcement visibility value",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit setting.",
+      "property": "announcement_visibility",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_visibility value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "295",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Please enter a valid announcement visibility value",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit setting.",
+      "property": "announcement_visibility",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "295",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit removes image size prefixes when setting the icon 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit removes image size prefixes when setting the icon 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Managed email with custom sending domain editing members_support_address equaling default does not trigger verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "default@email.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Managed email with custom sending domain editing members_support_address equaling default does not trigger verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Managed email with custom sending domain editing members_support_address with matching domain does not trigger email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "support@sendingdomain.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "support@sendingdomain.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Managed email with custom sending domain editing members_support_address with matching domain does not trigger email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Managed email with custom sending domain editing members_support_address without matching domain triggers email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "members_support_address",
+    ],
+  },
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "default@email.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Managed email with custom sending domain editing members_support_address without matching domain triggers email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Managed email without custom sending domain editing members_support_address equaling default does not trigger verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "default@email.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Managed email without custom sending domain editing members_support_address equaling default does not trigger verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Managed email without custom sending domain editing members_support_address triggers email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "members_support_address",
+    ],
+  },
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "support@example.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Managed email without custom sending domain editing members_support_address triggers email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Managed email without custom sending domain editing members_support_address without matching domain triggers email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "members_support_address",
+    ],
+  },
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "support@example.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Managed email without custom sending domain editing members_support_address without matching domain triggers email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Self hoster without managed email editing members_support_address does not trigger email verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "support@customdomain.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "support@customdomain.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Self hoster without managed email editing members_support_address does not trigger email verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Self hoster without managed email editing members_support_address equaling default does not trigger verification flow 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "default@email.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Self hoster without managed email editing members_support_address equaling default does not trigger verification flow 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API deprecated can do updateMembersEmail 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API deprecated can do validateMembersEmailUpdate 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "98",
+  "content-type": "text/plain; charset=utf-8",
+  "location": "http://127.0.0.1:2369/ghost/#/settings/members/?supportAddressUpdate=success",
+  "vary": "Origin, Accept, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API stripe connect Can attempt to connect to stripe 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "The Stripe Connect token could not be parsed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Request not understood error, cannot edit setting.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API stripe connect Can attempt to connect to stripe 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "281",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API stripe connect can do disconnectStripeConnectIntegration 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API verify key update can update members_support_address via token 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Array [
+    Object {
+      "key": "members_track_sources",
+      "value": true,
+    },
+    Object {
+      "key": "title",
+      "value": null,
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "source",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_default_plan",
+      "value": "yearly",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_track_clicks",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "default_email_address",
+      "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "support_email_address",
+      "value": "support@example.com",
+    },
+  ],
+}
+`;
+
+exports[`Settings API verify key update can update members_support_address via token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API verify key update cannot update invalid keys via token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Not allowed to update this setting key via tokens",
+      "property": null,
+      "type": "IncorrectUsageError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API verify key update cannot update invalid keys via token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "241",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

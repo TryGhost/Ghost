@@ -1,0 +1,13 @@
+<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+  <title>portal-logo-stroke</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <g id="Artboard-Copy-4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
+    <path class="a" d="M19.903 14.016a5.009 5.009 0 0 0-3.031-3.654" id="Path" stroke="#000" stroke-width="1.5"/>
+    <path class="a" d="M13.037 10.4a5.001 5.001 0 0 0-2.88 5.85m2.283 3.046A4.977 4.977 0 0 0 15 20a4.99 4.99 0 0 0 4.12-2.167m-1.949 5.387a8.504 8.504 0 0 0 5.756-11.295m-2.316-3.31A8.468 8.468 0 0 0 15 6.5a8.468 8.468 0 0 0-5.608 2.113m-2.28 3.213a8.503 8.503 0 0 0 5.913 11.443" stroke="#000" stroke-width="1.5"/>
+    <path class="a" d="M10.924 26.29c1.273.46 2.645.71 4.076.71 5.52 0 10.17-3.727 11.57-8.803M8.712 4.777A11.993 11.993 0 0 0 3 15a11.97 11.97 0 0 0 3.982 8.928m19.867-10.839C25.933 7.369 20.977 3 15 3c-.69 0-1.367.058-2.025.17" stroke="#000" stroke-width="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,74 @@
+{
+    "roles": [
+        {
+            "id": "645453f3d254799990dd0e16",
+            "name": "Administrator",
+            "description": "Administrators",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e17",
+            "name": "Editor",
+            "description": "Editors",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e18",
+            "name": "Author",
+            "description": "Authors",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e19",
+            "name": "Contributor",
+            "description": "Contributors",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e1a",
+            "name": "Owner",
+            "description": "Blog Owner",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e1b",
+            "name": "Admin Integration",
+            "description": "External Apps",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e1c",
+            "name": "Ghost Explore Integration",
+            "description": "Internal Integration for the Ghost Explore directory",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e1d",
+            "name": "Self-Serve Migration Integration",
+            "description": "Internal Integration for the Self-Serve migration tool",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e1e",
+            "name": "DB Backup Integration",
+            "description": "Internal DB Backup Client",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        },
+        {
+            "id": "645453f3d254799990dd0e1f",
+            "name": "Scheduler Integration",
+            "description": "Internal Scheduler Client",
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-05-05T00:55:15.000Z"
+        }
+    ]
+}

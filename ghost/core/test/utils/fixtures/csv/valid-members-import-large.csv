@@ -1,0 +1,11 @@
+email,name,note,subscribed_to_emails,labels
+test1@example.com,joe,,true,,
+test2@example.com,test,"test note",false,"test-label"
+test3@example.com,test,"test note",false,"test-label"
+test4@example.com,test,"test note",false,"test-label"
+test5@example.com,test,"test note",false,"test-label"
+test6@example.com,test,"test note",false,"test-label"
+test7@example.com,test,"test note",false,"test-label"
+test8@example.com,test,"test note",false,"test-label"
+test9@example.com,test,"test note",false,"test-label"
+test10@example.com,test,"test note",false,"test-label"

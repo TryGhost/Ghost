@@ -1,0 +1,20 @@
+<div class="modal-content" {{on-key "Enter" (perform this.restoreRevisionTask)}}>
+    <header class="modal-header">
+        <h1>{{this.title}}</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>{{this.body}}</p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" @close}}><span>Cancel</span></button>
+        <GhTaskButton
+            @buttonText="Restore"
+            @successText="Restored"
+            @task={{this.restoreRevisionTask}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+        />
+    </div>
+</div>

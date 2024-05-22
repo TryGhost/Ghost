@@ -1,0 +1,333 @@
+<section class="gh-canvas gh-offer circle-bg" {{did-insert this.setup}}>
+    <GhCanvasHeader class="gh-canvas-header">
+        <div class="flex flex-column">
+            <div class="gh-canvas-breadcrumb">
+                <LinkTo @route="offers" data-test-link="offers-back">
+                    Offers
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}} {{if this.offer.isNew "New offer" "Edit offer"}}
+            </div>
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                {{#if this.offer.isNew}}
+                    New Offer
+                {{else}}
+                    {{this.offer.name}}
+                    {{#if (eq this.offer.status "archived")}}
+                        <span class="gh-badge gh-badge-title">Archived</span>
+                    {{/if}}
+                {{/if}}
+            </h2>
+        </div>
+
+        <section class="view-actions">
+            <GhTaskButton @class="gh-btn gh-btn-primary gh-btn-icon" @type="button" @task={{this.saveTask}} @data-test-button="save" />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container">
+        <div class="gh-main-layout content-preview">
+            <form>
+                <div class="gh-main-section gh-offer-form">
+                    <div class="gh-main-section-block no-margin">
+                        <h4 class="gh-main-section-header small bn">Basic</h4>
+                        <div class="gh-main-section-content grey">
+                            <GhFormGroup @errors={{this.offer.errors}} @property="name" @hasValidated={{this.offer.hasValidated}} class="no-margin">
+                                <label for="name" class="fw6">Name</label>
+                                <GhTextInput
+                                    @name="name"
+                                    @placeholder="Black Friday"
+                                    @id="name"
+                                    @value={{this.offer.name}}
+                                    @input={{this.setOfferName}}
+                                    data-test-input="offer-name"
+                                    @class="gh-input" />
+                                <span class="error">
+                                    <GhErrorMessage @errors={{this.offer.errors}} @property="name" />
+                                </span>
+                                <p>Visible to members on Stripe Checkout page.</p>
+                            </GhFormGroup>
+                        </div>
+                        <h4 class="gh-main-section-header gh-main-section-header-with-info small bn">
+                            <span>Discount information</span>
+                            <span class="midgrey gh-main-section-header-info tooltip-left" data-tooltip="Once saved, this cannot be changed" >{{svg-jar "info"}}</span>
+                        </h4>
+                        <div class="gh-main-section-content grey">
+                            <GhFormGroup>
+                                <div>
+                                    <label class="fw6">Offer type</label>
+                                    <div class="gh-offer-type-container {{if this.isDiscountSectionDisabled "disabled"}}">
+                                        <button class="gh-radio {{if this.isDiscountOffer "active"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
+                                            <div class="gh-radio-button"></div>
+                                            <div class="gh-radio-content">
+                                                <div class="gh-radio-label">Discount</div>
+                                                <div class="gh-radio-desc">Offer a special reduced price.</div>
+                                            </div>
+                                        </button>
+                                        <button class="gh-radio {{if this.isTrialOffer "active"}}"
+                                        type="button" {{on "click" (fn this.changeType "trial")}} disabled={{this.isDiscountSectionDisabled}}>
+                                            <div class="gh-radio-button"></div>
+                                            <div class="gh-radio-content">
+                                                <div class="gh-radio-label">Free trial</div>
+                                                <div class="gh-radio-desc">Give free access for a limited time.</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+
+                            {{#if this.isTrialOffer}}
+                                <div class="gh-offer-tier-and-trial">
+                                    <GhFormGroup @errors={{this.errors}} @property="product-cadence">
+                                        <label for="product-cadence" class="fw6">Tier – cadence</label>
+                                        <span class="gh-select gh-select-product-cadence">
+                                            <OneWaySelect
+                                                @value={{this.cadence}}
+                                                @options={{this.cadences}}
+                                                @optionValuePath="name"
+                                                @optionLabelPath="label"
+                                                @optionTargetPath="name"
+                                                @title="{{this.offer.tier.name}} - {{if (eq this.offer.cadence "month") "Monthly" "Yearly" }}"
+                                                @disabled={{this.isDiscountSectionDisabled}}
+                                                @update={{this.updateCadence}}
+                                            />
+                                            {{svg-jar "arrow-down-small"}}
+                                        </span>
+                                        <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
+                                    </GhFormGroup>
+                                    <div class="gh-offer-trial-duration">
+                                        <GhFormGroup @errors={{this.offer.errors}} @property="trialDuration">
+                                            <label for="trial-duration" class="fw6">Trial duration</label>
+                                            <div class="trial-duration">
+                                                <input
+                                                    type="number"
+                                                    id="trial-duration"
+                                                    class="gh-input"
+                                                    name="trial-duration"
+                                                    value={{this.offer.amount}}
+                                                    disabled={{this.isDiscountSectionDisabled}}
+                                                    {{on "input" this.setTrialDuration}}
+                                                    {{on "blur" (fn this.validateProperty "amount")}}
+                                                />
+                                            </div>
+                                            <span class="error">
+                                                <GhErrorMessage @errors={{this.offer.errors}} @property="amount" />
+                                            </span>
+                                        </GhFormGroup>
+                                    </div>
+                                </div>
+                                <p class="gh-offer-trial-info">Members will be subscribed at full price once the trial ends. <a class="green" href="https://ghost.org/help/free-trials">Learn more</a></p>
+                            {{else}}
+                                <div class="gh-offer-tier-and-trial">
+                                    <GhFormGroup @errors={{this.errors}} @property="product-cadence">
+                                        <label for="product-cadence" class="fw6">Tier – cadence</label>
+                                        <span class="gh-select gh-select-product-cadence">
+                                            <OneWaySelect
+                                                @value={{this.cadence}}
+                                                @options={{this.cadences}}
+                                                @optionValuePath="name"
+                                                @optionLabelPath="label"
+                                                @optionTargetPath="name"
+                                                @title="{{this.offer.tier.name}} - {{if (eq this.offer.cadence "month") "Monthly" "Yearly" }}"
+                                                @disabled={{this.isDiscountSectionDisabled}}
+                                                @update={{this.updateCadence}}
+                                            />
+                                            {{svg-jar "arrow-down-small"}}
+                                        </span>
+                                        <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
+                                    </GhFormGroup>
+                                    <div class="gh-offer-discount">
+                                        <label for="amount" class="fw6 mb1">Amount off</label>
+                                        <div class="flex items-start">
+                                            <GhFormGroup @errors={{this.offer.errors}} @property="amount" @hasValidated={{this.offer.hasValidated}}>
+                                                <div class="gh-offer-value percentage">
+                                                    <input
+                                                        type="number"
+                                                        id="amount"
+                                                        class="gh-input"
+                                                        name="amount"
+                                                        value={{if (eq this.offer.type 'fixed') (gh-price-amount this.offer.amount) this.offer.amount}}
+                                                        disabled={{this.isDiscountSectionDisabled}}
+                                                        {{on "input" this.setDiscountAmount}}
+                                                        {{on "blur" (fn this.validateProperty "amount")}}
+                                                    />
+                                                </div>
+                                                <span class="error">
+                                                    <GhErrorMessage @errors={{this.offer.errors}} @property="amount" />
+                                                </span>
+                                            </GhFormGroup>
+                                            <div class="gh-offer-type">
+                                                <GhFormGroup @errors={{this.offer.errors}} @property="type" @hasValidated={{this.offer.hasValidated}} class="no-margin">
+                                                    <span class="gh-select">
+                                                        <OneWaySelect
+                                                            @value={{this.offer.type}}
+                                                            @options={{this.offertypes}}
+                                                            @optionValuePath="offertype"
+                                                            @disabled={{this.isDiscountSectionDisabled}}
+                                                            @optionLabelPath="label"
+                                                            @optionTargetPath="offertype"
+                                                            @update={{this.setDiscountType}}
+                                                        />
+                                                        {{svg-jar "arrow-down-small"}}
+                                                    </span>
+                                                    <GhErrorMessage @errors={{this.offer.errors}} @property="type" />
+                                                </GhFormGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="gh-offer-duration">
+                                    <GhFormGroup @errors={{this.errors}} @property="duration">
+                                        <label for="product-cadence" class="fw6">Duration</label>
+                                        <span class="gh-select">
+                                            <OneWaySelect
+                                                @data-test-select="offer-duration"
+                                                @value={{this.offer.duration}}
+                                                @options={{this.durations}}
+                                                @optionValuePath="duration"
+                                                @disabled={{this.isDiscountSectionDisabled}}
+                                                @optionLabelPath="label"
+                                                @optionTargetPath="duration"
+                                                @update={{this.updateDuration}}
+                                            />
+                                            {{svg-jar "arrow-down-small"}}
+                                        </span>
+                                        <span class="error">
+                                            <GhErrorMessage @errors={{this.errors}} @property="duration" />
+                                        </span>
+                                    </GhFormGroup>
+                                    {{#if (eq this.offer.duration "repeating")}}
+                                        <GhFormGroup @errors={{this.offer.errors}} @property="durationInMonths">
+                                            <label for="duration-months" class="fw6">Number of months</label>
+                                            <div class="duration-months">
+                                                <GhTextInput
+                                                    @name="duration-months"
+                                                    @value={{readonly this.offer.durationInMonths}}
+                                                    @input={{this.setDurationInMonths}}
+                                                    @disabled={{this.isDiscountSectionDisabled}}
+                                                    @id="duration-months"
+                                                    @class="gh-input" />
+                                            </div>
+                                            <span class="error">
+                                                <GhErrorMessage @errors={{this.offer.errors}} @property="durationInMonths" />
+                                            </span>
+                                        </GhFormGroup>
+                                    {{/if}}
+                                </div>
+                            {{/if}}
+                        </div>
+
+                        <h4 class="gh-main-section-header small bn">Portal settings</h4>
+                        <div class="gh-main-section-content grey">
+                            <div class="form-col2 gh-offer-title-and-code">
+                                <GhFormGroup @errors={{this.offer.errors}} @property="displayTitle" @hasValidated={{this.offer.hasValidated}}>
+                                    <label for="display-title" class="fw6">Display title</label>
+                                    <GhTextInput
+                                        @name="display-title"
+                                        @value={{readonly this.offer.displayTitle}}
+                                        @input={{this.setPortalTitle}}
+                                        @placeholder="Black Friday Special"
+                                        @id="display-title"
+                                        @class="gh-input" />
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="displayTitle" />
+                                    </span>
+                                </GhFormGroup>
+                                <GhFormGroup @errors={{this.offer.errors}} @property="code" @hasValidated={{this.offer.hasValidated}}>
+                                    <label for="code" class="fw6">Offer code</label>
+                                    <GhTextInput
+                                        @name="code"
+                                        @placeholder="black-friday"
+                                        @value={{readonly this.offer.code}}
+                                        @input={{this.setOfferCode}}
+                                        @id="code"
+                                        @class="gh-input" />
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="code" />
+                                    </span>
+                                </GhFormGroup>
+                            </div>
+                            <GhFormGroup @errors={{this.offer.errors}} @property="displayDescription">
+                                <label for="description" class="fw6">Display description</label>
+                                <GhTextarea
+                                    @id="description"
+                                    @name="description"
+                                    @placeholder="Take advantage of this limited-time offer."
+                                    @value={{readonly this.offer.displayDescription}}
+                                    @input={{this.setPortalDescription}}
+                                    @stopEnterKeyDownPropagation="true"
+                                />
+                                <span class="error">
+                                    <GhErrorMessage @errors={{this.offer.errors}} @property="displayDescription" />
+                                </span>
+                            </GhFormGroup>
+                            <GhFormGroup @errors={{this.errors}} @property="url" class="gh-offer-url no-margin">
+                                <label for="url" class="fw6">URL</label>
+                                <div class="gh-input-group">
+                                    <GhTextInput
+                                        data-test-input="offer-portal-url"
+                                        @name="url"
+                                        @value={{readonly this.offerUrl}}
+                                        @id="url"
+                                        @disabled="disabled"
+                                        @placeholder={{this.defaultSiteUrl}}
+                                        @class="gh-input" />
+
+                                    <GhTaskButton
+                                        @type="button"
+                                        @buttonText="Copy link"
+                                        @task={{this.copyOfferUrl}}
+                                        @successText="Link copied"
+                                        @class="gh-btn gh-btn-icon" />
+                                </div>
+                                <GhErrorMessage @errors={{this.errors}} @property="url" />
+                            </GhFormGroup>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="gh-offer-portal-preview">
+                <div>
+                    <h4 class="gh-main-section-header small bn">Preview</h4>
+                    <div class="gh-setting-members-portalpreview">
+                        <div class="gh-setting-members-portal-mock">
+                            <GhSiteIframe
+                                scrolling="no"
+                                @src={{this.portalPreviewUrl}}
+                                @invisibleUntilLoaded="portal-ready"
+                                @onInserted={{this.portalPreviewInserted}}
+                                @onDestroyed={{this.portalPreviewDestroyed}} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gh-main-section">
+            <div class="gh-main-section-block gh-offer-archive-container">
+                {{#if (eq this.offer.status "active")}}
+                    {{#unless this.offer.isNew}}
+                        <button
+                            type="button"
+                            class="gh-btn gh-btn-black gh-btn-icon"
+                            {{on "click" this.openConfirmArchiveModal}}
+                        >
+                            <span>Archive offer</span>
+                        </button>
+                        <p>
+                            <span>Archiving an offer ensures it is no longer available for use. Don’t worry, existing members remain unchanged and the offer can be reactivated anytime.</span>
+                        </p>
+                    {{/unless}}
+                {{else}}
+                    <button
+                        type="button"
+                        class="gh-btn gh-btn-black gh-btn-icon"
+                        {{on "click" this.openConfirmUnarchiveModal}}
+                    >
+                        <span>Reactivate offer</span>
+                    </button>
+                {{/if}}
+            </div>
+        </div>
+    </section>
+</section>

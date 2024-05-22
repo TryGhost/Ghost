@@ -1,0 +1,95 @@
+.kg-nft-card,
+.kg-nft-card * {
+    box-sizing: border-box;
+}
+
+.kg-nft-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.kg-nft-card a.kg-nft-card-container {
+    position: static;
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    text-decoration: none;
+    font-family: -apple-system, BlinkMacSystemFont,
+                'avenir next', avenir,
+                'helvetica neue', helvetica,
+                ubuntu,
+                roboto, noto,
+                'segoe ui', arial,
+                sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: 0 2px 6px -2px rgb(0 0 0 / 10%), 0 0 1px rgb(0 0 0 / 40%);
+    width: 100%;
+    max-width: 512px;
+    color: #222;
+    background: #fff;
+    border-radius: 5px;
+    transition: none;
+}
+
+.kg-nft-card * {
+    position: static;
+}
+
+.kg-nft-metadata {
+    padding: 20px;
+    width: 100%;
+}
+
+.kg-nft-image {
+    border-radius: 5px 5px 0 0;
+    width: 100%;
+}
+
+.kg-nft-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.kg-nft-header h4.kg-nft-title {
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.3em;
+    min-width: unset;
+    max-width: unset;
+    margin: 0;
+    color: #222;
+}
+
+.kg-nft-opensea-logo {
+    margin-top: 2px;
+    width: 100px;
+    object-fit: scale-down;
+}
+
+.kg-nft-creator {
+    font-family: inherit;
+    line-height: 1.4em;
+    margin: 4px 0 0;
+    color: #ababab;
+}
+
+.kg-nft-creator span {
+    font-weight: 500;
+    color: #222;
+}
+
+.kg-nft-card p.kg-nft-description {
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4em;
+    margin: 20px 0 0;
+    color: #222;
+}

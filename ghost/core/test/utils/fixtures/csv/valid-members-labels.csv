@@ -1,0 +1,3 @@
+email,labels
+member+labels_1@example.com,label
+member+labels_2@example.com,"another-label, and-one-more"

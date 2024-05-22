@@ -1,0 +1,18 @@
+{
+    "schemaVersion": "1.0.0",
+    "packages": [
+        {
+            "name": "ember-cli",
+            "version": "3.20.0",
+            "blueprints": [
+                {
+                    "name": "app",
+                    "outputRepo": "https://github.com/ember-cli/ember-new-output",
+                    "codemodsSource": "ember-app-codemods-manifest@1",
+                    "isBaseBlueprint": true,
+                    "options": []
+                }
+            ]
+        }
+    ]
+}

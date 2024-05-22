@@ -1,0 +1,6 @@
+301:
+  /permanent-redirect-from: /permanent-redirect-to
+  /permanent-redirect-from-2: /permanent-redirect-to-2
+
+302:
+  /temporary-redirect-from: /temporary-redirect-to

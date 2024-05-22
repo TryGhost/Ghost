@@ -1,0 +1,53 @@
+<header class="modal-header flex justify-center">
+    <h1 style="margin: 0;">Impersonate</h1>
+</header>
+{{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+<a class="close" href role="button" title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</a>
+
+<div class="modal-body">
+    <div class="flex items-center justify-center mt4 mb4">
+        <GhMemberAvatar
+            @member={{this.member}}
+            @sizeClass={{if this.member.name 'f-headline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
+            @containerClass="w25 h25 gh-member-detail-avatar" />
+    </div>
+
+    <p class="tc pl4 pr4">
+        This is an authentication link to sign into <strong>{{this.config.blogTitle}}</strong> as <strong>{{this.member.email}}</strong>, you can send it to them if they need it, or use it to sign into their account for customer support.
+    </p>
+
+    <fieldset>
+        <div class="gh-input-group">
+            <GhTextInput
+                data-test-input="member-signin-url"
+                @id="member-signin-url"
+                @name="member-signin-url"
+                @disabled={{true}}
+                @value={{readonly this.signinUrl}}
+                @placeholder="{{this.config.blogUrl}}/members/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            />
+            {{#if this.signinUrl}}
+                <GhTaskButton
+                data-test-button="copy-impersonate-link"
+                @buttonText="Copy link"
+                @task={{this.copySigninUrl}}
+                @successText="Link copied"
+                @class="gh-btn gh-btn-black gh-btn-icon" />
+            {{else}}
+                <GhTaskButton
+                data-test-button="impersonate-link-copied"
+                @buttonText="Copy link"
+                @task={{this.copySigninUrl}}
+                @successText="Link copied"
+                @disabled="true"
+                @class="gh-btn gh-btn-black gh-btn-icon" />
+            {{/if}}
+        </div>
+    </fieldset>
+</div>
+
+<div>
+    <p class="tc pt4 mb2">This link is only valid for the next <strong>24 hours</strong></p>
+</div>

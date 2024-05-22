@@ -1,0 +1,32 @@
+{
+    "recommendations": [
+        {
+            "id": "64f6ed7d63be05eff0045d88",
+            "title": "Incoming recommendation 1 title",
+            "excerpt": "Incoming recommendation 1 excerpt",
+            "featured_image": "https://incoming1.com/image.jpg",
+            "favicon": "https://incoming1.com/favicon.ico",
+            "url": "https://incoming1.com/",
+            "recommending_back": false
+        },
+        {
+            "id": "f52d782ef9278a47d6965d1e",
+            "title": "Incoming recommendation 2 title",
+            "excerpt": "Incoming recommendation 2 excerpt",
+            "featured_image": "https://incoming2.com/image.jpg",
+            "favicon": "https://incoming2.com/favicon.ico",
+            "url": "https://incoming2.com/",
+            "recommending_back": true
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "pages": 1,
+            "limit": 5,
+            "total": 2,
+            "prev": null,
+            "next": null
+        }
+    }
+}

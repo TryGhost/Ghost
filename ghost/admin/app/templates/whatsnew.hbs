@@ -1,0 +1,32 @@
+<section class="gh-canvas js-settings-content gh-whats-new-canvas" {{scroll-top}}>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-whats-new-heading">{{svg-jar "gift"}} What's new?</h2>
+        <a href="https://ghost.org/changelog/#/portal/signup" class="gh-btn gh-btn-primary" type="button" target="_blank" rel="noopener noreferrer"><span>Turn on notifications</span></a>
+    </GhCanvasHeader>
+    <section class="view-container">
+        <div class="gh-about-container">
+            <section class="gh-whats-new gh-about-box" {{did-insert (perform this.whatsNew.updateLastSeen)}}>
+                {{#each this.whatsNew.entries as |entry|}}
+                    <div class="gh-wn-entry" {{scroll-to when=(eq entry.slug this.entry)}}>
+                        <a href="{{entry.url}}">
+                            <h4>{{moment-format entry.published_at "DD MMMM YYYY"}}</h4>
+                            <h1>{{entry.title}}</h1>
+                            {{#if entry.feature_image}}
+                                <img class="mb5" src={{entry.feature_image}}>
+                            {{/if}}
+                        </a>
+                        <div class="gh-wn-content">
+                        {{#if entry.custom_excerpt}}
+                            <p>{{entry.custom_excerpt}}</p>
+                            <a href={{entry.url}} class="dib fw6 mb6" target="_blank" rel="noopener noreferrer">Read the full post →</a>
+                        {{else}}
+                            {{{entry.html}}}
+                        {{/if}}
+                        </div>
+                    </div>
+                {{/each}}
+                <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">View all updates &rarr;</a>
+            </section>
+        </div>
+    </section>
+</section>

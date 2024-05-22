@@ -1,0 +1,993 @@
+{
+    "models": [
+        {
+            "name": "Collection",
+            "entries": [
+                {
+                    "title":            "Latest",
+                    "slug":             "latest",
+                    "description":      "All posts",
+                    "type":             "automatic",
+                    "filter":           ""
+                },
+                {
+                    "title":            "Featured",
+                    "slug":             "featured",
+                    "description":      "Featured posts",
+                    "type":             "automatic",
+                    "filter":           "featured:true"
+                }
+            ]
+        },
+        {
+            "name": "Product",
+            "entries": [
+                {
+                    "name":             "Free",
+                    "slug":             "free",
+                    "type":             "free",
+                    "active":           true,
+                    "visibility":       "public"
+                },
+                {
+                    "name":             "Default Product",
+                    "slug":             "default-product",
+                    "type":             "paid",
+                    "active":           true,
+                    "visibility":       "public",
+                    "currency":         "usd",
+                    "monthly_price":    500,
+                    "yearly_price":     5000
+                }
+            ]
+        },
+        {
+            "name": "Newsletter",
+            "entries": [
+                {
+                    "name":             "Default Newsletter",
+                    "slug":             "default-newsletter",
+                    "show_header_name": false
+                }
+            ]
+        },
+        {
+            "name": "Tag",
+            "entries": [
+                {
+                    "name":             "News",
+                    "slug":             "news",
+                    "description":      null,
+                    "parent_id":        null,
+                    "meta_title":       null,
+                    "meta_description": null
+                }
+            ]
+        },
+        {
+            "name": "Role",
+            "entries": [
+                {
+                    "name": "Administrator",
+                    "description": "Administrators"
+                },
+                {
+                    "name": "Editor",
+                    "description": "Editors"
+                },
+                {
+                    "name": "Author",
+                    "description": "Authors"
+                },
+                {
+                    "name": "Contributor",
+                    "description": "Contributors"
+                },
+                {
+                    "name": "Owner",
+                    "description": "Blog Owner"
+                },
+                {
+                    "name": "Admin Integration",
+                    "description": "External Apps"
+                },
+                {
+                    "name": "Ghost Explore Integration",
+                    "description": "Internal Integration for the Ghost Explore directory"
+                },
+                {
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Internal Integration for the Self-Serve migration tool"
+                },
+                {
+                    "name": "DB Backup Integration",
+                    "description": "Internal DB Backup Client"
+                },
+                {
+                    "name": "Scheduler Integration",
+                    "description": "Internal Scheduler Client"
+                }
+            ]
+        },
+        {
+            "name": "Permission",
+            "entries": [
+                {
+                    "name": "Read explore data",
+                    "action_type": "read",
+                    "object_type": "explore"
+                },
+                {
+                    "name": "Export database",
+                    "action_type": "exportContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Import database",
+                    "action_type": "importContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Delete all content",
+                    "action_type": "deleteAllContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Send mail",
+                    "action_type": "send",
+                    "object_type": "mail"
+                },
+                {
+                    "name": "Browse notifications",
+                    "action_type": "browse",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Add notifications",
+                    "action_type": "add",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Delete notifications",
+                    "action_type": "destroy",
+                    "object_type": "notification"
+                },
+                {
+                    "name": "Browse posts",
+                    "action_type": "browse",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Read posts",
+                    "action_type": "read",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Edit posts",
+                    "action_type": "edit",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Add posts",
+                    "action_type": "add",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Delete posts",
+                    "action_type": "destroy",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Browse settings",
+                    "action_type": "browse",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Read settings",
+                    "action_type": "read",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Edit settings",
+                    "action_type": "edit",
+                    "object_type": "setting"
+                },
+                {
+                    "name": "Generate slugs",
+                    "action_type": "generate",
+                    "object_type": "slug"
+                },
+                {
+                    "name": "Browse tags",
+                    "action_type": "browse",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Read tags",
+                    "action_type": "read",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Edit tags",
+                    "action_type": "edit",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Add tags",
+                    "action_type": "add",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Delete tags",
+                    "action_type": "destroy",
+                    "object_type": "tag"
+                },
+                {
+                    "name": "Browse themes",
+                    "action_type": "browse",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Edit themes",
+                    "action_type": "edit",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Activate themes",
+                    "action_type": "activate",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "View active theme details",
+                    "action_type": "readActive",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Upload themes",
+                    "action_type": "add",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Download themes",
+                    "action_type": "read",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Delete themes",
+                    "action_type": "destroy",
+                    "object_type": "theme"
+                },
+                {
+                    "name": "Browse users",
+                    "action_type": "browse",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Read users",
+                    "action_type": "read",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Edit users",
+                    "action_type": "edit",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Add users",
+                    "action_type": "add",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Delete users",
+                    "action_type": "destroy",
+                    "object_type": "user"
+                },
+                {
+                    "name": "Assign a role",
+                    "action_type": "assign",
+                    "object_type": "role"
+                },
+                {
+                    "name": "Browse roles",
+                    "action_type": "browse",
+                    "object_type": "role"
+                },
+                {
+                    "name": "Browse invites",
+                    "action_type": "browse",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Read invites",
+                    "action_type": "read",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Edit invites",
+                    "action_type": "edit",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Add invites",
+                    "action_type": "add",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Delete invites",
+                    "action_type": "destroy",
+                    "object_type": "invite"
+                },
+                {
+                    "name": "Download redirects",
+                    "action_type": "download",
+                    "object_type": "redirect"
+                },
+                {
+                    "name": "Upload redirects",
+                    "action_type": "upload",
+                    "object_type": "redirect"
+                },
+                {
+                    "name": "Add webhooks",
+                    "action_type": "add",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Edit webhooks",
+                    "action_type": "edit",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Delete webhooks",
+                    "action_type": "destroy",
+                    "object_type": "webhook"
+                },
+                {
+                    "name": "Browse integrations",
+                    "action_type": "browse",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Read integrations",
+                    "action_type": "read",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Edit integrations",
+                    "action_type": "edit",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Add integrations",
+                    "action_type": "add",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Delete integrations",
+                    "action_type": "destroy",
+                    "object_type": "integration"
+                },
+                {
+                    "name": "Browse API keys",
+                    "action_type": "browse",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Read API keys",
+                    "action_type": "read",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Edit API keys",
+                    "action_type": "edit",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Add API keys",
+                    "action_type": "add",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Delete API keys",
+                    "action_type": "destroy",
+                    "object_type": "api_key"
+                },
+                {
+                    "name": "Browse Actions",
+                    "action_type": "browse",
+                    "object_type": "action"
+                },
+                {
+                    "name": "Browse Members",
+                    "action_type": "browse",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Read Members",
+                    "action_type": "read",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Edit Members",
+                    "action_type": "edit",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Add Members",
+                    "action_type": "add",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Delete Members",
+                    "action_type": "destroy",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Browse Products",
+                    "action_type": "browse",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Read Products",
+                    "action_type": "read",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Edit Products",
+                    "action_type": "edit",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Add Products",
+                    "action_type": "add",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Delete Products",
+                    "action_type": "destroy",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Publish posts",
+                    "action_type": "publish",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Backup database",
+                    "action_type": "backupContent",
+                    "object_type": "db"
+                },
+                {
+                    "name": "Email preview",
+                    "action_type": "read",
+                    "object_type": "email_preview"
+                },
+                {
+                    "name": "Send test email",
+                    "action_type": "sendTestEmail",
+                    "object_type": "email_preview"
+                },
+                {
+                    "name": "Browse emails",
+                    "action_type": "browse",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Read emails",
+                    "action_type": "read",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Retry emails",
+                    "action_type": "retry",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Browse labels",
+                    "action_type": "browse",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Read labels",
+                    "action_type": "read",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Edit labels",
+                    "action_type": "edit",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Add labels",
+                    "action_type": "add",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Delete labels",
+                    "action_type": "destroy",
+                    "object_type": "label"
+                },
+                {
+                    "name": "Read member signin urls",
+                    "action_type": "read",
+                    "object_type": "member_signin_url"
+                },
+                {
+                    "name": "Read identities",
+                    "action_type": "read",
+                    "object_type": "identity"
+                },
+                {
+                    "name": "Auth Stripe Connect for Members",
+                    "action_type": "auth",
+                    "object_type": "members_stripe_connect"
+                },
+                {
+                    "name": "Browse snippets",
+                    "action_type": "browse",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Read snippets",
+                    "action_type": "read",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Edit snippets",
+                    "action_type": "edit",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Add snippets",
+                    "action_type": "add",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Delete snippets",
+                    "action_type": "destroy",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Browse offers",
+                    "action_type": "browse",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Read offers",
+                    "action_type": "read",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Edit offers",
+                    "action_type": "edit",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Add offers",
+                    "action_type": "add",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Reset all passwords",
+                    "action_type": "resetAllPasswords",
+                    "object_type": "authentication"
+                },
+                {
+                    "name": "Browse custom theme settings",
+                    "action_type": "browse",
+                    "object_type": "custom_theme_setting"
+                },
+                {
+                    "name": "Edit custom theme settings",
+                    "action_type": "edit",
+                    "object_type": "custom_theme_setting"
+                },
+                {
+                    "name": "Browse newsletters",
+                    "action_type": "browse",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Read newsletters",
+                    "action_type": "read",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Add newsletters",
+                    "action_type": "add",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Edit newsletters",
+                    "action_type": "edit",
+                    "object_type": "newsletter"
+                },
+                {
+                    "name": "Browse comments",
+                    "action_type": "browse",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Read comments",
+                    "action_type": "read",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Edit comments",
+                    "action_type": "edit",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Add comments",
+                    "action_type": "add",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Delete comments",
+                    "action_type": "destroy",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Moderate comments",
+                    "action_type": "moderate",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Like comments",
+                    "action_type": "like",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Unlike comments",
+                    "action_type": "unlike",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Report comments",
+                    "action_type": "report",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Browse links",
+                    "action_type": "browse",
+                    "object_type": "link"
+                },
+                {
+                    "name": "Edit links",
+                    "action_type": "edit",
+                    "object_type": "link"
+                },
+                {
+                    "name": "Browse mentions",
+                    "action_type": "browse",
+                    "object_type": "mention"
+                },
+                {
+                    "name": "Browse collections",
+                    "action_type": "browse",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Read collections",
+                    "action_type": "read",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Edit collections",
+                    "action_type": "edit",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Add collections",
+                    "action_type": "add",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Delete collections",
+                    "action_type": "destroy",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Browse recommendations",
+                    "action_type": "browse",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Read recommendations",
+                    "action_type": "read",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Edit recommendations",
+                    "action_type": "edit",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Add recommendations",
+                    "action_type": "add",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Delete recommendations",
+                    "action_type": "destroy",
+                    "object_type": "recommendation"
+                }
+            ]
+        },
+        {
+            "name": "User",
+            "entries": [
+                {
+                    "id": 1,
+                    "name": "Ghost",
+                    "email": "ghost@example.com",
+                    "status": "inactive",
+                    "free_member_signup_notification": true,
+                    "paid_subscription_started_notification": true,
+                    "paid_subscription_canceled_notification": false,
+                    "donation_notifications": true,
+                    "roles": []
+                }
+            ]
+        },
+        {
+            "name": "Post",
+            "entries": [
+                {
+                    "title": "Coming soon",
+                    "slug": "coming-soon",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[[\"a\",[\"href\",\"#/portal/\",\"rel\",\"noopener noreferrer\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"This is a brand new site that's just getting started. Things will be up and running here shortly, but you can \"],[0,[0],1,\"subscribe\"],[0,[],0,\" in the meantime if you'd like to stay up to date and receive emails when new content is published!\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "featured": false,
+                    "type": "post",
+                    "status": "published",
+                    "visibility": "public",
+                    "created_by": "1",
+                    "published_by": "1"
+                },
+                {
+                    "title": "About this site",
+                    "slug": "about",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"hr\",{}]],\"markups\":[[\"a\",[\"href\",\"https://ghost.org\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"This is an independent publication. If you subscribe today, you'll get full access to the website as well as email newsletters about new content when it's available. Your subscription makes this site possible. Thank you!\"]]],[1,\"h3\",[[0,[],0,\"Access all areas\"]]],[1,\"p\",[[0,[],0,\"By signing up, you'll get access to the full archive of everything that's been published before and everything that's still to come. Your very own private library.\"]]],[1,\"h3\",[[0,[],0,\"Fresh content, delivered\"]]],[1,\"p\",[[0,[],0,\"Stay up to date with new content sent straight to your inbox! No more worrying about whether you missed something because of a pesky algorithm or news feed.\"]]],[1,\"h3\",[[0,[],0,\"Meet people like you\"]]],[1,\"p\",[[0,[],0,\"Join a community of other subscribers who share the same interests.\"]]],[10,0],[1,\"h3\",[[0,[],0,\"Start your own thing\"]]],[1,\"p\",[[0,[],0,\"Enjoying the experience? Get started for free and set up your very own subscription business using \"],[0,[0],1,\"Ghost\"],[0,[],0,\", the same platform that powers this website.\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "featured": false,
+                    "type": "page",
+                    "status": "published",
+                    "visibility": "public",
+                    "created_by": "1",
+                    "published_by": "1"
+                }
+            ]
+        },
+        {
+            "name": "Integration",
+            "entries": [
+                {
+                    "slug": "zapier",
+                    "name": "Zapier",
+                    "description": "Built-in Zapier integration",
+                    "type": "builtin",
+                    "api_keys": [{"type": "admin"}]
+                },
+                {
+                    "slug": "ghost-explore",
+                    "name": "Ghost Explore",
+                    "description": "Built-in Ghost Explore integration",
+                    "type": "core",
+                    "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
+                },
+                {
+                    "slug": "self-serve-migration",
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Core Self-Serve Migration integration",
+                    "type": "core",
+                    "api_keys": [
+                        {
+                            "type": "admin",
+                            "role": "Self-Serve Migration Integration"
+                        }
+                    ]
+                },
+                {
+                    "slug": "ghost-backup",
+                    "name": "Ghost Backup",
+                    "description": "Internal DB Backup integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "DB Backup Integration"}]
+                },
+                {
+                    "slug": "ghost-scheduler",
+                    "name": "Ghost Scheduler",
+                    "description": "Internal Scheduler integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "Scheduler Integration"}]
+                },
+                {
+                    "slug": "ghost-internal-frontend",
+                    "name": "Ghost Internal Frontend",
+                    "description": "Internal frontend integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "content"}]
+                },
+                {
+                    "slug": "ghost-core-content",
+                    "name": "Ghost Core Content API",
+                    "description": "Internal Content API integration for Admin access",
+                    "type": "core",
+                    "api_keys": [{"type": "content"}]
+                }
+            ]
+        }
+    ],
+    "relations": [
+        {
+            "from": {
+                "model": "Role",
+                "match": "name",
+                "relation": "permissions"
+            },
+            "to": {
+                "model": "Permission",
+                "match": ["object_type", "action_type"]
+            },
+            "entries": {
+                "Administrator": {
+                    "db": "all",
+                    "mail": "all",
+                    "notification": "all",
+                    "post": "all",
+                    "setting": "all",
+                    "slug": "all",
+                    "tag": "all",
+                    "theme": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "redirect": "all",
+                    "webhook": "all",
+                    "integration": "all",
+                    "api_key": "all",
+                    "action": "all",
+                    "member": "all",
+                    "product": "all",
+                    "label": "all",
+                    "email_preview": "all",
+                    "email": "all",
+                    "member_signin_url": "read",
+                    "snippet": "all",
+                    "custom_theme_setting": "all",
+                    "offer": "all",
+                    "authentication": "resetAllPasswords",
+                    "members_stripe_connect": "auth",
+                    "newsletter": "all",
+                    "explore": "read",
+                    "comment": "all",
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all",
+                    "recommendation": "all"
+                },
+                "DB Backup Integration": {
+                    "db": "all"
+                },
+                "Scheduler Integration": {
+                    "post": "publish"
+                },
+                "Ghost Explore Integration": {
+                    "explore": "read"
+                },
+                "Self-Serve Migration Integration": {
+                    "db": "importContent",
+                    "member": "add",
+                    "tag": "read"
+                },
+                "Admin Integration": {
+                    "mail": "all",
+                    "notification": "all",
+                    "post": "all",
+                    "setting": "all",
+                    "slug": "all",
+                    "tag": "all",
+                    "theme": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "redirect": "all",
+                    "webhook": "all",
+                    "action": "all",
+                    "member": "all",
+                    "label": "all",
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "product": ["browse", "read", "add", "edit"],
+                    "offer": ["browse", "read", "add", "edit"],
+                    "newsletter": ["browse", "read", "add", "edit"],
+                    "explore": "read",
+                    "comment": "all",
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all",
+                    "recommendation": "all"
+                },
+                "Editor": {
+                    "notification": "all",
+                    "post": "all",
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "label": ["browse", "read"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": "all",
+                    "recommendation": ["browse", "read"]
+                },
+                "Author": {
+                    "post": ["browse", "read", "edit", "add", "destroy"],
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": ["browse", "read", "add"],
+                    "user": ["browse", "read"],
+                    "role": ["browse"],
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "read",
+                    "email": "read",
+                    "snippet": ["browse", "read"],
+                    "label": ["browse", "read"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": ["browse", "read", "add"],
+                    "recommendation": ["browse", "read"]
+                },
+                "Contributor": {
+                    "post": ["browse", "read", "edit", "add", "destroy"],
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": ["browse", "read"],
+                    "user": ["browse", "read"],
+                    "role": ["browse"],
+                    "theme": ["browse"],
+                    "email_preview": "read",
+                    "email": "read",
+                    "snippet": ["browse", "read"],
+                    "collection": ["browse", "read"],
+                    "recommendation": ["browse", "read"]
+                }
+            }
+        },
+        {
+            "from": {
+                "model": "Post",
+                "match": "slug",
+                "relation": "tags"
+            },
+            "to": {
+                "model": "Tag",
+                "match": "name"
+            },
+            "entries": {
+                "coming-soon": ["News"]
+            }
+        },
+        {
+            "from": {
+                "model": "User",
+                "match": "id",
+                "relation": "roles"
+            },
+            "to": {
+                "model": "Role",
+                "match": "name"
+            },
+            "entries": {
+                "1": ["Owner"]
+            }
+        }
+    ]
+}

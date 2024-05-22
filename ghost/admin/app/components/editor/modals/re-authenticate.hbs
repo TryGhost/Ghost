@@ -1,0 +1,37 @@
+<div class="modal-content" data-test-modal="re-authenticate">
+    <form id="login" class="gh-signin" method="post" novalidate="novalidate" {{on "submit" (perform this.reauthenticateTask)}}>
+        <header>
+            <h1>Are you still here?</h1>
+            <p>Your authenticated session expired. Enter your password to continue where you left off.</p>
+        </header>
+
+        <div class="form-group {{if this.authenticationError 'error'}}">
+            <label for="password">Password</label>
+            <span class="gh-input-icon gh-icon-lock forgotten-wrap" {{validation-status errors=this.signup.errors property="password" hasValidated=this.signup.hasValidated}}>
+                <input
+                    type="password"
+                    class="gh-input password"
+                    placeholder="•••••••••••••••"
+                    name="password"
+                    value={{this.signup.password}}
+                    aria-label="Your password"
+                    {{on "input" this.setPassword}}
+                />
+            </span>
+        </div>
+
+        <GhTaskButton
+            @type="submit"
+            @buttonText="Sign in &rarr;"
+            @runningText="Authenticating"
+            @showSuccess={{false}}
+            @task={{this.reauthenticateTask}}
+            @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
+            style={{accent-color-background}}
+        />
+
+        {{#if this.authenticationError}}
+            <p class="response">{{this.authenticationError}}</p>
+        {{/if}}
+    </form>
+</div>

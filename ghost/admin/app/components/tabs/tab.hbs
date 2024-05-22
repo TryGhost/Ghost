@@ -1,0 +1,13 @@
+<button
+    class="tab {{if this.isSelectedTab "tab-selected" }}"
+    id="{{this.id}}"
+    type="button"
+    role="tab"
+    aria-selected="{{this.isSelectedTab}}"
+    aria-controls="{{this.id}}-panel"
+    tabindex="{{if this.isSelectedTab "0" "-1"}}"
+    {{on "click" this.handleClick}}
+    {{on "keyup" this.handleKeyup}}
+>
+    {{yield}}
+</button>

@@ -1,0 +1,11 @@
+:root {
+    color-scheme: dark;
+}
+
+.bg-grouped-table {
+    background: #191b1f;
+}
+
+.highlight-whitegrey:hover {
+    background-color: color-mod(var(--whitegrey) a(60%) s(+5%)) !important;
+}

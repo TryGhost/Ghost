@@ -1,0 +1,81 @@
+{{!-- template-lint-disable no-invalid-interactive --}}
+<div class="gh-post-history" {{did-insert this.onInsert}}>
+    <div class="gh-post-history-main">
+        <div class="gh-koenig-editor-pane flex flex-column mih-100">
+            {{#if this.selectedHTML}}
+                {{{this.selectedHTML}}}
+            {{/if}}
+            <div class="gh-post-history-hidden-lexical current">
+                <div class="gh-editor-feature-image-container">
+                    <div class="gh-editor-feature-image">
+                        {{#if this.selectedRevision.feature_image}}
+                            <img src="{{this.selectedRevision.feature_image}}">
+                        {{/if}}
+                        {{#if this.selectedRevision.feature_image_caption}}
+                            <p>{{{this.selectedRevision.feature_image_caption}}}</p>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="gh-editor-title">{{this.currentTitle}}</div>
+                <KoenigLexicalEditor @lexical={{this.selectedRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerSelectedEditorApi"}}/>
+            </div>
+        </div>
+    </div>
+    <div class="settings-menu-container">
+        <div class="settings-menu settings-menu-pane settings-menu-pane-main">
+            <div class="settings-menu-header subview">
+                <button
+                    aria-label="Close meta data panel"
+                    class="back settings-menu-header-action"
+                    data-test-button="close-psm-subview"
+                    type="button" {{action "closeModal"}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    {{svg-jar "arrow-left"}}
+                    <span class="hidden">Back</span>
+                </button>
+                <h4>{{capitalize this.post.displayName}} history</h4>
+            </div>
+            <div class="settings-menu-content">
+                <ul class="nav-list">
+                    {{#each this.revisionList as |revision index|}}
+                    <li class="nav-list-item {{if revision.selected "selected" ""}}">
+                        <button type="button" {{action "handleClick" index}}>
+                            <div class="flex items-center">
+                                <span class="gh-post-history-version">{{gh-format-post-time revision.createdAt format="D MMM YYYY, HH:mm"}}{{this.timezone}}</span>
+                                {{#if revision.latest}}
+                                    <span class="gh-post-history-version-tag current">Latest</span>
+                                {{/if}}
+
+                                {{#if revision.new_publish}}
+                                    <span class="gh-post-history-version-tag published">Published</span>
+                                {{/if}}
+                                {{#if (eq revision.reason "unpublished")}}
+                                    <span class="gh-post-history-version-tag unpublished">Unpublished</span>
+                                {{/if}}
+
+                            </div>
+                            <div class="flex items-center mt2">
+                                <span class="user-list-item-figure" style={{background-image-style revision.author.profile_image_url}}>
+                                    <span class="hidden">Photo of {{revision.author.name}}</span>
+                                </span>
+                                <span class="gh-post-history-version-meta {{if (eq revision.author.name "Deleted staff user") "deleted-user"}}">{{revision.author.name}}</span>
+                            </div>
+                        </button>
+                        {{#if (and revision.selected (not revision.latest))}}
+                            <button
+                                type="button"
+                                class="gh-post-history-version-restore"
+                                {{on "click" (fn this.restoreRevision index)}}
+                            >
+                                <span>Restore</span>
+                            </button>
+                        {{/if}}
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{{this.didInsert}}

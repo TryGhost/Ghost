@@ -1,0 +1,5 @@
+<svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>arrow-left-tail</title>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M.75 8a.75.75 0 01.75-.75h12.857a.75.75 0 110 1.5H1.5A.75.75 0 01.75 8z"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.03 1.47a.75.75 0 010 1.06L2.56 8l5.47 5.47a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"/>
+</svg>

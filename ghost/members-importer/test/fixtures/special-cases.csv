@@ -1,0 +1,3 @@
+id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers
+634e48e056ef99c6a7af5850,timetraveler@example.com,"From the cuture","a note",true,true,,9999-10-18T06:34:08.000Z,,"user import label",This is a Bronze Tier
+

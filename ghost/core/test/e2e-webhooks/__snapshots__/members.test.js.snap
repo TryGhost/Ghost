@@ -1,0 +1,137 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`member.* events member.added event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate, br",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`member.* events member.added event is triggered 2: [body] 1`] = `
+Object {
+  "member": Object {
+    "current": Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "testemail@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_seen_at": null,
+      "name": "Test Member",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+      ],
+      "note": "test note",
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Array [],
+      "tiers": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    "previous": Object {},
+  },
+}
+`;
+
+exports[`member.* events member.deleted event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate, br",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`member.* events member.deleted event is triggered 2: [body] 1`] = `
+Object {
+  "member": Object {
+    "current": Object {},
+    "previous": Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "testemail2@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_seen_at": null,
+      "name": "Test Member2",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+      ],
+      "note": "test note2",
+      "status": "free",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  },
+}
+`;
+
+exports[`member.* events member.edited event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate, br",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`member.* events member.edited event is triggered 2: [body] 1`] = `
+Object {
+  "member": Object {
+    "current": Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "testemail3@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Array [],
+      "last_seen_at": null,
+      "name": "Ghost",
+      "newsletters": Array [
+        Object {
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Default Newsletter",
+          "status": "active",
+        },
+      ],
+      "note": "test note3",
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    "previous": Object {
+      "name": "Test Member3",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  },
+}
+`;

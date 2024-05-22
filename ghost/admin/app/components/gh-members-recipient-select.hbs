@@ -1,0 +1,100 @@
+<div class="gh-publish-send-to {{if this.isSpecificChecked "mb4"}}">
+    <div class="gh-publish-send-to-option">
+        <div class="for-checkbox {{if @disabled "disabled"}}">
+            <label class="checkbox" for="send-email-to-free">
+                <input
+                    id="send-email-to-free"
+                    type="checkbox"
+                    class="gh-input post-settings-featured"
+                    checked={{this.isFreeChecked}}
+                    disabled={{@disabled}}
+                    aria-label="Free members toggle"
+                    {{on "change" (fn this.toggleFilter "status:free")}}
+                    data-test-checkbox="free-members"
+                >
+                <div class="flex">
+                    <span class="input-toggle-component"></span>
+                    <p>
+                        Free
+                        {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:free"))) as |countFetcher|}}
+                            {{#if (not (is-empty countFetcher.count))}}
+                                <span class="gh-publish-emailcount" data-test-email-count="free-members">({{format-number countFetcher.count}})</span>
+                            {{/if}}
+                        {{/let}}
+                    </p>
+                </div>
+            </label>
+        </div>
+    </div>
+    {{#if this.isPaidAvailable}}
+        <div class="gh-publish-send-to-option">
+            <div class="for-checkbox {{if @disabled "disabled"}}">
+                <label class="checkbox" for="send-email-to-paid">
+                    <input
+                        id="send-email-to-paid"
+                        type="checkbox"
+                        class="gh-input post-settings-featured"
+                        checked={{this.isPaidChecked}}
+                        disabled={{@disabled}}
+                        aria-label="Paid members toggle"
+                        {{on "change" (fn this.toggleFilter "status:-free")}}
+                        data-test-checkbox="paid-members"
+                    >
+                    <div class="flex">
+                        <span class="input-toggle-component"></span>
+                        <p>
+                            Paid
+                            {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:-free"))) as |countFetcher|}}
+                                {{#if (not (is-empty countFetcher.count))}}
+                                    <span class="gh-publish-emailcount" data-test-email-count="paid-members">({{format-number countFetcher.count}})</span>
+                                {{/if}}
+                            {{/let}}
+                        </p>
+                    </div>
+                </label>
+            </div>
+        </div>
+    {{/if}}
+    {{#if this.specificOptions}}
+        <div class="gh-publish-send-to-option">
+            <div class="for-checkbox {{if @disabled "disabled"}}">
+                <label class="checkbox" for="send-email-to-specific">
+                    <input
+                        id="send-email-to-specific"
+                        type="checkbox"
+                        class="gh-input post-settings-featured"
+                        checked={{this.isSpecificChecked}}
+                        disabled={{@disabled}}
+                        aria-label="Specific people toggle"
+                        {{on "change" this.toggleSpecificFilter}}
+                        data-test-checkbox="specific-members"
+                    >
+                    <div class="flex">
+                        <span class="input-toggle-component"></span>
+                        <p>Specific people</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+    {{/if}}
+</div>
+{{#if this.isSpecificChecked}}
+    <div data-test-select="specific-members">
+        <label class="gh-main-section-header small bn">Selection</label>
+        <GhTokenInput
+            @class="select-members select-members-recipient"
+            @dropdownClass={{@dropdownClass}}
+            @options={{this.specificOptions}}
+            @selected={{this.selectedSpecificOptions}}
+            @disabled={{@disabled}}
+            @searchMessage="All labels selected"
+            @optionsComponent={{component "power-select/options"}}
+            @allowCreation={{false}}
+            @renderInPlace={{this.renderInPlace}}
+            @onChange={{this.selectSpecificOptions}}
+            as |option|
+        >
+            {{option.name}}
+        </GhTokenInput>
+    </div>
+{{/if}}

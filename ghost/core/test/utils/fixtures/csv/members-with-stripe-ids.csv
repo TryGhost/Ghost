@@ -1,0 +1,3 @@
+email,subscribed,stripe_customer_id
+member+duplicate_stripe_1@example.com,true,cus_GbbIQRd8TnFqHq
+member+unique_stripe_1@example.com,true,cus_GbbIQRd8TnFqHA

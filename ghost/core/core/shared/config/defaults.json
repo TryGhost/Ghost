@@ -1,0 +1,233 @@
+{
+    "url": "http://localhost:2368",
+    "server": {
+        "host": "127.0.0.1",
+        "port": 2368,
+        "shutdownTimeout": 60000
+    },
+    "admin": {
+        "redirects": true
+    },
+    "updateCheck": {
+        "url": "https://updates.ghost.org",
+        "forceUpdate": false
+    },
+    "privacy": false,
+    "useMinFiles": true,
+    "paths": {
+        "contentPath": "content/",
+        "fixtures": "core/server/data/schema/fixtures/fixtures",
+        "defaultSettings": "core/server/data/schema/default-settings/default-settings",
+        "assetSrc": "core/frontend/src"
+    },
+    "adapters": {
+        "sso": {
+            "active": "DefaultSSOAdapter"
+        },
+        "cache": {
+            "active": "MemoryCache",
+            "settings": {},
+            "imageSizes": {},
+            "gscan": {}
+        }
+    },
+    "storage": {
+        "active": "LocalImagesStorage",
+        "media": "LocalMediaStorage",
+        "files": "LocalFilesStorage",
+        "LocalMediaStorage": {},
+        "LocalFilesStorage": {}
+    },
+    "scheduling": {
+        "active": "scheduling-default"
+    },
+    "members": {
+        "contentApiAccess": [],
+        "paymentProcessors": [],
+        "emailTemplate": {
+            "showSiteHeader": true,
+            "showPoweredBy": true
+        }
+    },
+    "logging": {
+        "level": "info",
+        "useLocalTime": false,
+        "rotation": {
+            "enabled": false,
+            "period": "1d",
+            "count": 10
+        },
+        "transports": [
+            "stdout"
+        ]
+    },
+    "spam": {
+        "user_login": {
+            "minWait": 600000,
+            "maxWait": 604800000,
+            "freeRetries": 4
+        },
+        "user_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "private_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "content_api_key": {
+            "minWait": 3600000,
+            "maxWait": 86400000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "member_login": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
+        "webmentions_block": {
+            "minWait": 10,
+            "maxWait": 100,
+            "lifetime": 1000,
+            "freeRetries": 100
+        },
+        "email_preview_block": {
+            "minWait": 360000,
+            "maxWait": 360000,
+            "lifetime": 3600,
+            "freeRetries": 10
+        }
+    },
+    "caching": {
+        "frontend": {
+            "maxAge": 0
+        },
+        "publicAssets": {
+            "maxAge": 31536000
+        },
+        "301": {
+            "maxAge": 31536000
+        },
+        "customRedirects": {
+            "maxAge": 31536000
+        },
+        "favicon": {
+            "maxAge": 86400
+        },
+        "sitemap": {
+            "maxAge": 3600
+        },
+        "sitemapXSL": {
+            "maxAge": 86400
+        },
+        "robotstxt": {
+            "maxAge": 3600
+        },
+        "wellKnown": {
+            "maxAge": 86400
+        },
+        "cors": {
+            "maxAge": 86400
+        },
+        "contentAPI": {
+            "maxAge": 0
+        },
+        "commentsCountAPI": {
+            "maxAge": 0
+        }
+    },
+    "optimization": {
+        "getHelper": {
+            "timeout": {
+                "threshold": 5000,
+                "level": "error"
+            },
+            "notify": {
+                "threshold": 200,
+                "level": "warn"
+            }
+        }
+    },
+    "imageOptimization": {
+        "resize": true,
+        "srcsets": true
+    },
+    "compress": true,
+    "preloadHeaders": false,
+    "adminFrameProtection": true,
+    "sendWelcomeEmail": true,
+    "stripeDirect": false,
+    "enableStripePromoCodes": false,
+    "emailAnalytics": true,
+    "backgroundJobs": {
+        "emailAnalytics": true
+    },
+    "portal": {
+        "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
+        "version": "2.37"
+    },
+    "sodoSearch": {
+        "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
+        "version": "1.1"
+    },
+    "announcementBar": {
+        "url": "https://cdn.jsdelivr.net/ghost/announcement-bar@~{version}/umd/announcement-bar.min.js",
+        "version": "1.1"
+    },
+    "comments": {
+        "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
+        "version": "0.16"
+    },
+    "signupForm": {
+        "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
+        "version": "0.1"
+    },
+    "tenor": {
+        "googleApiKey": null,
+        "contentFilter": "off"
+    },
+    "opensea": {
+        "privateReadOnlyApiKey": null
+    },
+    "twitter": {
+        "privateReadOnlyToken": null
+    },
+    "gravatar": {
+        "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
+    },
+    "milestones":
+        {
+            "arr": [
+                {
+                    "currency": "usd",
+                    "values": [0, 100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+                }
+            ],
+            "members": [0, 100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
+            "minDaysSinceImported": 7,
+            "minDaysSinceLastEmail": 14
+        },
+    "bulkEmail": {
+        "batchSize": 1000
+    },
+    "disableJSBackups": false
+}

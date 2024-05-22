@@ -1,0 +1,202 @@
+{
+    "name": "source",
+    "description": "A default theme for the Ghost publishing platform",
+    "demo": "https://source.ghost.io",
+    "version": "1.0.2",
+    "engines": {
+        "ghost": ">=5.0.0"
+    },
+    "license": "MIT",
+    "scripts": {
+        "dev": "gulp",
+        "zip": "gulp zip",
+        "test": "gscan .",
+        "test:ci": "gscan --fatal --verbose .",
+        "pretest": "gulp build",
+        "preship": "yarn test",
+        "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version && git push --follow-tags; else echo \"Uncomitted changes found.\" && exit 1; fi",
+        "postship": "git fetch && gulp release"
+    },
+    "author": {
+        "name": "Ghost Foundation",
+        "email": "hello@ghost.org",
+        "url": "https://ghost.org/"
+    },
+    "gpm": {
+        "type": "theme",
+        "categories": [
+            "Minimal",
+            "Magazine"
+        ]
+    },
+    "keywords": [
+        "ghost",
+        "theme",
+        "ghost-theme"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Source.git"
+    },
+    "bugs": "https://github.com/TryGhost/Source/issues",
+    "contributors": "https://github.com/TryGhost/Source/graphs/contributors",
+    "devDependencies": {
+        "@tryghost/release-utils": "0.8.1",
+        "autoprefixer": "10.4.7",
+        "beeper": "2.1.0",
+        "cssnano": "5.1.12",
+        "gscan": "4.39.4",
+        "gulp": "4.0.2",
+        "gulp-concat": "2.6.1",
+        "gulp-livereload": "4.0.2",
+        "gulp-postcss": "9.0.1",
+        "gulp-uglify": "3.0.2",
+        "gulp-zip": "5.1.0",
+        "inquirer": "8.2.4",
+        "postcss": "8.2.13",
+        "postcss-easy-import": "4.0.0",
+        "pump": "3.0.0"
+    },
+    "browserslist": [
+        "defaults"
+    ],
+    "config": {
+        "posts_per_page": 16,
+        "image_sizes": {
+            "xs": {
+                "width": 160
+            },
+            "s": {
+                "width": 320
+            },
+            "m": {
+                "width": 600
+            },
+            "l": {
+                "width": 960
+            },
+            "xl": {
+                "width": 1200
+            },
+            "xxl": {
+                "width": 2000
+            }
+        },
+        "card_assets": true,
+        "custom": {
+            "navigation_layout": {
+                "type": "select",
+                "options": [
+                    "Logo in the middle",
+                    "Logo on the left",
+                    "Stacked"
+                ],
+                "default": "Logo in the middle"
+            },
+            "site_background_color": {
+                "type": "color",
+                "default": "#ffffff"
+            },
+            "header_and_footer_color": {
+                "type": "select",
+                "options": [
+                    "Background color",
+                    "Accent color"
+                ],
+                "default": "Background color"
+            },
+            "title_font": {
+                "type": "select",
+                "options": [
+                    "Modern sans-serif",
+                    "Elegant serif",
+                    "Consistent mono"
+                ],
+                "default": "Modern sans-serif"
+            },
+            "body_font": {
+                "type": "select",
+                "options": [
+                    "Modern sans-serif",
+                    "Elegant serif"
+                ],
+                "default": "Modern sans-serif"
+            },
+            "signup_heading": {
+                "type": "text",
+                "description": "Used in your footer across your theme, defaults to site title when empty"
+            },
+            "signup_subheading": {
+                "type": "text",
+                "description": "Defaults to site description when empty"
+            },
+            "header_style": {
+                "type": "select",
+                "options": [
+                    "Landing",
+                    "Highlight",
+                    "Magazine",
+                    "Search",
+                    "Off"
+                ],
+                "description": "Landing is recommended for all sites, Highlight & Magazine for those with more content",
+                "default": "Landing",
+                "group": "homepage"
+            },
+            "header_text": {
+                "type": "text",
+                "group": "homepage",
+                "description": "Defaults to site description when empty",
+                "visibility": "header_style:[Landing, Search]"
+            },
+            "background_image": {
+                "type": "boolean",
+                "default": true,
+                "description": "Use the publication cover set on the Brand tab as your background",
+                "group": "homepage",
+                "visibility": "header_style:[Landing, Search]"
+            },
+            "show_featured_posts": {
+                "type": "boolean",
+                "default": false,
+                "group": "homepage",
+                "visibility": "header_style:[Highlight, Magazine]"
+            },
+            "post_feed_style": {
+                "type": "select",
+                "options": [
+                    "List",
+                    "Grid"
+                ],
+                "default": "List",
+                "group": "homepage"
+            },
+            "show_images_in_feed": {
+                "type": "boolean",
+                "default": true,
+                "group": "homepage",
+                "visibility": "post_feed_style:List"
+            },
+            "show_author": {
+                "type": "boolean",
+                "default": true,
+                "group": "homepage"
+            },
+            "show_publish_date": {
+                "type": "boolean",
+                "default": true,
+                "group": "homepage"
+            },
+            "show_publication_info_sidebar": {
+                "type": "boolean",
+                "default": false,
+                "group": "homepage"
+            }
+        }
+    },
+    "renovate": {
+        "extends": [
+            "@tryghost:theme"
+        ]
+    }
+}

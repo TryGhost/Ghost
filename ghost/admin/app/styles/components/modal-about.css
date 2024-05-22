@@ -1,0 +1,152 @@
+.gh-about-logo svg {
+    position: relative;
+    width: 120px;
+    height: auto;
+}
+
+.gh-about-logo {
+    border-bottom: 1px solid var(--lightgrey-l2);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+}
+
+.gh-about-modal .gh-about-logo {
+    margin: 4px 0 20px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.gh-about-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 80px;
+}
+
+.gh-whats-new-canvas .gh-about-container {
+    display: flex;
+    grid-template-columns: unset;
+    grid-gap: unset;
+    margin: 0 auto;
+    max-width: 920px;
+    margin-top: 60px;
+}
+
+.gh-about-box {
+    position: sticky;
+    top: 96px;
+    right: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    height: max-content;
+    border-radius: 3px;
+    min-width: 300px;
+}
+
+.gh-about-box.grey {
+    border: none;
+    background: var(--main-color-content-greybg);
+}
+
+.gh-env-details {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    padding: 24px 28px 28px;
+}
+
+.gh-about-container h2 {
+    font-size: 1.65rem;
+    line-height: 1.4em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--lightgrey-l2);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.gh-env-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gh-env-list li {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.gh-env-error {
+    margin: 1.2rem 0;
+    padding: 16px;
+    line-height: 1.4em;
+    border: none;
+    background: color-mod(var(--red) a(6%));
+    border-radius: 3px;
+}
+
+.gh-env-error a {
+    color: var(--red);
+}
+
+.gh-env-help {
+    max-width: 200px;
+}
+
+.gh-env-help .gh-btn {
+    margin: 4px 0;
+}
+
+@media (max-width: 670px) {
+    .gh-env-details {
+        flex-direction: column;
+    }
+    .gh-env-help {
+        margin: 1em 0;
+        max-width: none;
+    }
+    .gh-env-help .gh-btn {
+        display: inline-block;
+    }
+}
+
+.gh-about-content-actions {
+    display: none;
+}
+
+
+
+/* Upgrade
+/* ---------------------------------------------------------- */
+
+.gh-upgrade-notification {
+    padding-top: 1em;
+}
+
+.gh-upgrade-notification a {
+    text-decoration: underline;
+}
+
+.gh-about-modal .gh-upgrade-notification {
+    background: color-mod(var(--green) a(8%));
+    padding: 24px 28px 24px;
+    border-radius: 3px;
+    margin-bottom: 28px;
+}
+
+/* Copyright Info
+/* ---------------------------------------------------------- */
+
+.gh-copyright-info {
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    border-top: 1px solid var(--lightgrey-l2);
+    padding-top: 16px;
+    margin-top: 16px;
+    line-height: 1.45em;
+}
+
+.gh-about-modal .gh-copyright-info {
+    margin: 4px 0 8px;
+    border-top: none;
+}

@@ -1,0 +1,335 @@
+/* Modals
+/* ---------------------------------------------------------- */
+
+
+/* Fullscreen Modal
+/* ---------------------------------------------------------- */
+
+/* explicit modal container so that background and content can be animated individually */
+.fullscreen-modal-container {
+    display: flex;
+    justify-content: center;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10000;
+    overflow: auto;
+    height: 100vh;
+}
+
+.fullscreen-modal-background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    height: 100vh;
+    background: #15171A;
+    opacity: 0.6;
+}
+
+.fullscreen-modal {
+    position: relative;
+    z-index: 100;
+    max-width: 550px;
+    margin: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    pointer-events: none;
+}
+
+.fullscreen-modal * {
+    pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+    .fullscreen-modal {
+        padding: 10px;
+    }
+}
+
+/* Modifiers
+/* ---------------------------------------------------------- */
+
+.fullscreen-modal-wide {
+    width: 100%;
+    max-width: 550px;
+}
+
+.fullscreen-modal-wider {
+    width: 100%;
+    max-width: 720px;
+}
+
+.fullscreen-modal-narrow {
+    width: 100%;
+    max-width: 420px;
+}
+
+.fullscreen-modal-full-overlay {
+    width: 100%;
+    max-width: 90%;
+}
+
+.fullscreen-modal-total-overlay {
+    width: 100vw;
+    max-width: unset;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: var(--white)
+}
+
+.fullscreen-modal-total-overlay .modal-content {
+    height: 100%;
+}
+
+.fullscreen-modal-action {
+    margin: 6vw 0;
+}
+
+@media (max-height: 960px) {
+    .fullscreen-modal-action {
+        margin: 40px auto;
+    }
+}
+
+.fullscreen-modal-body-scrolling .modal-body {
+    max-height: calc(100vh - 12vw - 12vmin - 24px - 34px - 64px);   /* top and bottom margins + extra padding at the bottom + modal header & footer */
+    overflow-y: scroll;
+    margin: 0 -32px;
+    padding: 0 32px;
+}
+
+.fullscreen-modal-body-scrolling .modal-footer,
+.modal-footer.top-shadow {
+    position: relative;
+    margin: 20px -32px 0;
+    padding: 0 32px;
+}
+
+.modal-footer.top-shadow {
+    margin-bottom: -4px;
+    padding-top: 4px;
+}
+
+.fullscreen-modal-body-scrolling .modal-footer:before,
+.modal-footer.top-shadow:before {
+    position: absolute;
+    content: "";
+    top: -20px;
+    left: -32px;
+    right: -32px;
+    height: 6px;
+    background: hsla(0,0%,100%,0);
+    box-shadow: 0 -0.3px 1px rgb(0 0 0 / 3%), 0 -4px 4px rgb(0 0 0 / 4%);
+}
+
+.modal-footer.top-shadow:before {
+    left: 0;
+    right: 0;
+}
+
+
+/* The modal
+/* ---------------------------------------------------------- */
+
+
+/* Modal content
+/* ---------------------------------------------------------- */
+
+.modal-content {
+    position: relative;
+    padding: 32px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 3px;
+    box-shadow:
+        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+        0 12.5px 10px rgba(0, 0, 0, 0.035),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+        0 100px 80px rgba(0, 0, 0, 0.07)
+    ;
+}
+
+.modal-content * {
+    user-select: text;
+}
+
+.modal-content .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border: none;
+}
+
+.modal-content .close svg {
+    fill: #808284;
+    width: 16px;
+    height: 16px;
+}
+
+.modal-content .close svg:hover {
+    fill: var(--darkgrey);
+}
+
+.modal-header {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+.modal-header h1 {
+    display: inline-block;
+    margin: -5px 25px 0 0;
+    font-size: 2.2rem;
+    line-height: 1.35em;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.modal-header.icon-center {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 124px;
+}
+
+.modal-header.icon-center svg {
+    width: 66px;
+    height: 66px;
+}
+
+.modal-header.icon-center h1 {
+    margin: 20px 0 8px;
+    padding: 0;
+}
+
+.modal-header.icon-center .gh-loading-content {
+    position: relative;
+    padding: 8px 0;
+    height: 62px;
+}
+
+.modal-body {
+    position: relative;
+}
+
+.modal-body p {
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-footer-spread {
+    justify-content: space-between;
+}
+
+.modal-footer button {
+    margin-left: 12px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.modal-footer button:first-of-type {
+    margin-left: 0;
+}
+
+.modal-footer-hint {
+    font-size: 1.3rem;
+    color: var(--midgrey-d2);
+}
+
+.modal-body .gh-image-uploader {
+    margin: 0;
+    background: var(--whitegrey-l2);
+}
+
+/* Content Modifiers
+/* ---------------------------------------------------------- */
+
+.modal-body fieldset {
+    margin: 0;
+}
+
+/* Login styles */
+.modal-body .login-form {
+    display: block;
+}
+
+.modal-body .login-form .password-wrap input {
+    width: 100%;
+    margin-right: 20px;
+}
+
+.modal-body .login-form .gh-btn span {
+    height: 38px;
+}
+
+.modal-body .form-group p {
+    font-size: 1.3rem;
+}
+
+@media (max-width: 900px) {
+    .modal-body .login-form {
+        margin: 0 auto;
+        max-width: 264px;
+    }
+    .modal-body .login-form .password-wrap {
+        margin: 0 auto 1em;
+        width: 100%;
+    }
+    .modal-body .login-form .password-wrap input {
+        margin-right: 0;
+    }
+    .modal-body .login-form .gh-btn {
+        margin: 0;
+        margin-bottom: 1em;
+        width: 100%;
+    }
+}
+
+@media (min-width: 901px) {
+    .modal-body .login-form {
+        display: flex;
+        align-items: center;
+    }
+    .modal-body .login-form .password-wrap {
+        flex: 1;
+        margin-right: 10px;
+    }
+}
+
+/* Re-authentication modal (cookies expired with unsaved changes in editor)
+/* ---------------------------------------------------------- */
+
+.modal-reauthenticate p {
+    color: var(--black);
+    font-size: 1.6rem;
+    font-weight: 400;
+}
+
+.epm-modal.modal-reauthenticate .modal-content {
+    padding: 48px 32px;
+}
+
+.modal-reauthenticate .gh-signin .gh-btn-login {
+    margin-top: 32px;
+}

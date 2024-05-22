@@ -1,0 +1,58 @@
+{
+    "database": {
+        "client": "sqlite3",
+        "connection": {
+            "filename": "/test.db"
+        },
+        "debug": false
+    },
+    "spam": {
+        "user_login": {
+            "minWait": 600000,
+            "maxWait": 604800000,
+            "freeRetries": 4
+        },
+        "user_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "private_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "content_api_key": {
+            "minWait": 3600000,
+            "maxWait": 86400000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "member_login": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
+        "webmentions_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        }
+    }
+}

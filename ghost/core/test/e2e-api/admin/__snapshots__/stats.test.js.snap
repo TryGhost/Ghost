@@ -1,0 +1,454 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Stats API Can fetch MRR history 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "totals": Array [
+      Object {
+        "currency": "usd",
+        "mrr": 1000,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "currency": "usd",
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "mrr": 0,
+    },
+    Object {
+      "currency": "usd",
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "mrr": 1000,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Can fetch MRR history 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "158",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Can fetch member count history 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "totals": Object {
+      "comped": 0,
+      "free": 3,
+      "paid": 5,
+    },
+  },
+  "stats": Array [
+    Object {
+      "comped": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "free": 3,
+      "paid": 5,
+      "paid_canceled": 0,
+      "paid_subscribed": 0,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Can fetch member count history 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "149",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Can fetch subscriptions history 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "cadences": Array [
+      "year",
+      "month",
+    ],
+    "tiers": Array [
+      StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    ],
+    "totals": Array [
+      Object {
+        "cadence": "month",
+        "count": 1,
+        "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "cadence": "month",
+      "cancellations": 0,
+      "count": 1,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 4,
+      "signups": 4,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+    Object {
+      "cadence": "year",
+      "cancellations": 0,
+      "count": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 0,
+      "signups": 0,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Can fetch subscriptions history 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Post attribution stats Can fetch attribution stats 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "stats": Array [
+    Object {
+      "paid_conversions": 1,
+      "signups": 2,
+      "source": "Direct",
+    },
+    Object {
+      "paid_conversions": 0,
+      "signups": 1,
+      "source": "Twitter",
+    },
+  ],
+}
+`;
+
+exports[`Stats API Referrer source history stats Can fetch attribution stats 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "stats": Array [
+    Object {
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "paid_conversions": 2,
+      "signups": 2,
+      "source": null,
+    },
+    Object {
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "paid_conversions": 1,
+      "signups": 4,
+      "source": "Direct",
+    },
+    Object {
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "paid_conversions": 2,
+      "signups": 4,
+      "source": "Twitter",
+    },
+  ],
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for 3D secure payments 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "cadences": Array [
+      "year",
+      "month",
+    ],
+    "tiers": Array [
+      StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    ],
+    "totals": Array [
+      Object {
+        "cadence": "month",
+        "count": 2,
+        "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "cadence": "month",
+      "cancellations": 0,
+      "count": 2,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 1,
+      "positive_delta": 5,
+      "signups": 5,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+    Object {
+      "cadence": "year",
+      "cancellations": 0,
+      "count": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 0,
+      "signups": 0,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for 3D secure payments 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for 3D secure payments 3: [body] 1`] = `
+Object {
+  "meta": Object {
+    "cadences": Array [
+      "year",
+      "month",
+    ],
+    "tiers": Array [
+      StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    ],
+    "totals": Array [
+      Object {
+        "cadence": "month",
+        "count": 3,
+        "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "cadence": "month",
+      "cancellations": 0,
+      "count": 3,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 1,
+      "positive_delta": 6,
+      "signups": 6,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+    Object {
+      "cadence": "year",
+      "cancellations": 0,
+      "count": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 0,
+      "signups": 0,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for 3D secure payments 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for free trials 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "cadences": Array [
+      "year",
+      "month",
+    ],
+    "tiers": Array [
+      StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    ],
+    "totals": Array [
+      Object {
+        "cadence": "month",
+        "count": 1,
+        "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "cadence": "month",
+      "cancellations": 0,
+      "count": 1,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 4,
+      "signups": 4,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+    Object {
+      "cadence": "year",
+      "cancellations": 0,
+      "count": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 0,
+      "signups": 0,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for free trials 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for free trials 3: [body] 1`] = `
+Object {
+  "meta": Object {
+    "cadences": Array [
+      "year",
+      "month",
+    ],
+    "tiers": Array [
+      StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    ],
+    "totals": Array [
+      Object {
+        "cadence": "month",
+        "count": 2,
+        "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "cadence": "month",
+      "cancellations": 0,
+      "count": 2,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 1,
+      "positive_delta": 5,
+      "signups": 5,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+    Object {
+      "cadence": "year",
+      "cancellations": 0,
+      "count": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 0,
+      "signups": 0,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch history for free trials 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch subscriptions history 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "cadences": Array [
+      "year",
+      "month",
+    ],
+    "tiers": Array [
+      StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    ],
+    "totals": Array [
+      Object {
+        "cadence": "month",
+        "count": 1,
+        "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    ],
+  },
+  "stats": Array [
+    Object {
+      "cadence": "month",
+      "cancellations": 0,
+      "count": 1,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 4,
+      "signups": 4,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+    Object {
+      "cadence": "year",
+      "cancellations": 0,
+      "count": 0,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "negative_delta": 0,
+      "positive_delta": 0,
+      "signups": 0,
+      "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Stats API Subscriptions history Can fetch subscriptions history 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

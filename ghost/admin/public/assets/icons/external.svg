@@ -1,0 +1,5 @@
+<svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>external</title>
+  <path clip-rule="evenodd" d="M22.707 1.293a1 1 0 0 1 0 1.414l-11 11a1 1 0 0 1-1.414-1.414l11-11a1 1 0 0 1 1.414 0z"/>
+  <path clip-rule="evenodd" d="M13 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8a1 1 0 1 1-2 0V3h-7a1 1 0 0 1-1-1zM1 2a1 1 0 0 1 1-1h7a1 1 0 0 1 0 2H3v18h18v-6a1 1 0 1 1 2 0v7a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2z"/>
+</svg>

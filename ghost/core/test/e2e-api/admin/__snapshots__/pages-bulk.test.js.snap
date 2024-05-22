@@ -1,0 +1,130 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pages Bulk API Delete Can delete all pages 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Delete Can delete pages that match a tag 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 5,
+        "unsuccessful": 0,
+      },
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can add a single tag to pages 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "stats": Object {
+        "successful": 5,
+        "unsuccessful": 0,
+      },
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can add multiple tags to pages and create new tags 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can change access of pages 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 6,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can change access of pages to tiers 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 6,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can feature multiple pages 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 6,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can unfeature multiple pages 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 6,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Pages Bulk API Edit Can unpublish pages 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 5,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;

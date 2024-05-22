@@ -1,0 +1,537 @@
+/* Settings Menu
+/* ---------------------------------------------------------- */
+
+/* Toggle button
+/* ---------------------------------------------------------- */
+
+.settings-menu-toggle {
+    position: absolute;
+    top: 30px;
+    right: 24px;
+    z-index: 9999;
+    margin-right: 0 !important;
+}
+
+.settings-menu-toggle .settings-menu-open svg path {
+    stroke: var(--black);
+}
+
+@media (min-width: 500px) and (max-width: 1024px) {
+    .settings-menu-toggle {
+        top: 12px;
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-toggle {
+        top: 11px;
+        right: 20px;
+    }
+}
+
+.settings-menu-toggle-spacer {
+    width: 46px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-toggle-spacer {
+        width: 68px;
+    }
+}
+
+
+/* Container
+/* ---------------------------------------------------------- */
+
+.settings-menu-container {
+    z-index: 999;
+    height: 100dvh;
+    min-width: 420px;
+    overflow-x: visible;
+    overflow-y: auto;
+    border-left: 1px solid var(--whitegrey-d1);
+}
+
+.settings-menu-container-wide {
+    width: 501px;
+    min-width: 501px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-container {
+        position: absolute;
+        right: 0;
+        box-shadow:
+        -4.5px 0 3.6px rgba(0, 0, 0, 0.007),
+        -12.5px 0 10px rgba(0, 0, 0, 0.008),
+        -30.1px 0 24.1px rgba(0, 0, 0, 0.01),
+        -100px 0 80px rgba(0, 0, 0, 0.02)
+    ;
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-container {
+        width: 100vw;
+        min-width: 100vw;
+    }
+}
+
+.settings-menu-container .settings-menu-pane {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 419px;
+    overflow: auto;
+    background-color: var(--white);
+    opacity: 1;
+    z-index: 0;
+}
+
+.settings-menu-container-wide .settings-menu-pane {
+    width: 500px;
+    min-width: 500px;
+}
+
+.settings-menu-container .settings-menu-pane-main {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    height: 100dvh;
+}
+
+@media (max-width: 500px) {
+    .settings-menu-container .settings-menu-pane {
+        width: 100vw;
+        min-width: 100vw;
+    }
+}
+
+/* Header
+/* ---------------------------------------------------------- */
+
+.settings-menu-header {
+    position: fixed;
+    display: flex;
+    width: 100%;
+    padding: 36px 24px 24px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 3;
+    background: var(--white);
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-header {
+        padding-top: 15px;
+    }
+}
+
+.settings-menu-header h4 {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.375;
+    font-weight: 600;
+}
+
+.settings-menu-header .close {
+    margin-right: -15px;
+    padding: 10px 15px;
+    font-size: 12px;
+    line-height: 12px;
+}
+
+.settings-menu-header .close svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--darkgrey);
+}
+
+.settings-menu-header.subview {
+    z-index: 2;
+    width: 100%;
+    max-width: 484px;
+}
+
+.settings-menu-header.subview h4 {
+    width: 100%;
+    text-align: left;
+}
+
+.settings-menu-header.subview .back {
+    margin-left: -15px;
+    padding: 2px 15px 0;
+    line-height: 14px;
+}
+
+.settings-menu-header.subview .back svg {
+    width: 12px;
+    height: 12px;
+}
+
+.settings-menu-header.subview .back svg path {
+    fill: var(--darkgrey);
+}
+
+/* Content
+/* ---------------------------------------------------------- */
+
+.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
+.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
+.settings-menu-pane .gh-date-time-picker-date,
+.settings-menu-pane .gh-date-time-picker-time {
+    background: var(--white);
+    border: var(--input-border);
+}
+
+.settings-menu-container .ember-power-select-multiple-trigger input,
+.settings-menu-pane .gh-date-time-picker-date input,
+.settings-menu-pane .gh-date-time-picker-time input {
+    border: none !important;
+}
+
+.settings-menu-content {
+    padding: 92px 0 0;
+}
+
+.gh-post-settings {
+    padding: 0 24px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-content {
+        padding-top: 72px;
+    }
+}
+
+.settings-menu-content label code {
+    font-weight: normal;
+    border: 1px solid var(--lightgrey);
+}
+
+.settings-menu-content .gh-image-uploader {
+    margin: 0 0 1.6rem 0;
+    background: color-mod(var(--whitegrey-l1) l(+2%));
+}
+
+.settings-menu-content .gh-image-uploader .description {
+    font-size: 1.4rem;
+}
+
+.settings-menu-content .gh-image-uploader form {
+    padding: 35px 45px;
+}
+
+.settings-menu-content .gh-image-uploader.-with-image {
+    width: auto;
+    min-height: 50px;
+    max-height: 250px;
+    margin-top: 0;
+}
+
+.settings-menu-content .gh-radio {
+    margin: 20px 0;
+}
+
+.settings-menu-content .no-selection {
+    margin-top: -16px;
+}
+
+.settings-menu-content .gh-radio-desc {
+    margin: 8px 0 0 -32px;
+}
+
+.settings-menu-content .select-members {
+    margin-bottom: .4rem;
+}
+
+.settings-menu-content .segment-totals {
+    line-height: 1.65;
+}
+
+.settings-menu-content textarea {
+    height: 108px;
+}
+
+.settings-menu-content textarea.gh-input {
+    font-size: 1.5rem;
+    line-height: 1.4em;
+    letter-spacing: 0;
+}
+
+.settings-menu-content .gh-cm-editor-textarea {
+    min-height: 170px;
+}
+
+.settings-menu-content .nav-list {
+    margin: 0;
+}
+
+.settings-menu-content .word-count {
+    font-weight: bold;
+}
+
+.ghost-url-preview {
+    width: 98%;
+    /* Preview never wider than input */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-menu-post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3.2rem;
+    padding: .4rem 0;
+}
+
+.settings-menu-content .for-checkbox .input-toggle-component {
+    margin-right: .8rem;
+}
+
+.settings-menu-content .for-checkbox {
+    margin: 0;
+    width: initial;
+}
+
+.settings-menu-content .for-checkbox label {
+    margin: 0;
+    padding: 0;
+}
+
+.settings-menu-content .for-checkbox label p {
+    margin: 0;
+    color: var(--black);
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+li.nav-list-item .switch {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100% !important;
+    padding: 2rem 2.4rem;
+}
+
+li.nav-list-item .for-switch.x-small label {
+    width: initial;
+    height: initial !important;
+}
+
+.settings-menu-content .gh-toggle-featured {
+    position: relative;
+    width: 34px;
+    height: 20px;
+}
+
+.settings-menu-delete-button {
+    margin: 3.2rem 2.4rem 2.4rem;
+}
+
+.settings-menu-delete-button button,
+.settings-menu-delete-button button:hover,
+.settings-menu-delete-button button:active,
+.settings-menu-delete-button button:focus {
+    border: 1px solid var(--red);
+}
+
+.settings-menu-delete-button button span {
+    height: 40px;
+    line-height: 40px;
+    color: var(--red);
+}
+
+.settings-menu-delete-button button:hover span {
+    color: var(--red-d1);
+}
+
+.settings-menu-delete-button svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin: 0 .8rem 2px 0;
+    color: var(--red);
+}
+
+.settings-menu-delete-button button:hover svg {
+    color: var(--red-d1);
+}
+
+.post-setting-custom-excerpt {
+    font-size: 1.5rem;
+    line-height: 1.35em;
+    letter-spacing: 0;
+}
+
+.settings-menu-content .gh-seo-preview-title {
+    white-space: inherit;
+}
+
+.settings-menu-content .CodeMirror {
+    height: 170px;
+    min-height: 170px;
+    padding: 0;
+    background: var(--white);
+    color: var(--darkgrey);
+    border: 1px solid var(--lightgrey);
+    border-radius: 4px;
+}
+
+.settings-menu-content .CodeMirror-cursor {
+    border: 1px solid var(--midgrey);
+}
+
+.settings-menu-content .CodeMirror-gutters {
+    background-color: var(--whitegrey-l2);
+    border-right: 1px solid var(--lightgrey);
+}
+
+.settings-menu-content .CodeMirror:hover {
+    cursor: text;
+}
+
+.settings-menu-content .CodeMirror-scroll {
+    min-height: 170px;
+}
+
+.settings-menu-content .for-radio .input-toggle-component,
+.settings-menu-content .for-checkbox .input-toggle-component {
+    background: #fff;
+}
+
+/* .settings-menu-pane .ember-power-select-multiple-trigger {
+    border: var(--input-border);
+    background: var(--input-bg-color);
+}
+
+.settings-menu-pane .ember-power-select-trigger[aria-expanded=true] {
+    border-color: transparent;
+    background: color-mod(var(--input-bg-color) l(-3%));
+} */
+
+.settings-menu-pane .ember-power-select-dropdown {
+    border: none;
+    border-top: none;
+    margin: 0 1px;
+    width: calc(100% - 2px);
+    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
+}
+
+.settings-menu-pane .gh-date-time-picker-date,
+.settings-menu-pane .gh-date-time-picker-time {
+    margin: 0;
+}
+
+.settings-menu-pane .gh-date-time-picker-date {
+    margin-right: 4px;
+}
+
+.settings-menu-pane .gh-date-time-picker-time {
+    margin-left: 4px;
+}
+
+.settings-menu-content.keyboard-shortcuts .form-group {
+    margin-bottom: 3em;
+}
+
+.settings-menu-content.keyboard-shortcuts label {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--whitegrey-d1);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.settings-menu-content .gh-shortcut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--whitegrey-d1);
+}
+
+.settings-menu-content .gh-shortcut .link {
+    color: var(--accent-color);
+}
+
+.settings-menu-content .gh-shortcut .code {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: .95em;
+}
+
+.gh-shortcut .gh-keys {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-shortcut .gh-key {
+    min-width: 28px;
+    height: 28px;
+    background: var(--whitegrey);
+    border-radius: var(--border-radius);
+    padding: 0 6px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 28px;
+    cursor: default;
+}
+
+.gh-shortcut .gh-key.mono {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: 1.25rem;
+}
+
+.gh-shortcut .gh-key.mono.clear {
+    background: transparent;
+}
+
+/* Background
+/* ---------------------------------------------------------- */
+@keyframes coverFadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.mobile-menu-expanded .content-cover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    background: rgba(0,0,0,0.02);
+    /* Not off the screen, to give a parallax effect */
+    animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
+}
+
+.mobile-menu-expanded .content-cover {
+    transform: translate3d(205px, 0px, 0px);
+}
+
+/* Email
+/* ---------------------------------------------------------- */
+.settings-menu-email-button span {
+    padding: 4px 0;
+    line-height: 1em;
+    height: unset;
+    margin-bottom: 4px;
+}
+
+.settings-menu-email .disabled button,
+.settings-menu-email .disabled input {
+    opacity: 0.5;
+}

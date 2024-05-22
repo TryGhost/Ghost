@@ -1,0 +1,31 @@
+{
+    "config": {
+        "version": "5.53.3",
+        "environment": "development",
+        "database": "sqlite3",
+        "mail": "SMTP",
+        "useGravatar": true,
+        "labs": {},
+        "clientExtensions": {},
+        "enableDeveloperExperiments": true,
+        "stripeDirect": false,
+        "mailgunIsConfigured": false,
+        "emailAnalytics": true,
+        "tenor": {
+            "googleApiKey": null,
+            "contentFilter": "off"
+        },
+        "editor": {
+            "url": "http://editor.test/koenig-lexical.umd.js",
+            "version": ""
+        },
+        "adminX": {
+            "url": "http://admin-x.test/admin-x-settings.umd.js",
+            "version": "0.0"
+        },
+        "signupForm": {
+            "url": "https://signup-form.test/signup-form.min.js",
+            "version": "0.1"
+        }
+    }
+}

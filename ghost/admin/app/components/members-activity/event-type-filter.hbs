@@ -1,0 +1,37 @@
+<GhBasicDropdown @verticalPosition="below" as |dd|>
+    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon">
+        <span class={{if @excludedEvents "gh-btn-label-green"}}>
+            {{svg-jar "filter"}}
+            Filter events
+        </span>
+    </dd.Trigger>
+
+    <dd.Content class="gh-member-activity-actions-menu dropdown-menu dropdown-triangle-top-right gh-member-activity-actions-menu--suppression">
+        {{!-- NOTE: re-using ember-power-select-options styles --}}
+        <ul class="ember-power-select-options" role="listbox">
+            {{#each this.eventTypes as |type idx|}}
+                {{#if type.divider}}
+                    <li class="gh-member-activity-actions-menu-divider"></li>
+                {{/if}}
+                <li class="ember-power-select-option mb0 gh-member-activity-actions-menu-item">
+                    <label for="type-{{idx}}">
+                        {{svg-jar type.icon class="gh-member-activity-actions-menu-icon"}}
+                        <span>{{type.name}}</span>
+                    </label>
+                    <div class="for-switch x-small">
+                        <label class="switch" for="type-{{idx}}">
+                            <input
+                                type="checkbox"
+                                checked={{type.isSelected}}
+                                id="type-{{idx}}"
+                                name="eventTypes"
+                                class="gh-input post-settings-featured"
+                                {{on "input" (fn this.toggleEventType type.event)}}>
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </li>
+            {{/each}}
+        </ul>
+    </dd.Content>
+</GhBasicDropdown>

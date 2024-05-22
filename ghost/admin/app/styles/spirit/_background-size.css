@@ -1,0 +1,17 @@
+.cover { background-size: cover!important; }
+.contain { background-size: contain!important; }
+
+@media (--breakpoint-not-small) {
+  .cover-ns { background-size: cover!important; }
+  .contain-ns { background-size: contain!important; }
+}
+
+@media (--breakpoint-medium) {
+  .cover-m { background-size: cover!important; }
+  .contain-m { background-size: contain!important; }
+}
+
+@media (--breakpoint-large) {
+  .cover-l { background-size: cover!important; }
+  .contain-l { background-size: contain!important; }
+}

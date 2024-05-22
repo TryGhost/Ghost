@@ -1,0 +1,97 @@
+.kg-toggle-card,
+.kg-toggle-card * {
+    box-sizing: border-box;
+}
+
+.kg-toggle-card {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
+    border-radius: 4px;
+    padding: 1.2em;
+}
+
+.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
+    height: 0;
+    overflow: hidden;
+    transition: opacity .5s ease, top .35s ease;
+    opacity: 0;
+    top: -0.5em;
+    position: relative;
+}
+
+.kg-toggle-content {
+    height: auto;
+    opacity: 1;
+    transition: opacity 1s ease, top .35s ease;
+    top: 0;
+    position: relative;
+}
+
+.kg-toggle-card[data-kg-toggle-state="close"] svg {
+    transform: unset;
+}
+
+.kg-toggle-heading {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.kg-toggle-card h4.kg-toggle-heading-text {
+    font-size: 1.15em;
+    font-weight: 700;
+    line-height: 1.3em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.kg-toggle-content p:first-of-type {
+    margin-top: 0.5em;
+}
+
+.kg-toggle-card .kg-toggle-content p,
+.kg-toggle-card .kg-toggle-content ol,
+.kg-toggle-card .kg-toggle-content ul {
+    font-size: 0.95em;
+    line-height: 1.5em;
+    margin-top: 0.95em;
+    margin-bottom: 0;
+}
+
+.kg-toggle-card li + li {
+    margin-top: 0.5em;
+}
+
+.kg-toggle-card-icon {
+    height: 24px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 1em;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.kg-toggle-heading svg {
+    width: 14px;
+    color: rgba(124, 139, 154, 0.5);
+    transition: all 0.3s;
+    transform: rotate(-180deg);
+}
+
+.kg-toggle-heading path {
+    fill: none;
+    stroke: currentcolor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+    fill-rule: evenodd;
+}
+
+.kg-toggle-card + .kg-toggle-card {
+    margin-top: 1em;
+}

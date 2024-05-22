@@ -1,0 +1,76 @@
+{{!< default}}
+{{!-- The tag above means: insert everything in this file into the body of the default.hbs template --}}
+
+{{#post}}
+
+<main class="gh-main">
+
+    <article class="gh-article {{post_class}}">
+
+        <header class="gh-article-header gh-canvas">
+
+            {{#if primary_tag}}
+                <a class="gh-article-tag" href="{{primary_tag.url}}">{{primary_tag.name}}</a>
+            {{/if}}
+            <h1 class="gh-article-title is-title">{{title}}</h1>
+            {{#if custom_excerpt}}
+                <p class="gh-article-excerpt is-body">{{custom_excerpt}}</p>
+            {{/if}}
+
+            <div class="gh-article-meta">
+                <div class="gh-article-author-image">
+                    {{#foreach authors}}
+                        {{#if profile_image}}
+                            <a href="{{url}}">
+                                <img class="author-profile-image" src="{{img_url profile_image size="xs"}}" alt="{{name}}" />
+                            </a>
+                        {{else}}
+                            <a href="{{url}}">{{> "icons/avatar"}}</a>
+                        {{/if}}
+                    {{/foreach}}
+                </div>
+                <div class="gh-article-meta-wrapper">
+                    <h4 class="gh-article-author-name">{{authors}}</h4>
+                    <div class="gh-article-meta-content">
+                        <time class="gh-article-meta-date" datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time>
+                        {{#if reading_time}}
+                            <span class="gh-article-meta-length"><span class="bull">—</span> {{reading_time}}</span>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+
+            {{> "feature-image"}}
+
+        </header>
+
+        <section class="gh-content gh-canvas is-body">
+            {{content}}
+        </section>
+
+    </article>
+
+    {{#if comments}}
+        <div class="gh-comments gh-canvas">
+            {{comments}}
+        </div>
+    {{/if}}
+
+</main>
+
+{{/post}}
+
+{{#get "posts" include="authors" filter="id:-{{post.id}}" limit="4" as |next|}}
+    {{#if next}}
+        <section class="gh-container is-grid gh-outer">
+            <div class="gh-container-inner gh-inner">
+                <h2 class="gh-container-title">Read more</h2>
+                <div class="gh-feed">
+                    {{#foreach next}}
+                        {{> "post-card" lazyLoad=true}}
+                    {{/foreach}}
+                </div>
+            </div>
+        </section>
+    {{/if}}
+{{/get}}

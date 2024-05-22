@@ -1,0 +1,15 @@
+<LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data middarkgrey f8" data-test-table-data={{this.columnName}}>
+    {{#if this.columnValue}}
+        <div class={{this.columnValue.class}}>
+            {{#if this.columnValue.icon}}
+                {{svg-jar this.columnValue.icon}}
+            {{/if}}
+            <span>{{this.columnValue.text}}</span>
+            {{#if this.columnValue.subtext}}
+                <div class="midlightgrey {{this.columnValue.subtextClass}}">{{this.columnValue.subtext}}</div>
+            {{/if}}
+        </div>
+    {{else}}
+        <span class="midlightgrey">-</span>
+    {{/if}}
+</LinkTo>

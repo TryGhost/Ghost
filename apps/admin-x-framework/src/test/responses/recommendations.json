@@ -1,0 +1,46 @@
+{
+    "recommendations": [
+        {
+            "id": "652d788df9278a47d6963d1f",
+            "title": "Recommendation 1 title",
+            "description": "Recommendation 1 description",
+            "excerpt": "Recommendation 1 excerpt",
+            "featured_image": "https://recommendation1.com/image.jpg",
+            "favicon": "https://recommendation1.com/favicon.ico",
+            "url": "https://recommendation1.com/",
+            "one_click_subscribe": true,
+            "created_at": "2023-10-28T20:00:00.000Z",
+            "updated_at": "2023-10-30T20:00:00.000Z",
+            "count": {
+                "clicks": 0,
+                "subscribers": 3
+            }
+        },
+        {
+            "id": "652d782ef9278a47d6963d1e",
+            "title": "Recommendation 2 title",
+            "description": "Recommendation 2 description",
+            "excerpt": "Recommendation 2 excerpt",
+            "featured_image": "https://recommendation2.com/image.jpg",
+            "favicon": "https://recommendation2.com/favicon.ico",
+            "url": "https://recommendation2.com/",
+            "one_click_subscribe": false,
+            "created_at": "2023-10-28T20:00:00.000Z",
+            "updated_at": "2023-10-30T20:00:00.000Z",
+            "count": {
+                "clicks": 10,
+                "subscribers": 0
+            }
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "pages": 1,
+            "limit": 5,
+            "total": 2,
+            "prev": null,
+            "next": null
+        }
+    }
+}

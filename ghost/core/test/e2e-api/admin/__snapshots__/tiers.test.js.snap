@@ -1,0 +1,292 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tiers API Can browse Tiers 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 2,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Free",
+      "slug": "free",
+      "trial_days": 0,
+      "type": "free",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visibility": "public",
+      "welcome_page_url": "/welcome-free",
+    },
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
+      "name": "Default Product",
+      "slug": "default-product",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visibility": "public",
+      "welcome_page_url": "/welcome-paid",
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Can create a new tier 1: [body] 1`] = `
+Object {
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 100,
+      "name": "new premium tier",
+      "slug": "new-premium-tier",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": null,
+      "visibility": "public",
+      "welcome_page_url": null,
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Can edit tier properties and relations 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 1,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
+      "name": "Default Product",
+      "slug": "default-product",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visibility": "none",
+      "welcome_page_url": "/welcome-paid",
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Can edit tier properties and relations 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "450",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tiers API Can edit tier properties and relations 3: [body] 1`] = `
+Object {
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [
+        "daily cat pictures",
+        "delicious avo toast",
+      ],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "description": "Updated description",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
+      "name": "Default Product",
+      "slug": "default-product",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visibility": "none",
+      "welcome_page_url": "/welcome-paid",
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Can edit tier properties and relations 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "422",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tiers API Can update a benefit's capitalization 1: [body] 1`] = `
+Object {
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [
+        "TEST BENEFIT",
+      ],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 100,
+      "name": "benefit test tier",
+      "slug": "benefit-test-tier",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": null,
+      "visibility": "public",
+      "welcome_page_url": null,
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Can update a benefit's capitalization 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "832",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tiers API Can update a benefit's capitalization 2: [body] 1`] = `
+Object {
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [
+        "Test benefit",
+      ],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 100,
+      "name": "benefit test tier",
+      "slug": "benefit-test-tier",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": null,
+      "visibility": "public",
+      "welcome_page_url": null,
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Can update a benefit's capitalization 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "350",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tiers API Errors when price is negative 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Tier prices must not be negative",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save tier.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Errors when price is non-integer 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Tier prices must be an integer.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save tier.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Tiers API Errors when price is too large 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Tier prices may not exceed 999999.99",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save tier.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;

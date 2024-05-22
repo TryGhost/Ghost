@@ -1,0 +1,141 @@
+{
+  "db": [{
+    "meta": {
+      "exported_on": 1616560573131,
+      "version": "4.1.0"
+    },
+    "data": {
+      "products": [
+        {
+          "id": "60be1fb9bd3af33564cf87b2",
+          "name": "Ghost Inc.",
+          "slug": "ghost-inc",
+          "created_at": "2021-09-15T13:31:37.000Z",
+          "updated_at": "2022-05-20T07:13:52.000Z",
+          "description": "Our daily newsletter",
+          "monthly_price_id": "614b122e63d2191233117343",
+          "yearly_price_id": "614b122f63d2191233117344",
+          "type": "paid",
+          "active": 1,
+          "welcome_page_url": "/welcome",
+          "visibility": "public"
+        }
+      ],
+      "stripe_prices": [
+        {
+          "id": "614b122e63d2191233117343",
+          "stripe_price_id": "price_a425520db0",
+          "stripe_product_id": "prod_d2c1708c21",
+          "active": 1,
+          "nickname": "Monthly",
+          "currency": "usd",
+          "amount": 500,
+          "type": "recurring",
+          "interval": "month",
+          "created_at": "2021-12-31T11:23:26.000Z",
+          "updated_at": "2022-05-18T13:49:01.000Z",
+          "description": null
+        },
+        {
+          "id": "614b122f63d2191233117344",
+          "stripe_price_id": "price_d04baebb73",
+          "stripe_product_id": "prod_d2c1708c21",
+          "active": 1,
+          "nickname": "Yearly",
+          "currency": "usd",
+          "amount": 4800,
+          "type": "recurring",
+          "interval": "year",
+          "created_at": "2021-12-31T11:23:27.000Z",
+          "updated_at": "2022-05-18T14:46:25.000Z",
+          "description": null
+        }
+      ],
+      "stripe_products": [
+        {
+            "id": "60be1fc9bd3af33564cfb337",
+            "product_id": "60be1fb9bd3af33564cf87b2",
+            "stripe_product_id": "prod_d2c1708c21",
+            "created_at": "2021-09-15T13:31:53.000Z",
+            "updated_at": "2021-09-15T13:31:53.000Z"
+        }
+      ],
+      "settings": [
+        {
+          "id": "614a8ae163d21912331172c6",
+          "group": "portal",
+          "key": "portal_products",
+          "value": "[\"60be1fb9bd3af33564cf87b2\"]",
+          "type": "array",
+          "flags": null,
+          "created_at": "2021-12-31T01:46:09.000Z",
+          "updated_at": "2022-01-14T15:53:50.000Z"
+        }
+      ],
+      "posts": [
+        {
+          "id": "626104751a34a28c24d4ed78",
+          "uuid": "e4b7fed0-348e-4415-ac3e-0aa36f5f8956",
+          "title": "Test newsletter",
+          "slug": "test-newsletter",
+          "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[],\"sections\":[[1,\"p\",[]],[1,\"p\",[[0,[],0,\"Hi there! This is a test newsletter.\"]]]],\"ghostVersion\":\"4.0\"}",
+          "html": "<p></p><p>Hi there! This is a test newsletter.</p>",
+          "comment_id": "626104751a34a28c24d4ed78",
+          "plaintext": "\n\nHi there! This is a test newsletter.",
+          "feature_image": null,
+          "featured": 0,
+          "type": "post",
+          "status": "published",
+          "locale": null,
+          "visibility": "public",
+          "created_at": "2022-06-08T07:15:01.000Z",
+          "updated_at": "2022-06-08T07:16:15.000Z",
+          "published_at": "2022-06-08T07:15:28.000Z",
+          "custom_excerpt": null,
+          "codeinjection_head": null,
+          "codeinjection_foot": null,
+          "custom_template": null,
+          "canonical_url": null,
+          "email_recipient_filter": "status:-free",
+          "newsletter_id": "626022161e917a710c687f9e"
+        }
+      ],
+      "posts_products": [
+        {
+            "id": "6261047e1a34a28c24d4ed7d",
+            "post_id": "626104751a34a28c24d4ed78",
+            "product_id": "60be1fb9bd3af33564cf87b2",
+            "sort_order": 0
+        }
+      ],
+      "newsletters": [
+        {
+            "id": "626022161e917a710c687f9e",
+            "name": "Ghost Inc.",
+            "description": null,
+            "slug": "test",
+            "sender_email": "support@ghost.org",
+            "sender_reply_to": "newsletter",
+            "status": "active",
+            "visibility": "members",
+            "subscribe_on_signup": 1,
+            "sort_order": 0,
+            "header_image": null,
+            "show_header_icon": 1,
+            "show_header_title": 1,
+            "title_font_category": "sans_serif",
+            "title_alignment": "center",
+            "show_feature_image": 1,
+            "body_font_category": "sans_serif",
+            "footer_content": null,
+            "show_badge": 1,
+            "sender_name": null,
+            "created_at": "2022-06-27T16:01:10.000Z",
+            "updated_at": null,
+            "show_header_name": 1,
+            "uuid": "a90a709b-b1c3-42a7-8d98-a288a682ab50"
+        }
+      ]
+    }
+  }]
+}

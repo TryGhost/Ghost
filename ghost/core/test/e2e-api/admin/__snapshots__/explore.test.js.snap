@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Explore API Read Can request Explore data 1: [body] 1`] = `
+Object {
+  "explore": Object {
+    "most_recently_published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    "mrr_stats": Object {
+      "data": Array [
+        Object {
+          "currency": "usd",
+          "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+          "mrr": 0,
+        },
+        Object {
+          "currency": "usd",
+          "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+          "mrr": 1000,
+        },
+      ],
+      "meta": Object {
+        "totals": Array [
+          Object {
+            "currency": "usd",
+            "mrr": 1000,
+          },
+        ],
+      },
+    },
+    "owner_email": "jbloggs@example.com",
+    "site": Object {
+      "accent_color": "#FF1A75",
+      "description": "Thoughts, stories and ideas",
+      "icon": null,
+      "locale": "en",
+      "title": "Ghost",
+      "url": "http://127.0.0.1:2369/",
+    },
+    "stripe": Object {
+      "configured": true,
+      "livemode": false,
+    },
+    "total_members": 8,
+    "total_posts_published": Any<Number>,
+    "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
+  },
+}
+`;
+
+exports[`Explore API Read Can request Explore data 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

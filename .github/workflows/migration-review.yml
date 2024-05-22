@@ -1,0 +1,55 @@
+name: Migration Review
+on:
+  pull_request_target:
+    types: [opened]
+    paths:
+      - 'ghost/core/core/server/data/schema/**'
+      - 'ghost/core/core/server/data/migrations/versions/**'
+jobs:
+  createComment:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'TryGhost'
+    name: Add migration review requirements
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ["migration"]
+            })
+
+      - uses: peter-evans/create-or-update-comment@ac8e6509d7545ebc2e5e7c35eaa12195c2f77adc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            It looks like this PR contains a migration 👀
+            Here's the checklist for reviewing migrations:
+
+            ### General requirements
+
+            - [ ]  Satisfies idempotency requirement (both `up()` and `down()`)
+            - [ ]  Does not reference models
+            - [ ]  Filename is in the correct format (and correctly ordered)
+            - [ ]  Targets the next minor version
+            - [ ]  All code paths have appropriate log messages
+            - [ ]  Uses the correct utils
+            - [ ]  Contains a minimal changeset
+            - [ ]  Does not mix DDL/DML operations
+
+            ### Schema changes
+
+            - [ ]  Both schema change and related migration have been implemented
+            - [ ]  For index changes: has been performance tested for large tables
+            - [ ]  For new tables/columns: fields use the appropriate predefined field lengths
+            - [ ]  For new tables/columns: field names follow the appropriate conventions
+            - [ ]  Does not drop a non-alpha table outside of a major version
+
+            ### Data changes
+
+            - [ ]  Mass updates/inserts are batched appropriately
+            - [ ]  Does not loop over large tables/datasets
+            - [ ]  Defends against missing or invalid data
+            - [ ]  For settings updates: follows the appropriate guidelines

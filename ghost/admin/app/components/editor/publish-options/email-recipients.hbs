@@ -1,0 +1,30 @@
+<div class="form-group max-width mb0">
+    <GhMembersRecipientSelect
+        @filter={{@publishOptions.recipientFilter}}
+        @newsletter={{@publishOptions.newsletter}}
+        @onChange={{@publishOptions.setRecipientFilter}}
+        @renderInPlace={{false}}
+        @dropdownClass="gh-publish-newsletter-dropdown"
+    />
+
+    {{#if (gt @publishOptions.newsletters.length 1)}}
+        <div class="mt4" data-test-select="newsletter">
+            <label class="gh-main-section-header small bn">Newsletter</label>
+            <PowerSelect
+                @selected={{@publishOptions.newsletter}}
+                @options={{@publishOptions.newsletters}}
+                @onChange={{@publishOptions.setNewsletter}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-publish-newsletter-trigger"
+                @dropdownClass="gh-publish-newsletter-dropdown"
+                as |newsletter|
+            >
+                <span data-test-select-option={{newsletter.name}}>{{newsletter.name}}</span>
+                {{!-- TODO: remove conditional when author/editor can fetch member counts --}}
+                {{#if @publishOptions.user.isAdmin}}
+                    <span class="gh-newsletter-count">{{format-number newsletter.count.active_members}}</span>
+                {{/if}}
+            </PowerSelect>
+        </div>
+    {{/if}}
+</div>

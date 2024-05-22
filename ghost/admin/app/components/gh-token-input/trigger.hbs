@@ -1,0 +1,68 @@
+<SortableObjects
+    @tagName="ul"
+    @id={{concat "ember-power-select-multiple-options-" @select.uniqueId}}
+    @class="ember-power-select-multiple-options"
+    @sortableObjectList={{@select.selected}}
+    @enableSort={{true}}
+    @useSwap={{false}}
+    @sortEndAction={{action "reorderItems"}}
+>
+    {{#each @select.selected as |opt idx|}}
+        {{#component (or @extra.tokenComponent "draggable-object")
+            tagName="li"
+            class=(concat "ember-power-select-multiple-option" (if opt.class (concat " token-" opt.class)))
+            select=@select
+            content=(readonly opt)
+            idx=idx
+            isSortable=true
+            mouseDown=this.handleOptionMouseDown
+            touchStart=this.handleOptionTouchStart
+        }}
+            <span class="ember-power-select-multiple-inner-text" data-test-selected-token>
+                {{#if @selectedItemComponent}}
+                    {{component @selectedItemComponent option=(readonly opt) select=(readonly @select)}}
+                {{else}}
+                    {{yield opt @select}}
+                {{/if}}
+            </span>
+            {{#unless @select.disabled}}
+                <span role="button"
+                    aria-label="remove element"
+                    class="ember-power-select-multiple-remove-btn"
+                    data-selected-index={{idx}}
+                    {{on "mousedown" this.handleOptionMouseDown}}
+                >
+                    {{svg-jar "close" data-selected-index=idx}}
+                </span>
+            {{/unless}}
+        {{/component}}
+    {{else}}
+        {{#if (and @placeholder (not @searchEnabled))}}
+            <span class="ember-power-select-placeholder">{{@placeholder}}</span>
+        {{/if}}
+    {{/each}}
+
+    {{#if @searchEnabled}}
+        <input
+            type="search"
+            class="ember-power-select-trigger-multiple-input"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            id="ember-power-select-trigger-multiple-input-{{@select.uniqueId}}"
+            value={{@select.searchText}}
+            aria-controls={{@listboxId}}
+            style={{this.triggerMultipleInputStyle}}
+            placeholder={{this.maybePlaceholder}}
+            disabled={{@select.disabled}}
+            tabindex={{@tabindex}}
+            {{on "focus" @onFocus}}
+            {{on "blur" @onBlur}}
+            {{on "input" this.handleInput}}
+            {{on "keydown" this.handleKeydown}}
+            {{did-insert this.storeInputStyles}}
+        >
+    {{/if}}
+</SortableObjects>
+<span class="ember-power-select-status-icon"></span>

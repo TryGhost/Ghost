@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Members Stripe Connect API can do auth 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "289",
+  "content-type": "text/plain; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "location": StringMatching /\\^https:\\\\/\\\\/connect\\\\\\.stripe\\\\\\.com\\\\/oauth\\\\/authorize\\\\\\?response_type=code&scope=read_write&client_id=/,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-admin-api-session=/,
+  ],
+  "vary": "Accept-Version, Origin, Accept, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

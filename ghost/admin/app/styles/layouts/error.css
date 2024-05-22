@@ -1,0 +1,88 @@
+/* Error /ghost/404/
+/* ---------------------------------------------------------- */
+
+.error-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: text;
+}
+
+.error-details {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.error-ghost {
+    margin: 15px;
+    height: 115px;
+}
+
+@media (max-width: 630px) {
+    .error-ghost {
+        display: none;
+    }
+}
+
+.error-code {
+    margin: 0;
+    color: #979797;
+    font-size: 7.8rem;
+    line-height: 0.9em;
+}
+
+
+.error-description {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #979797;
+    font-size: 1.9rem;
+    font-weight: 300;
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    margin: 15px;
+}
+
+.error-message a {
+    margin-top: 5px;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+/* Stack trace
+/* ---------------------------------------------------------- */
+
+.error-stack {
+    margin: 1rem auto;
+    padding: 2rem;
+    max-width: 800px;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.error-stack-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.error-stack-list li {
+    display: block;
+}
+
+.error-stack-list li:before {
+    content: "\21AA";
+    display: inline-block;
+    margin-right: 0.5rem;
+    color: #bbb;
+    font-size: 1.2rem;
+}
+
+.error-stack-function {
+    font-weight: bold;
+}

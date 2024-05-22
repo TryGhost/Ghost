@@ -1,0 +1,3 @@
+test/coverage/**
+test/utils/fixtures/themes/casper/assets/**
+test/utils/fixtures/themes/source/assets/**

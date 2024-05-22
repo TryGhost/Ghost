@@ -1,0 +1,80 @@
+.gh-tier-card {
+    position:relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+@media (max-width: 980px) {
+    .gh-tier-card {
+        padding: 4vmin 48px;
+    }
+}
+
+.gh-tier-card-price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+    padding: 12px 8px;
+    border-radius: 3px;
+    min-width: 90px;
+    min-height: 66px;
+}
+
+.gh-tier-card-price:first-of-type {
+    border-right: 1px solid var(--whitegrey);
+}
+
+.gh-tier-card-price .currency-symbol,
+.gh-tier-card-price .amount,
+.gh-tier-card-price .currency,
+.gh-tier-card-price .currency-code {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-tier-card-price .currency-symbol {
+    margin-top: -3px;
+}
+
+.gh-tier-card-price .amount {
+    letter-spacing: -.7px;
+    line-height: 1;
+    margin-right: 2px;
+    margin-left: 1px;
+    font-size: 2.2rem;
+}
+
+.gh-tier-card-price .currency {
+    text-transform: uppercase;
+    position: relative;
+    top: 2px;
+    font-size: 1.4rem;
+    letter-spacing: 0.4px;
+    line-height: 1;
+}
+
+.gh-tier-card-price .currency-code {
+    text-transform: uppercase;
+    position: relative;
+    top: 0;
+    font-weight: 600;
+    line-height: 1;
+    font-size: 1.25rem;
+    letter-spacing: -.2px;
+}
+
+.gh-tier-card-price .period {
+    font-size: 1.25rem;
+    text-transform: lowercase;
+    line-height: 1.2em;
+    margin-top: 2px;
+}
+
+.tier-actions-menu.fade-out {
+    animation-duration: 0.01s;
+    pointer-events: none;
+}

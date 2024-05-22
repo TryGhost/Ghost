@@ -1,0 +1,50 @@
+{{#let (parse-member-event @event @hasMultipleNewsletters) as |event|}}
+    <tr>
+        {{#unless @hideMemberColumn}}
+            <div class="gh-list-data">
+                <LinkTo @route="members-activity" @query={{hash member=event.member.id}}>
+                    <div class="flex items-center">
+                        <GhMemberAvatar @member={{event.member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                        <div class="w-80">
+                            <h3 class="ma0 pa0 gh-members-list-name {{unless event.member.name "gh-members-name-noname"}}">{{event.subject}}</h3>
+                            {{#if event.member.name}}
+                                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{event.member.email}}</p>
+                            {{/if}}
+                        </div>
+                    </div>
+                </LinkTo>
+            </div>
+        {{/unless}}
+        <div class="gh-list-data">
+            <div class="gh-members-activity-container">
+                <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
+                <div class="gh-members-activity-event">
+                    <span class="gh-members-activity-description feature-memberAttribution">
+                        <span class="gh-members-activity-event-text">{{capitalize-first-letter event.action}}</span>
+                        {{#if event.info}}
+                            <span class="highlight">({{event.info}})</span>
+                        {{/if}}
+                        {{#if event.route}}
+                            <span class="gh-members-activity-event-join">{{event.join}}</span>
+                            <LinkTo class="gh-members-activity-object-link" @route={{event.route.name}} @model={{event.route.model}}>{{event.object}}</LinkTo>
+                        {{else if event.url}}
+                            <span class="gh-members-activity-event-join">{{event.join}}</span>
+                            <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
+                        {{else if event.email}}
+                            <span class="gh-members-activity-event-dash">–</span>
+                            <GhEmailPreviewLink @data={{event.email}} />
+                        {{/if}}
+                    </span>
+                    {{#if event.description}}
+                        <div class="ghost-members-activity-event-description feature-memberAttribution">
+                            <div class="ghost-members-activity-event-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
+                                <span>{{event.description}}</span>
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+        <div class="gh-list-data gh-list-data-date">{{moment-format event.timestamp "DD MMM YYYY HH:mm"}}</div>
+    </tr>
+{{/let}}
