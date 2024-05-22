@@ -182,6 +182,8 @@ module.exports = class WebhookController {
      * @private
      */
     async checkoutSessionEvent(session) {
+        let sendSignupEmail = true;
+
         if (session.mode === 'setup') {
             const setupIntent = await this.api.getSetupIntent(session.setup_intent);
             const member = await this.deps.memberRepository.get({
@@ -252,6 +254,7 @@ module.exports = class WebhookController {
                 stripe_product_id: session.metadata.product
             });
             if (!product) {
+                sendSignupEmail = false;
                 return; // Ignore any Stripe subscriptions that do not exist in Ghost - we should not create members for these.
             }
 
@@ -340,7 +343,7 @@ module.exports = class WebhookController {
                 }
             }
 
-            if (checkoutType !== 'upgrade') {
+            if (checkoutType !== 'upgrade' && sendSignupEmail) {
                 this.sendSignupEmail(customer.email);
             }
         }
