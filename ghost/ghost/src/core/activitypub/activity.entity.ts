@@ -95,6 +95,16 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.to;
     }
 
+    toJSON(): object {
+        return {
+            id: this.attr.id,
+            type: this.attr.type,
+            actor: this.attr.actor,
+            object: this.attr.object,
+            to: this.attr.to
+        };
+    }
+
     getJSONLD(url: URL): ActivityPub.Activity {
         const object = this.getObject(url);
         const actor = this.getActor(url);
@@ -195,3 +205,22 @@ function validateDate(value: any): Date {
 
     return date;
 }
+
+const data = {
+    inbox: [
+        {
+            attr: {
+                id: '664d30858dbfa941c19d522d', to: 'https://0a2e-129-222-88-174.ngrok-free.app/activitypub/actor/deadbeefdeadbeefdeadbeef', type: 'Accept', actor: {id: 'https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef', url: 'https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef', icon: '', name: 'The Main', type: 'Person', image: '', inbox: 'https://main.ghost.org/activitypub/inbox/deadbeefdeadbeefdeadbeef', outbox: 'https://main.ghost.org/activitypub/outbox/deadbeefdeadbeefdeadbeef', summary: 'The bio for the actor', '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1', {featured: {'@id': 'http://joinmastodon.org/ns#featured', '@type': '@id'}}, {discoverable: {'@id': 'http://joinmastodon.org/ns#discoverable', '@type': '@id'}}, {manuallyApprovesFollowers: {'@id': 'http://joinmastodon.org/ns#manuallyApprovesFollowers', '@type': '@id'}}, {value: 'schema:value', schema: 'http://schema.org#', PropertyValue: 'schema:PropertyValue'}], featured: 'https://main.ghost.org/activitypub/featured/deadbeefdeadbeefdeadbeef', followers: 'https://main.ghost.org/activitypub/followers/deadbeefdeadbeefdeadbeef', following: 'https://main.ghost.org/activitypub/following/deadbeefdeadbeefdeadbeef', publicKey: {id: 'https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef#main-key', owner: 'https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef', publicKeyPem: '-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBANRpUrwk7x7bJDddHmrYSWVw9enVPMFm5qAW7fTgoZ7x2PoJUIqy/bkqpXZ0SmZs\nsLO3UZm+yN/DqxioD8BnhhD0N8Ydv6+UniT7hE2tHvsMxQIq2jet1auSBZNFmUIWodsBxI/R\ntm+KwFBFk+P+MvVsGZ2K3Rkd4K0dv0/45dtXAgMBAAE=\n-----END RSA PUBLIC KEY-----\n'}, published: '1970-01-01T00:00:00Z', attachment: [{name: 'Website', type: 'PropertyValue', value: '<a href=\'https://main.ghost.org/activitypub/\'>main.ghost.org</a>'}], discoverable: true, preferredUsername: 'index', manuallyApprovesFollowers: false}, object: {id: 'https://0a2e-129-222-88-174.ngrok-free.app/activitypub/activity/664d30788dbfa941c19d522b', type: 'Follow'}, deleted: false, activity: 'https://main.ghost.org/activitypub/activity/664d3085fd27b20001a76d81', createdAt: '2024-05-21T23:38:45.000Z', createdBy: {id: 'd34d01d0d34d01d0d34d01d0', role: 'Owner', type: 'user'}
+            },
+            events: []
+        }
+    ],
+    outbox: [],
+    features: [],
+    username: 'index',
+    followers: [],
+    following: [
+        {id: 'https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef', username: '@index@main.ghost.org'}
+    ],
+    displayName: 'My Site'
+};
