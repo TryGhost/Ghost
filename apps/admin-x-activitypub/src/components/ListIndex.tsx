@@ -2,6 +2,7 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
 import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface Activity {
@@ -37,66 +38,34 @@ const ActivityPubComponent: React.FC = () => {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [following, setFollowing] = useState<Following[]>([]);
     const [followingCount, setFollowingCount] = useState<number>(0); // New state variable
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
     const {updateRoute} = useRouting();
 
+    // TODO: Replace with actual user ID
+    const {data: inbox} = useBrowseInboxForUser('deadbeefdeadbeefdeadbeef');
+    const {data: followingData} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
+
     useEffect(() => {
-        const fetchActivities = async () => {
-            try {
-                const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/inbox/deadbeefdeadbeefdeadbeef`);
-                // const response = await fetch(`https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
-                // console.log('Fetching activities from:', 'https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef');
-                // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/inbox/deadbeefdeadbeefdeadbeef');
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setActivities(data.orderedItems);
-                } else {
-                    throw new Error('Failed to fetch activities');
-                }
-            } catch (error) {
-                // console.error('Error fetching activities:', error);
-            }
-        };
-
-        if (siteData?.url) {
-            fetchActivities();
+        if (inbox) {
+            setActivities(inbox.orderedItems);
         }
 
         // Clean up function if needed
         return () => {
             // Any clean-up code here
         };
-    }, [siteData?.url]);
+    }, [inbox, setActivities]);
 
     useEffect(() => {
-        const fetchFollowing = async () => {
-            try {
-                const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/following/deadbeefdeadbeefdeadbeef`);
-                // console.log('Fetching following from:', siteData?.url.replace(/\/$/, '') + '/activitypub/following/deadbeefdeadbeefdeadbeef');
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setFollowing(data.items);
-                    setFollowingCount(data.totalItems); // Update following count
-                } else {
-                    throw new Error('Failed to fetch following');
-                }
-            } catch (error) {
-                // console.error('Error fetching activities:', error);
-            }
-        };
-
-        if (siteData?.url) {
-            fetchFollowing();
+        if (followingData) {
+            setFollowing(followingData.items);
+            setFollowingCount(followingData.totalItems); // Update following count
         }
 
         // Clean up function if needed
         return () => {
             // Any clean-up code here
         };
-    }, [siteData?.url]);
+    }, [followingData, setFollowing, setFollowingCount]);
 
     const [articleContent, setArticleContent] = useState<string | null>(null);
     const [articleActor, setArticleActor] = useState<string | null>(null);
@@ -3951,7 +3920,7 @@ figcaption a {
     text-align: center;
     padding: 0 2.5em;
   }
-  
+
   @media (max-width: 800px) {
     .kg-blockquote-alt {
       font-size: 1.4em;
@@ -3959,13 +3928,13 @@ figcaption a {
       padding-right: 2em;
     }
   }
-  
+
   @media (max-width: 600px) {
     .kg-blockquote-alt {
       font-size: 1.2em;
       padding-left: 1.75em;
       padding-right: 1.75em;
-    } 
+    }
   }
 
   .kg-bookmark-card,
@@ -4129,8 +4098,8 @@ figcaption a {
     margin-top: 6vmin;
 }
 
-.kg-collection-card + * { 
-    margin-top: 6vmin; 
+.kg-collection-card + * {
+    margin-top: 6vmin;
 }
 
 .kg-collection-card-title {

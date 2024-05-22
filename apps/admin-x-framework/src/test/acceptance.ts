@@ -149,7 +149,7 @@ export const limitRequests = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {
+export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
 
     const namedRequests = Object.entries(requests).reduce(
@@ -157,8 +157,11 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
         [] as Array<MockRequestConfig & {name: keyof Requests}>
     );
 
-    await page.route(/\/ghost\/api\/admin\//, async (route) => {
-        const apiPath = route.request().url().replace(/^.*\/ghost\/api\/admin/, '');
+    const routeRegex = options?.useActivityPub ? /\/activitypub\// : /\/ghost\/api\/admin\//;
+    const routeReplaceRegex = options.useActivityPub ? /^.*\/activitypub/ : /^.*\/ghost\/api\/admin/;
+
+    await page.route(routeRegex, async (route) => {
+        const apiPath = route.request().url().replace(routeReplaceRegex, '');
 
         const matchingMock = namedRequests.find((request) => {
             if (request.method !== route.request().method()) {

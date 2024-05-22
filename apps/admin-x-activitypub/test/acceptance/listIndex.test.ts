@@ -3,29 +3,19 @@ import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/accept
 
 test.describe('ListIndex', async () => {
     test('Renders the list page', async ({page}) => {
-        await mockApi({page, requests: {
-            browseSite: {method: 'GET', path: '/site/', response: responseFixtures.site}
-        }});
+        const userId = 'deadbeefdeadbeefdeadbeef';
+        await mockApi({
+            page,
+            requests: {
+                useBrowseInboxForUser: {method: 'GET', path: `/inbox/${userId}`, response: responseFixtures.activitypubInbox},
+                useBrowseFollowingForUser: {method: 'GET', path: `/following/${userId}`, response: responseFixtures.activitypubFollowing}
+            },
+            options: {useActivityPub: true}
+        });
 
         // Printing browser consol logs
         page.on('console', (msg) => {
             console.log(`Browser console log: ${msg.type()}: ${msg.text()}`); /* eslint-disable-line no-console */
-        });
-
-        await page.route('*/**/activitypub/inbox/*', async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                json: responseFixtures.activitypubInbox
-            });
-        });
-
-        await page.route('*/**/activitypub/following/*', async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                json: responseFixtures.activitypubFollowing
-            });
         });
 
         await page.goto('/');
