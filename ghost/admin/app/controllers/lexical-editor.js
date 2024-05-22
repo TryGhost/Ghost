@@ -1294,13 +1294,14 @@ export default class LexicalEditorController extends Controller {
             description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }
 
-        description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Do')}</strong></span>`);
-        description.push(`at <span><strong>${publishedAtBlogTZ.format('HH:mm')}</strong>`);
+        description.push(`on <span><strong>${publishedAtBlogTZ.format('D MMM YYYY')}</strong></span>`);
+        let timeZoneLabel = '';
         if (publishedAtBlogTZ.utcOffset() === 0) {
-            description.push('(UTC)</span>');
+            timeZoneLabel = '(UTC)</span>';
         } else {
-            description.push(`(UTC${publishedAtBlogTZ.format('Z').replace(/([+-])0/, '$1').replace(/:00/, '')})</span>`);
+            timeZoneLabel = `(UTC${publishedAtBlogTZ.format('Z').replace(/([+-])0/, '$1').replace(/:00/, '')})</span>`;
         }
+        description.push(`at <span><strong>${publishedAtBlogTZ.format('HH:mm')}</strong>&nbsp;${timeZoneLabel}`);
 
         description = htmlSafe(description.join(' '));
 
