@@ -49,7 +49,7 @@ const ActivityPubComponent: React.FC = () => {
                 const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/inbox/deadbeefdeadbeefdeadbeef`);
                 // const response = await fetch(`https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
                 // console.log('Fetching activities from:', 'https://1357-2a01-11-8210-4b10-885-f591-83c8-1a78.ngrok-free.app/activitypub/outbox/deadbeefdeadbeefdeadbeef');
-                // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/inbox/deadbeefdeadbeefdeadbeef');
+                console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/inbox/deadbeefdeadbeefdeadbeef');
 
                 if (response.ok) {
                     const data = await response.json();
@@ -174,7 +174,7 @@ const ArticleBody: React.FC<{html: string}> = ({html}) => {
     const siteData = site.data?.site;
 
     const cssContent = `<style>
-  </style><link rel="stylesheet" type="text/css" href="${siteData?.url.replace(/\/$/, '')}/src/styles/index.css" />`;
+  </style><link rel="stylesheet" type="text/css" href="${siteData?.url.replace(/\/$/, '')}/assets/styles/reader.css" />`;
 
     const htmlContent = `
   <html>
@@ -221,7 +221,7 @@ const ObjectContentDisplay: React.FC<{actor: any, object: any }> = ({actor, obje
                 <div className='border-1 group/article flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
                     <div className='mb-3 flex w-full items-center gap-2'>
                         <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
-                        <span className='gh-wn-entry text-base font-semibold'>{actor.name}</span>
+                        <span className='text-base font-semibold'>{actor.name}</span>
                         <span className='ml-auto text-md text-grey-800'>{getUsername(actor)}</span>
                     </div>
                     <div className='grid w-full grid-cols-[auto_170px]'>
