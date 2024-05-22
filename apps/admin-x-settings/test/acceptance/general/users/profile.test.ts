@@ -116,27 +116,27 @@ test.describe('User profile', async () => {
 
         await testUrlValidation(
             twitterInput,
-            'twitter.com/username',
-            'https://twitter.com/username'
+            'x.com/username',
+            'https://x.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             'testuser',
-            'https://twitter.com/testuser'
+            'https://x.com/testuser'
         );
 
         await testUrlValidation(
             twitterInput,
             'http://github.com/username',
-            'https://twitter.com/username'
+            'https://x.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
             '*(&*(%%))',
-            'The URL must be in a format like https://twitter.com/yourUsername'
+            'The URL must be in a format like https://x.com/yourUsername'
         );
 
         await testUrlValidation(
