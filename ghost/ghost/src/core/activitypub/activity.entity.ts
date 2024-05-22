@@ -95,6 +95,16 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.to;
     }
 
+    toJSON(): object {
+        return {
+            id: this.attr.id,
+            type: this.attr.type,
+            actor: this.attr.actor,
+            object: this.attr.object,
+            to: this.attr.to
+        };
+    }
+
     getJSONLD(url: URL): ActivityPub.Activity {
         const object = this.getObject(url);
         const actor = this.getActor(url);

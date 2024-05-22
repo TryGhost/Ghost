@@ -47,17 +47,11 @@ export class ActivityRepositoryKnex implements ActivityRepository {
     }
 
     async save(activity: Activity) {
-        const data = {
-            actor: activity.getActor,
-            object: activity.getObject,
-            to: activity?.to?.href
-
-        };
-
+        const data = activity.toJSON();
         await this.knex('prototype_activitypub')
             .insert({
                 id: new ObjectID().toHexString(),
-                activity: activity.activityId?.href,
+                url: activity.activityId?.href,
                 type: activity.type,
                 data: JSON.stringify(data),
                 created_at: activity.createdAt || new Date(),

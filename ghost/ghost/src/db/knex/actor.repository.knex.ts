@@ -41,24 +41,30 @@ export class ActorRepositoryKnex implements ActorRepository {
     }
 
     private async dbToActor(model: ActivityPub.ActivityPubActorDBData) {
+        const inbox = model.data.inbox ? model.data.inbox.map(activity => Activity.create(activity)) : [];
+        const outbox = model.data.outbox ? model.data.outbox.map(activity => Activity.create(activity)) : [];
+        const featured = model?.data?.featured?.length ? model.data.featured.map(feature => ({
+            id: new URI(feature.id)
+        })) : [];
+        const following = model?.data?.following?.length ? model.data.following.map(follows => ({
+            id: new URI(follows.id),
+            username: follows.username || undefined
+        })) : [];
+        const followers = model?.data?.followers?.length ? model.data.followers.map(follower => ({
+            id: new URI(follower.id)
+        })) : [];
+
         return Actor.create({
             id: ObjectID.createFromHexString(model.id),
             username: model.data.username,
-            displayName: model.data.displayName || undefined,
+            displayName: model.data?.displayName ?? undefined,
             publicKey: this.settingsCache.get('ghost_public_key'),
             privateKey: this.settingsCache.get('ghost_private_key'),
-            following: model.data.following.map(following => ({
-                id: new URI(following.id),
-                username: following.username || undefined
-            })) || [],
-            followers: model.data.followers.map(follower => ({
-                id: new URI(follower.id)
-            })) || [],
-            featured: model.data.featured.map(feature => ({
-                id: new URI(feature.id)
-            })) || [],
-            inbox: model.data.inbox.map(activity => Activity.create(activity)) || [],
-            outbox: model.data.outbox.map(activity => Activity.create(activity)) || [],
+            following,
+            followers,
+            featured,
+            inbox,
+            outbox,
             internal: model.internal,
             createdAt: new Date(model.created_at),
             updatedAt: new Date(model.updated_at)
@@ -98,14 +104,17 @@ export class ActorRepositoryKnex implements ActorRepository {
     }
 
     async save(actor: Actor) {
+        const inbox = actor.inbox instanceof Activity ? actor.inbox.map(activity => activity.toJSON()) : actor.inbox;
+        const outbox = actor.outbox instanceof Activity ? actor.outbox.map(activity => activity.toJSON()) : actor.outbox;
+
         const data = {
             username: actor.username,
             displayName: actor.displayName,
             following: actor.following,
             followers: actor.followers,
             features: actor.featured,
-            inbox: actor.inbox,
-            outbox: actor.outbox
+            inbox,
+            outbox
         };
 
         const id = actor.id;
