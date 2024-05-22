@@ -282,4 +282,49 @@ describe('getImageDimensions', function () {
             done();
         }).catch(done);
     });
+
+    it('does not append image size prefix to external images', function (done) {
+        const originalMetaData = {
+            coverImage: {
+                url: 'http://anothersite.com/some/storage/mypostcoverimage.jpg'
+            },
+            authorImage: {
+                url: 'http://anothersite.com/some/storage/me.jpg'
+            },
+            ogImage: {
+                url: 'http://anothersite.com/some/storage/super-facebook-image.jpg'
+            },
+            twitterImage: 'http://anothersite.com/some/storage/super-twitter-image.jpg',
+            site: {
+                logo: {
+                    url: 'http://anothersite.com/some/storage/logo.jpg'
+                }
+            }
+        };
+
+        const metaData = _.cloneDeep(originalMetaData);
+
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        getImageDimensions(metaData).then(function (result) {
+            should.exist(result);
+            result.coverImage.should.have.property('url');
+            result.coverImage.url.should.eql('http://anothersite.com/some/storage/mypostcoverimage.jpg');
+            result.authorImage.should.have.property('url');
+            result.authorImage.url.should.eql('http://anothersite.com/some/storage/me.jpg');
+            result.ogImage.should.have.property('url');
+            result.ogImage.url.should.eql('http://anothersite.com/some/storage/super-facebook-image.jpg');
+            result.site.logo.should.have.property('url');
+            result.site.logo.url.should.eql('http://anothersite.com/some/storage/logo.jpg');
+            done();
+        }).catch(done);
+    });
 });

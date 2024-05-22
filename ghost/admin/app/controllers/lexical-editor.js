@@ -15,6 +15,7 @@ import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
+import {capitalizeFirstLetter} from '../helpers/capitalize-first-letter';
 import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
@@ -1263,12 +1264,14 @@ export default class LexicalEditorController extends Controller {
         let notifications = this.notifications;
         let message = messageMap.success.post[prevStatus][status];
         let actions, type, path;
+        type = this.get('post.displayName');
 
         if (status === 'published' || status === 'scheduled') {
-            type = this.get('post.displayName');
             path = this.get('post.url');
-            actions = `<a href="${path}" target="_blank">View ${type}</a>`;
+            actions = `<a href="${path}" target="_blank">View on site</a>`;
         }
+
+        message = capitalizeFirstLetter(type) + ' ' + message.toLowerCase();
 
         notifications.showNotification(message, {type: 'success', actions: (actions && htmlSafe(actions)), delayed});
     }
@@ -1278,11 +1281,12 @@ export default class LexicalEditorController extends Controller {
             publishedAtUTC,
             previewUrl,
             emailOnly,
-            newsletter
+            newsletter,
+            displayName
         } = this.post;
         let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.timezone);
 
-        let title = 'Scheduled';
+        let title = capitalizeFirstLetter(displayName) + ' scheduled';
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
         if (newsletter) {
@@ -1290,17 +1294,18 @@ export default class LexicalEditorController extends Controller {
             description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }
 
-        description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Do')}</strong></span>`);
-        description.push(`at <span><strong>${publishedAtBlogTZ.format('HH:mm')}</strong>`);
+        description.push(`on <span><strong>${publishedAtBlogTZ.format('D MMM YYYY')}</strong></span>`);
+        let timeZoneLabel = '';
         if (publishedAtBlogTZ.utcOffset() === 0) {
-            description.push('(UTC)</span>');
+            timeZoneLabel = '(UTC)</span>';
         } else {
-            description.push(`(UTC${publishedAtBlogTZ.format('Z').replace(/([+-])0/, '$1').replace(/:00/, '')})</span>`);
+            timeZoneLabel = `(UTC${publishedAtBlogTZ.format('Z').replace(/([+-])0/, '$1').replace(/:00/, '')})</span>`;
         }
+        description.push(`at <span><strong>${publishedAtBlogTZ.format('HH:mm')}</strong>&nbsp;${timeZoneLabel}`);
 
         description = htmlSafe(description.join(' '));
 
-        let actions = htmlSafe(`<a href="${previewUrl}" target="_blank">View Preview</a>`);
+        let actions = htmlSafe(`<a href="${previewUrl}" target="_blank">Show preview</a>`);
 
         return this.notifications.showNotification(title, {description, actions, type: 'success', delayed});
     }

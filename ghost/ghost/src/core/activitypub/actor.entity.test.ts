@@ -25,6 +25,21 @@ describe('Actor', function () {
                 assert.equal(doesnaeHaveDisplayName.displayName, 'username');
             });
         });
+
+        describe('actorId', function () {
+            it('Correctly returns the actor url', function () {
+                const actor = Actor.create({username: 'testing'});
+                const idString = actor.id.toHexString();
+                const actorId = actor.actorId;
+
+                const baseUrl = new URL('https://domain.tld/base');
+
+                assert.equal(
+                    actorId.getValue(baseUrl),
+                    `https://domain.tld/base/actor/${idString}`
+                );
+            });
+        });
     });
 
     describe('#createArticle', function () {
@@ -36,7 +51,12 @@ describe('Actor', function () {
                 title: 'Post Title',
                 slug: 'post-slug',
                 html: '<p>Hello world</p>',
-                visibility: 'public'
+                visibility: 'public',
+                url: new URI(''),
+                authors: ['Mr Burns'],
+                featuredImage: null,
+                publishedAt: null,
+                excerpt: 'Hey'
             });
 
             actor.createArticle(article);
@@ -124,8 +144,14 @@ describe('Actor', function () {
             const followActivity = new Activity({
                 activity: new URI(`https://activitypub.server/activity`),
                 type: 'Follow',
-                actor: newFollower,
-                object: {id: actor.actorId},
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
+                object: {
+                    id: actor.actorId,
+                    type: 'Person'
+                },
                 to: actor.actorId
             });
 
@@ -142,8 +168,14 @@ describe('Actor', function () {
             const followActivity = new Activity({
                 activity: null,
                 type: 'Follow',
-                actor: newFollower,
-                object: {id: actor.actorId},
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
+                object: {
+                    id: actor.actorId,
+                    type: 'Person'
+                },
                 to: actor.actorId
             });
 
@@ -165,9 +197,13 @@ describe('Actor', function () {
             const activity = new Activity({
                 activity: null,
                 type: 'Accept',
-                actor: newFollower,
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
                 object: {
-                    id: newFollower
+                    id: newFollower,
+                    type: 'Person'
                 },
                 to: actor.actorId
             });

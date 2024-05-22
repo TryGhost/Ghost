@@ -14,6 +14,7 @@ import {TheWorld} from '../../../core/activitypub/tell-the-world.service';
 import DomainEvents from '@tryghost/domain-events';
 import {NestApplication} from '@nestjs/core';
 import ObjectID from 'bson-objectid';
+import {URI} from '../../../core/activitypub/uri.object';
 
 describe('ActivityPubController', function () {
     let app: NestApplication;
@@ -21,6 +22,10 @@ describe('ActivityPubController', function () {
         const moduleRef = await Test.createTestingModule({
             controllers: [ActivityPubController],
             providers: [
+                {
+                    provide: 'logger',
+                    useValue: console
+                },
                 {
                     provide: 'ActivityPubBaseURL',
                     useValue: new URL('https://example.com')
@@ -54,7 +59,12 @@ describe('ActivityPubController', function () {
                                 title: 'Testing',
                                 slug: 'testing',
                                 html: '<p> testing </p>',
-                                visibility: 'public'
+                                visibility: 'public',
+                                authors: ['Mr Roach'],
+                                url: new URI('roachie'),
+                                publishedAt: new Date(),
+                                featuredImage: null,
+                                excerpt: 'testing...'
                             };
                         }
                     }
@@ -93,9 +103,21 @@ describe('ActivityPubController', function () {
             .expect(200);
     });
 
+    it('Can handle requests to get the inbox', async function () {
+        await request(app.getHttpServer())
+            .get('/activitypub/inbox/deadbeefdeadbeefdeadbeef')
+            .expect(200);
+    });
+
     it('Can handle requests to get the following', async function () {
         await request(app.getHttpServer())
             .get('/activitypub/following/deadbeefdeadbeefdeadbeef')
+            .expect(200);
+    });
+
+    it('Can handle requests to get the followers', async function () {
+        await request(app.getHttpServer())
+            .get('/activitypub/followers/deadbeefdeadbeefdeadbeef')
             .expect(200);
     });
 

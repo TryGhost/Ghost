@@ -153,7 +153,7 @@ describe('Acceptance: Editor', function () {
                 await blur('[data-test-date-time-picker-time-input]');
 
                 expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
-                    .to.equal('Must be in the past');
+                    .to.equal('Please choose a past date and time.');
 
                 // closing the PSM will reset the invalid date/time
                 await click('[data-test-psm-trigger]');
