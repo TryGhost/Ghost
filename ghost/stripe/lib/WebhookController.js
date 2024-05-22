@@ -248,6 +248,13 @@ module.exports = class WebhookController {
         }
 
         if (session.mode === 'subscription') {
+            const product = await this.deps.productRepository.get({
+                stripe_product_id: session.metadata.product
+            });
+            if (!product) {
+                return; // Ignore any Stripe subscriptions that do not exist in Ghost - we should not create members for these.
+            }
+
             const customer = await this.api.getCustomer(session.customer, {
                 expand: ['subscriptions.data.default_payment_method']
             });
