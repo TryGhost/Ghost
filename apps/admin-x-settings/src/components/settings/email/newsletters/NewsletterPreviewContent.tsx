@@ -230,7 +230,7 @@ const NewsletterPreviewContent: React.FC<{
                             {showSubscriptionDetails && (
                                 <div className="border-b border-grey-200 py-8" style={{borderColor: secondaryBorderColor}}>
                                     <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide" style={{color: titleColor}}>Subscription details</h4>
-                                    <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to The Local Host. Your subscription will renew on 17 Jul 2024.</p>
+                                    <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">
                                             <p style={{color: textColor}}>Name: Jamie Larson</p>
