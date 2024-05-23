@@ -1,6 +1,7 @@
 import React from 'react';
 import {$getSelection, $isParagraphNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_MODIFIER_COMMAND} from 'lexical';
 import {$getSelectionRangeRect} from '../utils/$getSelectionRangeRect';
+import {$isAtLinkSearchNode} from '@tryghost/kg-default-nodes';
 import {$isLinkNode} from '@lexical/link';
 import {FloatingFormatToolbar, toolbarItemTypes} from '../components/ui/FloatingFormatToolbar';
 import {FloatingLinkToolbar} from '../components/ui/FloatingLinkToolbar';
@@ -41,7 +42,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
                 return;
             }
 
-            if (!$isRangeSelection(selection)) {
+            if (!$isRangeSelection(selection) || $isAtLinkSearchNode(selection.anchor.getNode())) {
                 if (toolbarItemType) {
                     setToolbarItemType(null);
                 }

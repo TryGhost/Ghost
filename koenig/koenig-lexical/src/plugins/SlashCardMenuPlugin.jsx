@@ -157,7 +157,7 @@ function useSlashCardMenu(editor) {
                 setCommandParams(cps);
             });
         });
-    }, [editor, closeMenu, setQuery, setCommandParams]);
+    }, [editor, isShowingMenu, closeMenu, setQuery, setCommandParams]);
 
     // open the menu when / is pressed on a blank paragraph
     React.useEffect(() => {

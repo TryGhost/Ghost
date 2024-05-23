@@ -1,4 +1,5 @@
 // see lexical useLexicalTextEntity hook
+// duplicated here because the upstream version is dependent on TextNode but we use ExtendedTextNode
 
 import {$createTextNode, $isTextNode, TextNode} from 'lexical';
 import {mergeRegister} from '@lexical/utils';

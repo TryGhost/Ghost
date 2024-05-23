@@ -1,8 +1,11 @@
 import {
+    AtLinkNode,
+    AtLinkSearchNode,
     ExtendedHeadingNode,
     ExtendedQuoteNode,
     ExtendedTextNode,
     TKNode,
+    ZWNJNode,
     extendedHeadingNodeReplacement,
     extendedQuoteNodeReplacement,
     extendedTextNodeReplacement
@@ -68,7 +71,10 @@ const DEFAULT_NODES = [
     GalleryNode,
     SignupNode,
     CollectionNode,
-    TKNode
+    TKNode,
+    AtLinkNode,
+    AtLinkSearchNode,
+    ZWNJNode
 ];
 
 export default DEFAULT_NODES;

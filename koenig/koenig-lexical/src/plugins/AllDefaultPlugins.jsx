@@ -1,3 +1,4 @@
+import AtLinkPlugin from './AtLinkPlugin.jsx';
 import CollectionPlugin from '../plugins/CollectionPlugin';
 import EmEnDashPlugin from '../plugins/EmEnDashPlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
@@ -35,7 +36,10 @@ export const AllDefaultPlugins = () => {
 
             {/* Koenig Plugins */}
             <CardMenuPlugin />
+            <KoenigSnippetPlugin />
+            <KoenigSelectorPlugin /> {/* Tenor/Unsplash selectors */}
             <EmojiPickerPlugin />
+            <AtLinkPlugin />
 
             {/* Card Plugins */}
             <AudioPlugin />
@@ -53,16 +57,12 @@ export const AllDefaultPlugins = () => {
             <HeaderPlugin />
             <BookmarkPlugin />
             <PaywallPlugin />
-            <KoenigSelectorPlugin />
             <ProductPlugin />
             <EmailCtaPlugin />
             <EmailPlugin />
             <EmbedPlugin />
             <SignupPlugin />
             <CollectionPlugin />
-
-            {/* Snippet Plugins */}
-            <KoenigSnippetPlugin />
         </>
     );
 };

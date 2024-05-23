@@ -304,7 +304,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         fetchCollectionPosts,
         feature: {
             ...defaultCardConfig.feature,
-            internalLinking: searchParams.get('labs')?.includes('internalLinking')
+            internalLinking: searchParams.get('labs')?.includes('internalLinking'),
+            internalLinkingAtLinks: searchParams.get('labs')?.includes('internalLinking')
         }
     };
 

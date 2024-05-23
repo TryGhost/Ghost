@@ -24,6 +24,8 @@ import * as textnode from './nodes/ExtendedTextNode';
 import * as headingnode from './nodes/ExtendedHeadingNode';
 import * as quotenode from './nodes/ExtendedQuoteNode';
 import * as tk from './nodes/TKNode';
+import * as atLink from './nodes/at-link/index.js';
+import * as zwnj from './nodes/zwnj/ZWNJNode.js';
 
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
@@ -53,6 +55,8 @@ export * from './nodes/ExtendedTextNode';
 export * from './nodes/ExtendedHeadingNode';
 export * from './nodes/ExtendedQuoteNode';
 export * from './nodes/TKNode';
+export * from './nodes/at-link/index.js';
+export * from './nodes/zwnj/ZWNJNode';
 
 // export convenience objects for use elsewhere
 export const DEFAULT_NODES = [
@@ -84,5 +88,8 @@ export const DEFAULT_NODES = [
     emailCta.EmailCtaNode,
     signup.SignupNode,
     collection.CollectionNode,
-    tk.TKNode
+    tk.TKNode,
+    atLink.AtLinkNode,
+    atLink.AtLinkSearchNode,
+    zwnj.ZWNJNode
 ];
