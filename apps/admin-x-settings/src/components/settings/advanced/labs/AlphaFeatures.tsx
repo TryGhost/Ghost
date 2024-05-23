@@ -67,6 +67,10 @@ const features = [{
     title: 'ActivityPub',
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
+},{
+    title: 'Subhead',
+    description: 'Using custom excerpts as subheads in editor and newsletter',
+    flag: 'subhead'
 }];
 
 const AlphaFeatures: React.FC = () => {
