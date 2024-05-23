@@ -1,5 +1,6 @@
 // import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
+import getUsername from '../utils/get-username';
 import {Activity, FollowItem, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -6131,17 +6132,5 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
         </Page>
     );
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getUsername(actor: any) {
-    if (!actor.preferredUsername || !actor.id) {
-        return '@unknown@unknown';
-    }
-    try {
-        return `@${actor.preferredUsername}@${(new URL(actor.id)).hostname}`;
-    } catch (err) {
-        return '@unknown@unknown';
-    }
-}
 
 export default ActivityPubComponent;
