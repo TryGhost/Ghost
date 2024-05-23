@@ -252,7 +252,7 @@ export const OffersIndexModal = () => {
                                         {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
                                         {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
                                     ]}
-                                    position='right'
+                                    position='end'
                                     triggerButtonProps={{
                                         link: true
                                     }}
