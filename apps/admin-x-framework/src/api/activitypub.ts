@@ -1,35 +1,40 @@
 import {createMutation, createQueryWithId} from '../utils/api/hooks';
 
-type FollowData = {
+export type FollowItem = {
+    id: string;
     username: string
 };
 
-type Inbox = {
+export type Activity = {
+    id: string;
+    type: string;
+    summary: string;
+    actor: object;
+    object: {
+        type: 'Article' | 'Link';
+    };
+}
+
+export type InboxResponseData = {
     '@context': string;
     id: string;
     summary: string;
     type: string;
     totalItems: number;
-    orderedItems: object[] | [];
+    orderedItems: Activity[];
 }
 
-type InboxResponseData = {
-    inbox: Inbox;
-}
-
-type Following = {
+export type FollowingResponseData = {
     '@context': string;
     id: string;
     summary: string;
     type: string;
     totalItems: number;
-    items: {
-        username: string;
-    }[] | [];
+    items: FollowItem[];
 }
 
-type FollowingResponseData = {
-    following: Following;
+type FollowData = {
+    username: string
 }
 
 export const useFollow = createMutation<object, FollowData>({

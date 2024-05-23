@@ -1,25 +1,9 @@
 // import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
+import {Activity, FollowItem, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
-import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-
-interface Activity {
-    id: string;
-    type: string;
-    summary: string;
-    actor: object;
-    object: {
-        type: 'Article' | 'Link';
-    };
-    siteData: SiteData;
-}
-
-export type Following = {
-    id: string;
-    username?: string;
-}
 
 // interface ObjectContent {
 //   type: string;
@@ -36,7 +20,7 @@ interface ViewArticleProps {
 
 const ActivityPubComponent: React.FC = () => {
     const [activities, setActivities] = useState<Activity[]>([]);
-    const [following, setFollowing] = useState<Following[]>([]);
+    const [following, setFollowing] = useState<FollowItem[]>([]);
     const [followingCount, setFollowingCount] = useState<number>(0); // New state variable
     const {updateRoute} = useRouting();
 
@@ -45,7 +29,7 @@ const ActivityPubComponent: React.FC = () => {
     const {data: followingData} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
 
     useEffect(() => {
-        if (inbox) {
+        if (inbox && inbox?.orderedItems?.length) {
             setActivities(inbox.orderedItems);
         }
 
@@ -68,7 +52,7 @@ const ActivityPubComponent: React.FC = () => {
     }, [followingData, setFollowing, setFollowingCount]);
 
     const [articleContent, setArticleContent] = useState<string | null>(null);
-    const [articleActor, setArticleActor] = useState<string | null>(null);
+    const [, setArticleActor] = useState<string | null>(null);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleViewContent = (content: any, actor: any) => {
@@ -124,7 +108,7 @@ const ActivityPubComponent: React.FC = () => {
                 </ViewContainer>
 
             ) : (
-                <ViewArticle actor={articleActor} object={articleContent} onBackToList={handleBackToList} />
+                <ViewArticle object={articleContent} onBackToList={handleBackToList} />
             )}
 
         </Page>

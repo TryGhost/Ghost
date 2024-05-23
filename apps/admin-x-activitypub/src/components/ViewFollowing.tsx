@@ -1,11 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
-import {Following} from './ListIndex.tsx';
+import {FollowingResponseData, useFollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
 
 interface ViewFollowingModalProps {
-    following: Following[],
+    following: FollowingResponseData[],
     animate?: boolean
 }
 
