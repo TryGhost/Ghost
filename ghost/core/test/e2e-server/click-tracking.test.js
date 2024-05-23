@@ -17,7 +17,7 @@ describe('Click Tracking', function () {
     beforeEach(async function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
-       await mockManager.mockActivityPub();
+        await mockManager.mockActivityPub();
     });
 
     afterEach(function () {
