@@ -221,7 +221,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     };
 
     const buttons = (
-        <Button color='green' label='Invite people' link={true} linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' color='clear' label='Invite people' size='sm' linkWithPadding onClick={() => {
             showInviteModal();
         }} />
     );

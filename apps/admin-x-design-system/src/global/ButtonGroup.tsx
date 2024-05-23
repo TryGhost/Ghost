@@ -17,7 +17,7 @@ export interface ButtonGroupProps {
 const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, linkWithPadding, clearBg = true, outlineOnMobile, className}) => {
     let groupColorClasses = clsx(
         'flex items-center justify-start rounded',
-        link ? 'gap-4' : 'gap-3',
+        link ? 'gap-4' : 'gap-2',
         className
     );
 
@@ -33,7 +33,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
     return (
         <div className={groupColorClasses}>
             {buttons.map(({key, ...props}) => (
-                <Button key={key} link={link} linkWithPadding={linkWithPadding} {...props} />
+                <Button key={key} link={link} linkWithPadding={linkWithPadding} size={size} {...props} />
             ))}
         </div>
     );
