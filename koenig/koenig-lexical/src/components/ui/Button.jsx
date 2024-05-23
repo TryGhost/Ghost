@@ -15,7 +15,7 @@ export function Button({color, dataTestId, href, size, width, rounded, shrink, v
     return (
         <Tag
             className={clsx(
-                'not-kg-prose inline-block grow cursor-pointer text-center font-sans font-medium',
+                'not-kg-prose inline-block cursor-pointer text-center font-sans font-medium',
                 (!shrink && 'shrink-0'), // This is for dynamic buttons that need to wrap onto a new line if width exceeds editor width, such as the ButtonCard
                 width === 'regular' || 'w-full',
                 rounded && 'rounded-md',
