@@ -169,12 +169,12 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function frontendCaching(req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
-        if (req.member || res.isPrivateBlog) {
-            return shared.middleware.cacheControl('private')(req, res, next);
-        } else {
-            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+    siteApp.use(async function frontendCaching(req, res, next) {
+        try {
+            const middleware = await mw.frontendCaching.getMiddleware();
+            return middleware(req, res, next);
+        } catch {
+            return next();
         }
     });
 
