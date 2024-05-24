@@ -42,17 +42,16 @@ export const useFollow = createMutation<object, FollowData>({
     path: data => `/activitypub/follow/${data.username}`
 });
 
-const dataType = 'InboxResponseData';
-
 // This is a frontend root, not using the Ghost admin API
 export const useBrowseInboxForUser = createQueryWithId<InboxResponseData>({
-    dataType,
+    dataType: 'InboxResponseData',
     useActivityPub: true,
     path: id => `/inbox/${id}`
 });
 
+// This is a frontend root, not using the Ghost admin API
 export const useBrowseFollowingForUser = createQueryWithId<FollowingResponseData>({
-    dataType,
+    dataType: 'FollowingResponseData',
     useActivityPub: true,
     path: id => `/following/${id}`
 });
