@@ -2,21 +2,13 @@
 import React, {useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
 import getUsername from '../utils/get-username';
+import {ActorProperties, ObjectProperties, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
-import {useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-// interface ObjectContent {
-//   type: string;
-//   name: string;
-//   content: string;
-//   url: string;
-// }
-
 interface ViewArticleProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    object: any,
+    object: ObjectProperties,
     onBackToList: () => void;
 }
 
@@ -27,12 +19,11 @@ const ActivityPubComponent: React.FC = () => {
     const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('deadbeefdeadbeefdeadbeef');
     const {data: {items: following = [], totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
 
-    const [articleContent, setArticleContent] = useState<string | null>(null);
-    const [, setArticleActor] = useState<string | null>(null);
+    const [articleContent, setArticleContent] = useState<ObjectProperties | null>(null);
+    const [, setArticleActor] = useState<ActorProperties | null>(null);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleViewContent = (content: any, actor: any) => {
-        setArticleContent(content);
+    const handleViewContent = (object: ObjectProperties, actor: ActorProperties) => {
+        setArticleContent(object);
         setArticleActor(actor);
     };
 
@@ -57,12 +48,11 @@ const ActivityPubComponent: React.FC = () => {
                 >
                     <div className='grid grid-cols-6 items-start gap-8'>
                         <ul className='col-span-4 flex flex-col'>
-                            {activities.slice().reverse().map(activity => (
-                                activity.type === 'Create' && activity.object.type === 'Article' ?
+                            {activities && activities.slice().reverse().map(activity => (
+                                activity.type === 'Create' && activity.object.type === 'Article' &&
                                     <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
                                         <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
                                     </li>
-                                    : null
                             ))}
                         </ul>
                         <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
@@ -73,11 +63,9 @@ const ActivityPubComponent: React.FC = () => {
                                 </div>
                             </div>
                             <ul data-test-following>
-                                {following.slice().map(({username}) => {
-                                    return (<li className='mb-4'>
-                                        <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
-                                    </li>);
-                                })}
+                                {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
+                                    <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
+                                </li>)}
                             </ul>
                         </div>
                     </div>
@@ -91,7 +79,7 @@ const ActivityPubComponent: React.FC = () => {
     );
 };
 
-const ArticleBody: React.FC<{heading: string, image: string, html: string}> = ({heading, image, html}) => {
+const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
     // const dangerouslySetInnerHTML = {__html: html};
     // const cssFile = '../index.css';
     const site = useBrowseSite();
@@ -107,9 +95,11 @@ const ArticleBody: React.FC<{heading: string, image: string, html: string}> = ({
   <body>
     <header class="gh-article-header gh-canvas">
         <h1 class="gh-article-title is-title" data-test-article-heading>${heading}</h1>
-        <figure class="gh-article-image">
+${image &&
+        `<figure class="gh-article-image">
             <img src="${image}" alt="${heading}" />
-        </figure>
+        </figure>`
+}
     </header>
     <div class="gh-content gh-canvas is-body">
       ${html}
@@ -136,14 +126,13 @@ const ArticleBody: React.FC<{heading: string, image: string, html: string}> = ({
     );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ObjectContentDisplay: React.FC<{actor: any, object: any }> = ({actor, object}) => {
+const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProperties }> = ({actor, object}) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(object.content || '', 'text/html');
 
     const plainTextContent = doc.body.textContent;
     const timestamp =
-        new Date(object.published).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object.published).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
+        new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     return (
         <>
@@ -195,7 +184,7 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                 </div>
                 <div className='-mx-[4.8rem] -mb-[4.8rem] w-auto'>
                     {/* <Heading className='mb-3' level={1} data-test-article-heading>{object.name}</Heading> */}
-                    <ArticleBody heading={object.name} html={object.content} image={object.image}/>
+                    <ArticleBody heading={object.name} html={object.content} image={object?.image}/>
                 </div>
             </ViewContainer>
         </Page>

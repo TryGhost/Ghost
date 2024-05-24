@@ -1,4 +1,4 @@
-function getUsername(actor: {preferredUsername: string; id: string;}) {
+function getUsername(actor: {preferredUsername: string; id: string|null;}) {
     if (!actor.preferredUsername || !actor.id) {
         return '@unknown@unknown';
     }
