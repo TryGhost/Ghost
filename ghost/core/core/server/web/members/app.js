@@ -45,7 +45,14 @@ module.exports = function setupMembersApp() {
     membersApp.put('/api/member/newsletters', bodyParser.json({limit: '50mb'}), middleware.updateMemberNewsletters);
 
     // Get and update member data
-    membersApp.get('/api/member', middleware.getMemberData);
+    // Caching members content is an experimental feature
+    const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
+    if (shouldCacheMembersContent) {
+        membersApp.get('/api/member', middleware.loadMemberSession, middleware.accessInfoSession, middleware.getMemberData);
+    } else {
+        membersApp.get('/api/member', middleware.getMemberData);
+    }
+    
     membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
     membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
 
