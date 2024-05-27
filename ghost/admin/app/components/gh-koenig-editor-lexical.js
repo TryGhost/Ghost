@@ -117,25 +117,35 @@ export default class GhKoenigEditorReactComponent extends Component {
     // - Enter, creating an empty paragraph when editor is not empty
     @action
     onTitleKeydown(event) {
-        const {editorAPI} = this;
+        if (this.feature.get('subhead')) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const subheadElement = document.querySelector('.gh-editor-subhead');
+                if (subheadElement) {
+                    subheadElement.focus();
+                }
+            }
+        } else {
+            const {editorAPI} = this;
 
-        if (!editorAPI || event.originalEvent.isComposing) {
-            return;
-        }
+            if (!editorAPI || event.originalEvent.isComposing) {
+                return;
+            }
 
-        const {key} = event;
-        const {value, selectionStart} = event.target;
+            const {key} = event;
+            const {value, selectionStart} = event.target;
 
-        const couldLeaveTitle = !value || selectionStart === value.length;
-        const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;
+            const couldLeaveTitle = !value || selectionStart === value.length;
+            const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;
 
-        if (key === 'Enter' || key === 'Tab' || arrowLeavingTitle) {
-            event.preventDefault();
+            if (key === 'Enter' || key === 'Tab' || arrowLeavingTitle) {
+                event.preventDefault();
 
-            if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
-                editorAPI.insertParagraphAtTop({focus: true});
-            } else {
-                editorAPI.focusEditor({position: 'top'});
+                if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
+                    editorAPI.insertParagraphAtTop({focus: true});
+                } else {
+                    editorAPI.focusEditor({position: 'top'});
+                }
             }
         }
     }
