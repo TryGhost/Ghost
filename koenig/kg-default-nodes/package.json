@@ -29,7 +29,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.19.1",
+    "@babel/eslint-parser": "7.24.5",
     "@babel/plugin-syntax-import-assertions": "^7.20.0",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
@@ -38,7 +38,7 @@
     "c8": "9.1.0",
     "html-minifier": "^4.0.0",
     "mocha": "10.4.0",
-    "prettier": "^3.0.1",
+    "prettier": "3.2.5",
     "rollup": "4.17.2",
     "should": "13.2.3",
     "sinon": "17.0.1"
