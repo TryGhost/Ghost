@@ -6,6 +6,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const {JSDOM} = require('jsdom');
 
 const messages = {
     db: {
@@ -144,11 +145,21 @@ const checkFileExists = (fileData) => {
 
 const checkFileIsValid = (fileData, types, extensions) => {
     const type = fileData.mimetype;
-
     if (types.includes(type) && extensions.includes(fileData.ext)) {
+        // sanitize SVGs, which can contain JS/scripts
+        const ext = path.extname(fileData.name).toLowerCase();
+        if (ext === '.svg') {
+            const window = new JSDOM('').window;
+            const DOMPurify = require('dompurify')(window);
+            const content = fs.readFileSync(fileData.path, 'utf8');
+            console.log(`content`, content);
+            const clean = DOMPurify.sanitize(content);
+            console.log(`clean`, clean);
+
+            fs.writeFileSync(fileData.path, clean, 'utf8');
+        }
         return true;
     }
-
     return false;
 };
 
