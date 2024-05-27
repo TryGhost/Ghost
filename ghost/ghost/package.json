@@ -20,7 +20,7 @@
     "build"
   ],
   "devDependencies": {
-    "@nestjs/testing": "^10.3.8",
+    "@nestjs/testing": "10.3.8",
     "@types/node": "^20.10.0",
     "@types/sinon": "^17.0.3",
     "@types/supertest": "^6.0.2",
@@ -39,8 +39,8 @@
     "@nestjs/platform-express": "10.3.8",
     "@tryghost/errors": "^1.2.27",
     "bson-objectid": "2.0.4",
-    "express": "^4.18.2",
-    "reflect-metadata": "^0.1.14",
-    "rxjs": "^7.8.1"
+    "express": "4.19.2",
+    "reflect-metadata": "0.1.14",
+    "rxjs": "7.8.1"
   }
 }
