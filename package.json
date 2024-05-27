@@ -44,7 +44,7 @@
   },
   "resolutions": {
     "@tryghost/errors": "1.3.2",
-    "@tryghost/logging": "2.4.14",
+    "@tryghost/logging": "2.4.15",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
