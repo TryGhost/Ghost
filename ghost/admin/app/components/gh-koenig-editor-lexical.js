@@ -6,6 +6,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class GhKoenigEditorReactComponent extends Component {
     @service settings;
+    @service feature;
 
     containerElement = null;
     titleElement = null;
@@ -28,6 +29,10 @@ export default class GhKoenigEditorReactComponent extends Component {
             return color.slice(1);
         }
         return color;
+    }
+
+    get excerpt() {
+        return this.args.excerpt || '';
     }
 
     @action
@@ -134,6 +139,33 @@ export default class GhKoenigEditorReactComponent extends Component {
             }
         }
     }
+
+    // Subheader ("excerpt") Actions -------------------------------------------
+
+    @action
+    updateExcerpt(event) {
+        this.args.onExcerptChange?.(event.target.value);
+    }
+
+    @action
+    focusExcerpt() {
+        this.args.onExcerptFocus?.();
+    }
+
+    @action
+    blurExcerpt() {
+        this.args.onExcerptBlur?.();
+    }
+
+    @action
+    onExcerptKeydown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.editorAPI.focusEditor({position: 'top'});
+        }
+    }
+
+    // move cursor to the editor on
 
     // Body actions ------------------------------------------------------------
 
