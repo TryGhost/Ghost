@@ -8,6 +8,7 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
+import {Replay} from '@sentry/replay';
 import {beforeSend} from 'ghost-admin/utils/sentry';
 import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -194,8 +195,18 @@ export default Route.extend(ShortcutsRoute, {
 
                 // Session Replay on errors
                 // Docs: https://docs.sentry.io/platforms/javascript/session-replay
-                replaysOnErrorSampleRate: 1.0
-
+                replaysOnErrorSampleRate: 1.0,
+                integrations: [
+                    // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
+                    // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
+                    new Replay({
+                        mask: ['.koenig-lexical'],
+                        unmask: ['[role="menu"]', '.gh-nav'],
+                        maskAllText: false,
+                        maskAllInputs: true,
+                        blockAllMedia: true
+                    })
+                ]
             };
             if (this.config.sentry_env === 'development') {
                 sentryConfig.integrations = [new Debug()];
