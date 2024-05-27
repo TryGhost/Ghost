@@ -18,6 +18,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTitle?: string | null;
     headerSubtitle?: string | null;
     showPostTitleSection: boolean;
+    showSubhead: boolean;
     titleAlignment?: string;
     titleFontCategory?: string;
     bodyFontCategory?: string;
@@ -49,6 +50,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTitle,
     headerSubtitle,
     showPostTitleSection,
+    showSubhead,
     titleAlignment,
     titleFontCategory,
     bodyFontCategory,
@@ -132,8 +134,8 @@ const NewsletterPreviewContent: React.FC<{
                                     )} style={{color: titleColor}}>
                                         Your email newsletter
                                     </h2>
-                                    {hasSubhead && (
-                                        <p className="mb-4 text-[1.6rem] leading-[1.7] text-black">A subheading that highlights the key points of your newsletter.</p>
+                                    {(hasSubhead && showSubhead) && (
+                                        <p className="mb-4 text-[1.6rem] leading-[1.7] text-black">A subhead that highlights the key points of your newsletter.</p>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-sm leading-none tracking-[0.1px] text-grey-600',

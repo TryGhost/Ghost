@@ -428,7 +428,7 @@ const Sidebar: React.FC<{
                         <Toggle
                             checked={newsletter.show_subhead}
                             direction="rtl"
-                            label='Subheading'
+                            label='Subhead'
                             onChange={e => updateNewsletter({show_subhead: e.target.checked})}
                         />
                     }
