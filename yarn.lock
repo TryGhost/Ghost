@@ -6943,7 +6943,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.3.1", "@tryghost/errors@1.3.2", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.27", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.2":
+"@tryghost/errors@1.3.1", "@tryghost/errors@1.3.2", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.2":
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.3.2.tgz#3612f6f59ca07e37d1095f9eb31ff6a069a3b7f2"
   integrity sha512-Aqi2vz7HHwN6p2juIYUu8vpMtaKavjULBKNnL0l1req9qXjPs90i/HV8zhvK0ceeWuPdEXaCkfHSRr/yxG3/uw==
@@ -7152,7 +7152,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.1.16.tgz#cdaed36dc97bde8f53a08880fa5cee171641fd93"
   integrity sha512-u2dqnTA7AbA8GUPZVVVToSW91eqV0G42pbJeGTxmlzK91OIKa4fbrMO4Vp0HD3cMhCHYml9kWa976HowGS/NjQ==
 
-"@tryghost/limit-service@1.2.14", "@tryghost/limit-service@^1.2.10":
+"@tryghost/limit-service@1.2.14":
   version "1.2.14"
   resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.14.tgz#bd2629900971b231f0beae0e3a4ebeee8db81dc4"
   integrity sha512-L15PsK9Aq/uFx3dCdjimtYbWP40y26niRe5+MQJZ/txvvJAVJpy8nRt1fufP/GGCJDXHivPJ+Lm0dIPs3VTgIg==
