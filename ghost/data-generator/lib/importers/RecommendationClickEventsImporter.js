@@ -14,7 +14,7 @@ class RecommendationClickEventsImporter extends TableImporter {
         const recommendations = await this.transaction.select('id', 'created_at').from('recommendations');
         this.members = await this.transaction.select('id').from('members').limit(500);
 
-        await this.importForEach(recommendations, quantity ? quantity / recommendations.length : () => faker.datatype.number({min: 0, max: 50}));
+        await this.importForEach(recommendations, quantity ? quantity / recommendations.length : () => faker.datatype.number({min: 0, max: 30}));
     }
 
     generate() {
