@@ -190,7 +190,12 @@ export default Route.extend(ShortcutsRoute, {
                     // ResizeObserver loop errors occur often from extensions and
                     // embedded content, generally harmless and not useful to report
                     /^ResizeObserver loop completed with undelivered notifications/
-                ]
+                ],
+
+                // Session Replay on errors
+                // Docs: https://docs.sentry.io/platforms/javascript/session-replay
+                replaysOnErrorSampleRate: 1.0
+
             };
             if (this.config.sentry_env === 'development') {
                 sentryConfig.integrations = [new Debug()];
