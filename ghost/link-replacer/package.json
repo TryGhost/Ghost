@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@probe.gl/bench": "^4.0.6",
+    "@probe.gl/bench": "4.0.9",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
@@ -26,6 +26,6 @@
   },
   "dependencies": {
     "entities": "4.5.0",
-    "html5parser": "^2.0.2"
+    "html5parser": "2.0.2"
   }
 }
