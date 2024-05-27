@@ -1,5 +1,8 @@
 const should = require('should');
 const validation = require('../../../../../../core/server/web/api/middleware/upload')._test;
+const badSvgPath = ('../../../../../utils/fixtures/images/svg-with-script.svg');
+const fs = require('fs');
+const path = require('path');
 
 describe('web utils', function () {
     describe('checkFileExists', function () {
@@ -38,6 +41,20 @@ describe('web utils', function () {
 
         it('returns false if file has invalid type', function () {
             validation.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['archive'], ['.txt']).should.be.false();
+        });
+    });
+
+    describe('sanitizeSvg', function () {
+        it.only('sanitizes SVG files by removing any script tags', function () {
+            const filepath = path.join(__dirname, badSvgPath);
+            // verify dirty
+            const dirtySvgContent = fs.readFileSync(filepath, 'utf8');
+            dirtySvgContent.should.containEql('<script');
+            // clean the file
+            validation.sanitizeSvg(filepath);
+            fs.readFileSync(filepath, 'utf8').should.not.containEql('<script>');
+            // reset the file
+            fs.writeFileSync(filepath, dirtySvgContent, 'utf8');
         });
     });
 });
