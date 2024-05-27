@@ -26,7 +26,7 @@
     "tailwind.config.cjs"
   ],
   "devDependencies": {
-    "@codemirror/lang-html": "^6.4.5",
+    "@codemirror/lang-html": "6.4.9",
     "@storybook/addon-essentials": "7.6.19",
     "@storybook/addon-interactions": "7.6.19",
     "@storybook/addon-links": "7.6.19",
