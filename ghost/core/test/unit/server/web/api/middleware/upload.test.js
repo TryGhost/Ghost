@@ -45,7 +45,7 @@ describe('web utils', function () {
     });
 
     describe('sanitizeSvg', function () {
-        it.only('sanitizes SVG files by removing any script tags', function () {
+        it('sanitizes SVG files by removing any script tags', function () {
             const filepath = path.join(__dirname, badSvgPath);
             // verify dirty
             const dirtySvgContent = fs.readFileSync(filepath, 'utf8');

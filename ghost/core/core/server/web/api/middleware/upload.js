@@ -165,7 +165,7 @@ const sanitizeSvg = (filepath) => {
     const content = fs.readFileSync(filepath, 'utf8');
     const clean = DOMPurify.sanitize(content);
     fs.writeFileSync(filepath, clean, 'utf8');
-}
+};
 
 /**
  *
