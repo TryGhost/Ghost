@@ -35,7 +35,7 @@
     "@rollup/plugin-babel": "6.0.4",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "c8": "9.1.0",
-    "jsdom": "24.0.0",
+    "jsdom": "24.1.0",
     "mocha": "10.4.0",
     "rollup": "4.17.2",
     "should": "13.2.3",
