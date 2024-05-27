@@ -1,13 +1,21 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
+import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
+
+// const sleep = (ms: number) => (
+//     new Promise((resolve) => {
+//         setTimeout(resolve, ms);
+//     })
+// );
 
 const FollowSite = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
     const mutation = useFollow();
+    const client = useQueryClient();
 
     // mutation.isPending
     // mutation.isError
@@ -30,7 +38,16 @@ const FollowSite = NiceModal.create(() => {
                 message: 'Site followed',
                 type: 'success'
             });
+
+            // // Because we don't return the new follower data from the API, we need to wait a bit to let it process and then update the query.
+            // // This is a dirty hack and should be replaced with a better solution.
+            // await sleep(2000);
+
             modal.remove();
+            // Refetch the following data.
+            // At this point it might not be updated yet, but it will be eventually.
+            await client.refetchQueries({queryKey: ['FollowingResponseData'], type: 'active'});
+            updateRoute('');
         } catch (error) {
             // If there's an error, set the error state
             setError(errorMessage);
@@ -48,11 +65,6 @@ const FollowSite = NiceModal.create(() => {
             size='sm'
             title='Follow a Ghost site'
             onOk={handleFollow}
-            // onOk={() => {
-            //     mutation.mutate({username: profileName});
-            //     updateRoute('');
-            //     modal.remove();
-            // }}
         >
             <div className='mt-3 flex flex-col gap-4'>
                 <TextField
