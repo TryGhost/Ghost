@@ -7135,7 +7135,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "4.0.9"
 
-"@tryghost/kg-unsplash-selector@^0.1.15":
+"@tryghost/kg-unsplash-selector@0.1.17":
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.1.17.tgz#6caa4ae0afbd3989981cbc17e7c909d243cadfc6"
   integrity sha512-8cw4qtkczWBrAo7PpZ/kT78yzpm8B+cEwWW6McWkTzZRs3AuBUWWyCVi6plb1c+RhY110FoFkyMLBJnGeM+D3g==
