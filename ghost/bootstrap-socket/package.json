@@ -24,6 +24,6 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/logging": "2.4.14"
+    "@tryghost/logging": "2.4.15"
   }
 }
