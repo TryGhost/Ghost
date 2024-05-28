@@ -53,7 +53,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'editorSubtitle',
-    'newsletterSubtitle'
+    'newsletterSubtitle',
+    'internalLinkingAtLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
