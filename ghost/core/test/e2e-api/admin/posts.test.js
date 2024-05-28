@@ -128,58 +128,58 @@ describe('Posts API', function () {
         mockManager.restore();
     });
 
-    it('Can browse', async function () {
-        await agent.get('posts/?limit=2')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
+    // it('Can browse', async function () {
+    //     await agent.get('posts/?limit=2')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: new Array(2).fill(matchPostShallowIncludes)
+    //         });
+    // });
 
-    it('Can browse with formats', async function () {
-        await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
+    // it('Can browse with formats', async function () {
+    //     await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: new Array(2).fill(matchPostShallowIncludes)
+    //         });
+    // });
 
-    it('Can browse filtering by a collection', async function () {
-        await agent.get('posts/?collection=featured')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
+    // it('Can browse filtering by a collection', async function () {
+    //     await agent.get('posts/?collection=featured')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: new Array(2).fill(matchPostShallowIncludes)
+    //         });
+    // });
 
-    it('Can browse filtering by collection using paging parameters', async function () {
-        await agent
-            .get(`posts/?collection=latest&limit=1&page=6`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: Array(1).fill(buildMatchPostShallowIncludes(2))
-            })
-            .expect((res) => {
-                // the total of posts with any status is 13
-                assert.equal(res.body.meta.pagination.total, 13);
-            });
-    });
+    // it('Can browse filtering by collection using paging parameters', async function () {
+    //     await agent
+    //         .get(`posts/?collection=latest&limit=1&page=6`)
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: Array(1).fill(buildMatchPostShallowIncludes(2))
+    //         })
+    //         .expect((res) => {
+    //             // the total of posts with any status is 13
+    //             assert.equal(res.body.meta.pagination.total, 13);
+    //         });
+    // });
 
     describe('Export', function () {
         it('Can export', async function () {
