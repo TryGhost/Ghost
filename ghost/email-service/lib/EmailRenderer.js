@@ -289,9 +289,10 @@ class EmailRenderer {
      * @param {Newsletter} newsletter
      * @param {Segment} segment
      * @param {EmailRenderOptions} options
+     * @param {object} labs
      * @returns {Promise<EmailBody>}
      */
-    async renderBody(post, newsletter, segment, options) {
+    async renderBody(post, newsletter, segment, options, labs) {
         let html = await this.renderPostBaseHtml(post);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
@@ -337,7 +338,8 @@ class EmailRenderer {
             newsletter,
             html,
             addPaywall,
-            segment
+            segment,
+            labs
         });
         html = await this.renderTemplate(templateData);
 
@@ -952,7 +954,7 @@ class EmailRenderer {
     /**
      * @private
      */
-    async getTemplateData({post, newsletter, html, addPaywall, segment}) {
+    async getTemplateData({post, newsletter, html, addPaywall, segment, labs}) {
         let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
         let adjustedAccentColor;
         let adjustedAccentContrastColor;
@@ -1129,7 +1131,10 @@ class EmailRenderer {
                 signupUrl: signupUrl.href
             } : null,
 
-            year: new Date().getFullYear().toString()
+            year: new Date().getFullYear().toString(),
+
+            // Labs
+            labs
         };
 
         return data;
