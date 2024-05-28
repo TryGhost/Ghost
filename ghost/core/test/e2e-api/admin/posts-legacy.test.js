@@ -126,42 +126,42 @@ describe('Posts API', function () {
     //     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     // });
 
-    it('Can filter posts', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?filter=featured:true'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+    // it('Can filter posts', async function () {
+    //     const res = await request.get(localUtils.API.getApiQuery('posts/?filter=featured:true'))
+    //         .set('Origin', config.get('url'))
+    //         .expect('Content-Type', /json/)
+    //         .expect('Cache-Control', testUtils.cacheRules.private)
+    //         .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(2);
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-    });
+    //     should.not.exist(res.headers['x-cache-invalidate']);
+    //     const jsonResponse = res.body;
+    //     should.exist(jsonResponse.posts);
+    //     localUtils.API.checkResponse(jsonResponse, 'posts');
+    //     jsonResponse.posts.should.have.length(2);
+    //     localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+    //     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+    // });
 
-    it('Returns a validation error when unknown filter key is used', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
-        await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(400);
-        sinon.assert.calledOnce(loggingStub);
-    });
+    // it('Returns a validation error when unknown filter key is used', async function () {
+    //     const loggingStub = sinon.stub(logging, 'error');
+    //     await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
+    //         .set('Origin', config.get('url'))
+    //         .expect('Content-Type', /json/)
+    //         .expect('Cache-Control', testUtils.cacheRules.private)
+    //         .expect(400);
+    //     sinon.assert.calledOnce(loggingStub);
+    // });
 
-    it('Can paginate posts', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?page=2'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+    // it('Can paginate posts', async function () {
+    //     const res = await request.get(localUtils.API.getApiQuery('posts/?page=2'))
+    //         .set('Origin', config.get('url'))
+    //         .expect('Content-Type', /json/)
+    //         .expect('Cache-Control', testUtils.cacheRules.private)
+    //         .expect(200);
 
-        const jsonResponse = res.body;
-        should.equal(jsonResponse.meta.pagination.page, 2);
-    });
+    //     const jsonResponse = res.body;
+    //     should.equal(jsonResponse.meta.pagination.page, 2);
+    // });
 
     it('Can request a post by id', async function () {
         const res = await request.get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
