@@ -227,6 +227,57 @@ describe('Actor', function () {
             assert(actor.following.find(follower => follower.id.href === newFollower.href));
             assert(actor.following.find(follower => follower.username === '@index@activitypub.server'));
         });
+
+        it('Handles Undo(Follow) activities', async function () {
+            const actor = Actor.create({
+                username: 'TestingPostToInbox'
+            });
+
+            const newFollower = new URI(
+                'https://activitypub.server/actor'
+            );
+
+            const followActivity = new Activity({
+                type: 'Follow',
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
+                object: {
+                    id: actor.actorId,
+                    type: 'Person'
+                },
+                to: actor.actorId
+            });
+
+            await actor.postToInbox(followActivity);
+
+            assert(
+                actor.followers.find(
+                    follower => follower.id.href === newFollower.href
+                )
+            );
+
+            const undoFollowActivity = new Activity({
+                type: 'Undo',
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
+                object: {
+                    id: followActivity.activityId,
+                    type: followActivity.type
+                },
+                to: actor.actorId
+            });
+
+            await actor.postToInbox(undoFollowActivity);
+            assert(
+                !actor.followers.find(
+                    follower => follower.id.href === newFollower.href
+                )
+            );
+        });
     });
 
     describe('#toJSONLD', function () {

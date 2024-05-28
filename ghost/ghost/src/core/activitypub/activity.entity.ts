@@ -59,6 +59,10 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.object;
     }
 
+    getRawObject() {
+        return this.attr.object;
+    }
+
     getActor(url: URL) {
         if (this.attr.actor instanceof Actor) {
             return this.attr.actor.getJSONLD(url);

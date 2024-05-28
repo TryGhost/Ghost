@@ -107,6 +107,20 @@ export class Actor extends Entity<ActorData> {
                 username: `@index@${activity.actorId.hostname}`
             });
         }
+        if (activity.type === 'Undo') {
+            const object = activity.getRawObject();
+            if (object instanceof Article) {
+                // Undo Article doesnae make sense
+                return;
+            }
+            if (object.type === 'Follow') {
+                const originalFollow = this.inbox.find(item => item.activityId.href === object.id.href);
+                if (!originalFollow) {
+                    return;
+                }
+                this.attr.followers = this.attr.followers.filter(item => originalFollow.objectId.href === item.id.href);
+            }
+        }
     }
 
     async follow(actor: {id: URI, username: string;}) {
