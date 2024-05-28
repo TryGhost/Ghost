@@ -26,10 +26,10 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "i18next-parser": "8.8.0",
+    "i18next-parser": "8.13.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "i18next": "23.11.4"
+    "i18next": "23.11.5"
   }
 }

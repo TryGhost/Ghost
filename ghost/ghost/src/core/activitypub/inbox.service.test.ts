@@ -27,9 +27,13 @@ describe('InboxService', function () {
                 type: 'Follow',
                 activity: null,
                 object: {
+                    type: 'Application',
                     id: new URI('https://whatever.com')
                 },
-                actor: new URI('https://blak.com'),
+                actor: {
+                    type: 'Person',
+                    id: new URI('https://blak.com')
+                },
                 to: new URI('https://whatever.com')
             });
 
@@ -59,9 +63,13 @@ describe('InboxService', function () {
                 type: 'Follow',
                 activity: null,
                 object: {
+                    type: 'Person',
                     id: new URI('https://whatever.com')
                 },
-                actor: new URI('https://blak.com'),
+                actor: {
+                    type: 'Person',
+                    id: new URI('https://blak.com')
+                },
                 to: new URI('https://whatever.com')
             });
 

@@ -17,7 +17,7 @@ describe('ActivityListener', function () {
                     calledWith.push([activity, actor]);
                 }
             }
-            const listener = new ActivityListener(new MockTheWorld(new URL('https://example.com')));
+            const listener = new ActivityListener(new MockTheWorld(new URL('https://example.com'), console));
 
             const actor = Actor.create({
                 username: 'Testing'
@@ -28,8 +28,9 @@ describe('ActivityListener', function () {
             const activity = new Activity({
                 type: 'Follow',
                 activity: null,
-                actor: actor.actorId,
+                actor: actor,
                 object: {
+                    type: 'Person',
                     id: toFollow
                 },
                 to: toFollow

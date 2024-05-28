@@ -1,13 +1,24 @@
 import {Entity} from '../../common/entity.base';
+import {Actor} from './actor.entity';
+import {Article} from './article.object';
 import {ActivityPub} from './types';
 import {URI} from './uri.object';
 
 type ActivityData = {
     activity: URI | null;
     type: ActivityPub.ActivityType;
-    actor: URI;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    object: {id: URI, [x: string]: any};
+    actor: {
+        id: URI;
+        type: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [x: string]: any;
+    } | Actor;
+    object: {
+        id: URI;
+        type: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [x: string]: any;
+    } | Article;
     to: URI | null;
 }
 
@@ -41,15 +52,31 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.type;
     }
 
-    getObject() {
+    getObject(url: URL) {
+        if (this.attr.object instanceof Article) {
+            return this.attr.object.getJSONLD(url);
+        }
         return this.attr.object;
     }
 
-    get actorId() {
+    getActor(url: URL) {
+        if (this.attr.actor instanceof Actor) {
+            return this.attr.actor.getJSONLD(url);
+        }
         return this.attr.actor;
     }
 
+    get actorId() {
+        if (this.attr.actor instanceof Actor) {
+            return this.attr.actor.actorId;
+        }
+        return this.attr.actor.id;
+    }
+
     get objectId() {
+        if (this.attr.object instanceof Article) {
+            return this.attr.object.objectId;
+        }
         return this.attr.object.id;
     }
 
@@ -58,16 +85,20 @@ export class Activity extends Entity<ActivityData> {
     }
 
     getJSONLD(url: URL): ActivityPub.Activity {
+        const object = this.getObject(url);
+        const actor = this.getActor(url);
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
             id: this.activityId?.getValue(url) || null,
             type: this.attr.type,
             actor: {
-                type: 'Person',
-                id: this.actorId.getValue(url),
-                username: `@index@${this.actorId.hostname}`
+                ...actor,
+                id: this.actorId.getValue(url)
             },
-            object: this.objectId.getValue(url),
+            object: {
+                ...object,
+                id: this.objectId.getValue(url)
+            },
             to: this.attr.to?.getValue(url) || null
         };
     }
@@ -78,10 +109,18 @@ export class Activity extends Entity<ActivityData> {
             throw new Error(`Unknown type ${parsed.type}`);
         }
         return new Activity({
-            activity: 'id' in json ? getURI(json.id) : null,
+            activity: 'id' in json && typeof json.id === 'string' ? getURI(json.id) : null,
             type: parsed.type as ActivityPub.ActivityType,
-            actor: getURI(parsed.actor),
-            object: {id: getURI(parsed.object)},
+            actor: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...(parsed.actor as any),
+                id: getURI(parsed.actor)
+            },
+            object: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...(parsed.object as any),
+                id: getURI(parsed.object)
+            },
             to: 'to' in json ? getURI(json.to) : null
         });
     }
