@@ -74,9 +74,8 @@ const controller = {
         async query(frame) {
             if (frame.options.columns) {
                 const stringsToRemove = ['html', 'mobiledoc', 'plaintext', 'lexical'];
-
                 frame.options.columns = _.difference(frame.options.columns, stringsToRemove);
-               // frame.options.columns = _.omit(frame.options.columns, ['html', 'mobiledoc', 'plaintext', 'lexical']);
+                // frame.options.columns = _.omit(frame.options.columns, ['html', 'mobiledoc', 'plaintext', 'lexical']);
             }
             if (!frame.options.columns) {
                 frame.options.columns = ['id','uuid','title','slug','featured','type','status','locale','visibility','email_recipient_filter','created_at','created_by','updated_at','updated_by','published_at','published_by','newsletter_id','show_title_and_feature_image'];
