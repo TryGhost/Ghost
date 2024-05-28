@@ -270,7 +270,7 @@ module.exports = {
                 base: '1.4rem',
                 xs: '1.2rem',
                 sm: '1.3rem',
-                md: '1.40rem',
+                md: '1.4rem',
                 lg: '1.65rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
