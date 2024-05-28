@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
 import getUsername from '../utils/get-username';
 import {ActorProperties, ObjectProperties, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Heading, Icon, List, ListItem, Page, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -31,10 +31,103 @@ const ActivityPubComponent: React.FC = () => {
         setArticleContent(null);
     };
 
+    const [selectedTab, setSelectedTab] = useState('inbox');
+
+    const tabs: ViewTab[] = [
+        {
+            id: 'inbox',
+            title: 'Inbox',
+            contents: <div className='grid grid-cols-6 items-start gap-8'>
+                <ul className='col-span-4 flex flex-col'>
+                    {activities && activities.slice().reverse().map(activity => (
+                        activity.type === 'Create' && activity.object.type === 'Article' &&
+                        <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
+                            <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
+                        </li>
+                    ))}
+                </ul>
+                <div className='col-span-2 rounded-xl bg-grey-50 p-5' id="ap-sidebar">
+                    <div className='grid grid-cols-2 gap-4'>
+                        <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                            <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                            <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                        </div>
+                    </div>
+                    <ul data-test-following>
+                        {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
+                            <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
+                        </li>)}
+                    </ul>
+                </div>
+            </div>
+        },
+        {
+            id: 'activity',
+            title: 'Activity',
+            contents: <div className='grid grid-cols-6 items-start gap-8'><List className='col-span-4'>
+                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a placeholder post</span></div>}></ListItem>
+                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@veryverylongplaceholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a placeholder post</span></div>}></ListItem>
+                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a very very very long placeholder post</span></div>}></ListItem>
+            </List>
+            <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
+                <div className='grid grid-cols-2 gap-4'>
+                    <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                    </div>
+                </div>
+                <ul data-test-following>
+                    {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
+                        <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
+                    </li>)}
+                </ul>
+            </div></div>
+        },
+        {
+            id: 'likes',
+            title: 'Likes',
+            contents: <div className='grid grid-cols-6 items-start gap-8'><div className='border-1 group/article col-span-4 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
+                <div className='mb-3 flex w-full items-center gap-2'>
+                    <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
+                    <span className='line-clamp-1 text-base font-semibold'>Platformer</span>
+                    <span className='line-clamp-1 text-md text-grey-800'>@index@placeholder.net</span>
+                    <span className='ml-auto line-clamp-1 text-md text-grey-800'>2d</span>
+                </div>
+                <div className='grid w-full grid-cols-[auto_170px] gap-4'>
+                    <div className='flex flex-col'>
+                        <div className='flex w-full justify-between gap-4'>
+                            <Heading className='mb-2 line-clamp-2' level={5} data-test-activity-heading>This Is a Placeholder Post</Heading>
+                        </div>
+                        <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>This is just a placeholder liked post. The real thing is coming soon.</p>
+                        <div className='flex'>
+                            <Icon className='text-grey-500 transition-colors hover:text-red-500' name='heart' />
+                            {/* <Button icon='heart' iconColorClass='text-grey-500 hover:text-red-500' size='sm'/> */}
+                        </div>
+                    </div>
+                    <div className='relative min-w-[33%] grow'>
+                    </div>
+                </div>
+            </div><div className='col-span-2 rounded-xl bg-grey-50 p-5'>
+                <div className='grid grid-cols-2 gap-4'>
+                    <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                    </div>
+                </div>
+                <ul data-test-following>
+                    {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
+                        <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
+                    </li>)}
+                </ul>
+            </div></div>
+        }
+    ];
+
     return (
         <Page>
             {!articleContent ? (
                 <ViewContainer
+                    firstOnPage={true}
                     primaryAction={{
                         title: 'Follow',
                         onClick: () => {
@@ -42,33 +135,13 @@ const ActivityPubComponent: React.FC = () => {
                         },
                         icon: 'add'
                     }}
-                    title='ActivityPub Inbox'
+                    selectedTab={selectedTab}
+                    stickyHeader={true}
+                    tabs={tabs}
                     toolbarBorder={false}
                     type='page'
-                >
-                    <div className='grid grid-cols-6 items-start gap-8'>
-                        <ul className='col-span-4 flex flex-col'>
-                            {activities && activities.slice().reverse().map(activity => (
-                                activity.type === 'Create' && activity.object.type === 'Article' &&
-                                    <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
-                                        <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
-                                    </li>
-                            ))}
-                        </ul>
-                        <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
-                            <div className='grid grid-cols-2 gap-4'>
-                                <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                                </div>
-                            </div>
-                            <ul data-test-following>
-                                {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
-                                    <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
-                                </li>)}
-                            </ul>
-                        </div>
-                    </div>
+                    onTabChange={setSelectedTab} 
+                >   
                 </ViewContainer>
 
             ) : (
