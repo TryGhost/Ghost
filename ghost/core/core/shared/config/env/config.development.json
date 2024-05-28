@@ -1,12 +1,17 @@
 {
     "url": "http://localhost:2368",
     "database": {
-        "client": "sqlite3",
+        "client": "mysql2",
         "connection": {
-            "filename": "content/data/ghost-dev.db"
+            "host": "127.0.0.1",
+            "port": 3306,
+            "user": "root",
+            "password": "",
+            "database": "ghost12"
         },
-        "debug": false
+        "debug": true
     },
+    "debug": true,
     "paths": {
         "contentPath": "content/"
     },
