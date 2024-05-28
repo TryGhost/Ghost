@@ -15,11 +15,16 @@ interface RenderOptions {
     renderData?: Map<number, any>;
 }
 
+function defaultOnError() {
+    // do nothing
+}
+
 export default class LexicalHTMLRenderer {
     dom: import('jsdom').JSDOM;
     nodes: Klass<LexicalNode>[];
+    onError: (error: Error) => void;
 
-    constructor({dom, nodes}: {dom?: import('jsdom').JSDOM, nodes?: Klass<LexicalNode>[]} = {}) {
+    constructor({dom, nodes, onError}: {dom?: import('jsdom').JSDOM, nodes?: Klass<LexicalNode>[], onError?: () => void} = {}) {
         if (!dom) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const jsdom = require('jsdom');
@@ -31,6 +36,7 @@ export default class LexicalHTMLRenderer {
         }
 
         this.nodes = nodes || [];
+        this.onError = onError || defaultOnError;
     }
 
     async render(lexicalState: SerializedEditorState | string, userOptions: RenderOptions = {}) {
@@ -50,7 +56,8 @@ export default class LexicalHTMLRenderer {
         ];
 
         const editor: LexicalEditor = createHeadlessEditor({
-            nodes: DEFAULT_NODES
+            nodes: DEFAULT_NODES,
+            onError: this.onError
         });
 
         const editorState = editor.parseEditorState(lexicalState);

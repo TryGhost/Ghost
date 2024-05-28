@@ -6,8 +6,12 @@ const dom = new JSDOM();
 
 function shouldRender({input, output, options = {}}) {
     return async function () {
-        const {nodes, ...renderOptions} = options;
-        const renderer = new Renderer({dom, nodes});
+        const defaultOnError = (err) => {
+            throw err;
+        };
+
+        const {nodes, onError, ...renderOptions} = options;
+        const renderer = new Renderer({dom, nodes, onError: onError || defaultOnError});
         const renderedInput = await renderer.render(input, renderOptions);
         renderedInput.should.equal(output);
     };
