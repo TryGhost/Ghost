@@ -755,7 +755,12 @@ class EmailRenderer {
         return replacements;
     }
 
+    getLabs() {
+        return this.#labs;
+    }
+
     async renderTemplate(data) {
+        const labs = this.getLabs();
         this.#handlebars = require('handlebars').create();
 
         // Helpers
@@ -801,6 +806,14 @@ class EmailRenderer {
             }
 
             return false;
+        });
+
+        this.#handlebars.registerHelper('hasFeature', function (flag, options) {
+            if (labs.isSet(flag)) {
+                return options.fn(this);
+            } else {
+                return options.inverse(this);
+            }
         });
 
         // Partials
