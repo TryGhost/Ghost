@@ -84,6 +84,11 @@ export const useFollow = createMutation<object, FollowRequestProps>({
     path: data => `/activitypub/follow/${data.username}`
 });
 
+export const useUnfollow = createMutation<object, FollowRequestProps>({
+    method: 'POST',
+    path: data => `/activitypub/unfollow/${data.username}`
+});
+
 // This is a frontend root, not using the Ghost admin API
 export const useBrowseInboxForUser = createQueryWithId<InboxResponseData>({
     dataType: 'InboxResponseData',
