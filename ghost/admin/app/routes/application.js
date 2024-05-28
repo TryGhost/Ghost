@@ -192,24 +192,31 @@ export default Route.extend(ShortcutsRoute, {
                     // embedded content, generally harmless and not useful to report
                     /^ResizeObserver loop completed with undelivered notifications/
                 ],
+                integrations: []
+            };
 
+            try {
                 // Session Replay on errors
                 // Docs: https://docs.sentry.io/platforms/javascript/session-replay
-                replaysOnErrorSampleRate: 1.0,
-                integrations: [
+                sentryConfig.replaysOnErrorSampleRate = 1.0;
+                sentryConfig.integrations.push(
                     // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
                     // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
                     new Replay({
-                        mask: ['.koenig-lexical'],
-                        unmask: ['[role="menu"]', '.gh-nav'],
+                        mask: ['.koenig-lexical', '.gh-dashboard'],
+                        unmask: ['[role="menu"]', '[data-testid="settings-panel"]', '.gh-nav'],
                         maskAllText: false,
                         maskAllInputs: true,
                         blockAllMedia: true
                     })
-                ]
-            };
+                );
+            } catch (e) {
+                // no-op, Session Replay is not critical
+                console.error('Error enabling Sentry Replay:', e); // eslint-disable-line no-console
+            }
+
             if (this.config.sentry_env === 'development') {
-                sentryConfig.integrations = [new Debug()];
+                sentryConfig.integrations.push(new Debug());
             }
             Sentry.init(sentryConfig);
         }
