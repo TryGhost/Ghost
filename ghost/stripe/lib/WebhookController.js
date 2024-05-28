@@ -254,6 +254,7 @@ module.exports = class WebhookController {
                 expand: ['subscriptions.data.default_payment_method']
             });
 
+            // TODO - what if we don't have this data link?
             const product = await this.deps.productRepository.get({
                 stripe_product_id: customer.subscriptions?.data?.[0].plan?.product
             });
