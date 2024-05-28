@@ -114,7 +114,8 @@ class EmailServiceWrapper {
             limitService,
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
-            emailAnalyticsJobs
+            emailAnalyticsJobs,
+            labs
         });
 
         this.controller = new EmailController(this.service, {

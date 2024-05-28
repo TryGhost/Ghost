@@ -33,6 +33,7 @@ class EmailService {
     #membersRepository;
     #verificationTrigger;
     #emailAnalyticsJobs;
+    #labs;
 
     /**
      *
@@ -48,6 +49,7 @@ class EmailService {
      * @param {object} dependencies.membersRepository
      * @param {VerificationTrigger} dependencies.verificationTrigger
      * @param {object} dependencies.emailAnalyticsJobs
+     * @param {object} dependencies.labs
      */
     constructor({
         batchSendingService,
@@ -59,7 +61,8 @@ class EmailService {
         limitService,
         membersRepository,
         verificationTrigger,
-        emailAnalyticsJobs
+        emailAnalyticsJobs,
+        labs
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -71,6 +74,7 @@ class EmailService {
         this.#sendingService = sendingService;
         this.#verificationTrigger = verificationTrigger;
         this.#emailAnalyticsJobs = emailAnalyticsJobs;
+        this.#labs = labs;
     }
 
     /**
@@ -271,7 +275,7 @@ class EmailService {
         const exampleMember = await this.getExampleMember(null, segment);
 
         const subject = this.#emailRenderer.getSubject(post);
-        let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false});
+        let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false}, this.#labs);
 
         return {
             subject,
