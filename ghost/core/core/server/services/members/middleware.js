@@ -47,7 +47,7 @@ const setAccessCookies = function setAccessCookies(member = undefined, res, free
     if (!hmacSecret) {
         return;
     }
-    const hmacSecretBuffer = Buffer.from(hmacSecret, 'hex');
+    const hmacSecretBuffer = Buffer.from(hmacSecret, 'base64');
     if (hmacSecretBuffer.length === 0) {
         return;
     }
