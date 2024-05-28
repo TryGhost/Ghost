@@ -2,7 +2,9 @@ import {createMutation, createQueryWithId} from '../utils/api/hooks';
 
 export type FollowItem = {
     id: string;
-    username: string
+    username: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [x: string]: any
 };
 
 export type ObjectProperties = {

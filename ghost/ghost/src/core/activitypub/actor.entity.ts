@@ -103,6 +103,7 @@ export class Actor extends Entity<ActorData> {
         if (activity.type === 'Accept') {
             // TODO: Check that the Accept is for a real Follow activity
             this.attr.following.push({
+                ...activity.getRawActor(),
                 id: activity.actorId,
                 username: `@index@${activity.actorId.hostname}`
             });

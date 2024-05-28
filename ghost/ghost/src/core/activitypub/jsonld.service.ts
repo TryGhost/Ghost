@@ -27,7 +27,7 @@ export class JSONLDService {
             summary: `Following collection for ${actor.username}`,
             type: 'Collection',
             totalItems: actor.following.length,
-            items: actor.following.map(item => ({id: item.id.getValue(this.url), username: item.username}))
+            items: actor.following.map(item => ({...item, id: item.id.getValue(this.url), username: item.username}))
         };
     }
 

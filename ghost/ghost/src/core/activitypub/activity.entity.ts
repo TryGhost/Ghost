@@ -59,8 +59,12 @@ export class Activity extends Entity<ActivityData> {
         return this.attr.object;
     }
 
-    getRawObject() {
+    getRawObject(): Readonly<ActivityData['object']> {
         return this.attr.object;
+    }
+
+    getRawActor(): Readonly<ActivityData['actor']> {
+        return this.attr.actor;
     }
 
     getActor(url: URL) {
