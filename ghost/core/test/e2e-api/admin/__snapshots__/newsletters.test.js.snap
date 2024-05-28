@@ -561,6 +561,7 @@ Object {
       "show_header_title": true,
       "show_latest_posts": false,
       "show_post_title_section": true,
+      "show_subhead": false,
       "show_subscription_details": false,
       "slug": "my-test-newsletter-with-custom-sender_email-and-subscribe-existing",
       "sort_order": 10,
