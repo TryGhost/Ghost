@@ -5,7 +5,7 @@ import {ActivityPub} from './types';
 import {URI} from './uri.object';
 
 type ActivityData = {
-    activity: URI | null;
+    activity?: URI;
     type: ActivityPub.ActivityType;
     actor: {
         id: URI;
@@ -81,7 +81,10 @@ export class Activity extends Entity<ActivityData> {
     }
 
     get activityId() {
-        return this.attr.activity;
+        if (this.attr.activity) {
+            return this.attr.activity;
+        }
+        return new URI(`activity/${this.id.toHexString()}`);
     }
 
     getJSONLD(url: URL): ActivityPub.Activity {
@@ -109,7 +112,7 @@ export class Activity extends Entity<ActivityData> {
             throw new Error(`Unknown type ${parsed.type}`);
         }
         return new Activity({
-            activity: 'id' in json && typeof json.id === 'string' ? getURI(json.id) : null,
+            activity: 'id' in parsed ? getURI(parsed.id) : undefined,
             type: parsed.type as ActivityPub.ActivityType,
             actor: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

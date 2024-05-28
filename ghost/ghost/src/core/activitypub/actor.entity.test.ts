@@ -142,7 +142,6 @@ describe('Actor', function () {
             const newFollower = new URI('https://activitypub.server/actor');
 
             const followActivity = new Activity({
-                activity: new URI(`https://activitypub.server/activity`),
                 type: 'Follow',
                 actor: {
                     id: newFollower,
@@ -160,42 +159,12 @@ describe('Actor', function () {
             assert(actor.followers.find(follower => follower.id.href === newFollower.href));
         });
 
-        it('Throws if the Follow activity is anonymous', async function () {
-            const actor = Actor.create({username: 'TestingPostToInbox'});
-
-            const newFollower = new URI('https://activitypub.server/actor');
-
-            const followActivity = new Activity({
-                activity: null,
-                type: 'Follow',
-                actor: {
-                    id: newFollower,
-                    type: 'Person'
-                },
-                object: {
-                    id: actor.actorId,
-                    type: 'Person'
-                },
-                to: actor.actorId
-            });
-
-            let error: unknown = null;
-            try {
-                await actor.postToInbox(followActivity);
-            } catch (err) {
-                error = err;
-            }
-
-            assert.ok(error);
-        });
-
         it('Handles Accept activities', async function () {
             const actor = Actor.create({username: 'TestingPostToInbox'});
 
             const newFollower = new URI('https://activitypub.server/actor');
 
             const activity = new Activity({
-                activity: null,
                 type: 'Accept',
                 actor: {
                     id: newFollower,

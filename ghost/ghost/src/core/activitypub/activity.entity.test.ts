@@ -71,7 +71,6 @@ describe('Activity', function () {
             });
             const activity = new Activity({
                 type: 'Create',
-                activity: null,
                 actor: actor,
                 object: article,
                 to: new URI('bloo')

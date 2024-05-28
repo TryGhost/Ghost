@@ -111,7 +111,6 @@ export class Actor extends Entity<ActorData> {
 
     async follow(actor: {id: URI, username: string;}) {
         const activity = new Activity({
-            activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Follow',
             actor: this,
             object: {
@@ -124,12 +123,8 @@ export class Actor extends Entity<ActorData> {
     }
 
     async acceptFollow(activity: Activity) {
-        if (!activity.activityId) {
-            throw new Error('Cannot accept Follow of anonymous activity');
-        }
         this.attr.followers.push({id: activity.actorId});
         const accept = new Activity({
-            activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Accept',
             to: activity.actorId,
             actor: this,
@@ -157,7 +152,6 @@ export class Actor extends Entity<ActorData> {
 
     createArticle(article: Article) {
         const activity = new Activity({
-            activity: new URI(`activity/${new ObjectID().toHexString()}`),
             to: this.followersCollectionId,
             type: 'Create',
             actor: this,

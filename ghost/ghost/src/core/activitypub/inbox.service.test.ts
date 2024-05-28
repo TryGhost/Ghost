@@ -25,7 +25,6 @@ describe('InboxService', function () {
             const owner = new ObjectID();
             const activity = new Activity({
                 type: 'Follow',
-                activity: null,
                 object: {
                     type: 'Application',
                     id: new URI('https://whatever.com')
@@ -61,7 +60,6 @@ describe('InboxService', function () {
             const owner = new ObjectID();
             const activity = new Activity({
                 type: 'Follow',
-                activity: null,
                 object: {
                     type: 'Person',
                     id: new URI('https://whatever.com')
