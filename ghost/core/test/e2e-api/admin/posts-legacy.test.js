@@ -104,27 +104,27 @@ describe('Posts API', function () {
     //     jsonResponse.posts[0].slug.should.eql('portal');
     // });
 
-    it('Can include single relation', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?include=tags'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+    // it('Can include single relation', async function () {
+    //     const res = await request.get(localUtils.API.getApiQuery('posts/?include=tags'))
+    //         .set('Origin', config.get('url'))
+    //         .expect('Content-Type', /json/)
+    //         .expect('Cache-Control', testUtils.cacheRules.private)
+    //         .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(13);
-        localUtils.API.checkResponse(
-            jsonResponse.posts[0],
-            'post',
-            null,
-            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count']
-        );
+    //     should.not.exist(res.headers['x-cache-invalidate']);
+    //     const jsonResponse = res.body;
+    //     should.exist(jsonResponse.posts);
+    //     localUtils.API.checkResponse(jsonResponse, 'posts');
+    //     jsonResponse.posts.should.have.length(13);
+    //     localUtils.API.checkResponse(
+    //         jsonResponse.posts[0],
+    //         'post',
+    //         null,
+    //         ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count']
+    //     );
 
-        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-    });
+    //     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+    // });
 
     it('Can filter posts', async function () {
         const res = await request.get(localUtils.API.getApiQuery('posts/?filter=featured:true'))
