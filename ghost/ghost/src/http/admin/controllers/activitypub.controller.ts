@@ -25,4 +25,13 @@ export class ActivityPubController {
         await this.activitypub.follow(username);
         return {};
     }
+
+    @Roles([
+        'Owner'
+    ])
+    @Post('unfollow/:username')
+    async unfollow(@Param('username') username: string): Promise<object> {
+        await this.activitypub.unfollow(username);
+        return {};
+    }
 }

@@ -26,4 +26,22 @@ export class ActivityPubService {
 
         await this.actors.save(actor);
     }
+
+    async unfollow(username: string): Promise<void> {
+        const json = await this.webfinger.finger(username);
+        const actor = await this.actors.getOne('index');
+
+        if (!actor) {
+            throw new Error('Could not find default actor');
+        }
+
+        const actorToUnfollow = {
+            id: new URI(json.id),
+            username
+        };
+
+        actor.unfollow(actorToUnfollow);
+
+        await this.actors.save(actor);
+    }
 }

@@ -17,4 +17,18 @@ describe('ActivityPubController', function () {
             assert((mockActivityPubService.follow as Sinon.SinonStub).calledWith('@egg@ghost.org'));
         });
     });
+
+    describe('#unfollow', function () {
+        it('Calls unfollow on the ActivityPubService and returns an empty object', async function () {
+            const mockActivityPubService = {
+                unfollow: Sinon.stub().resolves(),
+                getFollowing: Sinon.stub().resolves([])
+            } as unknown as ActivityPubService;
+            const controller = new ActivityPubController(mockActivityPubService);
+
+            await controller.unfollow('@egg@ghost.org');
+
+            assert((mockActivityPubService.unfollow as Sinon.SinonStub).calledWith('@egg@ghost.org'));
+        });
+    });
 });
