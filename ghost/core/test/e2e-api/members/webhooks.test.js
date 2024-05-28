@@ -44,7 +44,7 @@ async function assertSubscription(subscriptionId, asserts) {
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
 }
 
-describe('Members API', function () {
+describe.only('Members API', function () {
     // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
     // @todo: Test what happens when a complimentary subscription starts a paid subscription
 
@@ -260,7 +260,15 @@ describe('Members API', function () {
                 email: 'cancel-paid-test@email.com',
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -481,7 +489,15 @@ describe('Members API', function () {
                 email: 'cancel-complimentary-test@email.com',
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -621,7 +637,15 @@ describe('Members API', function () {
                 email: 'checkout-webhook-test@email.com',
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -720,7 +744,15 @@ describe('Members API', function () {
                 email: 'checkout-newsletter-default-test@email.com',
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -767,7 +799,15 @@ describe('Members API', function () {
                 email: 'checkout-newsletter-test@email.com',
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -973,7 +1013,15 @@ describe('Members API', function () {
                 email: `${customer_id}@email.com`,
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -1372,7 +1420,15 @@ describe('Members API', function () {
                 email: `${customer_id}@email.com`,
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -1570,7 +1626,15 @@ describe('Members API', function () {
                 email: `${customer_id}@email.com`,
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
@@ -1728,7 +1792,15 @@ describe('Members API', function () {
                 email: `${customer_id}@email.com`,
                 subscriptions: {
                     type: 'list',
-                    data: [subscription]
+                    data: [{
+                        plan: {
+                            product: {
+                                id: subscription.items.data[0].price.id,
+                                product: subscription.items.data[0].price.product
+                            }
+                        },
+                        ...subscription
+                    }]
                 }
             });
 
