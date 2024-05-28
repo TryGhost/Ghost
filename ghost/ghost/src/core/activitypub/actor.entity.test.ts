@@ -135,6 +135,51 @@ describe('Actor', function () {
         });
     });
 
+    describe('#unfollow', function () {
+        it('Creates an Undo of a Follow activity and removes them from the following list', async function () {
+            const actor = Actor.create({username: 'TestingUnfollow'});
+
+            const actorToFollow = {
+                id: new URI('https://activitypub.server/actor'),
+                username: '@user@domain'
+            };
+
+            actor.follow(actorToFollow);
+
+            const newFollower = new URI('https://activitypub.server/actor');
+
+            const acceptActivity = new Activity({
+                type: 'Accept',
+                actor: {
+                    id: newFollower,
+                    type: 'Person'
+                },
+                object: {
+                    id: newFollower,
+                    type: 'Person'
+                },
+                to: actor.actorId
+            });
+
+            await actor.postToInbox(acceptActivity);
+
+            assert(actor.following.find(follower => follower.id.href === newFollower.href));
+            assert(actor.following.find(follower => follower.username === '@index@activitypub.server'));
+
+            actor.unfollow(actorToFollow);
+
+            assert(!actor.following.find(follower => follower.id.href === newFollower.href));
+            assert(!actor.following.find(follower => follower.username === '@index@activitypub.server'));
+
+            Actor.getActivitiesToSave(actor, function (activities) {
+                const followActivity = activities.find(activity => activity.type === 'Follow');
+                const undoActivity = activities.find(activity => activity.type === 'Undo');
+
+                assert.equal(undoActivity?.objectId.href, followActivity?.activityId.href);
+            });
+        });
+    });
+
     describe('#postToInbox', function () {
         it('Handles Follow activities', async function () {
             const actor = Actor.create({username: 'TestingPostToInbox'});

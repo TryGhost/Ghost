@@ -122,6 +122,26 @@ export class Actor extends Entity<ActorData> {
         this.doActivity(activity);
     }
 
+    async unfollow(actor: {id: URI, username: string;}) {
+        const originalFollow = this.outbox.find(item => item.type === 'Follow' && item.objectId.href === actor.id.href);
+
+        if (!originalFollow) {
+            return;
+        }
+
+        const activity = new Activity({
+            type: 'Undo',
+            actor: this,
+            object: {
+                id: originalFollow.activityId,
+                type: 'Follow'
+            },
+            to: actor.id
+        });
+        this.attr.following = this.attr.following.filter(item => item.id.href !== actor.id.href);
+        this.doActivity(activity);
+    }
+
     async acceptFollow(activity: Activity) {
         this.attr.followers.push({id: activity.actorId});
         const accept = new Activity({
