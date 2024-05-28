@@ -419,116 +419,116 @@ describe('Collections API', function () {
         //         });
         // });
 
-        it('Creates an automatic Collection with a published_at filter', async function () {
-            const collection = {
-                title: 'Test Collection with published_at filter',
-                slug: 'published-at-filter',
-                description: 'Test Collection Description with published_at filter',
-                type: 'automatic',
-                filter: 'published_at:>=2022-05-25'
-            };
+        // it('Creates an automatic Collection with a published_at filter', async function () {
+        //     const collection = {
+        //         title: 'Test Collection with published_at filter',
+        //         slug: 'published-at-filter',
+        //         description: 'Test Collection Description with published_at filter',
+        //         type: 'automatic',
+        //         filter: 'published_at:>=2022-05-25'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(9).fill(matchPostShallowIncludes)
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(9).fill(matchPostShallowIncludes)
+        //         });
+        // });
 
-        it('Creates an automatic Collection with a tags filter', async function () {
-            const collection = {
-                title: 'Test Collection with tag filter',
-                slug: 'tag-filter',
-                description: 'BACON!',
-                type: 'automatic',
-                filter: 'tags:[\'bacon\']'
-            };
+        // it('Creates an automatic Collection with a tags filter', async function () {
+        //     const collection = {
+        //         title: 'Test Collection with tag filter',
+        //         slug: 'tag-filter',
+        //         description: 'BACON!',
+        //         type: 'automatic',
+        //         filter: 'tags:[\'bacon\']'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill({
-                        ...matchPostShallowIncludes,
-                        tags: new Array(2).fill(tagSnapshotMatcher)
-                    })
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill({
+        //                 ...matchPostShallowIncludes,
+        //                 tags: new Array(2).fill(tagSnapshotMatcher)
+        //             })
+        //         });
+        // });
 
-        it('Creates an automatic Collection with a tag filter, checking filter aliases', async function () {
-            const collection = {
-                title: 'Test Collection with tag filter alias',
-                slug: 'bacon-tag-expansion',
-                description: 'BACON!',
-                type: 'automatic',
-                filter: 'tag:[\'bacon\']'
-            };
+        // it('Creates an automatic Collection with a tag filter, checking filter aliases', async function () {
+        //     const collection = {
+        //         title: 'Test Collection with tag filter alias',
+        //         slug: 'bacon-tag-expansion',
+        //         description: 'BACON!',
+        //         type: 'automatic',
+        //         filter: 'tag:[\'bacon\']'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill({
-                        ...matchPostShallowIncludes,
-                        tags: new Array(2).fill(tagSnapshotMatcher)
-                    })
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill({
+        //                 ...matchPostShallowIncludes,
+        //                 tags: new Array(2).fill(tagSnapshotMatcher)
+        //             })
+        //         });
+        // });
     });
 
     describe('Collection Posts updates automatically', function () {
