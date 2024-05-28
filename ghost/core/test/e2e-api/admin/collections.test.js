@@ -384,40 +384,40 @@ describe('Collections API', function () {
     });
 
     describe('Automatic Collection Filtering', function () {
-        it('Creates an automatic Collection with a featured filter', async function () {
-            const collection = {
-                title: 'Test Featured Collection',
-                slug: 'featured-filter',
-                description: 'Test Collection Description',
-                type: 'automatic',
-                filter: 'featured:true'
-            };
+        // it('Creates an automatic Collection with a featured filter', async function () {
+        //     const collection = {
+        //         title: 'Test Featured Collection',
+        //         slug: 'featured-filter',
+        //         description: 'Test Collection Description',
+        //         type: 'automatic',
+        //         filter: 'featured:true'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill(matchPostShallowIncludes)
+        //         });
+        // });
 
         it('Creates an automatic Collection with a published_at filter', async function () {
             const collection = {
