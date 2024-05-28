@@ -154,17 +154,22 @@ const checkFileIsValid = (fileData, types, extensions) => {
 /**
  * 
  * @param {String} filepath 
- * @returns {void}
+ * @returns {Boolean}
  * 
- * Sanitizes SVG files by removing any script tags.
+ * Checks for the presence of <script> tags or 'on' attributes in an SVG file
  * 
  */
-const sanitizeSvg = (filepath) => {
-    const window = new JSDOM('').window;
-    const DOMPurify = require('dompurify')(window);
-    const content = fs.readFileSync(filepath, 'utf8');
-    const clean = DOMPurify.sanitize(content);
-    fs.writeFileSync(filepath, clean, 'utf8');
+const isSvgSafe = (filepath) => {
+    const fileContent = fs.readFileSync(filepath, 'utf8');
+    const document = new JSDOM(fileContent).window.document;
+    document.body.innerHTML = fileContent;
+    const svgEl = document.body.firstElementChild;
+    
+    const attributes = Array.from(svgEl.attributes).map(({name}) => name);
+    const hasScriptAttr = !!attributes.find(attr => attr.startsWith('on'));
+    const scripts = svgEl.getElementsByTagName('script');
+
+    return scripts.length === 0 && !hasScriptAttr ? true : false;
 };
 
 /**
@@ -206,7 +211,11 @@ const validation = function ({type}) {
         }
 
         if (req.file.ext === '.svg') {
-            sanitizeSvg(req.file.path);
+            if (!isSvgSafe(req.file.path)) {
+                return next(new errors.UnsupportedMediaTypeError({
+                    message: 'SVG files cannot contain <script> tags or "on" attributes.'
+                }));
+            }
         }
 
         next();
@@ -281,5 +290,5 @@ module.exports = {
 module.exports._test = {
     checkFileExists,
     checkFileIsValid,
-    sanitizeSvg
+    isSvgSafe
 };
