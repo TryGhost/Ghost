@@ -46,7 +46,7 @@ module.exports = {
         title_color: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
-        show_subheader: {type: 'boolean', nullable: false, defaultTo: false}
+        show_subhead: {type: 'boolean', nullable: false, defaultTo: false}
     },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

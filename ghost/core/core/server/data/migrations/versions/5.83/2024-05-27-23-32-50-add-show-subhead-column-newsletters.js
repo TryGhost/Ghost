@@ -3,7 +3,7 @@
 const {createAddColumnMigration} = require('../../utils');
 
 module.exports = createAddColumnMigration('newsletters', 'show_subhead', {
-    type: 'bool',
+    type: 'boolean',
     nullable: false,
     defaultTo: false
 });
