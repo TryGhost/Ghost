@@ -66,7 +66,7 @@
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
                 @titleHasTk={{this.titleHasTk}}
                 @onTitleChange={{this.updateTitleScratch}}
-                @onExcerptChange={{this.updateExcerpt}}
+                @onExcerptChange={{this.updateExcerptScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
