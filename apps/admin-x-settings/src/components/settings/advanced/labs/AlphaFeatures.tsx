@@ -64,6 +64,10 @@ const features = [{
     description: 'Adds internal URL search to editor link inputs',
     flag: 'internalLinking'
 },{
+    title: 'Internal Linking @-links (internal alpha)',
+    description: 'Adds internal URL search when typing @ in the editor',
+    flag: 'internalLinkingAtLinks'
+},{
     title: 'ActivityPub',
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'

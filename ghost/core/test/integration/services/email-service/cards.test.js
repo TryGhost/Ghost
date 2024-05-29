@@ -169,7 +169,11 @@ describe('Can send cards via email', function () {
             'extended-text', // not a card
             'extended-quote', // not a card
             'extended-heading', // not a card
-            'tk' // shouldn't be present in published posts / emails
+            // not a card and shouldn't be present in published posts / emails
+            'tk',
+            'at-link',
+            'at-link-search',
+            'zwnj'
         ];
 
         const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
