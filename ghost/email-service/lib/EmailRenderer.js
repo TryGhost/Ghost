@@ -10,6 +10,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
+const {registerHelpers} = require('./helpers/helpers');
 
 const messages = {
     subscriptionStatus: {
@@ -763,58 +764,8 @@ class EmailRenderer {
         const labs = this.getLabs();
         this.#handlebars = require('handlebars').create();
 
-        // Helpers
-        this.#handlebars.registerHelper('if', function (conditional, options) {
-            if (conditional) {
-                return options.fn(this);
-            } else {
-                return options.inverse(this);
-            }
-        });
-
-        this.#handlebars.registerHelper('and', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        this.#handlebars.registerHelper('not', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        this.#handlebars.registerHelper('or', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        this.#handlebars.registerHelper('hasFeature', function (flag, options) {
-            if (labs.isSet(flag)) {
-                return options.fn(this);
-            } else {
-                return options.inverse(this);
-            }
-        });
+        // Register helpers
+        registerHelpers(this.#handlebars, labs);
 
         // Partials
         if (this.#labs.isSet('emailCustomization')) {
