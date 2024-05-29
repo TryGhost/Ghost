@@ -119,16 +119,16 @@ const NewsletterPreviewContent: React.FC<{
                                 </div>
                             )}
                             {showHeader && (
-                                <div className="border-b border-grey-200 py-12" style={{borderColor: secondaryBorderColor}}>
+                                <div className="border-b border-grey-200 py-8" style={{borderColor: secondaryBorderColor}}>
                                     {headerIcon && <img alt="" className="mx-auto mb-2 h-10 w-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
-                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.4rem] font-normal leading-tight text-grey-600" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
+                                    {headerSubtitle && <h5 className="mb-1 text-center text-md font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
                             {showPostTitleSection && (
-                                <div className={clsx('flex flex-col pb-10 pt-12', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
+                                <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
                                     <h2 className={clsx(
-                                        'pb-4 text-5xl font-bold leading-supertight text-black',
+                                        'pb-4 text-4xl font-bold leading-supertight text-black',
                                         titleFontCategory === 'serif' && 'font-serif',
                                         titleAlignment === 'center' ? 'text-center' : 'text-left'
                                     )} style={{color: titleColor}}>
@@ -138,14 +138,14 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-4 text-[1.6rem] leading-[1.7] text-black">A subhead that highlights the key points of your newsletter.</p>
                                     )}
                                     <div className={clsx(
-                                        'flex w-full justify-between text-center text-sm leading-none tracking-[0.1px] text-grey-600',
+                                        'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col' : 'flex-row'
                                     )}>
-                                        <p className="pb-2" style={{color: secondaryTextColor}}>
+                                        <p className="pb-1" style={{color: secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-2 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -156,11 +156,11 @@ const NewsletterPreviewContent: React.FC<{
                                     <div className="h-[300px] w-full max-w-[600px] bg-grey-200 bg-cover bg-no-repeat">
                                         <img alt="Feature" className='min-h-full min-w-full shrink-0' src={CoverImage} />
                                     </div>
-                                    <div className="mt-1 w-full max-w-[600px] pb-[30px] text-center text-[1.3rem] text-grey-600" style={{color: secondaryTextColor}}>Feature image caption</div>
+                                    <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
 
-                            <div className={clsx('max-w-[600px] border-b border-grey-200 py-5 text-[1.6rem] leading-[1.7] text-black', bodyFontCategory === 'serif' && 'font-serif')} style={{borderColor: secondaryBorderColor}}>
+                            <div className={clsx('max-w-[600px] border-b border-grey-200 pb-5 text-[1.6rem] leading-[1.7] text-black', bodyFontCategory === 'serif' && 'font-serif')} style={{borderColor: secondaryBorderColor}}>
                                 <p className="mb-5" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                                 <p className="mb-5" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                                 <p className="mb-5" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
@@ -205,7 +205,7 @@ const NewsletterPreviewContent: React.FC<{
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>The three latest posts published on your site</h4>
-                                            <p className="m-0 text-base text-grey-600" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
+                                            <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
                                             <img alt="Latest post" src={LatestPosts1} />
@@ -214,7 +214,7 @@ const NewsletterPreviewContent: React.FC<{
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
-                                            <p className="m-0 text-base text-grey-600" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
+                                            <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
                                             <img alt="Latest post" src={LatestPosts2} />
@@ -223,7 +223,7 @@ const NewsletterPreviewContent: React.FC<{
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>To keep your work front and center</h4>
-                                            <p className="m-0 text-base text-grey-600" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
+                                            <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
                                             <img alt="Latest post" src={LatestPosts3} />
@@ -252,9 +252,9 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Footer */}
                             <div className="flex flex-col items-center pt-10">
-                                <div dangerouslySetInnerHTML={{__html: footerContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-600" style={{color: secondaryTextColor}} />
+                                <div dangerouslySetInnerHTML={{__html: footerContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-700" style={{color: secondaryTextColor}} />
 
-                                <div className="px-8 pb-14 pt-3 text-center text-[1.3rem] text-grey-600">
+                                <div className="px-8 pb-14 pt-3 text-center text-[1.3rem] text-grey-700">
                                     <span style={{color: secondaryTextColor}}>{siteTitle} © {currentYear} &mdash; </span>
                                     <span className="pointer-events-none cursor-auto underline" style={{color: secondaryTextColor}}>Unsubscribe</span>
                                 </div>
