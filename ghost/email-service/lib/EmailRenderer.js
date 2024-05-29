@@ -10,7 +10,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
-const {registerHelpers} = require('./helpers/helpers');
+const {registerHelpers} = require('./helpers/register-helpers');
 
 const messages = {
     subscriptionStatus: {

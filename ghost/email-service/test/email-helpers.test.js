@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {registerHelpers} = require('../lib/helpers/helpers');
+const {registerHelpers} = require('../lib/helpers/register-helpers');
 
 describe('registerHelpers', function () {
     it('registers helpers', function () {
