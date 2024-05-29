@@ -2,7 +2,6 @@ const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const {DonationPaymentEvent} = require('@tryghost/donations');
-const { sendEmail } = require('../../core/test/utils/batch-email-utils');
 
 module.exports = class WebhookController {
     /**
@@ -183,8 +182,6 @@ module.exports = class WebhookController {
      * @private
      */
     async checkoutSessionEvent(session) {
-        let sendSignupEmail = true;
-
         if (session.mode === 'setup') {
             const setupIntent = await this.api.getSetupIntent(session.setup_intent);
             const member = await this.deps.memberRepository.get({
