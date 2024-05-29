@@ -986,6 +986,7 @@ DataGenerator.Content.members_paid_subscription_events[2].member_id = DataGenera
 DataGenerator.Content.links[0].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.links[1].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.links[2].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.stripe_products[0].product_id = DataGenerator.Content.products[0].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {

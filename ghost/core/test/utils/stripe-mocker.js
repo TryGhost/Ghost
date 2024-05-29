@@ -143,6 +143,9 @@ class StripeMocker {
         await DomainEvents.allSettled();
     }
 
+    /**
+     *  @see https://docs.stripe.com/api/subscriptions/object
+     */
     async createSubscription({customer, price, ...overrides}, options = {sendWebhook: true}) {
         const subscriptionId = `sub_${this.#generateRandomId()}`;
 
@@ -153,7 +156,6 @@ class StripeMocker {
             canceled_at: null,
             current_period_end: (Date.now() + 1000 * 60 * 60 * 24 * 31) / 1000,
             start_date: Math.floor(Date.now() / 1000),
-
             status: 'active',
             items: {
                 type: 'list',
@@ -168,6 +170,18 @@ class StripeMocker {
         };
         this.subscriptions.push(subscription);
         customer.subscriptions.data.push(subscription);
+        
+        const plan = {
+            product: {
+                id: price.id,
+                product: price.product
+            }
+        };
+        // find customer id in this.customers and set plan to customer.subscriptions.data[0]
+        const cust = this.customers.find(c => c.id === customer.id);
+        if (cust) {
+            cust.subscriptions.data[0].plan = plan;
+        }
 
         // Announce
         if (options.sendWebhook) {
@@ -253,7 +267,6 @@ class StripeMocker {
                     if (!price) {
                         return [400, {error: 'Invalid price ' + first.price}];
                     }
-
                     decoded.items = {
                         data: [
                             {

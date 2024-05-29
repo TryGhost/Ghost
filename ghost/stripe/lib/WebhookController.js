@@ -252,6 +252,23 @@ module.exports = class WebhookController {
                 expand: ['subscriptions.data.default_payment_method']
             });
 
+            // Ignore any Stripe subscriptions that do not exist in Ghost - we should not create members for these.
+            try {
+                const stripeProductId = customer.subscriptions?.data?.[0].plan?.product;
+                const product = await this.deps.productRepository.get({
+                    stripe_product_id: stripeProductId
+                });
+                if (!product) {
+                    logging.warn(`Stripe checkout session ${session.id} has no product attached to subscription ${customer.subscriptions?.data?.[0].id}, aborting member creation.`);
+                    return; 
+                }
+            } catch (err) {
+                logging.error(`Error getting product for Stripe subscription ${customer.subscriptions?.data?.[0].id}`, err);
+                throw new errors.NotFoundError({
+                    message: `No product attached to subscription for Stripe customer ${customer.id} and Stripe product ${customer.subscriptions?.data?.[0].plan?.product}`
+                });
+            }
+
             let member = await this.deps.memberRepository.get({
                 email: customer.email
             });
