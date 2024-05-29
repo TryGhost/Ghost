@@ -12,7 +12,12 @@ export namespace ActivityPub {
         type: string | string[];
     };
 
-    export type Object = RootObject | AnonymousObject;
+    export type SubObject = {
+        id: string;
+        type: string | string[];
+    };
+
+    export type Object = RootObject | AnonymousObject | SubObject;
 
     export type Actor = ActivityPub.Object & {
         inbox: string;
@@ -35,15 +40,21 @@ export namespace ActivityPub {
             id: string,
             owner: string,
             publicKeyPem: string
-        }
+        },
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [x: string]: any
     };
 
     export type Article = ActivityPub.Object & {
         type: 'Article';
         name: string;
         content: string;
-        url: string;
-        attributedTo: string | object[];
+        url?: string;
+        attributedTo?: string | object[];
+        image?: string;
+        published?: string;
+        preview?: {type: string, content: string};
     };
 
     export type Link = string | {
@@ -57,12 +68,12 @@ export namespace ActivityPub {
         width?: number
     };
 
-    export type ActivityType = 'Create' | 'Update' | 'Delete';
+    export type ActivityType = 'Create' | 'Update' | 'Delete' | 'Follow' | 'Accept' | 'Reject' | 'Undo';
 
     export type Activity = ActivityPub.Object & {
         type: ActivityType;
-        summary: string;
-        actor: Link | Actor;
+        actor: Link | Actor | ActivityPub.Object;
         object: Link | ActivityPub.Object;
+        to: Link | Actor | null;
     }
 }

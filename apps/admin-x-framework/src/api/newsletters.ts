@@ -21,6 +21,7 @@ export type Newsletter = {
     show_header_title: boolean;
     title_font_category: string;
     title_alignment: string;
+    show_subhead: boolean;
     show_feature_image: boolean;
     body_font_category: string;
     footer_content: string | null;

@@ -40,7 +40,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Email').fill('test');
         await modal.getByRole('button', {name: 'Save & close'}).click();
-        await expect(modal).toContainText('Please enter a valid email address');
+        await expect(modal).toContainText('Enter a valid email address');
 
         await modal.getByLabel('Location').fill(new Array(195).join('a'));
         await modal.getByRole('button', {name: 'Save & close'}).click();
@@ -51,7 +51,7 @@ test.describe('User profile', async () => {
         await expect(modal).toContainText('Bio is too long');
 
         await modal.getByLabel('Website').fill('not-a-website');
-        await modal.getByLabel('Website').blur();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Enter a valid URL');
 
         const facebookInput = modal.getByLabel('Facebook profile');
@@ -116,27 +116,27 @@ test.describe('User profile', async () => {
 
         await testUrlValidation(
             twitterInput,
-            'twitter.com/username',
-            'https://twitter.com/username'
+            'x.com/username',
+            'https://x.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             'testuser',
-            'https://twitter.com/testuser'
+            'https://x.com/testuser'
         );
 
         await testUrlValidation(
             twitterInput,
             'http://github.com/username',
-            'https://twitter.com/username'
+            'https://x.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
             '*(&*(%%))',
-            'The URL must be in a format like https://twitter.com/yourUsername'
+            'The URL must be in a format like https://x.com/yourUsername'
         );
 
         await testUrlValidation(
