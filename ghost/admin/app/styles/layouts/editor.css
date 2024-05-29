@@ -727,7 +727,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background: transparent;
 }
 
-.gh-editor .gh-editor-title {
+.gh-editor-title {
     display: block;
     width: 100%;
     max-width: unset;
@@ -746,13 +746,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 @media (min-width: 500px) and (max-width: 768px) {
-    .gh-editor .gh-editor-title {
+    .gh-editor-title {
         font-size: 3.6rem;
     }
 }
 
 @media (max-width: 500px) {
-    .gh-editor .gh-editor-title {
+    .gh-editor-title {
         font-size: 2.8rem;
     }
 }
