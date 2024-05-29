@@ -113,6 +113,19 @@ class StripeMocker {
      * @param {number} data.yearly_price
      * @returns {Promise<object>} - The created product object.
      */
+    async createTier({name, currency, monthly_price, yearly_price}) {
+        const result = await tiers.api.add({
+            name: name ?? ('Tier ' + this.#generateRandomId()),
+            type: 'paid',
+            currency: currency.toUpperCase(),
+            monthlyPrice: monthly_price,
+            yearlyPrice: yearly_price
+        });
+        return await models.Product.findOne({
+            id: result.id.toHexString()
+        });
+    }
+
     /**
      * Creates a trial subscription.
      *
