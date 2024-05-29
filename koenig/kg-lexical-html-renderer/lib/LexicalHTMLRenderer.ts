@@ -1,11 +1,14 @@
 import {SerializedEditorState, LexicalEditor, LexicalNode, Klass} from 'lexical';
-
 import {createHeadlessEditor} from '@lexical/headless';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {LinkNode} from '@lexical/link';
 import $convertToHtmlString from './convert-to-html-string';
 import getDynamicDataNodes from './get-dynamic-data-nodes';
+
+// TODO: Using import causes circular definitions for kg-default-nodes
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const {registerRemoveAtLinkNodesTransform} = require('@tryghost/kg-default-transforms');
 
 interface RenderOptions {
     target?: 'html' | 'plaintext';
@@ -78,10 +81,14 @@ export default class LexicalHTMLRenderer {
 
         options.renderData = renderData;
 
-        // render nodes
+        // set up editor with our state
         editor.setEditorState(editorState);
-        let html = '';
 
+        // register transforms that clean up state for rendering
+        registerRemoveAtLinkNodesTransform(editor);
+
+        // render
+        let html = '';
         editor.update(async () => {
             html = $convertToHtmlString(options);
         });

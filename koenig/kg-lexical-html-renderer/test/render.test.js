@@ -1,4 +1,5 @@
 const {shouldRender} = require('./utils');
+const {AtLinkNode, AtLinkSearchNode, ZWNJNode} = require('@tryghost/kg-default-nodes');
 
 const Renderer = require('../build/LexicalHTMLRenderer').default;
 
@@ -69,5 +70,13 @@ describe('Unexpected input', function () {
     it('paragraphs with no children', shouldRender({
         input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing Before","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing After","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p>Testing Before</p><p></p><p>Testing After</p>`
+    }));
+});
+
+describe('Transforms',function () {
+    it('removes AtLink nodes when rendering', shouldRender({
+        options: {nodes: [AtLinkNode, AtLinkSearchNode, ZWNJNode]},
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing Before ","type":"text","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"","type":"zwnj","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":"search","type":"at-link-search","version":1,"placeholder":null}],"direction":"ltr","format":"","indent":0,"type":"at-link","version":1,"linkFormat":0},{"detail":0,"format":0,"mode":"normal","style":"","text":" After","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: '<p>Testing Before After</p>'
     }));
 });

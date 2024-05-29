@@ -12,6 +12,9 @@ export * from './transforms/denest.js';
 export * from './transforms/merge-list-nodes.js';
 export * from './transforms/remove-alignment.js';
 
+// only used when rendering so not registered by default
+export * from './transforms/remove-at-link-nodes.js';
+
 export function registerDefaultTransforms(editor: LexicalEditor) {
     return mergeRegister(
         // strip unwanted alignment formats
