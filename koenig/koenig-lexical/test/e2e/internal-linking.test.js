@@ -87,5 +87,34 @@ test.describe('Internal linking', async () => {
                 </span>
             `, {selector: '[data-testid="bookmark-url-listOption"][aria-selected="true"]'});
         });
+
+        test('highlights matches in results', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('Emoji');
+
+            await expect(page.locator('[data-testid="bookmark-url-listOption"]')).toBeVisible();
+            await expect(page.locator('span.font-bold').first()).toHaveText('Emoji');
+        });
+
+        test('does not crash with regexp chars in search', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('[');
+
+            await expect(page.locator('[data-testid="bookmark-url-listOption"]')).toBeVisible();
+        });
+    });
+
+    test.describe('Link toolbar', function () {
+
+    });
+
+    test.describe('At-linking', function () {
+
     });
 });

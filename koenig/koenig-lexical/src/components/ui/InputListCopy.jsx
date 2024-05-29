@@ -1,4 +1,5 @@
 import React from 'react';
+import escapeRegExp from 'lodash/escapeRegExp';
 import {Delayed} from './Delayed';
 import {DropdownContainerCopy} from './DropdownContainerCopy';
 import {Input} from './Input';
@@ -38,7 +39,7 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver,
             return item.label;
         }
 
-        const parts = item.label.split(new RegExp(`(${highlightString})`, 'gi'));
+        const parts = item.label.split(new RegExp(`(${escapeRegExp(highlightString)})`, 'gi'));
 
         return (
             <>
