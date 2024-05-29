@@ -103,7 +103,7 @@ const Sidebar: React.FC<{
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
-    const hasSubhead = useFeatureFlag('subhead');
+    const hasNewsletterSubtitle = useFeatureFlag('newsletterSubtitle');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
@@ -424,11 +424,11 @@ const Sidebar: React.FC<{
                         title='Body style'
                         onSelect={option => updateNewsletter({body_font_category: option?.value})}
                     />
-                    {hasSubhead && 
+                    {hasNewsletterSubtitle && 
                         <Toggle
                             checked={newsletter.show_subhead}
                             direction="rtl"
-                            label='Subhead'
+                            label='Subtitle'
                             onChange={e => updateNewsletter({show_subhead: e.target.checked})}
                         />
                     }

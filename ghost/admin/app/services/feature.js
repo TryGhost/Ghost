@@ -83,7 +83,8 @@ export default class FeatureService extends Service {
     @feature('onboardingChecklist') onboardingChecklist;
     @feature('ActivityPub') ActivityPub;
     @feature('internalLinking') internalLinking;
-    @feature('subhead') subhead;
+    @feature('editorSubtitle') editorSubtitle;
+    @feature('newsletterSubtitle') newsletterSubtitle;
 
     _user = null;
 
