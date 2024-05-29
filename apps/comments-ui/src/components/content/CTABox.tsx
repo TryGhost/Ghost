@@ -1,5 +1,4 @@
 import reactStringReplace from 'react-string-replace';
-import {comment} from 'postcss';
 import {useAppContext} from '../../AppContext';
 
 type Props = {
