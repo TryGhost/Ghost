@@ -44,7 +44,7 @@ async function assertSubscription(subscriptionId, asserts) {
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
 }
 
-describe.only('Members API', function () {
+describe('Members API', function () {
     // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
     // @todo: Test what happens when a complimentary subscription starts a paid subscription
 
