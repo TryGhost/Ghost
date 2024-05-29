@@ -108,6 +108,60 @@ test.describe('Internal linking', async () => {
 
             await expect(page.locator('[data-testid="bookmark-url-listOption"]')).toBeVisible();
         });
+
+        test('matches URL queries (http)', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('http');
+
+            await assertHTML(page, html`
+                <li>Link to web page</li>
+                <li aria-selected="true" role="option">
+                  <span>
+                    <svg></svg>
+                    <span>http</span>
+                  </span>
+                </li>
+            `, {selector: '[data-testid="bookmark-url-dropdown"]'});
+        });
+
+        test('matches URL queries (anchor)', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('#test');
+
+            await assertHTML(page, html`
+                <li>Link to web page</li>
+                <li aria-selected="true" role="option">
+                  <span>
+                    <svg></svg>
+                    <span>#test</span>
+                  </span>
+                </li>
+            `, {selector: '[data-testid="bookmark-url-dropdown"]'});
+        });
+
+        test('matches URL queries (relative)', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('/test');
+
+            await assertHTML(page, html`
+                <li>Link to web page</li>
+                <li aria-selected="true" role="option">
+                  <span>
+                    <svg></svg>
+                    <span>/test</span>
+                  </span>
+                </li>
+            `, {selector: '[data-testid="bookmark-url-dropdown"]'});
+        });
     });
 
     test.describe('Link toolbar', function () {

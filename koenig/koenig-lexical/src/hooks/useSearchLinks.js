@@ -3,7 +3,7 @@ import React from 'react';
 import debounce from 'lodash/debounce';
 
 const DEBOUNCE_MS = 100;
-const URL_QUERY_REGEX = /^http/;
+const URL_QUERY_REGEX = /^http|^#|^\//;
 
 function urlQueryOptions(query) {
     return [{

@@ -8,7 +8,7 @@ import debounce from 'lodash/debounce';
  * Displays the dropdown above or below the parent element, depending on the space available in the viewport.
  * The parent should be positioned relative.
  */
-export function DropdownContainerCopy({children, ...props}) {
+export function DropdownContainerCopy({dataTestId, children, ...props}) {
     const divRef = React.useRef(null);
 
     const [placement, setPlacement] = React.useState('bottom');
@@ -56,7 +56,7 @@ export function DropdownContainerCopy({children, ...props}) {
     }, []);
 
     return (
-        <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white px-2 py-1 shadow-md dark:bg-grey-950`} {...props}>
+        <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white px-2 py-1 shadow-md dark:bg-grey-950`} data-testid={`${dataTestId}-dropdown`} {...props}>
             {children}
         </ul>
     );

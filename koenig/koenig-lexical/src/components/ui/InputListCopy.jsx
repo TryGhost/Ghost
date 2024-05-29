@@ -142,7 +142,7 @@ export function InputListCopy({autoFocus, className, inputClassName, dataTestId,
                     onFocus={onFocus}
                 />
                 {showSuggestions &&
-                    <DropdownContainerCopy data-testid={`${dataTestId}-dropdown`}>
+                    <DropdownContainerCopy dataTestId={dataTestId}>
                         {isLoading && <InputListLoadingItem dataTestId={dataTestId}/>}
                         <KeyboardSelectionWithGroups
                             getGroup={getGroup}
