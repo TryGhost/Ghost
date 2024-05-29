@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
 import getUsername from '../utils/get-username';
 import {ActorProperties, ObjectProperties, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
-import {Avatar, Button, Heading, Icon, List, ListItem, Page, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Heading, List, ListItem, Page, SettingValue, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -38,7 +38,7 @@ const ActivityPubComponent: React.FC = () => {
             id: 'inbox',
             title: 'Inbox',
             contents: <div className='grid grid-cols-6 items-start gap-8'>
-                <ul className='col-span-4 flex flex-col'>
+                <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
                     {activities && activities.slice().reverse().map(activity => (
                         activity.type === 'Create' && activity.object.type === 'Article' &&
                         <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
@@ -46,19 +46,7 @@ const ActivityPubComponent: React.FC = () => {
                         </li>
                     ))}
                 </ul>
-                <div className='col-span-2 rounded-xl bg-grey-50 p-5' id="ap-sidebar">
-                    <div className='grid grid-cols-2 gap-4'>
-                        <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                            <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                            <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                        </div>
-                    </div>
-                    <ul data-test-following>
-                        {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
-                            <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
-                        </li>)}
-                    </ul>
-                </div>
+                <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
             </div>
         },
         {
@@ -67,59 +55,25 @@ const ActivityPubComponent: React.FC = () => {
             contents: <div className='grid grid-cols-6 items-start gap-8'><List className='col-span-4'>
                 <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a placeholder post</span></div>}></ListItem>
                 <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@veryverylongplaceholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a placeholder post</span></div>}></ListItem>
-                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a very very very long placeholder post</span></div>}></ListItem>
+                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> followed you</span></div>}></ListItem>
             </List>
-            <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
-                <div className='grid grid-cols-2 gap-4'>
-                    <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                    </div>
-                </div>
-                <ul data-test-following>
-                    {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
-                        <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
-                    </li>)}
-                </ul>
-            </div></div>
+            <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
+            </div>
         },
         {
             id: 'likes',
             title: 'Likes',
-            contents: <div className='grid grid-cols-6 items-start gap-8'><div className='border-1 group/article col-span-4 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
-                <div className='mb-3 flex w-full items-center gap-2'>
-                    <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
-                    <span className='line-clamp-1 text-base font-semibold'>Platformer</span>
-                    <span className='line-clamp-1 text-md text-grey-800'>@index@placeholder.net</span>
-                    <span className='ml-auto line-clamp-1 text-md text-grey-800'>2d</span>
-                </div>
-                <div className='grid w-full grid-cols-[auto_170px] gap-4'>
-                    <div className='flex flex-col'>
-                        <div className='flex w-full justify-between gap-4'>
-                            <Heading className='mb-2 line-clamp-2' level={5} data-test-activity-heading>This Is a Placeholder Post</Heading>
-                        </div>
-                        <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>This is just a placeholder liked post. The real thing is coming soon.</p>
-                        <div className='flex'>
-                            <Icon className='text-grey-500 transition-colors hover:text-red-500' name='heart' />
-                            {/* <Button icon='heart' iconColorClass='text-grey-500 hover:text-red-500' size='sm'/> */}
-                        </div>
-                    </div>
-                    <div className='relative min-w-[33%] grow'>
-                    </div>
-                </div>
-            </div><div className='col-span-2 rounded-xl bg-grey-50 p-5'>
-                <div className='grid grid-cols-2 gap-4'>
-                    <div className='group/stat mb-5 flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                    </div>
-                </div>
-                <ul data-test-following>
-                    {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
-                        <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
-                    </li>)}
+            contents: <div className='grid grid-cols-6 items-start gap-8'>
+                <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
+                    {activities && activities.slice().reverse().map(activity => (
+                        activity.type === 'Create' && activity.object.type === 'Article' &&
+                    <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
+                        <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
+                    </li>
+                    ))}
                 </ul>
-            </div></div>
+                <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
+            </div>
         }
     ];
 
@@ -151,6 +105,27 @@ const ActivityPubComponent: React.FC = () => {
         </Page>
     );
 };
+
+const Sidebar: React.FC<{followingCount: number, updateRoute: (route: string) => void}> = ({followingCount, updateRoute}) => (
+    <div className='order-1 col-span-6 rounded-xl bg-grey-50 p-6 lg:order-2 lg:col-span-2' id="ap-sidebar">
+        <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
+        <div className='grid grid-cols-2 gap-4'>
+            <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+            </div>
+            <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
+                <span className='text-3xl font-bold leading-none' data-test-following-count>0</span>
+                <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+            </div>
+        </div>
+        {/* <ul data-test-following>
+                        {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
+                            <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
+                        </li>)}
+                    </ul> */}
+    </div>
+);
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
     // const dangerouslySetInnerHTML = {__html: html};
@@ -190,11 +165,6 @@ ${image &&
             title="Embedded Content"
             width="100%"
         >
-            {/* <div className="mt gh-whats-new mb-2 flex flex-row items-center gap-4 pr-4">
-                <div className='gh-wn-entry'>
-                    <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-neutral-900 font-sans text-[16px] leading-normal [overflow-wrap:anywhere] dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
-                </div>
-            </div> */}
         </iframe>
     );
 };
@@ -207,27 +177,42 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
+    const [isClicked, setIsClicked] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    
+    const handleLikeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        setIsClicked(true);
+        setIsLiked(!isLiked);
+        setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
+    };
+
     return (
         <>
             {object && (
-                <div className='border-1 group/article flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
-                    <div className='mb-3 flex w-full items-center gap-2'>
+                <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
+                    <div className='relative z-10 mb-3 grid w-full grid-cols-[20px_auto_1fr_auto] items-center gap-2 text-base'>
                         <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
-                        <span className='line-clamp-1 text-base font-semibold'>{actor.name}</span>
-                        <span className='ml-auto line-clamp-1 text-md text-grey-800'>{getUsername(actor)}</span>
+                        <span className='truncate font-semibold'>{actor.name}</span>
+                        <span className='truncate text-grey-800'>{getUsername(actor)}</span>
+                        <span className='ml-auto text-right text-grey-800'>{timestamp}</span>
                     </div>
-                    <div className='grid w-full grid-cols-[auto_170px] gap-4'>
+                    <div className='relative z-10 grid w-full grid-cols-[auto_170px] gap-4'>
                         <div className='flex flex-col'>
                             <div className='flex w-full justify-between gap-4'>
                                 <Heading className='mb-2 line-clamp-2' level={5} data-test-activity-heading>{object.name}</Heading>
                             </div>
                             <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
-                            <p className='mt-auto text-md text-grey-800'>{timestamp}</p>
+                            <div className='flex gap-2'>
+                                <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                                <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
+                            </div>
                         </div>
-                        <div className='relative min-w-[33%] grow'>
+                        {object.image && <div className='relative min-w-[33%] grow'>
                             <img className='absolute h-full w-full rounded object-cover' src={object.image}/>
-                        </div>
+                        </div>}
                     </div>
+                    <div className='absolute -inset-x-3 inset-y-0 z-0 rounded transition-colors group-hover/article:bg-grey-50'></div>
                 </div>
             )}
         </>
@@ -237,19 +222,32 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
 const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
     const {updateRoute} = useRouting();
 
+    const [isClicked, setIsClicked] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    
+    const handleLikeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        setIsClicked(true);
+        setIsLiked(!isLiked);
+        setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
+    };
+
     return (
         <Page>
             <ViewContainer
                 toolbarBorder={false}
                 type='page'
             >
-                <div className='grid grid-cols-[1fr_minmax(320px,_600px)_1fr] gap-x-6 pb-4'>
+                <div className='grid grid-cols-[1fr_minmax(320px,_700px)_1fr] gap-x-6 pb-4'>
                     <div>
                         <Button icon='chevron-left' iconSize='xs' label='Inbox' data-test-back-button onClick={onBackToList}/>
                     </div>
-                    <div className='flex items-center'>
-                        <img src=''/>
+                    <div className='flex items-center justify-between'>
                         <span className='text-base font-semibold'>Placeholder</span>
+                        <div className='flex flex-row-reverse gap-2'>
+                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                            <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
+                        </div>
                     </div>
                     <div className='flex justify-end'>
                         <Button icon='arrow-top-right' iconSize='xs' label='Visit site' onClick={() => updateRoute('/')}/>
