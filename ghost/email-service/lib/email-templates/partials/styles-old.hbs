@@ -272,7 +272,7 @@ figcaption {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    color: {{secondaryTextColor}};
+    color: #738a94;
 }
 
 figcaption a {
@@ -327,11 +327,6 @@ figure blockquote p {
     padding-top: 32px;
 }
 
-.site-info-bordered {
-    padding-top: 32px;
-    border-bottom: 1px solid #e5eff5;
-}
-
 .site-url {
     color: #15212A;
     font-size: 16px;
@@ -342,7 +337,7 @@ figure blockquote p {
 }
 
 .site-url-bottom-padding {
-    padding-bottom: 32px;
+    padding-bottom: 12px;
 }
 
 .site-title {
@@ -351,7 +346,7 @@ figure blockquote p {
 
 .site-subtitle {
     color: #738a94;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     text-transform: none;
 }
@@ -381,10 +376,28 @@ figure blockquote p {
     text-align: left;
 }
 
+.post-subhead-wrapper {
+    width: 100%;
+    max-width: 600px !important;
+}
+
+.post-subhead {
+    margin: 0;
+    padding-bottom: 20px;
+    color: #15212A;
+    font-size: 17px;
+    line-height: 1.3em;
+    text-align: center;
+}
+
+.post-subhead-left {
+    text-align: left;
+}
+
 .post-meta,
 .view-online {
     color: #738a94;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     text-align: center;
 }
@@ -442,7 +455,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    color: {{secondaryTextColor}};
+    color: #738a94;
     line-height: 1.5em;
 }
 
@@ -1111,7 +1124,7 @@ a[data-flickr-embed] img {
     padding: 20px;
     margin-bottom: 1.5em;
     border-radius: 4px;
-    border: 1px solid {{secondaryBorderColor}};
+    border: 1px solid #738a94;
 }
 
 
@@ -1287,6 +1300,10 @@ a[data-flickr-embed] img {
         font-size: 16px;
     }
 
+    table.body .post-subhead {
+        font-size: 16px !important;
+    }
+
     table.body pre {
         white-space: pre-wrap !important;
         word-break: break-word !important;
@@ -1326,13 +1343,8 @@ a[data-flickr-embed] img {
         padding-top: 0 !important;
     }
 
-    table.body .site-info,
-    table.body .site-info-bordered {
+    table.body .site-info {
         padding-top: 24px !important;
-    }
-
-    table.body .site-url-bottom-padding {
-        padding-bottom: 24px !important;
     }
 
     table.body .post-title-link {
