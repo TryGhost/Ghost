@@ -284,6 +284,11 @@ export default class LexicalEditorController extends Controller {
         this.set('post.titleScratch', title);
     }
 
+    @action
+    updateExcerptScratch(excerpt) {
+        this.set('post.customExcerptScratch', excerpt);
+    }
+
     // updates local willPublish/Schedule values, does not get applied to
     // the post's `status` value until a save is triggered
     @action

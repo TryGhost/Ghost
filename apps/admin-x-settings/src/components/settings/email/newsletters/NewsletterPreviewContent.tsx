@@ -18,6 +18,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTitle?: string | null;
     headerSubtitle?: string | null;
     showPostTitleSection: boolean;
+    showSubhead: boolean;
     titleAlignment?: string;
     titleFontCategory?: string;
     bodyFontCategory?: string;
@@ -49,6 +50,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTitle,
     headerSubtitle,
     showPostTitleSection,
+    showSubhead,
     titleAlignment,
     titleFontCategory,
     bodyFontCategory,
@@ -75,6 +77,7 @@ const NewsletterPreviewContent: React.FC<{
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
     const hasNewEmailAddresses = useFeatureFlag('newEmailAddresses');
+    const hasSubhead = useFeatureFlag('subhead');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -131,6 +134,9 @@ const NewsletterPreviewContent: React.FC<{
                                     )} style={{color: titleColor}}>
                                         Your email newsletter
                                     </h2>
+                                    {(hasSubhead && showSubhead) && (
+                                        <p className="mb-4 text-[1.6rem] leading-[1.7] text-black">A subhead that highlights the key points of your newsletter.</p>
+                                    )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
                                         titleAlignment === 'center' ? 'flex-col' : 'flex-row'

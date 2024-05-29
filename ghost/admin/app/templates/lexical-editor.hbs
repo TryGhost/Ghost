@@ -61,10 +61,12 @@
             --}}
             <GhKoenigEditorLexical
                 @title={{readonly this.post.titleScratch}}
+                @excerpt={{readonly this.post.customExcerpt}}
                 @titleAutofocus={{this.shouldFocusTitle}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
                 @titleHasTk={{this.titleHasTk}}
                 @onTitleChange={{this.updateTitleScratch}}
+                @onExcerptChange={{this.updateExcerptScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
