@@ -107,7 +107,7 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
                     }
 
                     const textBeforeRegExp = /(^|\s)@$/;
-                    const textAfterRegExp = /^($|\s)/;
+                    const textAfterRegExp = /^($|\s|\.)/;
 
                     if (
                         textBeforeRegExp.test(textBeforeAnchor)

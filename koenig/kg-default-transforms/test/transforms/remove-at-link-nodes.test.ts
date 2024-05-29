@@ -392,6 +392,114 @@ describe('Remove AtLink nodes transform', function () {
         assertTransform(editor, registerTransforms, before, after);
     });
 
+    it('removes when succeeded by period', function () {
+        const before = {
+            root: {
+                children: [
+                    {
+                        children: [
+                            {
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: 'Test ',
+                                type: 'text',
+                                version: 1
+                            },
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: '',
+                                        type: 'zwnj',
+                                        version: 1
+                                    },
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'search',
+                                        type: 'at-link-search',
+                                        version: 1,
+                                        placeholder: null
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'at-link',
+                                version: 1,
+                                linkFormat: 0
+                            },
+                            {
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: '.',
+                                type: 'text',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        const after = {
+            root: {
+                children: [
+                    {
+                        children: [
+                            {
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: 'Test.',
+                                type: 'text',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        const registerTransforms = (editor: LexicalEditor) => {
+            registerRemoveAtLinkNodesTransform(editor);
+        };
+
+        const editor = createEditor({nodes});
+
+        assertTransform(editor, registerTransforms, before, after);
+    });
+
     it('can register without node loaded in editor', function () {
         const registerTransforms = (editor: LexicalEditor) => {
             registerRemoveAtLinkNodesTransform(editor);
