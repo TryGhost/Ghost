@@ -15,7 +15,15 @@ export function InputListLoadingItem({dataTestId}) {
     );
 }
 
-export function InputListItem({dataTestId, item, selected, onClick, onMouseOver, highlightString}) {
+export function InputListItem({dataTestId, item, selected, onClick, onMouseOver, highlightString, scrollIntoView}) {
+    const itemRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (selected && scrollIntoView) {
+            itemRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
+        }
+    }, [selected, scrollIntoView]);
+
     let selectionClass = '';
 
     if (selected) {
@@ -58,7 +66,7 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver,
     const Icon = item.Icon;
 
     return (
-        <li aria-selected={selected} className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} role="option" onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
+        <li ref={itemRef} aria-selected={selected} className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} role="option" onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
             <span className="line-clamp-1 flex items-center gap-[.6rem]">
                 {Icon && <Icon className="size-[1.4rem] stroke-[1.5px]" />}
                 <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-label`}><HighlightedLabel /></span>
@@ -98,13 +106,14 @@ export function InputListCopy({autoFocus, className, inputClassName, dataTestId,
         setInputFocused(false);
     };
 
-    const getItem = (item, selected, onMouseOver) => {
+    const getItem = (item, selected, onMouseOver, scrollIntoView) => {
         return (
             <InputListItem
                 key={item.value}
                 dataTestId={dataTestId}
                 highlightString={value}
                 item={item}
+                scrollIntoView={scrollIntoView}
                 selected={selected}
                 onClick={onSelectEvent}
                 onMouseOver={onMouseOver}

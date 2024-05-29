@@ -88,13 +88,14 @@ export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query,
         };
     }, [editor, scrollContainer, updatePopupPosition]);
 
-    const getItem = (item, selected, onMouseOver) => {
+    const getItem = (item, selected, onMouseOver, scrollIntoView) => {
         return (
             <InputListItem
                 key={item.value}
                 dataTestId={testId}
                 highlightString={query}
                 item={item}
+                scrollIntoView={scrollIntoView}
                 selected={selected}
                 onClick={onSelect}
                 onMouseOver={onMouseOver}

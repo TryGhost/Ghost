@@ -20,6 +20,7 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
     const items = groups.flatMap(group => group.items);
     const defaultIndex = Math.max(0, items.findIndex(item => item === defaultSelected));
     const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex);
+    const [scrollSelectedIntoView, setScrollSelectedIntoView] = React.useState(false);
 
     // If items change, check if the selectedIndex is still valid, and if not, reset it to 0
     React.useEffect(() => {
@@ -41,6 +42,7 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
             setSelectedIndex((i) => {
                 return Math.min(i + 1, items.length - 1);
             });
+            setScrollSelectedIntoView(true);
         }
         if (event.key === 'ArrowUp') {
             // The stop propagation is required for Safari
@@ -49,6 +51,7 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
             setSelectedIndex((i) => {
                 return Math.max(i - 1, 0);
             });
+            setScrollSelectedIntoView(true);
         }
         if (event.key === 'Enter') {
             // The stop propagation is required for Safari
@@ -75,8 +78,11 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
                         const itemsBefore = groups.slice(0, groupIndex).reduce((sum, prevGroup) => sum + prevGroup.items.length, 0);
                         const absoluteIndex = itemsBefore + index;
                         const isSelected = absoluteIndex === selectedIndex && !!item.value;
-                        const onMouseOver = () => !!item.value && setSelectedIndex(absoluteIndex);
-                        return getItem(item, isSelected, onMouseOver);
+                        const onMouseOver = () => {
+                            !!item.value && setSelectedIndex(absoluteIndex);
+                            setScrollSelectedIntoView(false);
+                        };
+                        return getItem(item, isSelected, onMouseOver, scrollSelectedIntoView);
                     })}
                 </Group>
             ))}
