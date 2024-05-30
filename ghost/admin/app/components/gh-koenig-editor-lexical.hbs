@@ -56,6 +56,22 @@
                 {{on "paste" this.cleanPastedTitle}}
                 data-test-editor-title-input={{true}}
             />
+
+            {{#if (feature 'editorSubtitle')}}
+                <GhTextarea
+                    @class="gh-editor-subtitle"
+                    @placeholder="Add a post excerpt..."
+                    @shouldFocus={{false}}
+                    @tabindex="1"
+                    @autoExpand=".gh-koenig-editor"
+                    @value={{readonly this.excerpt}}
+                    @input={{this.updateExcerpt}}
+                    @focus-out={{optional @blurExcerpt}}
+                    @keyDown={{this.onExcerptKeydown}}
+                    data-test-editor-subhead-input={{true}}
+                />
+                <hr class="gh-editor-title-divider">
+            {{/if}}
         </div>
 
         <KoenigLexicalEditor

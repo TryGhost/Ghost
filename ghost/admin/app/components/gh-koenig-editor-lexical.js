@@ -6,6 +6,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class GhKoenigEditorReactComponent extends Component {
     @service settings;
+    @service feature;
 
     containerElement = null;
     titleElement = null;
@@ -28,6 +29,10 @@ export default class GhKoenigEditorReactComponent extends Component {
             return color.slice(1);
         }
         return color;
+    }
+
+    get excerpt() {
+        return this.args.excerpt || '';
     }
 
     @action
@@ -112,28 +117,65 @@ export default class GhKoenigEditorReactComponent extends Component {
     // - Enter, creating an empty paragraph when editor is not empty
     @action
     onTitleKeydown(event) {
-        const {editorAPI} = this;
+        if (this.feature.get('editorSubtitle')) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const subheadElement = document.querySelector('.gh-editor-subtitle');
+                if (subheadElement) {
+                    subheadElement.focus();
+                }
+            }
+        } else {
+            const {editorAPI} = this;
 
-        if (!editorAPI || event.originalEvent.isComposing) {
-            return;
-        }
+            if (!editorAPI || event.originalEvent.isComposing) {
+                return;
+            }
 
-        const {key} = event;
-        const {value, selectionStart} = event.target;
+            const {key} = event;
+            const {value, selectionStart} = event.target;
 
-        const couldLeaveTitle = !value || selectionStart === value.length;
-        const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;
+            const couldLeaveTitle = !value || selectionStart === value.length;
+            const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;
 
-        if (key === 'Enter' || key === 'Tab' || arrowLeavingTitle) {
-            event.preventDefault();
+            if (key === 'Enter' || key === 'Tab' || arrowLeavingTitle) {
+                event.preventDefault();
 
-            if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
-                editorAPI.insertParagraphAtTop({focus: true});
-            } else {
-                editorAPI.focusEditor({position: 'top'});
+                if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
+                    editorAPI.insertParagraphAtTop({focus: true});
+                } else {
+                    editorAPI.focusEditor({position: 'top'});
+                }
             }
         }
     }
+
+    // Subhead ("excerpt") Actions -------------------------------------------
+
+    @action
+    updateExcerpt(event) {
+        this.args.onExcerptChange?.(event.target.value);
+    }
+
+    @action
+    focusExcerpt() {
+        this.args.onExcerptFocus?.();
+    }
+
+    @action
+    blurExcerpt() {
+        this.args.onExcerptBlur?.();
+    }
+
+    @action
+    onExcerptKeydown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.editorAPI.focusEditor({position: 'top'});
+        }
+    }
+
+    // move cursor to the editor on
 
     // Body actions ------------------------------------------------------------
 
