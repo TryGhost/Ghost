@@ -374,10 +374,18 @@ export default class KoenigLexicalEditor extends Component {
                 }
             }
 
-            // only published posts/pages have URLs
+            // only published posts/pages and staff with posts have URLs
             const filteredResults = [];
             results.forEach((group) => {
-                const items = (group.groupName === 'Posts' || group.groupName === 'Pages') ? group.options.filter(i => i.status === 'published') : group.options;
+                let items = group.options;
+
+                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
+                    items = items.filter(i => i.status === 'published');
+                }
+
+                if (group.groupName === 'Staff') {
+                    items = items.filter(i => !/\/404\//.test(i.url));
+                }
 
                 if (items.length === 0) {
                     return;
