@@ -261,13 +261,14 @@ export function getFreeProduct({
 }
 
 export function getBenefits({numOfBenefits}) {
+    const timestamp = Date.now();
     const random = Math.floor(Math.random() * 100);
 
     const beenfits = [
-        getBenefitData({name: `Limited early adopter pricing #${random}`}),
-        getBenefitData({name: `Latest gear reviews #${random}`}),
-        getBenefitData({name: `Weekly email newsletter #${random}`}),
-        getBenefitData({name: `Listen to my podcast #${random}`})
+        getBenefitData({name: `Limited early adopter pricing #${random}-${timestamp}`}),
+        getBenefitData({name: `Latest gear reviews #${random}-${timestamp}`}),
+        getBenefitData({name: `Weekly email newsletter #${random}-${timestamp}`}),
+        getBenefitData({name: `Listen to my podcast #$${random}-${timestamp}`})
     ];
     return beenfits.slice(0, numOfBenefits);
 }
