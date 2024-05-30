@@ -31,8 +31,8 @@ const defaultTheme = {
     },
     code: undefined,
     tkHighlighted: 'bg-lime-500 dark:bg-lime-800 py-1',
-    atLink: 'inline-block bg-grey-200 dark:bg-grey-800 px-1',
-    atLinkSearch: 'after:content-[attr(data-placeholder)] after:text-grey-500 min-w-[5px]'
+    atLink: 'inline-block bg-grey-200/70 dark:bg-grey-900',
+    atLinkSearch: 'after:content-[attr(data-placeholder)] after:text-grey-500 dark:after:text-grey-600 min-w-[5px]'
 };
 
 export default defaultTheme;
