@@ -59,7 +59,7 @@
 
             {{#if (feature 'subhead')}}
                 <GhTextarea
-                    @class="gh-editor-subhead"
+                    @class={{concat "gh-editor-subhead " (if this.excerptIsInvalid "red")}}
                     @placeholder="Add a subhead..."
                     @shouldFocus={{false}}
                     @tabindex="1"
@@ -70,6 +70,11 @@
                     @keyDown={{this.onExcerptKeydown}}
                     data-test-editor-subhead-input={{true}}
                 />
+                {{#if this.excerptIsInvalid}}
+                    <div class="gh-editor-subhead-error">
+                        {{{this.excerptErrorMessage}}}
+                    </div>
+                {{/if}}
                 <hr class="gh-editor-title-divider">
             {{/if}}
         </div>

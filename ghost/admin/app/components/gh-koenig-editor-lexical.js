@@ -18,6 +18,8 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     @tracked titleIsHovered = false;
     @tracked titleIsFocused = false;
+    @tracked excerptIsInvalid = false;
+    @tracked excerptErrorMessage = '';
 
     get title() {
         return this.args.title === '(Untitled)' ? '' : this.args.title;
@@ -152,8 +154,19 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     // Subheader ("excerpt") Actions -------------------------------------------
 
+    validateInput(value) {
+        if (value.length > 300) {
+            this.excerptIsInvalid = true;
+            this.excerptErrorMessage = 'Please keep the excerpt under 300 characters.';
+        } else {
+            this.excerptIsInvalid = false;
+            this.excerptErrorMessage = '';
+        }
+    }
+
     @action
     updateExcerpt(event) {
+        this.validateInput(event.target.value);
         this.args.onExcerptChange?.(event.target.value);
     }
 
