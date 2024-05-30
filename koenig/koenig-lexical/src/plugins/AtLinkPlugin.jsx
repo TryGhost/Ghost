@@ -53,7 +53,13 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
 
     const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState(null);
     const [query, setQuery] = React.useState('');
-    const {isSearching, listOptions} = useSearchLinks(query, searchLinks);
+    const {isSearching, listOptions} = useSearchLinks(query, searchLinks, {
+        noResultOptions() {
+            return [{
+                label: 'No results found'
+            }];
+        }
+    });
 
     // register an event listener to detect '@' character being typed
     // - we only ever want to convert an '@' to an at-link node when it's typed
@@ -356,6 +362,11 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
     // when a search result is selected, replace the at-link node with a link node
     const onItemSelect = React.useCallback((item) => {
         editor.update(() => {
+            if (!item?.value) {
+                $removeAtLink(focusedAtLinkNode, {focus: true});
+                return;
+            }
+
             const linkNode = $createLinkNode(item.value);
             const textNode = $createTextNode(item.label);
             linkNode.append(textNode);
@@ -376,7 +387,7 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
 
     // otherwise render search results popup
     return (
-        <Portal>
+        <Portal data-testid="at-link-popup">
             <AtLinkResultsPopup
                 atLinkNode={focusedAtLinkNode}
                 isSearching={isSearching}

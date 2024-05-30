@@ -17,7 +17,7 @@ function urlQueryOptions(query) {
     }];
 }
 
-function noResultOptions(query) {
+function defaultNoResultOptions(query) {
     return [{
         label: 'Link to web page',
         items: [{
@@ -29,7 +29,7 @@ function noResultOptions(query) {
     }];
 }
 
-function convertSearchResultsToListOptions(results) {
+function convertSearchResultsToListOptions(results, {noResultOptions} = {noResultOptions: defaultNoResultOptions}) {
     if (!results || !results.length) {
         return noResultOptions();
     }
@@ -50,7 +50,7 @@ function convertSearchResultsToListOptions(results) {
     });
 }
 
-export const useSearchLinks = (query, searchLinks) => {
+export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
     const [defaultListOptions, setDefaultListOptions] = React.useState([]);
     const [listOptions, setListOptions] = React.useState([]);
     const [isSearching, setIsSearching] = React.useState(false);
@@ -64,7 +64,7 @@ export const useSearchLinks = (query, searchLinks) => {
 
             setIsSearching(true);
             const results = await searchLinks(term);
-            setListOptions(convertSearchResultsToListOptions(results));
+            setListOptions(convertSearchResultsToListOptions(results, {noResultOptions}));
             setIsSearching(false);
         };
     }, [searchLinks]);

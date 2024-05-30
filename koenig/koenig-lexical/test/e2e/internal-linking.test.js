@@ -106,7 +106,7 @@ test.describe('Internal linking', async () => {
 
             await page.keyboard.type('[');
 
-            await expect(page.locator('[data-testid="bookmark-url-listOption"]')).toBeVisible();
+            await expect(page.locator('[data-testid="bookmark-url-dropdown"]')).toBeVisible();
         });
 
         test('matches URL queries (http)', async function () {
@@ -164,11 +164,99 @@ test.describe('Internal linking', async () => {
         });
     });
 
-    test.describe('Link toolbar', function () {
-
-    });
+    test.describe('Link toolbar', function () {});
 
     test.describe('At-linking', function () {
+        test('displays default links with no query', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('@');
 
+            await assertHTML(page, html`
+                <p>
+                    <span>
+                        <span data-lexical-text="true">‌</span>
+                        <span
+                            data-placeholder="Search for a link"
+                            data-lexical-text="true"
+                        ></span>
+                    </span>
+                </p>
+            `);
+
+            await assertHTML(page, html`
+                <div>
+                    <div>
+                        <div>
+                            <ul>
+                                <li>Latest posts</li>
+                                <li aria-selected="true" role="option">
+                                    <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
+                                    <span>
+                                        <span title="Members only"><svg></svg></span>
+                                        <span>8 May 2024</span>
+                                    </span>
+                                </li>
+                                <li aria-selected="false" role="option">
+                                    <span><span>Robotics Renaissance: How Automation is Transforming Industries</span></span>
+                                </li>
+                                <li aria-selected="false" role="option">
+                                    <span><span>Biodiversity Conservation in Fragile Ecosystems</span></span>
+                                </li>
+                                <li aria-selected="false" role="option">
+                                    <span><span>Unveiling the Crisis of Plastic Pollution: Analyzing Its Profound Impact on the Environment</span></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `, {selector: '[data-testid="at-link-popup"]'});
+        });
+
+        test('can search for links', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('@');
+            await page.keyboard.type('Emo');
+
+            await assertHTML(page, html`
+                <p>
+                    <span dir="ltr">
+                        <span data-lexical-text="true">‌</span>
+                        <span data-placeholder="" data-lexical-text="true">Emo</span>
+                    </span>
+                </p>
+            `);
+
+            // wait for search to complete
+            await expect(page.locator('[data-testid="at-link-results-listOption-label"]')).toContainText(['✨ Emoji autocomplete ✨']);
+
+            await assertHTML(page, html`
+                <div>
+                    <div>
+                        <div>
+                            <ul>
+                                <li>Posts</li>
+                                <li aria-selected="true" role="option">
+                                    <span><span>✨ <span>Emo</span>ji autocomplete ✨</span></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `, {selector: '[data-testid="at-link-popup"]'});
+        });
+
+        test('has custom no result options', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('@');
+            await page.keyboard.type('Unknown page');
+
+            await expect(page.locator('[data-testid="at-link-popup"]')).toContainText('No results found');
+
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <p><span data-lexical-text="true">@Unknown page</span></p>
+            `);
+        });
     });
 });

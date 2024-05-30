@@ -2,7 +2,7 @@ import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
 import {createPortal} from 'react-dom';
 
-function Portal({children, to, className}) {
+function Portal({children, to, className, ...props}) {
     const {darkMode} = React.useContext(KoenigComposerContext);
 
     const container = to || document.body;
@@ -16,7 +16,7 @@ function Portal({children, to, className}) {
     }
 
     return createPortal(
-        <div className="koenig-lexical" style={{width: 'fit-content'}} data-kg-portal onMouseDown={cancelEvents}>
+        <div className="koenig-lexical" style={{width: 'fit-content'}} data-kg-portal onMouseDown={cancelEvents} {...props}>
             <div className={`${darkMode ? 'dark' : ''} ${className || ''}`}>
                 {children}
             </div>
