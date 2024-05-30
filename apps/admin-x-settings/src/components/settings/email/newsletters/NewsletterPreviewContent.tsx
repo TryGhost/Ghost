@@ -135,7 +135,7 @@ const NewsletterPreviewContent: React.FC<{
                                         Your email newsletter
                                     </h2>
                                     {(hasNewsletterSubtitle && showSubhead) && (
-                                        <p className="mb-4 text-[1.6rem] leading-[1.7] text-black">A subtitle that highlights the key points of your newsletter.</p>
+                                        <p className="mb-4 text-pretty text-[1.6rem] leading-[1.7] text-black">A subtitle can help highlight key points and engage your readers.</p>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',

@@ -417,26 +417,28 @@ const Sidebar: React.FC<{
                         value={newsletter.title_color}
                         onChange={color => updateNewsletter({title_color: color})}
                     />}
+                    <ToggleGroup gap='lg'>
+                        {(hasNewsletterSubtitle && newsletter.show_post_title_section) &&
+                            <Toggle
+                                checked={newsletter.show_subhead}
+                                direction="rtl"
+                                label='Subtitle'
+                                onChange={e => updateNewsletter({show_subhead: e.target.checked})}
+                            />
+                        }
+                        <Toggle
+                            checked={newsletter.show_feature_image}
+                            direction="rtl"
+                            label='Feature image'
+                            onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
+                        />
+                    </ToggleGroup>
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         testId='body-font-select'
                         title='Body style'
                         onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                    />
-                    {hasNewsletterSubtitle && 
-                        <Toggle
-                            checked={newsletter.show_subhead}
-                            direction="rtl"
-                            label='Subtitle'
-                            onChange={e => updateNewsletter({show_subhead: e.target.checked})}
-                        />
-                    }
-                    <Toggle
-                        checked={newsletter.show_feature_image}
-                        direction="rtl"
-                        label='Feature image'
-                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
