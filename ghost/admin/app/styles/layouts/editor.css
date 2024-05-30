@@ -811,8 +811,20 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border: none !important;
 }
 
+.gh-editor-subtitle-error {
+    margin-top: .8rem;
+    color: var(--red-d1);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
 .gh-editor-title-divider {
     margin: 1.6rem 0 4.8rem;
+}
+
+.gh-editor-title-divider-error {
+    margin: .4rem 0 4.8rem;
+    border-top: 1px solid var(--red);
 }
 
 .gh-editor .tk-indicator {

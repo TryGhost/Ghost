@@ -71,11 +71,11 @@
                     data-test-editor-subhead-input={{true}}
                 />
                 {{#if this.excerptIsInvalid}}
-                    <div class="gh-editor-subhead-error">
+                    <div class="gh-editor-subtitle-error">
                         {{{this.excerptErrorMessage}}}
                     </div>
                 {{/if}}
-                <hr class="gh-editor-title-divider">
+                <hr class="gh-editor-title-divider {{if this.excerptIsInvalid "gh-editor-title-divider-error" ""}}">
             {{/if}}
         </div>
 
