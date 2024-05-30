@@ -60,8 +60,6 @@
             {{#if (feature 'editorSubtitle')}}
                 <GhTextarea
                     @class={{concat "gh-editor-subtitle " (if this.excerptIsInvalid "red")}}
-                    @placeholder="Add a subhead..."
-                    @class="gh-editor-subtitle"
                     @placeholder="Add a subtitle..."
                     @shouldFocus={{false}}
                     @tabindex="1"
