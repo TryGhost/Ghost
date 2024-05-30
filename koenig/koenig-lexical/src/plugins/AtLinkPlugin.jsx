@@ -47,19 +47,19 @@ function $removeAtLink(node, {focus = false} = {}) {
     }
 }
 
+function noResultOptions() {
+    return [{
+        label: 'No results found'
+    }];
+}
+
 // Manages at-link search nodes and display of the search results panel when appropriate
 export const KoenigAtLinkPlugin = ({searchLinks}) => {
     const [editor] = useLexicalComposerContext();
-
     const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState(null);
     const [query, setQuery] = React.useState('');
-    const {isSearching, listOptions} = useSearchLinks(query, searchLinks, {
-        noResultOptions() {
-            return [{
-                label: 'No results found'
-            }];
-        }
-    });
+    const searchOptions = React.useMemo(() => ({noResultOptions}), []);
+    const {isSearching, listOptions} = useSearchLinks(query, searchLinks, searchOptions);
 
     // register an event listener to detect '@' character being typed
     // - we only ever want to convert an '@' to an at-link node when it's typed

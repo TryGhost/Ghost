@@ -64,10 +64,19 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
 
             setIsSearching(true);
             const results = await searchLinks(term);
+
+            // can return undefined if the search was cancelled, avoid updating
+            // in that scenario because we can end up in a race condition where
+            // we overwrite the results with an empty array whilst still waiting
+            // for a later search to complete. Avoids flashing of "no results".
+            if (results === undefined) {
+                return;
+            }
+
             setListOptions(convertSearchResultsToListOptions(results, {noResultOptions}));
             setIsSearching(false);
         };
-    }, [searchLinks]);
+    }, [searchLinks, noResultOptions]);
 
     const debouncedSearch = React.useMemo(() => {
         return debounce(search, DEBOUNCE_MS);
