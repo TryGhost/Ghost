@@ -1045,6 +1045,7 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
+                showSubhead: newsletter.get('show_subhead'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
@@ -1078,6 +1079,7 @@ class EmailRenderer {
             classes: {
                 title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
+                subtitle: 'post-subtitle' + (newsletter.get('title_alignment') === 'left' ? ` post-subtitle-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

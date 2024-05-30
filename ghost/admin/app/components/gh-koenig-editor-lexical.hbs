@@ -57,10 +57,12 @@
                 data-test-editor-title-input={{true}}
             />
 
-            {{#if (feature 'subhead')}}
+            {{#if (feature 'editorSubtitle')}}
                 <GhTextarea
-                    @class={{concat "gh-editor-subhead " (if this.excerptIsInvalid "red")}}
+                    @class={{concat "gh-editor-subtitle " (if this.excerptIsInvalid "red")}}
                     @placeholder="Add a subhead..."
+                    @class="gh-editor-subtitle"
+                    @placeholder="Add a subtitle..."
                     @shouldFocus={{false}}
                     @tabindex="1"
                     @autoExpand=".gh-koenig-editor"

@@ -1995,6 +1995,7 @@ describe('Email renderer', function () {
                 title: 'post-title post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
+                subtitle: 'post-subtitle post-subtitle-left',
                 body: 'post-content-sans-serif'
             });
         });

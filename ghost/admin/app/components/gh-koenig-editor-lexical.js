@@ -119,10 +119,10 @@ export default class GhKoenigEditorReactComponent extends Component {
     // - Enter, creating an empty paragraph when editor is not empty
     @action
     onTitleKeydown(event) {
-        if (this.feature.get('subhead')) {
+        if (this.feature.get('editorSubtitle')) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                const subheadElement = document.querySelector('.gh-editor-subhead');
+                const subheadElement = document.querySelector('.gh-editor-subtitle');
                 if (subheadElement) {
                     subheadElement.focus();
                 }
@@ -152,7 +152,7 @@ export default class GhKoenigEditorReactComponent extends Component {
         }
     }
 
-    // Subheader ("excerpt") Actions -------------------------------------------
+    // Subhead ("excerpt") Actions -------------------------------------------
 
     validateInput(value) {
         if (value.length > 300) {
