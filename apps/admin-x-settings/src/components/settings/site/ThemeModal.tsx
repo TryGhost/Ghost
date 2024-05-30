@@ -90,7 +90,22 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const onThemeUpload = async (file: File) => {
         const themeFileName = file?.name.replace(/\.zip$/, '');
         const existingThemeNames = themes.map(t => t.name);
-        if (existingThemeNames.includes(themeFileName)) {
+        if (isDefaultOrLegacyTheme({name: themeFileName})) {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Cannot overwrite theme',
+                cancelLabel: 'Cancel',
+                okLabel: '',
+                prompt: (
+                    <>
+                        <p>Sorry, <strong>{themeFileName}</strong> is a default theme and cannot be overwritten.</p>
+                        <p>Please rename your zip file and try again.</p>
+                    </>
+                ),
+                onOk: async (confirmModal) => {
+                    confirmModal?.remove();
+                }
+            });
+        } else if (existingThemeNames.includes(themeFileName)) {
             NiceModal.show(ConfirmationModal, {
                 title: 'Overwrite theme',
                 prompt: (
