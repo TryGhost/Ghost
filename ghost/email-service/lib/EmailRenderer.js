@@ -872,18 +872,23 @@ class EmailRenderer {
      *
      * @param {*} text
      * @param {number} maxLength
-     * @param {number} maxLengthMobile should be larger than maxLength
+     * @param {number} maxLengthMobile should be smaller than maxLength
      * @returns
      */
     truncateHtml(text, maxLength, maxLengthMobile) {
-        if (!maxLengthMobile || maxLength >= maxLengthMobile) {
+        if (!maxLengthMobile || maxLength <= maxLengthMobile) {
             return escapeHtml(this.truncateText(text, maxLength));
         }
-        if (text && text.length > maxLength) {
-            if (text.length <= maxLengthMobile) {
-                return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '<span class="hide-mobile">…</span>';
+        if (text && text.length > maxLengthMobile) {
+            let ellipsis = '';
+
+            if (text.length > maxLengthMobile && text.length <= maxLength) {
+                ellipsis = '<span class="hide-desktop">…</span>';
+            } else if (text.length > maxLength) {
+                ellipsis = '...';
             }
-            return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '…';
+
+            return escapeHtml(text.substring(0, maxLengthMobile - 1)) + '<span class="desktop-only">' + escapeHtml(text.substring(maxLengthMobile - 1, maxLength - 1)) + '</span>' + ellipsis;
         } else {
             return escapeHtml(text ?? '');
         }
@@ -1032,7 +1037,7 @@ class EmailRenderer {
                 const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 105, 105),
+                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 95, featureImageMobile ? 55 : 75),
                     url: this.#getPostUrl(latestPost),
                     featureImage: featureImage ? {
                         src: featureImage,
@@ -1044,7 +1049,7 @@ class EmailRenderer {
                         width: featureImageMobileWidth,
                         height: featureImageMobileHeight
                     } : null,
-                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 60 : 70, 105)
+                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 120 : 130, featureImageMobile ? 90 : 100)
                 });
 
                 if (featureImage) {
