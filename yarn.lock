@@ -28924,10 +28924,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testem@3.13.0, testem@^3.2.0:
-  version "3.13.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.13.0.tgz#27d6b2c50e9607f2c2d4ea5f75c88b3434dac7a0"
-  integrity sha512-b4hdlkH2TR1TQJCOgBNbD7nz4TjeYF35MgUlzum3yfDaaR+lJDjmJNMgi72MKgg+SjkGZ1U3BCBOqLC85MsMmQ==
+testem@3.14.0, testem@^3.2.0:
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.14.0.tgz#ba563f5940d4c4c37e0b3db6d56b001b9aed80d4"
+  integrity sha512-hpybTZhio6DXUM7s0HsE8EOnN8zuA6LdNcz3EsTpQSnD56Cj6gSuFQx82wDKZQ6OmM1kvIBebxP+rEoOYBgCOA==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
