@@ -372,6 +372,7 @@ export default class KoenigLexicalEditor extends Component {
                 if (!didCancel(error)) {
                     throw error;
                 }
+                return;
             }
 
             // only published posts/pages and staff with posts have URLs
