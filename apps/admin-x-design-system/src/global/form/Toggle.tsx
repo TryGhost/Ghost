@@ -9,6 +9,7 @@ export type ToggleDirections = 'ltr' | 'rtl';
 export interface ToggleProps {
     checked?: boolean;
     disabled?: boolean;
+    name?: string;
     error?: boolean;
     size?: ToggleSizes;
     label?: React.ReactNode;
@@ -33,6 +34,7 @@ const Toggle: React.FC<ToggleProps> = ({
     error,
     checked,
     disabled,
+    name,
     onChange
 }) => {
     const id = useId();
@@ -95,6 +97,7 @@ const Toggle: React.FC<ToggleProps> = ({
                     )}
                     disabled={disabled}
                     id={id}
+                    name={name}
                     role="switch"
                     type="checkbox"
                     onChange={onChange} />

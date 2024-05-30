@@ -13,7 +13,7 @@ const FeatureToggle: React.FC<{ flag: string; label?: string; }> = ({label, flag
     const client = useQueryClient();
     const handleError = useHandleError();
 
-    return <Toggle checked={labs[flag]} label={label} labelClasses='sr-only' onChange={async () => {
+    return <Toggle checked={labs[flag]} label={label} labelClasses='sr-only' name={`feature-${flag}`} onChange={async () => {
         const newValue = !labs[flag];
         try {
             await editSettings([{
