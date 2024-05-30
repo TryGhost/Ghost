@@ -52,7 +52,9 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'subhead'
+    'editorSubtitle',
+    'newsletterSubtitle',
+    'internalLinkingAtLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

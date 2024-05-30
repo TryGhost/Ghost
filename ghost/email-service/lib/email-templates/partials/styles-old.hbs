@@ -308,6 +308,7 @@ figure blockquote p {
 
 .header-image {
     padding-top: 24px;
+    padding-bottom: 16px;
 }
 
 .site-icon {
@@ -376,12 +377,12 @@ figure blockquote p {
     text-align: left;
 }
 
-.post-subhead-wrapper {
+.post-subtitle-wrapper {
     width: 100%;
     max-width: 600px !important;
 }
 
-.post-subhead {
+.post-subtitle {
     margin: 0;
     padding-bottom: 20px;
     color: #15212A;
@@ -390,7 +391,7 @@ figure blockquote p {
     text-align: center;
 }
 
-.post-subhead-left {
+.post-subtitle-left {
     text-align: left;
 }
 
@@ -434,13 +435,15 @@ figure blockquote p {
     text-decoration: underline !important;
 }
 
-.feature-image-row:first-child > td {
-    padding-top: 24px;
-}
-
 .feature-image {
     padding-bottom: 30px;
     width: 100%;
+}
+
+.feature-image-row:first-child > td,
+.header-image-row + .feature-image-row > td,
+.site-info-row + .feature-image-row > td {
+    padding-top: 24px;
 }
 
 .feature-image-with-caption {
@@ -609,7 +612,7 @@ figure blockquote p {
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
-    padding-top: 52px;
+    padding-top: 32px;
 }
 
 .post-content a,
@@ -1300,7 +1303,7 @@ a[data-flickr-embed] img {
         font-size: 16px;
     }
 
-    table.body .post-subhead {
+    table.body .post-subtitle {
         font-size: 16px !important;
     }
 
