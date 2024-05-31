@@ -243,6 +243,6 @@ test.describe('Theme settings', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/responses/source.zip`);
 
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/Cannot overwrite theme/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/Upload failed/);
     });
 });
