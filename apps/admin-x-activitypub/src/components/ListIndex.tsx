@@ -180,8 +180,8 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     
-    const handleLikeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.stopPropagation();
+    const handleLikeClick = (event: React.MouseEvent<HTMLButtonElement> | undefined) => {
+        event?.stopPropagation();
         setIsClicked(true);
         setIsLiked(!isLiked);
         setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
