@@ -115,11 +115,11 @@ const NewsletterPreviewContent: React.FC<{
                         <div className="border border-transparent px-16" style={{borderColor}}>
                             {headerImage && (
                                 <div>
-                                    <img alt="" className="mt-6 block" src={headerImage} />
+                                    <img alt="" className="mb-4 mt-6 block" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
-                                <div className="border-b border-grey-200 py-8" style={{borderColor: secondaryBorderColor}}>
+                                <div className="py-3" style={{borderColor: secondaryBorderColor}}>
                                     {headerIcon && <img alt="" className="mx-auto mb-2 h-10 w-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-md font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
@@ -135,7 +135,7 @@ const NewsletterPreviewContent: React.FC<{
                                         Your email newsletter
                                     </h2>
                                     {(hasNewsletterSubtitle && showSubhead) && (
-                                        <p className="mb-4 text-[1.6rem] leading-[1.7] text-black">A subtitle that highlights the key points of your newsletter.</p>
+                                        <p className="mb-5 text-pretty text-[1.6rem] leading-[1.7] text-black">A subtitle can help highlight key points and engage your readers.</p>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
@@ -153,14 +153,21 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Feature image */}
                             {showFeatureImage && (
                                 <>
-                                    <div className="h-[300px] w-full max-w-[600px] bg-grey-200 bg-cover bg-no-repeat">
+                                    <div className={clsx(
+                                        'h-[300px] w-full max-w-[600px] bg-cover bg-no-repeat',
+                                        showPostTitleSection ? '' : 'pt-6'
+                                    )}>
                                         <img alt="Feature" className='min-h-full min-w-full shrink-0' src={CoverImage} />
                                     </div>
                                     <div className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700" style={{color: secondaryTextColor}}>Feature image caption</div>
                                 </>
                             )}
 
-                            <div className={clsx('max-w-[600px] border-b border-grey-200 pb-5 text-[1.6rem] leading-[1.7] text-black', bodyFontCategory === 'serif' && 'font-serif')} style={{borderColor: secondaryBorderColor}}>
+                            <div className={clsx(
+                                'max-w-[600px] border-b border-grey-200 pb-5 text-[1.6rem] leading-[1.7] text-black',
+                                bodyFontCategory === 'serif' && 'font-serif',
+                                (showFeatureImage || showPostTitleSection) ? '' : 'pt-8'
+                            )} style={{borderColor: secondaryBorderColor}}>
                                 <p className="mb-5" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                                 <p className="mb-5" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                                 <p className="mb-5" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>

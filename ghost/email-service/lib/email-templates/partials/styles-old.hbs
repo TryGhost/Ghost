@@ -308,6 +308,7 @@ figure blockquote p {
 
 .header-image {
     padding-top: 24px;
+    padding-bottom: 16px;
 }
 
 .site-icon {
@@ -390,6 +391,11 @@ figure blockquote p {
     text-align: center;
 }
 
+.post-subtitle-serif {
+    font-family: Georgia, serif;
+    letter-spacing: -0.01em;
+}
+
 .post-subtitle-left {
     text-align: left;
 }
@@ -434,13 +440,15 @@ figure blockquote p {
     text-decoration: underline !important;
 }
 
-.feature-image-row:first-child > td {
-    padding-top: 24px;
-}
-
 .feature-image {
     padding-bottom: 30px;
     width: 100%;
+}
+
+.feature-image-row:first-child > td,
+.header-image-row + .feature-image-row > td,
+.site-info-row + .feature-image-row > td {
+    padding-top: 24px;
 }
 
 .feature-image-with-caption {
@@ -609,7 +617,7 @@ figure blockquote p {
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
-    padding-top: 52px;
+    padding-top: 32px;
 }
 
 .post-content a,
