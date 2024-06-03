@@ -59,18 +59,22 @@
 
             {{#if (feature 'editorSubtitle')}}
                 <GhTextarea
-                    @class="gh-editor-subtitle"
-                    @placeholder="Add a post excerpt..."
+                    @class={{concat "gh-editor-subtitle " (if @excerptErrorMessage "red")}}
+                    @placeholder="Add a subtitle..."
                     @shouldFocus={{false}}
                     @tabindex="1"
                     @autoExpand=".gh-koenig-editor"
                     @value={{readonly this.excerpt}}
-                    @input={{this.updateExcerpt}}
-                    @focus-out={{optional @blurExcerpt}}
+                    @input={{this.onExcerptInput}}
                     @keyDown={{this.onExcerptKeydown}}
-                    data-test-editor-subhead-input={{true}}
+                    data-test-textarea="subtitle"
                 />
-                <hr class="gh-editor-title-divider">
+                {{#if @excerptErrorMessage}}
+                    <div class="gh-editor-subtitle-error" data-test-error="subtitle">
+                        {{@excerptErrorMessage}}
+                    </div>
+                {{/if}}
+                <hr class="gh-editor-title-divider {{if @excerptErrorMessage "gh-editor-title-divider-error" ""}}">
             {{/if}}
         </div>
 

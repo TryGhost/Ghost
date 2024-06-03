@@ -153,18 +153,8 @@ export default class GhKoenigEditorReactComponent extends Component {
     // Subhead ("excerpt") Actions -------------------------------------------
 
     @action
-    updateExcerpt(event) {
-        this.args.onExcerptChange?.(event.target.value);
-    }
-
-    @action
-    focusExcerpt() {
-        this.args.onExcerptFocus?.();
-    }
-
-    @action
-    blurExcerpt() {
-        this.args.onExcerptBlur?.();
+    onExcerptInput(event) {
+        this.args.setExcerpt?.(event.target.value);
     }
 
     @action
