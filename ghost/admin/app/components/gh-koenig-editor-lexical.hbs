@@ -71,11 +71,6 @@
                         @didCreateTextarea={{this.registerSubtitleElement}}
                         data-test-textarea="subtitle"
                     />
-                    {{#if @excerptErrorMessage}}
-                        <div class="gh-editor-subtitle-error" data-test-error="subtitle">
-                            {{@excerptErrorMessage}}
-                        </div>
-                    {{/if}}
                     {{#if @excerptHasTk}}
                         <div
                             class="tk-indicator tk-indicator-subtitle"
@@ -85,8 +80,13 @@
                             TK
                         </div>
                     {{/if}}
+                    <hr class="gh-editor-title-divider {{if @excerptErrorMessage "gh-editor-title-divider-error" ""}}">
+                    {{#if @excerptErrorMessage}}
+                        <div class="gh-editor-subtitle-error" data-test-error="subtitle">
+                            {{@excerptErrorMessage}}
+                        </div>
+                    {{/if}}
                 </div>
-                <hr class="gh-editor-title-divider {{if @excerptErrorMessage "gh-editor-title-divider-error" ""}}">
             {{/if}}
         </div>
 
