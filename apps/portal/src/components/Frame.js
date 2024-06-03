@@ -27,7 +27,7 @@ export default class Frame extends Component {
         const {children, head, title = '', style = {}, dataTestId = '', ...rest} = this.props;
         return (
             <iframe
-                srcDoc={`<!DOCTYPE html>`}
+                srcDoc={`https://account.ghost.org/signin`}
                 data-testid={dataTestId}
                 ref={node => (this.node = node)}
                 title={title}
