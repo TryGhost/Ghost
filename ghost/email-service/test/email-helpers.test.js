@@ -90,7 +90,7 @@ describe('registerHelpers', function () {
         assert.equal(result, true);
     });
 
-    it('usefeature helper returns true', function () {
+    it('hasFeature helper returns true', function () {
         const handlebars = {
             registerHelper: function (name, fn) {
                 this[name] = fn;
@@ -115,7 +115,7 @@ describe('registerHelpers', function () {
         assert.equal(result, true);
     });
 
-    it('usefeature helper returns false', function () {
+    it('hasFeature helper returns false', function () {
         const handlebars = {
             registerHelper: function (name, fn) {
                 this[name] = fn;

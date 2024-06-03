@@ -1035,6 +1035,7 @@ class EmailRenderer {
                 commentUrl: commentUrl.href,
                 authors,
                 publishedAt,
+                customExcerpt: post.get('custom_excerpt'),
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
                 feature_image_height: postFeatureImageHeight,

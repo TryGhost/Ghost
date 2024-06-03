@@ -80,10 +80,10 @@
                                                 </td>
                                             </tr>
                                             {{#hasFeature 'newsletterSubtitle'}}
-                                                {{#if newsletter.showSubhead}}
+                                                {{#if (and newsletter.showSubhead post.customExcerpt)}}
                                                     <tr>
                                                         <td class="post-subtitle-wrapper" style="width: 100%">
-                                                            <p class="{{classes.subtitle}}">Jonathan Haidt wrote a best-selling book about teens and social media. Not everyone buys its thesis.</p>
+                                                            <p class="{{classes.subtitle}}">{{post.customExcerpt}}.</p>
                                                         </td>
                                                     </tr>
                                                 {{/if}}
