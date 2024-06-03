@@ -226,8 +226,8 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     
-    const handleLikeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.stopPropagation();
+    const handleLikeClick = (event: React.MouseEvent<HTMLElement> | undefined) => {
+        event?.stopPropagation();
         setIsClicked(true);
         setIsLiked(!isLiked);
         setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
