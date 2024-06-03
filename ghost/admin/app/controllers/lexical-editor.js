@@ -26,6 +26,7 @@ import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from
 import {isInvalidError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
 // suffix that is applied to the title of a post when it has been duplicated
@@ -157,6 +158,8 @@ export default class LexicalEditorController extends Controller {
     @service ui;
 
     @inject config;
+
+    @tracked excerptErrorMessage = '';
 
     /* public properties -----------------------------------------------------*/
 
@@ -299,13 +302,19 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateExcerpt(excerpt) {
+    async updateExcerpt(excerpt) {
         this.post.customExcerpt = excerpt;
-        this.post.validate({property: 'customExcerpt'});
-    }
-
-    get excerptErrorMessage() {
-        return this.post.errors.errorsFor('customExcerpt')?.[0]?.message;
+        try {
+            await this.post.validate({property: 'customExcerpt'});
+            this.excerptErrorMessage = '';
+        } catch (e) {
+            // validator throws undefined on validation error
+            if (e === undefined) {
+                this.excerptErrorMessage = this.post.errors.errorsFor('customExcerpt')?.[0]?.message;
+                return;
+            }
+            throw e;
+        }
     }
 
     // updates local willPublish/Schedule values, does not get applied to
