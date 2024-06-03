@@ -839,6 +839,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     cursor: pointer;
 }
 
+.gh-editor .tk-indicator-subtitle {
+    top: -1px;
+}
+
 .gh-editor-feature-image-container .tk-indicator {
     top: 0;
     padding: 0 .4rem;

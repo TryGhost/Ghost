@@ -635,5 +635,39 @@ describe('Acceptance: Editor', function () {
                 'TK reminder modal'
             ).to.exist;
         });
+
+        it('handles TKs in subtitle', async function () {
+            enableLabsFlag(this.server, 'editorSubtitle');
+
+            const post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-textarea="subtitle"]').value,
+                'initial subtitle'
+            ).to.equal('');
+
+            await fillIn('[data-test-textarea="subtitle"]', 'Test TK subtitle');
+
+            expect(
+                find('[data-test-textarea="subtitle"]').value,
+                'subtitle after typing'
+            ).to.equal('Test TK subtitle');
+
+            // check for TK indicator
+            expect(
+                find('[data-testid="tk-indicator-subtitle"]'),
+                'TK indicator text'
+            ).to.exist;
+
+            // click publish to see if confirmation comes up
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-modal="tk-reminder"]'),
+                'TK reminder modal'
+            ).to.exist;
+        });
     });
 });
