@@ -17,7 +17,7 @@ const ActivityPubComponent: React.FC = () => {
 
     // TODO: Replace with actual user ID
     const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('deadbeefdeadbeefdeadbeef');
-    const {data: {items: following = [], totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
+    const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
 
     const [articleContent, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
@@ -53,9 +53,9 @@ const ActivityPubComponent: React.FC = () => {
             id: 'activity',
             title: 'Activity',
             contents: <div className='grid grid-cols-6 items-start gap-8'><List className='col-span-4'>
-                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a placeholder post</span></div>}></ListItem>
-                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@veryverylongplaceholder.news</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>This is a placeholder post</span></div>}></ListItem>
-                <ListItem avatar={<Avatar image='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@placeholder.news</span><span className='text-grey-800'> followed you</span></div>}></ListItem>
+                <ListItem avatar={<Avatar image='https://activitypub.ghost.is/favicon.ico' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@activitypub.ghost.is</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>Why ActivityPug Will Never Beat ActivityPub</span></div>}></ListItem>
+                <ListItem avatar={<Avatar image='https://activitypub.ghost.is/favicon.ico' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@activitypub.ghost.is</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>Top 11 Reasons Why John Should Get a Pug</span></div>}></ListItem>
+                <ListItem avatar={<Avatar image='https://activitypub.ghost.is/favicon.ico' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@activitypub.ghost.is</span><span className='text-grey-800'> followed you</span></div>}></ListItem>
             </List>
             <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
             </div>
@@ -200,7 +200,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                     <div className='relative z-10 grid w-full grid-cols-[auto_170px] gap-4'>
                         <div className='flex flex-col'>
                             <div className='flex w-full justify-between gap-4'>
-                                <Heading className='mb-2 line-clamp-2' level={5} data-test-activity-heading>{object.name}</Heading>
+                                <Heading className='mb-2 line-clamp-2 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
                             </div>
                             <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
                             <div className='flex gap-2'>
@@ -213,6 +213,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                         </div>}
                     </div>
                     <div className='absolute -inset-x-3 inset-y-0 z-0 rounded transition-colors group-hover/article:bg-grey-50'></div>
+                    {/* <div className='absolute inset-0 z-0 rounded from-white to-grey-50 transition-colors group-hover/article:bg-gradient-to-r'></div> */}
                 </div>
             )}
         </>
