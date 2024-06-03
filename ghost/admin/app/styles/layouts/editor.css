@@ -793,6 +793,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 100%;
     max-width: unset;
     min-width: auto;
+    min-height: auto; /* Allows element to collapse for auto-expand calculation */
     margin: 0;
     padding: 0;
     border: none;
