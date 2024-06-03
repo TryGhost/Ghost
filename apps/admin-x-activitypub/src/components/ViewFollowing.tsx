@@ -16,8 +16,6 @@ const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> 
 
     const {data: {items: following = []} = {}} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
 
-    console.log('following');
-    console.log(following);
     return (
         <Modal
             afterClose={() => {

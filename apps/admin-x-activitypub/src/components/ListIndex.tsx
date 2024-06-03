@@ -254,7 +254,7 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                         <Button icon='arrow-top-right' iconSize='xs' label='Visit site' onClick={() => updateRoute('/')}/>
                     </div>
                 </div>
-                <div className='-mx-[4.8rem] -mb-[4.8rem] w-auto'>
+                <div className='mx-[-4.8rem] mb-[-4.8rem] w-auto'>
                     {/* <Heading className='mb-3' level={1} data-test-article-heading>{object.name}</Heading> */}
                     <ArticleBody heading={object.name} html={object.content} image={object?.image}/>
                 </div>
