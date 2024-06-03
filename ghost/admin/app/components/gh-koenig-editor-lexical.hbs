@@ -67,10 +67,10 @@
                     @value={{readonly this.excerpt}}
                     @input={{this.onExcerptInput}}
                     @keyDown={{this.onExcerptKeydown}}
-                    data-test-editor-subhead-input={{true}}
+                    data-test-textarea="subtitle"
                 />
                 {{#if @excerptErrorMessage}}
-                    <div class="gh-editor-subtitle-error">
+                    <div class="gh-editor-subtitle-error" data-test-error="subtitle">
                         {{@excerptErrorMessage}}
                     </div>
                 {{/if}}

@@ -62,7 +62,7 @@ export default BaseValidator.create({
 
     customExcerpt(model) {
         if (!validator.isLength(model.customExcerpt || '', 0, 300)) {
-            if (this.featureImageAlt.editorSubtitle) {
+            if (model.feature.editorSubtitle) {
                 model.errors.add('customExcerpt', 'Please keep the subtitle under 300 characters.');
             } else {
                 model.errors.add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
