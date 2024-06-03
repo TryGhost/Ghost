@@ -67,6 +67,7 @@
                     @value={{readonly this.excerpt}}
                     @input={{this.onExcerptInput}}
                     @keyDown={{this.onExcerptKeydown}}
+                    @didCreateTextarea={{this.registerSubtitleElement}}
                     data-test-textarea="subtitle"
                 />
                 {{#if @excerptErrorMessage}}
@@ -84,7 +85,7 @@
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
             @registerAPI={{this.registerEditorAPI}}
-            @cursorDidExitAtTop={{this.focusTitle}}
+            @cursorDidExitAtTop={{if this.feature.editorSubtitle this.focusSubtitle this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
             @updatePostTkCount={{@updatePostTkCount}}
         />
