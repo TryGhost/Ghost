@@ -180,7 +180,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     
-    const handleLikeClick = (event: React.MouseEvent<HTMLButtonElement> | undefined) => {
+    const handleLikeClick = (event: React.MouseEvent<HTMLElement> | undefined) => {
         event?.stopPropagation();
         setIsClicked(true);
         setIsLiked(!isLiked);
