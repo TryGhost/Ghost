@@ -58,23 +58,34 @@
             />
 
             {{#if (feature 'editorSubtitle')}}
-                <GhTextarea
-                    @class={{concat "gh-editor-subtitle " (if @excerptErrorMessage "red")}}
-                    @placeholder="Add a subtitle..."
-                    @shouldFocus={{false}}
-                    @tabindex="1"
-                    @autoExpand=".gh-koenig-editor"
-                    @value={{readonly this.excerpt}}
-                    @input={{this.onExcerptInput}}
-                    @keyDown={{this.onExcerptKeydown}}
-                    @didCreateTextarea={{this.registerSubtitleElement}}
-                    data-test-textarea="subtitle"
-                />
-                {{#if @excerptErrorMessage}}
-                    <div class="gh-editor-subtitle-error" data-test-error="subtitle">
-                        {{@excerptErrorMessage}}
-                    </div>
-                {{/if}}
+                <div class="relative">
+                    <GhTextarea
+                        @class={{concat "gh-editor-subtitle " (if @excerptErrorMessage "red")}}
+                        @placeholder="Add a subtitle..."
+                        @shouldFocus={{false}}
+                        @tabindex="1"
+                        @autoExpand=".gh-koenig-editor"
+                        @value={{readonly this.excerpt}}
+                        @input={{this.onExcerptInput}}
+                        @keyDown={{this.onExcerptKeydown}}
+                        @didCreateTextarea={{this.registerSubtitleElement}}
+                        data-test-textarea="subtitle"
+                    />
+                    {{#if @excerptErrorMessage}}
+                        <div class="gh-editor-subtitle-error" data-test-error="subtitle">
+                            {{@excerptErrorMessage}}
+                        </div>
+                    {{/if}}
+                    {{#if @excerptHasTk}}
+                        <div
+                            class="tk-indicator tk-indicator-subtitle"
+                            data-testid="tk-indicator-subtitle"
+                            {{on "click" this.focusSubtitle}}
+                        >
+                            TK
+                        </div>
+                    {{/if}}
+                </div>
                 <hr class="gh-editor-title-divider {{if @excerptErrorMessage "gh-editor-title-divider-error" ""}}">
             {{/if}}
         </div>

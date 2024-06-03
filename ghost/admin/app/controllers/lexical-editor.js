@@ -102,6 +102,45 @@ const messageMap = {
     }
 };
 
+function textHasTk(text) {
+    let matchArr = TK_REGEX.exec(text);
+
+    if (matchArr === null) {
+        return false;
+    }
+
+    function isValidMatch(match) {
+        // negative lookbehind isn't supported before Safari 16.4
+        // so we capture the preceding char and test it here
+        if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
+            return false;
+        }
+
+        // we also check any following char in code to avoid an overly
+        // complex regex when looking for word-chars following the optional
+        // trailing symbol char
+        if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // our regex will match invalid TKs because we can't use negative lookbehind
+    // so we need to loop through the matches discarding any that are invalid
+    // and moving on to any subsequent matches
+    while (matchArr !== null && !isValidMatch(matchArr)) {
+        text = text.slice(matchArr.index + matchArr[0].length - 1);
+        matchArr = TK_REGEX.exec(text);
+    }
+
+    if (matchArr === null) {
+        return false;
+    }
+
+    return true;
+}
+
 @classic
 export default class LexicalEditorController extends Controller {
     @controller application;
@@ -225,48 +264,23 @@ export default class LexicalEditorController extends Controller {
 
     @computed('post.titleScratch')
     get titleHasTk() {
-        let text = this.post.titleScratch;
-        let matchArr = TK_REGEX.exec(text);
-
-        if (matchArr === null) {
-            return false;
-        }
-
-        function isValidMatch(match) {
-            // negative lookbehind isn't supported before Safari 16.4
-            // so we capture the preceding char and test it here
-            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
-                return false;
-            }
-
-            // we also check any following char in code to avoid an overly
-            // complex regex when looking for word-chars following the optional
-            // trailing symbol char
-            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
-                return false;
-            }
-
-            return true;
-        }
-
-        // our regex will match invalid TKs because we can't use negative lookbehind
-        // so we need to loop through the matches discarding any that are invalid
-        // and moving on to any subsequent matches
-        while (matchArr !== null && !isValidMatch(matchArr)) {
-            text = text.slice(matchArr.index + matchArr[0].length - 1);
-            matchArr = TK_REGEX.exec(text);
-        }
-
-        if (matchArr === null) {
-            return false;
-        }
-
-        return true;
+        return textHasTk(this.post.titleScratch);
     }
 
-    @computed('titleHasTk', 'postTkCount', 'featureImageTkCount')
+    @computed('post.customExcerpt')
+    get excerptHasTk() {
+        if (!this.feature.editorSubtitle) {
+            return false;
+        }
+
+        return textHasTk(this.post.customExcerpt || '');
+    }
+
+    @computed('titleHasTk', 'excerptHasTk', 'postTkCount', 'featureImageTkCount')
     get tkCount() {
-        return (this.titleHasTk ? 1 : 0) + this.postTkCount + this.featureImageTkCount;
+        const titleTk = this.titleHasTk ? 1 : 0;
+        const excerptTk = (this.feature.editorSubtitle && this.excerptHasTk) ? 1 : 0;
+        return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
     }
 
     @action
