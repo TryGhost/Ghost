@@ -939,7 +939,7 @@ describe('Email renderer', function () {
 
         beforeEach(function () {
             renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
-            labsEnabled = true;
+            labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
             basePost = {
                 lexical: '{}',
                 visibility: 'public',
@@ -1033,7 +1033,13 @@ describe('Email renderer', function () {
                     }
                 },
                 labs: {
-                    isSet: () => labsEnabled
+                    isSet: (key) => {
+                        if (typeof labsEnabled === 'object') {
+                            return labsEnabled[key] || false;
+                        }
+
+                        return labsEnabled;
+                    }
                 }
             });
         });
@@ -1761,6 +1767,78 @@ describe('Email renderer', function () {
 
             assert.equal(response.html.includes('width="248" height="248"'), true, 'Should not replace img height and width with auto from css');
             assert.equal(response.html.includes('width="auto" height="auto"'), false, 'Should not replace img height and width with auto from css');
+        });
+
+        describe('show subtitle', function () {
+            beforeEach(function () {
+                labsEnabled = {
+                    newsletterSubtitle: true
+                };
+            });
+
+            it('is rendered when enabled and customExcerpt is present', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is a subtitle'}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_subhead: true
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                assert.equal(response.html.match(/This is a subtitle/g).length, 2, 'Subtitle should appear twice (preheader and subtitle section)');
+            });
+
+            it('is not rendered when disabled and customExcerpt is present', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is a subtitle'}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_subhead: false
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                assert.equal(response.html.match(/This is a subtitle/g).length, 1, 'Subtitle should only appear once (preheader, subtitle section skipped)');
+                response.html.should.not.containEql('post-subtitle-wrapper');
+            });
+
+            it('does not render when enabled and customExcerpt is not present', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: null}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_subhead: true
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                response.html.should.not.containEql('post-subtitle-wrapper');
+            });
         });
     });
 
