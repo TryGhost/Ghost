@@ -285,8 +285,13 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateExcerptScratch(excerpt) {
-        this.set('post.customExcerptScratch', excerpt);
+    updateExcerpt(excerpt) {
+        this.post.customExcerpt = excerpt;
+        this.post.validate({property: 'customExcerpt'});
+    }
+
+    get excerptErrorMessage() {
+        return this.post.errors.errorsFor('customExcerpt')?.[0]?.message;
     }
 
     // updates local willPublish/Schedule values, does not get applied to

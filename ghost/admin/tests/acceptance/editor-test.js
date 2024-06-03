@@ -5,6 +5,7 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -488,6 +489,38 @@ describe('Acceptance: Editor', function () {
                 findAll('[data-test-field="og-title"]').length,
                 'facebook title not present after closing subview'
             ).to.equal(0);
+        });
+
+        it('handles in-editor excerpt update and validation', async function () {
+            enableLabsFlag(this.server, 'editorSubtitle');
+
+            let post = this.server.create('post', {authors: [author], customExcerpt: 'Existing excerpt'});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(find('[data-test-textarea="subtitle"]'), 'initial textarea').to.be.visible;
+            expect(find('[data-test-textarea="subtitle"]'), 'initial textarea').to.have.value('Existing excerpt');
+
+            await fillIn('[data-test-textarea="subtitle"]', 'New excerpt');
+            expect(find('[data-test-textarea="subtitle"]'), 'updated textarea').to.have.value('New excerpt');
+
+            await triggerEvent('[data-test-textarea="subtitle"]', 'keydown', {
+                key: 's',
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            expect(post.customExcerpt, 'saved excerpt').to.equal('New excerpt');
+
+            await fillIn('[data-test-textarea="subtitle"]', Array(302).join('a'));
+
+            expect(find('[data-test-error="subtitle"]'), 'subtitle error').to.exist;
+            expect(find('[data-test-error="subtitle"]')).to.have.trimmed.text('Please keep the subtitle under 300 characters.');
+
+            await fillIn('[data-test-textarea="subtitle"]', Array(300).join('a'));
+
+            expect(find('[data-test-error="subtitle"]'), 'subtitle error').to.not.exist;
         });
 
         // https://github.com/TryGhost/Ghost/issues/11786
