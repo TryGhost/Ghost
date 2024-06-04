@@ -2073,9 +2073,26 @@ describe('Email renderer', function () {
                 title: 'post-title post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
-                subtitle: 'post-subtitle post-subtitle-left',
+                subtitle: 'post-subtitle post-subtitle-serif-sans post-subtitle-left',
                 body: 'post-content-sans-serif'
             });
+        });
+
+        it('has correct subtitle classes for serif title+body', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'serif',
+                show_subtitle: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.subtitle, 'post-subtitle post-subtitle-serif-serif post-subtitle-left');
         });
 
         it('show comment CTA is enabled if labs disabled', async function () {
