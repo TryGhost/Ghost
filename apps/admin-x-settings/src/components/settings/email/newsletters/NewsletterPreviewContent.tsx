@@ -101,6 +101,18 @@ const NewsletterPreviewContent: React.FC<{
             <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
     }
 
+    let subtitleClasses = 'mb-5 text-pretty leading-[1.7] text-black';
+
+    if (titleFontCategory === 'serif' && bodyFontCategory === 'serif') {
+        subtitleClasses = clsx(subtitleClasses, 'font-serif text-[1.8rem]');
+    } else if (titleFontCategory !== 'serif' && bodyFontCategory === 'serif') {
+        subtitleClasses = clsx(subtitleClasses, 'text-[1.7rem] tracking-tight');
+    } else if (titleFontCategory === 'serif' && bodyFontCategory !== 'serif') {
+        subtitleClasses = clsx(subtitleClasses, 'font-serif text-[1.8rem]');
+    } else {
+        subtitleClasses = clsx(subtitleClasses, 'text-[1.7rem] tracking-tight');
+    }
+
     return (
         <div className="relative flex grow flex-col">
             <div className="absolute inset-0 m-5 flex items-center justify-center">
@@ -122,7 +134,7 @@ const NewsletterPreviewContent: React.FC<{
                                 <div className="py-3" style={{borderColor: secondaryBorderColor}}>
                                     {headerIcon && <img alt="" className="mx-auto mb-2 h-10 w-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
-                                    {headerSubtitle && <h5 className="mb-1 text-center text-md font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
+                                    {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
                             )}
                             {showPostTitleSection && (
@@ -135,20 +147,17 @@ const NewsletterPreviewContent: React.FC<{
                                         Your email newsletter
                                     </h2>
                                     {(hasNewsletterSubtitle && showSubtitle) && (
-                                        <p className={clsx(
-                                            'mb-5 text-pretty text-[1.6rem] leading-[1.7] text-black',
-                                            bodyFontCategory === 'serif' && 'font-serif'
-                                        )}>A subtitle to highlight key points and engage your readers</p>
+                                        <p className={subtitleClasses}>A subtitle to highlight key points and engage your readers</p>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
-                                        titleAlignment === 'center' ? 'flex-col' : 'flex-row'
+                                        titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row'
                                     )}>
-                                        <p className="pb-1" style={{color: secondaryTextColor}}>
+                                        <p className="pb-1 text-[1.3rem]" style={{color: secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
                                         </p>
-                                        <p className="pb-1 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-1 text-[1.3rem] underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -167,8 +176,8 @@ const NewsletterPreviewContent: React.FC<{
                             )}
 
                             <div className={clsx(
-                                'max-w-[600px] border-b border-grey-200 pb-5 text-[1.6rem] leading-[1.7] text-black',
-                                bodyFontCategory === 'serif' && 'font-serif',
+                                'max-w-[600px] border-b border-grey-200 pb-5 leading-[1.7] text-black',
+                                bodyFontCategory === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight',
                                 (showFeatureImage || showPostTitleSection) ? '' : 'pt-8'
                             )} style={{borderColor: secondaryBorderColor}}>
                                 <p className="mb-5" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
