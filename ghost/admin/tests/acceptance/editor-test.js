@@ -516,7 +516,7 @@ describe('Acceptance: Editor', function () {
             await fillIn('[data-test-textarea="subtitle"]', Array(302).join('a'));
 
             expect(find('[data-test-error="subtitle"]'), 'subtitle error').to.exist;
-            expect(find('[data-test-error="subtitle"]')).to.have.trimmed.text('Please keep the subtitle under 300 characters.');
+            expect(find('[data-test-error="subtitle"]')).to.have.trimmed.text('Subtitle cannot be longer than 300 characters.');
 
             await fillIn('[data-test-textarea="subtitle"]', Array(300).join('a'));
 
