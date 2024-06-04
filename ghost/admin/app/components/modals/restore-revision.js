@@ -34,6 +34,9 @@ export default class RestoreRevisionModal extends Component {
 
             post.lexical = revision.lexical;
             post.title = revision.title;
+            post.featureImage = revision.feature_image;
+            post.featureImageAlt = revision.feature_image_alt;
+            post.featureImageCaption = revision.feature_image_caption;
 
             yield post.save({adapterOptions: {saveRevision: true}});
 
