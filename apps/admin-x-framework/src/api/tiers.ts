@@ -41,7 +41,7 @@ export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: bo
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<TiersResponseType>;
         const tiers = pages.flatMap(page => page.tiers);
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             tiers,

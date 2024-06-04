@@ -10,7 +10,7 @@ export const insertToQueryCache = <ResponseData>(field: string, recordsToInsert?
 
         if (typeof currentData === 'object' && 'pages' in currentData) {
             const {pages} = currentData as InfiniteData<ResponseData>;
-            const lastPage = pages.at(-1)!;
+            const lastPage = pages[pages.length - 1];
             return {
                 ...currentData,
                 pages: pages.slice(0, -1).concat({
