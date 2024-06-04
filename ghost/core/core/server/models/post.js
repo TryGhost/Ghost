@@ -973,6 +973,7 @@ Post = ghostBookshelf.Model.extend({
                     feature_image_alt: model.get('posts_meta')?.feature_image_alt,
                     feature_image_caption: model.get('posts_meta')?.feature_image_caption,
                     title: model.get('title'),
+                    custom_excerpt: model.get('custom_excerpt'),
                     post_status: model.get('status')
                 };
 
