@@ -1,15 +1,25 @@
 import BaseSerializer from './application';
+import {camelize} from '@ember/string';
 
 export default BaseSerializer.extend({
     embed: true,
 
-    include(/*request*/) {
-        let includes = [];
+    include(request) {
+        const queryIncludes = (request.queryParams.include || '').split(',').compact().map(camelize);
+        const includes = new Set(queryIncludes);
 
-        includes.push('tags');
-        includes.push('authors');
+        // embedded records that are included by default in the API
+        includes.add('tags');
+        includes.add('authors');
 
-        return includes;
+        // clean up some things that mirage doesn't understand
+        includes.delete('authorsRoles');
+        includes.delete('countClicks');
+        includes.delete('postRevisionsAuthor');
+        includes.delete('tiers');
+
+        const result = Array.from(includes);
+        return result;
     },
 
     serialize(postModelOrCollection, request) {

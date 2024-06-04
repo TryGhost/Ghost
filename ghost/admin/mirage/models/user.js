@@ -6,5 +6,6 @@ export default Model.extend({
     postCount: false,
 
     roles: hasMany(),
-    posts: hasMany()
+    posts: hasMany(),
+    postRevision: hasMany()
 });
