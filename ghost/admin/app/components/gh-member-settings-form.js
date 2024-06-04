@@ -1,9 +1,9 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class extends Component {
@@ -137,8 +137,17 @@ export default class extends Component {
 
     @action
     setup() {
-        this.fetchTiers.perform();
-        this.fetchNewsletters.perform();
+        try {
+            this.fetchTiers.perform();
+            this.fetchNewsletters.perform();
+        } catch (e) {
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
+            }
+
+            throw e;
+        }
     }
 
     @action
