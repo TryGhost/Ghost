@@ -43,7 +43,7 @@ function EmbedIframe({dataTestId, html}) {
 
     const handleResize = () => {
         // get ratio from nested iframe if present (eg, Vimeo)
-        const firstElement = iframeRef.current.contentDocument.body.firstChild;
+        const firstElement = iframeRef.current?.contentDocument?.body?.firstChild;
 
         // won't have an iframe if the embed is invalid or fetching
         if (!firstElement) {
@@ -52,28 +52,30 @@ function EmbedIframe({dataTestId, html}) {
 
         if (firstElement.tagName === 'IFRAME') {
             const widthAttr = firstElement.getAttribute('width');
+            const heightAttr = firstElement.getAttribute('height');
 
-            if (widthAttr.indexOf('%') === -1) {
-                const heightAttr = parseInt(firstElement.getAttribute('height'));
-                if (widthAttr && heightAttr) {
-                    const ratio = parseInt(widthAttr) / heightAttr;
-                    const newHeight = iframeRef.current.offsetWidth / ratio;
-                    firstElement.style.height = `${newHeight}px`;
-                    iframeRef.current.style.height = `${newHeight}px`;
-                    firstElement.style.width = '100%';
-                    return;
-                }
+            if (widthAttr && heightAttr && widthAttr.indexOf('%') === -1 && heightAttr.indexOf('%') === -1) {
+                const ratio = parseInt(widthAttr) / parseInt(heightAttr);
+                const newHeight = iframeRef.current.offsetWidth / ratio;
+                firstElement.style.height = `${newHeight}px`;
+                iframeRef.current.style.height = `${newHeight}px`;
+                firstElement.style.width = '100%';
+                return;
             }
 
-            const heightAttr = firstElement.getAttribute('height');
-            if (heightAttr.indexOf('%') === -1) {
+            if (heightAttr && heightAttr.indexOf('%') === -1) {
                 iframeRef.current.style.height = `${heightAttr}px`;
                 return;
             }
         }
 
         // otherwise use iframes internal height (eg, Instagram)
-        const scrollHeight = iframeRef.current.contentDocument.scrollingElement.scrollHeight;
+        const scrollHeight = iframeRef.current?.contentDocument?.scrollingElement?.scrollHeight;
+
+        if (!scrollHeight) {
+            return;
+        }
+
         iframeRef.current.style.height = `${scrollHeight}px`;
     };
 
