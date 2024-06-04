@@ -4,8 +4,8 @@ import nql from '@tryghost/nql-lang';
 import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEWSLETTERS_FILTERS, NEXT_BILLING_DATE_FILTER, OFFERS_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 function escapeNqlString(value) {
@@ -234,9 +234,19 @@ export default class MembersFilter extends Component {
     async parseDefaultFilters() {
         // we need to make sure all the filters are loaded before parsing the default filter
         // otherwise the filter will be parsed with the wrong properties
-        await this.fetchTiers.perform();
-        await this.fetchNewsletters.perform();
-        await this.fetchOffers.perform();
+        try {
+            await this.fetchTiers.perform();
+            await this.fetchNewsletters.perform();
+            await this.fetchOffers.perform();
+        } catch (e) {
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
+            }
+
+            throw e;
+        }
+
         if (this.args.defaultFilterParam) {
             // check if it is different before parsing
             const validFilters = this.validFilters;

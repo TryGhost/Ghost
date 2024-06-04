@@ -4,11 +4,11 @@ import UnarchiveOfferModal from '../components/modals/offers/unarchive';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
-import {task} from 'ember-concurrency';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -258,7 +258,16 @@ export default class OffersController extends Controller {
 
     @action
     setup() {
-        this.fetchTiers.perform();
+        try {
+            this.fetchTiers.perform();
+        } catch (e) {
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
+            }
+
+            throw e;
+        }
     }
 
     @action
