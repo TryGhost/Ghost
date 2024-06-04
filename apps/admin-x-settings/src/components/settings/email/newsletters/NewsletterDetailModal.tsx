@@ -104,6 +104,7 @@ const Sidebar: React.FC<{
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const hasNewsletterSubtitle = useFeatureFlag('newsletterSubtitle');
+    const hasEditorSubtitle = useFeatureFlag('editorSubtitle');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
@@ -420,10 +421,10 @@ const Sidebar: React.FC<{
                     <ToggleGroup gap='lg'>
                         {(hasNewsletterSubtitle && newsletter.show_post_title_section) &&
                             <Toggle
-                                checked={newsletter.show_subhead}
+                                checked={newsletter.show_subtitle}
                                 direction="rtl"
-                                label='Subtitle'
-                                onChange={e => updateNewsletter({show_subhead: e.target.checked})}
+                                label={hasEditorSubtitle ? 'Subtitle' : 'Post excerpt'}
+                                onChange={e => updateNewsletter({show_subtitle: e.target.checked})}
                             />
                         }
                         <Toggle

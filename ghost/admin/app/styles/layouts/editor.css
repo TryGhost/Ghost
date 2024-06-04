@@ -793,14 +793,15 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 100%;
     max-width: unset;
     min-width: auto;
+    min-height: auto; /* Allows element to collapse for auto-expand calculation */
     margin: 0;
     padding: 0;
     border: none;
     background: transparent;
     color: var(--darkgrey);
-    font-size: 1.9rem;
+    font-size: 2.0rem;
     font-weight: 440;
-    line-height: 1.4em;
+    line-height: 1.5em;
     letter-spacing: -.018em;
     overflow: hidden;
     box-shadow: none;
@@ -811,8 +812,21 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border: none !important;
 }
 
+.gh-editor-subtitle-error {
+    margin-top: .8rem;
+    margin-bottom: 4.8rem;
+    color: var(--red-d1);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
 .gh-editor-title-divider {
     margin: 1.6rem 0 4.8rem;
+}
+
+.gh-editor-title-divider-error {
+    margin: 1.6rem 0 0;
+    border-top: 1px solid var(--red);
 }
 
 .gh-editor .tk-indicator {
@@ -824,6 +838,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     font-size: 1.2rem;
     font-weight: 500;
     cursor: pointer;
+}
+
+.gh-editor .tk-indicator-subtitle {
+    top: -1px;
 }
 
 .gh-editor-feature-image-container .tk-indicator {

@@ -7148,10 +7148,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.2.2.tgz#39cd50959de7b5ff8e0d2dbd8688ff83c81f57e1"
-  integrity sha512-1bFveIMMNg3Q6UPWGjTvg6m430N+4ZAMTWs2IfuR3iIVBPp687T41vgsiMQySfAepm/WKRAltpIh4kNYQOy1Ng==
+"@tryghost/koenig-lexical@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.2.3.tgz#392fe8189a54df2846d653ccc3e74ab92a385d3b"
+  integrity sha512-AQvgV6JrSgjk7EQZ16wrr6JBcM5V3EJg8z4cIeLCAyTY9Mc7Y6Pgh0evlabqCWwCqqXprMI1tjwptNmiwWd1vg==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
@@ -22788,10 +22788,10 @@ mv@~2:
     ncp "~2.0.0"
     rimraf "~2.4.0"
 
-mysql2@3.9.7:
-  version "3.9.7"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.9.7.tgz#843755daf65b5ef08afe545fe14b8fb62824741a"
-  integrity sha512-KnJT8vYRcNAZv73uf9zpXqNbvBG7DJrs+1nACsjZP1HMJ1TgXEy8wnNilXAn/5i57JizXKtrUtwDB7HxT9DDpw==
+mysql2@3.10.0:
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.10.0.tgz#5109449fda3dc03fb7d6bdf2cf91f97477081987"
+  integrity sha512-qx0mfWYt1DpTPkw8mAcHW/OwqqyNqBLBHvY5IjN8+icIYTjt6znrgYJ+gxqNNRpVknb5Wc/gcCM4XjbCR0j5tw==
   dependencies:
     denque "^2.1.0"
     generate-function "^2.3.1"
@@ -22802,10 +22802,10 @@ mysql2@3.9.7:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
-mysql2@3.9.9:
-  version "3.9.9"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.9.9.tgz#262582b612a2dea540ef0d581b362d55958cf272"
-  integrity sha512-Qtb2RUxwWMFkWXqF7Rd/7ySkupbQnNY7O0zQuQYgPcuJZ06M36JG3HIDEh/pEeq7LImcvA6O3lOVQ9XQK+HEZg==
+mysql2@3.9.7:
+  version "3.9.7"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.9.7.tgz#843755daf65b5ef08afe545fe14b8fb62824741a"
+  integrity sha512-KnJT8vYRcNAZv73uf9zpXqNbvBG7DJrs+1nACsjZP1HMJ1TgXEy8wnNilXAn/5i57JizXKtrUtwDB7HxT9DDpw==
   dependencies:
     denque "^2.1.0"
     generate-function "^2.3.1"

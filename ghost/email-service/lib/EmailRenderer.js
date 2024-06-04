@@ -1017,6 +1017,16 @@ class EmailRenderer {
             }
         }
 
+        let subtitleFontClass = '';
+        const bodyFont = newsletter.get('body_font_category');
+        const titleFont = newsletter.get('title_font_category');
+
+        if (titleFont === 'serif' && bodyFont === 'serif') {
+            subtitleFontClass = 'post-subtitle-serif-serif';
+        } else if (titleFont === 'serif' && bodyFont !== 'serif') {
+            subtitleFontClass = 'post-subtitle-serif-sans';
+        }
+
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -1035,6 +1045,7 @@ class EmailRenderer {
                 commentUrl: commentUrl.href,
                 authors,
                 publishedAt,
+                customExcerpt: post.get('custom_excerpt'),
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
                 feature_image_height: postFeatureImageHeight,
@@ -1045,7 +1056,7 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
-                showSubhead: newsletter.get('show_subhead'),
+                showSubtitle: newsletter.get('show_subtitle'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
@@ -1079,7 +1090,7 @@ class EmailRenderer {
             classes: {
                 title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                subtitle: 'post-subtitle' + (newsletter.get('body_font_category') === 'serif' ? ` post-subtitle-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-subtitle-left` : ``),
+                subtitle: 'post-subtitle' + ` ` + subtitleFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-subtitle-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

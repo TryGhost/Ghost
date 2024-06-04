@@ -273,7 +273,17 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchAutocompleteLinks = async () => {
-            const offers = await this.fetchOffersTask.perform();
+            let offers = [];
+            try {
+                offers = await this.fetchOffersTask.perform();
+            } catch (e) {
+                // Do not throw cancellation errors
+                if (didCancel(e)) {
+                    return;
+                }
+
+                throw e;
+            }
 
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
@@ -330,7 +340,17 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchLabels = async () => {
-            const labels = await this.fetchLabelsTask.perform();
+            let labels = [];
+            try {
+                labels = await this.fetchLabelsTask.perform();
+            } catch (e) {
+                // Do not throw cancellation errors
+                if (didCancel(e)) {
+                    return;
+                }
+
+                throw e;
+            }
 
             return labels.map(label => label.name);
         };
@@ -372,6 +392,7 @@ export default class KoenigLexicalEditor extends Component {
                 if (!didCancel(error)) {
                     throw error;
                 }
+                return;
             }
 
             // only published posts/pages and staff with posts have URLs

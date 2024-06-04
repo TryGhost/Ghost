@@ -10,6 +10,7 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     containerElement = null;
     titleElement = null;
+    subtitleElement = null;
     mousedownY = 0;
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
@@ -111,21 +112,34 @@ export default class GhKoenigEditorReactComponent extends Component {
         this.titleElement.focus();
     }
 
-    // move cursor to the editor on
-    // - Tab
-    // - Arrow Down/Right when input is empty or caret at end of input
-    // - Enter, creating an empty paragraph when editor is not empty
     @action
     onTitleKeydown(event) {
         if (this.feature.get('editorSubtitle')) {
-            if (event.key === 'Enter') {
+            // move cursor to the subtitle on
+            // - Tab (handled by browser)
+            // - Arrow Down/Right when input is empty or caret at end of input
+            // - Enter
+            const {key} = event;
+            const {value, selectionStart} = event.target;
+
+            if (key === 'Enter') {
                 event.preventDefault();
-                const subheadElement = document.querySelector('.gh-editor-subtitle');
-                if (subheadElement) {
-                    subheadElement.focus();
+                this.subtitleElement?.focus();
+            }
+
+            if ((key === 'ArrowDown' || key === 'ArrowRight') && !event.shiftKey) {
+                const couldLeaveTitle = !value || selectionStart === value.length;
+
+                if (couldLeaveTitle) {
+                    event.preventDefault();
+                    this.subtitleElement?.focus();
                 }
             }
         } else {
+            // move cursor to the editor on
+            // - Tab
+            // - Arrow Down/Right when input is empty or caret at end of input
+            // - Enter, creating an empty paragraph when editor is not empty
             const {editorAPI} = this;
 
             if (!editorAPI || event.originalEvent.isComposing) {
@@ -150,28 +164,61 @@ export default class GhKoenigEditorReactComponent extends Component {
         }
     }
 
-    // Subhead ("excerpt") Actions -------------------------------------------
+    // Subtitle ("excerpt") Actions -------------------------------------------
 
     @action
-    updateExcerpt(event) {
-        this.args.onExcerptChange?.(event.target.value);
+    registerSubtitleElement(element) {
+        this.subtitleElement = element;
     }
 
     @action
-    focusExcerpt() {
-        this.args.onExcerptFocus?.();
+    focusSubtitle() {
+        this.subtitleElement?.focus();
+
+        // timeout ensures this occurs after the keyboard events
+        setTimeout(() => {
+            this.subtitleElement?.setSelectionRange(-1, -1);
+        }, 0);
     }
 
     @action
-    blurExcerpt() {
-        this.args.onExcerptBlur?.();
+    onExcerptInput(event) {
+        this.args.setExcerpt?.(event.target.value);
     }
 
     @action
     onExcerptKeydown(event) {
-        if (event.key === 'Enter') {
+        // move cursor to the title on
+        // - Shift+Tab (handled by the browser)
+        // - Arrow Up/Left when input is empty or caret at start of input
+        // move cursor to the editor on
+        // - Tab
+        // - Arrow Down/Right when input is empty or caret at end of input
+        // - Enter, creating an empty paragraph when editor is not empty
+        const {key} = event;
+        const {value, selectionStart} = event.target;
+
+        if ((key === 'ArrowUp' || key === 'ArrowLeft') && !event.shiftKey) {
+            const couldLeaveTitle = !value || selectionStart === 0;
+
+            if (couldLeaveTitle) {
+                event.preventDefault();
+                this.focusTitle();
+            }
+        }
+
+        const {editorAPI} = this;
+        const couldLeaveTitle = !value || selectionStart === value.length;
+        const arrowLeavingTitle = (key === 'ArrowRight' || key === 'ArrowDown') && couldLeaveTitle;
+
+        if (key === 'Enter' || (key === 'Tab' && !event.shiftKey) || arrowLeavingTitle) {
             event.preventDefault();
-            this.editorAPI.focusEditor({position: 'top'});
+
+            if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
+                editorAPI.insertParagraphAtTop({focus: true});
+            } else {
+                editorAPI.focusEditor({position: 'top'});
+            }
         }
     }
 

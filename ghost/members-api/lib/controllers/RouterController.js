@@ -8,6 +8,7 @@ const messages = {
     emailRequired: 'Email is required.',
     badRequest: 'Bad Request.',
     notFound: 'Not Found.',
+    offerNotFound: 'This offer does not exist.',
     offerArchived: 'This offer is archived.',
     tierArchived: 'This tier is archived.',
     existingSubscription: 'A subscription exists for this Member.',
@@ -247,6 +248,14 @@ module.exports = class RouterController {
         // Fetch tier and offer
         if (offerId) {
             offer = await this._offersAPI.getOffer({id: offerId});
+
+            if (!offer) {
+                throw new BadRequestError({
+                    message: tpl(messages.offerNotFound),
+                    context: 'Offer with id "' + offerId + '" not found'
+                });
+            }
+
             tier = await this._tiersService.api.read(offer.tier.id);
             cadence = offer.cadence;
         } else {

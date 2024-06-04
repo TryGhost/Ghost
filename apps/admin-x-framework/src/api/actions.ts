@@ -78,7 +78,7 @@ export const useBrowseActions = createInfiniteQuery<ActionsList>({
             }
         });
 
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             actions: actions.reverse(),
