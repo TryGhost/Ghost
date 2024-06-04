@@ -161,6 +161,29 @@ describe('RouterController', function () {
                     assert.equal(error.context, 'Expected cadence to be "month" or "year", received "day"');
                 }
             });
+
+            it('returns a BadRequestError if offer is not found', async function () {
+                offersAPI = {
+                    getOffer: sinon.stub().resolves(null)
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({offerId: 'invalid'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Offer with id "invalid" not found');
+                }
+            });
         });
 
         afterEach(function () {
