@@ -135,7 +135,10 @@ const NewsletterPreviewContent: React.FC<{
                                         Your email newsletter
                                     </h2>
                                     {(hasNewsletterSubtitle && showSubhead) && (
-                                        <p className="mb-5 text-pretty text-[1.6rem] leading-[1.7] text-black">A subtitle to highlight key points and engage your readers</p>
+                                        <p className={clsx(
+                                            'mb-5 text-pretty text-[1.6rem] leading-[1.7] text-black',
+                                            bodyFontCategory === 'serif' && 'font-serif'
+                                        )}>A subtitle to highlight key points and engage your readers</p>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
