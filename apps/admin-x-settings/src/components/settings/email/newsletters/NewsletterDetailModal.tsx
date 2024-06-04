@@ -421,10 +421,10 @@ const Sidebar: React.FC<{
                     <ToggleGroup gap='lg'>
                         {(hasNewsletterSubtitle && newsletter.show_post_title_section) &&
                             <Toggle
-                                checked={newsletter.show_subhead}
+                                checked={newsletter.show_subtitle}
                                 direction="rtl"
                                 label={hasEditorSubtitle ? 'Subtitle' : 'Post excerpt'}
-                                onChange={e => updateNewsletter({show_subhead: e.target.checked})}
+                                onChange={e => updateNewsletter({show_subtitle: e.target.checked})}
                             />
                         }
                         <Toggle

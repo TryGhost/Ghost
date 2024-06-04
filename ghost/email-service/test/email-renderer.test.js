@@ -1780,7 +1780,7 @@ describe('Email renderer', function () {
                 const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is a subtitle'}));
                 const newsletter = createModel({
                     show_post_title_section: true,
-                    show_subhead: true
+                    show_subtitle: true
                 });
                 const segment = null;
                 const options = {};
@@ -1801,7 +1801,7 @@ describe('Email renderer', function () {
                 const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is a subtitle'}));
                 const newsletter = createModel({
                     show_post_title_section: true,
-                    show_subhead: false
+                    show_subtitle: false
                 });
                 const segment = null;
                 const options = {};
@@ -1823,7 +1823,7 @@ describe('Email renderer', function () {
                 const post = createModel(Object.assign({}, basePost, {custom_excerpt: null}));
                 const newsletter = createModel({
                     show_post_title_section: true,
-                    show_subhead: true
+                    show_subtitle: true
                 });
                 const segment = null;
                 const options = {};

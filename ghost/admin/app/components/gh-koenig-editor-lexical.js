@@ -164,7 +164,7 @@ export default class GhKoenigEditorReactComponent extends Component {
         }
     }
 
-    // Subhead ("excerpt") Actions -------------------------------------------
+    // Subtitle ("excerpt") Actions -------------------------------------------
 
     @action
     registerSubtitleElement(element) {
