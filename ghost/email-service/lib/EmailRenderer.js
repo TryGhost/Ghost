@@ -1022,9 +1022,9 @@ class EmailRenderer {
         const titleFont = newsletter.get('title_font_category');
 
         if (titleFont === 'serif' && bodyFont === 'serif') {
-            subtitleFontClass = 'post-subtitle-serif-serif';
+            subtitleFontClass = 'post-excerpt-serif-serif';
         } else if (titleFont === 'serif' && bodyFont !== 'serif') {
-            subtitleFontClass = 'post-subtitle-serif-sans';
+            subtitleFontClass = 'post-excerpt-serif-sans';
         }
 
         const data = {
@@ -1090,7 +1090,7 @@ class EmailRenderer {
             classes: {
                 title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                subtitle: 'post-subtitle' + ` ` + subtitleFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-subtitle-left` : ``),
+                subtitle: 'post-excerpt' + ` ` + subtitleFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

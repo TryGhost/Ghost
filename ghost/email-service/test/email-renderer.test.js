@@ -1816,7 +1816,7 @@ describe('Email renderer', function () {
                 await validateHtml(response.html);
 
                 assert.equal(response.html.match(/This is a subtitle/g).length, 1, 'Subtitle should only appear once (preheader, subtitle section skipped)');
-                response.html.should.not.containEql('post-subtitle-wrapper');
+                response.html.should.not.containEql('post-excerpt-wrapper');
             });
 
             it('does not render when enabled and customExcerpt is not present', async function () {
@@ -1837,7 +1837,7 @@ describe('Email renderer', function () {
 
                 await validateHtml(response.html);
 
-                response.html.should.not.containEql('post-subtitle-wrapper');
+                response.html.should.not.containEql('post-excerpt-wrapper');
             });
         });
     });
@@ -2073,7 +2073,7 @@ describe('Email renderer', function () {
                 title: 'post-title post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
-                subtitle: 'post-subtitle post-subtitle-serif-sans post-subtitle-left',
+                subtitle: 'post-excerpt post-excerpt-serif-sans post-excerpt-left',
                 body: 'post-content-sans-serif'
             });
         });
@@ -2092,7 +2092,7 @@ describe('Email renderer', function () {
                 show_subtitle: true
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.classes.subtitle, 'post-subtitle post-subtitle-serif-serif post-subtitle-left');
+            assert.equal(data.classes.subtitle, 'post-excerpt post-excerpt-serif-serif post-excerpt-left');
         });
 
         it('show comment CTA is enabled if labs disabled', async function () {
