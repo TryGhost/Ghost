@@ -25,7 +25,8 @@ const GA_FEATURES = [
     'filterEmailDisabled',
     'newEmailAddresses',
     'portalImprovements',
-    'onboardingChecklist'
+    'onboardingChecklist',
+    'newsletterExcerpt'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -53,7 +54,6 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'editorExcerpt',
-    'newsletterExcerpt',
     'internalLinkingAtLinks'
 ];
 
