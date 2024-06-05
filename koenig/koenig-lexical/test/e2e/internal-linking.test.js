@@ -162,6 +162,24 @@ test.describe('Internal linking', async () => {
                 </li>
             `, {selector: '[data-testid="bookmark-url-dropdown"]'});
         });
+
+        test('matches URL queries (mailto)', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('mailto:test@example.com');
+
+            await assertHTML(page, html`
+                <li>Link to web page</li>
+                <li aria-selected="true" role="option">
+                  <span>
+                    <svg></svg>
+                    <span>mailto:test@example.com</span>
+                  </span>
+                </li>
+            `, {selector: '[data-testid="bookmark-url-dropdown"]'});
+        });
     });
 
     test.describe('Link toolbar', function () {});

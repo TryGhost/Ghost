@@ -3,7 +3,7 @@ import React from 'react';
 import debounce from 'lodash/debounce';
 
 const DEBOUNCE_MS = 100;
-const URL_QUERY_REGEX = /^http|^#|^\//;
+const URL_QUERY_REGEX = /^http|^#|^\/|^mailto:|^tel:/;
 
 function urlQueryOptions(query) {
     return [{
@@ -29,9 +29,9 @@ function defaultNoResultOptions(query) {
     }];
 }
 
-function convertSearchResultsToListOptions(results, {noResultOptions} = {noResultOptions: defaultNoResultOptions}) {
+function convertSearchResultsToListOptions(results, {noResultOptions} = {}) {
     if (!results || !results.length) {
-        return noResultOptions();
+        return (noResultOptions || defaultNoResultOptions)();
     }
 
     return results.map((result) => {
