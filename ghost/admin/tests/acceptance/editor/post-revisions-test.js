@@ -26,7 +26,7 @@ describe('Acceptance: Post revisions', function () {
         this.server.create('post-revision', {
             post,
             title: post.title,
-            customExcerpt: 'New subtitle',
+            customExcerpt: 'New excerpt',
             featureImage: 'https://example.com/new-image.jpg',
             featureImageAlt: 'New feature alt text',
             featureImageCaption: 'New feature caption',
@@ -38,7 +38,7 @@ describe('Acceptance: Post revisions', function () {
         this.server.create('post-revision', {
             post,
             title: 'Old Title',
-            customExcerpt: 'Old subtitle',
+            customExcerpt: 'Old excerpt',
             featureImage: 'https://example.com/old-image.jpg',
             featureImageAlt: 'Old feature alt text',
             featureImageCaption: 'Old feature caption',
@@ -70,8 +70,8 @@ describe('Acceptance: Post revisions', function () {
         expect(find('[data-test-post-history-preview-feature-image]')).to.have.attribute('alt', 'New feature alt text');
         expect(find('[data-test-post-history-preview-feature-image-caption]')).to.have.trimmed.text('New feature caption');
 
-        // subtitle is not visible (needs feature flag)
-        expect(find('[data-test-post-history-preview-subtitle]')).to.not.exist;
+        // excerpt is not visible (needs feature flag)
+        expect(find('[data-test-post-history-preview-excerpt]')).to.not.exist;
 
         // previous post can be previewed
         await click('[data-test-revision-item="1"] [data-test-button="preview-revision"]');
@@ -90,22 +90,22 @@ describe('Acceptance: Post revisions', function () {
         expect(post.attrs.featureImageAlt).to.equal('Old feature alt text');
         expect(post.attrs.featureImageCaption).to.equal('Old feature caption');
 
-        // subtitle (customExcerpt) is not restored (needs feature flag)
+        // excerpt (customExcerpt) is not restored (needs feature flag)
         expect(post.attrs.customExcerpt).to.equal('Current excerpt');
     });
 
-    it('can preview and restore subtitle (with editorSubtitle feature flag)', async function () {
-        enableLabsFlag(this.server, 'editorSubtitle');
+    it('can preview and restore excerpt (with editorExcerpt feature flag)', async function () {
+        enableLabsFlag(this.server, 'editorExcerpt');
 
         const post = this.server.create('post', {
             title: 'Current Title',
-            customExcerpt: 'Current subtitle',
+            customExcerpt: 'Current excerpt',
             status: 'draft'
         });
         this.server.create('post-revision', {
             post,
             title: post.title,
-            customExcerpt: 'New subtitle',
+            customExcerpt: 'New excerpt',
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'hour'),
@@ -114,7 +114,7 @@ describe('Acceptance: Post revisions', function () {
         this.server.create('post-revision', {
             post,
             title: 'Old Title',
-            customExcerpt: 'Old subtitle',
+            customExcerpt: 'Old excerpt',
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'day'),
@@ -127,19 +127,19 @@ describe('Acceptance: Post revisions', function () {
         await click('[data-test-psm-trigger]');
         await click('[data-test-toggle="post-history"]');
 
-        // subtitle is visible
-        expect(find('[data-test-post-history-preview-subtitle]')).to.exist;
-        expect(find('[data-test-post-history-preview-subtitle]')).to.have.trimmed.text('New subtitle');
+        // excerpt is visible
+        expect(find('[data-test-post-history-preview-excerpt]')).to.exist;
+        expect(find('[data-test-post-history-preview-excerpt]')).to.have.trimmed.text('New excerpt');
 
         // previous post can be previewed
         await click('[data-test-revision-item="1"] [data-test-button="preview-revision"]');
-        expect(find('[data-test-post-history-preview-subtitle]')).to.have.trimmed.text('Old subtitle');
+        expect(find('[data-test-post-history-preview-excerpt]')).to.have.trimmed.text('Old excerpt');
 
         // previous post can be restored
         await click('[data-test-revision-item="1"] [data-test-button="restore-revision"]');
         await click('[data-test-modal="restore-revision"] [data-test-button="restore"]');
 
         // post has been saved with correct data
-        expect(post.attrs.customExcerpt).to.equal('Old subtitle');
+        expect(post.attrs.customExcerpt).to.equal('Old excerpt');
     });
 });

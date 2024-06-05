@@ -788,7 +788,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 2.4rem;
 }
 
-.gh-editor-subtitle {
+.gh-editor-excerpt {
     display: block;
     width: 100%;
     max-width: unset;
@@ -807,12 +807,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     box-shadow: none;
 }
 
-.gh-editor-subtitle:focus {
+.gh-editor-excerpt:focus {
     box-shadow: none !important;
     border: none !important;
 }
 
-.gh-editor-subtitle-error {
+.gh-editor-excerpt-error {
     margin-top: .8rem;
     margin-bottom: 4.8rem;
     color: var(--red-d1);
@@ -840,7 +840,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     cursor: pointer;
 }
 
-.gh-editor .tk-indicator-subtitle {
+.gh-editor .tk-indicator-excerpt {
     top: -1px;
 }
 

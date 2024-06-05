@@ -52,8 +52,8 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'editorSubtitle',
-    'newsletterSubtitle',
+    'editorExcerpt',
+    'newsletterExcerpt',
     'internalLinkingAtLinks'
 ];
 

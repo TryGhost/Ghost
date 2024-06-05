@@ -10,7 +10,7 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     containerElement = null;
     titleElement = null;
-    subtitleElement = null;
+    excerptElement = null;
     mousedownY = 0;
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
@@ -114,8 +114,8 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     @action
     onTitleKeydown(event) {
-        if (this.feature.get('editorSubtitle')) {
-            // move cursor to the subtitle on
+        if (this.feature.get('editorExcerpt')) {
+            // move cursor to the excerpt on
             // - Tab (handled by browser)
             // - Arrow Down/Right when input is empty or caret at end of input
             // - Enter
@@ -124,7 +124,7 @@ export default class GhKoenigEditorReactComponent extends Component {
 
             if (key === 'Enter') {
                 event.preventDefault();
-                this.subtitleElement?.focus();
+                this.excerptElement?.focus();
             }
 
             if ((key === 'ArrowDown' || key === 'ArrowRight') && !event.shiftKey) {
@@ -132,7 +132,7 @@ export default class GhKoenigEditorReactComponent extends Component {
 
                 if (couldLeaveTitle) {
                     event.preventDefault();
-                    this.subtitleElement?.focus();
+                    this.excerptElement?.focus();
                 }
             }
         } else {
@@ -167,17 +167,17 @@ export default class GhKoenigEditorReactComponent extends Component {
     // Subtitle ("excerpt") Actions -------------------------------------------
 
     @action
-    registerSubtitleElement(element) {
-        this.subtitleElement = element;
+    excerptSubtitleElement(element) {
+        this.excerptElement = element;
     }
 
     @action
     focusSubtitle() {
-        this.subtitleElement?.focus();
+        this.excerptElement?.focus();
 
         // timeout ensures this occurs after the keyboard events
         setTimeout(() => {
-            this.subtitleElement?.setSelectionRange(-1, -1);
+            this.excerptElement?.setSelectionRange(-1, -1);
         }, 0);
     }
 

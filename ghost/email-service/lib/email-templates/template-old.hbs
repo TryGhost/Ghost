@@ -79,11 +79,11 @@
                                                     <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
                                                 </td>
                                             </tr>
-                                            {{#hasFeature 'newsletterSubtitle'}}
-                                                {{#if (and newsletter.showSubtitle post.customExcerpt)}}
+                                            {{#hasFeature 'newsletterExcerpt'}}
+                                                {{#if (and newsletter.showExcerpt post.customExcerpt)}}
                                                     <tr>
-                                                        <td class="post-subtitle-wrapper" style="width: 100%">
-                                                            <p class="{{classes.subtitle}}">{{post.customExcerpt}}</p>
+                                                        <td class="post-excerpt-wrapper" style="width: 100%">
+                                                            <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
                                                         </td>
                                                     </tr>
                                                 {{/if}}

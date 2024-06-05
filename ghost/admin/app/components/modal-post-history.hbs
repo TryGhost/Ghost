@@ -23,8 +23,8 @@
                 <div class="gh-editor-title" data-test-post-history-preview-title>
                     {{this.currentTitle}}
                 </div>
-                {{#if (feature "editorSubtitle")}}
-                    <div class="gh-editor-subtitle" data-test-post-history-preview-subtitle>
+                {{#if (feature "editorExcerpt")}}
+                    <div class="gh-editor-excerpt" data-test-post-history-preview-excerpt>
                         {{this.selectedRevision.custom_excerpt}}
                     </div>
                     <hr class="gh-editor-title-divider">

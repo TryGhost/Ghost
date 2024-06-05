@@ -39,7 +39,7 @@ export default class RestoreRevisionModal extends Component {
             post.featureImageAlt = revision.feature_image_alt;
             post.featureImageCaption = revision.feature_image_caption;
 
-            if (this.feature.editorSubtitle) {
+            if (this.feature.editorExcerpt) {
                 post.customExcerpt = revision.custom_excerpt;
             }
 

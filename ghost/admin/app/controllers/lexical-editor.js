@@ -272,7 +272,7 @@ export default class LexicalEditorController extends Controller {
 
     @computed('post.customExcerpt')
     get excerptHasTk() {
-        if (!this.feature.editorSubtitle) {
+        if (!this.feature.editorExcerpt) {
             return false;
         }
 
@@ -282,7 +282,7 @@ export default class LexicalEditorController extends Controller {
     @computed('titleHasTk', 'excerptHasTk', 'postTkCount', 'featureImageTkCount')
     get tkCount() {
         const titleTk = this.titleHasTk ? 1 : 0;
-        const excerptTk = (this.feature.editorSubtitle && this.excerptHasTk) ? 1 : 0;
+        const excerptTk = (this.feature.editorExcerpt && this.excerptHasTk) ? 1 : 0;
         return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
     }
 

@@ -30,7 +30,7 @@ const Newsletter = ghostBookshelf.Model.extend({
             border_color: null,
             title_color: null,
             feedback_enabled: false,
-            show_subtitle: false
+            show_excerpt: false
         };
     },
 
