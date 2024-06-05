@@ -16,8 +16,8 @@ const ActivityPubComponent: React.FC = () => {
     const {updateRoute} = useRouting();
 
     // TODO: Replace with actual user ID
-    const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('deadbeefdeadbeefdeadbeef');
-    const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
+    const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('inbox');
+    const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('inbox');
 
     const [articleContent, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
@@ -53,9 +53,9 @@ const ActivityPubComponent: React.FC = () => {
             id: 'activity',
             title: 'Activity',
             contents: <div className='grid grid-cols-6 items-start gap-8'><List className='col-span-4'>
-                <ListItem avatar={<Avatar image='https://activitypub.ghost.is/favicon.ico' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@activitypub.ghost.is</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>Why ActivityPug Will Never Beat ActivityPub</span></div>}></ListItem>
-                <ListItem avatar={<Avatar image='https://activitypub.ghost.is/favicon.ico' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@activitypub.ghost.is</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>Top 11 Reasons Why John Should Get a Pug</span></div>}></ListItem>
-                <ListItem avatar={<Avatar image='https://activitypub.ghost.is/favicon.ico' size='sm' />} id='list-item' title={<div><span className='font-medium'>@index@activitypub.ghost.is</span><span className='text-grey-800'> followed you</span></div>}></ListItem>
+                {activities && activities.slice().reverse().map(activity => (
+                    activity.type === 'Like' && <ListItem avatar={<Avatar image={activity.actor.icon} size='sm' />} id='list-item' title={<div><span className='font-medium'>{activity.actor.name}</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>{activity.object.name}</span></div>}></ListItem>
+                ))}
             </List>
             <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
             </div>
@@ -192,7 +192,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
             {object && (
                 <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
                     <div className='relative z-10 mb-3 grid w-full grid-cols-[20px_auto_1fr_auto] items-center gap-2 text-base'>
-                        <img className='w-5' src='https://www.platformer.news/content/images/size/w256h256/2024/05/Logomark_Blue_800px.png'/>
+                        <img className='w-5' src={actor.icon}/>
                         <span className='truncate font-semibold'>{actor.name}</span>
                         <span className='truncate text-grey-800'>{getUsername(actor)}</span>
                         <span className='ml-auto text-right text-grey-800'>{timestamp}</span>
