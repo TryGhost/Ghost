@@ -68,13 +68,13 @@ const features = [{
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
 },{
-    title: 'Subtitle in editor',
-    description: 'Using custom excerpt as subtitle in editor',
-    flag: 'editorSubtitle'
+    title: 'Show post excerpt inline',
+    description: 'Adds the excerpt input below the post title in the editor',
+    flag: 'editorExcerpt'
 },{
-    title: 'Subtitle in newsletter',
-    description: 'Showing subtitle in newsletter',
-    flag: 'newsletterSubtitle'
+    title: 'Excerpt in newsletter',
+    description: 'Showing excerpt in newsletter',
+    flag: 'newsletterExcerpt'
 }];
 
 const AlphaFeatures: React.FC = () => {

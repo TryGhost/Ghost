@@ -111,7 +111,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         showLatestPosts={newsletter.show_latest_posts}
         showPostTitleSection={newsletter.show_post_title_section}
         showSubscriptionDetails={newsletter.show_subscription_details}
-        showSubtitle={newsletter.show_subtitle}
+        showExcerpt={newsletter.show_excerpt}
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
