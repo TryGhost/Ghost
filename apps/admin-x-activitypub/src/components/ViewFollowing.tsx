@@ -1,5 +1,6 @@
 import {} from '@tryghost/admin-x-framework/api/activitypub';
 import NiceModal from '@ebay/nice-modal-react';
+import getUsername from '../utils/get-username';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {FollowingResponseData, useBrowseFollowingForUser, useUnfollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -11,7 +12,6 @@ interface ViewFollowingModalProps {
 
 const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> = ({}) => {
     const {updateRoute} = useRouting();
-    // const modal = NiceModal.useModal();
     const mutation = useUnfollow();
 
     const {data: {orderedItems: following = []} = {}} = useBrowseFollowingForUser('inbox');
@@ -32,7 +32,7 @@ const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> 
             <div className='mt-3 flex flex-col gap-4 pb-12'>
                 <List>
                     {following.map(item => (
-                        <ListItem action={<Button color='grey' label='Unfollow' link={true} onClick={() => mutation.mutate({username: item.username})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={item.username} id='list-item' title={item.name}></ListItem>
+                        <ListItem action={<Button color='grey' label='Unfollow' link={true} onClick={() => mutation.mutate({username: getUsername(item)})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsername(item)} id='list-item' title={item.name}></ListItem>
                     ))}
                 </List>
                 {/* <Table>

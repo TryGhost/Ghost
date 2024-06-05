@@ -2,7 +2,7 @@
 import React, {useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
 import getUsername from '../utils/get-username';
-import {ActorProperties, ObjectProperties, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties, useBrowseFollowersForUser, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, Button, Heading, List, ListItem, Page, SettingValue, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -18,6 +18,7 @@ const ActivityPubComponent: React.FC = () => {
     // TODO: Replace with actual user ID
     const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('inbox');
     const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('inbox');
+    const {data: {totalItems: followersCount = 0} = {}} = useBrowseFollowersForUser('inbox');
 
     const [articleContent, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
@@ -46,7 +47,7 @@ const ActivityPubComponent: React.FC = () => {
                         </li>
                     ))}
                 </ul>
-                <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
+                <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
         },
         {
@@ -57,7 +58,7 @@ const ActivityPubComponent: React.FC = () => {
                     activity.type === 'Like' && <ListItem avatar={<Avatar image={activity.actor.icon} size='sm' />} id='list-item' title={<div><span className='font-medium'>{activity.actor.name}</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>{activity.object.name}</span></div>}></ListItem>
                 ))}
             </List>
-            <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
+            <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
         },
         {
@@ -72,7 +73,7 @@ const ActivityPubComponent: React.FC = () => {
                     </li>
                     ))}
                 </ul>
-                <Sidebar followingCount={followingCount} updateRoute={updateRoute} />
+                <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
         }
     ];
@@ -106,7 +107,7 @@ const ActivityPubComponent: React.FC = () => {
     );
 };
 
-const Sidebar: React.FC<{followingCount: number, updateRoute: (route: string) => void}> = ({followingCount, updateRoute}) => (
+const Sidebar: React.FC<{followingCount: number, followersCount: number, updateRoute: (route: string) => void}> = ({followingCount, followersCount, updateRoute}) => (
     <div className='order-1 col-span-6 rounded-xl bg-grey-50 p-6 lg:order-2 lg:col-span-2' id="ap-sidebar">
         <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
         <div className='grid grid-cols-2 gap-4'>
@@ -115,15 +116,10 @@ const Sidebar: React.FC<{followingCount: number, updateRoute: (route: string) =>
                 <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
             </div>
             <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
-                <span className='text-3xl font-bold leading-none' data-test-following-count>0</span>
+                <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
                 <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
             </div>
         </div>
-        {/* <ul data-test-following>
-                        {following && following.slice().map(({username}) => <li key={username} className='mb-4'>
-                            <span className='mb-2 text-md font-medium text-grey-800'>{username}</span>
-                        </li>)}
-                    </ul> */}
     </div>
 );
 
@@ -243,19 +239,17 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                     <div>
                         <Button icon='chevron-left' iconSize='xs' label='Inbox' data-test-back-button onClick={onBackToList}/>
                     </div>
-                    <div className='flex items-center justify-between'>
-                        <span className='text-base font-semibold'>Placeholder</span>
-                        <div className='flex flex-row-reverse gap-2'>
+                    <div className='flex items-center justify-between'>  
+                    </div>
+                    <div className='flex justify-end'>
+                        <div className='flex flex-row-reverse items-center gap-3'>
                             <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
                             <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
                         </div>
-                    </div>
-                    <div className='flex justify-end'>
-                        <Button icon='arrow-top-right' iconSize='xs' label='Visit site' onClick={() => updateRoute('/')}/>
+                        <Button hideLabel={true} icon='arrow-top-right' iconSize='xs' label='Visit site' onClick={() => updateRoute('/')}/>
                     </div>
                 </div>
                 <div className='mx-[-4.8rem] mb-[-4.8rem] w-auto'>
-                    {/* <Heading className='mb-3' level={1} data-test-article-heading>{object.name}</Heading> */}
                     <ArticleBody heading={object.name} html={object.content} image={object?.image}/>
                 </div>
             </ViewContainer>

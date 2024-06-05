@@ -11,7 +11,8 @@ interface AppProps {
 const modals = {
     paths: {
         'follow-site': 'FollowSite',
-        'view-following': 'ViewFollowing'
+        'view-following': 'ViewFollowing',
+        'view-followers': 'ViewFollowers'
     },
     load: async () => import('./components/modals')
 };
