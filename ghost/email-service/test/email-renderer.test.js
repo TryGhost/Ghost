@@ -1794,7 +1794,8 @@ describe('Email renderer', function () {
 
                 await validateHtml(response.html);
 
-                assert.equal(response.html.match(/This is an excerpt/g).length, 2, 'Excerpt should appear twice (preheader and excerpt section)');
+                assert.equal(response.html.match(/This is an excerpt/g).length, 1, 'Preheader has no non-breaking space;');
+                assert.equal(response.html.match(/This is an&#xA0;excerpt/g).length, 1, 'Excerpt has last space replaced with non-breaking space;');
             });
 
             it('is not rendered when disabled and customExcerpt is present', async function () {

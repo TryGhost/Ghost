@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
 const {registerHelpers} = require('../lib/helpers/register-helpers');
+const {escape} = require('querystring');
 
 describe('registerHelpers', function () {
     it('registers helpers', function () {
@@ -138,5 +139,35 @@ describe('registerHelpers', function () {
         });
 
         assert.equal(result, false);
+    });
+
+    it('avoidOrphanedWords helper', function () {
+        const handlebars = {
+            registerHelper: function (name, fn) {
+                this[name] = fn;
+            },
+            escapeExpression(text) {
+                return text;
+            },
+            SafeString: class SafeString {
+                constructor(text) {
+                    this.text = text;
+                }
+            }
+        };
+
+        registerHelpers(handlebars, {});
+
+        const tests = [
+            {input: null, expected: ''},
+            {input: '', expected: ''},
+            {input: 'One-word', expected: new handlebars.SafeString('One-word')},
+            {input: 'Two words', expected: new handlebars.SafeString('Two&nbsp;words')}
+        ];
+
+        for (const test of tests) {
+            const result = handlebars.avoidOrphanedWords(test.input);
+            assert.deepEqual(result, test.expected);
+        }
     });
 });
