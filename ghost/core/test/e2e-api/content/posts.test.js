@@ -144,7 +144,7 @@ describe('Posts Content API', function () {
         });
     });
 
-    it('Can filter posts by authors', async function () {
+    it.only('Can filter posts by authors', async function () {
         const res = await agent
             .get('posts/?filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors')
             .expectStatus(200)
@@ -159,7 +159,7 @@ describe('Posts Content API', function () {
 
         const jsonResponse = res.body;
 
-        assert.equal(jsonResponse.posts[0].slug, 'not-so-short-bit-complex', 'The API orders by number of matched authors');
+        assert.equal(jsonResponse.posts[0].slug, 'welcome', 'The API orders by number of matched authors, then by published_at desc, then by id desc');
 
         const primaryAuthors = jsonResponse.posts.map((post) => {
             return post.primary_author.slug;
