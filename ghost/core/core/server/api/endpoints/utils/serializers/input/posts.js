@@ -92,18 +92,11 @@ function defaultRelations(frame) {
 }
 
 function setDefaultOrder(frame) {
-    let includesOrderedRelations = false;
-
-    if (frame.options.withRelated) {
-        const orderedRelations = ['author', 'authors', 'tag', 'tags'];
-        includesOrderedRelations = _.intersection(orderedRelations, frame.options.withRelated).length > 0;
-    }
-
-    if (!frame.options.order && !includesOrderedRelations && frame.options.filter) {
+    if (!frame.options.order && frame.options.filter) {
         frame.options.autoOrder = slugFilterOrder('posts', frame.options.filter);
     }
 
-    if (!frame.options.order && !frame.options.autoOrder && !includesOrderedRelations) {
+    if (!frame.options.order && !frame.options.autoOrder) {
         frame.options.order = 'published_at desc';
     }
 }
