@@ -144,7 +144,7 @@ describe('Posts Content API', function () {
         });
     });
 
-    it.only('Can filter posts by authors', async function () {
+    it('Can filter posts by authors', async function () {
         const res = await agent
             .get('posts/?filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors')
             .expectStatus(200)
