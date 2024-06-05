@@ -81,12 +81,14 @@ type FollowRequestProps = {
 
 export const useFollow = createMutation<object, FollowRequestProps>({
     method: 'POST',
-    path: data => `/activitypub/follow/${data.username}`
+    useActivityPub: true,
+    path: data => `/follow/${data.username}`
 });
 
 export const useUnfollow = createMutation<object, FollowRequestProps>({
     method: 'POST',
-    path: data => `/activitypub/unfollow/${data.username}`
+    useActivityPub: true,
+    path: data => `/unfollow/${data.username}`
 });
 
 // This is a frontend root, not using the Ghost admin API
@@ -101,4 +103,11 @@ export const useBrowseFollowingForUser = createQueryWithId<FollowingResponseData
     dataType: 'FollowingResponseData',
     useActivityPub: true,
     path: id => `/following/${id}`
+});
+
+// This is a frontend root, not using the Ghost admin API
+export const useBrowseFollowersForUser = createQueryWithId<FollowingResponseData>({
+    dataType: 'FollowingResponseData',
+    useActivityPub: true,
+    path: id => `/followers/${id}`
 });

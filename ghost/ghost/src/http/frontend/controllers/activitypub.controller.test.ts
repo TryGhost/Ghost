@@ -93,44 +93,44 @@ describe('ActivityPubController', function () {
 
     it('Can handle requests to get the actor', async function () {
         await request(app.getHttpServer())
-            .get('/activitypub/actor/deadbeefdeadbeefdeadbeef')
+            .get('/activitypub/actor/index')
             .expect(200);
     });
 
     it('Can handle requests to get the outbox', async function () {
         await request(app.getHttpServer())
-            .get('/activitypub/outbox/deadbeefdeadbeefdeadbeef')
+            .get('/activitypub/outbox/index')
             .expect(200);
     });
 
     it('Can handle requests to get the inbox', async function () {
         await request(app.getHttpServer())
-            .get('/activitypub/inbox/deadbeefdeadbeefdeadbeef')
+            .get('/activitypub/inbox/index')
             .expect(200);
     });
 
     it('Can handle requests to get the following', async function () {
         await request(app.getHttpServer())
-            .get('/activitypub/following/deadbeefdeadbeefdeadbeef')
+            .get('/activitypub/following/index')
             .expect(200);
     });
 
     it('Can handle requests to get the followers', async function () {
         await request(app.getHttpServer())
-            .get('/activitypub/followers/deadbeefdeadbeefdeadbeef')
+            .get('/activitypub/followers/index')
             .expect(200);
     });
 
     it('Can handle requests to get an article', async function () {
         await request(app.getHttpServer())
-            .get('/activitypub/article/deadbeefdeadbeefdeadbeef')
+            .get('/activitypub/article/index')
             .expect(200);
     });
 
     describe('/inbox/:id', function () {
         it('Errors with invalid requests', async function () {
             await request(app.getHttpServer())
-                .post('/activitypub/inbox/deadbeefdeadbeefdeadbeef')
+                .post('/activitypub/inbox/index')
                 .send({
                     type: 'Follow',
                     actor: 'https://site.com/actor',

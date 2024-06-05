@@ -19,7 +19,7 @@ export class ActorRepositoryInMemory implements ActorRepository {
     ) {
         this.actors = [
             Actor.create({
-                id: ObjectID.createFromHexString('deadbeefdeadbeefdeadbeef'),
+                id: ObjectID.createFromHexString('index'),
                 username: 'index',
                 displayName: settingsCache.get('title'),
                 publicKey: settingsCache.get('ghost_public_key'),

@@ -6,7 +6,7 @@ describe('HTTPSignature', function () {
     describe('#validate', function () {
         it('returns true when the signature is valid', async function () {
             const requestMethod = 'POST';
-            const requestUrl = '/activitypub/inbox/deadbeefdeadbeefdeadbeef';
+            const requestUrl = '/activitypub/inbox/index';
             const requestHeaders = new Headers({
                 host: 'a424-171-97-56-187.ngrok-free.app',
                 'user-agent': 'http.rb/5.2.0 (Mastodon/4.3.0-nightly.2024-04-30; +https://mastodon.social/)',
@@ -29,7 +29,7 @@ describe('HTTPSignature', function () {
         });
         it('also returns true when the signature is valid', async function () {
             const requestMethod = 'POST';
-            const requestUrl = '/activitypub/inbox/deadbeefdeadbeefdeadbeef';
+            const requestUrl = '/activitypub/inbox/index';
             const requestHeaders = new Headers({
                 host: 'a424-171-97-56-187.ngrok-free.app',
                 'user-agent': 'http.rb/5.2.0 (Mastodon/4.3.0-nightly.2024-04-30; +https://mastodon.social/)',

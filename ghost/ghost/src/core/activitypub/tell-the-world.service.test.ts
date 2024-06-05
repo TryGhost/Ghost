@@ -20,7 +20,7 @@ describe('TheWorld', function () {
                 username: 'Testing'
             });
 
-            const toFollow = new URI('https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef');
+            const toFollow = new URI('https://main.ghost.org/activitypub/actor/index');
 
             const activity = new Activity({
                 type: 'Follow',
@@ -34,13 +34,13 @@ describe('TheWorld', function () {
             });
 
             const actorFetch = nock('https://main.ghost.org')
-                .get('/activitypub/actor/deadbeefdeadbeefdeadbeef')
+                .get('/activitypub/actor/index')
                 .reply(200, {
-                    inbox: 'https://main.ghost.org/activitypub/inbox/deadbeefdeadbeefdeadbeef'
+                    inbox: 'https://main.ghost.org/activitypub/inbox/index'
                 });
 
             const activityDelivery = nock('https://main.ghost.org')
-                .post('/activitypub/inbox/deadbeefdeadbeefdeadbeef')
+                .post('/activitypub/inbox/index')
                 .reply(201, {});
 
             await service.deliverActivity(activity, actor);
@@ -56,7 +56,7 @@ describe('TheWorld', function () {
                 username: 'Testing'
             });
 
-            const followers = new URI('https://main.ghost.org/activitypub/followers/deadbeefdeadbeefdeadbeef');
+            const followers = new URI('https://main.ghost.org/activitypub/followers/index');
 
             const activity = new Activity({
                 type: 'Create',
@@ -71,15 +71,15 @@ describe('TheWorld', function () {
             });
 
             nock('https://main.ghost.org')
-                .get('/activitypub/followers/deadbeefdeadbeefdeadbeef')
+                .get('/activitypub/followers/index')
                 .reply(200, {
                     '@context': '',
                     type: 'Collection',
                     totalItems: 3,
                     items: [
-                        'https://main.ghost.org/activitypub/actor/deadbeefdeadbeefdeadbeef',
+                        'https://main.ghost.org/activitypub/actor/index',
                         {
-                            id: 'https://main.ghost.org/activitypub/actor/beefdeadbeefdeadbeefdead'
+                            id: 'https://main.ghost.org/activitypub/actor/index'
                         },
                         {
                             invalid: true
@@ -88,23 +88,23 @@ describe('TheWorld', function () {
                 });
 
             nock('https://main.ghost.org')
-                .get('/activitypub/actor/deadbeefdeadbeefdeadbeef')
+                .get('/activitypub/actor/index')
                 .reply(200, {
-                    inbox: 'https://main.ghost.org/activitypub/inbox/deadbeefdeadbeefdeadbeef'
+                    inbox: 'https://main.ghost.org/activitypub/inbox/index'
                 });
 
             nock('https://main.ghost.org')
-                .get('/activitypub/actor/beefdeadbeefdeadbeefdead')
+                .get('/activitypub/actor/index')
                 .reply(200, {
-                    inbox: 'https://main.ghost.org/activitypub/inbox/beefdeadbeefdeadbeefdead'
+                    inbox: 'https://main.ghost.org/activitypub/inbox/index'
                 });
 
             const firstActivityDelivery = nock('https://main.ghost.org')
-                .post('/activitypub/inbox/deadbeefdeadbeefdeadbeef')
+                .post('/activitypub/inbox/index')
                 .reply(201, {});
 
             const secondActivityDelivery = nock('https://main.ghost.org')
-                .post('/activitypub/inbox/beefdeadbeefdeadbeefdead')
+                .post('/activitypub/inbox/index')
                 .reply(201, {});
 
             await service.deliverActivity(activity, actor);
