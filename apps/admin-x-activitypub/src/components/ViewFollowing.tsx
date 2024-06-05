@@ -14,7 +14,7 @@ const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> 
     // const modal = NiceModal.useModal();
     const mutation = useUnfollow();
 
-    const {data: {items: following = []} = {}} = useBrowseFollowingForUser('deadbeefdeadbeefdeadbeef');
+    const {data: {orderedItems: following = []} = {}} = useBrowseFollowingForUser('inbox');
 
     return (
         <Modal

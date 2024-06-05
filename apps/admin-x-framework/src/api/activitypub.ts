@@ -72,7 +72,7 @@ export type FollowingResponseData = {
     summary: string;
     type: string;
     totalItems: number;
-    items: FollowItem[];
+    orderedItems: FollowItem[];
 }
 
 type FollowRequestProps = {
