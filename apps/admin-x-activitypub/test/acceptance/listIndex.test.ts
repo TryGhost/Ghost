@@ -3,7 +3,7 @@ import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/accept
 
 test.describe('ListIndex', async () => {
     test('Renders the list page', async ({page}) => {
-        const userId = 'deadbeefdeadbeefdeadbeef';
+        const userId = 'index';
         await mockApi({
             page,
             requests: {
