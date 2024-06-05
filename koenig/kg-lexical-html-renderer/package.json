@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-lexical-html-renderer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-lexical-html-renderer",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -41,8 +41,8 @@
     "@lexical/link": "0.13.1",
     "@lexical/list": "0.13.1",
     "@lexical/rich-text": "0.13.1",
-    "@tryghost/kg-default-nodes": "1.1.0",
-    "@tryghost/kg-default-transforms": "1.1.1",
+    "@tryghost/kg-default-nodes": "1.1.1",
+    "@tryghost/kg-default-transforms": "1.1.2",
     "jsdom": "^24.0.0",
     "lexical": "0.13.1",
     "prettier": "3.2.5"
