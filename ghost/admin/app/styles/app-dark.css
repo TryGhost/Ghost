@@ -745,7 +745,7 @@ input:focus,
 /* Editor  */
 
 .gh-editor-title,
-.gh-editor-subtitle {
+.gh-editor-excerpt {
     background: var(--white);
 }
 

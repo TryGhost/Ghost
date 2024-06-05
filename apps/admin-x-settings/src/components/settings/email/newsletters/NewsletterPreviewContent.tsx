@@ -18,7 +18,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTitle?: string | null;
     headerSubtitle?: string | null;
     showPostTitleSection: boolean;
-    showSubtitle: boolean;
+    showExcerpt: boolean;
     titleAlignment?: string;
     titleFontCategory?: string;
     bodyFontCategory?: string;
@@ -50,7 +50,7 @@ const NewsletterPreviewContent: React.FC<{
     headerTitle,
     headerSubtitle,
     showPostTitleSection,
-    showSubtitle,
+    showExcerpt,
     titleAlignment,
     titleFontCategory,
     bodyFontCategory,
@@ -77,7 +77,7 @@ const NewsletterPreviewContent: React.FC<{
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
     const hasNewEmailAddresses = useFeatureFlag('newEmailAddresses');
-    const hasNewsletterSubtitle = useFeatureFlag('newsletterSubtitle');
+    const hasNewsletterExcerpt = useFeatureFlag('newsletterExcerpt');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -101,16 +101,16 @@ const NewsletterPreviewContent: React.FC<{
             <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
     }
 
-    let subtitleClasses = 'mb-5 text-pretty leading-[1.7] text-black';
+    let excerptClasses = 'mb-5 text-pretty leading-[1.7] text-black';
 
     if (titleFontCategory === 'serif' && bodyFontCategory === 'serif') {
-        subtitleClasses = clsx(subtitleClasses, 'font-serif text-[1.8rem]');
+        excerptClasses = clsx(excerptClasses, 'font-serif text-[1.8rem]');
     } else if (titleFontCategory !== 'serif' && bodyFontCategory === 'serif') {
-        subtitleClasses = clsx(subtitleClasses, 'text-[1.7rem] tracking-tight');
+        excerptClasses = clsx(excerptClasses, 'text-[1.7rem] tracking-tight');
     } else if (titleFontCategory === 'serif' && bodyFontCategory !== 'serif') {
-        subtitleClasses = clsx(subtitleClasses, 'font-serif text-[1.8rem]');
+        excerptClasses = clsx(excerptClasses, 'font-serif text-[1.8rem]');
     } else {
-        subtitleClasses = clsx(subtitleClasses, 'text-[1.7rem] tracking-tight');
+        excerptClasses = clsx(excerptClasses, 'text-[1.7rem] tracking-tight');
     }
 
     return (
@@ -146,8 +146,8 @@ const NewsletterPreviewContent: React.FC<{
                                     )} style={{color: titleColor}}>
                                         Your email newsletter
                                     </h2>
-                                    {(hasNewsletterSubtitle && showSubtitle) && (
-                                        <p className={subtitleClasses}>A subtitle to highlight key points and engage your readers</p>
+                                    {(hasNewsletterExcerpt && showExcerpt) && (
+                                        <p className={excerptClasses}>A subtitle to highlight key points and engage your readers</p>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',

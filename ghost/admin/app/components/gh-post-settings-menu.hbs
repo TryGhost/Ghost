@@ -93,7 +93,7 @@
                             {{/if}}
                         {{/if}}
 
-                        {{#unless (feature 'editorSubtitle')}}
+                        {{#unless (feature 'editorExcerpt')}}
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
                             <label for="custom-excerpt">Excerpt</label>
                             <GhTextarea

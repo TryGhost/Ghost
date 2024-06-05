@@ -1017,14 +1017,14 @@ class EmailRenderer {
             }
         }
 
-        let subtitleFontClass = '';
+        let excerptFontClass = '';
         const bodyFont = newsletter.get('body_font_category');
         const titleFont = newsletter.get('title_font_category');
 
         if (titleFont === 'serif' && bodyFont === 'serif') {
-            subtitleFontClass = 'post-subtitle-serif-serif';
+            excerptFontClass = 'post-excerpt-serif-serif';
         } else if (titleFont === 'serif' && bodyFont !== 'serif') {
-            subtitleFontClass = 'post-subtitle-serif-sans';
+            excerptFontClass = 'post-excerpt-serif-sans';
         }
 
         const data = {
@@ -1056,7 +1056,7 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
-                showSubtitle: newsletter.get('show_subtitle'),
+                showExcerpt: newsletter.get('show_excerpt'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
@@ -1090,7 +1090,7 @@ class EmailRenderer {
             classes: {
                 title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                subtitle: 'post-subtitle' + ` ` + subtitleFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-subtitle-left` : ``),
+                excerpt: 'post-excerpt' + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

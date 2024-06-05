@@ -106,12 +106,12 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
+        showExcerpt={newsletter.show_excerpt}
         showFeatureImage={newsletter.show_feature_image}
         showFeedback={showFeedback}
         showLatestPosts={newsletter.show_latest_posts}
         showPostTitleSection={newsletter.show_post_title_section}
         showSubscriptionDetails={newsletter.show_subscription_details}
-        showSubtitle={newsletter.show_subtitle}
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
