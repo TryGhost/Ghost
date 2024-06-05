@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
 import {click, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -19,14 +20,16 @@ describe('Acceptance: Post revisions', function () {
     it('can restore a draft post revision', async function () {
         const post = this.server.create('post', {
             title: 'Current Title',
+            customExcerpt: 'Current excerpt',
             status: 'draft'
         });
         this.server.create('post-revision', {
             post,
             title: post.title,
-            featureImage: post.featureImage,
-            featureImageAlt: post.featureImageAlt,
-            featureImageCaption: post.featureImageCaption,
+            customExcerpt: 'New subtitle',
+            featureImage: 'https://example.com/new-image.jpg',
+            featureImageAlt: 'New feature alt text',
+            featureImageCaption: 'New feature caption',
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'hour'),
@@ -35,9 +38,10 @@ describe('Acceptance: Post revisions', function () {
         this.server.create('post-revision', {
             post,
             title: 'Old Title',
-            featureImage: post.featureImage,
-            featureImageAlt: post.featureImageAlt,
-            featureImageCaption: post.featureImageCaption,
+            customExcerpt: 'Old subtitle',
+            featureImage: 'https://example.com/old-image.jpg',
+            featureImageAlt: 'Old feature alt text',
+            featureImageCaption: 'Old feature caption',
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'day'),
@@ -62,6 +66,12 @@ describe('Acceptance: Post revisions', function () {
 
         // latest post is previewed by default
         expect(find('[data-test-post-history-preview-title]')).to.have.trimmed.text('Current Title');
+        expect(find('[data-test-post-history-preview-feature-image]')).to.have.attribute('src', 'https://example.com/new-image.jpg');
+        expect(find('[data-test-post-history-preview-feature-image]')).to.have.attribute('alt', 'New feature alt text');
+        expect(find('[data-test-post-history-preview-feature-image-caption]')).to.have.trimmed.text('New feature caption');
+
+        // subtitle is not visible (needs feature flag)
+        expect(find('[data-test-post-history-preview-subtitle]')).to.not.exist;
 
         // previous post can be previewed
         await click('[data-test-revision-item="1"] [data-test-button="preview-revision"]');
@@ -74,5 +84,62 @@ describe('Acceptance: Post revisions', function () {
         await click('[data-test-modal="restore-revision"] [data-test-button="restore"]');
         expect(find('[data-test-modal="restore-revision"]')).to.not.exist;
         expect(find('[data-test-editor-title-input]')).to.have.value('Old Title');
+        // post has been saved with correct data
+        expect(post.attrs.title).to.equal('Old Title');
+        expect(post.attrs.featureImage).to.equal('https://example.com/old-image.jpg');
+        expect(post.attrs.featureImageAlt).to.equal('Old feature alt text');
+        expect(post.attrs.featureImageCaption).to.equal('Old feature caption');
+
+        // subtitle (customExcerpt) is not restored (needs feature flag)
+        expect(post.attrs.customExcerpt).to.equal('Current excerpt');
+    });
+
+    it('can preview and restore subtitle (with editorSubtitle feature flag)', async function () {
+        enableLabsFlag(this.server, 'editorSubtitle');
+
+        const post = this.server.create('post', {
+            title: 'Current Title',
+            customExcerpt: 'Current subtitle',
+            status: 'draft'
+        });
+        this.server.create('post-revision', {
+            post,
+            title: post.title,
+            customExcerpt: 'New subtitle',
+            postStatus: 'draft',
+            author: post.authors.models[0],
+            createdAt: moment(post.updatedAt).subtract(1, 'hour'),
+            reason: 'explicit_save'
+        });
+        this.server.create('post-revision', {
+            post,
+            title: 'Old Title',
+            customExcerpt: 'Old subtitle',
+            postStatus: 'draft',
+            author: post.authors.models[0],
+            createdAt: moment(post.updatedAt).subtract(1, 'day'),
+            reason: 'initial_revision'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+
+        // open post history menu
+        await click('[data-test-psm-trigger]');
+        await click('[data-test-toggle="post-history"]');
+
+        // subtitle is visible
+        expect(find('[data-test-post-history-preview-subtitle]')).to.exist;
+        expect(find('[data-test-post-history-preview-subtitle]')).to.have.trimmed.text('New subtitle');
+
+        // previous post can be previewed
+        await click('[data-test-revision-item="1"] [data-test-button="preview-revision"]');
+        expect(find('[data-test-post-history-preview-subtitle]')).to.have.trimmed.text('Old subtitle');
+
+        // previous post can be restored
+        await click('[data-test-revision-item="1"] [data-test-button="restore-revision"]');
+        await click('[data-test-modal="restore-revision"] [data-test-button="restore"]');
+
+        // post has been saved with correct data
+        expect(post.attrs.customExcerpt).to.equal('Old subtitle');
     });
 });
