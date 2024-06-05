@@ -20,6 +20,10 @@ const BetaFeatures: React.FC = () => {
                 detail={<>Search and link to your own content directly inside the editor — so that your workflow is never interrupted</>}
                 title='Internal linking' />
             <LabItem
+                action={<FeatureToggle flag="editorExcerpt" />}
+                detail={<>Adds the excerpt input below the post title in the editor</>}
+                title='Show post excerpt inline' />
+            <LabItem
                 action={<FeatureToggle flag="additionalPaymentMethods" />}
                 detail={<>Enable support for PayPal, iDEAL, WeChat Pay and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Additional payment methods' />

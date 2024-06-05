@@ -37,7 +37,8 @@ const BETA_FEATURES = [
     'activitypub',
     'internalLinking',
     'stripeAutomaticTax',
-    'webmentions'
+    'webmentions',
+    'editorExcerpt'
 ];
 
 const ALPHA_FEATURES = [
@@ -53,7 +54,6 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'editorExcerpt',
     'internalLinkingAtLinks'
 ];
 

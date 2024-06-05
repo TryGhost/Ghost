@@ -68,10 +68,6 @@ const features = [{
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
 },{
-    title: 'Show post excerpt inline',
-    description: 'Adds the excerpt input below the post title in the editor',
-    flag: 'editorExcerpt'
-},{
     title: 'Excerpt in newsletter',
     description: 'Showing excerpt in newsletter',
     flag: 'newsletterExcerpt'
