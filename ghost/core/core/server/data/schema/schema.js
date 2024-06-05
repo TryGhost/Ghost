@@ -30,7 +30,7 @@ module.exports = {
         header_image: {type: 'string', maxlength: 2000, nullable: true},
         show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
         show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
-        show_subtitle: {type: 'boolean', nullable: false, defaultTo: false},
+        show_excerpt: {type: 'boolean', nullable: false, defaultTo: false},
         title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
         title_alignment: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'center', validations: {isIn: [['center', 'left']]}},
         show_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
