@@ -1,6 +1,5 @@
 const assert = require('assert/strict');
 const {registerHelpers} = require('../lib/helpers/register-helpers');
-const {escape} = require('querystring');
 
 describe('registerHelpers', function () {
     it('registers helpers', function () {
