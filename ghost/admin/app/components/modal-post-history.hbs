@@ -20,7 +20,15 @@
                         {{/if}}
                     </div>
                 </div>
-                <div class="gh-editor-title" data-test-post-history-preview-title>{{this.currentTitle}}</div>
+                <div class="gh-editor-title" data-test-post-history-preview-title>
+                    {{this.currentTitle}}
+                </div>
+                {{#if (feature "editorSubtitle")}}
+                    <div class="gh-editor-subtitle" data-test-post-history-preview-subtitle>
+                        {{this.selectedRevision.custom_excerpt}}
+                    </div>
+                    <hr class="gh-editor-title-divider">
+                {{/if}}
                 <KoenigLexicalEditor
                     @lexical={{this.selectedRevision.lexical}}
                     @cardConfig={{this.cardConfig}}
