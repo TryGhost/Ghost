@@ -29,8 +29,10 @@ const getFreeTier = async function getFreeTier() {
 
 /**
  * Sets the ghost-access and ghost-access-hmac cookies on the response object
+ * @param {Object} member - The member object
  * @param {import('express').Request} req - The member object
  * @param {import('express').Response} res - The express response object to set the cookies on
+ * @param {Object} freeTier - The free tier object
  * @returns 
  */
 const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
