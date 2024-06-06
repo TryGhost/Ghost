@@ -2327,12 +2327,12 @@ describe('Email renderer', function () {
     describe('truncateHTML', function () {
         it('works correctly', async function () {
             const emailRenderer = new EmailRenderer({});
-            assert.equal(emailRenderer.truncateHtml('This is a short one', 5, 10), 'This<span class="desktop-only"> is a</span>…');
-            assert.equal(emailRenderer.truncateHtml('This is a', 5, 10), 'This<span class="desktop-only"> is a</span><span class="hide-mobile">…</span>');
-            assert.equal(emailRenderer.truncateHtml('This', 5, 10), 'This');
+            assert.equal(emailRenderer.truncateHtml('This is a short one', 10, 5), 'This<span class="desktop-only"> is a</span>…');
+            assert.equal(emailRenderer.truncateHtml('This is a', 10, 5), 'This<span class="desktop-only"> is a</span><span class="hide-desktop">…</span>');
+            assert.equal(emailRenderer.truncateHtml('This', 10, 5), 'This');
             assert.equal(emailRenderer.truncateHtml('This is a long text', 5, 5), 'This…');
             assert.equal(emailRenderer.truncateHtml('This is a long text', 5), 'This…');
-            assert.equal(emailRenderer.truncateHtml(null, 5, 10), '');
+            assert.equal(emailRenderer.truncateHtml(null, 10, 5), '');
         });
     });
 
