@@ -68,6 +68,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -190,8 +198,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -206,10 +212,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -658,6 +660,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -780,8 +790,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -796,10 +804,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1248,6 +1252,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -1370,8 +1382,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -1386,10 +1396,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
