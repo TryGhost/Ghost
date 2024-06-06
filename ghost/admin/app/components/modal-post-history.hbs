@@ -1,6 +1,6 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history" {{did-insert this.onInsert}}>
-    <div class="gh-post-history-main">
+    <div class="gh-post-history-main" data-test-post-history-preview>
         <div class="gh-koenig-editor-pane flex flex-column mih-100">
             {{#if this.selectedHTML}}
                 {{{this.selectedHTML}}}
@@ -9,15 +9,31 @@
                 <div class="gh-editor-feature-image-container">
                     <div class="gh-editor-feature-image">
                         {{#if this.selectedRevision.feature_image}}
-                            <img src="{{this.selectedRevision.feature_image}}">
+                            <img
+                                src={{this.selectedRevision.feature_image}}
+                                alt={{this.selectedRevision.feature_image_alt}}
+                                data-test-post-history-preview-feature-image
+                            >
                         {{/if}}
                         {{#if this.selectedRevision.feature_image_caption}}
-                            <p>{{{this.selectedRevision.feature_image_caption}}}</p>
+                            <p data-test-post-history-preview-feature-image-caption>{{{this.selectedRevision.feature_image_caption}}}</p>
                         {{/if}}
                     </div>
                 </div>
-                <div class="gh-editor-title">{{this.currentTitle}}</div>
-                <KoenigLexicalEditor @lexical={{this.selectedRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerSelectedEditorApi"}}/>
+                <div class="gh-editor-title" data-test-post-history-preview-title>
+                    {{this.currentTitle}}
+                </div>
+                {{#if (feature "editorExcerpt")}}
+                    <div class="gh-editor-excerpt" data-test-post-history-preview-excerpt>
+                        {{this.selectedRevision.custom_excerpt}}
+                    </div>
+                    <hr class="gh-editor-title-divider">
+                {{/if}}
+                <KoenigLexicalEditor
+                    @lexical={{this.selectedRevision.lexical}}
+                    @cardConfig={{this.cardConfig}}
+                    @registerAPI={{this.registerSelectedEditorApi}}
+                />
             </div>
         </div>
     </div>
@@ -28,7 +44,8 @@
                     aria-label="Close meta data panel"
                     class="back settings-menu-header-action"
                     data-test-button="close-psm-subview"
-                    type="button" {{action "closeModal"}}
+                    type="button"
+                    {{on "click" this.closeModal}}
                     {{on "mousedown" (optional this.noop)}}
                 >
                     {{svg-jar "arrow-left"}}
@@ -39,19 +56,19 @@
             <div class="settings-menu-content">
                 <ul class="nav-list">
                     {{#each this.revisionList as |revision index|}}
-                    <li class="nav-list-item {{if revision.selected "selected" ""}}">
-                        <button type="button" {{action "handleClick" index}}>
+                    <li class="nav-list-item {{if revision.selected "selected" ""}}" data-test-revision-item={{index}}>
+                        <button type="button" {{on "click" (fn this.handleClick index)}} data-test-button="preview-revision">
                             <div class="flex items-center">
                                 <span class="gh-post-history-version">{{gh-format-post-time revision.createdAt format="D MMM YYYY, HH:mm"}}{{this.timezone}}</span>
                                 {{#if revision.latest}}
-                                    <span class="gh-post-history-version-tag current">Latest</span>
+                                    <span class="gh-post-history-version-tag current" data-test-revision-latest>Latest</span>
                                 {{/if}}
 
                                 {{#if revision.new_publish}}
-                                    <span class="gh-post-history-version-tag published">Published</span>
+                                    <span class="gh-post-history-version-tag published" data-test-revision-published>Published</span>
                                 {{/if}}
                                 {{#if (eq revision.reason "unpublished")}}
-                                    <span class="gh-post-history-version-tag unpublished">Unpublished</span>
+                                    <span class="gh-post-history-version-tag unpublished" data-test-revision-unpublished>Unpublished</span>
                                 {{/if}}
 
                             </div>
@@ -67,6 +84,7 @@
                                 type="button"
                                 class="gh-post-history-version-restore"
                                 {{on "click" (fn this.restoreRevision index)}}
+                                data-test-button="restore-revision"
                             >
                                 <span>Restore</span>
                             </button>

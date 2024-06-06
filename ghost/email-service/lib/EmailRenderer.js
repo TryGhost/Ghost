@@ -10,6 +10,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
+const {registerHelpers} = require('./helpers/register-helpers');
 
 const messages = {
     subscriptionStatus: {
@@ -755,53 +756,16 @@ class EmailRenderer {
         return replacements;
     }
 
+    getLabs() {
+        return this.#labs;
+    }
+
     async renderTemplate(data) {
+        const labs = this.getLabs();
         this.#handlebars = require('handlebars').create();
 
-        // Helpers
-        this.#handlebars.registerHelper('if', function (conditional, options) {
-            if (conditional) {
-                return options.fn(this);
-            } else {
-                return options.inverse(this);
-            }
-        });
-
-        this.#handlebars.registerHelper('and', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        this.#handlebars.registerHelper('not', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        this.#handlebars.registerHelper('or', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
+        // Register helpers
+        registerHelpers(this.#handlebars, labs);
 
         // Partials
         if (this.#labs.isSet('emailCustomization')) {
@@ -1058,6 +1022,16 @@ class EmailRenderer {
             }
         }
 
+        let excerptFontClass = '';
+        const bodyFont = newsletter.get('body_font_category');
+        const titleFont = newsletter.get('title_font_category');
+
+        if (titleFont === 'serif' && bodyFont === 'serif') {
+            excerptFontClass = 'post-excerpt-serif-serif';
+        } else if (titleFont === 'serif' && bodyFont !== 'serif') {
+            excerptFontClass = 'post-excerpt-serif-sans';
+        }
+
         const data = {
             site: {
                 title: this.#settingsCache.get('title'),
@@ -1076,6 +1050,7 @@ class EmailRenderer {
                 commentUrl: commentUrl.href,
                 authors,
                 publishedAt,
+                customExcerpt: post.get('custom_excerpt'),
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
                 feature_image_height: postFeatureImageHeight,
@@ -1086,6 +1061,7 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
+                showExcerpt: newsletter.get('show_excerpt'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
@@ -1119,6 +1095,7 @@ class EmailRenderer {
             classes: {
                 title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
+                excerpt: 'post-excerpt' + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

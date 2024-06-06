@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
 const models = require('../../../core/server/models');
@@ -228,7 +229,7 @@ describe('Comments API', function () {
     describe('when caching members content is enabled', function () {
         it('sets ghost-access and ghost-access-hmac cookies', async function () {
             configUtils.set('cacheMembersContent:enabled', true);
-            configUtils.set('cacheMembersContent:hmacSecret', 'testsecret');
+            configUtils.set('cacheMembersContent:hmacSecret', crypto.randomBytes(64).toString('base64'));
             membersAgent = await agentProvider.getMembersAPIAgent();
             await fixtureManager.init('newsletters', 'members:newsletters');
             await membersAgent.loginAs('member@example.com');

@@ -939,7 +939,7 @@ describe('Email renderer', function () {
 
         beforeEach(function () {
             renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
-            labsEnabled = true;
+            labsEnabled = true; // TODO: odd default because it means we're testing the unused email-customization template
             basePost = {
                 lexical: '{}',
                 visibility: 'public',
@@ -1033,7 +1033,13 @@ describe('Email renderer', function () {
                     }
                 },
                 labs: {
-                    isSet: () => labsEnabled
+                    isSet: (key) => {
+                        if (typeof labsEnabled === 'object') {
+                            return labsEnabled[key] || false;
+                        }
+
+                        return labsEnabled;
+                    }
                 }
             });
         });
@@ -1762,6 +1768,78 @@ describe('Email renderer', function () {
             assert.equal(response.html.includes('width="248" height="248"'), true, 'Should not replace img height and width with auto from css');
             assert.equal(response.html.includes('width="auto" height="auto"'), false, 'Should not replace img height and width with auto from css');
         });
+
+        describe('show excerpt', function () {
+            beforeEach(function () {
+                labsEnabled = {
+                    newsletterExcerpt: true
+                };
+            });
+
+            it('is rendered when enabled and customExcerpt is present', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is an excerpt'}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_excerpt: true
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                assert.equal(response.html.match(/This is an excerpt/g).length, 2, 'Excerpt should appear twice (preheader and excerpt section)');
+            });
+
+            it('is not rendered when disabled and customExcerpt is present', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is an excerpt'}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_excerpt: false
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                assert.equal(response.html.match(/This is an excerpt/g).length, 1, 'Subtitle should only appear once (preheader, excerpt section skipped)');
+                response.html.should.not.containEql('post-excerpt-wrapper');
+            });
+
+            it('does not render when enabled and customExcerpt is not present', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: null}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_excerpt: true
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                response.html.should.not.containEql('post-excerpt-wrapper');
+            });
+        });
     });
 
     describe('getTemplateData', function () {
@@ -1995,8 +2073,26 @@ describe('Email renderer', function () {
                 title: 'post-title post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
+                excerpt: 'post-excerpt post-excerpt-serif-sans post-excerpt-left',
                 body: 'post-content-sans-serif'
             });
+        });
+
+        it('has correct excerpt classes for serif title+body', async function () {
+            const html = '';
+            const post = createModel({
+                posts_meta: createModel({}),
+                loaded: ['posts_meta'],
+                published_at: new Date(0)
+            });
+            const newsletter = createModel({
+                title_font_category: 'serif',
+                title_alignment: 'left',
+                body_font_category: 'serif',
+                show_excerpt: true
+            });
+            const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
+            assert.equal(data.classes.excerpt, 'post-excerpt post-excerpt-serif-serif post-excerpt-left');
         });
 
         it('show comment CTA is enabled if labs disabled', async function () {

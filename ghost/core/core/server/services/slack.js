@@ -63,7 +63,24 @@ function ping(post) {
         if (post.custom_excerpt) {
             description = post.custom_excerpt;
         } else if (post.html) {
-            description = `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`;
+            const membersContentIdx = post.html.indexOf('<!--members-only-->');
+            const substringEnd = membersContentIdx > -1 ? membersContentIdx : post.html.length;
+
+            description = `${
+                post.html
+                    // Remove members-only content
+                    .substring(0, substringEnd)
+                    // Strip out HTML
+                    .replace(/<[^>]+>/g, '')
+                    // Split into sentences
+                    .split('.')
+                    // Remove empty strings
+                    .filter(sentence => sentence.trim() !== '')
+                    // Get the first three sentences
+                    .slice(0, 3)
+                    // Join 'em back together
+                    .join('.')
+            }.`;
         } else {
             description = null;
         }
@@ -160,7 +177,10 @@ function slackListener(model, options) {
         return;
     }
 
-    ping(model.toJSON());
+    ping({
+        ...model.toJSON(),
+        authors: model.related('authors').toJSON()
+    });
 }
 
 function slackTestPing() {
