@@ -142,4 +142,52 @@ describe('Acceptance: Post revisions', function () {
         // post has been saved with correct data
         expect(post.attrs.customExcerpt).to.equal('Old excerpt');
     });
+
+    it('reverts to current post excerpt if revision excerpt is missing (with editorExcerpt feature flag)', async function () {
+        enableLabsFlag(this.server, 'editorExcerpt');
+
+        const post = this.server.create('post', {
+            title: 'Current Title',
+            customExcerpt: 'Current excerpt',
+            status: 'draft'
+        });
+        this.server.create('post-revision', {
+            post,
+            title: post.title,
+            postStatus: 'draft',
+            author: post.authors.models[0],
+            createdAt: moment(post.updatedAt).subtract(1, 'hour'),
+            reason: 'explicit_save'
+        });
+        this.server.create('post-revision', {
+            post,
+            title: 'Old Title',
+            customExcerpt: null,
+            postStatus: 'draft',
+            author: post.authors.models[0],
+            createdAt: moment(post.updatedAt).subtract(1, 'day'),
+            reason: 'initial_revision'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+
+        // open post history menu
+        await click('[data-test-psm-trigger]');
+        await click('[data-test-toggle="post-history"]');
+
+        // latest excerpt is set to current
+        expect(find('[data-test-post-history-preview-excerpt]')).to.exist;
+        expect(find('[data-test-post-history-preview-excerpt]')).to.have.trimmed.text('Current excerpt');
+
+        // previous post can be previewed and excerpt is set to current
+        await click('[data-test-revision-item="1"] [data-test-button="preview-revision"]');
+        expect(find('[data-test-post-history-preview-excerpt]')).to.have.trimmed.text('Current excerpt');
+
+        // restore saves current excerpt
+        await click('[data-test-revision-item="1"] [data-test-button="restore-revision"]');
+        await click('[data-test-modal="restore-revision"] [data-test-button="restore"]');
+
+        // post has been saved with correct data
+        expect(post.attrs.customExcerpt).to.equal('Current excerpt');
+    });
 });
