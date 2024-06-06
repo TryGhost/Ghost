@@ -104,7 +104,6 @@ const Sidebar: React.FC<{
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const hasNewsletterExcerpt = useFeatureFlag('newsletterExcerpt');
-    const hasEditorSubtitle = useFeatureFlag('editorExcerpt');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
@@ -423,7 +422,7 @@ const Sidebar: React.FC<{
                             <Toggle
                                 checked={newsletter.show_excerpt}
                                 direction="rtl"
-                                label={hasEditorSubtitle ? 'Subtitle' : 'Post excerpt'}
+                                label="Post excerpt"
                                 onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
                             />
                         }
