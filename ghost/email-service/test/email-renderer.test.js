@@ -2243,7 +2243,7 @@ describe('Email renderer', function () {
             assert.deepEqual(data.latestPosts,
                 [
                     {
-                        excerpt: 'Super long custom excerpt. Super long custom excerpt. Super<span class="desktop-only"> long custom excerpt. Super long custom excer</span>…',
+                        excerpt: 'Super long custom excerpt. Super long custom excerpt. Super long custom excerpt. Super lo<span class="desktop-only">ng custom excer</span>…',
                         title: 'Test Post 1',
                         url: 'http://example.com',
                         featureImage: {
