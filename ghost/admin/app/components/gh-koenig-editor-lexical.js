@@ -4,7 +4,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-export default class GhKoenigEditorReactComponent extends Component {
+export default class GhKoenigEditorLexical extends Component {
     @service settings;
     @service feature;
 
@@ -114,7 +114,7 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     @action
     onTitleKeydown(event) {
-        if (this.feature.get('editorExcerpt')) {
+        if (this.feature.editorExcerpt) {
             // move cursor to the excerpt on
             // - Tab (handled by browser)
             // - Arrow Down/Right when input is empty or caret at end of input
@@ -167,12 +167,12 @@ export default class GhKoenigEditorReactComponent extends Component {
     // Subtitle ("excerpt") Actions -------------------------------------------
 
     @action
-    excerptSubtitleElement(element) {
+    registerExcerptElement(element) {
         this.excerptElement = element;
     }
 
     @action
-    focusSubtitle() {
+    focusExcerpt() {
         this.excerptElement?.focus();
 
         // timeout ensures this occurs after the keyboard events
