@@ -82,7 +82,7 @@ module.exports = {
          * This is valid for all x_by fields.
          */
         created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
+        updated_at: {type: 'dateTime', nullable: true, index: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true},
         published_at: {type: 'dateTime', nullable: true, index: true},
         published_by: {type: 'string', maxlength: 24, nullable: true},
