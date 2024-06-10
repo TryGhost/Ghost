@@ -65,9 +65,9 @@ export function LinkInputCopy({href, update, cancel}) {
         );
     };
 
-    const getGroup = (group) => {
+    const getGroup = (group, {showSpinner} = {}) => {
         return (
-            <InputListGroup dataTestId={testId} group={group} />
+            <InputListGroup dataTestId={testId} group={group} showSpinner={showSpinner} />
         );
     };
 
@@ -98,11 +98,12 @@ export function LinkInputCopy({href, update, cancel}) {
             {showSuggestions && (
                 <>
                     <ul className="max-h-[30vh] w-full overflow-y-auto bg-white py-1 dark:bg-grey-950">
-                        {isSearching && <InputListLoadingItem dataTestId={testId}/>}
+                        {isSearching && !listOptions.length && <InputListLoadingItem dataTestId={testId}/>}
                         <KeyboardSelectionWithGroups
                             getGroup={getGroup}
                             getItem={getItem}
                             groups={listOptions}
+                            isLoading={isSearching}
                             onSelect={onItemSelected}
                         />
                     </ul>

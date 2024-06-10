@@ -31,7 +31,7 @@ test.describe('Internal linking', async () => {
                       <div>
                         <div><input placeholder="Paste URL or search posts and pages..." value="" /></div>
                         <ul>
-                          <li>Latest posts</li>
+                          <li><div>Latest posts</div></li>
                           <li aria-selected="true" role="option">
                             <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
                             <span>
@@ -117,7 +117,7 @@ test.describe('Internal linking', async () => {
             await page.keyboard.type('http');
 
             await assertHTML(page, html`
-                <li>Link to web page</li>
+                <li><div>Link to web page</div></li>
                 <li aria-selected="true" role="option">
                   <span>
                     <svg></svg>
@@ -135,7 +135,7 @@ test.describe('Internal linking', async () => {
             await page.keyboard.type('#test');
 
             await assertHTML(page, html`
-                <li>Link to web page</li>
+                <li><div>Link to web page</div></li>
                 <li aria-selected="true" role="option">
                   <span>
                     <svg></svg>
@@ -153,7 +153,7 @@ test.describe('Internal linking', async () => {
             await page.keyboard.type('/test');
 
             await assertHTML(page, html`
-                <li>Link to web page</li>
+                <li><div>Link to web page</div></li>
                 <li aria-selected="true" role="option">
                   <span>
                     <svg></svg>
@@ -171,7 +171,7 @@ test.describe('Internal linking', async () => {
             await page.keyboard.type('mailto:test@example.com');
 
             await assertHTML(page, html`
-                <li>Link to web page</li>
+                <li><div>Link to web page</div></li>
                 <li aria-selected="true" role="option">
                   <span>
                     <svg></svg>
@@ -206,7 +206,7 @@ test.describe('Internal linking', async () => {
                     <div>
                         <div>
                             <ul>
-                                <li>Latest posts</li>
+                                <li><div>Latest posts</div></li>
                                 <li aria-selected="true" role="option">
                                     <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
                                     <span>
@@ -252,7 +252,7 @@ test.describe('Internal linking', async () => {
                     <div>
                         <div>
                             <ul>
-                                <li>Posts</li>
+                                <li><div>Posts</div></li>
                                 <li aria-selected="true" role="option">
                                     <span><span>✨ <span>Emo</span>ji autocomplete ✨</span></span>
                                 </li>

@@ -103,9 +103,9 @@ export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query,
         );
     };
 
-    const getGroup = (group) => {
+    const getGroup = (group, {showSpinner} = {}) => {
         return (
-            <InputListGroup dataTestId={testId} group={group} />
+            <InputListGroup dataTestId={testId} group={group} showSpinner={showSpinner} />
         );
     };
 
@@ -117,6 +117,7 @@ export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query,
                         getGroup={getGroup}
                         getItem={getItem}
                         groups={listOptions}
+                        isLoading={isSearching}
                         onSelect={onSelect}
                     />
                 </ul>

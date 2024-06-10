@@ -16,7 +16,7 @@ const Group = ({children}) => {
  * @param {T[]} [options.items]
  * @param {(T, selected) => import('react').ReactElement} [options.getItem]
  */
-export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect, defaultSelected}) {
+export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect, defaultSelected, isLoading}) {
     const items = groups.flatMap(group => group.items);
     const defaultIndex = Math.max(0, items.findIndex(item => item === defaultSelected));
     const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex);
@@ -73,7 +73,7 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
         <>
             {groups.map((group, groupIndex) => (
                 <Group key={group.label}>
-                    {getGroup(group)}
+                    {getGroup(group, {showSpinner: groupIndex === 0 && isLoading})}
                     {(group.items || []).map((item, index) => {
                         const itemsBefore = groups.slice(0, groupIndex).reduce((sum, prevGroup) => sum + prevGroup.items.length, 0);
                         const absoluteIndex = itemsBefore + index;
