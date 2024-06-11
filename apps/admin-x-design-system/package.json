@@ -57,7 +57,7 @@
     "@dnd-kit/core": "6.1.0",
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.13",
-    "@sentry/react": "7.116.0",
+    "@sentry/react": "7.117.0",
     "@tailwindcss/forms": "0.5.7",
     "@tailwindcss/line-clamp": "0.4.4",
     "@uiw/react-codemirror": "4.22.1",
@@ -68,7 +68,7 @@
     "react-colorful": "5.6.1",
     "react-hot-toast": "2.4.1",
     "react-select": "5.8.0",
-    "tailwindcss": "3.4.3"
+    "tailwindcss": "3.4.4"
   },
   "peerDependencies": {
     "react": "^18.2.0",

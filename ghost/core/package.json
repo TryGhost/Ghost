@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.84.2",
+  "version": "5.85.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.116.0",
+    "@sentry/node": "7.117.0",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -221,10 +221,10 @@
     "ws": "8.17.0",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
-    "yjs": "13.6.15"
+    "yjs": "13.6.16"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.116.0",
+    "@sentry/profiling-node": "7.117.0",
     "@tryghost/html-to-mobiledoc": "3.1.0",
     "sqlite3": "5.1.7"
   },
@@ -236,7 +236,7 @@
     "@types/common-tags": "1.8.4",
     "c8": "8.0.1",
     "cli-progress": "3.12.0",
-    "cssnano": "7.0.1",
+    "cssnano": "7.0.2",
     "detect-indent": "6.1.0",
     "detect-newline": "3.1.0",
     "expect": "29.3.1",

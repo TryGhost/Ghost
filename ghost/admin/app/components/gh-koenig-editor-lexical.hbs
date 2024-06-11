@@ -68,14 +68,14 @@
                         @value={{readonly this.excerpt}}
                         @input={{this.onExcerptInput}}
                         @keyDown={{this.onExcerptKeydown}}
-                        @didCreateTextarea={{this.registerSubtitleElement}}
+                        @didCreateTextarea={{this.registerExcerptElement}}
                         data-test-textarea="excerpt"
                     />
                     {{#if @excerptHasTk}}
                         <div
                             class="tk-indicator tk-indicator-excerpt"
                             data-testid="tk-indicator-excerpt"
-                            {{on "click" this.focusSubtitle}}
+                            {{on "click" this.focusExcerpt}}
                         >
                             TK
                         </div>
@@ -96,7 +96,7 @@
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
             @registerAPI={{this.registerEditorAPI}}
-            @cursorDidExitAtTop={{if this.feature.editorExcerpt this.focusSubtitle this.focusTitle}}
+            @cursorDidExitAtTop={{if this.feature.editorExcerpt this.focusExcerpt this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
             @updatePostTkCount={{@updatePostTkCount}}
         />
