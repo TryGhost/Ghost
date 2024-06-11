@@ -129,7 +129,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 const params = new URLSearchParams();
 
-                params.set('limit', '5');
+                params.set('limit', '20');
                 if (filter) {
                     params.set('filter', filter);
                 }
