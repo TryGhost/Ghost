@@ -175,6 +175,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -297,8 +305,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -313,10 +319,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -711,7 +713,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23528",
+  "content-length": "23508",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -798,6 +800,14 @@ Object {
 
   .mobile-only {
     display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
   }
 
   table.body p,
@@ -922,8 +932,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -938,10 +946,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1356,7 +1360,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28339",
+  "content-length": "28319",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1474,6 +1478,14 @@ Object {
 
   .mobile-only {
     display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
   }
 
   table.body p,
@@ -1598,8 +1610,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -1614,10 +1624,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2019,7 +2025,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23282",
+  "content-length": "23262",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2468,6 +2474,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -2590,8 +2604,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -2606,10 +2618,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3025,7 +3033,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24043",
+  "content-length": "24023",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3500,6 +3508,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -3622,8 +3638,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -3638,10 +3652,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -4057,7 +4067,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24043",
+  "content-length": "24023",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

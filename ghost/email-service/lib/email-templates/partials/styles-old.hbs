@@ -499,7 +499,7 @@ figure blockquote p {
 
 .latest-posts-header {
     margin: 0;
-    padding: 8px 0 16px;
+    padding: 8px 0 8px;
     color: #15212A;
     font-size: 13px;
     font-weight: 700;
@@ -507,7 +507,8 @@ figure blockquote p {
 }
 
 .latest-post {
-    padding: 8px 0;
+    max-width: 600px !important;
+    padding: 16px 0;
 }
 
 .latest-post a {
@@ -1288,6 +1289,10 @@ a[data-flickr-embed] img {
     display: none;
 }
 
+.hide-desktop {
+    display: none;
+}
+
 /* -------------------------------------
     RESPONSIVE AND MOBILE FRIENDLY STYLES
 ------------------------------------- */
@@ -1304,6 +1309,14 @@ a[data-flickr-embed] img {
 
     .mobile-only {
         display: initial !important;
+    }
+
+    .hide-desktop {
+        display: initial !important;
+    }
+
+    .desktop-only {
+        display: none !important;
     }
 
     table.body p,
@@ -1448,8 +1461,6 @@ a[data-flickr-embed] img {
     }
 
     table.body .latest-post-title {
-        display: inline-block !important;
-        width: 100%;
         padding-right: 8px !important;
     }
 
@@ -1463,10 +1474,6 @@ a[data-flickr-embed] img {
     table.body .latest-post-excerpt span {
         font-size: 13px !important;
         line-height: 1.2 !important;
-    }
-
-    table.body .latest-post-excerpt span {
-        display: none !important;
     }
 
     table.body .subscription-box h3 {
