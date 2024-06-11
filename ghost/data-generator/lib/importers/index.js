@@ -36,5 +36,6 @@ module.exports = [
     require('./MembersFeedbackImporter'),
     require('./RecommendationsImporter'),
     require('./RecommendationClickEventsImporter'),
-    require('./RecommendationSubscribeEventsImporter')
+    require('./RecommendationSubscribeEventsImporter'),
+    require('./CommentsImporter')
 ];
