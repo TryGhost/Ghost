@@ -287,15 +287,7 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateScratch(lexical) {
-        console.log(`updateScratch > setting lexicalScratch to lexical`);
         this.set('post.lexicalScratch', JSON.stringify(lexical));
-
-        // // stub the first load - we want to set the scratch after the load but not trigger a save
-        // if (this._initialLoad) {
-        //     console.log(`> setting initial load to false`);
-        //     this._initialLoad = false;
-        //     return;
-        // }
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
@@ -532,7 +524,6 @@ export default class LexicalEditorController extends Controller {
     @dropTask
     *autosaveTask(options) {
         if (!this.get('saveTask.isRunning')) {
-            console.log(`triggering autosave task...`);
             return yield this.saveTask.perform({
                 silent: true,
                 backgroundSave: true,
@@ -599,9 +590,7 @@ export default class LexicalEditorController extends Controller {
             adapterOptions.saveRevision = 1;
         }
 
-        console.log(`--running beforeSaveTask; leavingEditor`, leavingEditor);
         yield this.beforeSaveTask.perform(options);
-        console.log(`--running saveTask`);
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
 
@@ -684,7 +673,6 @@ export default class LexicalEditorController extends Controller {
         // Set lexical equal to what's in the editor but create a copy so that
         // nested objects/arrays don't keep references which can mean that both
         // scratch and lexical get updated simultaneously
-        console.log(`beforeSaveTask > setting lexical to scratch`);
         this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
@@ -846,7 +834,6 @@ export default class LexicalEditorController extends Controller {
         // update the scratch property if it's `null` and we get a blank lexical
         // back from the API - prevents "unsaved changes" modal on new+blank posts
         if (!post.lexicalScratch) {
-            console.log(`afterSave > setting lexicalScratch to lexical`);
             post.set('lexicalScratch', post.get('lexical'));
         }
 
@@ -857,7 +844,6 @@ export default class LexicalEditorController extends Controller {
         let bodiesMatch = post.get('lexicalScratch') === post.get('lexical');
 
         if (titlesMatch && bodiesMatch) {
-            console.log(`afterSave > match, setting hasDirtyAttributes to false`);
             this.set('hasDirtyAttributes', false);
         }
     }
@@ -1033,11 +1019,7 @@ export default class LexicalEditorController extends Controller {
         // edit of the post
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
         post.set('titleScratch', post.get('title'));
-        console.log(`setPost > setting lexicalScratch to lexical`);
         post.set('lexicalScratch', post.get('lexical'));
-        console.log(`lexicalScratch`, post.get('lexicalScratch'));
-        console.log(`lexical`, post.get('lexical'));
-        // this._initialLoad = true;
 
         this._previousTagNames = this._tagNames;
 
@@ -1058,7 +1040,6 @@ export default class LexicalEditorController extends Controller {
     // editor.edit->edit, or editor->any. Will either finish autosave then retry
     // transition or abort and show the "are you sure want to leave?" modal
     async willTransition(transition) {
-        console.log(`willTransition`);
         let post = this.post;
 
         // exit early and allow transition if we have no post, occurs if reset
@@ -1104,12 +1085,8 @@ export default class LexicalEditorController extends Controller {
                 && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
-        console.log(`this._saveOnLeavePerformed`, this._saveOnLeavePerformed);
-        console.log(`hasChangedSinceLastRevision`, hasChangedSinceLastRevision);
-        console.log(`hasDirtyAttributes`, hasDirtyAttributes);
-        console.log(`state.isDeleted`, state.isDeleted);
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted) {
-            console.log(`willTransition > saving a new revision`);
+        //  but we should never autosave when leaving published or soon-to-be published content (scheduled); this should require the user to intervene
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted && post.get('status') === 'draft') {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
@@ -1117,24 +1094,17 @@ export default class LexicalEditorController extends Controller {
             }
             await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             this._saveOnLeavePerformed = true;
-            console.log(`... retrying transition`);
             return transition.retry();
         }
 
         // controller is dirty and we aren't in a new->edit or delete->index
         // transition so show our "are you sure you want to leave?" modal
-        console.log(`this._leaveConfirmed`, this._leaveConfirmed);
-        console.log(`fromNewToEdit`, fromNewToEdit);
-        console.log(`deletedWithoutChanges`, deletedWithoutChanges);
-        console.log(`hasDirtyAttributes`, hasDirtyAttributes);
         if (!this._leaveConfirmed && !fromNewToEdit && !deletedWithoutChanges && hasDirtyAttributes) {
-            console.log(`willTransition > showing leave editor modal`);
             transition.abort();
 
             // if a save is running, wait for it to finish then transition
             if (this.saveTasks.isRunning) {
                 await this.saveTasks.last;
-                console.log(`... retrying transition`);
                 return transition.retry();
             }
 
@@ -1148,7 +1118,6 @@ export default class LexicalEditorController extends Controller {
                     await this.autosaveTask.perform({leavingEditor: true});
                     this._saveOnLeavePerformed = true;
                 }
-                console.log(`... retrying transition`);
                 return transition.retry();
             }
 
@@ -1158,14 +1127,12 @@ export default class LexicalEditorController extends Controller {
             }
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
-            console.log(`... showing leave editor modal`);
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
 
             if (reallyLeave !== true) {
                 return;
             } else {
                 this._leaveConfirmed = true;
-                console.log(`... retrying transition`);
                 return transition.retry();
             }
         }
@@ -1180,7 +1147,6 @@ export default class LexicalEditorController extends Controller {
 
     // called when the editor route is left or the post model is swapped
     reset() {
-        console.log(`controller reset`);
         let post = this.post;
 
         // make sure the save tasks aren't still running in the background
@@ -1250,7 +1216,6 @@ export default class LexicalEditorController extends Controller {
     /* Private methods -------------------------------------------------------*/
 
     _hasDirtyAttributes() {
-        console.log(`_hasDirtyAttributes`);
         let post = this.post;
 
         if (!post) {
@@ -1285,7 +1250,18 @@ export default class LexicalEditorController extends Controller {
         // additional guard in case we are trying to compare null with undefined
         if (scratch || lexical) {
             if (scratch !== lexical) {
-                console.log(`_hasDirtyAttributes > scratch !== lexical`, scratch, lexical)
+                // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
+                //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
+                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : {};
+                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : {};
+
+                scratchChildNodes.forEach(child => delete child.direction);
+                lexicalChildNodes.forEach(child => delete child.direction);
+
+                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
+                    return false;
+                }
+
                 this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
             }
@@ -1305,7 +1281,6 @@ export default class LexicalEditorController extends Controller {
         // we've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
-        console.log(`-- past non-tracked cases, value is`, hasDirtyAttributes);
 
         if (hasDirtyAttributes) {
             this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
