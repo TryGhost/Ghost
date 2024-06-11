@@ -37,7 +37,6 @@ const Content = () => {
     return (
         <>
             <ContentTitle count={commentCount} showCount={showCount} title={title}/>
-            <Pagination />
             <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
                 {commentsElements}
             </div>
@@ -47,6 +46,7 @@ const Content = () => {
                     : null
                 }
             </div>
+            <Pagination />
         </>
     );
 };
