@@ -18,7 +18,7 @@ export class ImageNode extends generateDecoratorNode({nodeType: 'image',
     exportJSON() {
         // checks if src is a data string
         const {src, width, height, title, alt, caption, cardWidth, href} = this;
-        const isBlob = src.startsWith('data:');
+        const isBlob = src && src.startsWith('data:');
 
         const dataset = {
             type: 'image',
