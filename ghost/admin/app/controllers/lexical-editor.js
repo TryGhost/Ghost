@@ -1125,6 +1125,7 @@ export default class LexicalEditorController extends Controller {
             if (this.post) {
                 Object.assign(this._leaveModalReason, {status: this.post.status});
             }
+            Sentry.captureMessage('showing leave editor modal', {extra: this._leaveModalReason});
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
