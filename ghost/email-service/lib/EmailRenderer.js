@@ -448,7 +448,7 @@ class EmailRenderer {
         $('figure, figcaption').each((i, elem) => !!(elem.tagName = 'div'));
 
         // Add a class to each figcaption so we can style them in the email
-        $('figcaption').each((i, elem) => !!(elem.toggleClass('kg-card-figcaption', true)));
+        $('figcaption').each((i, elem) => !!(elem.addClass('kg-card-figcaption')));
 
         // Remove duplicate black/white images (CSS based solution not working in Outlook)
         if (templateData.backgroundIsDark) {
