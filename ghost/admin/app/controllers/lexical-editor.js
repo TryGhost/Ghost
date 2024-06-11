@@ -16,7 +16,6 @@ import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalizeFirstLetter} from '../helpers/capitalize-first-letter';
-import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -793,22 +792,11 @@ export default class LexicalEditorController extends Controller {
 
         try {
             yield post.save(options);
-
-            // log if a save is slow
-            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
-                captureMessage('Successful Lexical save took > 2s', (scope) => {
-                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
-                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
-                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
-                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
-                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
-                });
-            }
         } catch (error) {
             this.post.set('emailOnly', previousEmailOnlyValue);
 
             if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
-                captureMessage('Failed Lexical save took > 2s', (scope) => {
+                Sentry.captureException('Failed Lexical save took > 2s', (scope) => {
                     scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
                     scope.setTag('post_type', post.isPage ? 'page' : 'post');
                     scope.setTag('save_revision', options.adapterOptions?.saveRevision);
