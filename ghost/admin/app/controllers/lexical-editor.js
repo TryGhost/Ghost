@@ -589,8 +589,8 @@ export default class LexicalEditorController extends Controller {
         if (explicitSave || leavingEditor) {
             adapterOptions.saveRevision = 1;
         }
-
         yield this.beforeSaveTask.perform(options);
+        
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
 
