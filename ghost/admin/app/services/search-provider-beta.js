@@ -82,9 +82,10 @@ export default class SearchProviderService extends Service {
                     usedIds.add(id);
 
                     groupResults.push({
+                        groupName: searchable.name,
                         id: `${searchable.model}.${doc[searchable.pathField]}`,
                         title: doc[searchable.titleField],
-                        groupName: searchable.name,
+                        url: doc.url,
                         status: doc.status,
                         visibility: doc.visibility,
                         publishedAt: doc.published_at

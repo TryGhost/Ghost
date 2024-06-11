@@ -27,7 +27,7 @@ export default BaseSerializer.extend({
             if (post.status === 'published') {
                 post.update('url', `http://localhost:4200/${post.slug}/`);
             } else {
-                post.update('url', `http://localhost:4200/p/`);
+                post.update('url', `http://localhost:4200/p/${post.uuid}/`);
             }
         };
 
