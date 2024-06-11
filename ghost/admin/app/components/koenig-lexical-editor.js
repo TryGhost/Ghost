@@ -447,7 +447,7 @@ export default class KoenigLexicalEditor extends Component {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
                 internalLinking: this.feature.internalLinking,
-                internalLinkingAtLinks: this.feature.internalLinkingAtLinks,
+                internalLinkingAtLinks: this.feature.internalLinking,
                 contentVisibility: this.feature.contentVisibility
             },
             deprecated: { // todo fix typo
