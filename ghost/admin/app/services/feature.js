@@ -84,6 +84,7 @@ export default class FeatureService extends Service {
     @feature('ActivityPub') ActivityPub;
     @feature('internalLinking') internalLinking;
     @feature('internalLinkingAtLinks') internalLinkingAtLinks;
+    @feature('internalLinkingSearchImprovements') internalLinkingSearchImprovements;
     @feature('editorExcerpt') editorExcerpt;
     @feature('newsletterExcerpt') newsletterExcerpt;
 

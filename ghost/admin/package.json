@@ -123,6 +123,7 @@
     "ember-websockets": "10.2.1",
     "eslint-plugin-babel": "5.3.1",
     "faker": "5.5.3",
+    "flexsearch": "0.7.43",
     "fs-extra": "11.2.0",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
@@ -173,7 +174,7 @@
   "dependencies": {
     "jose": "4.15.5",
     "path-browserify": "1.0.1",
-    "webpack": "5.91.0"
+    "webpack": "5.92.0"
   },
   "nx": {
     "targets": {
