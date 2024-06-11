@@ -1255,8 +1255,9 @@ export default class LexicalEditorController extends Controller {
                 const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : {};
                 const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : {};
 
-                scratchChildNodes.forEach(child => delete child.direction);
-                lexicalChildNodes.forEach(child => delete child.direction);
+                // nullling is typically faster than delete
+                scratchChildNodes.forEach(child => child.direction = null);
+                lexicalChildNodes.forEach(child => child.direction = null);
 
                 if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
                     return false;
