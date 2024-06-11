@@ -532,6 +532,7 @@ export default class LexicalEditorController extends Controller {
     @dropTask
     *autosaveTask(options) {
         if (!this.get('saveTask.isRunning')) {
+            console.log(`triggering autosave task...`);
             return yield this.saveTask.perform({
                 silent: true,
                 backgroundSave: true,
@@ -597,8 +598,10 @@ export default class LexicalEditorController extends Controller {
         if (explicitSave || leavingEditor) {
             adapterOptions.saveRevision = 1;
         }
-        yield this.beforeSaveTask.perform(options);
 
+        console.log(`--running beforeSaveTask; leavingEditor`, leavingEditor);
+        yield this.beforeSaveTask.perform(options);
+        console.log(`--running saveTask`);
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
 
@@ -1055,6 +1058,7 @@ export default class LexicalEditorController extends Controller {
     // editor.edit->edit, or editor->any. Will either finish autosave then retry
     // transition or abort and show the "are you sure want to leave?" modal
     async willTransition(transition) {
+        console.log(`willTransition`);
         let post = this.post;
 
         // exit early and allow transition if we have no post, occurs if reset
@@ -1100,7 +1104,12 @@ export default class LexicalEditorController extends Controller {
                 && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
+        console.log(`this._saveOnLeavePerformed`, this._saveOnLeavePerformed);
+        console.log(`hasChangedSinceLastRevision`, hasChangedSinceLastRevision);
+        console.log(`hasDirtyAttributes`, hasDirtyAttributes);
+        console.log(`state.isDeleted`, state.isDeleted);
         if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted) {
+            console.log(`willTransition > saving a new revision`);
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
@@ -1108,17 +1117,24 @@ export default class LexicalEditorController extends Controller {
             }
             await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             this._saveOnLeavePerformed = true;
+            console.log(`... retrying transition`);
             return transition.retry();
         }
 
         // controller is dirty and we aren't in a new->edit or delete->index
         // transition so show our "are you sure you want to leave?" modal
+        console.log(`this._leaveConfirmed`, this._leaveConfirmed);
+        console.log(`fromNewToEdit`, fromNewToEdit);
+        console.log(`deletedWithoutChanges`, deletedWithoutChanges);
+        console.log(`hasDirtyAttributes`, hasDirtyAttributes);
         if (!this._leaveConfirmed && !fromNewToEdit && !deletedWithoutChanges && hasDirtyAttributes) {
+            console.log(`willTransition > showing leave editor modal`);
             transition.abort();
 
             // if a save is running, wait for it to finish then transition
             if (this.saveTasks.isRunning) {
                 await this.saveTasks.last;
+                console.log(`... retrying transition`);
                 return transition.retry();
             }
 
@@ -1132,6 +1148,7 @@ export default class LexicalEditorController extends Controller {
                     await this.autosaveTask.perform({leavingEditor: true});
                     this._saveOnLeavePerformed = true;
                 }
+                console.log(`... retrying transition`);
                 return transition.retry();
             }
 
@@ -1141,12 +1158,14 @@ export default class LexicalEditorController extends Controller {
             }
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
+            console.log(`... showing leave editor modal`);
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
 
             if (reallyLeave !== true) {
                 return;
             } else {
                 this._leaveConfirmed = true;
+                console.log(`... retrying transition`);
                 return transition.retry();
             }
         }
@@ -1286,6 +1305,7 @@ export default class LexicalEditorController extends Controller {
         // we've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
+        console.log(`-- past non-tracked cases, value is`, hasDirtyAttributes);
 
         if (hasDirtyAttributes) {
             this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
