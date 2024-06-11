@@ -74,10 +74,6 @@ export const useFetchApi = () => {
                     ...options
                 });
 
-                if (attempts !== 0 && sentryDSN) {
-                    Sentry.captureMessage('Request took multiple attempts', {extra: getErrorData()});
-                }
-
                 return handleResponse(response) as ResponseData;
             } catch (error) {
                 retryingMs = Date.now() - startTime;
