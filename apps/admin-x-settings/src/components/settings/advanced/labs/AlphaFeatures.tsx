@@ -64,6 +64,10 @@ const features = [{
     description: 'Adds internal URL search when typing @ in the editor',
     flag: 'internalLinkingAtLinks'
 },{
+    title: 'Internal Linking search improvements (internal alpha)',
+    description: 'Replaces Admin\'s search with flexsearch indexes',
+    flag: 'internalLinkingSearchImprovements'
+},{
     title: 'ActivityPub',
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
