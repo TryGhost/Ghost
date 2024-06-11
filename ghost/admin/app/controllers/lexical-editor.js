@@ -287,7 +287,15 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateScratch(lexical) {
+        console.log(`updateScratch > setting lexicalScratch to lexical`);
         this.set('post.lexicalScratch', JSON.stringify(lexical));
+
+        // // stub the first load - we want to set the scratch after the load but not trigger a save
+        // if (this._initialLoad) {
+        //     console.log(`> setting initial load to false`);
+        //     this._initialLoad = false;
+        //     return;
+        // }
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
@@ -673,6 +681,7 @@ export default class LexicalEditorController extends Controller {
         // Set lexical equal to what's in the editor but create a copy so that
         // nested objects/arrays don't keep references which can mean that both
         // scratch and lexical get updated simultaneously
+        console.log(`beforeSaveTask > setting lexical to scratch`);
         this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
@@ -834,6 +843,7 @@ export default class LexicalEditorController extends Controller {
         // update the scratch property if it's `null` and we get a blank lexical
         // back from the API - prevents "unsaved changes" modal on new+blank posts
         if (!post.lexicalScratch) {
+            console.log(`afterSave > setting lexicalScratch to lexical`);
             post.set('lexicalScratch', post.get('lexical'));
         }
 
@@ -844,6 +854,7 @@ export default class LexicalEditorController extends Controller {
         let bodiesMatch = post.get('lexicalScratch') === post.get('lexical');
 
         if (titlesMatch && bodiesMatch) {
+            console.log(`afterSave > match, setting hasDirtyAttributes to false`);
             this.set('hasDirtyAttributes', false);
         }
     }
@@ -1019,7 +1030,11 @@ export default class LexicalEditorController extends Controller {
         // edit of the post
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
         post.set('titleScratch', post.get('title'));
+        console.log(`setPost > setting lexicalScratch to lexical`);
         post.set('lexicalScratch', post.get('lexical'));
+        console.log(`lexicalScratch`, post.get('lexicalScratch'));
+        console.log(`lexical`, post.get('lexical'));
+        // this._initialLoad = true;
 
         this._previousTagNames = this._tagNames;
 
@@ -1146,6 +1161,7 @@ export default class LexicalEditorController extends Controller {
 
     // called when the editor route is left or the post model is swapped
     reset() {
+        console.log(`controller reset`);
         let post = this.post;
 
         // make sure the save tasks aren't still running in the background
@@ -1215,6 +1231,7 @@ export default class LexicalEditorController extends Controller {
     /* Private methods -------------------------------------------------------*/
 
     _hasDirtyAttributes() {
+        console.log(`_hasDirtyAttributes`);
         let post = this.post;
 
         if (!post) {
@@ -1249,6 +1266,7 @@ export default class LexicalEditorController extends Controller {
         // additional guard in case we are trying to compare null with undefined
         if (scratch || lexical) {
             if (scratch !== lexical) {
+                console.log(`_hasDirtyAttributes > scratch !== lexical`, scratch, lexical)
                 this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
             }
