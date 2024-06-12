@@ -642,8 +642,7 @@ export default class LexicalEditorController extends Controller {
             if (!options.silent) {
                 let errorOrMessages = error || this.get('post.errors.messages');
                 this._showErrorAlert(prevStatus, this.get('post.status'), errorOrMessages);
-                // simulate a validation error for upstream tasks
-                throw undefined;
+                return;
             }
 
             return this.post;
