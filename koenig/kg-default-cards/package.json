@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "7.0.5",
-    "@tryghost/string": "^0.2.0",
-    "@tryghost/url-utils": "^4.0.0",
+    "@tryghost/string": "0.2.12",
+    "@tryghost/url-utils": "4.4.8",
     "handlebars": "^4.7.6",
     "juice": "^10.0.0",
     "lodash": "^4.17.21",
