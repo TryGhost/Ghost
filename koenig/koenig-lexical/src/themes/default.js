@@ -31,7 +31,7 @@ const defaultTheme = {
     },
     code: undefined,
     tkHighlighted: 'bg-lime-500 dark:bg-lime-800 py-1',
-    atLink: 'inline-block bg-grey-200/70 dark:bg-grey-900',
+    atLink: 'inline-block bg-grey-200/70 mx-[-.2rem] px-1 pb-[.2rem] leading-[1.4] rounded dark:bg-grey-900',
     atLinkSearch: 'after:content-[attr(data-placeholder)] after:text-grey-500 dark:after:text-grey-600 min-w-[5px]'
 };
 

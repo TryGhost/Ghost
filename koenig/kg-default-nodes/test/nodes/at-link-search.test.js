@@ -82,7 +82,7 @@ describe('AtLinkSearchNode', function () {
         const dom = atLinkNode.createDOM(config);
         dom.classList.contains('multiple').should.be.true;
         dom.classList.contains('classes').should.be.true;
-        dom.dataset.placeholder.should.equal('Search for a link');
+        dom.dataset.placeholder.should.equal('Type to search');
     }));
 
     it('renders without default placeholder if text is present', editorTest(function () {
@@ -106,7 +106,7 @@ describe('AtLinkSearchNode', function () {
     it('updates to remove default placeholder when text is added', editorTest(function () {
         const atLinkNode = $createAtLinkSearchNode();
         const dom = atLinkNode.createDOM(config);
-        dom.dataset.placeholder.should.equal('Search for a link');
+        dom.dataset.placeholder.should.equal('Type to search');
 
         const prevNode = AtLinkSearchNode.clone(atLinkNode);
 

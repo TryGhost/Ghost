@@ -6,7 +6,7 @@ import {$applyNodeReplacement, TextNode} from 'lexical';
 export class AtLinkSearchNode extends TextNode {
     __placeholder = null;
 
-    defaultPlaceholder = 'Search for a link';
+    defaultPlaceholder = 'Type to search';
 
     static getType() {
         return 'at-link-search';
