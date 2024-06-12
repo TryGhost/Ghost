@@ -115,6 +115,7 @@ test.describe('Internal linking', async () => {
             await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
 
             await page.keyboard.type('http');
+            await expect(page.getByTestId('input-list-spinner')).not.toBeVisible();
 
             await assertHTML(page, html`
                 <li><div>Link to web page</div></li>
@@ -133,6 +134,7 @@ test.describe('Internal linking', async () => {
             await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
 
             await page.keyboard.type('#test');
+            await expect(page.getByTestId('input-list-spinner')).not.toBeVisible();
 
             await assertHTML(page, html`
                 <li><div>Link to web page</div></li>
@@ -151,6 +153,7 @@ test.describe('Internal linking', async () => {
             await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
 
             await page.keyboard.type('/test');
+            await expect(page.getByTestId('input-list-spinner')).not.toBeVisible();
 
             await assertHTML(page, html`
                 <li><div>Link to web page</div></li>
@@ -169,6 +172,7 @@ test.describe('Internal linking', async () => {
             await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
 
             await page.keyboard.type('mailto:test@example.com');
+            await expect(page.getByTestId('input-list-spinner')).not.toBeVisible();
 
             await assertHTML(page, html`
                 <li><div>Link to web page</div></li>

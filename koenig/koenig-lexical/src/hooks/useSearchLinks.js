@@ -102,6 +102,7 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
         // perform a non-debounced search if the query is a URL so the
         // "Link to web page" option updates more responsively
         if (URL_QUERY_REGEX.test(query)) {
+            debouncedSearch.cancel();
             search(query);
         } else {
             debouncedSearch(query);

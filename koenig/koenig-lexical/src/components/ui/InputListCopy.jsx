@@ -87,7 +87,7 @@ export function InputListGroup({dataTestId, group, showSpinner}) {
         <li className="mb-0 mt-2 flex items-center justify-between border-t border-grey-200 px-4 pb-2 pt-3 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600 first-of-type:mt-0 first-of-type:border-t-0 dark:border-grey-900" data-testid={`${dataTestId}-listGroup`}>
             <div className="flex items-center gap-1.5">
                 {group.label}
-                {showSpinner && <span className="ml-px"><Spinner size="mini" /></span>}
+                {showSpinner && <span className="ml-px" data-testid="input-list-spinner"><Spinner size="mini" /></span>}
             </div>
         </li>
     );
