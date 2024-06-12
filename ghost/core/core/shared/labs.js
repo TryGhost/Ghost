@@ -55,7 +55,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'internalLinkingAtLinks',
-    'internalLinkingSearchImprovements'
+    'internalLinkingSearchImprovements',
+    'contentVisibility'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
