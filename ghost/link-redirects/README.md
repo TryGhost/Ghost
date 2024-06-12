@@ -103,7 +103,7 @@ sequenceDiagram
     participant Ghost
     participant Ghost Async
     participant DB
-    rect rgb(0,100,0)
+    rect rgba(0,100,0, 0.1)
     Member ->>Ghost: Clicks link in email
     Ghost ->> DB: Query: lookup redirect
     DB ->> Ghost: Redirect record
@@ -111,7 +111,7 @@ sequenceDiagram
     Ghost -->> Ghost Async: Emit RedirectEvent
     Ghost ->> Member: 302 Redirect
     end
-    rect rgb(100,0,0)
+    rect rgba(100,0,0,0.1)
     Ghost Async ->> DB: Lookup Member by `uuid` from URL param
     DB ->> Ghost Async: `member` record
     Ghost Async ->> DB: Insert `member_click_event`
@@ -120,7 +120,7 @@ sequenceDiagram
     Ghost Async ->> DB: Select `member_click_event`
     DB ->> Ghost Async: `member_click_event` record
     end
-    rect rgb(0,0,100)
+    rect rgba(0,0,100, 0.1)
     Ghost Async ->> DB: Select `member` by id
     DB ->> Ghost Async: `member` record
     Ghost Async ->> DB: Begin transaction 
@@ -141,7 +141,7 @@ sequenceDiagram
     DB ->> Ghost Async: 👌
     deactivate DB
     end
-    rect rgb(100,100,0)
+    rect rgba(100,100,0,0.1)
     Ghost Async ->> DB: Select `webhooks`
     Note right of DB: Send `member.edited` webhook 
     DB ->> Ghost Async: `webhook` records
