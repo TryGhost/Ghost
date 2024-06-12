@@ -1253,16 +1253,16 @@ export default class LexicalEditorController extends Controller {
             if (scratch !== lexical) {
                 // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
                 //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
-                // const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : {};
-                // const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : {};
+                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
 
                 // // nullling is typically faster than delete
-                // scratchChildNodes.forEach(child => child.direction = null);
-                // lexicalChildNodes.forEach(child => child.direction = null);
+                scratchChildNodes.forEach(child => child.direction = null);
+                lexicalChildNodes.forEach(child => child.direction = null);
 
-                // if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
-                //     return false;
-                // }
+                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
+                    return false;
+                }
 
                 this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
