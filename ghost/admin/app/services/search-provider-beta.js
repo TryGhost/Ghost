@@ -86,6 +86,7 @@ export default class SearchProviderService extends Service {
                         id: `${searchable.model}.${doc[searchable.pathField]}`,
                         title: doc[searchable.titleField],
                         url: doc.url,
+                        excerpt: doc.excerpt,
                         status: doc.status,
                         visibility: doc.visibility,
                         publishedAt: doc.published_at

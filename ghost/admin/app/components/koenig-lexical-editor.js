@@ -363,13 +363,14 @@ export default class KoenigLexicalEditor extends Component {
                     return this.defaultLinks;
                 }
 
-                const posts = await this.store.query('post', {filter: 'status:published', fields: 'id,url,title,visibility,published_at', order: 'published_at desc', limit: 5});
+                const posts = await this.store.query('post', {filter: 'status:published', fields: 'id,url,title,excerpt,visibility,published_at', order: 'published_at desc', limit: 5});
                 // NOTE: these posts are Ember Data models, not plain objects like the search results
                 const results = posts.toArray().map(post => ({
                     groupName: 'Latest posts',
                     id: post.id,
                     title: post.title,
                     url: post.url,
+                    excerpt: post.excerpt,
                     visibility: post.visibility,
                     publishedAt: post.publishedAtUTC.toISOString()
                 }));
@@ -447,7 +448,8 @@ export default class KoenigLexicalEditor extends Component {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
                 internalLinking: this.feature.internalLinking,
-                internalLinkingAtLinks: this.feature.internalLinkingAtLinks
+                internalLinkingAtLinks: this.feature.internalLinkingAtLinks,
+                internalLinkingExcerpts: this.feature.internalLinkingSearchImprovements
             },
             deprecated: {
                 headerV1: true // if false, shows header v1 in the menu
