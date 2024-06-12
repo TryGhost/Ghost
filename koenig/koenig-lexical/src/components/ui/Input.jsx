@@ -22,7 +22,14 @@ export function Input({autoFocus, className, dataTestId, value, onChange, ...pro
         // autoFocus not working, so we need to manually focus the input
         if (shouldFocusOnUpdate.current) {
             shouldFocusOnUpdate.current = false;
-            setTimeout(() => inputRef.current.focus(), 0);
+            const timeoutId = setTimeout(() => {
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
+            }, 0);
+
+            // Cleanup
+            return () => clearTimeout(timeoutId);
         }
     }, [value]);
 
