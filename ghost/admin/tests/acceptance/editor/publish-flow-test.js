@@ -631,7 +631,7 @@ describe('Acceptance: Publish flow', function () {
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {
                 title: 'Test Post',
-                status: 'draft',
+                status: 'draft'
             });
             await visit('/editor/post/' + post.id);
             await fillIn('[data-test-editor-title-input]', 'New Title');
