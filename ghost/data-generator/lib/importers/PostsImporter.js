@@ -81,6 +81,7 @@ class PostsImporter extends TableImporter {
                 ])
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
+            plaintext: content.join('\n\n'),
             email_recipient_filter: 'all',
             newsletter_id: this.type === 'post' && status === 'published' && luck(90) ? (visibility === 'paid' ? this.newsletters[0].id : this.newsletters[1].id) : null
         };
