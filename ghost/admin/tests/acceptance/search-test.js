@@ -17,7 +17,7 @@ const suites = [{
 }, {
     name: 'Acceptance: Search (beta)',
     beforeEach() {
-        enableLabsFlag(this.server, 'internalLinkingSearchImprovements');
+        enableLabsFlag(this.server, 'internalLinking');
     }
 }];
 
