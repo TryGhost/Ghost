@@ -55,7 +55,6 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'internalLinkingAtLinks',
-    'internalLinkingSearchImprovements',
     'contentVisibility'
 ];
 
