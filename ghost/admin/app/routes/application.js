@@ -190,7 +190,12 @@ export default Route.extend(ShortcutsRoute, {
                     /^TransitionAborted$/,
                     // ResizeObserver loop errors occur often from extensions and
                     // embedded content, generally harmless and not useful to report
-                    /^ResizeObserver loop completed with undelivered notifications/
+                    /^ResizeObserver loop completed with undelivered notifications/,
+                    /^ResizeObserver loop limit exceeded/,
+                    // When tasks in ember-concurrency are canceled, they sometimes lead to unhandled Promise rejections
+                    // This doesn't affect the application and is not useful to report
+                    // - http://ember-concurrency.com/docs/cancelation
+                    'TaskCancelation'
                 ],
                 integrations: []
             };
