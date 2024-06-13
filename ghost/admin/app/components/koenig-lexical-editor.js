@@ -447,9 +447,10 @@ export default class KoenigLexicalEditor extends Component {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
                 internalLinking: this.feature.internalLinking,
-                internalLinkingAtLinks: this.feature.internalLinkingAtLinks
+                internalLinkingAtLinks: this.feature.internalLinkingAtLinks,
+                contentVisibility: this.feature.contentVisibility
             },
-            deprecated: {
+            deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
             },
             membersEnabled: this.settings.membersSignupAccess === 'all',
