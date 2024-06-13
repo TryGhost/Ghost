@@ -78,7 +78,7 @@ export default class TagRoute extends AuthenticatedRoute {
 
     async confirmUnsavedChanges() {
         if (this.controller.model?.hasDirtyAttributes) {
-            Sentry.captureMessage('showing unsaved changes modal for collections route');
+            Sentry.captureMessage('showing unsaved changes modal for tags route');
             this.confirmModal = this.modals
                 .open(ConfirmUnsavedChangesModal)
                 .finally(() => {

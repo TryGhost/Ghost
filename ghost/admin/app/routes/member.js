@@ -97,7 +97,7 @@ export default class MembersRoute extends AdminRoute {
     }
 
     async confirmUnsavedChanges() {
-        Sentry.captureMessage('showing unsaved changes modal for collections route');
+        Sentry.captureMessage('showing unsaved changes modal for members route');
         this.confirmModal = this.modals
             .open(ConfirmUnsavedChangesModal)
             .finally(() => {
