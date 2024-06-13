@@ -29,6 +29,7 @@ export const SEARCHABLES = [
         name: 'Posts',
         model: 'post',
         fields: ['id', 'url', 'title', 'excerpt', 'status', 'published_at', 'visibility'],
+        order: 'updated_at desc', // ensure we use a simple rather than default order for faster response
         pathField: 'id',
         titleField: 'title',
         index: ['title', 'excerpt']
@@ -37,6 +38,7 @@ export const SEARCHABLES = [
         name: 'Pages',
         model: 'page',
         fields: ['id', 'url', 'title', 'excerpt', 'status', 'published_at', 'visibility'],
+        order: 'updated_at desc', // ensure we use a simple rather than default order for faster response
         pathField: 'id',
         titleField: 'title',
         index: ['title', 'excerpt']
@@ -118,7 +120,7 @@ export default class SearchProviderService extends Service {
 
     async #loadSearchable(searchable) {
         const url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        const query = {fields: searchable.fields, limit: 10000};
+        const query = {fields: searchable.fields, limit: 10000, order: searchable.order};
 
         try {
             const response = await this.ajax.request(url, {data: query});
