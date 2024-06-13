@@ -180,4 +180,37 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(controller.get('tkCount')).to.equal(1);
         });
     });
+
+    describe('hasDirtyAttributes', function () {
+        it('Changes in the direction field in the lexical string are not considered dirty', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const lexicalStringNoNullDirection = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const lexicalStringUpdatedContent = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+
+            // we can't seem to call setPost directly, so we have to set the post manually
+            controller.set('post', EmberObject.create({
+                title: 'this is a title',
+                titleScratch: 'this is a title',
+                status: 'published',
+                lexical: initialLexicalString,
+                lexicalScratch: initialLexicalString
+            }));
+
+            // synthetically update the lexicalScratch as if the editor itself made the modifications on loading the initial editorState
+            controller.send('updateScratch',JSON.parse(lexicalStringNoNullDirection));
+
+            // this should NOT result in the post being dirty - while lexical !== lexicalScratch, we ignore the direction field
+            let isDirty = controller.get('hasDirtyAttributes');
+            expect(isDirty).to.be.false;
+
+            // now we try a synthetic change in the actual text content that should result in a dirty post
+            controller.send('updateScratch',JSON.parse(lexicalStringUpdatedContent));
+
+            // this should NOT result in the post being dirty - while lexical !== lexicalScratch, we ignore the direction field
+            isDirty = controller.get('hasDirtyAttributes');
+            expect(isDirty).to.be.true;
+        });
+    });
 });
