@@ -2,7 +2,7 @@ import {MockedApi, addMultipleComments, initialize} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Pagination', async () => {
-    test('Shows pagination button at bottom if more than 20 comments', async ({page}) => {
+    test('Shows pagination button at top if more than 20 comments', async ({page}) => {
         const mockedApi = new MockedApi({});
 
         addMultipleComments(mockedApi, 21);
