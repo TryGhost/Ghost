@@ -1084,7 +1084,8 @@ export default class LexicalEditorController extends Controller {
                 && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted) {
+        //  but we should never autosave when leaving published or soon-to-be published content (scheduled); this should require the user to intervene
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted && post.get('status') === 'draft') {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
@@ -1123,6 +1124,7 @@ export default class LexicalEditorController extends Controller {
             if (this.post) {
                 Object.assign(this._leaveModalReason, {status: this.post.status});
             }
+            Sentry.captureMessage('showing leave editor modal', {extra: this._leaveModalReason});
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
@@ -1248,6 +1250,19 @@ export default class LexicalEditorController extends Controller {
         // additional guard in case we are trying to compare null with undefined
         if (scratch || lexical) {
             if (scratch !== lexical) {
+                // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
+                //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
+                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+
+                // // nullling is typically faster than delete
+                scratchChildNodes.forEach(child => child.direction = null);
+                lexicalChildNodes.forEach(child => child.direction = null);
+
+                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
+                    return false;
+                }
+
                 this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
             }
