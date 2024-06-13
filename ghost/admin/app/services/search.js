@@ -15,7 +15,7 @@ export default class SearchService extends Service {
     isContentStale = true;
 
     get provider() {
-        return this.feature.internalLinkingSearchImprovements
+        return this.feature.internalLinking
             ? this.searchProviderBeta
             : this.searchProvider;
     }

@@ -12,7 +12,7 @@ const suites = [{
 }, {
     name: 'Integration: Service: Search (beta)',
     beforeEach() {
-        enableLabsFlag(this.server, 'internalLinkingSearchImprovements');
+        enableLabsFlag(this.server, 'internalLinking');
     }
 }];
 
