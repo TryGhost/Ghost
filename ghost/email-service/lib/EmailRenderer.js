@@ -419,6 +419,10 @@ class EmailRenderer {
             return {src, width, height};
         });
 
+        // Add a class to each figcaption so we can style them in the email
+        $('figure, figcaption').each((i, elem) => !!($(elem).addClass('kg-card-figcaption')));
+        html = $.html();
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
@@ -446,9 +450,6 @@ class EmailRenderer {
 
         // convert figure and figcaption to div so that Outlook applies margins
         $('figure, figcaption').each((i, elem) => !!(elem.tagName = 'div'));
-
-        // Add a class to each figcaption so we can style them in the email
-        $('figcaption').each((i, elem) => !!(elem.addClass('kg-card-figcaption')));
 
         // Remove duplicate black/white images (CSS based solution not working in Outlook)
         if (templateData.backgroundIsDark) {
