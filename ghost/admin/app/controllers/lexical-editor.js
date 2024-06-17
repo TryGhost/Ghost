@@ -29,6 +29,8 @@ import {slugify} from '@tryghost/string';
 import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
+// suffix that is applied to the title of a post when it has been duplicated
+const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
@@ -860,33 +862,36 @@ export default class LexicalEditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // sync the post slug with the post title, except when:
-        // - the user has already typed a custom slug, which should not be overwritten
-        // - the post has been published, so that published URLs are not broken
-        if (!this.get('post.isPublished')) {
-            yield this.generateSlugTask.perform();
-        }
-
+        // always save updates automatically for drafts
         if (this.get('post.isDraft')) {
+            yield this.generateSlugTask.perform();
             yield this.autosaveTask.perform();
         }
 
         this.ui.updateDocumentTitle();
     }
 
+    /* 
+        // sync the post slug with the post title, except when:
+        // - the user has already typed a custom slug, which should not be overwritten
+        // - the post has been published, so that published URLs are not broken
+    */ 
     @enqueueTask
     *generateSlugTask() {
         const currentTitle = this.get('post.title');
         const newTitle = this.get('post.titleScratch');
         const currentSlug = this.get('post.slug');
-        
+
         // Only set an "untitled" slug once per post
         if (newTitle === DEFAULT_TITLE && currentSlug) {
             return;
         }
 
-        // If the old title doesn't match the slug for it, don't update the slug
-        if (currentSlug && slugify(currentTitle) !== currentSlug) {
+        // Update the slug unless the slug looks to be a custom slug or the title is a default/has been cleared out
+        if (
+            (currentSlug && slugify(currentTitle) !== currentSlug)
+            && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX))
+        ) {
             return;
         }
 
