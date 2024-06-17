@@ -25,6 +25,7 @@ import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from
 import {isInvalidError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
+import {slugify} from '@tryghost/string';
 import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
@@ -168,11 +169,6 @@ export default class LexicalEditorController extends Controller {
      * Flag used to determine if we should return to the analytics page or to the posts/pages overview
      */
     fromAnalytics = false;
-
-    /**
-     * Flag used to determine if the user has input a custom slug manually
-     */
-    isUserCustomSlug = false;
 
     // koenig related properties
     wordCount = 0;
@@ -749,7 +745,6 @@ export default class LexicalEditorController extends Controller {
         }
 
         this.set('post.slug', serverSlug);
-        this.isUserCustomSlug = true;
 
         // If this is a new post.  Don't save the post.  Defer the save
         // to the user pressing the save button
@@ -868,7 +863,7 @@ export default class LexicalEditorController extends Controller {
         // sync the post slug with the post title, except when:
         // - the user has already typed a custom slug, which should not be overwritten
         // - the post has been published, so that published URLs are not broken
-        if (!this.isUserCustomSlug && !this.get('post.isPublished')) {
+        if (!this.get('post.isPublished')) {
             yield this.generateSlugTask.perform();
         }
 
@@ -881,18 +876,25 @@ export default class LexicalEditorController extends Controller {
 
     @enqueueTask
     *generateSlugTask() {
-        let title = this.get('post.titleScratch');
-
+        const currentTitle = this.get('post.title');
+        const newTitle = this.get('post.titleScratch');
+        const currentSlug = this.get('post.slug');
+        
         // Only set an "untitled" slug once per post
-        if (title === DEFAULT_TITLE && this.get('post.slug')) {
+        if (newTitle === DEFAULT_TITLE && currentSlug) {
+            return;
+        }
+
+        // If the old title doesn't match the slug for it, don't update the slug
+        if (currentSlug && slugify(currentTitle) !== currentSlug) {
             return;
         }
 
         try {
-            let slug = yield this.slugGenerator.generateSlug('post', title);
+            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle);
 
-            if (!isBlank(slug)) {
-                this.set('post.slug', slug);
+            if (!isBlank(newSlug)) {
+                this.set('post.slug', newSlug);
             }
         } catch (error) {
             // Nothing to do (would be nice to log this somewhere though),
@@ -1148,7 +1150,6 @@ export default class LexicalEditorController extends Controller {
     // called when the editor route is left or the post model is swapped
     reset() {
         let post = this.post;
-        this.isUserCustomSlug = false;
 
         // make sure the save tasks aren't still running in the background
         // after leaving the edit route
