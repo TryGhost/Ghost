@@ -31073,10 +31073,10 @@ yeast@0.1.2:
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
   integrity sha512-8HFIh676uyGYP6wP13R/j6OJ/1HwJ46snpvzE7aHAN3Ryqh2yX6Xox2B4CUmTwwOIzlG3Bs7ocsP5dZH/R1Qbg==
 
-yjs@13.6.16:
-  version "13.6.16"
-  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.6.16.tgz#4ac8a1393495af390dcfa0631e3d24cfc50fc9a3"
-  integrity sha512-uEq+n/dFIecBElEdeQea8nDnltScBfuhCSyAxDw4CosveP9Ag0eW6iZi2mdpW7EgxSFT7VXK2MJl3tKaLTmhAQ==
+yjs@13.6.17:
+  version "13.6.17"
+  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.6.17.tgz#ed40a6a3a3c5fc4903e2c3e4fae9c174bab616e4"
+  integrity sha512-ERnKXYZrZqgGO81Yqt3D69detaRUwaqhsQTZRKi9CDMgteDMund+KcLChfwpjQbva9YwfRgh7S914Pa6qPVVCA==
   dependencies:
     lib0 "^0.2.86"
 
