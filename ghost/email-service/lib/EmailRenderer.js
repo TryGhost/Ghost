@@ -420,7 +420,7 @@ class EmailRenderer {
         });
 
         // Add a class to each figcaption so we can style them in the email
-        $('figure, figcaption').each((i, elem) => !!($(elem).addClass('kg-card-figcaption')));
+        $('figcaption').each((i, elem) => !!($(elem).addClass('kg-card-figcaption')));
         html = $.html();
 
         // Juice HTML (inline CSS)
