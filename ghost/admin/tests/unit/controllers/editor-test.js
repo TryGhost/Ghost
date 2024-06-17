@@ -10,21 +10,7 @@ import {task} from 'ember-concurrency';
 describe('Unit: Controller: lexical-editor', function () {
     setupTest();
 
-    describe.only('generateSlug', function () {
-        // beforeEach(function () {
-        //     this.controller = this.owner.lookup('controller:lexical-editor');
-        //     this.controller.set('slugGenerator', EmberObject.create({
-        //         generateSlug(slugType, str) {
-        //             console.log('--stubbed generateSlug', slugType, str);
-        //             return RSVP.resolve(`${str}-slug`);
-        //         }
-        //     }));
-        // });
-
-        // afterEach(async function () {
-        //     await this.controller.reset();
-        // });
-
+    describe('generateSlug', function () {
         it('should generate a slug and set it on the post', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
@@ -98,7 +84,7 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(controller.get('post.slug')).to.equal('newTitle-slug');
         });
 
-        it.only('should not generate a new slug if it appears a custom slug was set', async function () {
+        it('should not generate a new slug if it appears a custom slug was set', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
