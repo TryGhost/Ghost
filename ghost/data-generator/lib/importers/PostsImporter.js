@@ -62,23 +62,34 @@ class PostsImporter extends TableImporter {
             slug: `${slugify(title)}-${faker.random.numeric(3)}`,
             status,
             visibility,
-            mobiledoc: JSON.stringify({
-                version: '0.3.1',
-                atoms: [],
-                cards: [],
-                markups: [['em']],
-                sections: content.map(paragraph => [
-                    1,
-                    'p',
-                    [
-                        [
-                            0,
-                            [],
-                            0,
-                            paragraph
-                        ]
-                    ]
-                ])
+            lexical: JSON.stringify({
+                root: {
+                    children: content.map(paragraph => (
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: paragraph,
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    )),
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
             plaintext: content.join('\n\n'),
