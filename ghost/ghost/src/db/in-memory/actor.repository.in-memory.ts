@@ -18,13 +18,6 @@ export class ActorRepositoryInMemory implements ActorRepository {
         @Inject('DomainEvents') domainEvents: DomainEvents
     ) {
         this.actors = [
-            Actor.create({
-                username: 'index',
-                displayName: settingsCache.get('title'),
-                publicKey: settingsCache.get('ghost_public_key'),
-                privateKey: settingsCache.get('ghost_private_key'),
-                following: []
-            })
         ];
         this.domainEvents = domainEvents;
     }
