@@ -403,9 +403,6 @@ async function initNestDependencies() {
         provide: 'DomainEvents',
         useValue: require('@tryghost/domain-events')
     }, {
-        provide: 'ActivityPubBaseURL',
-        useValue: activityPubBaseUrl
-    }, {
         provide: 'SettingsCache',
         useValue: require('./shared/settings-cache')
     }, {
