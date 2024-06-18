@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
-const GhostNestApp = require('@tryghost/ghost');
 
 // App requires
 const config = require('../../shared/config');
