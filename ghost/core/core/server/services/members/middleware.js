@@ -29,12 +29,19 @@ const getFreeTier = async function getFreeTier() {
 
 /**
  * Sets the ghost-access and ghost-access-hmac cookies on the response object
- * @param {object} member - The member object
+ * @param {Object} member - The member object
+ * @param {import('express').Request} req - The member object
  * @param {import('express').Response} res - The express response object to set the cookies on
+ * @param {Object} freeTier - The free tier object
  * @returns 
  */
-const setAccessCookies = function setAccessCookies(member = undefined, res, freeTier) {
+const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
     if (!member) {
+        // If there is no cookie sent with the request, return early
+        if (!req.headers.cookie || !req.headers.cookie.includes('ghost-access')) {
+            return;
+        }
+        // If there are cookies sent with the request, set them to null and expire them immediately
         const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
         const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
         const existingCookies = res.getHeader('Set-Cookie') || [];
@@ -47,12 +54,16 @@ const setAccessCookies = function setAccessCookies(member = undefined, res, free
     if (!hmacSecret) {
         return;
     }
+    const hmacSecretBuffer = Buffer.from(hmacSecret, 'base64');
+    if (hmacSecretBuffer.length === 0) {
+        return;
+    }
     const activeSubscription = member.subscriptions?.find(sub => sub.status === 'active');
 
     const cookieTimestamp = Math.floor(Date.now() / 1000); // to mitigate a cookie replay attack
     const memberTier = activeSubscription && activeSubscription.tier.id || freeTier.id;
     const memberTierAndTimestamp = `${memberTier}:${cookieTimestamp}`;
-    const memberTierHmac = crypto.createHmac('sha256', hmacSecret).update(memberTierAndTimestamp).digest('hex');
+    const memberTierHmac = crypto.createHmac('sha256', hmacSecretBuffer).update(memberTierAndTimestamp).digest('hex');
 
     const maxAge = 3600;
     const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
@@ -66,7 +77,7 @@ const setAccessCookies = function setAccessCookies(member = undefined, res, free
 const accessInfoSession = async function accessInfoSession(req, res, next) {
     const freeTier = await getFreeTier();
     onHeaders(res, function () {
-        setAccessCookies(req.member, res, freeTier);
+        setAccessCookies(req.member, req, res, freeTier);
     });
     next();
 };
@@ -300,7 +311,7 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
             // Set the ghost-access cookies to enable tier-based caching
             try {
                 const freeTier = await getFreeTier();
-                setAccessCookies(member, res, freeTier);
+                setAccessCookies(member, req, res, freeTier);
             } catch {
                 // This is a non-critical operation, so we can safely ignore any errors
             }

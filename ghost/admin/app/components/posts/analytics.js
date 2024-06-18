@@ -201,18 +201,30 @@ export default class Analytics extends Component {
             }
             return this._fetchReferrersStats.perform();
         } catch (e) {
-            if (!didCancel(e)) {
-                // re-throw the non-cancelation error
-                throw e;
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
             }
+
+            throw e;
         }
     }
 
     async fetchLinks() {
-        if (this._fetchLinks.isRunning) {
-            return this._fetchLinks.last;
+        try {
+            if (this._fetchLinks.isRunning) {
+                return this._fetchLinks.last;
+            }
+
+            return this._fetchLinks.perform();
+        } catch (e) {
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
+            }
+
+            throw e;
         }
-        return this._fetchLinks.perform();
     }
 
     @task

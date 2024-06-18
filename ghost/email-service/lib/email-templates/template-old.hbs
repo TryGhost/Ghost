@@ -44,8 +44,8 @@
                                         {{/if}}
 
                                         {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
-                                            <tr>
-                                                <td class="{{#if (and newsletter.showPostTitleSection showHeaderTitle) }}site-info-bordered{{else}}site-info{{/if}}" width="100%" align="center">
+                                            <tr class="site-info-row">
+                                                <td class="site-info" width="100%" align="center">
                                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                         {{#if (and showHeaderIcon site.iconUrl) }}
                                                             <tr>
@@ -79,9 +79,18 @@
                                                     <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
                                                 </td>
                                             </tr>
+                                            {{#hasFeature 'newsletterExcerpt'}}
+                                                {{#if (and newsletter.showExcerpt post.customExcerpt)}}
+                                                    <tr>
+                                                        <td class="post-excerpt-wrapper" style="width: 100%">
+                                                            <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
+                                                        </td>
+                                                    </tr>
+                                                {{/if}}
+                                            {{/hasFeature}}
                                             <tr>
                                                 <td style="width: 100%">
-                                                    <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
+                                                    <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
                                                         <tr>
                                                             <td height="20" class="{{classes.meta}}" style="padding: 0;">
                                                                 By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
