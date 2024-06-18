@@ -152,19 +152,23 @@ const checkFileIsValid = (fileData, types, extensions) => {
 };
 
 /**
- * 
- * @param {String} filepath 
+ *
+ * @param {String} filepath
  * @returns {Boolean}
- * 
+ *
  * Checks for the presence of <script> tags or 'on' attributes in an SVG file
- * 
+ *
  */
 const isSvgSafe = (filepath) => {
     const fileContent = fs.readFileSync(filepath, 'utf8');
     const document = new JSDOM(fileContent).window.document;
     document.body.innerHTML = fileContent;
     const svgEl = document.body.firstElementChild;
-    
+
+    if (!svgEl) {
+        return false;
+    }
+
     const attributes = Array.from(svgEl.attributes).map(({name}) => name);
     const hasScriptAttr = !!attributes.find(attr => attr.startsWith('on'));
     const scripts = svgEl.getElementsByTagName('script');
