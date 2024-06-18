@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.85.0",
+  "version": "5.85.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -33,7 +33,7 @@
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-decorators": "7.23.7",
     "@ember/jquery": "2.0.0",
-    "@ember/optional-features": "2.0.0",
+    "@ember/optional-features": "2.1.0",
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.4",
     "@ember/test-waiters": "3.1.0",
@@ -172,7 +172,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.15.5",
+    "jose": "4.15.7",
     "path-browserify": "1.0.1",
     "webpack": "5.92.0"
   },

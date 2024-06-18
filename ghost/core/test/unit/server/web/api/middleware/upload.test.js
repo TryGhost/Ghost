@@ -63,5 +63,10 @@ describe('web utils', function () {
             dirtySvgContent.should.not.containEql('<script');
             validation.isSvgSafe(filepath).should.be.true;
         });
+
+        it('returns false for malformed svg', async function () {
+            const filepath = path.join(__dirname, imageFixturePath, 'svg-malformed.svg');
+            validation.isSvgSafe(filepath).should.be.false;
+        });
     });
 });

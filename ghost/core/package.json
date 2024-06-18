@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.85.0",
+  "version": "5.85.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -207,7 +207,7 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.23",
     "multer": "1.4.4",
-    "mysql2": "3.10.0",
+    "mysql2": "3.10.1",
     "nconf": "0.12.1",
     "node-jose": "2.2.0",
     "path-match": "1.2.4",
@@ -218,10 +218,10 @@
     "socket.io": "4.7.5",
     "stoppable": "1.1.0",
     "uuid": "9.0.1",
-    "ws": "8.17.0",
+    "ws": "8.17.1",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
-    "yjs": "13.6.16"
+    "yjs": "13.6.18"
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "7.117.0",

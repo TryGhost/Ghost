@@ -13,7 +13,6 @@ describe('Unit: Controller: lexical-editor', function () {
     describe('generateSlug', function () {
         it('should generate a slug and set it on the post', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
-
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -33,7 +32,6 @@ describe('Unit: Controller: lexical-editor', function () {
 
         it('should not set the destination if the title is "(Untitled)" and the post already has a slug', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
-
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
                     return RSVP.resolve(`${str}-slug`);
@@ -48,15 +46,95 @@ describe('Unit: Controller: lexical-editor', function () {
 
             expect(controller.get('post.slug')).to.equal('whatever');
         });
+
+        it('should generate a new slug if the previous title was (Untitled)', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str) {
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+            controller.set('post', EmberObject.create({
+                slug: '',
+                title: '(Untitled)',
+                titleScratch: 'title'
+            }));
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('title-slug');
+        });
+
+        it('should generate a new slug if the previous title ended with (Copy)', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str) {
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+
+            controller.set('post', EmberObject.create({
+                slug: '',
+                title: 'title (Copy)',
+                titleScratch: 'newTitle'
+            }));
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('newTitle-slug');
+        });
+
+        it('should not generate a new slug if it appears a custom slug was set', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str) {
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+
+            controller.set('post', EmberObject.create({
+                slug: 'custom-slug',
+                title: 'original title',
+                titleScratch: 'newTitle'
+            }));
+
+            expect(controller.get('post.slug')).to.equal('custom-slug');
+            expect(controller.get('post.titleScratch')).to.equal('newTitle');
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('custom-slug');
+        });
+
+        it('should generate new slugs if the title changes', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str) {
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+            controller.set('post', EmberObject.create({
+                slug: 'somepost',
+                title: 'somepost',
+                titleScratch: 'newtitle'
+            }));
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('newtitle-slug');
+        });
     });
 
     describe('saveTitleTask', function () {
         beforeEach(function () {
             this.controller = this.owner.lookup('controller:lexical-editor');
             this.controller.set('target', {send() {}});
+            defineProperty(this.controller, 'autosaveTask', task(function * () {
+                yield RSVP.resolve();
+            }));
         });
 
-        it('should invoke generateSlug if the post is new and a title has not been set', async function () {
+        it('should invoke generateSlug if the post is not published', async function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
@@ -64,9 +142,10 @@ describe('Unit: Controller: lexical-editor', function () {
                 this.set('post.slug', 'test-slug');
                 yield RSVP.resolve();
             }));
-            controller.set('post', EmberObject.create({isNew: true}));
 
-            expect(controller.get('post.isNew')).to.be.true;
+            controller.set('post', EmberObject.create({isDraft: true}));
+
+            expect(controller.get('post.isDraft')).to.be.true;
             expect(controller.get('post.titleScratch')).to.not.be.ok;
 
             controller.set('post.titleScratch', 'test');
@@ -76,62 +155,16 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(controller.get('post.slug')).to.equal('test-slug');
         });
 
-        it('should invoke generateSlug if the post is not new and it\'s title is "(Untitled)"', async function () {
+        it('should not invoke generateSlug if the post is published', async function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlugTask', task(function * () {
-                this.set('post.slug', 'test-slug');
-                yield RSVP.resolve();
-            }));
-            controller.set('post', EmberObject.create({isNew: false, title: '(Untitled)'}));
-
-            expect(controller.get('post.isNew')).to.be.false;
-            expect(controller.get('post.titleScratch')).to.not.be.ok;
-
-            controller.set('post.titleScratch', 'New Title');
-
-            await controller.saveTitleTask.perform();
-
-            expect(controller.get('post.titleScratch')).to.equal('New Title');
-            expect(controller.get('post.slug')).to.equal('test-slug');
-        });
-
-        it('should invoke generateSlug if the post is a duplicated post', async function () {
-            let {controller} = this;
-
-            controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlugTask', task(function * () {
-                this.set('post.slug', 'test-slug');
-                yield RSVP.resolve();
-            }));
-            controller.set('post', EmberObject.create({isNew: false, title: 'Some Title (Copy)'}));
-
-            expect(controller.get('post.isNew')).to.be.false;
-            expect(controller.get('post.titleScratch')).to.not.be.ok;
-
-            controller.set('post.titleScratch', 'Some Title');
-
-            await controller.saveTitleTask.perform();
-
-            expect(controller.get('post.titleScratch')).to.equal('Some Title');
-            expect(controller.get('post.slug')).to.equal('test-slug');
-        });
-
-        it('should not invoke generateSlug if the post is new but has a title', async function () {
-            let {controller} = this;
-
-            controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlugTask', task(function * () {
-                expect(false, 'generateSlug should not be called').to.equal(true);
-                yield RSVP.resolve();
-            }));
             controller.set('post', EmberObject.create({
-                isNew: true,
-                title: 'a title'
+                title: 'a title',
+                isPublished: true
             }));
 
-            expect(controller.get('post.isNew')).to.be.true;
+            expect(controller.get('post.isPublished')).to.be.true;
             expect(controller.get('post.title')).to.equal('a title');
             expect(controller.get('post.titleScratch')).to.not.be.ok;
 
@@ -139,26 +172,6 @@ describe('Unit: Controller: lexical-editor', function () {
             await controller.saveTitleTask.perform();
 
             expect(controller.get('post.titleScratch')).to.equal('test');
-            expect(controller.get('post.slug')).to.not.be.ok;
-        });
-
-        it('should not invoke generateSlug if the post is not new and the title is not "(Untitled)"', async function () {
-            let {controller} = this;
-
-            controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlugTask', task(function * () {
-                expect(false, 'generateSlug should not be called').to.equal(true);
-                yield RSVP.resolve();
-            }));
-            controller.set('post', EmberObject.create({isNew: false}));
-
-            expect(controller.get('post.isNew')).to.be.false;
-            expect(controller.get('post.title')).to.not.be.ok;
-
-            controller.set('post.titleScratch', 'title');
-            await controller.saveTitleTask.perform();
-
-            expect(controller.get('post.titleScratch')).to.equal('title');
             expect(controller.get('post.slug')).to.not.be.ok;
         });
     });
