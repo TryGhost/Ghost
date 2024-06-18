@@ -1,6 +1,7 @@
 import {} from '@tryghost/admin-x-framework/api/activitypub';
 import NiceModal from '@ebay/nice-modal-react';
 import getUsername from '../utils/get-username';
+import getUsernameFromFollowing from '../utils/get-username-from-following';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {FollowingResponseData, useBrowseFollowersForUser, useUnfollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -33,7 +34,7 @@ const ViewFollowersModal: React.FC<RoutingModalProps & ViewFollowersModalProps> 
             <div className='mt-3 flex flex-col gap-4 pb-12'>
                 <List>
                     {followers.map(item => (
-                        <ListItem action={<Button color='grey' label='Follow back' link={true} onClick={() => mutation.mutate({username: item.username})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsername(item)} id='list-item' title={item.name}></ListItem>
+                        <ListItem action={<Button color='grey' label='Follow back' link={true} onClick={() => mutation.mutate({username: item.username})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsernameFromFollowing(item)} id='list-item' title={item.name}></ListItem>
                     ))}
                 </List>
             </div>
