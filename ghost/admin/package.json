@@ -172,7 +172,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.15.5",
+    "jose": "4.15.7",
     "path-browserify": "1.0.1",
     "webpack": "5.92.0"
   },
