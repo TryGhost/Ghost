@@ -6,7 +6,7 @@ type Props = {
     isPaid: boolean
 };
 const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
-    const {accentColor, publication, member, t} = useAppContext();
+    const {accentColor, commentCount, publication, member, t} = useAppContext();
 
     const buttonStyle = {
         backgroundColor: accentColor
@@ -31,7 +31,7 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
     ));
 
     return (
-        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} border-y border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
+        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} ${!member && commentCount ? 'border-t' : 'border-none'} border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
             <h1 className={`mb-[8px] text-center font-sans text-[24px] tracking-tight  text-black dark:text-[rgba(255,255,255,0.85)] ${isFirst ? 'font-semibold' : 'font-bold'}`}>
                 {titleText}
             </h1>
