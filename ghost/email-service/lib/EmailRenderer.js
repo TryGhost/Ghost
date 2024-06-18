@@ -419,6 +419,10 @@ class EmailRenderer {
             return {src, width, height};
         });
 
+        // Add a class to each figcaption so we can style them in the email
+        $('figcaption').each((i, elem) => !!($(elem).addClass('kg-card-figcaption')));
+        html = $.html();
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
