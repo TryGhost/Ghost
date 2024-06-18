@@ -61,11 +61,15 @@
             --}}
             <GhKoenigEditorLexical
                 @title={{readonly this.post.titleScratch}}
-                @titleAutofocus={{this.shouldFocusTitle}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
+                @titleAutofocus={{this.shouldFocusTitle}}
                 @titleHasTk={{this.titleHasTk}}
                 @onTitleChange={{this.updateTitleScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
+                @excerpt={{readonly this.post.customExcerpt}}
+                @excerptHasTk={{this.excerptHasTk}}
+                @setExcerpt={{this.updateExcerpt}}
+                @excerptErrorMessage={{this.excerptErrorMessage}}
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
                 @onBodyChange={{this.updateScratch}}
@@ -93,6 +97,7 @@
                 }}
                 @postType={{this.post.displayName}}
                 @registerAPI={{this.registerEditorAPI}}
+                @savePostTask={{this.savePostTask}}
             />
 
             <div class="gh-editor-wordcount-container">

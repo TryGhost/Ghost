@@ -3,6 +3,7 @@ import RestoreRevisionModal from '../components/modals/restore-revision';
 import {action, set} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+import {waitFor} from '@ember/test-waiters';
 
 function checkFinishedRendering(element, done) {
     let last = element.innerHTML;
@@ -50,6 +51,10 @@ export default class ModalPostHistory extends Component {
                 latest: index === 0,
                 createdAt: revision.get('createdAt'),
                 title: revision.get('title'),
+                // custom_excerpt is a new field that was added to the post-revision model
+                // that may not have been populated for older revisions. To cover that case
+                // we revert to the current post's customExcerpt to avoid losing data when restoring.
+                custom_excerpt: revision.get('customExcerpt') ?? this.post.customExcerpt,
                 feature_image: revision.get('featureImage'),
                 feature_image_alt: revision.get('featureImageAlt'),
                 feature_image_caption: revision.get('featureImageCaption'),
@@ -84,9 +89,11 @@ export default class ModalPostHistory extends Component {
     }
 
     @action
-    handleClick(index) {
+    @waitFor
+    async handleClick(index) {
         this.selectedRevisionIndex = index;
-        this.updateSelectedHTML();
+        // async with @waitFor so tests will wait for the action to complete
+        await this.updateSelectedHTML();
     }
 
     @action
@@ -138,28 +145,31 @@ export default class ModalPostHistory extends Component {
     }
 
     updateSelectedHTML() {
-        if (this.selectedEditor) {
-            let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
+        return new Promise((resolve) => {
+            if (this.selectedEditor) {
+                let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
 
-            this.selectedEditor.editorInstance.setEditorState(selectedState);
-        }
-
-        let current = document.querySelector('.gh-post-history-hidden-lexical.current');
-
-        let currentDone = false;
-
-        let updateIfDone = () => {
-            if (currentDone) {
-                this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
+                this.selectedEditor.editorInstance.setEditorState(selectedState);
             }
-        };
 
-        checkFinishedRendering(current, () => {
-            current.querySelectorAll('[contenteditable]').forEach((el) => {
-                el.setAttribute('contenteditable', false);
+            let current = document.querySelector('.gh-post-history-hidden-lexical.current');
+
+            let currentDone = false;
+
+            let updateIfDone = () => {
+                if (currentDone) {
+                    this.selectedHTML = this.stripInitialPlaceholder(current.innerHTML);
+                }
+                resolve();
+            };
+
+            checkFinishedRendering(current, () => {
+                current.querySelectorAll('[contenteditable]').forEach((el) => {
+                    el.setAttribute('contenteditable', false);
+                });
+                currentDone = true;
+                updateIfDone();
             });
-            currentDone = true;
-            updateIfDone();
         });
     }
 }

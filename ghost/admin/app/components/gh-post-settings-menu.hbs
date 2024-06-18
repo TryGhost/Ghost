@@ -93,7 +93,7 @@
                             {{/if}}
                         {{/if}}
 
-
+                        {{#unless (feature 'editorExcerpt')}}
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
                             <label for="custom-excerpt">Excerpt</label>
                             <GhTextarea
@@ -108,6 +108,7 @@
                             />
                             <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
                         </GhFormGroup>
+                        {{/unless}}
 
                         {{#unless this.session.user.isAuthorOrContributor}}
                             <GhFormGroup class="for-select mb8" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">

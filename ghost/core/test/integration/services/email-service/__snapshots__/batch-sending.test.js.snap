@@ -68,6 +68,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -190,8 +198,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -206,10 +212,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -672,6 +674,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -794,8 +804,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -810,10 +818,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1262,6 +1266,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -1384,8 +1396,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -1400,10 +1410,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1852,6 +1858,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -1974,8 +1988,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -1990,10 +2002,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2442,6 +2450,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -2564,8 +2580,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -2580,10 +2594,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2980,6 +2990,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -3102,8 +3120,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -3118,10 +3134,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3570,6 +3582,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -3692,8 +3712,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -3708,10 +3726,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -4254,6 +4268,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -4376,8 +4398,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -4392,10 +4412,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -6258,6 +6274,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -6380,8 +6404,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -6396,10 +6418,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -6624,10 +6642,10 @@ table.body h2 span {
 
                                 <tr>
                                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 24px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" valign=\\"top\\">
-                                        <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 16px; color: #000000; font-size: 13px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
+                                        <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 8px; color: #000000; font-size: 13px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 16px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6645,7 +6663,7 @@ table.body h2 span {
                                             </table>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 16px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6663,7 +6681,7 @@ table.body h2 span {
                                             </table>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 16px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6993,6 +7011,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -7115,8 +7141,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -7131,10 +7155,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -7638,6 +7658,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -7760,8 +7788,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -7776,10 +7802,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -8283,6 +8305,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -8405,8 +8435,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -8421,10 +8449,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -8928,6 +8952,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -9050,8 +9082,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -9066,10 +9096,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -9573,6 +9599,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -9695,8 +9729,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -9711,10 +9743,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -10218,6 +10246,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -10340,8 +10376,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -10356,10 +10390,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -10810,6 +10840,14 @@ Object {
     display: initial !important;
   }
 
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
   table.body p,
 table.body ul,
 table.body ol,
@@ -10932,8 +10970,6 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
-    display: inline-block !important;
-    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -10948,10 +10984,6 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
-  }
-
-  table.body .latest-post-excerpt span {
-    display: none !important;
   }
 
   table.body .subscription-box h3 {

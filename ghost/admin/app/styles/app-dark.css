@@ -744,6 +744,11 @@ input:focus,
 
 /* Editor  */
 
+.gh-editor-title,
+.gh-editor-excerpt {
+    background: var(--white);
+}
+
 .gh-editor-title::placeholder {
     color: var(--midlightgrey-d2);
 }

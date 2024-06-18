@@ -30,6 +30,7 @@ module.exports = {
         header_image: {type: 'string', maxlength: 2000, nullable: true},
         show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
         show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
+        show_excerpt: {type: 'boolean', nullable: false, defaultTo: false},
         title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
         title_alignment: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'center', validations: {isIn: [['center', 'left']]}},
         show_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
@@ -81,7 +82,7 @@ module.exports = {
          * This is valid for all x_by fields.
          */
         created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
+        updated_at: {type: 'dateTime', nullable: true, index: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true},
         published_at: {type: 'dateTime', nullable: true, index: true},
         published_by: {type: 'string', maxlength: 24, nullable: true},
@@ -412,7 +413,8 @@ module.exports = {
         reason: {type: 'string', maxlength: 50, nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
-        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true}
+        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
+        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}}
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

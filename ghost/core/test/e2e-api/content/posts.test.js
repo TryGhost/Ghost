@@ -22,6 +22,28 @@ const postMatcherShallowIncludes = Object.assign(
     }
 );
 
+async function trackDb(fn, skip) {
+    const db = require('../../../core/server/data/db');
+    if (db?.knex?.client?.config?.client !== 'sqlite3') {
+        return skip();
+    }
+    /** @type {import('sqlite3').Database} */
+    const database = db.knex.client;
+
+    const queries = [];
+    function handler(/** @type {{sql: string}} */ query) {
+        queries.push(query);
+    }
+
+    database.on('query', handler);
+
+    await fn();
+
+    database.off('query', handler);
+
+    return queries;
+}
+
 describe('Posts Content API', function () {
     let agent;
 
@@ -159,7 +181,7 @@ describe('Posts Content API', function () {
 
         const jsonResponse = res.body;
 
-        assert.equal(jsonResponse.posts[0].slug, 'not-so-short-bit-complex', 'The API orders by number of matched authors');
+        assert.equal(jsonResponse.posts[0].slug, 'welcome', 'The API orders by number of matched authors, then by published_at desc, then by id desc');
 
         const primaryAuthors = jsonResponse.posts.map((post) => {
             return post.primary_author.slug;
@@ -419,5 +441,25 @@ describe('Posts Content API', function () {
             .get(`posts/${post.id}/`)
             .expectStatus(200);
         assert(response.body.posts[0].html.includes('<a href="https://example.com">Link</a><a href="invalid">Test</a>'), 'Html not expected: ' + response.body.posts[0].html);
+    });
+
+    it('Does not select * by default', async function () {
+        let queries = await trackDb(() => agent.get('posts/?limit=all').expectStatus(200), this.skip.bind(this));
+        let postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
+        for (const query of postsRelatedQueries) {
+            assert(!query.sql.includes('*'), 'Query should not select *');
+        }
+
+        queries = await trackDb(() => agent.get('posts/?limit=3').expectStatus(200), this.skip.bind(this));
+        postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
+        for (const query of postsRelatedQueries) {
+            assert(!query.sql.includes('*'), 'Query should not select *');
+        }
+
+        queries = await trackDb(() => agent.get('posts/?include=tags,authors').expectStatus(200), this.skip.bind(this));
+        postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
+        for (const query of postsRelatedQueries) {
+            assert(!query.sql.includes('*'), 'Query should not select *');
+        }
     });
 });
