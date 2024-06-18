@@ -16,7 +16,7 @@ export class FileNode extends generateDecoratorNode({nodeType: 'file',
     /* @override */
     exportJSON() {
         const {src, fileTitle, fileCaption, fileName, fileSize} = this;
-        const isBlob = src.startsWith('data:');
+        const isBlob = src && src.startsWith('data:');
 
         return {
             type: 'file',

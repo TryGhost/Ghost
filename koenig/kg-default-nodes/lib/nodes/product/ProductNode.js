@@ -21,7 +21,7 @@ export class ProductNode extends generateDecoratorNode({nodeType: 'product',
     exportJSON() {
         // checks if src is a data string
         const {productImageSrc, productImageWidth, productImageHeight, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = this;
-        const isBlob = productImageSrc.startsWith('data:');
+        const isBlob = productImageSrc && productImageSrc.startsWith('data:');
 
         const dataset = {
             type: 'product',

@@ -21,9 +21,9 @@ export class VideoNode extends generateDecoratorNode({nodeType: 'video',
 ) {
     /* override */
     exportJSON() {
-        // checks if src is a data string
         const {src, caption, fileName, mimeType, width, height, duration, thumbnailSrc, customThumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = this;
-        const isBlob = src.startsWith('data:');
+        // checks if src is a data string
+        const isBlob = src && src.startsWith('data:');
 
         const dataset = {
             type: 'video',
