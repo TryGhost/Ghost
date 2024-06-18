@@ -604,7 +604,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-feature-image .image-action svg path {
-    fill: var(--darkgrey);
+    stroke-width: 2;
 }
 
 .gh-editor-feature-image-add {
