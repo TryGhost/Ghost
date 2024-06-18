@@ -1,6 +1,5 @@
 import {} from '@tryghost/admin-x-framework/api/activitypub';
 import NiceModal from '@ebay/nice-modal-react';
-import getUsername from '../utils/get-username';
 import getUsernameFromFollowing from '../utils/get-username-from-following';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {FollowingResponseData, useBrowseFollowersForUser, useUnfollow} from '@tryghost/admin-x-framework/api/activitypub';
