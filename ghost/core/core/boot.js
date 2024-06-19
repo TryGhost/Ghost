@@ -388,7 +388,6 @@ async function initNestDependencies() {
     debug('Begin: initNestDependencies');
     const GhostNestApp = require('@tryghost/ghost');
     const providers = [];
-    const urlUtils = require('./shared/url-utils');
     providers.push({
         provide: 'logger',
         useValue: require('@tryghost/logging')
