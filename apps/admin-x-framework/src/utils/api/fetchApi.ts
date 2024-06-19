@@ -111,10 +111,11 @@ export const useFetchApi = () => {
     };
 };
 
-const {apiRoot} = getGhostPaths();
+const {apiRoot, activityPubRoot} = getGhostPaths();
 
-export const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
-    const url = new URL(`${apiRoot}${path}`, window.location.origin);
+export const apiUrl = (path: string, searchParams: Record<string, string> = {}, useActivityPub: boolean = false) => {
+    const root = useActivityPub ? activityPubRoot : apiRoot;
+    const url = new URL(`${root}${path}`, window.location.origin);
     url.search = new URLSearchParams(searchParams).toString();
     return url.toString();
 };
