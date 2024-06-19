@@ -2070,10 +2070,10 @@ describe('Email renderer', function () {
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
             assert.deepEqual(data.classes, {
-                title: 'post-title post-title-serif post-title-left',
+                title: 'post-title post-title-no-excerpt post-title-serif post-title-left',
                 titleLink: 'post-title-link post-title-link-left',
                 meta: 'post-meta post-meta-left',
-                excerpt: 'post-excerpt post-excerpt-serif-sans post-excerpt-left',
+                excerpt: 'post-excerpt post-excerpt-no-feature-image post-excerpt-serif-sans post-excerpt-left',
                 body: 'post-content-sans-serif'
             });
         });
@@ -2092,7 +2092,7 @@ describe('Email renderer', function () {
                 show_excerpt: true
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.classes.excerpt, 'post-excerpt post-excerpt-serif-serif post-excerpt-left');
+            assert.equal(data.classes.excerpt, 'post-excerpt post-excerpt-no-feature-image post-excerpt-serif-serif post-excerpt-left');
         });
 
         it('show comment CTA is enabled if labs disabled', async function () {
