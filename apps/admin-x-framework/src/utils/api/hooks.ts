@@ -20,6 +20,7 @@ export interface Meta {
 interface QueryOptions<ResponseData> {
     dataType: string
     path: string
+    headers?: Record<string, string>;
     defaultSearchParams?: Record<string, string>;
     permissions?: string[];
     returnData?: (originalData: unknown) => ResponseData;
@@ -38,7 +39,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const result = useQuery<ResponseData>({
         enabled: options.permissions ? usePermission(options.permissions) : true,
         queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url),
+        queryFn: () => fetchApi(url, {...options}),
         ...query
     });
 
@@ -145,6 +146,7 @@ export const createQueryWithId = <ResponseData>(options: Omit<QueryOptions<Respo
 
 interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<ResponseData>, 'dataType' | 'path'>, Omit<RequestOptions, 'body'> {
     path: (payload: Payload) => string;
+    headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
