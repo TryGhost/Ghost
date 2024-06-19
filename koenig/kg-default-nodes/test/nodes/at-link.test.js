@@ -28,11 +28,13 @@ describe('AtLinkNode', function () {
         const {window} = new JSDOM('<!doctype html><html><body></body></html>');
         global.document = window.document;
         global.window = window;
+        global.DOMParser = window.DOMParser;
     });
 
     afterEach(function () {
         delete global.document;
         delete global.window;
+        delete global.DOMParser;
     });
 
     it('matches node with $isAtLinkNode', editorTest(function () {

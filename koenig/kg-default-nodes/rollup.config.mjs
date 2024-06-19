@@ -1,6 +1,7 @@
 /* eslint-env node */
 import pkg from './package.json' assert { type: 'json' };
 import babel from '@rollup/plugin-babel';
+import svg from 'rollup-plugin-svg';
 
 const dependencies = Object.keys(pkg.dependencies);
 
@@ -14,6 +15,7 @@ export default [
             format: 'cjs',
             sourcemap: true
         },
+        plugins: [svg()],
         external: id => /lodash/.test(id) || dependencies.includes(id)
     },
 
@@ -27,6 +29,7 @@ export default [
             sourcemap: true
         },
         plugins: [
+            svg(),
             babel({
                 babelHelpers: 'bundled',
                 presets: [

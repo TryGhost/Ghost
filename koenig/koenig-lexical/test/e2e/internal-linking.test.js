@@ -196,6 +196,7 @@ test.describe('Internal linking', async () => {
             await assertHTML(page, html`
                 <p>
                     <span>
+                        <svg></svg>
                         <span data-lexical-text="true">‌</span>
                         <span
                             data-placeholder="Find a post, tag or author"
@@ -242,6 +243,7 @@ test.describe('Internal linking', async () => {
             await assertHTML(page, html`
                 <p>
                     <span dir="ltr">
+                        <svg></svg>
                         <span data-lexical-text="true">‌</span>
                         <span data-placeholder="" data-lexical-text="true">Emo</span>
                     </span>

@@ -147,6 +147,13 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
 
                         // ensure we still have a cursor and it's inside the search node
                         atLinkNode.select(1, 1);
+
+                        const searchNode = atLinkNode.getChildAtIndex(1);
+                        const rangeSelection = $getSelection();
+                        if ($isRangeSelection(rangeSelection)) {
+                            rangeSelection.anchor.set(searchNode.getKey(), 0, 'element');
+                            rangeSelection.focus.set(searchNode.getKey(), 0, 'element');
+                        }
                     });
                 }
             }
