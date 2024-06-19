@@ -11,6 +11,7 @@ import {
     AtLinkNode,
     AtLinkSearchNode
 } from '@tryghost/kg-default-nodes';
+import {$createBookmarkNode} from '../nodes/BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
 import {
     $createTextNode,
@@ -384,16 +385,29 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
                 return;
             }
 
-            const linkNode = $createLinkNode(item.value);
-            const textNode = $createTextNode(item.label);
-            linkNode.append(textNode);
-            linkNode.setFormat(focusedAtLinkNode.getLinkFormat());
+            const parent = focusedAtLinkNode.getParent();
+            // we have to get the children nodes
+            const children = parent.getChildren();
 
-            focusedAtLinkNode.replace(linkNode);
-            linkNode.selectEnd();
+            if (children.length !== 1 || !$isAtLinkNode(children[0])) {
+                const linkNode = $createLinkNode(item.value);
+                const textNode = $createTextNode(item.label);
+                linkNode.append(textNode);
+                linkNode.setFormat(focusedAtLinkNode.getLinkFormat());
 
-            setQuery('');
-            setFocusedAtLinkNode(null);
+                focusedAtLinkNode.replace(linkNode);
+                linkNode.selectEnd();
+
+                setQuery('');
+                setFocusedAtLinkNode(null);
+            } else {
+                const bookmarkNode = $createBookmarkNode({
+                    url: item.value,
+                    title: item.label
+                });
+                focusedAtLinkNode.replace(bookmarkNode);
+                bookmarkNode.selectEnd();
+            }
         });
     }, [editor, focusedAtLinkNode]);
 

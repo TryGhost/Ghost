@@ -311,5 +311,40 @@ test.describe('Internal linking', async () => {
                 <p><span data-lexical-text="true">@</span></p>
             `);
         });
+
+        test('creates a bookmark when at-linking from a line', async function () {
+            await focusEditor(page);
+
+            await page.keyboard.type('@remote');
+            await page.keyboard.press('Enter');
+            // now wait till data-testid="bookmark-container" appears
+            await page.waitForSelector('[data-testid="bookmark-container"]');
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="bookmark">
+                        <div>
+                            <div>
+                                <div>
+                                    <div>Ghost: The Creator Economy Platform</div>
+                                    <div>
+                                        The former of the two songs addresses the issue of negative rumors
+                                        in a relationship, while the latter, with a more upbeat pulse, is a
+                                        classic club track; the single is highlighted by a hyped bridge.
+                                    </div>
+                                    <div>
+                                        <img alt="" src="https://www.ghost.org/favicon.ico" />
+                                        <span>Ghost - The Professional Publishing Platform</span>
+                                        <span>Author McAuthory</span>
+                                    </div>
+                                </div>
+                                <div><img alt="" src="https://ghost.org/images/meta/ghost.png" /></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div contenteditable="false" data-lexical-cursor="true"></div>
+            `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
+        });
     });
 });
