@@ -315,7 +315,9 @@ test.describe('Internal linking', async () => {
         test('creates a bookmark when at-linking from a line', async function () {
             await focusEditor(page);
 
-            await page.keyboard.type('@remote');
+            await page.keyboard.type('@');
+            await page.keyboard.type('Emo');
+            await expect(page.locator('[data-testid="at-link-results-listOption-label"]')).toContainText(['✨ Emoji autocomplete ✨']);
             await page.keyboard.press('Enter');
             // now wait till data-testid="bookmark-container" appears
             await page.waitForSelector('[data-testid="bookmark-container"]');
