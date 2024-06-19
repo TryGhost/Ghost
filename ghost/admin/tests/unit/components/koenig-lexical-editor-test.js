@@ -1,4 +1,5 @@
-import {decoratePostSearchResult} from 'ghost-admin/components/koenig-lexical-editor';
+import sinon from 'sinon';
+import {decoratePostSearchResult, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -65,6 +66,61 @@ describe('Unit: Component: koenig-lexical-editor', function () {
             expect(result.metaText).to.equal('8 May 2024');
             expect(result.MetaIcon).to.be.undefined;
             expect(result.metaIconTitle).to.be.undefined;
+        });
+    });
+
+    describe('offersUrls', function () {
+        let context;
+        let performStub;
+
+        beforeEach(function () {
+            context = {
+                fetchOffersTask: {
+                    perform: () => {}
+                },
+                config: {
+                    getSiteUrl: code => `https://example.com?offer=${code}`
+                }
+            };
+
+            performStub = sinon.stub(context.fetchOffersTask, 'perform');
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('returns an empty array if fetching offers gives no result', async function () {
+            performStub.resolves([]);
+
+            const results = await offerUrls.call(context);
+
+            expect(performStub.callCount).to.equal(1);
+            expect(results).to.deep.equal([]);
+        });
+
+        it('returns an empty array if fetching offers fails', async function () {
+            performStub.rejects(new Error('Failed to fetch offers'));
+
+            const results = await offerUrls.call(context);
+
+            expect(performStub.callCount).to.equal(1);
+            expect(results).to.deep.equal([]);
+        });
+
+        it(('returns an array of offers urls if fetching offers is successful'), async function () {
+            performStub.resolves([
+                {name: 'Yellow Thursday', code: 'yellow-thursday'},
+                {name: 'Green Friday', code: 'green-friday'}
+            ]);
+
+            const results = await offerUrls.call(context);
+
+            expect(performStub.callCount).to.equal(1);
+            expect(results).to.deep.equal([
+                {label: 'Offer — Yellow Thursday', value: 'https://example.com?offer=yellow-thursday'},
+                {label: 'Offer — Green Friday', value: 'https://example.com?offer=green-friday'}
+            ]);
         });
     });
 });
