@@ -1,5 +1,6 @@
 const labsService = require('../../../shared/labs');
 const DomainEvents = require('@tryghost/domain-events');
+const events = require('../../lib/common/events');
 const settingsCache = require('../../../shared/settings-cache');
 const members = require('../members');
 
@@ -32,7 +33,8 @@ class MembersEventsServiceWrapper {
             getMembersApi() {
                 return members.api;
             },
-            db
+            db,
+            events
         });
 
         this.eventStorage.subscribe(DomainEvents);
