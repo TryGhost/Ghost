@@ -45,8 +45,8 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
         return this.settingsModel?.hasDirtyAttributes || false;
     }
 
-    get mailgunIsConfigured() {
-        return this.mailgunApiKey && this.mailgunDomain && this.mailgunBaseUrl;
+    get bulkEmailIsConfigured() {
+        return (this.mailgunApiKey && this.mailgunDomain && this.mailgunBaseUrl) || this.postmarkApiToken;
     }
 
     // the settings API endpoint is a little weird as it's singular and we have
