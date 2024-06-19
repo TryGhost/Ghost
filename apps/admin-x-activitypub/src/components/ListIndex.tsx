@@ -241,7 +241,7 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                     </div>
                     <div className='flex items-center justify-between'>  
                     </div>
-                    <div className='flex justify-end items-center gap-1'>
+                    <div className='flex justify-end'>
                         <div className='flex flex-row-reverse items-center gap-3'>
                             <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
                             <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
