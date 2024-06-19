@@ -112,7 +112,15 @@
     border-right: none;
     background: unset;
     width: 100%;
-    pointer-events: none;
+    overflow: unset;
+}
+
+.gh-nav-contributor .gh-nav-body {
+    overflow: unset;
+}
+
+.gh-nav-contributor .gh-sidebar-banner {
+    max-width: 300px;
 }
 
 .gh-nav-menu {
