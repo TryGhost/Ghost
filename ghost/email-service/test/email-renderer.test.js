@@ -2092,7 +2092,7 @@ describe('Email renderer', function () {
                 show_excerpt: true
             });
             const data = await emailRenderer.getTemplateData({post, newsletter, html, addPaywall: false});
-            assert.equal(data.classes.excerpt, 'post-excerpt-no-feature-image post-excerpt-serif-serif post-excerpt-left');
+            assert.equal(data.classes.excerpt, 'post-excerpt post-excerpt-no-feature-image post-excerpt-serif-serif post-excerpt-left');
         });
 
         it('show comment CTA is enabled if labs disabled', async function () {
