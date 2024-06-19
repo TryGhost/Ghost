@@ -1097,9 +1097,9 @@ class EmailRenderer {
             footerContent: newsletter.get('footer_content'),
 
             classes: {
-                title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
+                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                excerpt: 'post-excerpt' + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
+                excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

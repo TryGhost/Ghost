@@ -395,7 +395,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
@@ -1001,7 +1001,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/email/post-uuid/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -1593,7 +1593,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-6/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -2185,7 +2185,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-7/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -3317,7 +3317,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -3909,7 +3909,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -4595,7 +4595,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -6601,7 +6601,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is the main post title</a>
                                                 </td>
                                             </tr>
@@ -7338,7 +7338,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-12/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -7985,7 +7985,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-9/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -8632,7 +8632,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-8/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -9279,7 +9279,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-11/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -9926,7 +9926,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-10/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -10573,7 +10573,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
@@ -11167,7 +11167,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
