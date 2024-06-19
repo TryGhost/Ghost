@@ -237,6 +237,16 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
                         // - handles case where text is backspaced to empty
                         if ($isZWNJNode(selection.focus.getNode()) && window.getSelection().anchorOffset === 0) {
                             selectedAtLinkNode.select(1, 1);
+                            const rangeSelection = $getSelection();
+                            if ($isRangeSelection(rangeSelection)) {
+                                rangeSelection.anchor.set(searchNode.getKey(), 0, 'element');
+                                rangeSelection.focus.set(searchNode.getKey(), 0, 'element');
+                            }
+                        }
+
+                        // if the search node is already empty but active, remove the at-link node on backspace
+                        if (searchNodeText === '' && $isZWNJNode(selection.anchor.getNode())) {
+                            $removeAtLink(selectedAtLinkNode, {focus: true});
                         }
                     } else {
                         // search node isn't focused, reset plugin state

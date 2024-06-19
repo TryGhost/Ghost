@@ -282,5 +282,34 @@ test.describe('Internal linking', async () => {
                 <p><span data-lexical-text="true">@Unknown page</span></p>
             `);
         });
+
+        test.only('removes at-linking when backspacing', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('@');
+            await page.keyboard.type('AB');
+
+            await page.keyboard.press('Backspace');
+            await page.keyboard.press('Backspace');
+            // we should now have an empty input field with placeholder text
+            await assertHTML(page, html`
+                <p>
+                    <span>
+                        <svg></svg>
+                        <span data-lexical-text="true">‌</span>
+                        <span
+                            data-placeholder="Find a post, tag or author"
+                            data-lexical-text="true"
+                        ></span>
+                    </span>
+                </p>
+            `);
+
+            await page.keyboard.press('Backspace');
+
+            // it should now remove the at-linking entirely leaving only an @
+            await assertHTML(page, html`
+                <p><span data-lexical-text="true">@</span></p>
+            `);
+        });
     });
 });
