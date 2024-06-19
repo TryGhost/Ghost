@@ -1,1 +1,25 @@
 @import '@tryghost/admin-x-design-system/styles.css';
+
+.admin-x-base.admin-x-activitypub {
+    animation-name: none;
+}
+
+@keyframes bump {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+.bump {
+animation: bump 0.3s ease-in-out;
+}
+
+.ap-red-heart path {
+    fill: #F50B23;
+}
