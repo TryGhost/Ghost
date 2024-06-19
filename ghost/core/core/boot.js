@@ -389,7 +389,6 @@ async function initNestDependencies() {
     const GhostNestApp = require('@tryghost/ghost');
     const providers = [];
     const urlUtils = require('./shared/url-utils');
-    const activityPubBaseUrl = new URL('activitypub', urlUtils.urlFor('home', true));
     providers.push({
         provide: 'logger',
         useValue: require('@tryghost/logging')
