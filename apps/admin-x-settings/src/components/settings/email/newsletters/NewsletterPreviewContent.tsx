@@ -104,13 +104,20 @@ const NewsletterPreviewContent: React.FC<{
     let excerptClasses = 'mb-5 text-pretty leading-[1.7] text-black';
 
     if (titleFontCategory === 'serif' && bodyFontCategory === 'serif') {
-        excerptClasses = clsx(excerptClasses, 'font-serif text-[1.8rem]');
+        excerptClasses = clsx(excerptClasses, 'mb-8 font-serif text-[2.0rem] leading-tight');
     } else if (titleFontCategory !== 'serif' && bodyFontCategory === 'serif') {
-        excerptClasses = clsx(excerptClasses, 'text-[1.7rem] tracking-tight');
+        excerptClasses = clsx(excerptClasses, 'mb-8 text-[1.7rem] leading-tight tracking-tight');
     } else if (titleFontCategory === 'serif' && bodyFontCategory !== 'serif') {
-        excerptClasses = clsx(excerptClasses, 'font-serif text-[1.8rem]');
+        excerptClasses = clsx(excerptClasses, 'mb-8 font-serif text-[2.0rem] leading-tight');
     } else {
-        excerptClasses = clsx(excerptClasses, 'text-[1.7rem] tracking-tight');
+        excerptClasses = clsx(excerptClasses, 'mb-8 text-[1.9rem] leading-tight tracking-tight');
+    }
+
+    if (titleAlignment === 'center') {
+        excerptClasses = clsx(
+            excerptClasses,
+            'text-center'
+        );
     }
 
     return (
@@ -140,9 +147,10 @@ const NewsletterPreviewContent: React.FC<{
                             {showPostTitleSection && (
                                 <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
                                     <h2 className={clsx(
-                                        'pb-4 text-4xl font-bold leading-supertight text-black',
+                                        'text-4xl font-bold leading-supertight text-black',
                                         titleFontCategory === 'serif' && 'font-serif',
-                                        titleAlignment === 'center' ? 'text-center' : 'text-left'
+                                        titleAlignment === 'center' ? 'text-center' : 'text-left',
+                                        showExcerpt ? 'mb-2' : 'mb-8'
                                     )} style={{color: titleColor}}>
                                         Your email newsletter
                                     </h2>
