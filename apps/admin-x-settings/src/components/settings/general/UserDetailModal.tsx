@@ -113,10 +113,6 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         onSave: async (values) => {
             await updateUser?.(values);
         },
-        onSavedStateReset: () => {
-            mainModal.remove();
-            navigateOnClose();
-        },
         onSaveError: handleError
     });
     const setUserData = (newData: User) => updateForm(() => newData);
@@ -353,9 +349,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
             buttonsDisabled={okProps.disabled}
+            cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
-            okLabel={okProps.label || 'Save & close'}
+            okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
