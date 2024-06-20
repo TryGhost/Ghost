@@ -131,5 +131,20 @@ describe('oembed-service', function () {
             assert.equal(response.author_url, 'https://example.com/user/testauthor');
             assert.equal(response.html, '<iframe src="https://www.example.com/embed"></iframe>');
         });
+
+        it('uses a known user-agent for bookmark requests', async function () {
+            nock('https://www.example.com')
+                .get('/')
+                .query(true)
+                .matchHeader('User-Agent', /Mozilla\/.*/)
+                .reply(200, `<html><head><title>Example</title></head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com', 'bookmark');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.url, 'https://www.example.com');
+            assert.equal(response.metadata.title, 'Example');
+        });
     });
 });

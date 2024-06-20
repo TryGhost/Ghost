@@ -6,6 +6,9 @@ const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
 
+// Some sites block non-standard user agents so we need to mimic a typical browser
+const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9';
+
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
@@ -126,6 +129,9 @@ class OEmbedService {
         return this.externalRequest(
             url,
             {
+                headers: {
+                    'user-agent': USER_AGENT
+                },
                 timeout: 2000,
                 followRedirect: true,
                 ...options
@@ -205,7 +211,11 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
-        const gotOpts = {};
+        const gotOpts = {
+            headers: {
+                'User-Agent': USER_AGENT
+            }
+        };
 
         if (process.env.NODE_ENV?.startsWith('test')) {
             gotOpts.retry = 0;
