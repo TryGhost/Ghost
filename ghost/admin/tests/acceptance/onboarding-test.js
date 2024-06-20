@@ -1,7 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {currentURL, find, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {enableMembers} from '../helpers/members';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -16,7 +15,6 @@ describe('Acceptance: Onboarding', function () {
         this.server.loadFixtures('settings');
         this.server.loadFixtures('themes');
 
-        enableLabsFlag(this.server, 'onboardingChecklist');
         enableMembers(this.server);
     });
 

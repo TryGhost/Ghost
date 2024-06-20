@@ -125,7 +125,7 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-button="publish-flow-preview"]'), 'preview button on complete step').to.not.exist;
         expect(find('[data-test-button="publish-flow-publish"]'), 'publish button on complete step').to.not.exist;
 
-        await click('[data-test-button="back-to-editor"]');
+        await click('[data-test-button="close-publish-flow"]');
 
         expect(find('[data-test-button="publish-flow"]'), 'publish button after publishing').to.not.exist;
         expect(find('[data-test-button="update-flow"]'), 'update button after publishing').to.exist;
