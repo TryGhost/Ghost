@@ -1,8 +1,8 @@
 import {} from '@tryghost/admin-x-framework/api/activitypub';
 import NiceModal from '@ebay/nice-modal-react';
-import getUsernameFromFollowing from '../utils/get-username-from-following';
+import getUsername from '../utils/get-username';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
-import {FollowingResponseData, useBrowseFollowersForUser, useUnfollow} from '@tryghost/admin-x-framework/api/activitypub';
+import {FollowingResponseData, useBrowseFollowersForUser, useFollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ViewFollowersModalProps {
@@ -13,10 +13,11 @@ interface ViewFollowersModalProps {
 const ViewFollowersModal: React.FC<RoutingModalProps & ViewFollowersModalProps> = ({}) => {
     const {updateRoute} = useRouting();
     // const modal = NiceModal.useModal();
-    const mutation = useUnfollow();
+    const mutation = useFollow();
 
-    const {data: {orderedItems: followers = []} = {}} = useBrowseFollowersForUser('inbox');
+    const {data: {items = []} = {}} = useBrowseFollowersForUser('inbox');
 
+    const followers = Array.isArray(items) ? items : [items];
     return (
         <Modal
             afterClose={() => {
@@ -33,7 +34,7 @@ const ViewFollowersModal: React.FC<RoutingModalProps & ViewFollowersModalProps> 
             <div className='mt-3 flex flex-col gap-4 pb-12'>
                 <List>
                     {followers.map(item => (
-                        <ListItem action={<Button color='grey' label='Follow back' link={true} onClick={() => mutation.mutate({username: item.username})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsernameFromFollowing(item)} id='list-item' title={item.name}></ListItem>
+                        <ListItem action={<Button color='grey' label='Follow back' link={true} onClick={() => mutation.mutate({username: getUsername(item)})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsername(item)} id='list-item' title={item.name}></ListItem>
                     ))}
                 </List>
             </div>
