@@ -97,18 +97,7 @@
             </p>
         {{else}}
             <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
-                {{#if (feature "onboardingChecklist")}}
-                    <LinkTo @route="dashboard" class="gh-back-to-editor">Back to dashboard</LinkTo>
-                {{else}}
-                    <button
-                    type="button"
-                    class="gh-back-to-editor"
-                    {{on "click" @close}}
-                    data-test-button="back-to-editor"
-                >
-                    <span>Back to editor</span>
-                    </button>
-                {{/if}}
+                <LinkTo @route="dashboard" class="gh-back-to-editor" data-test-button="back-to-dashboard">Back to dashboard</LinkTo>
             </p>
         {{/if}}
     {{/if}}
