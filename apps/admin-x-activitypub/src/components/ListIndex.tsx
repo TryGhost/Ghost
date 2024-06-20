@@ -16,7 +16,7 @@ const ActivityPubComponent: React.FC = () => {
     const {updateRoute} = useRouting();
 
     // TODO: Replace with actual user ID
-    const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('index');
+    const {data: {items: activities = []} = {}} = useBrowseInboxForUser('index');
     const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('index');
     const {data: {totalItems: followersCount = 0} = {}} = useBrowseFollowersForUser('index');
 
