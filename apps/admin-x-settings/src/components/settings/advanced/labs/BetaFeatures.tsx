@@ -16,10 +16,6 @@ const BetaFeatures: React.FC = () => {
     return (
         <List titleSeparator={false}>
             <LabItem
-                action={<FeatureToggle flag="internalLinking" />}
-                detail={<>Search and link to your own content directly inside the editor — so that your workflow is never interrupted</>}
-                title='Internal linking' />
-            <LabItem
                 action={<FeatureToggle flag="editorExcerpt" />}
                 detail={<>Adds the excerpt input below the post title in the editor</>}
                 title='Show post excerpt inline' />
