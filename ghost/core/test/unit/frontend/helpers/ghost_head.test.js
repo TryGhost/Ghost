@@ -1065,6 +1065,30 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+
+        it('does not override code injection', async function () {
+            settingsCache.get.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
+
+            const renderObject = {
+                post: Object.assign({}, posts[1], {codeinjection_head: '<style>:root {--ghost-accent-color: #post-code-injection}</style>'})
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#site-setting'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/amp/',
+                    context: null,
+                    safeVersion: '0.3'
+                }
+            }));
+        });
     });
 
     describe('members scripts', function () {
