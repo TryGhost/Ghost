@@ -83,6 +83,28 @@ export function decoratePostSearchResult(item, settings) {
     }
 }
 
+/**
+ * Fetches the URLs of all active offers
+ * @returns {Promise<{label: string, value: string}[]>}
+ */
+export async function offerUrls() {
+    let offers = [];
+
+    try {
+        offers = await this.fetchOffersTask.perform();
+    } catch (e) {
+        // No-op: if offers are not available (e.g. missing permissions), return an empty array
+        return [];
+    }
+
+    return offers.map((offer) => {
+        return {
+            label: `Offer — ${offer.name}`,
+            value: this.config.getSiteUrl(offer.code)
+        };
+    });
+}
+
 class ErrorHandler extends React.Component {
     state = {
         hasError: false
@@ -273,18 +295,6 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchAutocompleteLinks = async () => {
-            let offers = [];
-            try {
-                offers = await this.fetchOffersTask.perform();
-            } catch (e) {
-                // Do not throw cancellation errors
-                if (didCancel(e)) {
-                    return;
-                }
-
-                throw e;
-            }
-
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
                 {label: 'Free signup', value: '#/portal/signup/free'}
@@ -329,12 +339,7 @@ export default class KoenigLexicalEditor extends Component {
                 return [];
             };
 
-            const offersLinks = offers.toArray().map((offer) => {
-                return {
-                    label: `Offer - ${offer.name}`,
-                    value: this.config.getSiteUrl(offer.code)
-                };
-            });
+            const offersLinks = await offerUrls.call(this);
 
             return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
