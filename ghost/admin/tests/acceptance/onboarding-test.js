@@ -50,6 +50,19 @@ describe('Acceptance: Onboarding', function () {
             expect(find('[data-test-dashboard="header"]'), 'header').to.not.exist;
             expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.not.exist;
         });
+
+        it('checklist is shown when members disabled', async function () {
+            this.server.db.settings.update({membersSignupAccess: 'none'});
+            await visit('/setup/done');
+            await visit('/dashboard');
+
+            // onboarding is't shown
+            expect(find('[data-test-dashboard="onboarding-checklist"]'), 'checklist').to.exist;
+
+            // other default dashboard elements are not visible
+            expect(find('[data-test-dashboard="header"]'), 'header').to.not.exist;
+            expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.not.exist;
+        });
     });
 
     describe('checklist (non-owner)', function () {
