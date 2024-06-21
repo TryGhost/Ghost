@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.117.0",
+    "@sentry/node": "7.118.0",
     "@opentelemetry/api": "1.9.0",
     "@opentelemetry/auto-instrumentations-node": "0.47.1",
     "@opentelemetry/exporter-prometheus": "0.52.1",
@@ -233,7 +233,7 @@
     "yjs": "13.6.18"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.117.0",
+    "@sentry/profiling-node": "7.118.0",
     "@tryghost/html-to-mobiledoc": "3.1.0",
     "sqlite3": "5.1.7"
   },
