@@ -1,9 +1,10 @@
 async function initOpenTelemetry({config}) {
     // Always enable in development environment
     // In production, only enable if explicitly enabled via config `opentelemetry:enabled`
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    // TODO: Instrumentation currently breaks viewing posts - disabled until we can fix
+    // const isDevelopment = process.env.NODE_ENV === 'development';
     const isConfigured = config.get('opentelemetry:enabled');
-    const enabled = isDevelopment || isConfigured;
+    const enabled = isConfigured; // || isDevelopment;
     if (!enabled) {
         return;
     }
