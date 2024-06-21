@@ -63,7 +63,7 @@
     "@opentelemetry/auto-instrumentations-node": "0.46.0",
     "@opentelemetry/exporter-prometheus": "0.51.1",
     "@opentelemetry/exporter-trace-otlp-http": "0.51.0",
-    "@opentelemetry/instrumentation-knex": "0.36.1",
+    "@opentelemetry/instrumentation-knex": "0.37.0",
     "@opentelemetry/instrumentation-runtime-node": "0.4.0",
     "@opentelemetry/sdk-metrics": "1.24.0",
     "@opentelemetry/sdk-node": "0.51.0",
