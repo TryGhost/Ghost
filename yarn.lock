@@ -8905,10 +8905,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@20.14.3", "@types/node@>=10.0.0", "@types/node@>=13.7.0", "@types/node@>=8.1.0":
-  version "20.14.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.3.tgz#7a9a5d009b0861e7f337166dc435dbfd758db92d"
-  integrity sha512-Nuzqa6WAxeGnve6SXqiPAM9rA++VQs+iLZ1DDd56y0gdvygSZlQvZuvdFPR3yLqkVxPu4WrO02iDEyH1g+wazw==
+"@types/node@*", "@types/node@20.14.7", "@types/node@>=10.0.0", "@types/node@>=13.7.0", "@types/node@>=8.1.0":
+  version "20.14.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.7.tgz#342cada27f97509eb8eb2dbc003edf21ce8ab5a8"
+  integrity sha512-uTr2m2IbJJucF3KUxgnGOZvYbN0QgkGyWxG6973HCpMYFy2KfcgYuIwkJQMQkt1VbBMlvWRbpshFTLxnxCZjKQ==
   dependencies:
     undici-types "~5.26.4"
 
