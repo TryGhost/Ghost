@@ -7,7 +7,7 @@ const charset = require('charset');
 const iconv = require('iconv-lite');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
-const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9';
+const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 
 const messages = {
     noUrlProvided: 'No url provided.',
