@@ -30,12 +30,16 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     };
 
     const handleUrlSubmit = async (eventOrUrl) => {
+        if (!eventOrUrl) {
+            return;
+        }
+
         // TODO: change this so we only get given URL strings - child components should handle their own events
         if (typeof eventOrUrl === 'string') {
             fetchMetadata(eventOrUrl);
         }
 
-        if (eventOrUrl.key === 'Enter') {
+        if (eventOrUrl?.key === 'Enter') {
             fetchMetadata(eventOrUrl.target.value);
         }
     };

@@ -4,12 +4,18 @@ import {expect, test} from '@playwright/test';
 test.describe('Bookmark card (labs: internalLinking)', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
+    let errors;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
+
+        page.on('pageerror', (err) => {
+            errors.push(err.message);
+        });
     });
 
     test.beforeEach(async () => {
+        errors = [];
         await initialize({page, uri: '/#/?content=false&labs=internalLinking'});
     });
 
@@ -344,6 +350,20 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
 
             await expect(page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
             await expect(page.getByTestId('bookmark-container')).toBeVisible();
+        });
+
+        test('handles Enter with no matching result', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await page.keyboard.type('Not a valid match');
+
+            await expect(page.getByText('Enter URL to create link')).toBeVisible();
+
+            await page.keyboard.press('Enter');
+
+            await expect(page.getByText('Enter URL to create link')).toBeVisible();
+
+            expect(errors).toEqual([]);
         });
     });
 });
