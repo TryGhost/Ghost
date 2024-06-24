@@ -40,6 +40,7 @@ const defaultCardConfig = {
         {label: 'Homepage', value: window.location.origin + '/'},
         {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
     ]),
+    renderLabels: true,
     fetchLabels: () => Promise.resolve(['Label 1', 'Label 2']),
     siteTitle: 'Koenig Lexical',
     siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,

@@ -52,6 +52,7 @@ export function SignupCard({alignment,
     imageDragHandler,
     headerTextEditor,
     headerTextEditorInitialState,
+    renderLabels,
     subheaderTextEditor,
     subheaderTextEditorInitialState,
     disclaimerTextEditor,
@@ -503,15 +504,17 @@ export function SignupCard({alignment,
                         onBlur={handleButtonTextBlur}
                         onChange={handleButtonText}
                     />
-                    <MultiSelectDropdownSetting
-                        availableItems={availableLabels}
-                        dataTestId='labels-dropdown'
-                        description='Added to members created using this form'
-                        items={labels}
-                        label='Labels'
-                        placeholder='Select'
-                        onChange={handleLabels}
-                    />
+                    { renderLabels && (
+                        <MultiSelectDropdownSetting
+                            availableItems={availableLabels}
+                            dataTestId='labels-dropdown'
+                            description='Added to members created using this form'
+                            items={labels}
+                            label='Labels'
+                            placeholder='Select'
+                            onChange={handleLabels}
+                        />
+                    )}
                 </SettingsPanel>
             )}
         </>
@@ -552,6 +555,7 @@ SignupCard.propTypes = {
     imageDragHandler: PropTypes.object,
     headerTextEditor: PropTypes.object,
     headerTextEditorInitialState: PropTypes.object,
+    renderLabels: PropTypes.bool,
     subheaderTextEditor: PropTypes.object,
     subheaderTextEditorInitialState: PropTypes.object,
     disclaimerTextEditor: PropTypes.object,

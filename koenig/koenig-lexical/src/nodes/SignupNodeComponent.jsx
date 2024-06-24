@@ -52,7 +52,7 @@ function SignupNodeComponent({
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        if (cardConfig?.fetchLabels) {
+        if (cardConfig.renderLabels && cardConfig.fetchLabels) {
             cardConfig.fetchLabels().then((options) => {
                 setAvailableLabels(options);
             });
@@ -254,6 +254,7 @@ function SignupNodeComponent({
                 labels={labels}
                 layout={layout}
                 openImageEditor={openImageEditor}
+                renderLabels={cardConfig.renderLabels}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showBackgroundImage={showBackgroundImage}
                 subheader={subheader}
