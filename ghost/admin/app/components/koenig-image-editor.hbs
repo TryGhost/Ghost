@@ -6,7 +6,7 @@
         <button
             type="button"
             class="{{if @className @className "image-action image-edit"}}"
-            title="Edit image"
+            data-tooltip="Edit"
             {{on "click" (fn this.handleClick uploader)}}
         >
             {{svg-jar "koenig/kg-wand"}}
