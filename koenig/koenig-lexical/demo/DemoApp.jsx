@@ -44,6 +44,7 @@ const defaultCardConfig = {
     fetchLabels: () => Promise.resolve(['Label 1', 'Label 2']),
     siteTitle: 'Koenig Lexical',
     siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,
+    siteUrl: window.location.origin,
     membersEnabled: true,
     feature: {
         collections: true,

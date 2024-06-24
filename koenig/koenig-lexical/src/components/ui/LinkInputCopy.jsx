@@ -1,6 +1,7 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext';
 import PropTypes from 'prop-types';
 import React from 'react';
+import trackEvent from '../../utils/analytics';
 import {Input} from './Input';
 import {InputListGroup, InputListItem, InputListLoadingItem} from './InputListCopy';
 import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
@@ -17,6 +18,11 @@ export function LinkInputCopy({href, update, cancel}) {
     const containerRef = React.useRef(null);
 
     const testId = 'link-input';
+
+    React.useEffect(() => {
+        trackEvent('Link dropdown: Opened', {context: 'text'});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // update the internal href when the prop changes
     React.useEffect(() => {
@@ -47,7 +53,7 @@ export function LinkInputCopy({href, update, cancel}) {
     }, [cancel]);
 
     const onItemSelected = (item) => {
-        update(item.value);
+        update(item.value, item.type);
     };
 
     const getItem = (item, selected, onMouseOver, scrollIntoView) => {

@@ -1,6 +1,7 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import Portal from '../components/ui/Portal';
 import React from 'react';
+import trackEvent from '../utils/analytics';
 import {
     $createAtLinkNode,
     $createAtLinkSearchNode,
@@ -27,6 +28,7 @@ import {
 } from 'lexical';
 import {$insertFirst, mergeRegister} from '@lexical/utils';
 import {AtLinkResultsPopup} from '../components/ui/AtLinkResultsPopup';
+import {isInternalUrl} from '../utils/isInternalUrl';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSearchLinks} from '../hooks/useSearchLinks';
 
@@ -55,7 +57,7 @@ function noResultOptions() {
 }
 
 // Manages at-link search nodes and display of the search results panel when appropriate
-export const KoenigAtLinkPlugin = ({searchLinks}) => {
+export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
     const [editor] = useLexicalComposerContext();
     const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState(null);
     const [query, setQuery] = React.useState('');
@@ -389,7 +391,9 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
             // we have to get the children nodes
             const children = parent.getChildren();
 
-            if (children.length !== 1 || !$isAtLinkNode(children[0])) {
+            let isTextLink = (children.length !== 1 || !$isAtLinkNode(children[0]));
+
+            if (isTextLink) {
                 const linkNode = $createLinkNode(item.value);
                 const textNode = $createTextNode(item.label);
                 linkNode.append(textNode);
@@ -408,8 +412,15 @@ export const KoenigAtLinkPlugin = ({searchLinks}) => {
                 focusedAtLinkNode.replace(bookmarkNode);
                 bookmarkNode.selectEnd();
             }
+
+            if (item.type === 'internal' || item.type === 'default') {
+                trackEvent('Link dropdown: Internal link chosen', {context: 'at-link', fromLatest: item.type === 'default', isBookmark: !isTextLink});
+            } else {
+                let linkTarget = isInternalUrl(item.value, siteUrl) ? 'internal' : 'external';
+                trackEvent('Link dropdown: URL entered', {context: 'at-link', target: linkTarget, isBookmark: !isTextLink});
+            }
         });
-    }, [editor, focusedAtLinkNode]);
+    }, [editor, focusedAtLinkNode, siteUrl]);
 
     // render nothing when we don't have a focused at-link node
     if (!focusedAtLinkNode) {
@@ -447,7 +458,7 @@ export const AtLinkPlugin = () => {
         return null;
     }
 
-    return <KoenigAtLinkPlugin searchLinks={cardConfig.searchLinks} />;
+    return <KoenigAtLinkPlugin searchLinks={cardConfig.searchLinks} siteUrl={cardConfig.siteUrl} />;
 };
 
 export default AtLinkPlugin;

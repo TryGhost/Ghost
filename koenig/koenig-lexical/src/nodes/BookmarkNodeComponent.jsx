@@ -1,6 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React, {useCallback} from 'react';
+import trackEvent from '../utils/analytics.js';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
@@ -8,6 +9,7 @@ import {BookmarkCard} from '../components/ui/cards/BookmarkCard';
 import {BookmarkCardWithSearch} from '../components/ui/cards/BookmarkCardWithSearch.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {isInternalUrl} from '../utils/isInternalUrl.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, publisher, thumbnail, captionEditor, captionEditorInitialState, createdWithUrl}) {
@@ -29,13 +31,21 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         setUrlInputValue(eventOrUrl.target.value);
     };
 
-    const handleUrlSubmit = async (eventOrUrl) => {
+    const handleUrlSubmit = async (eventOrUrl, type) => {
         if (!eventOrUrl) {
             return;
         }
 
         // TODO: change this so we only get given URL strings - child components should handle their own events
         if (typeof eventOrUrl === 'string') {
+            if (type === 'internal' || type === 'default') {
+                trackEvent('Link dropdown: Internal link chosen', {context: 'bookmark', fromLatest: type === 'default'});
+            }
+            if (type === 'url') {
+                const target = isInternalUrl(eventOrUrl, cardConfig?.siteUrl) ? 'internal' : 'external';
+                trackEvent('Link dropdown: URL entered', {context: 'bookmark', target});
+            }
+
             fetchMetadata(eventOrUrl);
         }
 

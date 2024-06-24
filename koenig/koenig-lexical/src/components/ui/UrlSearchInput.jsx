@@ -1,10 +1,18 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
+import trackEvent from '../../utils/analytics';
 import {InputListCopy} from './InputListCopy';
 import {useSearchLinks} from '../../hooks/useSearchLinks';
 
 export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading, searchLinks}) {
     const {isSearching, listOptions} = useSearchLinks(value, searchLinks);
+
+    React.useEffect(() => {
+        if (!value) {
+            trackEvent('Link dropdown: Opened', {context: 'bookmark'});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     React.useEffect(() => {
         const handleKeyDown = (e) => {
@@ -44,8 +52,8 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
         handleUrlChange(inputValue);
     };
 
-    const onSelectEvent = (selectedValue) => {
-        handleUrlSubmit(selectedValue);
+    const onSelectEvent = (selectedValue, type) => {
+        handleUrlSubmit(selectedValue, type);
     };
 
     const handleKeyDown = (event) => {

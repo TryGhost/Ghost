@@ -1,4 +1,5 @@
 import React from 'react';
+import trackEvent from '../../utils/analytics';
 import {$getSelection} from 'lexical';
 import {InputListGroup, InputListItem} from './InputListCopy';
 import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
@@ -7,6 +8,13 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query, onSelect}) {
     const [editor] = useLexicalComposerContext();
+
+    React.useEffect(() => {
+        if (!query) {
+            trackEvent('Link dropdown: Opened', {context: 'at-link'});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const scrollContainer = React.useMemo(() => {
         return getScrollParent(editor.getRootElement());

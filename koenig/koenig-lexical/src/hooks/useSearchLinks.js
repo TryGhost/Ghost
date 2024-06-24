@@ -12,7 +12,8 @@ function urlQueryOptions(query) {
             label: query,
             value: query,
             Icon: EarthIcon,
-            highlight: false
+            highlight: false,
+            type: 'url'
         }]
     }];
 }
@@ -24,12 +25,13 @@ function defaultNoResultOptions(query) {
             label: `Enter URL to create link`,
             value: null,
             Icon: EarthIcon,
-            highlight: false
+            highlight: false,
+            type: 'no-results'
         }]
     }];
 }
 
-function convertSearchResultsToListOptions(results, {noResultOptions} = {}) {
+function convertSearchResultsToListOptions(results, {noResultOptions, type} = {}) {
     if (!results || !results.length) {
         return (noResultOptions || defaultNoResultOptions)();
     }
@@ -42,7 +44,8 @@ function convertSearchResultsToListOptions(results, {noResultOptions} = {}) {
                 Icon: item.Icon,
                 metaText: item.metaText,
                 MetaIcon: item.MetaIcon,
-                metaIconTitle: item.metaIconTitle
+                metaIconTitle: item.metaIconTitle,
+                type: type || 'internal'
             };
         });
 
@@ -90,7 +93,7 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
             // they're available when the query is cleared
             !query && setIsSearching(true);
             const results = await searchLinks();
-            setDefaultListOptions(convertSearchResultsToListOptions(results));
+            setDefaultListOptions(convertSearchResultsToListOptions(results, {type: 'default'}));
             !query && setIsSearching(false);
         };
 

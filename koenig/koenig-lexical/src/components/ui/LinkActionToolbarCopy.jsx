@@ -1,14 +1,18 @@
+import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import Portal from './Portal.jsx';
 import React from 'react';
+import trackEvent from '../../utils/analytics.js';
 import {$createRangeSelection, $getSelection, $setSelection} from 'lexical';
 import {$getSelectionRangeRect} from '../../utils/$getSelectionRangeRect.js';
 import {LinkInputCopy} from './LinkInputCopy.jsx';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {getScrollParent} from '../../utils/getScrollParent.js';
+import {isInternalUrl} from '../../utils/isInternalUrl.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function LinkActionToolbarCopy({anchorElem, href, onClose, ...props}) {
     const [editor] = useLexicalComposerContext();
+    const {cardConfig} = React.useContext(KoenigComposerContext);
 
     const scrollContainer = React.useMemo(() => {
         return getScrollParent(editor.getRootElement());
@@ -89,7 +93,7 @@ export function LinkActionToolbarCopy({anchorElem, href, onClose, ...props}) {
         };
     }, [anchorElem, updateLinkToolbarPosition]);
 
-    const onLinkUpdate = (updatedHref) => {
+    const onLinkUpdate = (updatedHref, type) => {
         editor.update(() => {
             editor.dispatchCommand(TOGGLE_LINK_COMMAND, updatedHref || null);
             // remove selection to avoid format menu popup
@@ -99,6 +103,17 @@ export function LinkActionToolbarCopy({anchorElem, href, onClose, ...props}) {
             rangeSelection.setTextNodeRange(focusNode, focusNode.getTextContentSize(), focusNode, focusNode.getTextContentSize());
             $setSelection(rangeSelection);
             onClose();
+
+            if (type === 'internal' || type === 'default') {
+                trackEvent('Link dropdown: Internal link chosen', {context: 'text', fromLatest: type === 'default'});
+            } else {
+                try {
+                    const target = isInternalUrl(updatedHref, cardConfig?.siteUrl) ? 'internal' : 'external';
+                    trackEvent('Link dropdown: URL entered', {context: 'text', target});
+                } catch (e) {
+                    // noop
+                }
+            }
         });
     };
 

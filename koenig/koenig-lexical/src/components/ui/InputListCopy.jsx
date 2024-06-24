@@ -138,7 +138,7 @@ export function InputListCopy({autoFocus, className, inputClassName, dataTestId,
     };
 
     const onSelectEvent = (item) => {
-        (onSelect || onChange)(item.value);
+        (onSelect || onChange)(item.value, item.type);
     };
 
     const showSuggestions = (isLoading || (listOptions && !!listOptions.length)) && inputFocused;
