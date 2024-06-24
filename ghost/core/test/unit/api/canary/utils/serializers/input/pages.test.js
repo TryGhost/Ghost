@@ -69,7 +69,6 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.options.formats.should.containEql('plaintext');
         });
 
-
         describe('Content API', function () {
             it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
                 const apiConfig = {};
