@@ -115,7 +115,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.browse(apiConfig, frame);
                 const columns = Object.keys(postsSchema);
                 const parsedSelectRaw = frame.options.selectRaw.split(',').map(column => column.trim());
-                parsedSelectRaw.should.eql(columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@'].includes(column)));
+                parsedSelectRaw.should.eql(columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@','@@INDEXES@@'].includes(column)));
             });
 
             it('strips mobiledoc and lexical columns from a specified columns option', function () {
