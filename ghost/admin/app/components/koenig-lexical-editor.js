@@ -462,7 +462,8 @@ export default class KoenigLexicalEditor extends Component {
             membersEnabled: this.settings.membersSignupAccess === 'all',
             searchLinks,
             siteTitle: this.settings.title,
-            siteDescription: this.settings.description
+            siteDescription: this.settings.description,
+            siteUrl: this.config.getSiteUrl('/')
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
