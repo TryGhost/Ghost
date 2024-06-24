@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
 const nock = require('nock');
+const got = require('got');
 
 const OembedService = require('../');
 
@@ -8,7 +9,12 @@ describe('oembed-service', function () {
     let oembedService;
 
     before(function () {
-        oembedService = new OembedService({});
+        oembedService = new OembedService({
+            config: {get() {
+                return true;
+            }},
+            externalRequest: got
+        });
 
         nock.disableNetConnect();
     });
@@ -94,6 +100,51 @@ describe('oembed-service', function () {
                 assert.equal(error.statusCode, 422);
                 assert.equal(error.context, 'Request failed with error code 500');
             }
+        });
+    });
+
+    describe('fetchOembedDataFromUrl', function () {
+        it('allows rich embeds to skip height field', async function () {
+            nock('https://www.example.com')
+                .get('/')
+                .query(true)
+                .reply(200, `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`);
+
+            nock('https://www.example.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    type: 'rich',
+                    version: '1.0',
+                    title: 'Test Title',
+                    author_name: 'Test Author',
+                    author_url: 'https://example.com/user/testauthor',
+                    html: '<iframe src="https://www.example.com/embed"></iframe>',
+                    width: 640,
+                    height: null
+                });
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+
+            assert.equal(response.title, 'Test Title');
+            assert.equal(response.author_name, 'Test Author');
+            assert.equal(response.author_url, 'https://example.com/user/testauthor');
+            assert.equal(response.html, '<iframe src="https://www.example.com/embed"></iframe>');
+        });
+
+        it('uses a known user-agent for bookmark requests', async function () {
+            nock('https://www.example.com')
+                .get('/')
+                .query(true)
+                .matchHeader('User-Agent', /Mozilla\/.*/)
+                .reply(200, `<html><head><title>Example</title></head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com', 'bookmark');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.url, 'https://www.example.com');
+            assert.equal(response.metadata.title, 'Example');
         });
     });
 });

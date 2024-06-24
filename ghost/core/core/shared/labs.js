@@ -25,8 +25,8 @@ const GA_FEATURES = [
     'filterEmailDisabled',
     'newEmailAddresses',
     'portalImprovements',
-    'onboardingChecklist',
-    'newsletterExcerpt'
+    'newsletterExcerpt',
+    'internalLinking'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -35,7 +35,6 @@ const BETA_FEATURES = [
     'additionalPaymentMethods',
     'i18n',
     'activitypub',
-    'internalLinking',
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt'

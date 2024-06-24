@@ -52,10 +52,6 @@ const features = [{
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
 },{
-    title: 'Onboarding checklist',
-    description: 'Onboarding checklist that helps new customers get started',
-    flag: 'onboardingChecklist'
-},{
     title: 'NestJS Playground',
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
