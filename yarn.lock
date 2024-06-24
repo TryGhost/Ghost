@@ -7939,10 +7939,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.2.8":
-  version "1.2.8"
-  resolved "https://registry.npmjs.org/@tryghost/koenig-lexical/-/koenig-lexical-1.2.8.tgz#fa92c6dd065a4f4ed1388391898b3d75d6b2cd13"
-  integrity sha512-c4Igsw57s6u3b/EeO++Ov/GSGok9z7nCt8Jo1o2mHhOwFEgBwv4rQg+4xbxqwcTX4Fdnapr4IdhRcuoQle8HlA==
+"@tryghost/koenig-lexical@1.2.9":
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.2.9.tgz#ab922c51b2ddaa8bb361fd7e4c5760bb6e902055"
+  integrity sha512-1PrM2qCJFyMpUSxrzL8IuzY2OAYbeUKuVSEX/GKOxk/zZRib0Q5dsfjrhVv3iurvBg2Gmg5yyzXC60FDqXLR9w==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
