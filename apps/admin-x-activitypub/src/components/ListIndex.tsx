@@ -132,14 +132,14 @@ const Sidebar: React.FC<{followingCount: number, followersCount: number, updateR
             </div>
         </div>
         <div className='rounded-xl bg-grey-50 p-6'>
-            <header className='flex items-center justify-between'>
+            <header className='mb-4 flex items-center justify-between'>
                 <Heading level={5}>Explore</Heading>
                 <Button label='View all' link={true}/>
             </header>
             <List>
-                <ListItem detail='829 followers' title='404 Media' />
-                <ListItem detail='829 followers' title='404 Media' />
-                <ListItem detail='829 followers' title='404 Media' />
+                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='829 followers' hideActions={true} title='404 Media' />
+                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='791 followers' hideActions={true} title='The Browser' />
+                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='854 followers' hideActions={true} title='Welcome to Hell World' />
             </List>
         </div>
     </div>
