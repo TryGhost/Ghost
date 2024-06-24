@@ -22,7 +22,7 @@
     "build"
   ],
   "devDependencies": {
-    "@types/node": "20.14.7",
+    "@types/node": "20.14.8",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "sinon": "15.2.0",
