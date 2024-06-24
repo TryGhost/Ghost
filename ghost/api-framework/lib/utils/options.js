@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const {IncorrectUsageError} = require('@tryghost/errors');
 
 /**
  * @description Helper function to prepare params for internal usages.
@@ -13,6 +14,14 @@ const trimAndLowerCase = (params) => {
 
     if (_.isString(params)) {
         params = params.split(',');
+    }
+
+    // If we don't have an array at this point, something is wrong, so we should throw an
+    // error to avoid trying to .map over something else
+    if (!_.isArray(params)) {
+        throw new IncorrectUsageError({
+            message: 'Params must be a string or array'
+        });
     }
 
     return params.map((item) => {
