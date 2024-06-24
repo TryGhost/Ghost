@@ -21,7 +21,7 @@
   ],
   "devDependencies": {
     "@nestjs/testing": "10.3.9",
-    "@types/node": "20.14.7",
+    "@types/node": "20.14.8",
     "@types/sinon": "^17.0.3",
     "@types/supertest": "^6.0.2",
     "c8": "8.0.1",
