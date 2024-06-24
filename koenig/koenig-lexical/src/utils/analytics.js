@@ -8,5 +8,4 @@ export default function trackEvent(eventName, props = {}) {
     if (window.posthog) {
         window.posthog.capture(eventName, props);
     }
-    console.log('trackEvent', eventName, props); // eslint-disable-line no-console
 }
