@@ -202,7 +202,9 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 imageCardDragHandler={imageCardDragHandler}
                 imageFileDragHandler={imageFileDragHandler}
                 imageUploader={imageUploader}
+                isPinturaEnabled={isPinturaEnabled}
                 isSelected={isSelected}
+                openImageEditor={openImageEditor}
                 previewSrc={previewSrc}
                 setAltText={setAltText}
                 src={src}
@@ -244,58 +246,34 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         hide={isGif(src)}
                         icon="imgRegular"
                         isActive={cardWidth === 'regular'}
-                        label="Regular"
+                        label="Regular width"
                         onClick={() => handleImageCardResize('regular')}
                     />
                     <ToolbarMenuItem
                         hide={isGif(src)}
                         icon="imgWide"
                         isActive={cardWidth === 'wide'}
-                        label="Wide"
+                        label="Wide width"
                         onClick={() => handleImageCardResize('wide')}
                     />
                     <ToolbarMenuItem
                         hide={isGif(src)}
                         icon="imgFull"
                         isActive={cardWidth === 'full'}
-                        label="Full"
+                        label="Full width"
                         onClick={() => handleImageCardResize('full')}
                     />
                     <ToolbarMenuSeparator hide={isGif(src)} />
                     <ToolbarMenuItem icon="link" isActive={href || false} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />
-                    <ToolbarMenuItem
-                        hide={isGif(src)}
-                        icon="imgReplace"
-                        isActive={false}
-                        label="Replace"
-                        onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})}
-                    />
-                    <ToolbarMenuSeparator hide={!isPinturaEnabled} />
-                    <ToolbarMenuItem
-                        hide={!isPinturaEnabled}
-                        icon="edit"
-                        isActive={false}
-                        label="Edit"
-                        onClick={() => openImageEditor({
-                            image: src,
-                            handleSave: (editedImage) => {
-                                onFileChange({
-                                    target: {
-                                        files: [editedImage]
-                                    }
-                                });
-                            }
-                        })}
-                    />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Create snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

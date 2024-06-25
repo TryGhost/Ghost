@@ -71,7 +71,10 @@ test.describe('Gallery card', async () => {
                                             width="3840" />
                                         <div>
                                             <div>
-                                                <button type="button"><svg></svg></button>
+                                                <button aria-label="Delete" type="button">
+                                                    <svg></svg>
+                                                    <div><span>Delete</span></div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -83,7 +86,10 @@ test.describe('Gallery card', async () => {
                                             width="3840" />
                                         <div>
                                             <div>
-                                                <button type="button"><svg></svg></button>
+                                                <button aria-label="Delete" type="button">
+                                                    <svg></svg>
+                                                    <div><span>Delete</span></div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -176,7 +182,10 @@ test.describe('Gallery card', async () => {
                                             width="248" />
                                         <div>
                                             <div>
-                                                <button type="button"><svg></svg></button>
+                                                <button aria-label="Delete" type="button">
+                                                    <svg></svg>
+                                                    <div><span>Delete</span></div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -348,7 +357,10 @@ test.describe('Gallery card', async () => {
                                             width="248" />
                                         <div>
                                             <div>
-                                                <button type="button"><svg></svg></button>
+                                                <button aria-label="Delete" type="button">
+                                                    <svg></svg>
+                                                    <div><span>Delete</span></div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -359,7 +371,10 @@ test.describe('Gallery card', async () => {
                                             width="248" />
                                         <div>
                                             <div>
-                                                <button type="button"><svg></svg></button>
+                                                <button aria-label="Delete" type="button">
+                                                    <svg></svg>
+                                                    <div><span>Delete</span></div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -454,7 +469,10 @@ test.describe('Gallery card', async () => {
                             <img alt="" height="248" src="blob:..." width="248" />
                             <div>
                                 <div>
-                                <button type="button"><svg></svg></button>
+                                    <button aria-label="Delete" type="button">
+                                        <svg></svg>
+                                        <div><span>Delete</span></div>
+                                    </button>
                                 </div>
                             </div>
                             </div>

@@ -1,6 +1,6 @@
 import DeleteIcon from '../../../../assets/icons/kg-trash.svg?react';
-import EditIcon from '../../../../assets/icons/kg-edit.svg?react';
 import React from 'react';
+import WandIcon from '../../../../assets/icons/kg-wand.svg?react';
 import {IconButton} from '../../IconButton.jsx';
 import {MediaPlaceholder} from '../../MediaPlaceholder.jsx';
 import {ProgressBar} from '../../ProgressBar.jsx';
@@ -30,7 +30,7 @@ export function ProductCardImage({
     };
 
     return (
-        <div className="not-kg-prose group relative mb-4 w-full rounded-md">
+        <div className="not-kg-prose group/image relative mb-4 w-full rounded-md">
             {
                 showPlaceholder
                     ? (
@@ -63,7 +63,7 @@ export function ProductCardImage({
                             {
                                 isEditing && (
                                     <>
-                                        <div className="absolute inset-0 rounded-md bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
+                                        <div className="absolute inset-0 rounded-md bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100"></div>
                                     </>
                                 )
                             }
@@ -71,8 +71,8 @@ export function ProductCardImage({
                             {
                                 isEditing && (
                                     <>
-                                        <div className="absolute right-5 top-5 flex opacity-0 transition-all group-hover:opacity-100">
-                                            <IconButton dataTestId="replace-product-image" Icon={DeleteIcon} onClick={onRemove} />
+                                        <div className="absolute right-5 top-5 flex opacity-0 transition-all group-hover/image:opacity-100">
+                                            <IconButton dataTestId="replace-product-image" Icon={DeleteIcon} label="Delete" onClick={onRemove} />
                                         </div>
                                     </>
                                 )
@@ -81,8 +81,8 @@ export function ProductCardImage({
                             {
                                 isEditing && isPinturaEnabled && (
                                     <>
-                                        <div className="absolute right-16 top-5 flex opacity-0 transition-all group-hover:opacity-100">
-                                            <IconButton dataTestId="replace-product-image" Icon={EditIcon} onClick={() => openImageEditor({
+                                        <div className="absolute right-16 top-5 flex opacity-0 transition-all group-hover/image:opacity-100">
+                                            <IconButton dataTestId="replace-product-image" Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
                                                 image: imgSrc,
                                                 handleSave: (editedImage) => {
                                                     onImgChange({

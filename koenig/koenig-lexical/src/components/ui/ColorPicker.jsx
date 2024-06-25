@@ -88,7 +88,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange})
                             type="button"
                             onClick={openColorPicker}
                         >
-                            <EyedropperIcon className="size-full" />
+                            <EyedropperIcon className="size-full stroke-2" />
                         </button>
                     )}
                 </div>

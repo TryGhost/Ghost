@@ -108,7 +108,7 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Create snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

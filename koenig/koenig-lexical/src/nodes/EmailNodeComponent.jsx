@@ -52,7 +52,7 @@ export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Create snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

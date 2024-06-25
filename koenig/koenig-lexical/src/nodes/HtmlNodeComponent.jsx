@@ -14,6 +14,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
     const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+    const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
 
     const updateHtml = (value) => {
         editor.update(() => {
@@ -62,12 +63,17 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                    {isContentVisibilityEnabled && 
+                        <>
+                            <ToolbarMenuItem icon="visibility" isActive={false} label="Visibility" onClick={() => {}} />
+                            <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                        </>}
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Create snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

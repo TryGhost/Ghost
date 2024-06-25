@@ -220,7 +220,7 @@ export function SignupCard({alignment,
                     {layout === 'split' && (
                         <MediaUploader
                             additionalActions={<>
-                                <IconButton dataTestId="media-upload-size" Icon={(backgroundSize === 'cover') ? ShrinkIcon : ExpandIcon} onClick={toggleBackgroundSize} />
+                                <IconButton dataTestId="media-upload-size" Icon={(backgroundSize === 'cover') ? ShrinkIcon : ExpandIcon} label={(backgroundSize === 'cover') ? 'Contain' : 'Cover'} onClick={toggleBackgroundSize} />
                             </>}
                             alt='Background image'
                             backgroundSize={backgroundSize}

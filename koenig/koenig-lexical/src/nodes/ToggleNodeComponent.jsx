@@ -57,7 +57,7 @@ export function ToggleNodeComponent({nodeKey, headingEditor, headingEditorInitia
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Create snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

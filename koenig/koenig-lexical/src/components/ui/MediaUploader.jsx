@@ -1,7 +1,7 @@
 import DeleteIcon from '../../assets/icons/kg-trash.svg?react';
-import EditIcon from '../../assets/icons/kg-edit.svg?react';
 import ImageUploadForm from './ImageUploadForm';
 import PropTypes from 'prop-types';
+import WandIcon from '../../assets/icons/kg-wand.svg?react';
 import clsx from 'clsx';
 import {IconButton} from './IconButton';
 import {MediaPlaceholder} from './MediaPlaceholder';
@@ -76,18 +76,18 @@ export function MediaUploader({
     }
 
     return (
-        <div className={clsx('group relative flex items-center justify-center', borderStyle === 'dashed' && 'rounded', className)} data-testid="media-upload-filled">
+        <div className={clsx('group/image relative flex items-center justify-center', borderStyle === 'dashed' && 'rounded', className)} data-testid="media-upload-filled">
             {src && (
                 <>
                     <img alt={alt} className={clsx('mx-auto size-full', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', borderStyle === 'dashed' && 'rounded', imgClassName)} src={src} />
-                    <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100', borderStyle === 'dashed' && 'rounded')}></div>
+                    <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'dashed' && 'rounded')}></div>
                 </>
             )}
 
             {!isLoading && (
-                <div className="absolute right-2 top-2 flex space-x-2 opacity-0 transition-all group-hover:opacity-100">
+                <div className="absolute right-2 top-2 flex space-x-2 opacity-0 transition-all group-hover/image:opacity-100">
                     {additionalActions}
-                    { isPinturaEnabled && <IconButton Icon={EditIcon} onClick={() => openImageEditor({
+                    { isPinturaEnabled && <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
                         image: src,
                         handleSave: (editedImage) => {
                             onFileChange({
@@ -97,7 +97,7 @@ export function MediaUploader({
                             });
                         }
                     })} /> }
-                    <IconButton dataTestId="media-upload-remove" Icon={DeleteIcon} onClick={onRemove} />
+                    <IconButton dataTestId="media-upload-remove" Icon={DeleteIcon} label="Delete" onClick={onRemove} />
                 </div>
             )}
 

@@ -60,8 +60,14 @@ test.describe('Signup card', async () => {
                                     src="__GHOST_URL__/content/images/2023/05/fake-image.jpg" />
                                 <div></div>
                                 <div>
-                                    <button type="button"><svg></svg></button>
-                                    <button type="button"><svg></svg></button>
+                                    <button aria-label="Contain" type="button">
+                                        <svg></svg>
+                                        <div><span>Contain</span></div>
+                                    </button>
+                                    <button aria-label="Delete" type="button">
+                                        <svg></svg>
+                                        <div><span>Delete</span></div>
+                                    </button>
                                 </div>
                             </div>
                             <div>

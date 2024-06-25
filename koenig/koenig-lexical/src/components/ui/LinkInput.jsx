@@ -49,10 +49,10 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
     }, [onEscape]);
 
     return (
-        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded-md bg-black px-1 py-0 font-sans text-sm font-medium dark:bg-grey-950">
+        <div ref={containerRef} className="relative m-0 flex items-center justify-evenly gap-1 rounded-lg bg-white p-1 font-sans text-md font-normal text-black shadow-md dark:bg-grey-950">
             <input
                 ref={inputRef}
-                className="mb-[1px] h-auto w-full rounded-md bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40 dark:bg-grey-950"
+                className="mb-[1px] h-8 w-full pl-3 pr-9 leading-loose text-grey-900 selection:bg-grey/40 dark:bg-grey-950"
                 data-testid="link-input"
                 placeholder="Enter url"
                 value={_href}
@@ -76,17 +76,10 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
                         setHref('');
                         inputRef.current.focus();
                     }}>
-                        <CloseIcon className="size-3 stroke-2 text-grey" />
+                        <CloseIcon className="size-4 stroke-2 text-grey" />
                     </button>
                 )
             }
-
-            {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,
-             and Tailwind can't handle this. They recommended CSS-in-JS or style attr for such cases (https://v2.tailwindcss.com/docs/just-in-time-mode) */}
-            <div
-                className="absolute left-[calc(50%-8px)] top-[36px] w-0 border-x-8 border-t-8 border-x-transparent border-t-black dark:border-t-grey-950"
-                style={arrowStyles}
-            ></div>
         </div>
     );
 }

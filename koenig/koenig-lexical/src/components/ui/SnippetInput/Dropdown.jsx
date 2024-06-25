@@ -20,12 +20,12 @@ export const Dropdown = ({
 
             <li className="mb-0 block">
                 <button
-                    className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100 dark:hover:bg-black ${isCreateButtonActive ? 'bg-grey-100 dark:bg-black' : ''}`}
+                    className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green-600 hover:bg-grey-100 dark:hover:bg-black ${isCreateButtonActive ? 'bg-grey-100 dark:bg-black' : ''}`}
                     type="button"
                     onClick={onCreateSnippet}
                 >
                     <span>Create &quot;{value}&ldquo;</span>
-                    <PlusIcon className="size-3 stroke-green stroke-[3px]" />
+                    <PlusIcon className="size-3 stroke-green-600 stroke-[3px]" />
                 </button>
             </li>
 
@@ -43,7 +43,7 @@ export const Dropdown = ({
 const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
     return (
         <li role="separator">
-            <span className="tracking-loose block border-t border-grey-200 px-3 pb-2 pt-3 text-xs font-medium uppercase text-grey dark:border-grey-900 dark:text-grey-800">Replace existing</span>
+            <span className="block border-t border-grey-200 px-3 pb-2 pt-3 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600 dark:border-grey-900 dark:text-grey-800">Replace existing</span>
             <ul role="menu">
                 {
                     list.map((item, index) => (

@@ -14,7 +14,7 @@ import GalleryCardIcon from '../assets/icons/kg-card-type-gallery.svg?react';
 import GalleryPlaceholderIcon from '../assets/icons/kg-gallery-placeholder.svg?react';
 import GifCardIcon from '../assets/icons/kg-card-type-gif.svg?react';
 import HeaderCardIcon from '../assets/icons/kg-card-type-header.svg?react';
-import HeadingOneIcon from '../assets/icons/kg-heading-1.svg?react';
+import HeadingThreeIcon from '../assets/icons/kg-heading-3.svg?react';
 import HeadingTwoIcon from '../assets/icons/kg-heading-2.svg?react';
 import HtmlCardIcon from '../assets/icons/kg-card-type-html.svg?react';
 import ImageCardIcon from '../assets/icons/kg-card-type-image.svg?react';
@@ -104,8 +104,8 @@ const DesignSandbox = () => {
                 <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
                     <ToolbarItem Icon={BoldIcon} label="Format text as bold" />
                     <ToolbarItem Icon={ItalicIcon} label="Format text as italics" />
-                    <ToolbarItem Icon={HeadingOneIcon} label="Toggle heading 1" />
-                    <ToolbarItem Icon={HeadingTwoIcon} label="Toggle heading 2" />
+                    <ToolbarItem Icon={HeadingTwoIcon} label="Toggle heading 1" />
+                    <ToolbarItem Icon={HeadingThreeIcon} label="Toggle heading 2" />
                     <ToolbarSeparator />
                     <ToolbarItem Icon={QuoteIcon} label="Toggle blockquote" />
                     <ToolbarItem Icon={LinkIcon} label="Insert link" />

@@ -1,6 +1,6 @@
 import ExternalLinkIcon from '../../assets/icons/kg-help.svg?react';
 import React from 'react';
-import TrashCardIcon from '../../assets/icons/kg-trash-outline.svg?react';
+import TrashCardIcon from '../../assets/icons/kg-trash.svg?react';
 import trackEvent from '../../utils/analytics';
 
 export const CardMenuSection = ({label, children, ...props}) => {
@@ -102,13 +102,13 @@ export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove
                 {...props}
             >
                 <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-white text-grey-900 dark:bg-transparent dark:text-grey-500">
-                    <Icon className="size-[1.8rem]" />
+                    <Icon className="size-[1.8rem] stroke-2" />
                 </div>
                 <div className="m-0 ml-4 truncate text-[1.35rem] font-medium leading-snug tracking-[.02rem] text-grey-900 dark:text-grey-200">{label}</div>
                 {
                     !!onRemove && (
                         <button className="ml-auto cursor-pointer rounded-md p-[4px] hover:bg-grey-200 group-hover:block dark:hover:bg-grey-950" title="Remove snippet" type="button" onClick={handleSnippetRemove}>
-                            <TrashCardIcon className="size-[1.8rem] stroke-red text-red" />
+                            <TrashCardIcon className="size-[1.8rem] stroke-red stroke-[1.5] text-red" />
                         </button>
                     )
                 }

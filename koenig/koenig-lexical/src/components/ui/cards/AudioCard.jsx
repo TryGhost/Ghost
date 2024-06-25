@@ -112,11 +112,11 @@ function AudioThumbnail({
         );
     } else if (src) {
         return (
-            <div className="group relative flex aspect-square h-20 items-center justify-center rounded-md bg-purple">
+            <div className="group/image relative flex aspect-square h-20 items-center justify-center rounded-md bg-purple">
                 <img alt="Audio thumbnail" className="size-full rounded-md object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
                 {isEditing && (
-                    <div className="absolute right-2 top-2 flex opacity-0 transition-all group-hover:opacity-100">
-                        <IconButton dataTestId='remove-thumbnail' Icon={DeleteIcon} onClick={removeThumbnail} />
+                    <div className="absolute right-2 top-2 flex opacity-0 transition-all group-hover/image:opacity-100">
+                        <IconButton dataTestId='remove-thumbnail' Icon={DeleteIcon} label="Delete" onClick={removeThumbnail} />
                     </div>
                 )}
             </div>

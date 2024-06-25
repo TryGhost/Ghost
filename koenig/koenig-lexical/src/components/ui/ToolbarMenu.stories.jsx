@@ -7,7 +7,7 @@ import {ToolbarMenuSeparator} from './ToolbarMenu';
 import {Add} from './ToolbarMenuItem.stories';
 import {Bold} from './ToolbarMenuItem.stories';
 import {Edit} from './ToolbarMenuItem.stories';
-import {HeadingOne} from './ToolbarMenuItem.stories';
+import {HeadingThree} from './ToolbarMenuItem.stories';
 import {HeadingTwo} from './ToolbarMenuItem.stories';
 import {ImgFull} from './ToolbarMenuItem.stories';
 import {ImgRegular} from './ToolbarMenuItem.stories';
@@ -43,8 +43,8 @@ Text.args = {
     children: [
         <Bold {...Bold.args} />,
         <Italic {...Italic.args} />,
-        <HeadingOne {...HeadingOne.args} />,
         <HeadingTwo {...HeadingTwo.args} />,
+        <HeadingThree {...HeadingThree.args} />,
         <ToolbarMenuSeparator />,
         <Quote {...Quote.args} />,
         <Link {...Link.args} />,

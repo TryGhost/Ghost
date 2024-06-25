@@ -162,7 +162,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Create snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

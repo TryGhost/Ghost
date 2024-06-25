@@ -5,7 +5,6 @@ import {CardCaptionEditor} from '../CardCaptionEditor';
 import {IconButton} from '../IconButton';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
-// import {IconButton} from '../IconButton';
 
 function GalleryRow({index, images, deleteImage, isDragging}) {
     const GalleryImages = images.map((image, idx) => {
@@ -52,7 +51,7 @@ function GalleryImage({image, deleteImage, position, isDragging}) {
 
     return (
         <div
-            className={`group relative ${classes.join(' ')}`}
+            className={`group/image relative ${classes.join(' ')}`}
             data-testid="gallery-image"
             style={style}
             data-image
@@ -66,9 +65,9 @@ function GalleryImage({image, deleteImage, position, isDragging}) {
             />
 
             {isDragging ? null : (
-                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover:visible group-hover:opacity-100 ${overlayClasses.join(' ')}`}>
+                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100 ${overlayClasses.join(' ')}`}>
                     <div className="flex flex-row-reverse">
-                        <IconButton Icon={DeleteIcon} onClick={() => deleteImage(image)} />
+                        <IconButton Icon={DeleteIcon} label="Delete" onClick={() => deleteImage(image)} />
                     </div>
                 </div>
             )}

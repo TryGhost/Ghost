@@ -273,9 +273,7 @@ test.describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div>
-                            <img alt="" src="blob:...">
-                        </div>
+                        <div><img alt="" src="blob:..." /></div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
@@ -411,62 +409,6 @@ test.describe('Image card', async () => {
         expect(await page.locator('[data-kg-card-toolbar="image"] button[aria-label="Snippet"]')).not.toBeNull();
     });
 
-    test('can replace image from image toolbar button', async function () {
-        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
-        const filePath2 = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
-
-        await focusEditor(page);
-        await page.keyboard.type('image! ');
-
-        const [fileChooser] = await Promise.all([
-            page.waitForEvent('filechooser'),
-            await page.click('button[name="placeholder-button"]')
-        ]);
-        await fileChooser.setFiles([filePath]);
-
-        await page.click('[data-kg-card="image"]');
-
-        expect(await page.locator('[data-kg-card-toolbar="image"]')).not.toBeNull();
-
-        const [replacefileChooser] = await Promise.all([
-            page.waitForEvent('filechooser'),
-            await page.click('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')
-        ]);
-        await replacefileChooser.setFiles([filePath2]);
-
-        // placeholder is replaced with uploading image
-        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
-
-        // wait for upload to complete
-        await expect(await page.getByTestId('progress-bar')).toBeHidden();
-
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
-                    <figure data-kg-card-width="regular">
-                        <div>
-                            <img alt="" src="blob:...">
-                        </div>
-                        <figcaption>
-                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
-                                <div>
-                                    <div data-kg="editor">
-                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
-                                            <p><br /></p>
-                                        </div>
-                                    </div>
-                                    <div>Type caption for image (optional)</div>
-                                </div>
-                            </div>
-                            <button name="alt-toggle-button" type="button">Alt</button>
-                        </figcaption>
-                    </figure>
-                    <div data-kg-card-toolbar="image"></div>
-                </div>
-            </div>
-        `, {ignoreCardToolbarContents: true});
-    });
-
     test('toolbar can toggle image sizes', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
@@ -489,13 +431,13 @@ test.describe('Image card', async () => {
 
         expect(await page.locator('[data-kg-card-toolbar="image"]')).not.toBeNull();
 
-        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Wide"]');
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Wide width"]');
         expect (await page.locator('[data-kg-card-width="wide"]')).not.toBeNull();
 
-        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Full"]');
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Full width"]');
         expect (await page.locator('[data-kg-card-width="full"]')).not.toBeNull();
 
-        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Regular"]');
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Regular width"]');
         expect (await page.locator('[data-kg-card-width="regular"]')).not.toBeNull();
     });
 
@@ -519,7 +461,7 @@ test.describe('Image card', async () => {
 
         await page.click('figure');
 
-        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Regular"]');
+        await page.click('[data-kg-card-toolbar="image"] button[aria-label="Regular width"]');
 
         expect(await page.locator('[data-kg-card-toolbar="image"]')).not.toBeNull();
     });
@@ -578,9 +520,7 @@ test.describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div>
-                            <img alt="" src="blob:..." />
-                        </div>
+                        <div><img alt="" src="blob:..." /></div>
                     </figure>
                 </div>
             </div>

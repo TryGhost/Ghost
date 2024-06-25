@@ -34,14 +34,14 @@ Italic.args = {
     icon: 'italic'
 };
 
-export const HeadingOne = Template.bind({});
-HeadingOne.args = {
-    icon: 'headingOne'
-};
-
 export const HeadingTwo = Template.bind({});
 HeadingTwo.args = {
     icon: 'headingTwo'
+};
+
+export const HeadingThree = Template.bind({});
+HeadingThree.args = {
+    icon: 'headingThree'
 };
 
 export const Quote = Template.bind({});

@@ -312,8 +312,18 @@ test.describe('Email card', async () => {
                             <div>
                                 <div>
                                     <ul>
-                                        <li><button aria-label="Left" type="button"><svg></svg></button></li>
-                                        <li><button aria-label="Center" type="button"><svg></svg></button></li>
+                                        <li>
+                                            <button aria-label="Left" type="button">
+                                                <svg></svg>
+                                                <div><span>Left</span></div>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button aria-label="Center" type="button">
+                                                <svg></svg>
+                                                <div><span>Center</span></div>
+                                            </button>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>

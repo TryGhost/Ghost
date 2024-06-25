@@ -74,7 +74,7 @@ export default function FloatingToolbar({
 
     return (
         <Portal>
-            <div ref={toolbarRef} className="not-kg-prose fixed z-[10000]" style={{opacity: 0, transition: 'opacity 250ms ease-in-out'}} data-kg-floating-toolbar>
+            <div ref={toolbarRef} className="not-kg-prose fixed z-[10000]" style={{opacity: 0, transition: 'opacity 100ms ease'}} data-kg-floating-toolbar>
                 {children}
             </div>
         </Portal>
