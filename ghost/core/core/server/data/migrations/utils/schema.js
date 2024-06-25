@@ -109,10 +109,7 @@ function createAddIndexMigration(table, columns, rollbackIndexColumns = null) {
             await commands.addIndex(table, columns, knex);
         },
         async function down(knex) {
-            console.log(`DOWN`)
-            console.log(`ROLLBACK INDEX COLUMNS >> `, rollbackIndexColumns)
             if (rollbackIndexColumns) {
-                console.log(`ADDING INDEX FOR ROLLBACK >> `, rollbackIndexColumns);
                 await commands.addIndex(table, rollbackIndexColumns, knex);
             }
             await commands.dropIndex(table, columns, knex);
