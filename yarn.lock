@@ -7939,10 +7939,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.2.8":
-  version "1.2.8"
-  resolved "https://registry.npmjs.org/@tryghost/koenig-lexical/-/koenig-lexical-1.2.8.tgz#fa92c6dd065a4f4ed1388391898b3d75d6b2cd13"
-  integrity sha512-c4Igsw57s6u3b/EeO++Ov/GSGok9z7nCt8Jo1o2mHhOwFEgBwv4rQg+4xbxqwcTX4Fdnapr4IdhRcuoQle8HlA==
+"@tryghost/koenig-lexical@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.0.tgz#03bfaa55a5c2da64b2ddfb4c1ee271a62dc4a11d"
+  integrity sha512-qeKenjk3fRDPjxzqDqIDDAWVZTTKfk8JPMxyPjUzyUilWFavztRfxuo+QHqsjTGAp+TnaBTWADoq2WHbgKSA+A==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
@@ -15005,10 +15005,10 @@ ember-assign-polyfill@^2.6.0:
     ember-cli-babel "^7.20.5"
     ember-cli-version-checker "^2.0.0"
 
-ember-auto-import@2.7.3, "ember-auto-import@^1.12.1 || ^2.4.3", ember-auto-import@^2.2.3, ember-auto-import@^2.4.1:
-  version "2.7.3"
-  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.7.3.tgz#08421f35cd9628327e1dd5d9df40673a1d7beb71"
-  integrity sha512-EQzStGYxNvTPYWCFh0X57HFAzAvA2rHHRgBeWNDKHQ/rENNlHw0c0e0i1XebwEfv+yGHOodE4dN+f/mrYkQXLw==
+ember-auto-import@2.7.4, "ember-auto-import@^1.12.1 || ^2.4.3", ember-auto-import@^2.2.3, ember-auto-import@^2.4.1:
+  version "2.7.4"
+  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.7.4.tgz#ca99570eb3d6165968df797a4750aa58073852b5"
+  integrity sha512-6CdXSegJJc8nwwK7+1lIcBUnMVrJRNd4ZdMgcKbCAwPvcGxMgRVBddSzrX/+q/UuflvTEO26Dk1g7Z6KHMXUhw==
   dependencies:
     "@babel/core" "^7.16.7"
     "@babel/plugin-proposal-class-properties" "^7.16.7"
