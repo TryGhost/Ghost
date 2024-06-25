@@ -581,7 +581,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     padding: 0;
     background: var(--white);
     color: var(--darkgrey);
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all .1s ease-in;
     opacity: 0;
 }
@@ -604,7 +604,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-feature-image .image-action svg path {
-    fill: var(--darkgrey);
+    stroke-width: 2;
 }
 
 .gh-editor-feature-image-add {
@@ -1037,7 +1037,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor .editor-preview h3,
 .gh-editor .editor-preview h4,
 .gh-editor .editor-preview h5,
-.gh-editor .editor-preview h6, {
+.gh-editor .editor-preview h6 {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Open Sans", "Helvetica Neue", sans-serif;
 }
 

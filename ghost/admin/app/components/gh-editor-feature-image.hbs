@@ -46,7 +46,7 @@
                     @imageSrc={{@image}}
                     @saveImage={{fn this.saveImage uploader.setFiles}}
                 />
-                <button type="button" class="image-action image-delete" title="Delete image" {{on "click" @clearImage}}>
+                <button type="button" class="image-action image-delete" data-tooltip="Delete" {{on "click" @clearImage}}>
                     {{svg-jar "koenig/kg-trash"}}
                 </button>
             </div>
