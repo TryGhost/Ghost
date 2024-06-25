@@ -203,7 +203,7 @@ export default Route.extend(ShortcutsRoute, {
             try {
                 // Session Replay on errors
                 // Docs: https://docs.sentry.io/platforms/javascript/session-replay
-                sentryConfig.replaysOnErrorSampleRate = 1.0;
+                sentryConfig.replaysOnErrorSampleRate = 0.5;
                 sentryConfig.integrations.push(
                     // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
                     // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
