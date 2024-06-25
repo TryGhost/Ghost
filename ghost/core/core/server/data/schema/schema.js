@@ -94,7 +94,6 @@ module.exports = {
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         show_title_and_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
         '@@INDEXES@@': [
-            ['type','status'],
             ['type','status','updated_at']
         ],
         '@@UNIQUE_CONSTRAINTS@@': [
