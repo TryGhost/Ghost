@@ -38,6 +38,11 @@ export default function FloatingToolbar({
                 const selection = $getSelection();
                 rangeRect = $getSelectionRangeRect({editor, selection});
             }
+
+            if (!rangeRect) {
+                return;
+            }
+
             setFloatingElemPosition(rangeRect, toolbarElement, anchorElem, {controlOpacity});
         });
     }, [anchorElem, controlOpacity, editor, targetElem, toolbarRef]);

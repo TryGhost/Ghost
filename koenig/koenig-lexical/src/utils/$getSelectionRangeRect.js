@@ -5,11 +5,16 @@ export function $getSelectionRangeRect({selection, editor}) {
     if (!selection || !$isRangeSelection(selection)) {
         return null;
     }
+
     const anchor = selection.anchor;
     const focus = selection.focus;
     const selectionRange = createDOMRange(editor, anchor.getNode(), selection.anchor.offset, focus.getNode(), selection.focus.offset);
-    const selectionRects = createRectsFromDOMRange(editor, selectionRange);
 
+    if (!selectionRange) {
+        return null;
+    }
+
+    const selectionRects = createRectsFromDOMRange(editor, selectionRange);
     const returnRect = selectionRects[0];
 
     // we can get multiple rects if the selection spans multiple lines or has inline nodes like links
