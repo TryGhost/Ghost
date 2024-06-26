@@ -84,6 +84,29 @@ const ActivityPubComponent: React.FC = () => {
                 </ul>
                 <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
+        },
+        {
+            id: 'dense',
+            title: 'Dense',
+            contents: <div className='grid grid-cols-6 items-start gap-8'>
+                <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
+                    {activities && activities.some(activity => activity.type === 'Create' && activity.object.type === 'Article') ? (activities.slice().reverse().map(activity => (
+                        activity.type === 'Create' && activity.object.type === 'Article' &&
+                        <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
+                            <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
+                        </li>
+                    ))) : <div className='flex items-center justify-center text-center'>
+                        <div className='flex max-w-[32em] flex-col items-center justify-center gap-4'>
+                            {/* <img alt='Ghost site logos' className='w-[220px]' src={ActivityPubWelcomeImage}/> */}
+                            <Heading className='text-balance' level={2}>Welcome to ActivityPub</Heading>
+                            <p className='text-pretty text-grey-800'>We’re so glad to have you on board! At the moment, you can follow other Ghost sites and enjoy their content right here inside Ghost.</p>
+                            <p className='text-pretty text-grey-800'>You can see all of the users on the right—find your favorite ones and give them a follow.</p>
+                            <Button color='green' label='Learn more' link={true}/>
+                        </div>
+                    </div>}
+                </ul>
+                <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
+            </div>
         }
     ];
 
@@ -209,7 +232,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
         <>
             {object && (
                 <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
-                    <div className='relative z-10 mb-3 grid w-full grid-cols-[20px_auto_1fr_auto] items-center gap-2 text-base'>
+                    {/* <div className='relative z-10 mb-3 grid w-full grid-cols-[20px_auto_1fr_auto] items-center gap-2 text-base'>
                         <img className='w-5' src={actor.icon}/>
                         <span className='truncate font-semibold'>{actor.name}</span>
                         <span className='truncate text-grey-800'>{getUsername(actor)}</span>
@@ -230,9 +253,26 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                             <img className='absolute h-full w-full rounded object-cover' src={object.image}/>
                         </div>}
                     </div>
-                    <div className='absolute -inset-x-3 inset-y-0 z-0 rounded transition-colors group-hover/article:bg-grey-50'></div>
-                    {/* <div className='absolute inset-0 z-0 rounded from-white to-grey-50 transition-colors group-hover/article:bg-gradient-to-r'></div> */}
+                    <div className='absolute -inset-x-3 inset-y-0 z-0 rounded transition-colors group-hover/article:bg-grey-50'></div> */}
+                    <div className='relative z-10 flex w-full items-center gap-4 text-base'>
+                        <img className='w-10' src={actor.icon}/>
+                        <div>
+                            <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
+                            <div className='flex'>
+                                <span className='mr-1 truncate text-grey-800 after:content-["_·"]'>{actor.name}</span>
+                                <span className='mr-1 truncate text-grey-800 after:content-["_·"]'>{getUsername(actor)}</span>
+                                <span className=' text-grey-800'>{timestamp}</span>
+                            </div>
+                        </div>
+                        <div className='ml-auto flex gap-2 opacity-0 group-hover/article:opacity-100'>
+                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                            <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
+                        </div>
+                    </div>
+                    
+                    <div className='absolute -inset-x-3 inset-y-0 z-0 rounded transition-colors group-hover/article:bg-grey-100'></div>
                 </div>
+                
             )}
         </>
     );
