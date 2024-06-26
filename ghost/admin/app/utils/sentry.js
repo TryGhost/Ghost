@@ -14,11 +14,6 @@ export function beforeSend(event, hint) {
             return null;
         }
 
-        // Ignore errors that are due to browser power saving settings
-        if (exception?.message?.includes('The play() request was interrupted because video-only background media was paused to save power.')) {
-            return null;
-        }
-
         // if the error value includes a model id then overwrite it to improve grouping
         if (event.exception && event.exception.values && event.exception.values.length > 0) {
             const pattern = /<(post|page):[a-f0-9]+>/;
