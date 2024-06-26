@@ -8,11 +8,11 @@ function UrlInputPlugin({value, onEnter}) {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(
-        (event) => {
+        () => {
             return mergeRegister(
                 editor.registerCommand(
                     KEY_ENTER_COMMAND,
-                    () => {
+                    (event) => {
                         onEnter(event);
                         return false;
                     },
