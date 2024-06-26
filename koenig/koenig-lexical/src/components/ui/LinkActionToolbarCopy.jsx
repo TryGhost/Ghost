@@ -96,12 +96,16 @@ export function LinkActionToolbarCopy({anchorElem, href, onClose, ...props}) {
     const onLinkUpdate = (updatedHref, type) => {
         editor.update(() => {
             editor.dispatchCommand(TOGGLE_LINK_COMMAND, updatedHref || null);
+
             // remove selection to avoid format menu popup
             const selection = $getSelection();
-            const focusNode = selection.focus.getNode();
-            const rangeSelection = $createRangeSelection();
-            rangeSelection.setTextNodeRange(focusNode, focusNode.getTextContentSize(), focusNode, focusNode.getTextContentSize());
-            $setSelection(rangeSelection);
+            if (selection) {
+                const focusNode = selection.focus.getNode();
+                const rangeSelection = $createRangeSelection();
+                rangeSelection.setTextNodeRange(focusNode, focusNode.getTextContentSize(), focusNode, focusNode.getTextContentSize());
+                $setSelection(rangeSelection);
+            }
+
             onClose();
 
             if (type === 'internal' || type === 'default') {
