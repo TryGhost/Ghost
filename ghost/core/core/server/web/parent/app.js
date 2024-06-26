@@ -29,7 +29,7 @@ module.exports = function setupParentApp() {
     // Enable request queuing if configured
     const queueConfig = config.get('optimization:requestQueue');
 
-    if (queueConfig?.enabled === true) {
+    if (queueConfig) {
         parentApp.use(mw.queueRequest(queueConfig));
     }
 
