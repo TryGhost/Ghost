@@ -64,9 +64,10 @@ function RestrictedContentDemo() {
                 let addLastParagraph = false;
 
                 editor.getEditorState().read(() => {
-                    const lastNode = $getRoot().getChildren().at(-1);
+                    const nodes = $getRoot().getChildren();
+                    const lastNode = nodes[nodes.length - 1];
 
-                    if ($isDecoratorNode(lastNode)) {
+                    if (lastNode && $isDecoratorNode(lastNode)) {
                         addLastParagraph = true;
                     }
                 });

@@ -99,8 +99,10 @@ export const ExternalControlPlugin = ({registerAPI}) => {
             lastNodeIsDecorator() {
                 let isDecorator = false;
                 editor.getEditorState().read(() => {
-                    const lastNode = $getRoot().getChildren().at(-1);
-                    isDecorator = $isDecoratorNode(lastNode);
+                    const nodes = $getRoot().getChildren();
+                    const lastNode = nodes[nodes.length - 1];
+
+                    isDecorator = lastNode && $isDecoratorNode(lastNode);
                 });
                 return isDecorator;
             }
