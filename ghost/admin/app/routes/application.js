@@ -185,6 +185,11 @@ export default Route.extend(ShortcutsRoute, {
                 release: `ghost@${this.config.version}`,
                 beforeSend,
                 ignoreErrors: [
+                    // Network errors that we don't control
+                    /Server was unreachable/,
+                    /NetworkError when attempting to fetch resource./,
+                    /Failed to fetch/,
+                    /Load failed/,
                     // TransitionAborted errors surface from normal application behaviour
                     // - https://github.com/emberjs/ember.js/issues/12505
                     /^TransitionAborted$/,
