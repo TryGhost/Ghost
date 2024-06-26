@@ -118,7 +118,7 @@ export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query,
     };
 
     return (
-        <div ref={popupRef} className="not-kg-prose fixed z-[10000]">
+        <div ref={popupRef} className="not-kg-prose fixed z-[10000]" data-testid="at-link-results">
             <div className="relative m-0 flex w-full flex-col rounded-lg bg-white p-1 px-2 font-sans text-sm font-medium shadow-md dark:bg-grey-950">
                 <ul className="max-h-[30vh] w-full overflow-y-auto bg-white py-1 dark:bg-grey-950">
                     <KeyboardSelectionWithGroups

@@ -24,7 +24,8 @@ import {
     DELETE_CHARACTER_COMMAND,
     FORMAT_ELEMENT_COMMAND,
     FORMAT_TEXT_COMMAND,
-    KEY_ESCAPE_COMMAND
+    KEY_ESCAPE_COMMAND,
+    PASTE_COMMAND
 } from 'lexical';
 import {$insertFirst, mergeRegister} from '@lexical/utils';
 import {AtLinkResultsPopup} from '../components/ui/AtLinkResultsPopup';
@@ -329,6 +330,29 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
             editor.registerCommand(
                 FORMAT_ELEMENT_COMMAND,
                 $skipFormatCommandIfNeeded,
+                COMMAND_PRIORITY_HIGH
+            ),
+            // prevent paste in the search node triggering external paste handlers
+            editor.registerCommand(
+                PASTE_COMMAND,
+                (clipboardEvent) => {
+                    const selection = $getSelection();
+                    const anchorNode = selection.anchor.getNode();
+                    if ($isRangeSelection(selection) && ($isAtLinkNode(anchorNode) || $isAtLinkSearchNode(anchorNode))) {
+                        clipboardEvent.preventDefault();
+
+                        const atLinkSearchNode = $isAtLinkSearchNode(anchorNode) ? anchorNode : anchorNode.getChildAtIndex(1);
+                        const text = clipboardEvent.clipboardData.getData('text/plain');
+
+                        if (text) {
+                            atLinkSearchNode.setTextContent(atLinkSearchNode.getTextContent() + text);
+                            atLinkSearchNode.selectEnd();
+                        }
+
+                        return true;
+                    }
+                    return false;
+                },
                 COMMAND_PRIORITY_HIGH
             )
         );

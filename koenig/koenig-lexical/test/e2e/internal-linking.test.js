@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, insertCard} from '../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, insertCard, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Internal linking', async () => {
@@ -347,6 +347,23 @@ test.describe('Internal linking', async () => {
                 </div>
                 <div contenteditable="false" data-lexical-cursor="true"></div>
             `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
+        });
+
+        test('can paste into at-link node', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('@');
+            await pasteText(page, 'https://ghost.org');
+            await expect(page.getByTestId('at-link-results')).toBeVisible();
+
+            await assertHTML(page, html`
+                <p>
+                    <span dir="ltr">
+                        <svg></svg>
+                        <span data-lexical-text="true">‌</span>
+                        <span data-placeholder="" data-lexical-text="true">https://ghost.org</span>
+                    </span>
+                </p>
+            `);
         });
     });
 });
