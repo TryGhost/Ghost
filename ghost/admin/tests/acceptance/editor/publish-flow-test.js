@@ -1,6 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -332,22 +332,24 @@ describe('Acceptance: Publish flow', function () {
                 .text('Right now');
 
             const siteTz = this.server.db.settings.findBy({key: 'timezone'}).value;
-            const plus10 = moment().tz(siteTz).add(10, 'minutes').set({});
+            const plus10 = moment().tz(siteTz).add(10, 'minutes').startOf('minute');
 
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
             await click('[data-test-radio="schedule"]');
 
             // date + time inputs are shown, defaults to now+5 mins
+            await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]'), 'datepicker').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]'), 'initial datepicker value')
                 .to.have.value(plus10.format('YYYY-MM-DD'));
 
+            await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]'), 'time input').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]'), 'initial time input value')
                 .to.have.value(plus10.format('HH:mm'));
 
             // can set a new date and time
-            const newDate = moment().tz(siteTz).add(4, 'days').add(5, 'hours').set('second', 0);
+            const newDate = moment().tz(siteTz).add(4, 'days').add(5, 'hours').startOf('minute');
             await fillIn('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]', newDate.format('YYYY-MM-DD'));
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]');
             await fillIn('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]', newDate.format('HH:mm'));

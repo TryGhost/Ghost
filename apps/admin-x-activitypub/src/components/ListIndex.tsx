@@ -1,4 +1,5 @@
 // import NiceModal from '@ebay/nice-modal-react';
+// import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import React, {useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
 import getUsername from '../utils/get-username';
@@ -16,7 +17,7 @@ const ActivityPubComponent: React.FC = () => {
     const {updateRoute} = useRouting();
 
     // TODO: Replace with actual user ID
-    const {data: {orderedItems: activities = []} = {}} = useBrowseInboxForUser('index');
+    const {data: {items: activities = []} = {}} = useBrowseInboxForUser('index');
     const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('index');
     const {data: {totalItems: followersCount = 0} = {}} = useBrowseFollowersForUser('index');
 
@@ -40,12 +41,20 @@ const ActivityPubComponent: React.FC = () => {
             title: 'Inbox',
             contents: <div className='grid grid-cols-6 items-start gap-8'>
                 <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
-                    {activities && activities.slice().reverse().map(activity => (
+                    {activities && activities.some(activity => activity.type === 'Create' && activity.object.type === 'Article') ? (activities.slice().reverse().map(activity => (
                         activity.type === 'Create' && activity.object.type === 'Article' &&
                         <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
                             <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
                         </li>
-                    ))}
+                    ))) : <div className='flex items-center justify-center text-center'>
+                        <div className='flex max-w-[32em] flex-col items-center justify-center gap-4'>
+                            {/* <img alt='Ghost site logos' className='w-[220px]' src={ActivityPubWelcomeImage}/> */}
+                            <Heading className='text-balance' level={2}>Welcome to ActivityPub</Heading>
+                            <p className='text-pretty text-grey-800'>We’re so glad to have you on board! At the moment, you can follow other Ghost sites and enjoy their content right here inside Ghost.</p>
+                            <p className='text-pretty text-grey-800'>You can see all of the users on the right—find your favorite ones and give them a follow.</p>
+                            <Button color='green' label='Learn more' link={true}/>
+                        </div>
+                    </div>}
                 </ul>
                 <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
@@ -108,17 +117,30 @@ const ActivityPubComponent: React.FC = () => {
 };
 
 const Sidebar: React.FC<{followingCount: number, followersCount: number, updateRoute: (route: string) => void}> = ({followingCount, followersCount, updateRoute}) => (
-    <div className='order-1 col-span-6 rounded-xl bg-grey-50 p-6 lg:order-2 lg:col-span-2' id="ap-sidebar">
-        <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
-        <div className='grid grid-cols-2 gap-4'>
-            <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+    <div className='order-1 col-span-6 flex flex-col gap-5 lg:order-2 lg:col-span-2'>
+        <div className='rounded-xl bg-grey-50 p-6' id="ap-sidebar">
+            <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
+            <div className='grid grid-cols-2 gap-4'>
+                <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                </div>
+                <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
+                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
+                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                </div>
             </div>
-            <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
-                <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
-                <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-            </div>
+        </div>
+        <div className='rounded-xl bg-grey-50 p-6'>
+            <header className='mb-4 flex items-center justify-between'>
+                <Heading level={5}>Explore</Heading>
+                <Button label='View all' link={true}/>
+            </header>
+            <List>
+                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='829 followers' hideActions={true} title='404 Media' />
+                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='791 followers' hideActions={true} title='The Browser' />
+                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='854 followers' hideActions={true} title='Welcome to Hell World' />
+            </List>
         </div>
     </div>
 );
@@ -241,7 +263,7 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                     </div>
                     <div className='flex items-center justify-between'>  
                     </div>
-                    <div className='flex justify-end'>
+                    <div className='flex items-center justify-end gap-2'>
                         <div className='flex flex-row-reverse items-center gap-3'>
                             <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
                             <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>

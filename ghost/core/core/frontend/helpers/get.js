@@ -299,7 +299,7 @@ module.exports = async function get(resource, options) {
     try {
         const spanName = `{{#get "${resource}"${apiOptionsString}}} ${data.member ? 'member' : 'public'}`;
         const result = await Sentry.startSpan({
-            op: 'frontend.helpers.get', 
+            op: 'frontend.helpers.get',
             name: spanName,
             tags: {
                 resource,
@@ -313,11 +313,11 @@ module.exports = async function get(resource, options) {
             if (response[resource] && response[resource].length) {
                 response[resource].forEach(prepareContextResource);
             }
-    
+
             // used for logging details of slow requests
             returnedRowsCount = response[resource] && response[resource].length;
             span?.setTag('returnedRows', returnedRowsCount);
-    
+
             // block params allows the theme developer to name the data using something like
             // `{{#get "posts" as |result pageInfo|}}`
             const blockParams = [response[resource]];
@@ -325,7 +325,7 @@ module.exports = async function get(resource, options) {
                 response.pagination = response.meta.pagination;
                 blockParams.push(response.meta.pagination);
             }
-    
+
             // Call the main template function
             const rendered = options.fn(response, {
                 data: data,
@@ -357,7 +357,9 @@ module.exports = async function get(resource, options) {
                         apiOptions,
                         returnedRows: returnedRowsCount
                     }
-                }));
+                }), {
+                    time: totalMs
+                });
             }
         }
     }

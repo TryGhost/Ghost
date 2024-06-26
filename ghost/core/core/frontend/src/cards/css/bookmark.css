@@ -12,6 +12,7 @@
 .kg-bookmark-card a.kg-bookmark-container,
 .kg-bookmark-card a.kg-bookmark-container:hover {
     display: flex;
+    background: #fff;
     text-decoration: none;
     border-radius: 6px;
     border: 1px solid rgb(124 139 154 / 25%);
@@ -28,6 +29,7 @@
     justify-content: flex-start;
     padding: 20px;
     overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
 .kg-bookmark-title {

@@ -7,6 +7,7 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
 const sentry = require('../../../../../../shared/sentry');
@@ -21,6 +22,33 @@ function removeSourceFormats(frame) {
         frame.options.formats = frame.options.formats.filter((format) => {
             return !['mobiledoc', 'lexical'].includes(format);
         });
+    }
+}
+
+/**
+ * Selects all allowed columns for the given frame.
+ * 
+ * This removes the lexical and mobiledoc columns from the query. This is a performance improvement as we never intend
+ *  to expose those columns in the content API and they are very large datasets to be passing around and de/serializing.
+ * 
+ * NOTE: This is only intended for the Content API. We need these fields within Admin API responses.
+ *
+ * @param {Object} frame - The frame object.
+ */
+function selectAllAllowedColumns(frame) {
+    if (!frame.options.columns && !frame.options.selectRaw) {
+        // Because we're returning columns directly from the schema we need to remove info columns like @@UNIQUE_CONSTRAINTS@@ and @@INDEXES@@
+        frame.options.selectRaw = _.keys(_.omit(postsSchema, ['lexical','mobiledoc','@@INDEXES@@','@@UNIQUE_CONSTRAINTS@@'])).join(',');
+    } else if (frame.options.columns) {
+        frame.options.columns = frame.options.columns.filter((column) => {
+            return !['mobiledoc', 'lexical'].includes(column);
+        });
+    } else if (frame.options.selectRaw) {
+        frame.options.selectRaw = frame.options.selectRaw.split(',').map((column) => {
+            return column.trim();
+        }).filter((column) => {
+            return !['mobiledoc', 'lexical'].includes(column);
+        }).join(',');
     }
 }
 
@@ -97,7 +125,10 @@ module.exports = {
         forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
-            removeSourceFormats(frame);
+            // CASE: the content api endpoint for posts should not return mobiledoc or lexical
+            removeSourceFormats(frame); // remove from the format field
+            selectAllAllowedColumns(frame); // remove from any specified column or selectRaw options            
+
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
         }
