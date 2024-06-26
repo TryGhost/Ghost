@@ -157,7 +157,7 @@ test.describe('Embed card', async () => {
             await expect(urlInput).toHaveValue('badurl');
             await urlInput.press('Enter');
 
-            await expect(await page.getByTestId('embed-url-error-message')).toContainText('There was an error when parsing the URL.');
+            await expect(await page.getByTestId('embed-url-error-message')).toContainText('Oops, that link didn\'t work.');
         });
 
         test('retry button bring back url input', async function () {
@@ -358,7 +358,7 @@ test.describe('Embed card', async () => {
         await page.keyboard.type('badurl');
         await page.keyboard.press('Enter');
 
-        await expect(await page.getByTestId('embed-url-error-message')).toContainText('There was an error when parsing the URL.');
+        await expect(await page.getByTestId('embed-url-error-message')).toContainText('Oops, that link didn\'t work.');
 
         await page.keyboard.press('Escape');
 

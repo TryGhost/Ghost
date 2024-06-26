@@ -35,14 +35,14 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
     }
     if (hasError) {
         return (
-            <div className="min-width-[500px] flex flex-row items-center justify-between rounded-sm border border-red bg-red/5 px-3 py-2 text-sm leading-snug text-red" data-testid={`${dataTestId}-error-container`}>
+            <div className="min-width-[500px] flex flex-row items-center justify-between rounded-md border border-grey-300 px-3 py-2 text-sm font-normal leading-snug text-grey-900" data-testid={`${dataTestId}-error-container`}>
                 <div>
-                    <span className="mr-3" data-testid={`${dataTestId}-error-message`}>There was an error when parsing the URL.</span>
-                    <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-retry`} type="button"><span className="underline" onClick={handleRetry}><strong>Retry</strong></span></button>
-                    <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-pasteAsLink`} type="button"><span className="underline" onClick={() => handlePasteAsLink(value)}><strong>Paste URL as link</strong></span></button>
+                    <span className="mr-3" data-testid={`${dataTestId}-error-message`}>Oops, that link didn&apos;t work.</span>
+                    <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-retry`} type="button"><span className="font-semibold underline" onClick={handleRetry}>Retry</span></button>
+                    <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-pasteAsLink`} type="button"><span className="font-semibold underline" onClick={() => handlePasteAsLink(value)}>Paste URL as link</span></button>
                 </div>
                 <button className="cursor-pointer p-1" data-testid={`${dataTestId}-error-close`} type="button" onClick={handleClose}>
-                    <CloseIcon className="red size-3"/>
+                    <CloseIcon className="size-4 stroke-2 text-grey-400"/>
                 </button>
             </div>
         );
