@@ -441,7 +441,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     // code card shortcut
                     if (!isNested) {
                         const selection = $getSelection();
-                        const currentNode = selection.getNodes()[0];
+                        const currentNode = selection?.getNodes()[0];
                         if ($isTextNode(currentNode)) {
                             const textContent = currentNode.getTextContent();
                             if (textContent.match(/^```(\w{1,10})?/)) {
