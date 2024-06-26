@@ -8,7 +8,7 @@ const story = {
     component: TenorSelector,
     parameters: {
         status: {
-            type: 'inProgress'
+            type: 'Functional'
         }
     }
 };

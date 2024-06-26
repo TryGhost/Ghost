@@ -37,7 +37,7 @@ const story = {
     },
     parameters: {
         status: {
-            type: 'inProgress'
+            type: 'Functional'
         }
     }
 };

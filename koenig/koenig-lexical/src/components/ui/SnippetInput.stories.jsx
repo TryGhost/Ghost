@@ -7,7 +7,7 @@ const story = {
     component: SnippetInput,
     parameters: {
         status: {
-            type: 'inProgress'
+            type: 'Functional'
         }
     }
 };

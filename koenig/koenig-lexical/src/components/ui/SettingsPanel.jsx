@@ -266,6 +266,6 @@ export function MediaUploadSetting({className, label, hideLabel, onFileChange, i
 
 export function SettingsDivider() {
     return (
-        <hr className="-mx-6 mt-2 border-grey-200 dark:border-white/5" />
+        <hr className="-mx-6 mt-2 border-grey-250 dark:border-white/5" />
     );
 }
