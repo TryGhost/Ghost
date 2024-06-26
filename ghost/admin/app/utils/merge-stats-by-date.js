@@ -1,31 +1,26 @@
-export default function mergeDates(list, entry) {
-    const [current, ...rest] = list;
+export default function mergeStatsByDate(list) {
+    const reducedStatsByDate = list.reduce((acc, current) => {
+        const currentDate = current.date;
 
-    if (!current) {
-        return entry ? [entry] : [];
-    }
+        if (!acc[currentDate]) {
+            acc[currentDate] = {
+                date: currentDate,
+                count: 0,
+                positiveDelta: 0,
+                negativeDelta: 0,
+                signups: 0,
+                cancellations: 0
+            };
+        }
 
-    if (!entry) {
-        return mergeDates(rest, {
-            date: current.date,
-            count: current.count,
-            positiveDelta: current.positive_delta,
-            negativeDelta: current.negative_delta,
-            signups: current.signups,
-            cancellations: current.cancellations
-        });
-    }
+        acc[currentDate].count += current.count;
+        acc[currentDate].positiveDelta += current.positive_delta;
+        acc[currentDate].negativeDelta += current.negative_delta;
+        acc[currentDate].signups += current.signups;
+        acc[currentDate].cancellations += current.cancellations;
 
-    if (current.date === entry.date) {
-        return mergeDates(rest, {
-            date: entry.date,
-            count: entry.count + current.count,
-            positiveDelta: entry.positiveDelta + current.positive_delta,
-            negativeDelta: entry.negativeDelta + current.negative_delta,
-            signups: entry.signups + current.signups,
-            cancellations: entry.cancellations + current.cancellations
-        });
-    }
+        return acc;
+    }, {});
 
-    return [entry].concat(mergeDates(list));
+    return Object.values(reducedStatsByDate);
 }
