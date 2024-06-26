@@ -99,19 +99,14 @@ function createSetNullableMigration(table, column, options = {}) {
 /**
  * @param {string} table
  * @param {string[]|string} columns One or multiple columns (in case the index should be for multiple columns)
- * @param {string[]|string} rollbackIndexColumns One or multiple columns (in case the index should be for multiple columns).
- *  When rolling back an index that modifies a foreign key index, it needs to be replaced with the original index on the FK.
  * @returns {Migration}
  */
-function createAddIndexMigration(table, columns, rollbackIndexColumns = null) {
+function createAddIndexMigration(table, columns) {
     return createTransactionalMigration(
         async function up(knex) {
             await commands.addIndex(table, columns, knex);
         },
         async function down(knex) {
-            if (rollbackIndexColumns) {
-                await commands.addIndex(table, rollbackIndexColumns, knex);
-            }
             await commands.dropIndex(table, columns, knex);
         }
     );
