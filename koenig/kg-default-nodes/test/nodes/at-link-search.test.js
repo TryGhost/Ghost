@@ -150,4 +150,10 @@ describe('AtLinkSearchNode', function () {
         atLinkNode.setTextContent('test');
         atLinkNode.getTextContent().should.equal('test');
     }));
+
+    it('has "element"-like methods', editorTest(function () {
+        const atLinkNode = $createAtLinkSearchNode();
+        atLinkNode.getChildrenSize().should.equal(0);
+        should.equal(atLinkNode.getChildAtIndex(0), null);
+    }));
 });

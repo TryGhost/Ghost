@@ -86,6 +86,18 @@ export class AtLinkSearchNode extends TextNode {
         const self = this.getLatest();
         return self.__placeholder;
     }
+
+    // Lexical will incorrectly pick up this node as an element node when the
+    // cursor is placed by the SVG icon element in the parent AtLinkNode. We
+    // need these methods to avoid throwing errors in that case but otherwise
+    // behaviour is unaffected.
+    getChildrenSize() {
+        return 0;
+    }
+
+    getChildAtIndex() {
+        return null;
+    }
 }
 
 export function $createAtLinkSearchNode(text = '', placeholder = null) {
