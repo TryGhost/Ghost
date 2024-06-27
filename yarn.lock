@@ -18023,7 +18023,7 @@ fined@^1.0.1:
     object.pick "^1.2.0"
     parse-filepath "^1.0.1"
 
-fireworm@^0.7.0:
+fireworm@^0.7.2:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/fireworm/-/fireworm-0.7.2.tgz#bc5736515b48bd30bf3293a2062e0b0e0361537a"
   integrity sha512-GjebTzq+NKKhfmDxjKq3RXwQcN9xRmZWhnnuC9L+/x5wBQtR0aaQM50HsjrzJ2wc28v1vSdfOpELok0TKR4ddg==
@@ -30049,10 +30049,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testem@3.14.0, testem@^3.2.0:
-  version "3.14.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.14.0.tgz#ba563f5940d4c4c37e0b3db6d56b001b9aed80d4"
-  integrity sha512-hpybTZhio6DXUM7s0HsE8EOnN8zuA6LdNcz3EsTpQSnD56Cj6gSuFQx82wDKZQ6OmM1kvIBebxP+rEoOYBgCOA==
+testem@3.15.0, testem@^3.2.0:
+  version "3.15.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.15.0.tgz#c1f66ff2f6d0e9606c77c4de6b62bca088632d1a"
+  integrity sha512-vI1oQsjJW4QdVaH6ZmfNErzH7nzs0KzHJluocnfvbz1XRYGJKkIMGKWfsbD8MGGJOg+uzXcEek0/2W7BmGR4ug==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
@@ -30063,7 +30063,7 @@ testem@3.14.0, testem@^3.2.0:
     consolidate "^0.16.0"
     execa "^1.0.0"
     express "^4.10.7"
-    fireworm "^0.7.0"
+    fireworm "^0.7.2"
     glob "^7.0.4"
     http-proxy "^1.13.1"
     js-yaml "^3.2.5"
