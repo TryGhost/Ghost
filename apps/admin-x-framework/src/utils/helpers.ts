@@ -12,7 +12,7 @@ export function getGhostPaths(): IGhostPaths {
     const adminRoot = `${subdir}/ghost/`;
     const assetRoot = `${subdir}/ghost/assets/`;
     const apiRoot = `${subdir}/ghost/api/admin`;
-    const activityPubRoot = `${subdir}/activitypub`;
+    const activityPubRoot = `${subdir}/.ghost/activitypub`;
     return {subdir, adminRoot, assetRoot, apiRoot, activityPubRoot};
 }
 
