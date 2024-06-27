@@ -185,8 +185,8 @@ export default Route.extend(ShortcutsRoute, {
                 release: `ghost@${this.config.version}`,
                 beforeSend,
                 ignoreErrors: [
-                    // Browser autoplay policies
-                    /The play() request was interrupted because video-only background media was paused to save power./,
+                    // Browser autoplay policies (this regex covers a few)
+                    /The play() request was interrupted/,
 
                     // Network errors that we don't control
                     /Server was unreachable/,
