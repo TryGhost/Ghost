@@ -121,7 +121,7 @@ module.exports = function (Bookshelf) {
             }
 
             //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
-            if(unfilteredOptions.useBasicCount) {
+            if (unfilteredOptions.useBasicCount) {
                 options.useBasicCount = unfilteredOptions.useBasicCount;
             }
 
