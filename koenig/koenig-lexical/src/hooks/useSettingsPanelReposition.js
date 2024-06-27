@@ -215,7 +215,7 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
 
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                if (entry.contentBoxSize) {
+                if (entry.contentBoxSize?.[0]) {
                     const width = entry.contentBoxSize[0].inlineSize;
                     if (typeof width === 'number' && width !== prevWidth) {
                         panelRepositionDebounced(width);
