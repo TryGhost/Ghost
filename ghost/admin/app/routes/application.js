@@ -193,6 +193,8 @@ export default Route.extend(ShortcutsRoute, {
                     /NetworkError when attempting to fetch resource./,
                     /Failed to fetch/,
                     /Load failed/,
+                    /The operation was aborted./,
+
                     // TransitionAborted errors surface from normal application behaviour
                     // - https://github.com/emberjs/ember.js/issues/12505
                     /^TransitionAborted$/,
