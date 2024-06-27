@@ -120,6 +120,11 @@ module.exports = function (Bookshelf) {
                 });
             }
 
+            //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
+            if (unfilteredOptions.useBasicCount) {
+                options.useBasicCount = unfilteredOptions.useBasicCount;
+            }
+
             const response = await itemCollection.fetchPage(options);
             // Attributes are being filtered here, so they are not leaked into calling layer
             // where models are serialized to json and do not do more filtering.

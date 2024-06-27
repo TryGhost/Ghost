@@ -393,6 +393,9 @@ module.exports = class MemberBREADService {
             withRelated.add('email_recipients.email');
         }
 
+        //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
+        options.useBasicCount = true;
+
         const page = await this.memberRepository.list({
             ...options,
             withRelated: Array.from(withRelated)
