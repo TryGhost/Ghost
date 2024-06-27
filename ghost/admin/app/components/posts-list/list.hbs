@@ -1,14 +1,50 @@
 <MultiList::List @model={{@list}} class="posts-list gh-list {{unless @model "no-posts"}} feature-memberAttribution" as |list| >
-    {{#each @model as |post|}}
-        <list.item @id={{post.id}} class="gh-posts-list-item-group">
-            <PostsList::ListItem
-                @post={{post}}
-                data-test-post-id={{post.id}}
-            />
-        </list.item>
+    {{!-- conditionally display each of the post statuses --}}
+    {{!-- {{#if (not @model.scheduledPosts._isDone)}} --}}
+        {{#each @model.scheduledPosts as |post|}}
+            <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                <PostsList::ListItem
+                    @post={{post}}
+                    data-test-post-id={{post.id}}
+                />
+            </list.item>
+        {{/each}}
+    {{!-- {{else}} --}}
+        {{#if (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity)}}
+            {{#each @model.draftPosts as |post|}}
+                <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <PostsList::ListItem
+                        @post={{post}}
+                        data-test-post-id={{post.id}}
+                    />
+                </list.item>
+            {{/each}}
+        {{/if}}
+        {{#if (and @model.scheduledPosts.reachedInfinity @model.draftPosts.reachedInfinity)}}
+            {{#each @model.publishedAndSentPosts as |post|}}
+                <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <PostsList::ListItem
+                        @post={{post}}
+                        data-test-post-id={{post.id}}
+                    />
+                </list.item>
+            {{/each}}
+        {{/if}}
+    {{!-- {{else}} --}}
+        {{!-- {{yield}} --}}
+    {{!-- {{/if}} --}}
+    {{!-- {{#each-in @model as |postStatus posts|}}
+        {{#each posts as |post|}}
+            <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                <PostsList::ListItem
+                    @post={{post}}
+                    data-test-post-id={{post.id}}
+                />
+            </list.item>
+        {{/each}}
     {{else}}
         {{yield}}
-    {{/each}}
+    {{/each-in}} --}}
 </MultiList::List>
 
 {{!-- The currently selected item or items are passed to the context menu --}}

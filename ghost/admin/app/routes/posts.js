@@ -1,4 +1,5 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import RSVP from 'rsvp';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
@@ -18,7 +19,8 @@ export default class PostsRoute extends AuthenticatedRoute {
     };
 
     modelName = 'post';
-    perPage = 30;
+    // perPage = 30;
+    perPage = 10;
 
     constructor() {
         super(...arguments);
@@ -64,6 +66,7 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         let filter = this._filterString(filterParams);
+        console.log(`filter`, filter);
         if (!isBlank(filter)) {
             queryParams.filter = filter;
         }
@@ -73,9 +76,14 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         let perPage = this.perPage;
-        let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
+        // let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
-        return this.infinity.model(this.modelName, paginationSettings);
+        // return this.infinity.model(this.modelName, paginationSettings);
+        return RSVP.hash({
+            scheduledPosts: this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:scheduled'})),
+            draftPosts: this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:draft'})),
+            publishedAndSentPosts: this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:[published,sent]'}))
+        });
     }
 
     // trigger a background load of all tags and authors for use in filter dropdowns

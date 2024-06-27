@@ -51,11 +51,49 @@
             </li>
         </PostsList::List>
 
-        <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel}}
-            @scrollable=".gh-main"
-            @triggerOffset={{1000}} />
-    </section>
+    <!-- load the correct infinity loader, always scheduled first -->
+    
+            {{#if this.postsInfinityModel.scheduledPosts}}
+                <GhInfinityLoader
+                    @infinityModel={{this.postsInfinityModel.scheduledPosts}}
+                    @scrollable=".gh-main"
+                    @triggerOffset={{1000}} />
+            {{/if}}
+            {{#if (and this.postsInfinityModel.scheduledPosts this.postsInfinityModel.scheduledPosts.reachedInfinity)}}
+                <GhInfinityLoader
+                    @infinityModel={{this.postsInfinityModel.draftPosts}}
+                    @scrollable=".gh-main"
+                    @triggerOffset={{1000}} />
+            {{/if}}
+            {{#if (and this.postsInfinityModel.scheduledPosts.reachedInfinity this.postsInfinityModel.draftPosts.reachedInfinity)}}
+                <GhInfinityLoader
+                    @infinityModel={{this.postsInfinityModel.publishedAndSentPosts}}
+                    @scrollable=".gh-main"
+                    @triggerOffset={{1000}} />
+            {{/if}}
 
+    {{!-- {{#if (isdefined this.postsInfinityModel.scheduledPosts)}}
+        {{#unless this.postsInfinityModel.scheduledPosts._isDone}}
+            <GhInfinityLoader
+                @infinityModel={{this.postsInfinityModel.scheduledPosts}}
+                @scrollable=".gh-main"
+                @triggerOffset={{1000}} />
+        {{/unless}}
+    {{else if (isdefined this.postsInfinityModel.draftPosts)}}
+        {{#unless this.postsInfinityModel.draftPosts._isDone}}
+            <GhInfinityLoader
+                @infinityModel={{this.postsInfinityModel.draftPosts}}
+                @scrollable=".gh-main"
+                @triggerOffset={{1000}} />
+        {{/unless}}
+    {{else if (isdefined this.postsInfinityModel.publishedAndSentPosts)}}
+        {{#unless this.postsInfinityModel.publishedAndSentPosts._isDone}}
+            <GhInfinityLoader
+                @infinityModel={{this.postsInfinityModel.publishedAndSentPosts}}
+                @scrollable=".gh-main"
+                @triggerOffset={{1000}} />
+        {{/unless}}
+    {{/if}} --}}
+    </section>
     {{outlet}}
 </section>
