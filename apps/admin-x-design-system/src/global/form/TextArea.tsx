@@ -18,7 +18,6 @@ export interface TextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     error?: boolean;
     placeholder?: string;
     hint?: React.ReactNode;
-    clearBg?: boolean;
     fontStyle?: FontStyles;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
