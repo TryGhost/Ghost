@@ -30,7 +30,7 @@
 
     <section class="view-container content-list">
         <PostsList::List
-            @model={{this.postsInfinityModel}}
+            @model={{@model}}
             @list={{this.selectionList}}
         >
             <li class="no-posts-box" data-test-no-posts-box>
@@ -52,32 +52,21 @@
         </PostsList::List>
 
     {{!-- only show one infinity loader wheel at a time - always defer to scheduled posts and then draft posts --}}    
-    {{#if this.postsInfinityModel.scheduledPosts}}
+    {{#if @model.scheduledPosts}}
         <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel.scheduledPosts}}
+            @infinityModel={{@model.scheduledPosts}}
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
     {{/if}}
-    {{#if (or (not isdefined @model.scheduledPosts) (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity))}}
+    {{#if (and @model.draftPosts (or (not isdefined @model.scheduledPosts) (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity)))}}
         <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel.draftPosts}}
+            @infinityModel={{@model.draftPosts}}
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
     {{/if}}
-    {{!-- TODO: frankly this logic sucks but it's less messy than some ways --}}
-    {{#if (and (not isdefined @model.scheduledPosts) (not isdefined @model.draftPosts))}}
+    {{#if (and @model.publishedAndSentPosts (and (or (not isdefined @model.scheduledPosts) @model.scheduledPosts.reachedInfinity) (or (not isdefined @model.draftPosts) @model.draftPosts.reachedInfinity)))}}
         <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel.publishedAndSentPosts}}
-            @scrollable=".gh-main"
-            @triggerOffset={{1000}} />
-    {{else if (and (not undefined this.postsInfinityModel.scheduledPosts) this.postsInfinity.scheduledPosts.reachedInfinity)}}
-        <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel.publishedAndSentPosts}}
-            @scrollable=".gh-main"
-            @triggerOffset={{1000}} />
-    {{else if (and (not undefined this.postsInfinityModel.publishedAndSentPosts) this.postsInfinity.publishedAndSentPosts.reachedInfinity)}}
-        <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel.publishedAndSentPosts}}
+            @infinityModel={{@model.publishedAndSentPosts}}
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
     {{/if}}

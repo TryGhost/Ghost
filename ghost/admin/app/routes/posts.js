@@ -80,9 +80,9 @@ export default class PostsRoute extends AuthenticatedRoute {
 
         // return this.infinity.model(this.modelName, paginationSettings);
         return RSVP.hash({
-            scheduledPosts: this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:scheduled'})),
-            draftPosts: this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:draft'})),
-            publishedAndSentPosts: this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:[published,sent]'}))
+            scheduledPosts: filter.includes('scheduled') ? this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:scheduled'})) : undefined,
+            draftPosts: filter.includes('draft') ? this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:draft'})) : undefined,
+            publishedAndSentPosts: (filter.includes('published') || filter.includes('sent')) ? this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, {...queryParams, filter: 'status:[published,sent]'})) : undefined
         });
     }
 
