@@ -41,7 +41,7 @@ describe('Acceptance: Content', function () {
             return await authenticateSession();
         });
 
-        it.only('displays and filters posts', async function () {
+        it('displays and filters posts', async function () {
             await visit('/posts');
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages
@@ -91,7 +91,7 @@ describe('Acceptance: Content', function () {
             expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[published,sent]');
 
             //  check order display is correct
-            let postIds = findAll('[data-test-post-id]').map((el) => el.getAttribute('data-test-post-id'));
+            let postIds = findAll('[data-test-post-id]').map(el => el.getAttribute('data-test-post-id'));
             expect(postIds, 'post order').to.deep.equal([scheduledPost.id, draftPost.id, publishedPost.id, authorPost.id]);
 
             // show all posts by editor
