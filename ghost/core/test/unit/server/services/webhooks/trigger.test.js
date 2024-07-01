@@ -1,83 +1,155 @@
 const assert = require('assert/strict');
+const crypto = require('crypto');
 const sinon = require('sinon');
 
 const WebhookTrigger = require('../../../../../core/server/services/webhooks/WebhookTrigger');
 
+const SIGNATURE_HEADER = 'X-Ghost-Signature';
+const SIGNATURE_REGEX = /^sha256=[a-z0-9]+, t=\d+$/;
+
 describe('Webhook Service', function () {
-    const models = {
-        Webhook: {
-            edit: () => sinon.stub().resolves(null),
-            destroy: () => sinon.stub().resolves(null),
-            findAllByEvent: () => sinon.stub().resolves(null),
-            getByEventAndTarget: () => sinon.stub().resolves(null),
-            add: () => sinon.stub().resolves(null)
-        }
-    };
+    const WEBHOOK_EVENT = 'post.added';
+    const WEBHOOK_TARGET_URL = 'http://example.com';
+    const WEBHOOK_SECRET = 'abc123dontstealme';
 
-    let payload = sinon.stub().resolves(null);
+    let models, payload, request, webhookTrigger;
 
-    afterEach(function () {
-        sinon.restore();
+    beforeEach(function () {
+        models = {
+            Webhook: {
+                edit: sinon.stub(),
+                destroy: sinon.stub(),
+                findAllByEvent: sinon.stub(),
+                getByEventAndTarget: sinon.stub(),
+                add: sinon.stub()
+            }
+        };
+
+        models.Webhook.edit.resolves(null);
+        models.Webhook.destroy.resolves(null);
+        models.Webhook.findAllByEvent.resolves(null);
+        models.Webhook.getByEventAndTarget.resolves(null);
+        models.Webhook.add.resolves(null);
+
+        payload = sinon.stub();
+        request = sinon.stub().resolves({});
+
+        webhookTrigger = new WebhookTrigger({models, payload, request});
+
+        sinon.stub(webhookTrigger, 'onSuccess').callsFake(() => Promise.resolve());
+        sinon.stub(webhookTrigger, 'onError').callsFake(() => Promise.resolve());
     });
 
     describe('trigger', function () {
-        it('Does not trigger payload handler when event and model that has no hooks registered', async function () {
-            sinon.stub(models.Webhook, 'findAllByEvent')
-                .withArgs('post.added', {context: {internal: true}})
+        it('does not trigger payload handler when there are no hooks registered for an event', async function () {
+            models.Webhook.findAllByEvent
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
                 .resolves({models: []});
 
-            const webhookTrigger = new WebhookTrigger({
-                models,
-                payload
-            });
-
-            await webhookTrigger.trigger('post.added');
+            await webhookTrigger.trigger(WEBHOOK_EVENT);
 
             assert.equal(models.Webhook.findAllByEvent.called, true);
             assert.equal(payload.called, false);
+            assert.equal(request.called, false);
         });
 
-        it('Does triggers payload handler and request when event when model has a registered hook', async function () {
-            const postModelStub = sinon.stub();
-            const webhookModelStub = {
-                get: () => {}
+        it('triggers payload handler when there are hooks registered for an event', async function () {
+            const webhookModel = {
+                get: sinon.stub()
             };
-            sinon.stub(webhookModelStub, 'get')
-                .withArgs('event').returns('post.added')
-                .withArgs('target_url').returns('http://example.com');
 
-            const requestStub = sinon.stub().resolves({});
+            webhookModel.get
+                .withArgs('event').returns(WEBHOOK_EVENT)
+                .withArgs('target_url').returns(WEBHOOK_TARGET_URL);
 
-            sinon.stub(models.Webhook, 'findAllByEvent')
-                .withArgs('post.added', {context: {internal: true}})
-                .resolves({models: [webhookModelStub]});
+            models.Webhook.findAllByEvent
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
+                .resolves({models: [webhookModel]});
 
-            payload = sinon.stub().resolves({data: [1]});
+            const postModel = sinon.stub();
 
-            const webhookTrigger = new WebhookTrigger({
-                models,
-                payload,
-                request: requestStub
-            });
+            payload
+                .withArgs(WEBHOOK_EVENT, postModel)
+                .resolves({data: [1]});
 
-            sinon.stub(webhookTrigger, 'onSuccess').callsFake(function () {
-                return Promise.resolve();
-            });
-            sinon.stub(webhookTrigger, 'onError').callsFake(function () {
-                return Promise.resolve();
-            });
-            await webhookTrigger.trigger('post.added', postModelStub);
+            await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
             assert.equal(models.Webhook.findAllByEvent.called, true);
             assert.equal(payload.called, true);
+            assert.equal(request.called, true);
+            assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
+            assert.equal(request.args[0][1].body, '{"data":[1]}');
+            assert.deepEqual(Object.keys(request.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
+            assert.equal(request.args[0][1].headers['Content-Length'], 12);
+            assert.equal(request.args[0][1].headers['Content-Type'], 'application/json');
+            assert.match(request.args[0][1].headers['Content-Version'], /v\d+\.\d+/);
+        });
 
-            assert.equal(requestStub.called, true);
-            assert.equal(requestStub.args[0][0], 'http://example.com');
-            assert.equal(requestStub.args[0][1].body, '{"data":[1]}');
-            assert.deepEqual(Object.keys(requestStub.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
-            assert.equal(requestStub.args[0][1].headers['Content-Length'], 12);
-            assert.equal(requestStub.args[0][1].headers['Content-Type'], 'application/json');
-            assert.match(requestStub.args[0][1].headers['Content-Version'], /v\d+\.\d+/);
+        it('includes a signature header when a webhook has a secret', async function () {
+            const webhookModel = {
+                get: sinon.stub()
+            };
+
+            webhookModel.get
+                .withArgs('event').returns(WEBHOOK_EVENT)
+                .withArgs('target_url').returns(WEBHOOK_TARGET_URL)
+                .withArgs('secret').returns(WEBHOOK_SECRET);
+
+            models.Webhook.findAllByEvent
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
+                .resolves({models: [webhookModel]});
+
+            const postModel = sinon.stub();
+
+            payload
+                .withArgs(WEBHOOK_EVENT, postModel)
+                .resolves({data: [1]});
+
+            await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
+
+            assert.equal(models.Webhook.findAllByEvent.called, true);
+            assert.equal(payload.called, true);
+            assert.equal(request.called, true);
+            assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
+
+            const header = request.args[0][1].headers[SIGNATURE_HEADER];
+            assert.equal(SIGNATURE_REGEX.test(header), true);
+        });
+
+        it('uses the request payload and a timestamp to generate the hash in the signature header', async function () {
+            const clock = sinon.useFakeTimers();
+            const ts = Date.now();
+            const webhookModel = {
+                get: sinon.stub()
+            };
+
+            webhookModel.get
+                .withArgs('event').returns(WEBHOOK_EVENT)
+                .withArgs('target_url').returns(WEBHOOK_TARGET_URL)
+                .withArgs('secret').returns(WEBHOOK_SECRET);
+
+            models.Webhook.findAllByEvent
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
+                .resolves({models: [webhookModel]});
+
+            const postModel = sinon.stub();
+
+            payload
+                .withArgs(WEBHOOK_EVENT, postModel)
+                .resolves({data: [1]});
+
+            await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
+
+            assert.equal(models.Webhook.findAllByEvent.called, true);
+            assert.equal(payload.called, true);
+            assert.equal(request.called, true);
+            assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
+
+            const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`{"data":[1]}${ts}`).digest('hex')}, t=${ts}`;
+            const header = request.args[0][1].headers[SIGNATURE_HEADER];
+            assert.equal(expectedHeader, header);
+
+            clock.restore();
         });
     });
 });
