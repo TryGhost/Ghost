@@ -29,6 +29,7 @@ export default class MemberController extends Controller {
     @tracked showImpersonateMemberModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
+    @tracked scratchMember = null;
 
     _previousLabels = null;
     _previousNewsletters = null;
@@ -56,6 +57,12 @@ export default class MemberController extends Controller {
 
     set member(member) {
         this.model = member;
+
+        if (member !== this.scratchMember?.member) {
+            const scratchMember = EmberObject.create({member});
+            SCRATCH_PROPS.forEach(prop => defineProperty(scratchMember, prop, boundOneWay(`member.${prop}`)));
+            this.scratchMember = scratchMember;
+        }
     }
 
     get dirtyAttributes() {
@@ -90,12 +97,6 @@ export default class MemberController extends Controller {
         options.unshiftObject({name: 'All labels', slug: null});
 
         return options;
-    }
-
-    get scratchMember() {
-        let scratchMember = EmberObject.create({member: this.member});
-        SCRATCH_PROPS.forEach(prop => defineProperty(scratchMember, prop, boundOneWay(`member.${prop}`)));
-        return scratchMember;
     }
 
     get subscribedAt() {
