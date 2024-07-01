@@ -4,7 +4,6 @@ import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
-import { filter } from 'keymaster';
 
 export default class PostsRoute extends AuthenticatedRoute {
     @service infinity;
