@@ -51,7 +51,7 @@ test.describe('AMP integration', async () => {
         const ampToggle = ampModal.getByRole('switch');
         await ampToggle.click();
 
-        await ampModal.getByRole('button', {name: 'Cancel'}).click();
+        await ampModal.getByRole('button', {name: 'Close'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
