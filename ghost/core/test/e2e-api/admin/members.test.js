@@ -2131,6 +2131,83 @@ describe('Members API', function () {
             });
     });
 
+    it('can change the email address', async function () {
+        const memberToChange = {
+            name: 'Jon Snow',
+            email: 'jon.snow@test.com',
+            newsletters: []
+        };
+
+        const memberChanged = {
+            email: 'aegon.targaryen@test.com'
+        };
+
+        // Create member
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [memberToChange]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        // Update email address
+        const newMember = body.members[0];
+        await agent
+            .put(`/members/${newMember.id}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Check member events
+        await assertMemberEvents({
+            eventType: 'MemberEmailChangeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            ]
+        });
+
+        // Check activity feed
+        const {body: eventsBody} = await agent
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const events = eventsBody.events;
+
+        matchArrayWithoutOrder(events, [
+            {
+                type: 'email_change_event',
+                data: {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            },
+            {
+                type: 'signup_event'
+            }
+        ]);
+    });
+
     describe('email_disabled', function () {
         const testMemberId = '6543c13c13575e086a06b222';
         const suppressedEmail = 'suppressed@email.com';

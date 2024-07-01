@@ -2910,12 +2910,12 @@ Object {
     Object {
       "comped": 4,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-      "free": 4,
+      "free": 5,
       "paid": 2,
     },
   ],
   "resource": "members",
-  "total": 10,
+  "total": 11,
 }
 `;
 
@@ -6315,6 +6315,130 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "853",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API can change the email address 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "jon.snow@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Jon Snow",
+      "newsletters": Array [],
+      "note": null,
+      "status": "free",
+      "subscribed": false,
+      "subscriptions": Any<Array>,
+      "tiers": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API can change the email address 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "665",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API can change the email address 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "aegon.targaryen@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Jon Snow",
+      "newsletters": Array [],
+      "note": null,
+      "status": "free",
+      "subscribed": false,
+      "subscriptions": Any<Array>,
+      "tiers": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API can change the email address 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "672",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API can change the email address 5: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1118",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

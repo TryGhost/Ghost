@@ -114,6 +114,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'subscriptions';
         }
 
+        if (event.type === 'email_change_event') {
+            icon = 'email-changed';
+        }
+
         return 'event-' + icon;
     }
 
@@ -208,8 +212,15 @@ export default class ParseMemberEventHelper extends Helper {
             return 'less like this';
         }
 
+        if (event.type === 'email_change_event') {
+            if (event.data.from_email && event.data.to_email) {
+                return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
+            }
+            return 'Email address changed';
+        }
+
         if (event.type === 'donation_event') {
-            return `Made a one-time payment`;
+            return 'Made a one-time payment';
         }
     }
 

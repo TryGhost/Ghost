@@ -122,7 +122,8 @@ module.exports = function MembersAPI({
         EmailSpamComplaintEvent,
         Comment,
         labsService,
-        memberAttributionService
+        memberAttributionService,
+        MemberEmailChangeEvent
     });
 
     const memberBREADService = new MemberBREADService({
