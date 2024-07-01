@@ -160,8 +160,8 @@
 .gh-og-preview {
     background: #fff;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset,
-    0 -1px 0 0 rgba(0, 0, 0, 0.06) inset,
-    0 1px 4px rgba(0, 0, 0, 0.1);
+        0 -1px 0 0 rgba(0, 0, 0, 0.06) inset,
+            0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .gh-og-preview-image {
@@ -229,7 +229,7 @@
     border-style: solid;
     border-color: #e1e8ed;
     color: #292f33;
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 1.4rem;
     line-height: 1.3em;
     background: #fff;
@@ -283,7 +283,7 @@
 /* NEW editor
 /* ---------------------------------------------------------- */
 
-.gh-main > section.gh-editor-fullscreen {
+.gh-main>section.gh-editor-fullscreen {
     position: fixed;
     top: 0;
     left: 0;
@@ -449,7 +449,7 @@
 .gh-editor-feedback-dropdown {
     min-width: 400px;
     border-radius: 3px;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .04), 0 8px 20px -3px rgba(0, 0, 0, .2);
     padding: 20px;
     background-color: #fff;
     background-clip: padding-box;
@@ -553,13 +553,20 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 4px;
 }
 
+.gh-editor-feature-image {
+    position: relative;
+}
+
+.gh-editor-feature-image img {
+    display: block;
+}
 .gh-editor-feature-image-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 100px;
-    background-image: linear-gradient(180deg,rgba(0,0,0,.2),transparent 40%,transparent);
+    bottom: 0;
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, .2), transparent 40%, transparent);
     transition: all .1s ease-in;
     opacity: 0;
 }
@@ -677,12 +684,19 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     stroke: var(--midgrey-l2);
 }
 
+.gh-editor-feature-image-caption-container {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .8rem 0;
+}
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;
     min-height: 24px;
-    margin: 0 0 1.2rem 0;
-    padding: 0;
+    margin: 0;
+    padding: 0 3.6rem 0 0;
     outline: none;
     border-width: 0;
     border-style: none;
@@ -1058,7 +1072,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 100%;
     height: 100%;
     border: 2px solid var(--blue);
-    background-color: rgba(255,255,255,0.6);
+    background-color: rgba(255, 255, 255, 0.6);
 }
 
 .gh-editor-drop-target .drop-target-message {
@@ -1109,6 +1123,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     position: relative;
     vertical-align: bottom;
 }
+
 .editor-toolbar .fa-check:before {
     position: absolute;
     right: 3px;
@@ -1197,8 +1212,8 @@ figure {
     left: -20px;
     width: 20px;
     height: 100%;
-    background: rgb(255,255,255);
-    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+    background: rgb(255, 255, 255);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
     z-index: 999;
     opacity: 0;
     transition: all 250ms ease-out;
@@ -1211,22 +1226,22 @@ figure {
     right: 0;
     width: 20px;
     height: 100%;
-    background: rgb(255,255,255);
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    background: rgb(255, 255, 255);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
     z-index: 999;
 }
 
 .ember-power-select-option[aria-current="true"] .kg-settings-link-url.scroller::before {
     opacity: 1;
     left: 0;
-    background: linear-gradient(90deg, rgba(244,245,245,1) 0%, rgba(244,245,245,0) 100%);
+    background: linear-gradient(90deg, rgba(244, 245, 245, 1) 0%, rgba(244, 245, 245, 0) 100%);
 }
 
 .ember-power-select-option[aria-current="true"] .kg-settings-link-url::after {
-    background: linear-gradient(90deg, rgba(244,245,245,0) 0%, rgba(244,245,245,1) 100%);
+    background: linear-gradient(90deg, rgba(244, 245, 245, 0) 0%, rgba(244, 245, 245, 1) 100%);
 }
 
-.kg-settings-link-url > span {
+.kg-settings-link-url>span {
     display: inline-block;
     font-weight: 400;
     font-size: 1.2rem;

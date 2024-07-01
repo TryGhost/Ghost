@@ -1148,7 +1148,7 @@ table.body h2 span {
 
                                             <tr class=\\"feature-image-row\\">
                                                 <td class=\\"feature-image
-                                                \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-bottom: 30px; width: 100%;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/super_photo.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
+                                                \\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-bottom: 30px; width: 100%; text-align: center;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/super_photo.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
                                             </tr>
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content-sans-serif\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; font-size: 17px; line-height: 1.5em; color: #000000; padding-bottom: 20px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); max-width: 600px;\\" valign=\\"top\\">
@@ -1360,7 +1360,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28343",
+  "content-length": "28380",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
