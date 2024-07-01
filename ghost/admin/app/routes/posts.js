@@ -64,12 +64,6 @@ export default class PostsRoute extends AuthenticatedRoute {
             filterParams.authors = params.author;
         }
 
-        // if (!isBlank(params.order)) {
-        //     queryParams.order = params.order;
-        // }
-
-        console.log(`params`, params)
-
         let perPage = this.perPage;
 
         const filterStatuses = filterParams.status;
