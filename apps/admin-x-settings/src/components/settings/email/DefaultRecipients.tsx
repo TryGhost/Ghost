@@ -125,7 +125,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const form = (
         <SettingGroupContent columns={1}>
             <Select
-                hint='Who should be able to subscribe to your site?'
+                hint='Who should receive your posts by default?'
                 options={RECIPIENT_FILTER_OPTIONS}
                 selectedOption={RECIPIENT_FILTER_OPTIONS.find(option => option.value === selectedOption)}
                 testId='default-recipients-select'
