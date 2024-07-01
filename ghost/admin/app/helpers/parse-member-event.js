@@ -214,9 +214,9 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'email_change_event') {
             if (event.data.from_email && event.data.to_email) {
-                return `Changed email address (${event.data.from_email} → ${event.data.to_email})`;
+                return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
             }
-            return `Changed email address`;
+            return `Email address changed`;
         }
 
         if (event.type === 'donation_event') {
