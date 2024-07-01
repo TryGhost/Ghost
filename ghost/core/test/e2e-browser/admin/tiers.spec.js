@@ -80,7 +80,8 @@ test.describe('Admin', () => {
                 await tierModal.getByLabel('Description').fill(updatedDescription);
                 await tierModal.getByLabel('Monthly price').fill(updatedMonthlyPrice);
                 await tierModal.getByLabel('Yearly price').fill(updatedYearlyPrice);
-                await tierModal.getByRole('button', {name: 'Save & close'}).click();
+                await tierModal.getByRole('button', {name: 'Save'}).click();
+                await tierModal.getByRole('button', {name: 'Close'}).click();
             });
 
             const portalFrame = await test.step('Go to website and open portal', async () => {
@@ -128,7 +129,8 @@ test.describe('Admin', () => {
                 const tierModal = await openTierModal(sharedPage, {slug});
                 await tierModal.getByRole('button', {name: 'Archive tier'}).click();
                 await sharedPage.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
-                await tierModal.getByRole('button', {name: 'Save & close'}).click();
+                await tierModal.getByRole('button', {name: 'Save'}).click();
+                await tierModal.getByRole('button', {name: 'Close'}).click();
             });
 
             await test.step('Archived tier should not be available in active tiers', async () => {
@@ -156,7 +158,8 @@ test.describe('Admin', () => {
                 const tierModal = await openTierModal(sharedPage, {slug});
                 await tierModal.getByRole('button', {name: 'Reactivate tier'}).click();
                 await sharedPage.getByTestId('confirmation-modal').getByRole('button', {name: 'Reactivate'}).click();
-                await tierModal.getByRole('button', {name: 'Save & close'}).click();
+                await tierModal.getByRole('button', {name: 'Save'}).click();
+                await tierModal.getByRole('button', {name: 'Close'}).click();
             });
 
             await test.step('Unarchived tier should be available in active tiers', async () => {
