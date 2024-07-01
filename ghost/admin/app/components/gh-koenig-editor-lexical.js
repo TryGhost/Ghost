@@ -236,7 +236,7 @@ export default class GhKoenigEditorLexical extends Component {
     // otherwise the browser will defocus the editor and the cursor will disappear
     @action
     focusEditor(event) {
-        if (!this.skipFocusEditor && event.target.classList.contains('gh-koenig-editor-pane')) {
+        if (!this.skipFocusEditor && event.target.classList.contains('gh-koenig-editor-pane') && this.editorAPI) {
             let editorCanvas = this.editorAPI.editorInstance.getRootElement();
             let {bottom} = editorCanvas.getBoundingClientRect();
 

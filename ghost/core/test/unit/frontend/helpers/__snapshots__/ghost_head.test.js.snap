@@ -281,6 +281,19 @@ Object {
 }
 `;
 
+exports[`{{ghost_head}} helper accent_color does not override code injection 1 1`] = `
+Object {
+  "rendered": "<meta name=\\"generator\\" content=\\"Ghost 0.3\\">
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #site-setting;}</style>
+    
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
+    <style>:root {--ghost-accent-color: #site-code-injection}</style>
+    <style>:root {--ghost-accent-color: #post-code-injection}</style>",
+}
+`;
+
 exports[`{{ghost_head}} helper accent_color includes style tag on templates with no context 1 1`] = `
 Object {
   "rendered": "<meta name=\\"generator\\" content=\\"Ghost 0.3\\">

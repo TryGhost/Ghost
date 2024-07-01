@@ -448,6 +448,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchCollectionPosts,
             fetchEmbed,
             fetchLabels,
+            renderLabels: !this.session.user.isContributor,
             feature: {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
@@ -461,7 +462,8 @@ export default class KoenigLexicalEditor extends Component {
             membersEnabled: this.settings.membersSignupAccess === 'all',
             searchLinks,
             siteTitle: this.settings.title,
-            siteDescription: this.settings.description
+            siteDescription: this.settings.description,
+            siteUrl: this.config.getSiteUrl('/')
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 

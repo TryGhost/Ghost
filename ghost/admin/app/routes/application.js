@@ -185,6 +185,17 @@ export default Route.extend(ShortcutsRoute, {
                 release: `ghost@${this.config.version}`,
                 beforeSend,
                 ignoreErrors: [
+                    // Browser autoplay policies (this regex covers a few)
+                    /The play() request was interrupted/,
+                    /The request is not allowed by the user agent or the platform in the current context/,
+
+                    // Network errors that we don't control
+                    /Server was unreachable/,
+                    /NetworkError when attempting to fetch resource./,
+                    /Failed to fetch/,
+                    /Load failed/,
+                    /The operation was aborted./,
+
                     // TransitionAborted errors surface from normal application behaviour
                     // - https://github.com/emberjs/ember.js/issues/12505
                     /^TransitionAborted$/,
@@ -203,7 +214,7 @@ export default Route.extend(ShortcutsRoute, {
             try {
                 // Session Replay on errors
                 // Docs: https://docs.sentry.io/platforms/javascript/session-replay
-                sentryConfig.replaysOnErrorSampleRate = 1.0;
+                sentryConfig.replaysOnErrorSampleRate = 0.5;
                 sentryConfig.integrations.push(
                     // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
                     // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
