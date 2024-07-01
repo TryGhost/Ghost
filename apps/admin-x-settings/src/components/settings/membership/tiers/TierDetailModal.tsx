@@ -1,4 +1,4 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
@@ -17,7 +17,6 @@ export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
 const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
 
-    const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
@@ -96,10 +95,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     ]);
                 }
             }
-        },
-        onSavedStateReset: () => {
-            modal.remove();
-            updateRoute('tiers');
         },
         onSaveError: handleError
     });
@@ -185,10 +180,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             updateRoute('tiers');
         }}
         buttonsDisabled={okProps.disabled}
+        cancelLabel='Close'
         dirty={saveState === 'unsaved'}
         leftButtonProps={leftButtonProps}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='lg'
         testId='tier-detail-modal'
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
