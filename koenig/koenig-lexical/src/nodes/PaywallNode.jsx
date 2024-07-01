@@ -13,7 +13,7 @@ export class PaywallNode extends BasePaywallNode {
         desc: 'Attract signups with a public intro',
         Icon: DividerCardIcon,
         insertCommand: INSERT_PAYWALL_COMMAND,
-        matches: ['public preview', 'public intro', 'members only', 'paywall'],
+        matches: ['public preview','preview', 'public intro', 'members only', 'paywall'],
         priority: 9,
         shortcut: '/paywall'
     };
