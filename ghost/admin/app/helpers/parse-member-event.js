@@ -216,11 +216,11 @@ export default class ParseMemberEventHelper extends Helper {
             if (event.data.from_email && event.data.to_email) {
                 return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
             }
-            return `Email address changed`;
+            return 'Email address changed';
         }
 
         if (event.type === 'donation_event') {
-            return `Made a one-time payment`;
+            return 'Made a one-time payment';
         }
     }
 
