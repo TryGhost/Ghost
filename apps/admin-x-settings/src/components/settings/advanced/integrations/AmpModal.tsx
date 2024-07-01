@@ -13,11 +13,11 @@ const AmpModal = NiceModal.create(() => {
     const {settings} = useGlobalData();
     const [ampEnabled] = getSettingValues<boolean>(settings, ['amp']);
     const [ampId] = getSettingValues<string>(settings, ['amp_gtag_id']);
-    const [enabled, setEnabled] = useState(false);
     const [trackingId, setTrackingId] = useState<string | null>('');
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
     const [okLabel, setOkLabel] = useState('Save');
+    const [enabled, setEnabled] = useState<boolean>(!!ampEnabled);
 
     useEffect(() => {
         setEnabled(ampEnabled || false);
