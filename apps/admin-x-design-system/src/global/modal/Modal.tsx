@@ -27,6 +27,7 @@ export interface ModalProps {
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
+    okDisabled?: boolean;
     footer?: boolean | React.ReactNode;
     header?: boolean;
     padding?: boolean;
@@ -62,6 +63,7 @@ const Modal: React.FC<ModalProps> = ({
     header,
     leftButtonProps,
     buttonsDisabled,
+    okDisabled,
     padding = true,
     onOk,
     okColor = 'black',
@@ -179,7 +181,7 @@ const Modal: React.FC<ModalProps> = ({
                 color: okColor,
                 className: 'min-w-[80px]',
                 onClick: onOk,
-                disabled: buttonsDisabled,
+                disabled: buttonsDisabled || okDisabled,
                 loading: okLoading
             });
         }
