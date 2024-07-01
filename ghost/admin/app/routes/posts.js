@@ -19,8 +19,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     };
 
     modelName = 'post';
-    // perPage = 30;
-    perPage = 10;
+    perPage = 30;
 
     constructor() {
         super(...arguments);
@@ -65,28 +64,30 @@ export default class PostsRoute extends AuthenticatedRoute {
             filterParams.authors = params.author;
         }
 
-        if (!isBlank(params.order)) {
-            queryParams.order = params.order;
-        }
+        // if (!isBlank(params.order)) {
+        //     queryParams.order = params.order;
+        // }
+
+        console.log(`params`, params)
 
         let perPage = this.perPage;
 
         const filterStatuses = filterParams.status;
         let models = {};
         if (filterStatuses.includes('scheduled')) {
-            let scheduledPostsParams = {...queryParams, filter: this._filterString({...filterParams, status: 'scheduled'})};
+            let scheduledPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
             models.scheduledPosts = this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, scheduledPostsParams));
         }
         if (filterStatuses.includes('draft')) {
-            let draftPostsParams = {...queryParams, filter: this._filterString({...filterParams, status: 'draft'})};
+            let draftPostsParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
             models.draftPosts = this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, draftPostsParams));
         }
         if (filterStatuses.includes('published') || filterStatuses.includes('sent')) {
             let publishedAndSentPostsParams;
             if (filterStatuses.includes('published') && filterStatuses.includes('sent')) {
-                publishedAndSentPostsParams = {...queryParams, filter: this._filterString({...filterParams, status: '[published,sent]'})};
+                publishedAndSentPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: '[published,sent]'})};
             } else {
-                publishedAndSentPostsParams = {...queryParams, filter: this._filterString({...filterParams, status: filterStatuses.includes('published') ? 'published' : 'sent'})};
+                publishedAndSentPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: filterStatuses.includes('published') ? 'published' : 'sent'})};
             }
             models.publishedAndSentPosts = this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, publishedAndSentPostsParams));
         }
