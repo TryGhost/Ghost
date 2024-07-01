@@ -33,7 +33,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                 onKeyDown={() => clearError('email')}
             />
             <TextField
-                hint="https://example.com/author"
+                hint={`https://example.com/author/${user.slug}`}
                 maxLength={191}
                 title="Slug"
                 value={user.slug}
