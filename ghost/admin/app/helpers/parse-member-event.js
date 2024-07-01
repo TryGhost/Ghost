@@ -330,7 +330,7 @@ export default class ParseMemberEventHelper extends Helper {
      * Get internal route props for a clickable object
      */
     getRoute(event) {
-        if (['comment_event', 'click_event', 'feedback_event'].includes(event.type)) {
+        if (['click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
                 return {
                     name: 'posts.analytics',
