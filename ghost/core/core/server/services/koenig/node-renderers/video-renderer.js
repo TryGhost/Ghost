@@ -118,7 +118,7 @@ export function emailCardTemplate({node, options, cardClasses}) {
                 >
                     <tr style="mso-hide: all">
                         <td width="25%" style="visibility: hidden; mso-hide: all">
-                            <img src="${posterSpacerSrc}" alt="" width="100%" border="0" style="height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
+                            <img src="${posterSpacerSrc}" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
                         </td>
                         <td width="50%" align="center" valign="middle" style="vertical-align: middle; mso-hide: all;">
                             <div class="kg-video-play-button" style="mso-hide: all"><div style="mso-hide: all"></div></div>
