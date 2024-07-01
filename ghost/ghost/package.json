@@ -20,7 +20,7 @@
     "build"
   ],
   "devDependencies": {
-    "@nestjs/testing": "10.3.9",
+    "@nestjs/testing": "10.3.10",
     "@types/node": "20.14.8",
     "@types/sinon": "^17.0.3",
     "@types/supertest": "^6.0.2",
@@ -34,9 +34,9 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@nestjs/common": "10.3.9",
-    "@nestjs/core": "10.3.9",
-    "@nestjs/platform-express": "10.3.9",
+    "@nestjs/common": "10.3.10",
+    "@nestjs/core": "10.3.10",
+    "@nestjs/platform-express": "10.3.10",
     "@tryghost/errors": "1.3.2",
     "bson-objectid": "2.0.4",
     "express": "4.19.2",
