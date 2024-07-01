@@ -114,6 +114,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'subscriptions';
         }
 
+        if (event.type === 'email_change_event') {
+            icon = 'logged-in'; // TODO: Update with correct icon
+        }
+
         return 'event-' + icon;
     }
 
@@ -206,6 +210,13 @@ export default class ParseMemberEventHelper extends Helper {
                 return 'more like this';
             }
             return 'less like this';
+        }
+
+        if (event.type === 'email_change_event') {
+            if (event.data.from_email && event.data.to_email) {
+                return `Changed email address (${event.data.from_email} → ${event.data.to_email})`;
+            }
+            return `Changed email address`;
         }
 
         if (event.type === 'donation_event') {

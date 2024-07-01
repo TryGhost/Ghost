@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 const ALL_EVENT_TYPES = [
     {event: 'signup_event', icon: 'filter-dropdown-signups', name: 'Signups', group: 'auth'},
     {event: 'login_event', icon: 'filter-dropdown-logins', name: 'Logins', group: 'auth'},
+    {event: 'email_change_event', icon: 'filter-dropdown-logins', name: 'Email address changed', group: 'auth'},
     {event: 'subscription_event', icon: 'filter-dropdown-paid-subscriptions', name: 'Paid subscriptions', group: 'payments'},
     {event: 'payment_event', icon: 'filter-dropdown-payments', name: 'Payments', group: 'payments'},
     {event: 'newsletter_event', icon: 'filter-dropdown-email-subscriptions', name: 'Email subscriptions', group: 'emails'},
