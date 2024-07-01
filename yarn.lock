@@ -7691,7 +7691,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.24.tgz#a7bc3519dd6c035aadd0e0c0dac03b55637390f5"
   integrity sha512-V5IHVJSyC8wrby/5YtFa1ajQ4qB3wfqc+AwlemDAEH2pZ5n5ygdb2qayeo4kwWPK0xn2Vul5KiRQK0bX+OePdw==
 
-"@tryghost/debug@0.1.30", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.30":
+"@tryghost/debug@0.1.30":
   version "0.1.30"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.30.tgz#1daaac3a6bf63d82f28ba62f515c95dae29b12b4"
   integrity sha512-bW/RBkF5QU9iwASVSzdwFM2ba41OWpqe8ffsmblJ+e6z0NPZYuul/n72E/SWyBa8jTVpMLIoxiKG/wO2ajzHWg==
@@ -7699,7 +7699,7 @@
     "@tryghost/root-utils" "^0.3.28"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.31":
+"@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.30", "@tryghost/debug@^0.1.31":
   version "0.1.31"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.31.tgz#242fff08b1380dc711e27134d48de2cc07042761"
   integrity sha512-h2uYaAsr71oUvHHBaBWq3pY9ej/0jYnx8i4AhcTwAnEFxmPF0yEB14Hb3oxYhYKnlm5rD7u64CvoCtoM3vmyew==
@@ -8081,7 +8081,7 @@
     got "13.0.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.28", "@tryghost/root-utils@^0.3.24", "@tryghost/root-utils@^0.3.28":
+"@tryghost/root-utils@0.3.28":
   version "0.3.28"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.28.tgz#43ae0047927a7753c9b526ea12ce6e382ec7fb1f"
   integrity sha512-/izwMw9tCJIQ3DVHumzEWgKhKAw5FwTgrrYcCNHl89yijJKaVRBOJUhlB/u2ST6UWfhahodjaYauq7ymTItaeg==
@@ -8089,7 +8089,7 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.29":
+"@tryghost/root-utils@^0.3.24", "@tryghost/root-utils@^0.3.28", "@tryghost/root-utils@^0.3.29":
   version "0.3.29"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.29.tgz#d6e941b586da8d14f3fbb82e44e20503377f8cf6"
   integrity sha512-IM/Yt0iR+y4a6t7Lt5QQrgonlTXxocmAOQN9IOge4BmRlCwXL3RzTJo2jIqVxMHWlMpaK65jVL4frWQ+ROBUxw==
@@ -8122,14 +8122,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.3.tgz#dad18d1c119ebf705b9720417684efe00081f149"
   integrity sha512-YrPm2m51/Ddqp+/9CclSv+tKqHkbv7iUu3BgiHJofGhs6ek0QQSpahgiBmJmi/o3R6V6DFbG7LT5qVEtkvMzKg==
 
-"@tryghost/tpl@0.1.30", "@tryghost/tpl@^0.1.30":
+"@tryghost/tpl@0.1.30":
   version "0.1.30"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.30.tgz#a012fd800e58d46a7d4146e2bde5f55892d8ae15"
   integrity sha512-EhbwSYCTFdK9cXyesCNPFwd3pF6an72vwTeQ9A9IjTVDd4or3wBc6lUwOifxWdYarxhaq2sX67gOn2Js6NbJWg==
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.31":
+"@tryghost/tpl@^0.1.30", "@tryghost/tpl@^0.1.31":
   version "0.1.31"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.31.tgz#3aad44ef36b6a3af4f4c9c33c320bc7ac565cfab"
   integrity sha512-AJVKeGq8/5ZHCJyKJQAB26/KXXsoRmRZUY+viJ6fgTV4eMwgsWh24Dv2L3gzOCiUi1iPYNf3MZaPnZqSquyxHg==
@@ -23785,10 +23785,10 @@ mv@~2:
     ncp "~2.0.0"
     rimraf "~2.4.0"
 
-mysql2@3.10.1:
-  version "3.10.1"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.10.1.tgz#c39b8faf24ef4fd56330ef269122471a22d19198"
-  integrity sha512-6zo1T3GILsXMCex3YEu7hCz2OXLUarxFsxvFcUHWMpkPtmZLeTTWgRdc1gWyNJiYt6AxITmIf9bZDRy/jAfWew==
+mysql2@3.10.2:
+  version "3.10.2"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.10.2.tgz#37297d5d75d2958e37adc9cd4db865354832d7a4"
+  integrity sha512-KCXPEvAkO0RcHPr362O5N8tFY2fXvbjfkPvRY/wGumh4EOemo9Hm5FjQZqv/pCmrnuxGu5OxnSENG0gTXqKMgQ==
   dependencies:
     denque "^2.1.0"
     generate-function "^2.3.1"
