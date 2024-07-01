@@ -1,14 +1,39 @@
 <MultiList::List @model={{@list}} class="posts-list gh-list {{unless @model "no-posts"}} feature-memberAttribution" as |list| >
-    {{#each @model as |post|}}
-        <list.item @id={{post.id}} class="gh-posts-list-item-group">
-            <PostsList::ListItem
-                @post={{post}}
-                data-test-post-id={{post.id}}
-            />
-        </list.item>
+    {{!-- always order as scheduled, draft, remainder --}}    
+    {{#if (or @model.scheduledPosts (or @model.draftPosts @model.publishedAndSentPosts))}}
+        {{#if @model.scheduledPosts}}
+            {{#each @model.scheduledPosts as |post|}}
+                <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <PostsList::ListItem
+                        @post={{post}}
+                        data-test-post-id={{post.id}}
+                    />
+                </list.item>
+            {{/each}}
+        {{/if}}
+        {{#if (and @model.draftPosts (or (not @model.scheduledPosts) (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity)))}}
+            {{#each @model.draftPosts as |post|}}
+                <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <PostsList::ListItem
+                        @post={{post}}
+                        data-test-post-id={{post.id}}
+                    />
+                </list.item>
+            {{/each}}
+        {{/if}}
+        {{#if (and @model.publishedAndSentPosts (and (or (not @model.scheduledPosts) @model.scheduledPosts.reachedInfinity) (or (not @model.draftPosts) @model.draftPosts.reachedInfinity)))}}
+            {{#each @model.publishedAndSentPosts as |post|}}
+                <list.item @id={{post.id}} class="gh-posts-list-item-group">
+                    <PostsList::ListItem
+                        @post={{post}}
+                        data-test-post-id={{post.id}}
+                    />
+                </list.item>
+            {{/each}}
+        {{/if}}
     {{else}}
         {{yield}}
-    {{/each}}
+    {{/if}}
 </MultiList::List>
 
 {{!-- The currently selected item or items are passed to the context menu --}}

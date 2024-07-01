@@ -30,7 +30,7 @@
 
     <section class="view-container content-list">
         <PostsList::List
-            @model={{this.postsInfinityModel}}
+            @model={{@model}}
             @list={{this.selectionList}}
         >
             <li class="no-posts-box" data-test-no-posts-box>
@@ -51,11 +51,26 @@
             </li>
         </PostsList::List>
 
+    {{!-- only show one infinity loader wheel at a time - always order as scheduled, draft, remainder --}}
+    {{#if @model.scheduledPosts}}
         <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel}}
+            @infinityModel={{@model.scheduledPosts}}
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
-    </section>
+    {{/if}}
+    {{#if (and @model.draftPosts (or (not @model.scheduledPosts) (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity)))}}
+        <GhInfinityLoader
+            @infinityModel={{@model.draftPosts}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
+    {{#if (and @model.publishedAndSentPosts (and (or (not @model.scheduledPosts) @model.scheduledPosts.reachedInfinity) (or (not @model.draftPosts) @model.draftPosts.reachedInfinity)))}}
+        <GhInfinityLoader
+            @infinityModel={{@model.publishedAndSentPosts}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
 
+    </section>
     {{outlet}}
 </section>
