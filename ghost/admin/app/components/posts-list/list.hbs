@@ -11,7 +11,7 @@
                 </list.item>
             {{/each}}
         {{/if}}
-        {{#if (and @model.draftPosts (or (not isdefined @model.scheduledPosts) (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity)))}}
+        {{#if (and @model.draftPosts (or (not @model.scheduledPosts) (and @model.scheduledPosts @model.scheduledPosts.reachedInfinity)))}}
             {{#each @model.draftPosts as |post|}}
                 <list.item @id={{post.id}} class="gh-posts-list-item-group">
                     <PostsList::ListItem
@@ -21,7 +21,7 @@
                 </list.item>
             {{/each}}
         {{/if}}
-        {{#if (and @model.publishedAndSentPosts (and (or (not isdefined @model.scheduledPosts) @model.scheduledPosts.reachedInfinity) (or (not isdefined @model.draftPosts) @model.draftPosts.reachedInfinity)))}}
+        {{#if (and @model.publishedAndSentPosts (and (or (not @model.scheduledPosts) @model.scheduledPosts.reachedInfinity) (or (not @model.draftPosts) @model.draftPosts.reachedInfinity)))}}
             {{#each @model.publishedAndSentPosts as |post|}}
                 <list.item @id={{post.id}} class="gh-posts-list-item-group">
                     <PostsList::ListItem
