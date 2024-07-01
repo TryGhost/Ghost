@@ -51,7 +51,7 @@
             </li>
         </PostsList::List>
 
-    {{!-- only show one infinity loader wheel at a time - always defer to scheduled posts and then draft posts --}}    
+    {{!-- only show one infinity loader wheel at a time - always order as scheduled, draft, remainder --}}
     {{#if @model.scheduledPosts}}
         <GhInfinityLoader
             @infinityModel={{@model.scheduledPosts}}

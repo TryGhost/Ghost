@@ -1,5 +1,5 @@
 <MultiList::List @model={{@list}} class="posts-list gh-list {{unless @model "no-posts"}} feature-memberAttribution" as |list| >
-    {{!-- conditionally display each of the post statuses --}}
+    {{!-- always order as scheduled, draft, remainder --}}    
     {{#if (or @model.scheduledPosts (or @model.draftPosts @model.publishedAndSentPosts))}}
         {{#if @model.scheduledPosts}}
             {{#each @model.scheduledPosts as |post|}}
