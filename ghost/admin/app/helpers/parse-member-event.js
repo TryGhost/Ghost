@@ -115,7 +115,7 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'email_change_event') {
-            icon = 'logged-in'; // TODO: Update with correct icon
+            icon = 'email-changed';
         }
 
         return 'event-' + icon;
