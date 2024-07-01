@@ -28,7 +28,6 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             await editIntegration(formState);
         },
         onSavedStateReset: () => {
-            modal.remove();
             updateRoute('integrations');
         },
         onSaveError: handleError,
@@ -82,9 +81,10 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             updateRoute('integrations');
         }}
         buttonsDisabled={okProps.disabled}
+        cancelLabel='Close'
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='md'
         testId='custom-integration-modal'
         title={formState.name || 'Custom integration'}
