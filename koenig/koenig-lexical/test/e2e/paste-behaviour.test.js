@@ -363,6 +363,25 @@ test.describe('Paste behaviour', async () => {
         });
     });
 
+    test.describe('Google Docs', function () {
+        test('ignores line breaks between paragraphs', async function () {
+            const copiedHtml = fs.readFileSync('test/e2e/fixtures/paste/google-docs-empty-paragraphs.html', 'utf8');
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">First</span>
+                </p>
+                <p dir="ltr">
+                    <span data-lexical-text="true">Second</span>
+                </p>
+                <p><br /></p>
+            `);
+        });
+    });
+
     test.describe('Invalid nesting', function () {
         // if we have inline elements converting to block elements such as Google Docs
         // spans converting to headings then we need to make sure we don't end up with

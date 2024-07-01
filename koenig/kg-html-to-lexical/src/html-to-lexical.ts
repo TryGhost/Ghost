@@ -6,7 +6,7 @@ import {$insertGeneratedNodes} from '@lexical/clipboard';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {LinkNode} from '@lexical/link';
-import {DEFAULT_NODES} from '@tryghost/kg-default-nodes';
+import {DEFAULT_NODES, DEFAULT_CONFIG} from '@tryghost/kg-default-nodes';
 import {JSDOM} from 'jsdom';
 import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
 
@@ -52,7 +52,8 @@ export function htmlToLexical(html: string, options?: htmlToLexicalOptions): Ser
     }
 
     const defaultEditorConfig = {
-        nodes: defaultNodes
+        nodes: defaultNodes,
+        html: DEFAULT_CONFIG.html
     };
     const editorConfig = Object.assign({}, defaultEditorConfig, options?.editorConfig);
 

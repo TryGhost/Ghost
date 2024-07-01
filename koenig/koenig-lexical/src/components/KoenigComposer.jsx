@@ -3,6 +3,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import defaultTheme from '../themes/default';
 import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
+import {DEFAULT_CONFIG} from '@tryghost/kg-default-nodes';
 import {Doc} from 'yjs';
 import {KoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
@@ -18,7 +19,8 @@ function defaultOnError(error) {
 
 const defaultConfig = {
     namespace: 'KoenigEditor',
-    theme: defaultTheme
+    theme: defaultTheme,
+    html: DEFAULT_CONFIG.html
 };
 
 const KoenigComposer = ({
