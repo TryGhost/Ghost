@@ -48,7 +48,6 @@ const SlackModal = NiceModal.create(() => {
             cancelLabel='Close'
             dirty={isDirty}
             okColor={okProps.color}
-            okDisabled={!isDirty}
             okLabel={okProps.label || 'Save'}
             testId='slack-modal'
             title=''
