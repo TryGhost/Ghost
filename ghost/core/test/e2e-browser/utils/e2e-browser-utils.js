@@ -195,7 +195,8 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
             await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Archive tier'}).click();
             await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
             await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Reactivate tier'}).waitFor();
-            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Save & close'}).click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Save'}).click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Close'}).click();
         }
 
         // Add the tier
@@ -209,7 +210,8 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
             await modal.getByLabel('Add a free trial').check();
             await modal.getByLabel('Trial days').fill(`${trialDays}`);
         }
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
         await page.locator('[data-testid="tier-card"]:visible').filter({hasText: name}).waitFor();
 
         // Enable the tier in portal
@@ -267,7 +269,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         // only one of these buttons is ever available - either 'Add offer' or 'Manage offers'
         const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
         const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
-        
+
         // Archive other offers to keep the list tidy
         // We only need 1 offer to be active at a time
         // Either the list of active offers loads, or the CTA when no offers exist
