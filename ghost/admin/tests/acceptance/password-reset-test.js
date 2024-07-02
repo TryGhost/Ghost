@@ -41,7 +41,7 @@ describe('Acceptance: Password Reset', function () {
 
             // error message shown
             expect(find('p.main-error').textContent.trim(), 'error message')
-                .to.equal('We need your email address to reset your password!');
+                .to.equal('We need your email address to reset your password.');
 
             // invalid email provided
             await fillIn('input[name="identification"]', 'test');
@@ -61,7 +61,7 @@ describe('Acceptance: Password Reset', function () {
 
             // error message
             expect(find('p.main-error').textContent.trim(), 'error message')
-                .to.equal('We need your email address to reset your password!');
+                .to.equal('We need your email address to reset your password.');
 
             // unknown email provided
             await fillIn('input[name="identification"]', 'unknown@example.com');
