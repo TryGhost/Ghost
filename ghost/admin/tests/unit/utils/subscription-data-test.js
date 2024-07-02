@@ -23,7 +23,6 @@ describe.only('Unit: Util: subscription-data', function () {
             expect(validUntil(sub)).to.equal('');
         });
 
-
         it('returns the end of the current billing period when the subscription is active', function () {
             let sub = {
                 status: 'active',
@@ -73,7 +72,7 @@ describe.only('Unit: Util: subscription-data', function () {
         it('returns an empty string if the subscription has no current_period_end', function () {
             let sub = {
                 status: 'active',
-                cancel_at_period_end: false,
+                cancel_at_period_end: false
             };
             expect(validUntil(sub)).to.equal('');
         });
