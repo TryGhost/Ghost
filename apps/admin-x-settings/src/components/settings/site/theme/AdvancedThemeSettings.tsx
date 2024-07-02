@@ -1,6 +1,8 @@
+import InvalidThemeModal, {FatalErrors} from './InvalidThemeModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -57,7 +59,26 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                 message: <div><span className='capitalize'>{theme.name}</span> is now your active theme</div>
             });
         } catch (e) {
-            handleError(e);
+            let fatalErrors: FatalErrors | null = null;
+            if (e instanceof JSONError && e.response?.status === 422 && e.data?.errors) {
+                fatalErrors = (e.data.errors as any) as FatalErrors;
+            } else {
+                handleError(e);
+            }
+            let title = 'Invalid Theme';
+            let prompt = <>This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme</>;
+
+            if (fatalErrors) {
+                NiceModal.show(InvalidThemeModal, {
+                    title,
+                    prompt,
+                    fatalErrors,
+                    onRetry: async (modal) => {
+                        modal?.remove();
+                        handleActivate();
+                    }
+                });
+            }
         }
     };
 
