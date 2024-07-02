@@ -51,5 +51,24 @@ module.exports = {
                 return options.inverse(this);
             }
         });
+
+        handlebars.registerHelper('avoidOrphanedWords', function (text) {
+            let replacement = text?.trim?.();
+
+            if (!replacement) {
+                return '';
+            }
+
+            // replace last space with &nbsp; to avoid orphaned words when wrapping
+            const lastSpaceIndex = replacement.lastIndexOf(' ');
+            if (lastSpaceIndex !== -1) {
+                replacement =
+                    handlebars.escapeExpression(replacement.substring(0, lastSpaceIndex)) +
+                    '&nbsp;' +
+                    handlebars.escapeExpression(replacement.substring(lastSpaceIndex + 1));
+            }
+
+            return new handlebars.SafeString(replacement);
+        });
     }
 };

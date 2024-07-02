@@ -1794,7 +1794,30 @@ describe('Email renderer', function () {
 
                 await validateHtml(response.html);
 
-                assert.equal(response.html.match(/This is an excerpt/g).length, 2, 'Excerpt should appear twice (preheader and excerpt section)');
+                assert.equal(response.html.match(/This is an excerpt/g).length, 1, 'Preheader has no non-breaking space;');
+                assert.equal(response.html.match(/This is an&#xA0;excerpt/g).length, 1, 'Excerpt has last space replaced with non-breaking space;');
+            });
+
+            it('does not add nbsp when aligned left', async function () {
+                const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is an excerpt'}));
+                const newsletter = createModel({
+                    show_post_title_section: true,
+                    show_excerpt: true,
+                    title_alignment: 'left'
+                });
+                const segment = null;
+                const options = {};
+
+                const response = await emailRenderer.renderBody(
+                    post,
+                    newsletter,
+                    segment,
+                    options
+                );
+
+                await validateHtml(response.html);
+
+                assert.equal(response.html.match(/This is an excerpt/g).length, 2, 'Excerpt appears twice (preheader + excerpt w/o nbsp)');
             });
 
             it('is not rendered when disabled and customExcerpt is present', async function () {

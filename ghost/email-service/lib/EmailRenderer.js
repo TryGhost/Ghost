@@ -1067,7 +1067,8 @@ class EmailRenderer {
                 showPostTitleSection: newsletter.get('show_post_title_section'),
                 showExcerpt: newsletter.get('show_excerpt'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
-                showSubscriptionDetails: newsletter.get('show_subscription_details')
+                showSubscriptionDetails: newsletter.get('show_subscription_details'),
+                titleIsCentered: newsletter.get('title_alignment') !== 'left'
             },
             latestPosts,
             latestPostsHasImages,

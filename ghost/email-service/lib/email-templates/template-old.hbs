@@ -76,14 +76,14 @@
                                         {{#if newsletter.showPostTitleSection}}
                                             <tr>
                                                 <td class="{{classes.title}}">
-                                                    <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                                    <a href="{{post.url}}" class="{{classes.titleLink}}">{{#if newsletter.titleIsCentered}}{{avoidOrphanedWords post.title}}{{else}}{{post.title}}{{/if}}</a>
                                                 </td>
                                             </tr>
                                             {{#hasFeature 'newsletterExcerpt'}}
                                                 {{#if (and newsletter.showExcerpt post.customExcerpt)}}
                                                     <tr>
                                                         <td class="post-excerpt-wrapper" style="width: 100%">
-                                                            <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
+                                                            <p class="{{classes.excerpt}}">{{#if newsletter.titleIsCentered}}{{avoidOrphanedWords post.customExcerpt}}{{else}}{{post.customExcerpt}}{{/if}}</p>
                                                         </td>
                                                     </tr>
                                                 {{/if}}
