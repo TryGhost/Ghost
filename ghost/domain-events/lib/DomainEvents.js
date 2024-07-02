@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const logging = require('@tryghost/logging');
+const debug = require('@tryghost/debug');
 
 /**
  * @template T
@@ -31,6 +32,7 @@ class DomainEvents {
     static subscribe(Event, handler) {
         DomainEvents.ee.on(Event.name, async (event) => {
             try {
+                debug('handle')(`Handling event: ${event.constructor.name}`);
                 await handler(event);
             } catch (e) {
                 logging.error('Unhandled error in event handler for event: ' + Event.name);
@@ -62,6 +64,7 @@ class DomainEvents {
         if (this.#trackingEnabled) {
             this.#dispatchCount += DomainEvents.ee.listenerCount(name);
         }
+        debug('dispatch')(`Dispatching event: ${name}`);
         DomainEvents.ee.emit(name, data);
     }
 
