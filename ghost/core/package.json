@@ -111,9 +111,9 @@
     "@tryghost/kg-converters": "1.0.5",
     "@tryghost/kg-default-atoms": "5.0.3",
     "@tryghost/kg-default-cards": "10.0.6",
-    "@tryghost/kg-default-nodes": "1.1.4",
-    "@tryghost/kg-html-to-lexical": "1.1.5",
-    "@tryghost/kg-lexical-html-renderer": "1.1.5",
+    "@tryghost/kg-default-nodes": "1.1.5",
+    "@tryghost/kg-html-to-lexical": "1.1.6",
+    "@tryghost/kg-lexical-html-renderer": "1.1.6",
     "@tryghost/kg-mobiledoc-html-renderer": "7.0.4",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/link-redirects": "0.0.0",
@@ -171,7 +171,6 @@
     "@tryghost/webmentions": "0.0.0",
     "@tryghost/zip": "1.1.43",
     "amperize": "0.6.1",
-    "analytics-node": "6.2.0",
     "body-parser": "1.20.2",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.7.0",
@@ -206,7 +205,6 @@
     "json-stable-stringify": "1.1.1",
     "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
-    "juice": "9.1.0",
     "keypair": "1.0.4",
     "knex": "2.4.2",
     "knex-migrator": "5.2.1",
@@ -234,7 +232,7 @@
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "7.118.0",
-    "@tryghost/html-to-mobiledoc": "3.1.0",
+    "@tryghost/html-to-mobiledoc": "3.1.2",
     "sqlite3": "5.1.7"
   },
   "devDependencies": {

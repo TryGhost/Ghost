@@ -34,6 +34,7 @@ export default class MembersRoute extends AdminRoute {
 
     setupController(controller, member, transition) {
         super.setupController(...arguments);
+        controller.member = member;
 
         controller.setInitialRelationshipValues();
 

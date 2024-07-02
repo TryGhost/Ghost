@@ -10,9 +10,8 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const SlackModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
-    const modal = NiceModal.useModal();
 
-    const {localSettings, updateSetting, handleSave, validate, errors, clearError} = useSettingGroup({
+    const {localSettings, updateSetting, handleSave, validate, errors, clearError, okProps} = useSettingGroup({
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -21,7 +20,8 @@ const SlackModal = NiceModal.create(() => {
             }
 
             return newErrors;
-        }
+        },
+        savingDelay: 500
     });
     const [slackUrl, slackUsername] = getSettingValues<string>(localSettings, ['slack_url', 'slack_username']);
 
@@ -38,22 +38,22 @@ const SlackModal = NiceModal.create(() => {
         }
     };
 
+    const isDirty = localSettings.some(setting => setting.dirty);
+
     return (
         <Modal
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            dirty={localSettings.some(setting => setting.dirty)}
-            okColor='black'
-            okLabel='Save & close'
+            cancelLabel='Close'
+            dirty={isDirty}
+            okColor={okProps.color}
+            okLabel={okProps.label || 'Save'}
             testId='slack-modal'
             title=''
             onOk={async () => {
                 toast.remove();
-                if (await handleSave()) {
-                    modal.remove();
-                    updateRoute('integrations');
-                }
+                await handleSave();
             }}
         >
             <IntegrationHeader
