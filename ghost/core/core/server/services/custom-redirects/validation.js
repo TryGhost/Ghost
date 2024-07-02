@@ -33,7 +33,6 @@ const validate = (redirects) => {
         if (!redirect.from || !redirect.to) {
             throw new errors.ValidationError({
                 message: tpl(messages.redirectsWrongFormat),
-                context: redirect,
                 help: tpl(messages.redirectsHelp)
             });
         }
@@ -44,7 +43,6 @@ const validate = (redirects) => {
         } catch (error) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidRedirectsFromRegex),
-                context: redirect,
                 help: tpl(messages.redirectsHelp)
             });
         }
