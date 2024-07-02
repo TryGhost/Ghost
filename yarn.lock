@@ -27331,7 +27331,7 @@ redis-parser@^3.0.0:
   dependencies:
     redis-errors "^1.0.0"
 
-redos-detector@^5.1.0:
+redos-detector@5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/redos-detector/-/redos-detector-5.1.0.tgz#67660c896a48490e80b35557f876a529680f0f8d"
   integrity sha512-08en/ij0//HwKZdKlelRZGQKmQhmKMQPVJPD+1THfYm64mZhLPOG0NBa47+DrOF53DyaRsCFyD7JHJaYITnt9g==
