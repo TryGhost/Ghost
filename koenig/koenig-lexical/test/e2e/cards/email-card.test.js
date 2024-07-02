@@ -182,7 +182,7 @@ test.describe('Email card', async () => {
         await page.keyboard.press('Backspace');
         await page.keyboard.press(`${ctrlOrCmd}+z`);
 
-        const emailCard = page.locator('[data-kg-card="email"] ul > li:first-child');
+        const emailCard = page.locator('[data-kg-card="email"] [data-lexical-editor] ul > li:first-child');
         await expect(emailCard).toHaveText('List item 1');
     });
 

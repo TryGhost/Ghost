@@ -265,7 +265,7 @@ test.describe('Toggle card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="toggle">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="toggle">
                     <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                         <div class="flex cursor-text items-start justify-between">
                             <div class="mr-2 w-full">
@@ -307,6 +307,7 @@ test.describe('Toggle card', async () => {
                         </div>
                     </div>
                     <div></div>
+                    <div data-kg-card-toolbar="toggle"></div>
                 </div>
             </div>
             <p><br /></p>

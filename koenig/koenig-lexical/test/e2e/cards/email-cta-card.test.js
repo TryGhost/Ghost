@@ -464,7 +464,7 @@ test.describe('Email card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div><svg></svg></div>
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="email-cta">
                     <div>
                         <div>Free members</div>
                         <hr />
@@ -478,6 +478,7 @@ test.describe('Email card', async () => {
                         <hr />
                         <div></div>
                     </div>
+                    <div data-kg-card-toolbar="email-cta"></div>
                 </div>
             </div>
             <p><br /></p>
