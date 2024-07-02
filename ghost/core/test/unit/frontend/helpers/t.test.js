@@ -53,4 +53,32 @@ describe('{{t}} helper', function () {
 
         rendered.should.eql('Top left Button');
     });
+
+    it('smart apostrophes throws a 400 server error', function () {
+        themeI18n.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
+
+        try {
+            t('“This causes an error”', {hash: {}});
+            should.fail('oops');
+        } catch (error) {
+            should.exist(error);
+            should.equal(error.statusCode, 400);
+            should.equal(error.errorType, 'IncorrectUsageError');
+            should.equal(error.message, 'Oops, seems there is an error in the template.');
+        }
+    });
+
+    it('throws 400 error if text or options are undefined', function () {
+        themeI18n.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
+
+        try {
+            t();
+            should.fail('oops');
+        } catch (error) {
+            should.exist(error);
+            should.equal(error.statusCode, 400);
+            should.equal(error.errorType, 'IncorrectUsageError');
+            should.equal(error.message, 'Oops, seems there is an error in the template.');
+        }
+    });
 });
