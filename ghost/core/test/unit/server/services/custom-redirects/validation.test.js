@@ -39,6 +39,26 @@ describe('UNIT: custom redirects validation', function () {
             should.fail('should have thrown');
         } catch (err) {
             err.message.should.equal('Incorrect RegEx in redirects file.');
+            err.errorDetails.redirect.should.equal(config[0]);
+            err.errorDetails.invalid.should.be.true();
+        }
+    });
+
+    it('throws for an invalid redirects config having unsafe RegExp in from field', function () {
+        const config = [{
+            permanent: true,
+            from: '^\/episodes\/([a-z0-9-]+)+\/$', // Unsafe due to the surplus + at the end causing infinite backtracking
+            to: '/'
+        }];
+
+        try {
+            validate(config);
+            should.fail('should have thrown');
+        } catch (err) {
+            err.message.should.equal('Incorrect RegEx in redirects file.');
+            err.errorDetails.redirect.should.equal(config[0]);
+            err.errorDetails.unsafe.should.be.true();
+            err.errorDetails.reason.should.equal('hitMaxBacktracks');
         }
     });
 
