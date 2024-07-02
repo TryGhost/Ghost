@@ -242,7 +242,6 @@ export default class DashboardStatsService extends Service {
         if (!this.memberAttributionStats) {
             return [];
         }
-
         return this.memberAttributionStats.filter((stat) => {
             if (this.chartDays === 'all') {
                 return true;
