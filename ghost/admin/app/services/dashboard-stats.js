@@ -238,11 +238,12 @@ export default class DashboardStatsService extends Service {
     /**
      * @type {SourceAttributionCount[]}
      */
+
     get memberSourceAttributionCounts() {
         if (!this.memberAttributionStats) {
             return [];
         }
-
+    
         return this.memberAttributionStats.filter((stat) => {
             if (this.chartDays === 'all') {
                 return true;
@@ -250,7 +251,7 @@ export default class DashboardStatsService extends Service {
             return stat.date >= moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
         }).reduce((acc, stat) => {
             const statSource = stat.source ?? '';
-            const existingSource = acc.find(s => s.source === statSource);
+            const existingSource = acc.find(s => s.source.toLowerCase() === statSource.toLowerCase());
             if (existingSource) {
                 existingSource.signups += stat.signups || 0;
                 existingSource.paidConversions += stat.paidConversions || 0;
