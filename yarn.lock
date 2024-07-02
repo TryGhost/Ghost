@@ -3572,19 +3572,19 @@
   resolved "https://registry.yarnpkg.com/@kapouer/eslint-plugin-no-return-in-loop/-/eslint-plugin-no-return-in-loop-1.0.0.tgz#9fdbe83deca12156c0b5fcbfae1f387e9f2baff5"
   integrity sha512-IXQp8N68L2fkk7p7RckBBhT/KwAX04GooIGjwzmY5THQanQvsmJpYgwC7A1Io2XDXBJzlGelQkP/C1SRM/aq8w==
 
-"@keyvhq/core@^2.0.0":
+"@keyvhq/core@^2.1.1":
   version "2.1.1"
-  resolved "https://registry.npmjs.org/@keyvhq/core/-/core-2.1.1.tgz#438ea23a6a7af183af8fa6a194e1b334512c428d"
+  resolved "https://registry.yarnpkg.com/@keyvhq/core/-/core-2.1.1.tgz#438ea23a6a7af183af8fa6a194e1b334512c428d"
   integrity sha512-wVnnVFWmtAvQP8v/Ugm8KSl4glrVZjb5uqVc1n5tbGzj45lZhG7F/YxCJ6qHGDfBtDEw5cp1nJ2qImdmaG/JEQ==
   dependencies:
     json-buffer "~3.0.1"
 
-"@keyvhq/memoize@~2.0.3":
-  version "2.0.3"
-  resolved "https://registry.npmjs.org/@keyvhq/memoize/-/memoize-2.0.3.tgz#7833170048f0f1dbf808ec727a4dce33d29e9a36"
-  integrity sha512-ID5Br2OshdhyD4G0g1dm7915Ol2ee6RmCPMDSEh7QFtkbHrtzkgJfYS60na6tGWRBqViAMrCByBfD6uSinjAgg==
+"@keyvhq/memoize@~2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@keyvhq/memoize/-/memoize-2.1.1.tgz#918120d20cf794d2e2bf3fd71f5e68342db70a53"
+  integrity sha512-OPxaMsWSvxSo5K4Jg3ZRw6fMuuLAMYrwqDgVZTlL6s6PRs4vDC331Azov3kSB8l4WQ5z26D/fzA757/0Ufh5aw==
   dependencies:
-    "@keyvhq/core" "^2.0.0"
+    "@keyvhq/core" "^2.1.1"
     mimic-fn "~3.0.0"
 
 "@lexical/clipboard@0.13.1":
@@ -3728,7 +3728,7 @@
     "@types/mdx" "^2.0.0"
     "@types/react" ">=16"
 
-"@metascraper/helpers@^5.40.0", "@metascraper/helpers@^5.45.10":
+"@metascraper/helpers@^5.45.10":
   version "5.45.10"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.45.10.tgz#59ced77f599767cb9a53ff231de81ef5b9b1cfe9"
   integrity sha512-IyEAvhCmsjXu5+PC5Lyce5neC0cHHfqBqcVgv0H6+PtNYqfiZ+5a4QWez+PqSsNFWVV58FKAxkFm2nJg2AKOXA==
@@ -22979,15 +22979,15 @@ metascraper-image@5.45.10:
   dependencies:
     "@metascraper/helpers" "^5.45.10"
 
-metascraper-logo-favicon@5.42.0:
-  version "5.42.0"
-  resolved "https://registry.npmjs.org/metascraper-logo-favicon/-/metascraper-logo-favicon-5.42.0.tgz#6fc0f750ed77e5839111b37b210f32bc92ce6d89"
-  integrity sha512-Fk9OQn9WBpKOeIYHs+73z7jd8RoHxU+HtBHM4tY88lvHozEXA7qIUl07NM3rURLJo8vQNT7zXcJ1l7VCHDfqfQ==
+metascraper-logo-favicon@5.45.12:
+  version "5.45.12"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.45.12.tgz#e4cc8cfbca58703b3b69a60e82b06c7800276ccc"
+  integrity sha512-IC+nS2W+Ie808hfxxUX2TdKhJwtOaPCikS9vPqMte8vMY/53iJez6ZJidyXr6zo8+awmspZvRLGxL+HGPCJSwg==
   dependencies:
-    "@keyvhq/memoize" "~2.0.3"
-    "@metascraper/helpers" "^5.40.0"
+    "@keyvhq/memoize" "~2.1.1"
+    "@metascraper/helpers" "^5.45.10"
     lodash "~4.17.21"
-    reachable-url "~1.7.1"
+    reachable-url "~1.8.1"
 
 metascraper-logo@5.45.10:
   version "5.45.10"
@@ -26914,10 +26914,10 @@ re2@~1.21.0:
     nan "^2.20.0"
     node-gyp "^10.1.0"
 
-reachable-url@~1.7.1:
-  version "1.7.2"
-  resolved "https://registry.npmjs.org/reachable-url/-/reachable-url-1.7.2.tgz#15b9eee6dd4ec390bc9ad7c4e8acf9079f61f27d"
-  integrity sha512-aJHwaTbbLjYcbMmzD/6xQ785vbEs8TTwoUg/Y/+faSk0TxPcsUxFk9bwsYRyDJID/krm1ZATBn3U+JSP1Vv2Bg==
+reachable-url@~1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/reachable-url/-/reachable-url-1.8.1.tgz#76d084b24532a6912073c45fb1f3bed54a0ef063"
+  integrity sha512-6skrNl6GMGXF/H91T/bz1aznkLDd+y5ApwpqCE8h3OdJ9pQgzfK1j2wh4MFtRvfLq5TH69+oXLq5CsiHL+zN1g==
   dependencies:
     got "~11.8.0"
     p-reflect "~2.1.0"
