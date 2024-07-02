@@ -62,7 +62,11 @@ class AdminAuthAssetsService {
      */
     async copyStatic() {
         try {
-            await fs.copyFile(path.join(this.src, 'index.html'), path.join(this.dest, 'index.html'));
+            const FileOrigin = path.join(this.src, 'index.html');
+            const FileDestination = path.join(this.dest, 'index.html');
+
+            await fs.mkdir(path.dirname(FileDestination), {recursive: true});
+            await fs.copyFile(FileOrigin, FileDestination);
         } catch (error) {
             if (error.code === 'EACCES') {
                 logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
