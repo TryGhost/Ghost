@@ -63,7 +63,6 @@ export default class extends Component {
         let subscriptionData = subscriptions.filter((sub) => {
             return !!sub.price;
         }).map((sub) => {
-            const periodEnded = sub.current_period_end && new Date(sub.current_period_end) < new Date();
             const data = {
                 ...sub,
                 attribution: {
@@ -73,7 +72,7 @@ export default class extends Component {
                 },
                 startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
                 validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
-                hasEnded: sub.status === 'canceled' && periodEnded,
+                hasEnded: sub.status === 'canceled',
                 willEndSoon: sub.cancel_at_period_end && ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status),
                 cancellationReason: sub.cancellation_reason,
                 price: {
