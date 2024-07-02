@@ -35,7 +35,7 @@ describe('Email Event Storage', function () {
         const db = createDb();
         const eventHandler = new EmailEventStorage({db});
         await eventHandler.handleDelivered(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].delivered_at);
     });
 
@@ -51,7 +51,7 @@ describe('Email Event Storage', function () {
         const db = createDb();
         const eventHandler = new EmailEventStorage({db});
         await eventHandler.handleOpened(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].opened_at);
     });
 
@@ -96,7 +96,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(existing.save.calledOnce);
     });
@@ -142,7 +142,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(existing.save.calledOnce);
     });
@@ -187,7 +187,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(existing.save.calledOnce);
     });
@@ -222,7 +222,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(EmailRecipientFailure.add.calledOnce);
     });
@@ -257,7 +257,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(EmailRecipientFailure.add.calledOnce);
     });
@@ -291,7 +291,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(EmailRecipientFailure.add.calledOnce);
     });
@@ -312,7 +312,7 @@ describe('Email Event Storage', function () {
             models: {}
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
     });
 
     it('Handles email permanent bounce events with skipped update', async function () {
@@ -356,7 +356,7 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        sinon.assert.calledTwice(db.update);
         assert(!!db.update.firstCall.args[0].failed_at);
         assert(EmailRecipientFailure.findOne.called);
         assert(!existing.save.called);
