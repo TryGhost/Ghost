@@ -38,7 +38,7 @@ export const GlobalStyles = `
 
     body {
         margin: 0px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
         font-size: 1.6rem;
         height: 100%;
         line-height: 1.6em;
@@ -48,7 +48,7 @@ export const GlobalStyles = `
         box-sizing: border-box;
         overflow: hidden;
     }
-
+    
     button,
     button span {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
@@ -97,9 +97,8 @@ export const GlobalStyles = `
     p {
         font-size: 15px;
         line-height: 1.5em;
-        margin-bottom: 24px;
     }
-
+    
     strong {
         font-weight: 600;
     }

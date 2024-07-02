@@ -114,9 +114,9 @@ describe('Portal Data links:', () => {
                 showPopup: false
             });
             expect(triggerButtonFrame).toBeInTheDocument();
-            popupFrame = await utils.findByTitle(/portal-popup/i);
+            popupFrame = await utils.findByTitle(/portal-overlay/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            const loginTitle = within(popupFrame).queryByText(/sign in/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });
