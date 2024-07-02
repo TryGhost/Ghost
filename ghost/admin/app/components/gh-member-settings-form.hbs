@@ -147,21 +147,7 @@
                                             {{/if}}
                                         {{/if}}
 
-                                        {{#if sub.isComplimentary}}
-                                            {{#if sub.compExpiry}}
-                                                <span class="gh-cp-membertier-renewal">Expires {{sub.compExpiry}}</span>
-                                            {{/if}}
-                                        {{else}}
-                                            {{#if sub.hasEnded}}
-                                                <span class="gh-cp-membertier-renewal">Ended {{sub.validUntil}}</span>
-                                            {{else if sub.willEndSoon}}
-                                                <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
-                                            {{else if sub.trialUntil}}
-                                                <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
-                                            {{else}}
-                                                <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
-                                            {{/if}}
-                                        {{/if}}
+                                         <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
                                     </div>
                                     <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
                                 </div>
