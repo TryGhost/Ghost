@@ -238,12 +238,11 @@ export default class DashboardStatsService extends Service {
     /**
      * @type {SourceAttributionCount[]}
      */
-
     get memberSourceAttributionCounts() {
         if (!this.memberAttributionStats) {
             return [];
         }
-    
+
         return this.memberAttributionStats.filter((stat) => {
             if (this.chartDays === 'all') {
                 return true;
