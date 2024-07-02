@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "c8": "10.1.2",
-    "mocha": "10.5.2",
+    "mocha": "10.6.0",
     "should": "13.2.3",
     "sinon": "18.0.0"
   },
