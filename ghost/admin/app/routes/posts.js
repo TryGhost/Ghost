@@ -1,5 +1,4 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import RSVP from 'rsvp';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
@@ -47,46 +46,36 @@ export default class PostsRoute extends AuthenticatedRoute {
             totalPagesParam: 'meta.pagination.pages'
         };
 
-        // type filters are actually mapping statuses
         assign(filterParams, this._getTypeFilters(params.type));
 
         if (params.type === 'featured') {
             filterParams.featured = true;
         }
 
-        // authors and contributors can only view their own posts
         if (user.isAuthor) {
+            // authors can only view their own posts
             filterParams.authors = user.slug;
         } else if (user.isContributor) {
+            // Contributors can only view their own draft posts
             filterParams.authors = user.slug;
-        // otherwise we need to filter by author if present
+            // filterParams.status = 'draft';
         } else if (params.author) {
             filterParams.authors = params.author;
         }
 
+        let filter = this._filterString(filterParams);
+        if (!isBlank(filter)) {
+            queryParams.filter = filter;
+        }
+
+        if (!isBlank(params.order)) {
+            queryParams.order = params.order;
+        }
+
         let perPage = this.perPage;
+        let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
-        const filterStatuses = filterParams.status;
-        let models = {};
-        if (filterStatuses.includes('scheduled')) {
-            let scheduledPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
-            models.scheduledPosts = this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, scheduledPostsParams));
-        }
-        if (filterStatuses.includes('draft')) {
-            let draftPostsParams = {...queryParams, order: params.order || 'updated_at desc', filter: this._filterString({...filterParams, status: 'draft'})};
-            models.draftPosts = this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, draftPostsParams));
-        }
-        if (filterStatuses.includes('published') || filterStatuses.includes('sent')) {
-            let publishedAndSentPostsParams;
-            if (filterStatuses.includes('published') && filterStatuses.includes('sent')) {
-                publishedAndSentPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: '[published,sent]'})};
-            } else {
-                publishedAndSentPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: filterStatuses.includes('published') ? 'published' : 'sent'})};
-            }
-            models.publishedAndSentPosts = this.infinity.model('post', assign({perPage, startingPage: 1}, paginationParams, publishedAndSentPostsParams));
-        }
-
-        return RSVP.hash(models);
+        return this.infinity.model(this.modelName, paginationSettings);
     }
 
     // trigger a background load of all tags and authors for use in filter dropdowns
@@ -131,12 +120,6 @@ export default class PostsRoute extends AuthenticatedRoute {
         };
     }
 
-    /**
-     * Returns an object containing the status filter based on the given type.
-     *
-     * @param {string} type - The type of filter to generate (draft, published, scheduled, sent).
-     * @returns {Object} - An object containing the status filter.
-     */
     _getTypeFilters(type) {
         let status = '[draft,scheduled,published,sent]';
 
