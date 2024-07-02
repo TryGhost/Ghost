@@ -3,7 +3,7 @@ import {compExpiry, getSubscriptionData, isActive, isCanceled, isComplimentary, 
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
-describe.only('Unit: Util: subscription-data', function () {
+describe('Unit: Util: subscription-data', function () {
     describe('validUntil', function () {
         it('returns the end of the current billing period when the subscription is canceled at the end of the period', function () {
             let sub = {
