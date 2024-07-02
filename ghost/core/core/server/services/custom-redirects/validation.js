@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const {isSafePattern} = require('redos-detector');
 
 const messages = {
     redirectsWrongFormat: 'Incorrect redirects file format.',
@@ -37,12 +38,31 @@ const validate = (redirects) => {
             });
         }
 
+        // Ensure valid regex
         try {
-            // each 'from' property should be a valid RegExp string
             new RegExp(redirect.from);
         } catch (error) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidRedirectsFromRegex),
+                errorDetails: {
+                    redirect,
+                    invalid: true
+                },
+                help: tpl(messages.redirectsHelp)
+            });
+        }
+
+        // Ensure safe regex
+        const analysis = isSafePattern(redirect.from);
+
+        if (analysis.safe === false) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidRedirectsFromRegex),
+                errorDetails: {
+                    redirect,
+                    unsafe: true,
+                    reason: analysis.error
+                },
                 help: tpl(messages.redirectsHelp)
             });
         }
