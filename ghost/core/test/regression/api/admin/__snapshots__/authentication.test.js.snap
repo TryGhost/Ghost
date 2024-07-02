@@ -754,7 +754,7 @@ exports[`Authentication API Password reset reset password 1: [body] 1`] = `
 Object {
   "password_reset": Array [
     Object {
-      "message": "Password changed successfully.",
+      "message": "Password updated",
     },
   ],
 }
@@ -764,7 +764,7 @@ exports[`Authentication API Password reset reset password 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "65",
+  "content-length": "51",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
