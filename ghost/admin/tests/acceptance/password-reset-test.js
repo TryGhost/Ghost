@@ -17,7 +17,7 @@ describe('Acceptance: Password Reset', function () {
             await click('.forgotten-link');
 
             // an alert with instructions is displayed
-            expect(findAll('.gh-alert-blue').length, 'alert count')
+            expect(findAll('[data-test-flow-notification]').length, 'alert count')
                 .to.equal(1);
         });
 
