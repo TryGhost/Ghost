@@ -231,14 +231,14 @@ select.error {
 .gh-input:focus,
 .gh-input.focus {
     outline: 0;
-    border-color: color-mod(var(--green)) !important;
+    border-color: var(--green);
     box-shadow: inset 0 0 0 1px var(--green);
     background: var(--white);
 }
 
 .error .gh-input:focus,
 .error .gh-input.focus {
-    border-color: color-mod(var(--red)) !important;
+    border-color: var(--red);
     box-shadow: inset 0 0 0 1px var(--red);
 }
 
