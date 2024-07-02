@@ -87,13 +87,13 @@
     "@tryghost/admin-x-design-system": "0.0.0",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
-    "@vitejs/plugin-react": "4.2.1",
+    "@vitejs/plugin-react": "4.3.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "vite": "4.5.3",
-    "vite-plugin-css-injected-by-js": "^3.3.0",
+    "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.3.0",
-    "vitest": "0.34.3"
+    "vitest": "0.34.6"
   },
   "peerDependencies": {
     "react": "^18.2.0",
