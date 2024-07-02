@@ -17,6 +17,7 @@ services:
     volumes:
       # Turns out you can drop .sql or .sql.gz files in here, cool!
       - ./mysql-preload:/docker-entrypoint-initdb.d
+      - ./mysql-config:/etc/mysql/conf.d
     healthcheck:
       test: "mysql -uroot -proot ghost -e 'select 1'"
       interval: 1s
