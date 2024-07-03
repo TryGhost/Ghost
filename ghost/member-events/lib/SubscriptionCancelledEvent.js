@@ -4,6 +4,8 @@
  * @prop {string} memberId
  * @prop {string} tierId
  * @prop {string} subscriptionId
+ * @prop {Date} expiryAt
+ * @prop {Date} canceledAt
  */
 
 module.exports = class SubscriptionCancelledEvent {

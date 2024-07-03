@@ -289,7 +289,7 @@ describe('Members API', function () {
             // Set the subscription to cancel at the end of the period
             set(subscription, {
                 ...subscription,
-                status: 'active',
+                canceled_at: Date.now() / 1000,
                 cancel_at_period_end: true,
                 metadata: {
                     cancellation_reason: 'I want to break free'
@@ -425,6 +425,7 @@ describe('Members API', function () {
             set(subscription, {
                 ...subscription,
                 status: 'canceled',
+                canceled_at: Date.now() / 1000,
                 cancellation_details: {
                     reason: 'payment_failed'
                 }
@@ -506,6 +507,7 @@ describe('Members API', function () {
                     }
                 ]
             });
+
 
             canceledPaidMember = updatedMember;
         });

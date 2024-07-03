@@ -1116,16 +1116,20 @@ module.exports = class MemberRepository {
                 // Dispatch cancellation event if:
                 // 1. The subscription has been set to cancel at period end, by the member in Portal
                 // 2. The subscription has been immediately canceled (e.g. due to multiple failed payments)
-                if ((updatedStatus === 'canceled') || (originalStatus !== 'canceled' && updatedStatus === 'expired')) {
+                if (this.isActiveSubscriptionStatus(originalStatus) && (updatedStatus === 'canceled' || updatedStatus === 'expired')) {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);
+                    const canceledAt = new Date(subscription.canceled_at * 1000);
+                    const expiryAt = updatedStatus === 'expired' ? canceledAt : updated.get('current_period_end');
 
                     const event = SubscriptionCancelledEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
                         memberId: member.id,
-                        subscriptionId: updated.get('id')
-                    }, subscription.canceled_at);
+                        subscriptionId: updated.get('id'),
+                        canceledAt,
+                        expiryAt
+                    });
 
                     this.dispatchEvent(event, options);
                 }

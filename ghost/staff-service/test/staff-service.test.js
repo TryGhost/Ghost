@@ -706,6 +706,8 @@ describe('StaffService', function () {
             let member;
             let tier;
             let subscription;
+            let expiryAt;
+            let canceledAt;
             before(function () {
                 member = {
                     name: 'Ghost',
@@ -722,17 +724,18 @@ describe('StaffService', function () {
                 subscription = {
                     amount: 5000,
                     currency: 'USD',
-                    interval: 'month',
-                    cancelAt: '2024-08-01T07:30:39.882Z',
-                    canceledAt: '2022-08-05T07:30:39.882Z'
+                    interval: 'month'
                 };
+
+                expiryAt = '2024-08-01T07:30:39.882Z';
+                canceledAt = '2022-08-05T07:30:39.882Z';
             });
 
             it('sends paid subscription cancel alert', async function () {
                 await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription: {
                     ...subscription,
                     cancellationReason: 'Changed my mind!'
-                }}, options);
+                }, expiryAt, canceledAt}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
@@ -762,7 +765,7 @@ describe('StaffService', function () {
             });
 
             it('sends paid subscription cancel alert without reason', async function () {
-                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, canceledAt}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
