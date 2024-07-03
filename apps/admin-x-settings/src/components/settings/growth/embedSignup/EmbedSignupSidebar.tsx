@@ -129,6 +129,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                     />
                     <TextArea
                         className='text-grey-800'
+                        clearBg={false}
                         fontStyle='mono'
                         hint={`Paste this code onto any website where you'd like your signup to appear.`}
                         title='Embed code'

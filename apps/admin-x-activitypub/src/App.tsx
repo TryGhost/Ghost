@@ -1,4 +1,4 @@
-import MainContent from './MainContent';
+import ListIndex from './components/ListIndex';
 import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
@@ -8,21 +8,12 @@ interface AppProps {
     designSystem: DesignSystemAppProps;
 }
 
-const modals = {
-    paths: {
-        'follow-site': 'FollowSite',
-        'view-following': 'ViewFollowing',
-        'view-followers': 'ViewFollowers'
-    },
-    load: async () => import('./components/modals')
-};
-
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <RoutingProvider basePath='activitypub' modals={modals}>
+            <RoutingProvider basePath='activitypub'>
                 <DesignSystemApp className='admin-x-activitypub' {...designSystem}>
-                    <MainContent />
+                    <ListIndex />
                 </DesignSystemApp>
             </RoutingProvider>
         </FrameworkProvider>

@@ -9,8 +9,8 @@ export default class GhAlert extends Component {
         const typeMapping = {
             success: 'green',
             error: 'red',
-            warn: 'black',
-            info: 'black'
+            warn: 'blue',
+            info: 'blue'
         };
 
         const type = this.args.message.type;

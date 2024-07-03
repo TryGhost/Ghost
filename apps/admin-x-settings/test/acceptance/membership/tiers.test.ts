@@ -18,7 +18,7 @@ test.describe('Tier settings', async () => {
 
         const modal = page.getByTestId('tier-detail-modal');
 
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(modal).toHaveText(/Enter a name for the tier/);
         await expect(modal).toHaveText(/Amount must be at least \$1/);
@@ -51,8 +51,7 @@ test.describe('Tier settings', async () => {
             browseTiers: {method: 'GET', path: '/tiers/', response: {tiers: [...responseFixtures.tiers.tiers, newTier]}}
         }});
 
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         // await expect(section.getByTestId('tier-card').filter({hasText: /Plus/})).toHaveText(/Plus tier/);
         // await expect(section.getByTestId('tier-card').filter({hasText: /Plus/})).toHaveText(/\$8\/month/);
@@ -104,7 +103,7 @@ test.describe('Tier settings', async () => {
         // Failing validations
 
         await modal.getByLabel('Name').fill('');
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(modal).toHaveText(/Enter a name for the tier/);
 
@@ -133,8 +132,7 @@ test.describe('Tier settings', async () => {
 
         // Save changes
 
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(section.getByTestId('tier-card').filter({hasText: /Supporter/})).toHaveText(/Supporter updated/);
         await expect(section.getByTestId('tier-card').filter({hasText: /Supporter/})).toHaveText(/Supporter description/);
@@ -187,8 +185,7 @@ test.describe('Tier settings', async () => {
         await modal.getByRole('button', {name: 'Add'}).click();
         await modal.getByLabel('New benefit').fill('Second benefit');
 
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(section.getByTestId('tier-card').filter({hasText: /Free/})).toHaveText(/Free tier description/);
 

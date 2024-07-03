@@ -171,30 +171,18 @@ export default class Analytics extends Component {
             }
             return this._fetchReferrersStats.perform();
         } catch (e) {
-            // Do not throw cancellation errors
-            if (didCancel(e)) {
-                return;
+            if (!didCancel(e)) {
+                // re-throw the non-cancelation error
+                throw e;
             }
-
-            throw e;
         }
     }
 
     async fetchLinks() {
-        try {
-            if (this._fetchLinks.isRunning) {
-                return this._fetchLinks.last;
-            }
-
-            return this._fetchLinks.perform();
-        } catch (e) {
-            // Do not throw cancellation errors
-            if (didCancel(e)) {
-                return;
-            }
-
-            throw e;
+        if (this._fetchLinks.isRunning) {
+            return this._fetchLinks.last;
         }
+        return this._fetchLinks.perform();
     }
 
     @task
@@ -238,7 +226,7 @@ export default class Analytics extends Component {
         }, 2000);
     }
 
-    @task({drop: true})
+    @task
     *_fetchReferrersStats() {
         let statsUrl = this.ghostPaths.url.api(`stats/referrers/posts/${this.post.id}`);
         let result = yield this.ajax.request(statsUrl);
@@ -251,7 +239,7 @@ export default class Analytics extends Component {
         });
     }
 
-    @task({drop: true})
+    @task
     *_fetchLinks() {
         const filter = `post_id:'${this.post.id}'`;
         let statsUrl = this.ghostPaths.url.api(`links/`) + `?filter=${encodeURIComponent(filter)}`;

@@ -33,14 +33,6 @@ export const Default: Story = {
     }
 };
 
-export const Small: Story = {
-    args: {
-        buttons: defaultButtons,
-        link: false,
-        size: 'sm'
-    }
-};
-
 const linkButtons: ButtonProps[] = [
     {
         label: 'Cancel',
@@ -57,5 +49,22 @@ export const LinkButtons: Story = {
     args: {
         buttons: linkButtons,
         link: true
+    }
+};
+
+export const WithBackground: Story = {
+    args: {
+        buttons: linkButtons,
+        link: true,
+        clearBg: false
+    }
+};
+
+export const SmallWithBackground: Story = {
+    args: {
+        buttons: linkButtons,
+        link: true,
+        clearBg: false,
+        size: 'sm'
     }
 };

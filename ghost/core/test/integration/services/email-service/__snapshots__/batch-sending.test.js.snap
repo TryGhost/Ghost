@@ -68,14 +68,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -198,6 +190,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -212,6 +206,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -395,7 +393,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
@@ -422,7 +420,7 @@ table.body h2 span {
                                             <tr class=\\"feature-image-row\\">
                                                 <td class=\\"feature-image
                                                         feature-image-with-caption
-                                                \\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; width: 100%; text-align: center; padding-bottom: 10px;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/image.jpg\\" alt=\\"Testing sending\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
+                                                \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; width: 100%; padding-bottom: 10px;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/image.jpg\\" alt=\\"Testing sending\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
                                             </tr>
                                                 <tr>
                                                     <td class=\\"feature-image-caption\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; width: 100%; padding: 10px 0 30px 0; text-align: center; color: rgba(0, 0, 0, 0.5); font-size: 13px;\\" width=\\"100%\\" valign=\\"top\\">Testing <b>feature image caption</b></td>
@@ -674,14 +672,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -804,6 +794,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -818,6 +810,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1001,7 +997,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/email/post-uuid/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -1266,14 +1262,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -1396,6 +1384,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -1410,6 +1400,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1593,7 +1587,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-6/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -1858,14 +1852,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -1988,6 +1974,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -2002,6 +1990,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2185,7 +2177,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-7/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -2450,14 +2442,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -2580,6 +2564,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -2594,6 +2580,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2990,14 +2980,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -3120,6 +3102,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -3134,6 +3118,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3317,7 +3305,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -3582,14 +3570,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -3712,6 +3692,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -3726,6 +3708,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3909,7 +3895,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -4268,14 +4254,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -4398,6 +4376,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -4412,6 +4392,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -4595,7 +4579,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -6274,14 +6258,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -6404,6 +6380,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -6418,6 +6396,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -6601,7 +6583,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is the main post title</a>
                                                 </td>
                                             </tr>
@@ -6642,10 +6624,10 @@ table.body h2 span {
 
                                 <tr>
                                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 24px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" valign=\\"top\\">
-                                        <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 8px; color: #000000; font-size: 13px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
+                                        <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 16px; color: #000000; font-size: 13px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 16px 0; max-width: 600px;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6663,7 +6645,7 @@ table.body h2 span {
                                             </table>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 16px 0; max-width: 600px;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -6681,7 +6663,7 @@ table.body h2 span {
                                             </table>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
-                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 16px 0; max-width: 600px;\\" valign=\\"top\\">
+                                                    <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
@@ -7011,14 +6993,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -7141,6 +7115,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -7155,6 +7131,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -7338,7 +7318,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-12/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -7658,14 +7638,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -7788,6 +7760,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -7802,6 +7776,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -7985,7 +7963,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-9/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -8305,14 +8283,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -8435,6 +8405,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -8449,6 +8421,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -8632,7 +8608,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-8/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -8952,14 +8928,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -9082,6 +9050,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -9096,6 +9066,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -9279,7 +9253,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-11/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -9599,14 +9573,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -9729,6 +9695,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -9743,6 +9711,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -9926,7 +9898,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-10/\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
@@ -10246,14 +10218,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -10376,6 +10340,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -10390,6 +10356,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -10573,7 +10543,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
@@ -10840,14 +10810,6 @@ Object {
     display: initial !important;
   }
 
-  .hide-desktop {
-    display: initial !important;
-  }
-
-  .desktop-only {
-    display: none !important;
-  }
-
   table.body p,
 table.body ul,
 table.body ol,
@@ -10970,6 +10932,8 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-post-title {
+    display: inline-block !important;
+    width: 100%;
     padding-right: 8px !important;
   }
 
@@ -10984,6 +10948,10 @@ table.body .latest-post-excerpt a,
 table.body .latest-post-excerpt span {
     font-size: 13px !important;
     line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -11167,7 +11135,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr>
-                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                <td class=\\"post-title post-title-serif\\" style=\\"vertical-align: top; color: #000000; padding-bottom: 16px; font-size: 42px; line-height: 1.1em; font-weight: 700; text-align: center; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
                                                     <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"display: block; text-align: center; margin-top: 50px; color: #000000; overflow-wrap: anywhere; text-decoration: none;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>

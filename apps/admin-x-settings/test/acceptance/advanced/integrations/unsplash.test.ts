@@ -21,8 +21,6 @@ test.describe('Unsplash integration', async () => {
         const unsplashToggle = unsplashModal.getByRole('switch');
         await unsplashToggle.click();
 
-        await unsplashModal.getByRole('button', {name: 'Save'}).click();
-
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'unsplash', value: false}

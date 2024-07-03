@@ -312,8 +312,8 @@
 /* ---------------------------------------------------------- */
 
 .gh-alert-black {
-    border-bottom: 1px solid var(--black);
-    background: var(--black);
+    border-bottom: color-mod(var(--darkgrey) lightness(-10%)) 1px solid;
+    background: var(--darkgrey);
     color: #fff;
 }
 .gh-alert-black a {

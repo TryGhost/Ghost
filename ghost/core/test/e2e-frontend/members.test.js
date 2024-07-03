@@ -125,10 +125,11 @@ describe('Front-end members behavior', function () {
                 .expect(400);
         });
 
-        it('should error for using an invalid offer id on members create checkout session endpoint', async function () {
+        //TODO: Remove 500 expect once tests are wired up with Stripe
+        it('should not throw 400 for using offer id on members create checkout session endpoint', async function () {
             await request.post('/members/api/create-stripe-checkout-session')
                 .send({
-                    offerId: 'invalid',
+                    offerId: '62826b1b6dccb3e3e997ebd4',
                     identity: null,
                     metadata: {
                         name: 'Jamie Larsen'
@@ -138,7 +139,7 @@ describe('Front-end members behavior', function () {
                     tierId: null,
                     cadence: null
                 })
-                .expect(400);
+                .expect(500);
         });
 
         it('should error for invalid data on members create update session endpoint', async function () {

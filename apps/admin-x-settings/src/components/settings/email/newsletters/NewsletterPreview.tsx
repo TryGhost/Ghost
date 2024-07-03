@@ -106,7 +106,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
-        showExcerpt={newsletter.show_excerpt}
         showFeatureImage={newsletter.show_feature_image}
         showFeedback={showFeedback}
         showLatestPosts={newsletter.show_latest_posts}

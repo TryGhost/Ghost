@@ -62,11 +62,7 @@ export default BaseValidator.create({
 
     customExcerpt(model) {
         if (!validator.isLength(model.customExcerpt || '', 0, 300)) {
-            if (model.feature.editorExcerpt) {
-                model.errors.add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
-            } else {
-                model.errors.add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
-            }
+            model.errors.add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
             this.invalidate();
         }
     },

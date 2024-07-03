@@ -35,23 +35,23 @@ test.describe('User profile', async () => {
         // Validation failures
 
         await modal.getByLabel('Full name').fill('');
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Name is required');
 
         await modal.getByLabel('Email').fill('test');
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Enter a valid email address');
 
         await modal.getByLabel('Location').fill(new Array(195).join('a'));
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Location is too long');
 
         await modal.getByLabel('Bio').fill(new Array(210).join('a'));
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Bio is too long');
 
         await modal.getByLabel('Website').fill('not-a-website');
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Enter a valid URL');
 
         const facebookInput = modal.getByLabel('Facebook profile');
@@ -116,27 +116,27 @@ test.describe('User profile', async () => {
 
         await testUrlValidation(
             twitterInput,
-            'x.com/username',
-            'https://x.com/username'
+            'twitter.com/username',
+            'https://twitter.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             'testuser',
-            'https://x.com/testuser'
+            'https://twitter.com/testuser'
         );
 
         await testUrlValidation(
             twitterInput,
             'http://github.com/username',
-            'https://x.com/username'
+            'https://twitter.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
             '*(&*(%%))',
-            'The URL must be in a format like https://x.com/yourUsername'
+            'The URL must be in a format like https://twitter.com/yourUsername'
         );
 
         await testUrlValidation(
@@ -151,7 +151,6 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Full name').fill('New Admin');
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
-        await expect(modal.getByText('https://example.com/author/newadmin')).toBeVisible();
         await modal.getByLabel('Location').fill('some location');
         await modal.getByLabel('Website').fill('https://example.com');
         await modal.getByLabel('Facebook profile').fill('fb');
@@ -166,10 +165,9 @@ test.describe('User profile', async () => {
         await modal.getByLabel(/Paid member cancellations/).check();
         await modal.getByLabel(/Milestones/).uncheck();
 
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
-        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(listItem.getByText('New Admin')).toBeVisible();
         await expect(listItem.getByText('newadmin@test.com')).toBeVisible();
@@ -315,7 +313,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Full name').fill('Updated');
 
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Cancel'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -375,7 +373,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await expect(modal.getByTestId('api-keys')).toBeHidden();
-        await modal.getByRole('button', {name: 'Close'}).click();
+        await modal.getByRole('button', {name: 'Cancel'}).click();
 
         // Can see and regenerate your own staff token
 

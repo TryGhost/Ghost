@@ -202,11 +202,3 @@ export function getModifierKey() {
         return 'Control';
     }
 }
-
-export function addMultipleComments(api, numComments) {
-    for (let i = 1; i <= numComments; i++) {
-        api.addComment({
-            html: `<p>This is comment ${i}.</p>`
-        });
-    }
-}

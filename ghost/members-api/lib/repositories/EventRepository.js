@@ -31,8 +31,7 @@ module.exports = class EventRepository {
         EmailSpamComplaintEvent,
         Comment,
         labsService,
-        memberAttributionService,
-        MemberEmailChangeEvent
+        memberAttributionService
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -49,7 +48,6 @@ module.exports = class EventRepository {
         this._MemberFeedback = MemberFeedback;
         this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
         this._memberAttributionService = memberAttributionService;
-        this._MemberEmailChangeEvent = MemberEmailChangeEvent;
     }
 
     async getEventTimeline(options = {}) {
@@ -78,8 +76,7 @@ module.exports = class EventRepository {
             pageActions.push(
                 {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
                 {type: 'login_event', action: 'getLoginEvents'},
-                {type: 'payment_event', action: 'getPaymentEvents'},
-                {type: 'email_change_event', action: 'getEmailChangeEvent'}
+                {type: 'payment_event', action: 'getPaymentEvents'}
             );
         }
 
@@ -758,38 +755,6 @@ module.exports = class EventRepository {
                     member: model.related('member').toJSON(),
                     email: model.related('email').toJSON()
                 }
-            };
-        });
-
-        return {
-            data,
-            meta
-        };
-    }
-
-    async getEmailChangeEvent(options = {}, filter) {
-        options = {
-            ...options,
-            withRelated: ['member'],
-            filter: 'custom:true',
-            mongoTransformer: chainTransformers(
-                // First set the filter manually
-                replaceCustomFilterTransformer(filter),
-
-                // Map the used keys in that filter
-                ...mapKeys({
-                    'data.created_at': 'created_at',
-                    'data.member_id': 'member_id'
-                })
-            )
-        };
-
-        const {data: models, meta} = await this._MemberEmailChangeEvent.findPage(options);
-
-        const data = models.map((model) => {
-            return {
-                type: 'email_change_event',
-                data: model.toJSON(options)
             };
         });
 

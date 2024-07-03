@@ -4,6 +4,7 @@ import {AdminAPIModule} from './admin-api.module';
 import {NotFoundFallthroughExceptionFilter} from '../filters/not-found-fallthrough.filter';
 import {ExampleListener} from '../../listeners/example.listener';
 import {GlobalExceptionFilter} from '../filters/global-exception.filter';
+import {ActivityPubModule} from './activitypub.module';
 
 class AppModuleClass {}
 
@@ -15,9 +16,13 @@ export const AppModule: DynamicModule = {
             {
                 path: 'ghost/api/admin',
                 module: AdminAPIModule
+            }, {
+                path: '',
+                module: ActivityPubModule
             }
         ]),
-        AdminAPIModule
+        AdminAPIModule,
+        ActivityPubModule
     ],
     exports: [],
     controllers: [],

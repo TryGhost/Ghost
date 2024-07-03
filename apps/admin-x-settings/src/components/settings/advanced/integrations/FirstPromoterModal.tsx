@@ -10,18 +10,17 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const FirstpromoterModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
+    const modal = NiceModal.useModal();
 
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
 
     const [accountId, setAccountId] = useState<string | null>('');
+    const [enabled, setEnabled] = useState(false);
 
     const [firstPromoterEnabled] = getSettingValues<boolean>(settings, ['firstpromoter']);
     const [firstPromoterId] = getSettingValues<string>(settings, ['firstpromoter_id']);
-
-    const [okLabel, setOkLabel] = useState('Save');
-    const [enabled, setEnabled] = useState<boolean>(!!firstPromoterEnabled);
 
     useEffect(() => {
         setEnabled(firstPromoterEnabled || false);
@@ -39,20 +38,8 @@ const FirstpromoterModal = NiceModal.create(() => {
                 value: accountId
             }
         ];
-        try {
-            setOkLabel('Saving...');
-            await Promise.all([
-                editSettings(updates),
-                new Promise((resolve) => {
-                    setTimeout(resolve, 1000);
-                })
-            ]);
-            setOkLabel('Saved');
-        } catch (e) {
-            handleError(e);
-        } finally {
-            setTimeout(() => setOkLabel('Save'), 1000);
-        }
+
+        await editSettings(updates);
     };
 
     return (
@@ -60,15 +47,16 @@ const FirstpromoterModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            cancelLabel='Close'
             dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
-            okLabel={okLabel}
+            okColor='black'
+            okLabel='Save & close'
             testId='firstpromoter-modal'
             title=''
             onOk={async () => {
                 try {
                     await handleSave();
+                    updateRoute('integrations');
+                    modal.remove();
                 } catch (e) {
                     handleError(e);
                 }

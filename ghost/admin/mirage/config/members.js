@@ -1,3 +1,4 @@
+import faker from 'faker';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql';
 import {Response} from 'miragejs';
@@ -6,7 +7,6 @@ import {
     paginateModelCollection,
     withPermissionsCheck
 } from '../utils';
-import {faker} from '@faker-js/faker';
 import {underscore} from '@ember/string';
 
 const ALLOWED_ROLES = [
