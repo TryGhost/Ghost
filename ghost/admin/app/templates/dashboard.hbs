@@ -85,38 +85,34 @@
             {{#if this.isLoading }}
                 <GhLoadingSpinner />
             {{else}}
-                {{#if this.areMembersEnabled}}
-
-                    {{#if this.onboarding.isChecklistShown}}
-                        <Dashboard::OnboardingChecklist />
+                {{#if this.onboarding.isChecklistShown}}
+                    <Dashboard::OnboardingChecklist />
+                {{/if}}
+                {{#if (and this.areMembersEnabled (not this.onboarding.isChecklistShown))}}
+                    {{#if this.hasPaidTiers}}
+                        <Dashboard::Charts::Overview />
                     {{/if}}
-
-                    {{#unless this.onboarding.isChecklistShown}}
+                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}" data-test-dashboard="attribution">
+                        <Dashboard::Charts::AnchorAttribution />
                         {{#if this.hasPaidTiers}}
-                            <Dashboard::Charts::Overview />
+                            <section class="gh-dashboard-section">
+                                <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
+                                    <Dashboard::Charts::PaidBreakdown />
+                                    <Dashboard::Charts::PaidMix />
+                                </article>
+                            </section>
                         {{/if}}
-                        <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}" data-test-dashboard="attribution">
-                            <Dashboard::Charts::AnchorAttribution />
-                            {{#if this.hasPaidTiers}}
-                                <section class="gh-dashboard-section">
-                                    <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
-                                        <Dashboard::Charts::PaidBreakdown />
-                                        <Dashboard::Charts::PaidMix />
-                                    </article>
-                                </section>
-                            {{/if}}
-                            {{#unless this.membersUtils.isMembersInviteOnly}}
-                                <Dashboard::Charts::Attribution />
-                            {{/unless}}
-                            {{#if this.areNewslettersEnabled}}
-                                <Dashboard::Charts::Engagement />
-                            {{/if}}
+                        {{#unless this.membersUtils.isMembersInviteOnly}}
+                            <Dashboard::Charts::Attribution />
+                        {{/unless}}
+                        {{#if this.areNewslettersEnabled}}
+                            <Dashboard::Charts::Engagement />
+                        {{/if}}
 
-                            {{#if this.isTotalMembersZero}}
-                                <Dashboard::Parts::Zero />
-                            {{/if}}
-                        </div>
-                    {{/unless}}
+                        {{#if this.isTotalMembersZero}}
+                            <Dashboard::Parts::Zero />
+                        {{/if}}
+                    </div>
                 {{/if}}
 
                 {{#unless this.onboarding.isChecklistShown}}

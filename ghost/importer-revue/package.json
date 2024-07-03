@@ -21,8 +21,8 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.29",
-    "@tryghost/kg-default-cards": "10.0.5",
+    "@tryghost/debug": "0.1.30",
+    "@tryghost/kg-default-cards": "10.0.6",
     "@tryghost/string": "0.2.12",
     "lodash": "4.17.21",
     "papaparse": "5.3.2",

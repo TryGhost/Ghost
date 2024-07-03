@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.37.7",
+  "version": "2.37.8",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -79,8 +79,8 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.23.3",
-    "@doist/react-interpolate": "1.0.0",
-    "@sentry/react": "7.114.0",
+    "@doist/react-interpolate": "1.1.1",
+    "@sentry/react": "7.118.0",
     "@sentry/tracing": "7.114.0",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
@@ -91,7 +91,7 @@
     "concurrently": "8.2.2",
     "cross-fetch": "4.0.0",
     "eslint-plugin-i18next": "6.0.3",
-    "jsdom": "22.1.0",
+    "jsdom": "24.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "vite": "4.5.3",

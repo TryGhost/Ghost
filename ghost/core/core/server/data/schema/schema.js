@@ -30,6 +30,7 @@ module.exports = {
         header_image: {type: 'string', maxlength: 2000, nullable: true},
         show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
         show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
+        show_excerpt: {type: 'boolean', nullable: false, defaultTo: false},
         title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
         title_alignment: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'center', validations: {isIn: [['center', 'left']]}},
         show_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
@@ -81,7 +82,7 @@ module.exports = {
          * This is valid for all x_by fields.
          */
         created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
+        updated_at: {type: 'dateTime', nullable: true, index: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true},
         published_at: {type: 'dateTime', nullable: true, index: true},
         published_by: {type: 'string', maxlength: 24, nullable: true},
@@ -92,6 +93,9 @@ module.exports = {
         canonical_url: {type: 'text', maxlength: 2000, nullable: true},
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         show_title_and_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
+        '@@INDEXES@@': [
+            ['type','status','updated_at']
+        ],
         '@@UNIQUE_CONSTRAINTS@@': [
             ['slug', 'type']
         ]
@@ -294,7 +298,10 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id'},
         tag_id: {type: 'string', maxlength: 24, nullable: false, references: 'tags.id'},
-        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        '@@INDEXES@@': [
+            ['post_id','tag_id']
+        ]
     },
     invites: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -412,7 +419,8 @@ module.exports = {
         reason: {type: 'string', maxlength: 50, nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
-        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true}
+        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
+        custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}}
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

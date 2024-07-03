@@ -1,6 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -125,7 +125,7 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-button="publish-flow-preview"]'), 'preview button on complete step').to.not.exist;
         expect(find('[data-test-button="publish-flow-publish"]'), 'publish button on complete step').to.not.exist;
 
-        await click('[data-test-button="back-to-editor"]');
+        await click('[data-test-button="close-publish-flow"]');
 
         expect(find('[data-test-button="publish-flow"]'), 'publish button after publishing').to.not.exist;
         expect(find('[data-test-button="update-flow"]'), 'update button after publishing').to.exist;
@@ -332,22 +332,24 @@ describe('Acceptance: Publish flow', function () {
                 .text('Right now');
 
             const siteTz = this.server.db.settings.findBy({key: 'timezone'}).value;
-            const plus10 = moment().tz(siteTz).add(10, 'minutes').set({});
+            const plus10 = moment().tz(siteTz).add(10, 'minutes').startOf('minute');
 
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
             await click('[data-test-radio="schedule"]');
 
             // date + time inputs are shown, defaults to now+5 mins
+            await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]'), 'datepicker').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]'), 'initial datepicker value')
                 .to.have.value(plus10.format('YYYY-MM-DD'));
 
+            await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]'), 'time input').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]'), 'initial time input value')
                 .to.have.value(plus10.format('HH:mm'));
 
             // can set a new date and time
-            const newDate = moment().tz(siteTz).add(4, 'days').add(5, 'hours').set('second', 0);
+            const newDate = moment().tz(siteTz).add(4, 'days').add(5, 'hours').startOf('minute');
             await fillIn('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]', newDate.format('YYYY-MM-DD'));
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]');
             await fillIn('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]', newDate.format('HH:mm'));
@@ -623,5 +625,78 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
         it('handles email sending error');
+    });
+
+    describe('Are you sure you want to leave? modal', function () {
+        // draft content should autosave and leave without warning
+        it(`Doesn't display for draft content`, async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                title: 'Test Post',
+                status: 'draft'
+            });
+            await visit('/editor/post/' + post.id);
+            await fillIn('[data-test-editor-title-input]', 'New Title');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
+        });
+        // published content should never autosave and should warn on leaving when there's changes
+        it('Displays when published content title has changed', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                title: 'Test Post',
+                status: 'published'
+            });
+            await visit('/editor/post/' + post.id);
+            await fillIn('[data-test-editor-title-input]', 'New Title');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
+        });
+        it('Displays when scheduled content has changed', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                title: 'Test Post',
+                status: 'scheduled'
+            });
+            await visit('/editor/post/' + post.id);
+            await fillIn('[data-test-editor-title-input]', 'New Title');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
+        });
+        // published and edited content should not warn when changes are reverted (either via undo or manually)
+        it(`Does not display when changed content is changed back`, async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                title: 'Test Post',
+                status: 'published',
+                lexical: `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`
+            });
+            await visit('/editor/post/' + post.id);
+            await fillIn('[data-test-editor-title-input]', 'New Title');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
+            await click('[data-test-stay-button]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
+            // revert title
+            await fillIn('[data-test-editor-title-input]', 'Test Post');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
+        });
+        it(`Does not save changes when leaving`, async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                title: 'Test Post',
+                status: 'published',
+                lexical: `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`
+            });
+            await visit('/editor/post/' + post.id);
+            await fillIn('[data-test-editor-title-input]', 'New Title');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
+            await click('[data-test-leave-button]');
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
+            // check that the title wasn't saved
+            expect(this.server.db.posts.find(post.id).title === 'Test Post').to.be.true;
+        });
     });
 });

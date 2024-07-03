@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "html-validate": "8.18.2",
+    "html-validate": "8.20.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
@@ -29,10 +29,10 @@
     "@tryghost/email-events": "0.0.0",
     "@tryghost/errors": "1.3.2",
     "@tryghost/html-to-plaintext": "0.0.0",
-    "@tryghost/kg-default-cards": "10.0.5",
-    "@tryghost/logging": "2.4.14",
-    "@tryghost/tpl": "0.1.29",
-    "@tryghost/validator": "0.2.10",
+    "@tryghost/kg-default-cards": "10.0.6",
+    "@tryghost/logging": "2.4.15",
+    "@tryghost/tpl": "0.1.30",
+    "@tryghost/validator": "0.2.11",
     "bson-objectid": "2.0.4",
     "cheerio": "0.22.0",
     "handlebars": "4.7.8",

@@ -103,6 +103,7 @@ const Sidebar: React.FC<{
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const hasNewsletterExcerpt = useFeatureFlag('newsletterExcerpt');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
@@ -251,27 +252,6 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                     />
                 </Form>
-                <Separator />
-                <div className='my-5 flex w-full items-start'>
-                    <span>
-                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
-                    </span>
-                    <Form marginBottom={false}>
-                        <Toggle
-                            checked={newsletter.show_badge}
-                            direction='rtl'
-                            label={
-                                <div className='flex flex-col gap-0.5'>
-                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
-                                </div>
-                            }
-                            labelStyle='value'
-                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
-                        />
-                    </Form>
-                </div>
-                <Separator />
                 <div className='mb-5 mt-10'>
                     {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
@@ -437,18 +417,28 @@ const Sidebar: React.FC<{
                         value={newsletter.title_color}
                         onChange={color => updateNewsletter({title_color: color})}
                     />}
+                    <ToggleGroup gap='lg'>
+                        {(hasNewsletterExcerpt && newsletter.show_post_title_section) &&
+                            <Toggle
+                                checked={newsletter.show_excerpt}
+                                direction="rtl"
+                                label="Post excerpt"
+                                onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
+                            />
+                        }
+                        <Toggle
+                            checked={newsletter.show_feature_image}
+                            direction="rtl"
+                            label='Feature image'
+                            onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
+                        />
+                    </ToggleGroup>
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         testId='body-font-select'
                         title='Body style'
                         onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                    />
-                    <Toggle
-                        checked={newsletter.show_feature_image}
-                        direction="rtl"
-                        label='Feature image'
-                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
@@ -488,6 +478,26 @@ const Sidebar: React.FC<{
                         onChange={html => updateNewsletter({footer_content: html})}
                     />
                 </Form>
+                <Separator />
+                <div className='my-5 flex w-full items-start'>
+                    <span>
+                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
+                    </span>
+                    <Form marginBottom={false}>
+                        <Toggle
+                            checked={newsletter.show_badge}
+                            direction='rtl'
+                            label={
+                                <div className='flex flex-col gap-0.5'>
+                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                </div>
+                            }
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
+                        />
+                    </Form>
+                </div>
             </>
         }
     ];

@@ -25,7 +25,8 @@ const GA_FEATURES = [
     'filterEmailDisabled',
     'newEmailAddresses',
     'portalImprovements',
-    'onboardingChecklist'
+    'newsletterExcerpt',
+    'internalLinking'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -34,9 +35,9 @@ const BETA_FEATURES = [
     'additionalPaymentMethods',
     'i18n',
     'activitypub',
-    'internalLinking',
     'stripeAutomaticTax',
-    'webmentions'
+    'webmentions',
+    'editorExcerpt'
 ];
 
 const ALPHA_FEATURES = [
@@ -51,7 +52,8 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    'adminXDemo'
+    'adminXDemo',
+    'contentVisibility'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const membersService = require('./service');
@@ -11,10 +12,74 @@ const {
 } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const onHeaders = require('on-headers');
+const tiersService = require('../tiers/service');
+const config = require('../../../shared/config');
 
 const messages = {
     missingUuid: 'Missing uuid.',
     invalidUuid: 'Invalid uuid.'
+};
+
+const getFreeTier = async function getFreeTier() {
+    const response = await tiersService.api.browse();
+    const freeTier = response.data.find(tier => tier.type === 'free');
+    return freeTier;
+};
+
+/**
+ * Sets the ghost-access and ghost-access-hmac cookies on the response object
+ * @param {Object} member - The member object
+ * @param {import('express').Request} req - The member object
+ * @param {import('express').Response} res - The express response object to set the cookies on
+ * @param {Object} freeTier - The free tier object
+ * @returns 
+ */
+const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
+    if (!member) {
+        // If there is no cookie sent with the request, return early
+        if (!req.headers.cookie || !req.headers.cookie.includes('ghost-access')) {
+            return;
+        }
+        // If there are cookies sent with the request, set them to null and expire them immediately
+        const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+        const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+        const existingCookies = res.getHeader('Set-Cookie') || [];
+        const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+
+        res.setHeader('Set-Cookie', cookiesToSet);
+        return;
+    }
+    const hmacSecret = config.get('cacheMembersContent:hmacSecret');
+    if (!hmacSecret) {
+        return;
+    }
+    const hmacSecretBuffer = Buffer.from(hmacSecret, 'base64');
+    if (hmacSecretBuffer.length === 0) {
+        return;
+    }
+    const activeSubscription = member.subscriptions?.find(sub => sub.status === 'active');
+
+    const cookieTimestamp = Math.floor(Date.now() / 1000); // to mitigate a cookie replay attack
+    const memberTier = activeSubscription && activeSubscription.tier.id || freeTier.id;
+    const memberTierAndTimestamp = `${memberTier}:${cookieTimestamp}`;
+    const memberTierHmac = crypto.createHmac('sha256', hmacSecretBuffer).update(memberTierAndTimestamp).digest('hex');
+
+    const maxAge = 3600;
+    const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+    const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+
+    const existingCookies = res.getHeader('Set-Cookie') || [];
+    const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+    res.setHeader('Set-Cookie', cookiesToSet);
+};
+
+const accessInfoSession = async function accessInfoSession(req, res, next) {
+    const freeTier = await getFreeTier();
+    onHeaders(res, function () {
+        setAccessCookies(req.member, req, res, freeTier);
+    });
+    next();
 };
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
@@ -242,6 +307,16 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
         // Note: don't reset 'member_login', or that would give an easy way around user enumeration by logging in to a manually created account
         const subscriptions = member && member.subscriptions || [];
 
+        if (config.get('cacheMembersContent:enabled')) {
+            // Set the ghost-access cookies to enable tier-based caching
+            try {
+                const freeTier = await getFreeTier();
+                setAccessCookies(member, req, res, freeTier);
+            } catch {
+                // This is a non-critical operation, so we can safely ignore any errors
+            }
+        }
+
         const action = req.query.action;
 
         if (action === 'signup' || action === 'signup-paid' || action === 'subscribe') {
@@ -322,5 +397,6 @@ module.exports = {
     updateMemberData,
     updateMemberNewsletters,
     deleteSession,
+    accessInfoSession,
     deleteSuppression
 };

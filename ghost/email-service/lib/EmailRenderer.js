@@ -10,6 +10,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
+const {registerHelpers} = require('./helpers/register-helpers');
 
 const messages = {
     subscriptionStatus: {
@@ -418,6 +419,10 @@ class EmailRenderer {
             return {src, width, height};
         });
 
+        // Add a class to each figcaption so we can style them in the email
+        $('figcaption').each((i, elem) => !!($(elem).addClass('kg-card-figcaption')));
+        html = $.html();
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
@@ -755,53 +760,16 @@ class EmailRenderer {
         return replacements;
     }
 
+    getLabs() {
+        return this.#labs;
+    }
+
     async renderTemplate(data) {
+        const labs = this.getLabs();
         this.#handlebars = require('handlebars').create();
 
-        // Helpers
-        this.#handlebars.registerHelper('if', function (conditional, options) {
-            if (conditional) {
-                return options.fn(this);
-            } else {
-                return options.inverse(this);
-            }
-        });
-
-        this.#handlebars.registerHelper('and', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        this.#handlebars.registerHelper('not', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (!arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        this.#handlebars.registerHelper('or', function () {
-            const len = arguments.length - 1;
-
-            for (let i = 0; i < len; i++) {
-                if (arguments[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
+        // Register helpers
+        registerHelpers(this.#handlebars, labs);
 
         // Partials
         if (this.#labs.isSet('emailCustomization')) {
@@ -872,18 +840,23 @@ class EmailRenderer {
      *
      * @param {*} text
      * @param {number} maxLength
-     * @param {number} maxLengthMobile should be larger than maxLength
+     * @param {number} maxLengthMobile should be smaller than maxLength
      * @returns
      */
     truncateHtml(text, maxLength, maxLengthMobile) {
-        if (!maxLengthMobile || maxLength >= maxLengthMobile) {
+        if (!maxLengthMobile || maxLength <= maxLengthMobile) {
             return escapeHtml(this.truncateText(text, maxLength));
         }
-        if (text && text.length > maxLength) {
-            if (text.length <= maxLengthMobile) {
-                return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '<span class="hide-mobile">…</span>';
+        if (text && text.length > maxLengthMobile) {
+            let ellipsis = '';
+
+            if (text.length > maxLengthMobile && text.length <= maxLength) {
+                ellipsis = '<span class="hide-desktop">…</span>';
+            } else if (text.length > maxLength) {
+                ellipsis = '…';
             }
-            return escapeHtml(text.substring(0, maxLength - 1)) + '<span class="mobile-only">' + escapeHtml(text.substring(maxLength - 1, maxLengthMobile - 1)) + '</span>' + '…';
+
+            return escapeHtml(text.substring(0, maxLengthMobile - 1)) + '<span class="desktop-only">' + escapeHtml(text.substring(maxLengthMobile - 1, maxLength - 1)) + '</span>' + ellipsis;
         } else {
             return escapeHtml(text ?? '');
         }
@@ -1032,7 +1005,7 @@ class EmailRenderer {
                 const {href: featureImageMobile, width: featureImageMobileWidth, height: featureImageMobileHeight} = await this.limitImageWidth(latestPost.get('feature_image'), 600, 480);
 
                 latestPosts.push({
-                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 105, 105),
+                    title: this.truncateHtml(latestPost.get('title'), featureImage ? 85 : 95, featureImageMobile ? 55 : 75),
                     url: this.#getPostUrl(latestPost),
                     featureImage: featureImage ? {
                         src: featureImage,
@@ -1044,13 +1017,23 @@ class EmailRenderer {
                         width: featureImageMobileWidth,
                         height: featureImageMobileHeight
                     } : null,
-                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 60 : 70, 105)
+                    excerpt: this.truncateHtml(latestPost.get('custom_excerpt') || latestPost.get('plaintext'), featureImage ? 120 : 130, featureImageMobile ? 90 : 100)
                 });
 
                 if (featureImage) {
                     latestPostsHasImages = true;
                 }
             }
+        }
+
+        let excerptFontClass = '';
+        const bodyFont = newsletter.get('body_font_category');
+        const titleFont = newsletter.get('title_font_category');
+
+        if (titleFont === 'serif' && bodyFont === 'serif') {
+            excerptFontClass = 'post-excerpt-serif-serif';
+        } else if (titleFont === 'serif' && bodyFont !== 'serif') {
+            excerptFontClass = 'post-excerpt-serif-sans';
         }
 
         const data = {
@@ -1071,6 +1054,7 @@ class EmailRenderer {
                 commentUrl: commentUrl.href,
                 authors,
                 publishedAt,
+                customExcerpt: post.get('custom_excerpt'),
                 feature_image: postFeatureImage,
                 feature_image_width: postFeatureImageWidth,
                 feature_image_height: postFeatureImageHeight,
@@ -1081,6 +1065,7 @@ class EmailRenderer {
             newsletter: {
                 name: newsletter.get('name'),
                 showPostTitleSection: newsletter.get('show_post_title_section'),
+                showExcerpt: newsletter.get('show_excerpt'),
                 showCommentCta: newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag,
                 showSubscriptionDetails: newsletter.get('show_subscription_details')
             },
@@ -1112,8 +1097,9 @@ class EmailRenderer {
             footerContent: newsletter.get('footer_content'),
 
             classes: {
-                title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
+                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
+                excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },
