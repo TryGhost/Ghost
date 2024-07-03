@@ -6,10 +6,10 @@
         <button
             type="button"
             class="{{if @className @className "image-action image-edit"}}"
-            data-tooltip="Edit"
+            title="Edit image"
             {{on "click" (fn this.handleClick uploader)}}
         >
-            {{svg-jar "koenig/kg-wand"}}
+            {{svg-jar "koenig/kg-edit"}}
         </button>
     </GhUploader>
 {{/if}}

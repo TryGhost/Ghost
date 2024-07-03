@@ -11,7 +11,7 @@ const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button className='mt-[-5px]' color='clear' label='Customize' size='sm' onClick={openPreviewModal}/>}
+            customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
             description="Set up primary and secondary menus"
             keywords={keywords}
             navid='navigation'

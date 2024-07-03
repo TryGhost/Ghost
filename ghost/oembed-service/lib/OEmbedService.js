@@ -6,9 +6,6 @@ const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
 
-// Some sites block non-standard user agents so we need to mimic a typical browser
-const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
-
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
@@ -129,9 +126,6 @@ class OEmbedService {
         return this.externalRequest(
             url,
             {
-                headers: {
-                    'user-agent': USER_AGENT
-                },
                 timeout: 2000,
                 followRedirect: true,
                 ...options
@@ -211,11 +205,7 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
-        const gotOpts = {
-            headers: {
-                'User-Agent': USER_AGENT
-            }
-        };
+        const gotOpts = {};
 
         if (process.env.NODE_ENV?.startsWith('test')) {
             gotOpts.retry = 0;
@@ -248,11 +238,11 @@ class OEmbedService {
             scraperResponse = await metascraper({
                 html,
                 url,
-                // In development, allow non-standard TLDs
+                // In development, allow non-standard tlds
                 validateUrl: this.config.get('env') !== 'development'
             });
         } catch (err) {
-            // Log to avoid being blind to errors happening in metascraper
+            // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
             return this.unknownProvider(url);
         }
@@ -344,7 +334,7 @@ class OEmbedService {
                 if (oembed.type === 'photo' && !oembed.url) {
                     return;
                 }
-                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width)) {
+                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width || !oembed.height)) {
                     return;
                 }
 

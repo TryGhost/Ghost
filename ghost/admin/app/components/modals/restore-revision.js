@@ -4,7 +4,6 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default class RestoreRevisionModal extends Component {
-    @service feature;
     @service notifications;
 
     get title() {
@@ -35,13 +34,6 @@ export default class RestoreRevisionModal extends Component {
 
             post.lexical = revision.lexical;
             post.title = revision.title;
-            post.featureImage = revision.feature_image;
-            post.featureImageAlt = revision.feature_image_alt;
-            post.featureImageCaption = revision.feature_image_caption;
-
-            if (this.feature.editorExcerpt) {
-                post.customExcerpt = revision.custom_excerpt;
-            }
 
             yield post.save({adapterOptions: {saveRevision: true}});
 

@@ -3,58 +3,42 @@ import NiceModal from '@ebay/nice-modal-react';
 import {Form, Modal, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
 import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const UnsplashModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
+    const modal = NiceModal.useModal();
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
-    const [okLabel, setOkLabel] = useState('Save');
-    const [enabled, setEnabled] = useState<boolean>(!!unsplashEnabled);
 
-    useEffect(() => {
-        setEnabled(unsplashEnabled || false);
-    }, [unsplashEnabled]);
-
-    const handleToggleChange = async () => {
+    const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const updates: Setting[] = [
-            {key: 'unsplash', value: (enabled)}
+            {key: 'unsplash', value: (e.target.checked)}
         ];
         try {
-            setOkLabel('Saving...');
-            await Promise.all([
-                editSettings(updates),
-                new Promise((resolve) => {
-                    setTimeout(resolve, 1000);
-                })
-            ]);
-            setOkLabel('Saved');
+            await editSettings(updates);
         } catch (error) {
             handleError(error);
-        } finally {
-            setTimeout(() => setOkLabel('Save'), 1000);
         }
     };
-
-    const isDirty = !(enabled === unsplashEnabled);
 
     return (
         <Modal
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            cancelLabel='Close'
-            dirty={isDirty}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
-            okLabel={okLabel}
+            okColor='black'
+            okLabel='Save & close'
             testId='unsplash-modal'
             title=''
-            onOk={handleToggleChange}
+            onOk={() => {
+                modal.remove();
+                updateRoute('integrations');
+            }}
         >
             <IntegrationHeader
                 detail='Beautiful, free photos'
@@ -64,13 +48,11 @@ const UnsplashModal = NiceModal.create(() => {
             <div className='mt-7'>
                 <Form marginBottom={false} grouped>
                     <Toggle
-                        checked={enabled}
+                        checked={unsplashEnabled}
                         direction='rtl'
                         hint={<>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</>}
                         label='Enable Unsplash'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
+                        onChange={handleToggleChange}
                     />
                 </Form>
             </div>

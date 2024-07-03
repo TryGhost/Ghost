@@ -22,10 +22,10 @@ export class APIError extends Error {
         errorOptions?: ErrorOptions
     ) {
         if (!message && response && response.url.includes('/ghost/api/admin/')) {
-            message = `Something went wrong while loading ${response.url.replace(/.+\/ghost\/api\/admin\//, '').replace(/\W.*/, '').replace('_', ' ')}, please try again.`;
+            message = `${response.statusText}, cannot fetch ${response.url.replace(/.+\/ghost\/api\/admin\//, '').replace(/\W.*/, '').replace('_', ' ')}`;
         }
 
-        super(message || 'Something went wrong, please try again.', errorOptions);
+        super(message || 'Unknown error', errorOptions);
     }
 }
 
@@ -48,13 +48,13 @@ export class VersionMismatchError extends JSONError {
 
 export class ServerUnreachableError extends APIError {
     constructor(errorOptions?: ErrorOptions) {
-        super(undefined, undefined, 'Something went wrong, please try again.', errorOptions);
+        super(undefined, undefined, 'Server was unreachable', errorOptions);
     }
 }
 
 export class TimeoutError extends APIError {
     constructor(errorOptions?: ErrorOptions) {
-        super(undefined, undefined, 'Request timed out, please try again.', errorOptions);
+        super(undefined, undefined, 'Request timed out', errorOptions);
     }
 }
 

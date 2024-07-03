@@ -17,7 +17,6 @@ function makePostLike(data: any = {}) {
         feature_image_alt: data.feature_image_alt || null,
         feature_image_caption: data.feature_image_caption || null,
         title: 'Title',
-        custom_excerpt: 'Subtitle',
         reason: 'reason',
         post_status: 'published'
     }, data);
@@ -34,7 +33,6 @@ function makeRevision(data: any = {}) {
         feature_image_alt: data.feature_image_alt || null,
         feature_image_caption: data.feature_image_caption || null,
         title: 'Title',
-        custom_excerpt: 'Subtitle',
         reason: 'reason',
         post_status: 'published'
     }, data);
@@ -94,26 +92,6 @@ describe('PostRevisions', function () {
             }), [{
                 lexical: 'blah',
                 title: 'not blah'
-            }].map(makeRevision), {
-                forceRevision: true,
-                isPublished: false
-            });
-
-            assert.deepEqual(actual, expected);
-        });
-
-        it('should return true if the current and previous custom_excerpt values are different and forceRevision is true', function () {
-            const postRevisions = new PostRevisions({config, model: {}});
-
-            const expected = {value: true, reason: 'explicit_save'};
-            const actual = postRevisions.shouldGenerateRevision(makePostLike({
-                lexical: 'blah',
-                html: 'blah',
-                title: 'blah',
-                custom_excerpt: 'blah2'
-            }), [{
-                lexical: 'blah',
-                custom_excerpt: 'not blah'
             }].map(makeRevision), {
                 forceRevision: true,
                 isPublished: false

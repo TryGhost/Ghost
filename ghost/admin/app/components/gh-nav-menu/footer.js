@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import ThemeErrorsModal from '../modals/design/theme-errors';
-import WhatsNew from '../modals/whats-new';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
@@ -44,7 +43,7 @@ export default class Footer extends Component {
         // filter errors that have other UI to display to users that the functionality is not working
         const filteredErrors = errors?.filter((error) => {
             if (error.code === 'GS110-NO-MISSING-PAGE-BUILDER-USAGE' && error?.failures?.[0].message.includes(`show_title_and_feature_image`)) {
-                return false;
+                return false;                
             }
             return true;
         });
@@ -60,10 +59,5 @@ export default class Footer extends Component {
         style['z-index'] = '1100';
 
         return {horizontalPosition, verticalPosition, style};
-    }
-
-    @action
-    openWhatsNew() {
-        return this.modals.open(WhatsNew);
     }
 }

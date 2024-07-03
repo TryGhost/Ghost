@@ -12,6 +12,8 @@ import {useUploadFile} from '@tryghost/admin-x-framework/api/files';
 
 const PinturaModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
+    const modal = NiceModal.useModal();
+    const [enabled, setEnabled] = useState(false);
     const [uploadingState, setUploadingState] = useState({
         js: false,
         css: false
@@ -26,29 +28,6 @@ const PinturaModal = NiceModal.create(() => {
     useEffect(() => {
         setEnabled(pinturaEnabled || false);
     }, [pinturaEnabled]);
-
-    const [okLabel, setOkLabel] = useState('Save');
-    const [enabled, setEnabled] = useState<boolean>(!!pinturaEnabled);
-
-    const handleToggleChange = async () => {
-        const updates: Setting[] = [
-            {key: 'pintura', value: (enabled)}
-        ];
-        try {
-            setOkLabel('Saving...');
-            await Promise.all([
-                editSettings(updates),
-                new Promise((resolve) => {
-                    setTimeout(resolve, 1000);
-                })
-            ]);
-            setOkLabel('Saved');
-        } catch (error) {
-            handleError(error);
-        } finally {
-            setTimeout(() => setOkLabel('Save'), 1000);
-        }
-    };
 
     const jsUploadRef = useRef<HTMLInputElement>(null);
     const cssUploadRef = useRef<HTMLInputElement>(null);
@@ -91,20 +70,23 @@ const PinturaModal = NiceModal.create(() => {
         }
     };
 
-    const isDirty = !(enabled === pinturaEnabled);
-
     return (
         <Modal
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            cancelLabel='Close'
-            dirty={isDirty}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
-            okLabel={okLabel}
+            cancelLabel=''
+            okColor='black'
+            okLabel='Save'
             testId='pintura-modal'
             title=''
-            onOk={handleToggleChange}
+            onOk={async () => {
+                modal.remove();
+                updateRoute('integrations');
+                await editSettings([
+                    {key: 'pintura', value: enabled}
+                ]);
+            }}
         >
             <IntegrationHeader
                 detail='Advanced image editing'

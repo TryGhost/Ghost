@@ -46,11 +46,11 @@
                     @imageSrc={{@image}}
                     @saveImage={{fn this.saveImage uploader.setFiles}}
                 />
-                <button type="button" class="image-action image-delete" data-tooltip="Delete" {{on "click" @clearImage}}>
+                <button type="button" class="image-action image-delete" title="Delete image" {{on "click" @clearImage}}>
                     {{svg-jar "koenig/kg-trash"}}
                 </button>
             </div>
-            <div class="gh-editor-feature-image-caption-container">
+            <div class="relative flex justify-between align-center">
                 {{#if this.isEditingAlt}}
                     <input
                         type="text"

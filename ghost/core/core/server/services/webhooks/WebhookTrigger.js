@@ -87,7 +87,6 @@ class WebhookTrigger {
             const reqPayload = JSON.stringify(hookPayload);
             const url = webhook.get('target_url');
             const secret = webhook.get('secret') || '';
-            const ts = Date.now();
 
             const headers = {
                 'Content-Length': Buffer.byteLength(reqPayload),
@@ -96,7 +95,7 @@ class WebhookTrigger {
             };
 
             if (secret !== '') {
-                headers['X-Ghost-Signature'] = `sha256=${crypto.createHmac('sha256', secret).update(`${reqPayload}${ts}`).digest('hex')}, t=${ts}`;
+                headers['X-Ghost-Signature'] = `sha256=${crypto.createHmac('sha256', secret).update(reqPayload).digest('hex')}, t=${Date.now()}`;
             }
 
             const opts = {

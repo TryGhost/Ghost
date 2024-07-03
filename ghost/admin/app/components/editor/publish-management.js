@@ -56,7 +56,7 @@ export default class PublishManagement extends Component {
             }
         }
 
-        if (isValid && (!this.publishFlowModal || this.publishFlowModal?.isClosing)) {
+        if (isValid && !this.publishFlowModal || this.publishFlowModal?.isClosing) {
             this.publishOptions.resetPastScheduledAt();
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
@@ -83,7 +83,7 @@ export default class PublishManagement extends Component {
 
         const isValid = await this._validatePost();
 
-        if (isValid && (!this.updateFlowModal || this.updateFlowModal.isClosing)) {
+        if (isValid && !this.updateFlowModal || this.updateFlowModal.isClosing) {
             this.updateFlowModal = this.modals.open(UpdateFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask
@@ -99,12 +99,10 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    async openPreview(event, {skipAnimation} = {}) {
+    openPreview(event, {skipAnimation} = {}) {
         event?.preventDefault();
 
-        const isValid = await this._validatePost();
-
-        if (isValid && (!this.previewModal || this.previewModal.isClosing)) {
+        if (!this.previewModal || this.previewModal.isClosing) {
             // open publish flow modal underneath to offer quick switching
             // without restarting the flow or causing flicker
 

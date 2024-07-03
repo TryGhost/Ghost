@@ -212,7 +212,6 @@ export default class MemberController extends Controller {
                         member.hasValidated.pushObject(payloadError.property);
                     }
                 }
-                return;
             }
 
             throw error;

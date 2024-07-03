@@ -25,7 +25,6 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
     @tracked submitting = false;
     @tracked loggingIn = false;
-    @tracked flowNotification = '';
     @tracked flowErrors = '';
     @tracked passwordResetEmailSent = false;
 
@@ -124,19 +123,21 @@ export default class SigninController extends Controller.extend(ValidationEngine
         let notifications = this.notifications;
 
         this.flowErrors = '';
-        this.flowNotification = '';
         // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
         this.hasValidated.addObject('identification');
 
         try {
             yield this.validate({property: 'forgotPassword'});
             yield this.ajax.post(forgottenUrl, {data: {password_reset: [{email}]}});
-            this.flowNotification = 'An email with password reset instructions has been sent.';
+            notifications.showAlert(
+                'Please check your email for instructions.',
+                {type: 'info', key: 'forgot-password.send.success'}
+            );
             return true;
         } catch (error) {
             // ValidationEngine throws "undefined" for failed validation
             if (!error) {
-                return this.flowErrors = 'We need your email address to reset your password.';
+                return this.flowErrors = 'We need your email address to reset your password!';
             }
 
             if (isVersionMismatchError(error)) {
