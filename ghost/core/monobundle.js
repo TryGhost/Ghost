@@ -4,9 +4,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const util = require('util');
-const exec = util.promisify(require('node:child_process').exec);
 
+const concurrently = require('concurrently');
 const detectIndent = require('detect-indent');
 const detectNewline = require('detect-newline');
 const findRoot = require('find-root');
@@ -111,6 +110,8 @@ function getWorkspaces(from) {
     console.log('workspaces', workspaces);
     console.log('\n-------------------------\n');
 
+    const packagesToPack = [];
+
     for (const w of workspaces) {
         const workspacePkgInfo = JSONFile.for(path.join(w, 'package.json'));
 
@@ -118,7 +119,7 @@ function getWorkspaces(from) {
             continue;
         }
 
-        console.log(`packaging ${w}\n`);
+        console.log(`packaging ${w}`);
 
         workspacePkgInfo.pkg.version = pkgInfo.pkg.version;
         workspacePkgInfo.write();
@@ -144,16 +145,23 @@ function getWorkspaces(from) {
         console.log(`- resolution override for ${workspacePkgInfo.pkg.name} to ${packedFilename}\n`);
         pkgInfo.pkg.resolutions[workspacePkgInfo.pkg.name] = packedFilename;
 
-        const command = `npm pack --pack-destination ../core/components`;
-        console.log(`running '${command}' in ${w}\n`);
-
-        const {stdout, stderr} = await exec(command, {cwd: w});
-        console.log('stdout', stdout);
-        console.log('stderr', stderr);
-        console.log('\n-------------------------\n');
+        packagesToPack.push(w);
     }
 
     pkgInfo.write();
+
+    const {result} = concurrently(packagesToPack.map(w => ({
+        name: w,
+        cwd: w,
+        command: 'npm pack --pack-destination ../core/components'
+    })));
+
+    try {
+        await result;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
 
     const filesToCopy = [
         'README.md',
