@@ -76,7 +76,7 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<UsersResponseType>;
         const users = pages.flatMap(page => page.users);
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             users: users,

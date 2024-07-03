@@ -73,7 +73,7 @@
                         data-test-button="sign-in" />
                 </form>
 
-                <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
+                <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
             {{/if}}
         </section>
     </div>

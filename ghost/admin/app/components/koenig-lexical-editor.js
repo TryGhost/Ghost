@@ -83,6 +83,28 @@ export function decoratePostSearchResult(item, settings) {
     }
 }
 
+/**
+ * Fetches the URLs of all active offers
+ * @returns {Promise<{label: string, value: string}[]>}
+ */
+export async function offerUrls() {
+    let offers = [];
+
+    try {
+        offers = await this.fetchOffersTask.perform();
+    } catch (e) {
+        // No-op: if offers are not available (e.g. missing permissions), return an empty array
+        return [];
+    }
+
+    return offers.map((offer) => {
+        return {
+            label: `Offer — ${offer.name}`,
+            value: this.config.getSiteUrl(offer.code)
+        };
+    });
+}
+
 class ErrorHandler extends React.Component {
     state = {
         hasError: false
@@ -273,8 +295,6 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchAutocompleteLinks = async () => {
-            const offers = await this.fetchOffersTask.perform();
-
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
                 {label: 'Free signup', value: '#/portal/signup/free'}
@@ -319,18 +339,23 @@ export default class KoenigLexicalEditor extends Component {
                 return [];
             };
 
-            const offersLinks = offers.toArray().map((offer) => {
-                return {
-                    label: `Offer - ${offer.name}`,
-                    value: this.config.getSiteUrl(offer.code)
-                };
-            });
+            const offersLinks = await offerUrls.call(this);
 
             return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
-            const labels = await this.fetchLabelsTask.perform();
+            let labels = [];
+            try {
+                labels = await this.fetchLabelsTask.perform();
+            } catch (e) {
+                // Do not throw cancellation errors
+                if (didCancel(e)) {
+                    return;
+                }
+
+                throw e;
+            }
 
             return labels.map(label => label.name);
         };
@@ -372,12 +397,21 @@ export default class KoenigLexicalEditor extends Component {
                 if (!didCancel(error)) {
                     throw error;
                 }
+                return;
             }
 
-            // only published posts/pages have URLs
+            // only published posts/pages and staff with posts have URLs
             const filteredResults = [];
             results.forEach((group) => {
-                const items = (group.groupName === 'Posts' || group.groupName === 'Pages') ? group.options.filter(i => i.status === 'published') : group.options;
+                let items = group.options;
+
+                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
+                    items = items.filter(i => i.status === 'published');
+                }
+
+                if (group.groupName === 'Staff') {
+                    items = items.filter(i => !/\/404\//.test(i.url));
+                }
 
                 if (items.length === 0) {
                     return;
@@ -414,18 +448,22 @@ export default class KoenigLexicalEditor extends Component {
             fetchCollectionPosts,
             fetchEmbed,
             fetchLabels,
+            renderLabels: !this.session.user.isContributor,
             feature: {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
-                internalLinking: this.feature.internalLinking
+                internalLinking: this.feature.internalLinking,
+                internalLinkingAtLinks: this.feature.internalLinking,
+                contentVisibility: this.feature.contentVisibility
             },
-            deprecated: {
+            deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
             },
             membersEnabled: this.settings.membersSignupAccess === 'all',
             searchLinks,
             siteTitle: this.settings.title,
-            siteDescription: this.settings.description
+            siteDescription: this.settings.description,
+            siteUrl: this.config.getSiteUrl('/')
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 

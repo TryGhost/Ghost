@@ -112,7 +112,15 @@
     border-right: none;
     background: unset;
     width: 100%;
-    pointer-events: none;
+    overflow: unset;
+}
+
+.gh-nav-contributor .gh-nav-body {
+    overflow: unset;
+}
+
+.gh-nav-contributor .gh-sidebar-banner {
+    max-width: 300px;
 }
 
 .gh-nav-menu {
@@ -443,6 +451,10 @@
     line-height: 1;
     transition: none;
     z-index: 999;
+}
+
+.gh-nav-list-home svg {
+    margin-top: -2px;
 }
 
 .gh-nav-list svg.force-fill path {
@@ -2137,12 +2149,12 @@ section.gh-ds h2 {
     background: var(--red);
 }
 
-/* Ghost Referrals invite toast */
-.gh-referral-toast {
+/* Sidebar banners like ghost Referrals invite toast */
+.gh-sidebar-banner {
     position: relative;
     display: block;
-    padding: 25px;
-    margin-bottom: 50px;
+    padding: 12px 16px 16px;
+    margin: 0 -7px 32px;
     color: var(--black);
     text-decoration: none;
     background: var(--white);
@@ -2152,38 +2164,38 @@ section.gh-ds h2 {
     cursor: pointer;
 }
 
-.gh-referral-toast a {
+.gh-sidebar-banner a {
     color: var(--black);
 }
 
-.gh-referral-toast:hover {
+.gh-sidebar-banner:hover {
     transform: translateY(-2px) scale(1.01);
     box-shadow: rgb(75 225 226 / 38%) -7px -4px 42px 10px, rgb(202 103 255 / 42%) 7px 8px 42px 10px;
     transition: all 0.3s ease;
   }
 
-.gh-referral-toast-close {
+.gh-sidebar-banner-close {
     position: absolute;
-    top: 7px;
-    right: 10px;
+    top: 4px;
+    right: 8px;
     padding: 5px;
     color: #ddd;
     font-size: 2.2rem;
     line-height: 1;
 }
 
-.gh-referral-toast-close:hover {
+.gh-sidebar-banner-close:hover {
     color: #15171A;
 }
 
-.gh-referral-toast a > strong {
+.gh-sidebar-banner a > strong {
     display: block;
     margin-bottom: 10px;
     font-size: 1.7rem;
     line-height: 1.2em;
 }
 
-.gh-referral-toast a > p {
+.gh-sidebar-banner a > p {
     margin: 0;
     font-size: 1.5rem;
     line-height: 1.35em;
@@ -2192,22 +2204,115 @@ section.gh-ds h2 {
     color: #666;
 }
 
-.gh-referral-toast a > p strong {
+.gh-sidebar-banner a > p strong {
     color: #ff247d;
 }
 
-.gh-referral-toast-button {
+.gh-sidebar-banner-button {
     margin-top: 20px;
     border-radius: 5px;
     width: 100%;
 }
 
-.gh-referral-toast-button span {
+.gh-sidebar-banner-button span {
     padding: 0 12px;
     font-size: 1.4rem;
     text-align-last: center;
-    height: 40px;
-    line-height: 40px;
+    height: 38px;
+    line-height: 38px;
+}
+
+.gh-sidebar-banner-container {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.gh-sidebar-banner-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-sidebar-banner-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    margin-top: 2px;
+}
+
+.gh-sidebar-banner-subhead {
+    font-size: 13px;
+    color: var(--midgrey);
+    font-weight: 400;
+}
+
+.gh-sidebar-banner a .gh-sidebar-banner-msg {
+    line-height: 1.4em;
+    font-weight: 600;
+    margin-top: -2px;
+    margin-bottom: 0;
+    font-size: 1.4rem;
+}
+
+.gh-sidebar-banner-details {
+    line-height: 1.4em;
+    font-size: 1.35rem;
+    margin: 5px 0 0;
+    color: var(--darkgrey);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.gh-sidebar-banner-msg + .gh-sidebar-banner-button {
+    margin-top: 14px;
+}
+
+.gh-referral-toast {
+    padding: 25px;
+    margin: 0 0 50px;
+}
+
+.gh-referral-toast .gh-sidebar-banner-close {
+    top: 7px;
+    right: 10px;
+}
+
+.gh-sidebar-banner.gh-error-banner {
+    box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.1), 0px 3px 8px 0px rgba(0, 0, 0, 0.06);
+    margin-bottom: 32px;
+    padding: 16px;
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-container {
+    flex-direction: row;
+    gap: 10px;
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-icon {
+    color: var(--red);
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-subhead {
+    color: var(--red);
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: block;
+    margin-top: -2px;
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-msg {
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin-top: 4px;
+    color: var(--darkgrey);
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-button {
+    color: var(--white);
+    background-color: var(--red);
 }
 
 .admin-x-container-error {

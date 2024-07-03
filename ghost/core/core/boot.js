@@ -388,8 +388,6 @@ async function initNestDependencies() {
     debug('Begin: initNestDependencies');
     const GhostNestApp = require('@tryghost/ghost');
     const providers = [];
-    const urlUtils = require('./shared/url-utils');
-    const activityPubBaseUrl = new URL('activitypub', urlUtils.urlFor('home', true));
     providers.push({
         provide: 'logger',
         useValue: require('@tryghost/logging')
@@ -402,9 +400,6 @@ async function initNestDependencies() {
     }, {
         provide: 'DomainEvents',
         useValue: require('@tryghost/domain-events')
-    }, {
-        provide: 'ActivityPubBaseURL',
-        useValue: activityPubBaseUrl
     }, {
         provide: 'SettingsCache',
         useValue: require('./shared/settings-cache')
@@ -514,6 +509,11 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
     try {
         // Step 1 - require more fundamental components
+        // OpenTelemetry should be configured as early as possible
+        debug('Begin: Load OpenTelemetry');
+        const opentelemetryInstrumentation = require('./shared/instrumentation');
+        opentelemetryInstrumentation.initOpenTelemetry({config});
+        debug('End: Load OpenTelemetry');
 
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
@@ -536,8 +536,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
+        const connection = require('./server/data/db/connection');
         sentry.initQueryTracing(
-            require('./server/data/db/connection')
+            connection
         );
         debug('End: Get DB ready');
 

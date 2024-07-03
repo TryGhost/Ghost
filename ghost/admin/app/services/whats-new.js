@@ -7,6 +7,8 @@ import {task} from 'ember-concurrency';
 
 export default Service.extend({
     session: service(),
+    store: service(),
+    response: null,
 
     entries: null,
     changelogUrl: 'https://ghost.org/blog/',
@@ -39,32 +41,47 @@ export default Service.extend({
         return latestMoment.isAfter(lastSeenMoment);
     }),
 
-    showModal: action(function () {
+    hasNewFeatured: computed('entries.[]', function () {
+        if (!this.hasNew) {
+            return false;
+        }
+
+        let [latestEntry] = this.entries;
+        return latestEntry.featured;
+    }),
+
+    seen: action(function () {
+        this.updateLastSeen.perform();
+    }),
+
+    openFeaturedModal: action(function () {
         this.set('isShowingModal', true);
     }),
 
-    closeModal: action(function () {
+    closeFeaturedModal: action(function () {
         this.set('isShowingModal', false);
-        this.updateLastSeen.perform();
+        this.seen();
     }),
 
     fetchLatest: task(function* () {
         try {
-            // we should already be logged in at this point so lets grab the user
-            // record and store it locally so that we don't have to deal with
-            // session.user being a promise and causing issues with CPs
-            let user = yield this.session.user;
-            this.set('_user', user);
+            if (!this.response) {
+                // we should already be logged in at this point so lets grab the user
+                // record and store it locally so that we don't have to deal with
+                // session.user being a promise and causing issues with CPs
+                let user = yield this.session.user;
+                this.set('_user', user);
 
-            let response = yield fetch('https://ghost.org/changelog.json');
-            if (!response.ok) {
-                // eslint-disable-next-line
-                return console.error('Failed to fetch changelog', {response});
+                this.response = yield fetch('https://ghost.org/changelog.json');
+                if (!this.response.ok) {
+                    // eslint-disable-next-line
+                    return console.error('Failed to fetch changelog', {response});
+                }
+
+                let result = yield this.response.json();
+                this.set('entries', result.posts || []);
+                this.set('changelogUrl', result.changelogUrl);
             }
-
-            let result = yield response.json();
-            this.set('entries', result.posts || []);
-            this.set('changelogUrl', result.changelogUrl);
         } catch (e) {
             console.error(e); // eslint-disable-line
         }

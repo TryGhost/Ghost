@@ -226,7 +226,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link linkWithPadding onClick={() => {
+        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add custom integration' size='sm' onClick={() => {
             updateRoute('integrations/new');
             setSelectedTab('custom');
         }} />
