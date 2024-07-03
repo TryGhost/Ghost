@@ -1770,12 +1770,6 @@ describe('Email renderer', function () {
         });
 
         describe('show excerpt', function () {
-            beforeEach(function () {
-                labsEnabled = {
-                    newsletterExcerpt: true
-                };
-            });
-
             it('is rendered when enabled and customExcerpt is present', async function () {
                 const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is an excerpt'}));
                 const newsletter = createModel({

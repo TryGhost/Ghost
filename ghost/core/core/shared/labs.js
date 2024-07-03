@@ -25,7 +25,6 @@ const GA_FEATURES = [
     'filterEmailDisabled',
     'newEmailAddresses',
     'portalImprovements',
-    'newsletterExcerpt',
     'internalLinking'
 ];
 
