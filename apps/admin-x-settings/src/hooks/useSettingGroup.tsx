@@ -109,10 +109,10 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
     
             if (existingSetting) {
                 return state.map(setting => (
-                    setting.key === key ? { ...setting, value, dirty: true } : setting
+                    setting.key === key ? {...setting, value, dirty: true} : setting
                 ));
             } else {
-                return [...state, { key, value, dirty: true }];
+                return [...state, {key, value, dirty: true}];
             }
         });
     };
