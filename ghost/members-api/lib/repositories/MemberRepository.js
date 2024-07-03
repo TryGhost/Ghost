@@ -1066,7 +1066,7 @@ module.exports = class MemberRepository {
                 const originalMrrDelta = model.get('mrr');
                 const updatedMrrDelta = updated.get('mrr');
 
-                const getEventName = (originalStatus, updatedStatus) => {
+                const getEventType = (originalStatus, updatedStatus) => {
                     if (originalStatus === updatedStatus) {
                         return 'updated';
                     }
@@ -1080,12 +1080,14 @@ module.exports = class MemberRepository {
 
                 const originalStatus = getStatus(model);
                 const updatedStatus = getStatus(updated);
+                const eventType = getEventType(originalStatus, updatedStatus);
 
                 const mrrDelta = updatedMrrDelta - originalMrrDelta;
+
                 await this._MemberPaidSubscriptionEvent.add({
                     member_id: member.id,
                     source: 'stripe',
-                    type: getEventName(originalStatus, updatedStatus),
+                    type: eventType,
                     subscription_id: updated.id,
                     from_plan: model.get('plan_id'),
                     to_plan: updated.get('status') === 'canceled' ? null : updated.get('plan_id'),
@@ -1108,6 +1110,23 @@ module.exports = class MemberRepository {
                         offerId: offerId,
                         batchId: options.batch_id
                     });
+                    this.dispatchEvent(event, options);
+                }
+
+                // Dispatch cancellation event if:
+                // 1. The subscription has been set to cancel at period end, by the member in Portal
+                // 2. The subscription has been immediately canceled (e.g. due to multiple failed payments)
+                if ((updatedStatus === 'canceled') || (originalStatus !== 'canceled' && updatedStatus === 'expired')) {
+                    const context = options?.context || {};
+                    const source = this._resolveContextSource(context);
+
+                    const event = SubscriptionCancelledEvent.create({
+                        source,
+                        tierId: ghostProduct?.get('id'),
+                        memberId: member.id,
+                        subscriptionId: updated.get('id')
+                    }, subscription.canceled_at);
+
                     this.dispatchEvent(event, options);
                 }
             }
@@ -1456,34 +1475,6 @@ module.exports = class MemberRepository {
                 id: member.id,
                 subscription: updatedSubscription
             }, options);
-
-            // Dispatch cancellation event
-            if (data.subscription.cancel_at_period_end) {
-                const stripeProductId = _.get(updatedSubscription, 'items.data[0].price.product');
-
-                let ghostProduct;
-                try {
-                    ghostProduct = await this._productRepository.get(
-                        {stripe_product_id: stripeProductId},
-                        {...sharedOptions, forUpdate: true}
-                    );
-                } catch (e) {
-                    ghostProduct = null;
-                }
-
-                const context = options?.context || {};
-                const source = this._resolveContextSource(context);
-                const cancellationTimestamp = updatedSubscription.canceled_at
-                    ? new Date(updatedSubscription.canceled_at * 1000)
-                    : new Date();
-                const cancelEventData = {
-                    source,
-                    memberId: member.id,
-                    subscriptionId: subscriptionModel.get('id'),
-                    tierId: ghostProduct?.get('id')
-                };
-                this.dispatchEvent(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp), options);
-            }
         }
     }
 
