@@ -60,10 +60,6 @@ const features = [{
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
 },{
-    title: 'Excerpt in newsletter',
-    description: 'Showing excerpt in newsletter',
-    flag: 'newsletterExcerpt'
-}, {
     title: 'Content Visibility',
     description: 'Enables content visibility in Emails',
     flag: 'contentVisibility'
