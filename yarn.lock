@@ -2234,6 +2234,27 @@
     "@elastic/transport" "~8.4.1"
     tslib "^2.4.0"
 
+"@elastic/elasticsearch@8.14.0":
+  version "8.14.0"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.14.0.tgz#93b1f2a7cb6cc5cd1ceebf5060576bc690432e0a"
+  integrity sha512-MGrgCI4y+Ozssf5Q2IkVJlqt5bUMnKIICG2qxeOfrJNrVugMCBCAQypyesmSSocAtNm8IX3LxfJ3jQlFHmKe2w==
+  dependencies:
+    "@elastic/transport" "^8.6.0"
+    tslib "^2.4.0"
+
+"@elastic/transport@^8.6.0":
+  version "8.7.0"
+  resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.7.0.tgz#006987fc5583f61c266e0b1003371e82efc7a6b5"
+  integrity sha512-IqXT7a8DZPJtqP2qmX1I2QKmxYyN27kvSW4g6pInESE1SuGwZDp2FxHJ6W2kwmYOJwQdAt+2aWwzXO5jHo9l4A==
+  dependencies:
+    "@opentelemetry/api" "1.x"
+    debug "^4.3.4"
+    hpagent "^1.0.0"
+    ms "^2.1.3"
+    secure-json-parse "^2.4.0"
+    tslib "^2.4.0"
+    undici "^6.12.0"
+
 "@elastic/transport@~8.4.1":
   version "8.4.1"
   resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.4.1.tgz#f98c5a5e2156bcb3f01170b4aca7e7de4d8b61b8"
@@ -3946,7 +3967,7 @@
   dependencies:
     "@opentelemetry/api" "^1.0.0"
 
-"@opentelemetry/api@1.9.0", "@opentelemetry/api@^1.0.0":
+"@opentelemetry/api@1.9.0", "@opentelemetry/api@1.x", "@opentelemetry/api@^1.0.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.0.tgz#d03eba68273dc0f7509e2a3d5cba21eae10379fe"
   integrity sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==
@@ -7679,6 +7700,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.24.tgz#a7bc3519dd6c035aadd0e0c0dac03b55637390f5"
   integrity sha512-V5IHVJSyC8wrby/5YtFa1ajQ4qB3wfqc+AwlemDAEH2pZ5n5ygdb2qayeo4kwWPK0xn2Vul5KiRQK0bX+OePdw==
 
+"@tryghost/debug@0.1.26":
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.26.tgz#c1a403fb8abfcf5293395f822593b5d6f997f426"
+  integrity sha512-Q0idDUzgPFgUOELED8GwmxEFtp9WjIw6sUayLgc2he4YJfe3hK2LsExt5XSJsa3OSZp1NgX7/OqVHd3vueynlA==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.24"
+    debug "^4.3.1"
+
 "@tryghost/debug@0.1.30":
   version "0.1.30"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.30.tgz#1daaac3a6bf63d82f28ba62f515c95dae29b12b4"
@@ -7694,6 +7723,15 @@
   dependencies:
     "@tryghost/root-utils" "^0.3.29"
     debug "^4.3.1"
+
+"@tryghost/elasticsearch@^3.0.15":
+  version "3.0.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-3.0.20.tgz#834a7ed1d87978bc5f7fb240e3371f7353af2008"
+  integrity sha512-n2ZAb8u6F1R0zaesUlTB0ybjkcn5TfqX9+kr+zGBZ6By8QW4p62q4/9vSU86BnJlnwuenKigpYzLo6WkVlA4Mw==
+  dependencies:
+    "@elastic/elasticsearch" "8.14.0"
+    "@tryghost/debug" "^0.1.31"
+    split2 "4.2.0"
 
 "@tryghost/elasticsearch@^3.0.19":
   version "3.0.19"
@@ -7943,7 +7981,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.4.10", "@tryghost/logging@2.4.15", "@tryghost/logging@^2.4.7":
+"@tryghost/logging@2.4.10", "@tryghost/logging@2.4.15", "@tryghost/logging@2.4.8", "@tryghost/logging@^2.4.7":
   version "2.4.15"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.15.tgz#a94e37d760a62d6f2fc2868e4cd8bf6f219b2a2e"
   integrity sha512-mSVdSR/9bd1D/DCFpfeFn2AnPE/0lK78ePHBrtteOipA7ogL0Kd+QvabHK5iKLe+/20flBZs4BvnU/DBuS8Pvw==
@@ -7959,6 +7997,18 @@
     gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
+
+"@tryghost/metrics@1.0.27":
+  version "1.0.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.27.tgz#00713047bf4592a26a83e4b9bb05eb41f103ab91"
+  integrity sha512-aOS+YljlSw6CSN7JZX8AVtSgSgrOfjxdDeGkSAyzNfj+7t/A7+Vf4lpKyblA3MtL54VVL2cXSZ5LcHnz7c2jEA==
+  dependencies:
+    "@tryghost/elasticsearch" "^3.0.15"
+    "@tryghost/pretty-stream" "^0.1.20"
+    "@tryghost/root-utils" "^0.3.24"
+    json-stringify-safe "^5.0.1"
+  optionalDependencies:
+    promise.allsettled "^1.0.5"
 
 "@tryghost/metrics@1.0.31":
   version "1.0.31"
@@ -8031,6 +8081,15 @@
   dependencies:
     chalk "^4.1.0"
     sywac "^1.3.0"
+
+"@tryghost/pretty-stream@^0.1.20":
+  version "0.1.25"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.25.tgz#5dba5a17cd83a10bcc47bb23052f4669bd8141d3"
+  integrity sha512-OPIOFtNHfQgkVQyZoh4HPLNM5EpLwSff7DYc1sh0KC5Z4QQHBxlFuMMHBmdUiDZtooCIo6i/6j6F4c4/KWnCBw==
+  dependencies:
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "^1.2.5"
 
 "@tryghost/pretty-stream@^0.1.24":
   version "0.1.24"
@@ -10276,6 +10335,13 @@ aws4@^1.8.0:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.11.0.tgz#d61f46d83b2519250e2784daf5b09479a8b41c59"
   integrity sha512-xh1Rl34h6Fi1DC2WWKfxUTVqRsNnr6LsKz2+hfwDxQJWmrx8+c7ylaqBMcHfl1U1r2dsifOvKX3LQuLNZ+XSvA==
+
+axios@^0.25.0:
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.25.0.tgz#349cfbb31331a9b4453190791760a8d35b093e0a"
+  integrity sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==
+  dependencies:
+    follow-redirects "^1.14.7"
 
 axios@^1.0.0, axios@^1.3.3, axios@^1.6.0:
   version "1.6.5"
@@ -26169,13 +26235,6 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.14, postcss@^7.0.17, postcss@^7.0.2
     picocolors "^0.2.1"
     source-map "^0.6.1"
 
-postmark@^3.11.0:
-  version "3.11.0"
-  resolved "https://registry.yarnpkg.com/postmark/-/postmark-3.11.0.tgz#43d68e9dc629c92da53ec57b3507715be3846787"
-  integrity sha512-asguBQ9M/8ueQMJ1D45iPF+3+T641q8rAU8m8cQSfhDWePw4TVYql9wszjAwSCE93dUonyrF08D8Kvg6USBoFA==
-  dependencies:
-    axios "^0.25.0"
-
 postgres-array@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/postgres-array/-/postgres-array-2.0.0.tgz#48f8fce054fbc69671999329b8834b772652d82e"
@@ -26224,6 +26283,13 @@ postgres-range@^1.1.1:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/postgres-range/-/postgres-range-1.1.4.tgz#a59c5f9520909bcec5e63e8cf913a92e4c952863"
   integrity sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==
+
+postmark@^3.11.0:
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/postmark/-/postmark-3.11.0.tgz#43d68e9dc629c92da53ec57b3507715be3846787"
+  integrity sha512-asguBQ9M/8ueQMJ1D45iPF+3+T641q8rAU8m8cQSfhDWePw4TVYql9wszjAwSCE93dUonyrF08D8Kvg6USBoFA==
+  dependencies:
+    axios "^0.25.0"
 
 prebuild-install@^7.1.1:
   version "7.1.1"
@@ -30609,6 +30675,11 @@ undici@^5.22.1:
   integrity sha512-Ji2IJhFXZY0x/0tVBXeQwgPlLWw13GVzpsWPQ3rV50IFMMof2I55PZZxtm4P6iNq+L5znYN9nSTAq0ZyE6lSJw==
   dependencies:
     busboy "^1.6.0"
+
+undici@^6.12.0:
+  version "6.19.2"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-6.19.2.tgz#231bc5de78d0dafb6260cf454b294576c2f3cd31"
+  integrity sha512-JfjKqIauur3Q6biAtHJ564e3bWa8VvT+7cSiOJHFbX4Erv6CLGDpg8z+Fmg/1OI/47RA+GI2QZaF48SSaLvyBA==
 
 unherit@^1.0.4:
   version "1.1.3"
