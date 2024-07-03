@@ -256,8 +256,8 @@ describe('Members API', function () {
             // Create a new customer in Stripe
             set(customer, {
                 id: customer_id,
-                name: 'Test Member',
-                email: 'cancel-paid-test@email.com',
+                name: 'Cancel me at the end of the billing cycle',
+                email: 'cancel-me-at-the-end-of-cycle@test.com',
                 subscriptions: {
                     type: 'list',
                     data: [subscription]
@@ -391,8 +391,8 @@ describe('Members API', function () {
             // Create a new customer in Stripe
             set(customer, {
                 id: customer_id,
-                name: 'Test Member',
-                email: 'cancel-paid-test@email.com',
+                name: 'Cancel me now',
+                email: 'cancel-me-immediately@test.com',
                 subscriptions: {
                     type: 'list',
                     data: [subscription]
