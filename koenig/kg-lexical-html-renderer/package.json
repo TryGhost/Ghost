@@ -36,15 +36,15 @@
     "sinon": "17.0.1"
   },
   "dependencies": {
-    "@lexical/clipboard": "0.14.2",
-    "@lexical/code": "0.14.2",
-    "@lexical/headless": "0.14.2",
-    "@lexical/link": "0.14.2",
-    "@lexical/list": "0.14.2",
-    "@lexical/rich-text": "0.14.2",
+    "@lexical/clipboard": "0.14.3",
+    "@lexical/code": "0.14.3",
+    "@lexical/headless": "0.14.3",
+    "@lexical/link": "0.14.3",
+    "@lexical/list": "0.14.3",
+    "@lexical/rich-text": "0.14.3",
     "@tryghost/kg-default-nodes": "1.1.6",
     "@tryghost/kg-default-transforms": "1.1.7",
     "jsdom": "^24.0.0",
-    "lexical": "0.14.2"
+    "lexical": "0.14.3"
   }
 }

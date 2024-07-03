@@ -1,6 +1,9 @@
-import {LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {registerMergeListNodesTransform} from '../../build';
+import {LexicalEditor} from 'lexical';
 import {assertTransform, createEditor} from '../utils';
+import {ListNode} from '@lexical/list';
+
+// Since Lexical 0.14.3 the default List nodes have a built-in transform
+// for merging adjacent lists. This test has been kept as a regression test.
 
 describe('Merge adjacent lists transform', function () {
     it('handles adjacent ULs', function () {
@@ -143,51 +146,12 @@ describe('Merge adjacent lists transform', function () {
         };
 
         const registerTransforms = (editor: LexicalEditor) => {
-            registerMergeListNodesTransform(editor);
+            // We still need to perform a registration to trigger core transforms
+            editor.registerNodeTransform(ListNode, () => {});
         };
 
         const editor = createEditor();
 
         assertTransform(editor, registerTransforms, before, after);
-    });
-
-    it('handles not having list nodes in the editor', function () {
-        const unchangedState = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Testing',
-                                type: 'text',
-                                version: 1
-                            }
-                        ],
-                        direction: null,
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: null,
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
-
-        const registerTransforms = (editor: LexicalEditor) => {
-            registerMergeListNodesTransform(editor);
-        };
-
-        const editor = createEditor({nodes: [ParagraphNode, TextNode]});
-
-        assertTransform(editor, registerTransforms, unchangedState, unchangedState);
     });
 });

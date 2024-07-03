@@ -6,10 +6,8 @@ import {$createParagraphNode, ParagraphNode} from 'lexical';
 import {$createHeadingNode, $createQuoteNode, HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {ExtendedHeadingNode} from '@tryghost/kg-default-nodes';
 import {ListItemNode, $createListItemNode, ListNode, $createListNode} from '@lexical/list';
-import {registerMergeListNodesTransform} from './transforms/merge-list-nodes.js';
 
 export * from './transforms/denest.js';
-export * from './transforms/merge-list-nodes.js';
 export * from './transforms/remove-alignment.js';
 
 // only used when rendering so not registered by default
@@ -30,8 +28,5 @@ export function registerDefaultTransforms(editor: LexicalEditor) {
         registerDenestTransform(editor, QuoteNode, () => ($createQuoteNode())),
         registerDenestTransform(editor, ListNode, node => ($createListNode(node.getListType(), node.getStart()))),
         registerDenestTransform(editor, ListItemNode, () => ($createListItemNode())),
-
-        // merge adjacent lists of the same type
-        registerMergeListNodesTransform(editor)
     );
 }

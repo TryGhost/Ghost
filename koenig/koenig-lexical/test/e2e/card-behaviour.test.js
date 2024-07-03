@@ -164,7 +164,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('```javascript ');
 
-            expect(await page.locator('[data-kg-card-editing="true"]')).not.toBeNull();
+            await expect(page.locator('[data-kg-card-editing="true"]')).toBeVisible();
 
             await page.click('.koenig-lexical');
             await assertHTML(page, html`
