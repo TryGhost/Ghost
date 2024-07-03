@@ -16,6 +16,8 @@ import siteFixture from './responses/site.json';
 import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
+import activitypubInboxFixture from './responses/activitypub/inbox.json';
+import activitypubFollowingFixture from './responses/activitypub/following.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
@@ -63,7 +65,9 @@ export const responseFixtures = {
     themes: themesFixture as ThemesResponseType,
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
-    latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
+    latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
+    activitypubInbox: activitypubInboxFixture,
+    activitypubFollowing: activitypubFollowingFixture
 };
 
 const defaultLabFlags = {
@@ -145,7 +149,7 @@ export const limitRequests = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {
+export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
 
     const namedRequests = Object.entries(requests).reduce(
@@ -153,8 +157,11 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
         [] as Array<MockRequestConfig & {name: keyof Requests}>
     );
 
-    await page.route(/\/ghost\/api\/admin\//, async (route) => {
-        const apiPath = route.request().url().replace(/^.*\/ghost\/api\/admin/, '');
+    const routeRegex = options?.useActivityPub ? /\/activitypub\// : /\/ghost\/api\/admin\//;
+    const routeReplaceRegex = options.useActivityPub ? /^.*\/activitypub/ : /^.*\/ghost\/api\/admin/;
+
+    await page.route(routeRegex, async (route) => {
+        const apiPath = route.request().url().replace(routeReplaceRegex, '');
 
         const matchingMock = namedRequests.find((request) => {
             if (request.method !== route.request().method()) {

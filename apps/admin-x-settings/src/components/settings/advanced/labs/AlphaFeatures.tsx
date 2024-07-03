@@ -52,21 +52,21 @@ const features = [{
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
 },{
-    title: 'Onboarding checklist',
-    description: 'Onboarding checklist that helps new customers get started',
-    flag: 'onboardingChecklist'
-},{
     title: 'NestJS Playground',
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
 },{
-    title: 'Internal Linking (private beta)',
-    description: 'Adds internal URL search to editor link inputs',
-    flag: 'internalLinking'
-},{
     title: 'ActivityPub',
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
+},{
+    title: 'Excerpt in newsletter',
+    description: 'Showing excerpt in newsletter',
+    flag: 'newsletterExcerpt'
+}, {
+    title: 'Content Visibility',
+    description: 'Enables content visibility in Emails',
+    flag: 'contentVisibility'
 }];
 
 const AlphaFeatures: React.FC = () => {

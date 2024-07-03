@@ -4,7 +4,7 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 
 const messages = {
     checkEmailForInstructions: 'Check your email for further instructions.',
-    passwordChanged: 'Password changed successfully.',
+    passwordChanged: 'Password updated',
     invitationAccepted: 'Invitation accepted.'
 };
 

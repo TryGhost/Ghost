@@ -160,8 +160,8 @@
 .gh-og-preview {
     background: #fff;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset,
-    0 -1px 0 0 rgba(0, 0, 0, 0.06) inset,
-    0 1px 4px rgba(0, 0, 0, 0.1);
+        0 -1px 0 0 rgba(0, 0, 0, 0.06) inset,
+            0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .gh-og-preview-image {
@@ -229,7 +229,7 @@
     border-style: solid;
     border-color: #e1e8ed;
     color: #292f33;
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 1.4rem;
     line-height: 1.3em;
     background: #fff;
@@ -283,7 +283,7 @@
 /* NEW editor
 /* ---------------------------------------------------------- */
 
-.gh-main > section.gh-editor-fullscreen {
+.gh-main>section.gh-editor-fullscreen {
     position: fixed;
     top: 0;
     left: 0;
@@ -449,7 +449,7 @@
 .gh-editor-feedback-dropdown {
     min-width: 400px;
     border-radius: 3px;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .04), 0 8px 20px -3px rgba(0, 0, 0, .2);
     padding: 20px;
     background-color: #fff;
     background-clip: padding-box;
@@ -553,13 +553,20 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 4px;
 }
 
+.gh-editor-feature-image {
+    position: relative;
+}
+
+.gh-editor-feature-image img {
+    display: block;
+}
 .gh-editor-feature-image-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 100px;
-    background-image: linear-gradient(180deg,rgba(0,0,0,.2),transparent 40%,transparent);
+    bottom: 0;
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, .2), transparent 40%, transparent);
     transition: all .1s ease-in;
     opacity: 0;
 }
@@ -581,7 +588,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     padding: 0;
     background: var(--white);
     color: var(--darkgrey);
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all .1s ease-in;
     opacity: 0;
 }
@@ -604,7 +611,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-feature-image .image-action svg path {
-    fill: var(--darkgrey);
+    stroke-width: 2;
 }
 
 .gh-editor-feature-image-add {
@@ -677,12 +684,19 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     stroke: var(--midgrey-l2);
 }
 
+.gh-editor-feature-image-caption-container {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .8rem 0;
+}
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;
     min-height: 24px;
-    margin: 0 0 1.7em 0;
-    padding: 0;
+    margin: 0;
+    padding: 0 3.6rem 0 0;
     outline: none;
     border-width: 0;
     border-style: none;
@@ -717,12 +731,25 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: .5;
 }
 
+.gh-editor-title-container {
+    position: relative;
+    max-width: 740px;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    border: none;
+    background: transparent;
+}
+
 .gh-editor-title {
     display: block;
     width: 100%;
+    max-width: unset;
     min-height: auto;
-    margin-bottom: 1.2rem;
+    margin: 0 0 1.6rem;
+    padding: 0 0 4px;
     border: none;
+    background: transparent;
     color: var(--black);
     font-size: 4.8rem;
     letter-spacing: -0.017em;
@@ -730,6 +757,18 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     font-weight: 700;
     overflow: hidden;
     box-shadow: none;
+}
+
+@media (min-width: 500px) and (max-width: 768px) {
+    .gh-editor-title {
+        font-size: 3.6rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-editor-title {
+        font-size: 2.8rem;
+    }
 }
 
 .gh-editor-title:focus {
@@ -741,6 +780,69 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: .5;
 }
 
+.gh-editor-title::placeholder {
+    color: var(--lightgrey-d1);
+    font-weight: 700;
+    opacity: 1;
+}
+
+.gh-editor-hidden-indicator {
+    position: absolute;
+    top: -1px;
+    height: 2.4rem;
+    margin-left: -6rem;
+    color: var(--midgrey-l2);
+}
+
+.gh-editor-title-container .gh-editor-hidden-indicator {
+    top: 1.8rem;
+}
+
+.gh-editor-hidden-indicator svg {
+    height: 2.4rem;
+}
+
+.gh-editor-excerpt {
+    display: block;
+    width: 100%;
+    max-width: unset;
+    min-width: auto;
+    min-height: auto; /* Allows element to collapse for auto-expand calculation */
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--darkgrey);
+    font-size: 2.0rem;
+    font-weight: 440;
+    line-height: 1.5em;
+    letter-spacing: -.018em;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+.gh-editor-excerpt:focus {
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.gh-editor-excerpt-error {
+    margin-top: .8rem;
+    margin-bottom: 4.8rem;
+    color: var(--red-d1);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.gh-editor-title-divider {
+    margin: 1.6rem 0 4.8rem;
+}
+
+.gh-editor-title-divider-error {
+    margin: 1.6rem 0 0;
+    border-top: 1px solid var(--red);
+}
+
 .gh-editor .tk-indicator {
     position: absolute;
     top: 15px;
@@ -750,6 +852,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     font-size: 1.2rem;
     font-weight: 500;
     cursor: pointer;
+}
+
+.gh-editor .tk-indicator-excerpt {
+    top: -1px;
 }
 
 .gh-editor-feature-image-container .tk-indicator {
@@ -927,21 +1033,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     }
 }
 
-@media (max-width: 500px) {
-    .gh-editor-title {
-        font-size: 3.4rem;
-    }
-}
-
-.gh-editor-title {
-    padding: 0 0 4px;
-}
-
-.gh-editor-title::placeholder {
-    color: var(--lightgrey-d1);
-    font-weight: 700;
-    opacity: 1;
-}
 .gh-editor .editor-preview {
     height: auto;
     margin-top: 4px;
@@ -960,7 +1051,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor .editor-preview h3,
 .gh-editor .editor-preview h4,
 .gh-editor .editor-preview h5,
-.gh-editor .editor-preview h6, {
+.gh-editor .editor-preview h6 {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
@@ -981,7 +1072,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 100%;
     height: 100%;
     border: 2px solid var(--blue);
-    background-color: rgba(255,255,255,0.6);
+    background-color: rgba(255, 255, 255, 0.6);
 }
 
 .gh-editor-drop-target .drop-target-message {
@@ -1032,6 +1123,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     position: relative;
     vertical-align: bottom;
 }
+
 .editor-toolbar .fa-check:before {
     position: absolute;
     right: 3px;
@@ -1120,8 +1212,8 @@ figure {
     left: -20px;
     width: 20px;
     height: 100%;
-    background: rgb(255,255,255);
-    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+    background: rgb(255, 255, 255);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
     z-index: 999;
     opacity: 0;
     transition: all 250ms ease-out;
@@ -1134,22 +1226,22 @@ figure {
     right: 0;
     width: 20px;
     height: 100%;
-    background: rgb(255,255,255);
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    background: rgb(255, 255, 255);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
     z-index: 999;
 }
 
 .ember-power-select-option[aria-current="true"] .kg-settings-link-url.scroller::before {
     opacity: 1;
     left: 0;
-    background: linear-gradient(90deg, rgba(244,245,245,1) 0%, rgba(244,245,245,0) 100%);
+    background: linear-gradient(90deg, rgba(244, 245, 245, 1) 0%, rgba(244, 245, 245, 0) 100%);
 }
 
 .ember-power-select-option[aria-current="true"] .kg-settings-link-url::after {
-    background: linear-gradient(90deg, rgba(244,245,245,0) 0%, rgba(244,245,245,1) 100%);
+    background: linear-gradient(90deg, rgba(244, 245, 245, 0) 0%, rgba(244, 245, 245, 1) 100%);
 }
 
-.kg-settings-link-url > span {
+.kg-settings-link-url>span {
     display: inline-block;
     font-weight: 400;
     font-size: 1.2rem;
@@ -1167,61 +1259,6 @@ figure {
 
 /* Labs
 /* ---------------------------------------------------------- */
-
-.gh-editor-title-container {
-    position: relative;
-    max-width: 740px;
-    width: 100%;
-    margin-right: auto;
-    margin-left: auto;
-    border: none;
-    background: transparent;
-}
-
-.gh-editor .gh-editor-title {
-    display: block;
-    width: 100%;
-    max-width: unset;
-    min-height: auto;
-    margin: 0 0 1.2rem;
-    border: none;
-    background: transparent;
-    color: var(--black);
-    font-size: 4.8rem;
-    letter-spacing: -0.017em;
-    line-height: 1.1em;
-    font-weight: 700;
-    overflow: hidden;
-    box-shadow: none;
-}
-
-@media (min-width: 500px) and (max-width: 768px) {
-    .gh-editor .gh-editor-title {
-        font-size: 3.6rem;
-    }
-}
-
-@media (max-width: 500px) {
-    .gh-editor .gh-editor-title {
-        font-size: 2.8rem;
-    }
-}
-
-.gh-editor-hidden-indicator {
-    position: absolute;
-    top: -1px;
-    height: 2.4rem;
-    margin-left: -6rem;
-    color: var(--midgrey-l2);
-}
-
-.gh-editor-title-container .gh-editor-hidden-indicator {
-    top: 1.8rem;
-}
-
-.gh-editor-hidden-indicator svg {
-    height: 2.4rem;
-}
 
 .gh-setting-error {
     margin-top: 1em;

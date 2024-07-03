@@ -104,8 +104,12 @@ module.exports = class MemberRepository {
             // Only dispatch the event after the transaction has finished
             options.transacting.executionPromise.then(async () => {
                 DomainEvents.dispatch(event);
-            }).catch(() => {
+            }).catch((err) => {
                 // catches transaction errors/rollback to not dispatch event
+                logging.error({
+                    err,
+                    message: `Error dispatching event ${event.constructor.name} for member ${event.data.memberId} after transaction finished`
+                });
             });
         } else {
             DomainEvents.dispatch(event);
@@ -988,7 +992,7 @@ module.exports = class MemberRepository {
             subscription_id: subscription.id,
             status: subscription.status,
             cancel_at_period_end: subscription.cancel_at_period_end,
-            cancellation_reason: subscription.metadata && subscription.metadata.cancellation_reason || null,
+            cancellation_reason: this.getCancellationReason(subscription),
             current_period_end: new Date(subscription.current_period_end * 1000),
             start_date: new Date(subscription.start_date * 1000),
             default_payment_card_last4: paymentMethod && paymentMethod.card && paymentMethod.card.last4 || null,
@@ -1134,6 +1138,11 @@ module.exports = class MemberRepository {
                 attribution: data.attribution,
                 batchId: options.batch_id
             });
+
+            if (offerId) {
+                logging.info(`Dispatching ${event.constructor.name} for member ${member.id} with offer ${offerId}`);
+            }
+
             this.dispatchEvent(event, options);
 
             if (getStatus(subscriptionModel) === 'active') {
@@ -1290,6 +1299,19 @@ module.exports = class MemberRepository {
                 ...eventData
             }, options);
         }
+    }
+
+    getCancellationReason(subscription) {
+        // Case: manual cancellation in Portal
+        if (subscription.metadata && subscription.metadata.cancellation_reason) {
+            return subscription.metadata.cancellation_reason;
+
+        // Case: Automatic cancellation due to several payment failures
+        } else if (subscription.cancellation_details && subscription.cancellation_details.reason && subscription.cancellation_details.reason === 'payment_failed') {
+            return 'Payment failed';
+        }
+
+        return null;
     }
 
     async getSubscription(data, options) {

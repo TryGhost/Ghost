@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
-const GhostNestApp = require('@tryghost/ghost');
 
 // App requires
 const config = require('../../shared/config');
@@ -21,8 +20,6 @@ const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
-const labs = require('../../shared/labs');
-const bodyParser = require('body-parser');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
@@ -50,36 +47,6 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
     siteApp.use(mw.cors);
-
-    const jsonParser = bodyParser.json({
-        type: ['application/activity+json', 'application/ld+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'],
-        // TODO: The @RawBody decorator in nest isn't working without this atm...
-        verify: function (req, res, buf) {
-            req.rawBody = buf;
-        }
-    });
-    siteApp.use(async function nestBodyParser(req, res, next) {
-        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
-            jsonParser(req, res, next);
-            return;
-        }
-        return next();
-    });
-
-    siteApp.use(async function nestApp(req, res, next) {
-        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
-            const originalExpressApp = req.app;
-            const app = await GhostNestApp.getApp();
-
-            const instance = app.getHttpAdapter().getInstance();
-            instance(req, res, function (err) {
-                req.app = originalExpressApp;
-                next(err);
-            });
-            return;
-        }
-        return next();
-    });
 
     siteApp.use(offersService.middleware);
 
@@ -121,9 +88,6 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve site files using the storage adapter
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
-    // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersService.middleware.loadMemberSession);
-
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
         '/members/.well-known',
@@ -148,18 +112,23 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
+
+    // Serve robots.txt if not found in theme
+    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
+
     debug('Static content done');
+
+    // site map - this should probably be refactored to be an internal app
+    sitemapHandler(siteApp);
+
+    // Global handling for member session, ensures a member is logged in to the frontend
+    siteApp.use(membersService.middleware.loadMemberSession);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     siteApp.use(themeMiddleware);
     debug('Themes done');
 
-    // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
-
-    // site map - this should probably be refactored to be an internal app
-    sitemapHandler(siteApp);
     debug('Internal apps done');
 
     // Add in all trailing slashes & remove uppercase
@@ -167,12 +136,12 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function frontendCaching(req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
-        if (req.member || res.isPrivateBlog) {
-            return shared.middleware.cacheControl('private')(req, res, next);
-        } else {
-            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+    siteApp.use(async function frontendCaching(req, res, next) {
+        try {
+            const middleware = await mw.frontendCaching.getMiddleware();
+            return middleware(req, res, next);
+        } catch {
+            return next();
         }
     });
 

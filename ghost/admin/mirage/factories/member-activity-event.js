@@ -1,6 +1,6 @@
-import faker from 'faker';
 import moment from 'moment-timezone';
 import {Factory} from 'miragejs';
+import {faker} from '@faker-js/faker';
 
 const EVENT_TYPES = [
     'newsletter_event',
@@ -16,7 +16,7 @@ const EVENT_TYPES = [
 
 /* eslint-disable camelcase */
 export default Factory.extend({
-    type() { return faker.random.arrayElement([EVENT_TYPES]); },
+    type() { return faker.helpers.arrayElement([EVENT_TYPES]); },
     createdAt() { return moment.utc().format(); },
 
     afterCreate(event, server) {

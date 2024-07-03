@@ -7,7 +7,6 @@ const EMPTY_SETTINGS = {
 };
 
 export default class OnboardingService extends Service {
-    @service feature;
     @service session;
 
     ONBOARDING_STEPS = [
@@ -24,8 +23,7 @@ export default class OnboardingService extends Service {
     }
 
     get isChecklistShown() {
-        return this.feature.onboardingChecklist
-            && this.session.user.isOwnerOnly
+        return this.session.user.isOwnerOnly
             && this.checklistStarted
             && !this.checklistCompleted
             && !this.checklistDismissed;
