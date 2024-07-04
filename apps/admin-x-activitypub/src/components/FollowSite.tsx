@@ -1,5 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -16,6 +17,9 @@ const FollowSite = NiceModal.create(() => {
     const modal = NiceModal.useModal();
     const mutation = useFollow();
     const client = useQueryClient();
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
 
     // mutation.isPending
     // mutation.isError
@@ -30,8 +34,11 @@ const FollowSite = NiceModal.create(() => {
 
     const handleFollow = async () => {
         try {
+            const url = new URL(`.ghost/activitypub/actions/follow/${profileName}`, siteUrl);
+            await fetch(url, {
+                method: 'POST'
+            });
             // Perform the mutation
-            await mutation.mutateAsync({username: profileName});
             // If successful, set the success state to true
             // setSuccess(true);
             showToast({
