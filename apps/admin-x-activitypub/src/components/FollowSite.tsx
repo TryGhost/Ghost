@@ -1,5 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -16,6 +17,14 @@ const FollowSite = NiceModal.create(() => {
     const modal = NiceModal.useModal();
     const mutation = useFollow();
     const client = useQueryClient();
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url;
+    console.log(JSON.stringify("This is my site Data: " + JSON.stringify(siteData)));
+    if(siteUrl) {
+        console.log(JSON.stringify("This is my site URL: " + siteUrl));
+    }
+
 
     // mutation.isPending
     // mutation.isError
