@@ -39,8 +39,11 @@ const FollowSite = NiceModal.create(() => {
 
     const handleFollow = async () => {
         try {
+            const url = new URL(`.ghost/activitypub/actions/follow/${profileName}`, siteUrl);
+            await fetch(url, {
+                method: 'POST'
+            });
             // Perform the mutation
-            await mutation.mutateAsync({username: profileName});
             // If successful, set the success state to true
             // setSuccess(true);
             showToast({
