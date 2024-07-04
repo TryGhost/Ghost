@@ -87,27 +87,9 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
     };
 
     // function to update the local state
-    // const updateSetting = (key: string, value: SettingValue) => {
-    //     updateForm((state) => {
-    //         if (state.some(setting => setting.key === key)) {
-    //             return state.map(setting => (
-    //                 setting.key === key ? {...setting, value, dirty: true} : setting
-    //             ));
-    //         } else {
-    //             return [...state, {key, value, dirty: true}];
-    //         }
-    //     });
-    // };
     const updateSetting = (key: string, value: SettingValue) => {
         updateForm((state) => {
-            const existingSetting = state.find(setting => setting.key === key);
-    
-            // Only update if the value has changed
-            if (existingSetting && existingSetting.value === value) {
-                return state;
-            }
-    
-            if (existingSetting) {
+            if (state.some(setting => setting.key === key)) {
                 return state.map(setting => (
                     setting.key === key ? {...setting, value, dirty: true} : setting
                 ));
