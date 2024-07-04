@@ -19,7 +19,7 @@ const FollowSite = NiceModal.create(() => {
     const client = useQueryClient();
     const site = useBrowseSite();
     const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location;
+    const siteUrl = siteData?.url ?? window.location.href;
 
     // mutation.isPending
     // mutation.isError
