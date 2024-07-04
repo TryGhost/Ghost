@@ -4371,10 +4371,10 @@
     "@opentelemetry/instrumentation" "^0.52.0"
     "@opentelemetry/semantic-conventions" "^1.22.0"
 
-"@opentelemetry/instrumentation-runtime-node@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-runtime-node/-/instrumentation-runtime-node-0.5.0.tgz#6ec26429b386cff90580b50a3d9c2aa6f3150c17"
-  integrity sha512-ABW2g44Efq4OLHNCGzj1iKVosl+MJ0bQM8DUQu94VBrc3mpsci5h0tNXvlE2mhMHayqFUFg+DD1qNghvKQew5g==
+"@opentelemetry/instrumentation-runtime-node@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-runtime-node/-/instrumentation-runtime-node-0.6.0.tgz#6d547f42222c54987411404cae06912a08d94575"
+  integrity sha512-sbDGvUFL3pGwiaSazQ9v259uVHu3WtApMeo8vMMEKHb+z1IVN6/prJffCBs4OA+4skmhf3iFTV531mVwtwWbTA==
   dependencies:
     "@opentelemetry/instrumentation" "^0.52.0"
 
