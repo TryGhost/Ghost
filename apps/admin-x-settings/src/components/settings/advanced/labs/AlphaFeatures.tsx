@@ -16,10 +16,6 @@ const features = [{
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
 },{
-    title: 'Websockets',
-    description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
-    flag: 'websockets'
-},{
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
