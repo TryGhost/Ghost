@@ -24,7 +24,6 @@ const GA_FEATURES = [
     'listUnsubscribeHeader',
     'filterEmailDisabled',
     'newEmailAddresses',
-    'portalImprovements',
     'internalLinking'
 ];
 
