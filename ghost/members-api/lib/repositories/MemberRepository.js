@@ -1113,9 +1113,9 @@ module.exports = class MemberRepository {
                     this.dispatchEvent(event, options);
                 }
 
-                // Dispatch cancellation event if:
-                // 1. The subscription has been set to cancel at period end, by the member in Portal
-                // 2. The subscription has been immediately canceled (e.g. due to multiple failed payments)
+                // Dispatch cancellation event, i.e. send paid cancellation staff notification, if:
+                // 1. The subscription has been set to cancel at period end, by the member in Portal, status 'canceled'
+                // 2. The subscription has been immediately canceled (e.g. due to multiple failed payments), status 'expired'
                 if (this.isActiveSubscriptionStatus(originalStatus) && (updatedStatus === 'canceled' || updatedStatus === 'expired')) {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);

@@ -508,7 +508,6 @@ describe('Members API', function () {
                 ]
             });
 
-
             canceledPaidMember = updatedMember;
         });
 
