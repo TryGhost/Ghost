@@ -31,7 +31,7 @@ const useNavigationEditor = ({items, setItems}: {
     const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
         items: items.map(item => ({...item, errors: {}})),
         setItems: newItems => setItems(newItems.map(({url, label}) => ({url, label}))),
-        blank: { url: '/',label: '', errors: {}},
+        blank: {url: '/',label: '', errors: {}},
         //blank: {label: '', url: '/', errors: {}},
         canAddNewItem: hasNewItem
     });
