@@ -1,2 +1,5 @@
 build
-tsconfig.tsbuildinfo
+cjs
+es
+types
+*.tsbuildinfo

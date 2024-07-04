@@ -1,3 +1,4 @@
 import LexicalHTMLRenderer from './LexicalHTMLRenderer';
 
-export = LexicalHTMLRenderer;
+export default LexicalHTMLRenderer;
+module.exports = LexicalHTMLRenderer;

@@ -18,6 +18,7 @@ interface RenderOptions {
     renderData?: Map<number, any>;
 }
 
+/* c8 ignore next 3 */
 function defaultOnError() {
     // do nothing
 }

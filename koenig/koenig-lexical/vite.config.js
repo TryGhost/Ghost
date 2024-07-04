@@ -60,7 +60,6 @@ export default (function viteConfig({mode}) {
         optimizeDeps: {
             include: [
                 '@tryghost/kg-clean-basic-html',
-                '@tryghost/kg-default-transforms',
                 '@tryghost/kg-markdown-html-renderer',
                 '@tryghost/kg-simplemde'
             ]

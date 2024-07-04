@@ -23,7 +23,7 @@
     /* Emit */
     "declaration": true,                      /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
     "sourceMap": true,                        /* Create source map files for emitted JavaScript files. */
-    "outDir": "build",                        /* Specify an output folder for all emitted files. */
+    "outDir": "cjs",                        /* Specify an output folder for all emitted files. */
     "esModuleInterop": true,                  /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
     "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
 

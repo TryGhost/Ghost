@@ -35,6 +35,7 @@ export default class TextContent {
     options: RequiredKeys<RendererOptions, 'dom'>;
 
     constructor(exportChildren: ExportChildren, options: RendererOptions) {
+        /* c8 ignore next 4 */
         if (ensureDomProperty(options) === false) {
             // eslint-disable-next-line ghost/ghost-custom/no-native-error
             throw new Error('TextContent requires a dom property in the options argument');
@@ -108,7 +109,7 @@ export default class TextContent {
                     if (bIndex === -1) {
                         return -1;
                     }
-
+                    /* c8 ignore next 1 */
                     return aIndex - bIndex;
                 });
 

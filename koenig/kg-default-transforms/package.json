@@ -4,14 +4,17 @@
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-transforms",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "tsc",
-    "prepare": "tsc",
-    "pretest": "tsc",
-    "test:unit": "NODE_ENV=testing c8 --src build --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "compile": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json",
+    "build:clean": "rm -rf ./cjs ./es ./types ./*.tsbuildinfo",
+    "build": "yarn compile",
+    "prepare": "yarn build:clean && yarn build",
+    "pretest": "yarn prepare",
+    "test:unit": "NODE_ENV=testing c8 --src cjs --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
@@ -19,7 +22,11 @@
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
   },
   "files": [
-    "build"
+    "LICENSE",
+    "README.md",
+    "cjs/",
+    "es/",
+    "types/"
   ],
   "publishConfig": {
     "access": "public"
