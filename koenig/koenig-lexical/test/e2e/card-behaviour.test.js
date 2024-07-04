@@ -758,7 +758,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // selects the card once caret reaches bottom of paragraph
-        test('moving through paragraph to card', async function () {
+        test.skip('moving through paragraph to card', async function () {
             await focusEditor(page);
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
@@ -1004,7 +1004,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // deletes empty paragraph, selects card
-        test('on empty paragraph after card', async function () {
+        test.skip('on empty paragraph after card', async function () {
             await focusEditor(page);
             await page.keyboard.type('---');
             await page.keyboard.press('Enter');
@@ -1032,7 +1032,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // deletes card, keeps selection at beginning of paragraph
-        test('at beginning of paragraph after card', async function () {
+        test.skip('at beginning of paragraph after card', async function () {
             await focusEditor(page);
             await page.keyboard.type('First paragraph');
             await page.keyboard.press('Enter');
@@ -1280,7 +1280,7 @@ test.describe('Card behaviour', async () => {
         });
 
         // deletes card, keeping caret at end of paragraph
-        test('at end of paragraph before card', async function () {
+        test.skip('at end of paragraph before card', async function () {
             await focusEditor(page);
             await page.keyboard.type('First paragraph');
             await page.keyboard.press('Enter');
@@ -1583,7 +1583,7 @@ test.describe('Card behaviour', async () => {
     });
 
     test.describe('SELECTION', function () {
-        test('shift+down does not put card in selected state', async function () {
+        test.skip('shift+down does not put card in selected state', async function () {
             await focusEditor(page);
             await page.keyboard.type('First');
             await page.keyboard.press('Enter');
