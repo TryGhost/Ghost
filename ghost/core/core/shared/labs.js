@@ -42,7 +42,6 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'ActivityPub',
     'NestPlayground',
-    'urlCache',
     'lexicalMultiplayer',
     'websockets',
     'emailCustomization',

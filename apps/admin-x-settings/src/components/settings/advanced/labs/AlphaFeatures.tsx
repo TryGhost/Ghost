@@ -4,10 +4,6 @@ import React from 'react';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
-    title: 'URL cache',
-    description: 'Enable URL Caching',
-    flag: 'urlCache'
-},{
     title: 'Lexical multiplayer',
     description: 'Enables multiplayer editing in the lexical editor.',
     flag: 'lexicalMultiplayer'
