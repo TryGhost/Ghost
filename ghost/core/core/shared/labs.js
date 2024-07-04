@@ -44,7 +44,6 @@ const ALPHA_FEATURES = [
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
-    'websockets',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
