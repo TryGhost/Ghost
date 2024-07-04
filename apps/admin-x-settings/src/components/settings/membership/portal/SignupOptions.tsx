@@ -1,5 +1,4 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CheckboxGroup, CheckboxProps, Form, HtmlField, Select, SelectOption, Toggle} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -14,7 +13,6 @@ const SignupOptions: React.FC<{
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const {config} = useGlobalData();
-    const hasPortalImprovements = useFeatureFlag('portalImprovements');
     const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson, portalDefaultPlan] = getSettingValues(
         localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans', 'portal_default_plan']
     );
@@ -52,16 +50,14 @@ const SignupOptions: React.FC<{
         updateSetting('portal_plans', JSON.stringify(portalPlans));
 
         // Check default plan is included
-        if (hasPortalImprovements) {
-            if (portalDefaultPlan === 'yearly') {
-                if (!portalPlans.includes('yearly') && portalPlans.includes('monthly')) {
-                    updateSetting('portal_default_plan', 'monthly');
-                }
-            } else if (portalDefaultPlan === 'monthly') {
-                if (!portalPlans.includes('monthly')) {
-                    // If both yearly and monthly are missing from plans, still set it to yearly
-                    updateSetting('portal_default_plan', 'yearly');
-                }
+        if (portalDefaultPlan === 'yearly') {
+            if (!portalPlans.includes('yearly') && portalPlans.includes('monthly')) {
+                updateSetting('portal_default_plan', 'monthly');
+            }
+        } else if (portalDefaultPlan === 'monthly') {
+            if (!portalPlans.includes('monthly')) {
+                // If both yearly and monthly are missing from plans, still set it to yearly
+                updateSetting('portal_default_plan', 'yearly');
             }
         }
     };
@@ -79,7 +75,7 @@ const SignupOptions: React.FC<{
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
                     disabled: isDisabled,
-                    label: hasPortalImprovements ? tier.name : 'Free',
+                    label: tier.name,
                     value: 'free',
                     onChange: (checked) => {
                         if (portalPlans.includes('free') && !checked) {
@@ -158,7 +154,7 @@ const SignupOptions: React.FC<{
                     ]}
                     title='Prices available at signup'
                 />
-                {(hasPortalImprovements && portalPlans.includes('yearly') && portalPlans.includes('monthly')) &&
+                {(portalPlans.includes('yearly') && portalPlans.includes('monthly')) &&
                     <Select
                         options={defaultPlanOptions}
                         selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}

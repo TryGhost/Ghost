@@ -78,7 +78,6 @@ export default class FeatureService extends Service {
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('filterEmailDisabled') filterEmailDisabled;
     @feature('adminXDemo') adminXDemo;
-    @feature('portalImprovements') portalImprovements;
     @feature('ActivityPub') ActivityPub;
     @feature('internalLinking') internalLinking;
     @feature('editorExcerpt') editorExcerpt;
