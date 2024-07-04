@@ -133,7 +133,7 @@
     "@tryghost/members-ssr": "0.0.0",
     "@tryghost/members-stripe-service": "0.0.0",
     "@tryghost/mentions-email-report": "0.0.0",
-    "@tryghost/metrics": "1.0.31",
+    "@tryghost/metrics": "1.0.34",
     "@tryghost/milestones": "0.0.0",
     "@tryghost/minifier": "0.0.0",
     "@tryghost/model-to-domain-event-interceptor": "0.0.0",

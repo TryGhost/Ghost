@@ -7695,6 +7695,14 @@
     "@tryghost/root-utils" "^0.3.29"
     debug "^4.3.1"
 
+"@tryghost/debug@^0.1.32":
+  version "0.1.32"
+  resolved "https://registry.npmjs.org/@tryghost/debug/-/debug-0.1.32.tgz#a6c1321132708c2e86bd8c47bf28292180fee722"
+  integrity sha512-oU4hy27I3WDA5Zty74QQ+Ki842Ib0aWdXKwfK01YwQ/gqr127mtNOBimkRg39mY27hO4PvE/zvRhtlJ05Jk2cQ==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.30"
+    debug "^4.3.1"
+
 "@tryghost/elasticsearch@^3.0.19":
   version "3.0.19"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-3.0.19.tgz#a0a94b667c83575a57775027aea5cb4ff4f216ef"
@@ -7702,6 +7710,15 @@
   dependencies:
     "@elastic/elasticsearch" "8.13.1"
     "@tryghost/debug" "^0.1.30"
+    split2 "4.2.0"
+
+"@tryghost/elasticsearch@^3.0.21":
+  version "3.0.21"
+  resolved "https://registry.npmjs.org/@tryghost/elasticsearch/-/elasticsearch-3.0.21.tgz#a4acbfccf1577d1f7c9750018cbd30afefa87b3a"
+  integrity sha512-blSWDB1HCFwhmo5tcDWpOWeMJdFTxTrZpfxU1asKVhARVYuLx5Su5+a8C4x43wewyAhMn9dc9e7qSUHsnUq8XQ==
+  dependencies:
+    "@elastic/elasticsearch" "8.13.1"
+    "@tryghost/debug" "^0.1.32"
     split2 "4.2.0"
 
 "@tryghost/email-mock-receiver@0.3.6":
@@ -7929,10 +7946,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.2.tgz#e285a5deef831b1f52cead6a2ad4f5a4ceb4cb9c"
-  integrity sha512-YJB6gK/RNvnthisXfkrpnLr2+xgqRwD80uU0VCC9CF+t25J7MvazxIY67WMeuToXl6J6ntiQp5pdFSeEzB4Rrg==
+"@tryghost/koenig-lexical@1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.3.tgz#22a1be14d5a269c4ed2ac4d6c25f6803e8393d03"
+  integrity sha512-noh8HofvapihB6D3aZqYxFYRWljIt0FsikEcuBWiGhMQaQqsphcy+Q8DVhS3lYnxNA9S7rPcBKuNYUTCMfQO7Q==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
@@ -7960,17 +7977,15 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/metrics@1.0.31":
-  version "1.0.31"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.31.tgz#9c50ac22e9e4601846ea5d4184a73ba2a31fd615"
-  integrity sha512-lEnBwfUs/nGzCs/ikupv4aYKx6dsNYtsU+3KAI+yldZhuPsNEtiSCdsDQG51527XmYIuvJntkRNMBXXwByXTxQ==
+"@tryghost/metrics@1.0.34":
+  version "1.0.34"
+  resolved "https://registry.npmjs.org/@tryghost/metrics/-/metrics-1.0.34.tgz#b223b21a61e4e116904872c3860e7e1d1bb1f481"
+  integrity sha512-e45Chvl7RRjzX0MfuEYJrlpVZF1Eh4hjkSxtfzhFitP8zk+43K8sxTJRMUPoOk6HfMN4ac3T+46TFgSk4KMpiA==
   dependencies:
-    "@tryghost/elasticsearch" "^3.0.19"
-    "@tryghost/pretty-stream" "^0.1.24"
-    "@tryghost/root-utils" "^0.3.28"
+    "@tryghost/elasticsearch" "^3.0.21"
+    "@tryghost/pretty-stream" "^0.1.26"
+    "@tryghost/root-utils" "^0.3.30"
     json-stringify-safe "^5.0.1"
-  optionalDependencies:
-    promise.allsettled "^1.0.5"
 
 "@tryghost/mobiledoc-kit@^0.12.4-ghost.1":
   version "0.12.4-ghost.1"
@@ -8041,6 +8056,15 @@
     moment "^2.29.1"
     prettyjson "^1.2.5"
 
+"@tryghost/pretty-stream@^0.1.26":
+  version "0.1.26"
+  resolved "https://registry.npmjs.org/@tryghost/pretty-stream/-/pretty-stream-0.1.26.tgz#1765f5080c37fa338ddd96003462a1da54e57061"
+  integrity sha512-Z56lak7dBiK5rgwFd1vYbSpsHi65gLLAZaCq81UMxo8fulvyTiWpdvoY+7Q5XApSi6kf2eivYmeN0zmZa+zdNg==
+  dependencies:
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "^1.2.5"
+
 "@tryghost/promise@0.3.10":
   version "0.3.10"
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.10.tgz#a1025c37773e8294fd4cecee33af1ed0bc07bcce"
@@ -8075,6 +8099,14 @@
   version "0.3.29"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.29.tgz#d6e941b586da8d14f3fbb82e44e20503377f8cf6"
   integrity sha512-IM/Yt0iR+y4a6t7Lt5QQrgonlTXxocmAOQN9IOge4BmRlCwXL3RzTJo2jIqVxMHWlMpaK65jVL4frWQ+ROBUxw==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.30":
+  version "0.3.30"
+  resolved "https://registry.npmjs.org/@tryghost/root-utils/-/root-utils-0.3.30.tgz#766818cd4394b683338f4d9fccc52c435f77b0b5"
+  integrity sha512-Pg9d0Igl3OGGKZ5RrCe6Wq8qAW9ABIjbn31WKlsO6OLLwRlH2ruNZXU8GBjNL3qrPEZwyI2FyNNDjSR+5gKXag==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -9055,10 +9087,10 @@
     "@typescript-eslint/types" "6.9.1"
     eslint-visitor-keys "^3.4.1"
 
-"@uiw/codemirror-extensions-basic-setup@4.22.2":
-  version "4.22.2"
-  resolved "https://registry.yarnpkg.com/@uiw/codemirror-extensions-basic-setup/-/codemirror-extensions-basic-setup-4.22.2.tgz#a114dc9ebad6de41a441c8aca655d9c34934a7d9"
-  integrity sha512-zcHGkldLFN3cGoI5XdOGAkeW24yaAgrDEYoyPyWHODmPiNwybQQoZGnH3qUdzZwUaXtAcLWoAeOPzfNRW2yGww==
+"@uiw/codemirror-extensions-basic-setup@4.23.0":
+  version "4.23.0"
+  resolved "https://registry.yarnpkg.com/@uiw/codemirror-extensions-basic-setup/-/codemirror-extensions-basic-setup-4.23.0.tgz#c3c181153335c208a25d59b8ecbc7fc87fe85356"
+  integrity sha512-+k5nkRpUWGaHr1JWT8jcKsVewlXw5qBgSopm9LW8fZ6KnSNZBycz8kHxh0+WSvckmXEESGptkIsb7dlkmJT/hQ==
   dependencies:
     "@codemirror/autocomplete" "^6.0.0"
     "@codemirror/commands" "^6.0.0"
@@ -9068,16 +9100,16 @@
     "@codemirror/state" "^6.0.0"
     "@codemirror/view" "^6.0.0"
 
-"@uiw/react-codemirror@4.22.2":
-  version "4.22.2"
-  resolved "https://registry.yarnpkg.com/@uiw/react-codemirror/-/react-codemirror-4.22.2.tgz#18dcb79e31cf34e0704366f3041da93ff3c64109"
-  integrity sha512-okCSl+WJG63gRx8Fdz7v0C6RakBQnbb3pHhuzIgDB+fwhipgFodSnu2n9oOsQesJ5YQ7mSOcKMgX0JEsu4nnfQ==
+"@uiw/react-codemirror@4.23.0":
+  version "4.23.0"
+  resolved "https://registry.yarnpkg.com/@uiw/react-codemirror/-/react-codemirror-4.23.0.tgz#5eeadcd5de61213ad76ac3c772fffb7e5b54b465"
+  integrity sha512-MnqTXfgeLA3fsUUQjqjJgemEuNyoGALgsExVm0NQAllAAi1wfj+IoKFeK+h3XXMlTFRCFYOUh4AHDv0YXJLsOg==
   dependencies:
     "@babel/runtime" "^7.18.6"
     "@codemirror/commands" "^6.1.0"
     "@codemirror/state" "^6.1.1"
     "@codemirror/theme-one-dark" "^6.0.0"
-    "@uiw/codemirror-extensions-basic-setup" "4.22.2"
+    "@uiw/codemirror-extensions-basic-setup" "4.23.0"
     codemirror "^6.0.0"
 
 "@vitejs/plugin-react@4.2.1":
@@ -10034,17 +10066,6 @@ array.prototype.flatmap@^1.3.1:
     define-properties "^1.1.4"
     es-abstract "^1.20.4"
     es-shim-unscopables "^1.0.0"
-
-array.prototype.map@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/array.prototype.map/-/array.prototype.map-1.0.4.tgz#0d97b640cfdd036c1b41cfe706a5e699aa0711f2"
-  integrity sha512-Qds9QnX7A0qISY7JT5WuJO0NJPE9CMlC6JzHQfhpqAAQQzufVRoeH7EzUY5GcPTx72voG8LV/5eo+b8Qi8hmhA==
-  dependencies:
-    call-bind "^1.0.2"
-    define-properties "^1.1.3"
-    es-abstract "^1.19.0"
-    es-array-method-boxes-properly "^1.0.0"
-    is-string "^1.0.7"
 
 array.prototype.reduce@^1.0.4:
   version "1.0.4"
@@ -16553,7 +16574,7 @@ error@^7.0.0:
   dependencies:
     string-template "~0.2.1"
 
-es-abstract@^1.17.2, es-abstract@^1.19.0, es-abstract@^1.19.1, es-abstract@^1.19.2, es-abstract@^1.20.1, es-abstract@^1.20.4:
+es-abstract@^1.17.2, es-abstract@^1.19.0, es-abstract@^1.19.2, es-abstract@^1.20.1, es-abstract@^1.20.4:
   version "1.21.2"
   resolved "https://registry.yarnpkg.com/es-abstract/-/es-abstract-1.21.2.tgz#a56b9695322c8a185dc25975aa3b8ec31d0e7eff"
   integrity sha512-y/B5POM2iBnIxCiernH1G7rC9qQoM77lLIMQLuob0zhp8C56Po81+2Nj0WFKnd0pNReDTnkYryc+zhOzpEIROg==
@@ -16598,7 +16619,7 @@ es-array-method-boxes-properly@^1.0.0:
   resolved "https://registry.yarnpkg.com/es-array-method-boxes-properly/-/es-array-method-boxes-properly-1.0.0.tgz#873f3e84418de4ee19c5be752990b2e44718d09e"
   integrity sha512-wd6JXUmyHmt8T5a2xreUwKcGPq6f1f+WwIJkijUqiGcJz1qqnZgP6XIK+QyIWU5lT7imeNxUll48bziG+TSYcA==
 
-es-get-iterator@^1.0.2, es-get-iterator@^1.1.2:
+es-get-iterator@^1.1.2:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/es-get-iterator/-/es-get-iterator-1.1.3.tgz#3ef87523c5d464d41084b2c3c9c214f1199763d6"
   integrity sha512-sPZmqHBe6JIiTfN5q2pEi//TwxmAFHwj/XEuYjTuse78i8KxaqMTTzxPoFKuzRpDpTJ+0NAbpfenkmH2rePtuw==
@@ -20771,19 +20792,6 @@ iterare@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/iterare/-/iterare-1.2.1.tgz#139c400ff7363690e33abffa33cbba8920f00042"
   integrity sha512-RKYVTCjAnRthyJes037NX/IiqeidgN1xc3j1RjFfECFp28A1GVwK9nA+i0rJPaHqSZwygLzRnFlzUuHFoWWy+Q==
-
-iterate-iterator@^1.0.1:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/iterate-iterator/-/iterate-iterator-1.0.2.tgz#551b804c9eaa15b847ea6a7cdc2f5bf1ec150f91"
-  integrity sha512-t91HubM4ZDQ70M9wqp+pcNpu8OyJ9UAtXntT/Bcsvp5tZMnz9vRa+IunKXeI8AnfZMTv0jNuVEmGeLSMjVvfPw==
-
-iterate-value@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/iterate-value/-/iterate-value-1.0.2.tgz#935115bd37d006a52046535ebc8d07e9c9337f57"
-  integrity sha512-A6fMAio4D2ot2r/TYzr4yUWrmwNdsN5xL7+HUiyACE4DXm+q8HtPcnFTp+NnW3k4N05tZ7FVYFFb2CR13NxyHQ==
-  dependencies:
-    es-get-iterator "^1.0.2"
-    iterate-iterator "^1.0.1"
 
 jackspeak@2.1.1, jackspeak@^2.3.5:
   version "2.1.1"
@@ -26405,18 +26413,6 @@ promise-retry@^2.0.1:
   dependencies:
     err-code "^2.0.2"
     retry "^0.12.0"
-
-promise.allsettled@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/promise.allsettled/-/promise.allsettled-1.0.5.tgz#2443f3d4b2aa8dfa560f6ac2aa6c4ea999d75f53"
-  integrity sha512-tVDqeZPoBC0SlzJHzWGZ2NKAguVq2oiYj7gbggbiTvH2itHohijTp7njOUA0aQ/nl+0lr/r6egmhoYu63UZ/pQ==
-  dependencies:
-    array.prototype.map "^1.0.4"
-    call-bind "^1.0.2"
-    define-properties "^1.1.3"
-    es-abstract "^1.19.1"
-    get-intrinsic "^1.1.1"
-    iterate-value "^1.0.2"
 
 promise.hash.helper@^1.0.7:
   version "1.0.8"
