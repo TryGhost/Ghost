@@ -353,7 +353,18 @@ describe('Members API', function () {
                 ]
             });
 
-            canceledPaidMember = updatedMember;
+            // Check that the staff notifications has been sent
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: /Paid subscription started: Cancel me at the end of the billing cycle/,
+                to: 'jbloggs@example.com'
+            });
+
+            mockManager.assert.sentEmail({
+                subject: /Cancellation: Cancel me at the end of the billing cycle/,
+                to: 'jbloggs@example.com'
+            });
         });
 
         it('Handles immediate cancellation of paid subscriptions', async function () {
@@ -506,6 +517,19 @@ describe('Members API', function () {
                         mrr_delta: -500
                     }
                 ]
+            });
+
+            // Check that the staff notifications has been sent
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: /Paid subscription started: Cancel me now/,
+                to: 'jbloggs@example.com'
+            });
+
+            mockManager.assert.sentEmail({
+                subject: /Cancellation: Cancel me now/,
+                to: 'jbloggs@example.com'
             });
 
             canceledPaidMember = updatedMember;
