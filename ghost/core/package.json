@@ -242,7 +242,7 @@
     "@types/common-tags": "1.8.4",
     "c8": "8.0.1",
     "cli-progress": "3.12.0",
-    "cssnano": "7.0.3",
+    "cssnano": "7.0.4",
     "detect-indent": "6.1.0",
     "detect-newline": "3.1.0",
     "expect": "29.3.1",
