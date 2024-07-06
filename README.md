@@ -17,7 +17,7 @@
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org/">
-        <img src="https://img.shields.io/badge/downloads-3M-brightgreen.svg" alt="Downloads" />
+        <img src="https://img.shields.io/badge/downloads-100M+-brightgreen.svg" alt="Downloads" />
     </a>
     <a href="https://github.com/TryGhost/Ghost/releases/">
         <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
@@ -82,7 +82,7 @@ For anyone wishing to contribute to Ghost or to hack/customize core files we rec
 
 # Ghost sponsors
 
-We'd like to extend big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
+A big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
 
 **[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)**
 
@@ -90,12 +90,13 @@ We'd like to extend big thanks to our sponsors and partners who make Ghost possi
 
 # Getting help
 
-You can find answers to a huge variety of questions, along with a large community of helpful developers over on the [Ghost forum](https://forum.ghost.org/) - replies are generally very quick. **Ghost(Pro)** customers also have access to 24/7 email support.
+Everyone can get help and support from a large community of developers over on the [Ghost forum](https://forum.ghost.org/). **Ghost(Pro)** customers have access to 24/7 email support.
 
-To stay up to date with all the latest news and product updates, make sure you [subscribe to our blog](https://ghost.org/blog/) — or you can always follow us [on Twitter](https://twitter.com/Ghost), if you prefer your updates bite-sized and facetious. :saxophone::turtle:
+To stay up to date with all the latest news and product updates, make sure you [subscribe to our changelog newsletter](https://ghost.org/changelog/) — or follow us [on Twitter](https://twitter.com/Ghost), if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
 &nbsp;
 
 # Copyright & license
 
-Copyright (c) 2013-2023 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
+Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE). 
+Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.

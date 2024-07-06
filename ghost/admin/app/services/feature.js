@@ -63,7 +63,6 @@ export default class FeatureService extends Service {
     @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
-    @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
@@ -79,11 +78,9 @@ export default class FeatureService extends Service {
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('filterEmailDisabled') filterEmailDisabled;
     @feature('adminXDemo') adminXDemo;
-    @feature('portalImprovements') portalImprovements;
     @feature('ActivityPub') ActivityPub;
     @feature('internalLinking') internalLinking;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('newsletterExcerpt') newsletterExcerpt;
     @feature('contentVisibility') contentVisibility;
 
     _user = null;

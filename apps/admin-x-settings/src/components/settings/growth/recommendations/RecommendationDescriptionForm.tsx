@@ -109,7 +109,6 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             }}
         />
         <TextArea
-            clearBg={true}
             error={Boolean(errors.description)}
             // Note: we don't show the error text here, because errors are related to the character count
             hint={<>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={descriptionLengthColor}>{descriptionLength}</strong></>}
