@@ -22,7 +22,7 @@
                 <td class="container">
                     <div class="content">
                         <!-- START CENTERED WHITE CONTAINER -->
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="20" class="main" width="100%">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
 
                             <!-- START MAIN CONTENT AREA -->
                             <tr>
@@ -44,12 +44,12 @@
                                         {{/if}}
 
                                         {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
-                                            <tr>
-                                                <td class="{{#if (and newsletter.showPostTitleSection showHeaderTitle) }}site-info-bordered{{else}}site-info{{/if}}" width="100%" align="center">
+                                            <tr class="site-info-row">
+                                                <td class="site-info" width="100%" align="center">
                                                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                         {{#if (and showHeaderIcon site.iconUrl) }}
                                                             <tr>
-                                                                <td class="site-icon"><a href="{{site.url}}"><img src="{{site.iconUrl}}" alt="{{site.title}}" border="0"></a></td>
+                                                                <td class="site-icon"><a href="{{site.url}}"><img src="{{site.iconUrl}}" alt="{{site.title}}" border="0" width="48" height="48"></a></td>
                                                             </tr>
                                                         {{/if}}
                                                         {{#if showHeaderTitle }}
@@ -79,9 +79,16 @@
                                                     <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
                                                 </td>
                                             </tr>
+                                            {{#if (and newsletter.showExcerpt post.customExcerpt)}}
+                                                <tr>
+                                                    <td class="post-excerpt-wrapper" style="width: 100%">
+                                                        <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
+                                                    </td>
+                                                </tr>
+                                            {{/if}}
                                             <tr>
                                                 <td style="width: 100%">
-                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 48px;">
+                                                    <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
                                                         <tr>
                                                             <td height="20" class="{{classes.meta}}" style="padding: 0;">
                                                                 By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
@@ -116,9 +123,14 @@
                                                     {{/if}}
                                                 ></td>
                                             </tr>
-                                            {{#if post.feature_image_caption }}
+
+                                             {{#if post.feature_image_caption }}
                                                 <tr>
-                                                    <td class="feature-image-caption" align="center">{{{post.feature_image_caption}}}</td>
+                                                    <td align="center">
+                                                        <div class="feature-image-caption">
+                                                            {{{post.feature_image_caption}}}
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             {{/if}}
                                         {{/if}}
@@ -141,7 +153,7 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: {{backgroundColor}}; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid {{secondaryBorderColor}};" align="center">
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5;" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
@@ -170,7 +182,7 @@
 
                              {{#if latestPosts.length}}
                                 <tr>
-                                    <td style="padding: 24px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid {{secondaryBorderColor}};">
+                                    <td style="padding: 24px 0; border-bottom: 1px solid #e5eff5;">
                                         <h3 class="latest-posts-header">Keep reading</h3>
                                         {{> latestPosts}}
                                     </td>

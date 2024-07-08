@@ -27,7 +27,6 @@
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "nock": "^14.0.0-beta.6",
-    "reflect-metadata": "0.1.13",
     "sinon": "^17.0.1",
     "supertest": "^7.0.0",
     "ts-node": "10.9.2",

@@ -221,7 +221,7 @@ describe('Members API', function () {
 
         let canceledPaidMember;
 
-        it('Handles cancellation of paid subscriptions correctly', async function () {
+        it('Handles cancellation of paid subscriptions at the end of the billing cycle', async function () {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
 
@@ -256,8 +256,143 @@ describe('Members API', function () {
             // Create a new customer in Stripe
             set(customer, {
                 id: customer_id,
-                name: 'Test Member',
-                email: 'cancel-paid-test@email.com',
+                name: 'Cancel me at the end of the billing cycle',
+                email: 'cancel-me-at-the-end-of-cycle@test.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            // Make sure this customer has a corresponding member in the database
+            // And all the subscriptions are setup correctly
+            const initialMember = await createMemberFromStripe();
+            assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
+            should(initialMember.subscriptions).match([
+                {
+                    status: 'active'
+                }
+            ]);
+
+            // Check whether MRR and status has been set
+            await assertSubscription(initialMember.subscriptions[0].id, {
+                subscription_id: subscription.id,
+                status: 'active',
+                cancel_at_period_end: false,
+                plan_amount: 500,
+                plan_interval: 'month',
+                plan_currency: 'usd',
+                mrr: 500
+            });
+
+            // Set the subscription to cancel at the end of the period
+            set(subscription, {
+                ...subscription,
+                status: 'active',
+                cancel_at_period_end: true,
+                metadata: {
+                    cancellation_reason: 'I want to break free'
+                }
+            });
+
+            // Send the webhook call to announce the cancelation
+            const webhookPayload = JSON.stringify({
+                type: 'customer.subscription.updated',
+                data: {
+                    object: subscription
+                }
+            });
+            const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            // Check that the subscription has been set to cancel and has saved the cancellation reason
+            const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
+            assert.equal(body2.members.length, 1, 'The member does not exist');
+            const updatedMember = body2.members[0];
+            should(updatedMember.subscriptions).match([
+                {
+                    status: 'active',
+                    cancel_at_period_end: true,
+                    cancellation_reason: 'I want to break free'
+                }
+            ]);
+
+            // Check whether MRR and cancel_at_period_end has been set
+            await assertSubscription(initialMember.subscriptions[0].id, {
+                subscription_id: subscription.id,
+                status: 'active',
+                cancel_at_period_end: true,
+                plan_amount: 500,
+                plan_interval: 'month',
+                plan_currency: 'usd',
+                mrr: 0
+            });
+
+            // Check that there is a canceled event
+            await assertMemberEvents({
+                eventType: 'MemberPaidSubscriptionEvent',
+                memberId: updatedMember.id,
+                asserts: [
+                    {
+                        type: 'created',
+                        mrr_delta: 500
+                    },
+                    {
+                        type: 'canceled',
+                        mrr_delta: -500
+                    }
+                ]
+            });
+
+            canceledPaidMember = updatedMember;
+        });
+
+        it('Handles immediate cancellation of paid subscriptions', async function () {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+
+            // Create a new subscription in Stripe
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'Monthly',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 500,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            });
+
+            // Create a new customer in Stripe
+            set(customer, {
+                id: customer_id,
+                name: 'Cancel me now',
+                email: 'cancel-me-immediately@test.com',
                 subscriptions: {
                     type: 'list',
                     data: [subscription]
@@ -289,12 +424,15 @@ describe('Members API', function () {
             // Cancel the previously created subscription in Stripe
             set(subscription, {
                 ...subscription,
-                status: 'canceled'
+                status: 'canceled',
+                cancellation_details: {
+                    reason: 'payment_failed'
+                }
             });
 
             // Send the webhook call to announce the cancelation
             const webhookPayload = JSON.stringify({
-                type: 'customer.subscription.updated',
+                type: 'customer.subscription.deleted',
                 data: {
                     object: subscription
                 }
@@ -318,7 +456,8 @@ describe('Members API', function () {
             assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
             should(updatedMember.subscriptions).match([
                 {
-                    status: 'canceled'
+                    status: 'canceled',
+                    cancellation_reason: 'Payment failed'
                 }
             ]);
 
