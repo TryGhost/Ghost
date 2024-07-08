@@ -18,18 +18,14 @@ const AccountPage: React.FC<{
     const updateSupportAddress: FocusEventHandler<HTMLInputElement> = (e) => {
         let supportAddress = e.target.value;
 
+        // Check for empty input or invalid email format and set error accordingly
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!supportAddress) {
             setError('members_support_address', 'Please enter an email address');
-            return;
+        } else if (!emailRegex.test(supportAddress)) {
+            setError('members_support_address', 'Please enter a valid email address');
         } else {
-            // Validating whether the email address is valid
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(supportAddress)) {
-                setError('members_support_address', 'Please enter a valid email address');
-                return;
-            } else {
-                setError('members_support_address', '');
-            }
+            setError('members_support_address', '');
         }
 
         let settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;
