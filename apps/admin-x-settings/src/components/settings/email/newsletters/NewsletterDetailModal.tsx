@@ -546,7 +546,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
