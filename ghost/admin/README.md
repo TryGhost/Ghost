@@ -2,51 +2,52 @@
 
 This is the home of the Ember.js-based Admin app that ships with [Ghost](https://github.com/tryghost/ghost).
 
-## Running tests
+## Test
 
-Build and run tests once:
+### Running tests in the browser
+
+Run all tests in the browser by running `yarn dev` in the Ghost monorepo and visiting http://localhost:4200/tests. The code is hotloaded on change and you can filter which tests to run.
+
+[Testing public documentation](https://ghost.notion.site/Testing-Ember-560cec6700fc4d37a58b3ba9febb4b4b)
+
+---
+
+Tip: You can use `await this.pauseTest()` in your tests to temporarily pause the execution of browser tests. Use the browser console to inspect and debug the DOM, then resume tests by running `resumeTest()` directly in the browser console ([docs](https://guides.emberjs.com/v3.28.0/testing/testing-application/#toc_debugging-your-tests))
+
+
+### Running tests in the CLI
+
+To build and run tests in the CLI, you can use:
 
 ```bash
 TZ=UTC yarn test
 ```
 _Note the `TZ=UTC` environment variable which is currently required to get tests working if your system timezone doesn't match UTC._
 
-If you are serving the admin app (e.g., when running `yarn serve`, or when running `yarn dev` in the main Ghost project),  you can also run the tests in your browser by going to http://localhost:4200/tests. 
+---
 
-This has the additional benefit that you can use `await this.pauseTest()` in your tests to temporarily pause tests (best to also add `this.timeout(0);` to avoid timeouts). This allows you to inspect the DOM in your browser to debug tests. You can resume tests by running `resumeTest()` in your browser console.
-
-[More information](https://guides.emberjs.com/v3.28.0/testing/testing-application/#toc_debugging-your-tests)
-
-
-### Writing tests
-
-When writing tests and not using the `http://localhost:4200/tests` browser tests, it can be easier to have a separate watching build that builds the project for the test environment (this drastically reduces the time you have to wait when running tests):
+However, this is very slow when writing tests, as it requires the app to be rebuilt on every change. Instead, create a separate watching build with:
 
 ```bash
 yarn build --environment=test -w -o="dist-test"
 ```
 
-After that, you can easily run tests locally:
-
-Run all tests:
+Then run tests with:
 
 ```bash
-TZ=UTC yarn test 1 --path="dist-test"
+TZ=UTC yarn test 1 --reporter dot --path="dist-test"
 ```
 
-To have a cleaner output:
+The `--reporter dot` shows a dot (`.`) for every successful test, and `F` for every failed test. It renders the output of the failed tests only.
 
-```bash
-TZ=UTC yarn test 1 --reporter dot  --path="dist-test"
-```
-
-This shows a dot (`.`) for every successful test, and `F` for every failed test. At the end, it will only show the output of the failed tests.
+---
 
 To run a specific test file:
 ```bash
-TZ=UTC yarn test 1 --reporter dot  --path="dist-test" -mp=tests/acceptance/settings/newsletters-test.js
+TZ=UTC yarn test 1 --reporter dot --path="dist-test" -mp=tests/unit/helpers/gh-count-characters-test.js
 ```
-_Hint: you can easily copy the path of a test in VSCode by right clicking on the test file and choosing `Copy Relative Path`._
+
+---
 
 To have a full list of the available options, run
 ```bash
@@ -55,4 +56,4 @@ ember exam --help
 
 # Copyright & License
 
-Copyright (c) 2013-2023 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
+Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
