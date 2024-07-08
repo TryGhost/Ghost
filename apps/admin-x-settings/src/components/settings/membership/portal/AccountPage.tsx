@@ -1,4 +1,5 @@
 import React, {FocusEventHandler, useEffect, useState} from 'react';
+import validator from 'validator';
 import {Form, TextField} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {fullEmailAddress, getEmailDomain} from '@tryghost/admin-x-framework/api/site';
@@ -18,11 +19,9 @@ const AccountPage: React.FC<{
     const updateSupportAddress: FocusEventHandler<HTMLInputElement> = (e) => {
         let supportAddress = e.target.value;
 
-        // Check for empty input or invalid email format and set error accordingly
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!supportAddress) {
             setError('members_support_address', 'Please enter an email address');
-        } else if (!emailRegex.test(supportAddress)) {
+        } else if (!validator.isEmail(supportAddress)) {
             setError('members_support_address', 'Please enter a valid email address');
         } else {
             setError('members_support_address', '');
