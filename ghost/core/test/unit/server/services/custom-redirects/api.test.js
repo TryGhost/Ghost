@@ -295,10 +295,8 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
                 await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
                 should.fail('setFromFilePath did not throw');
             } catch (err) {
-                // console.log(err);
                 should.exist(err);
                 err.errorType.should.eql('BadRequestError');
-                // err.message.should.match(/BadRequestError: Could not parse YAML: duplicated mapping key \(\d+:\d+\)/);
             }
 
             fs.unlink.called.should.not.be.true();
