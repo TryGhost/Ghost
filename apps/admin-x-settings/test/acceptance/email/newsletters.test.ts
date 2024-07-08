@@ -242,7 +242,7 @@ test.describe('Newsletter settings', async () => {
                 // Error case #2: the sender email address doesn't match the custom sending domain
                 await senderEmail.fill('harry@potter.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(modal).toHaveText(/Email must end with @customdomain.com/);
+                await expect(modal).toHaveText(/Email address must end with @customdomain.com/);
 
                 // But can have any address on the same domain, without verification
                 await senderEmail.fill('harry@customdomain.com');
