@@ -42,8 +42,6 @@ import {
     PASTE_COMMAND,
     createCommand
 } from 'lexical';
-import {$generateNodesFromDOM} from '@lexical/html';
-import {$generateNodesFromSerializedNodes, $insertGeneratedNodes} from '@lexical/clipboard';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 import {
     $isAtStartOfDocument,
@@ -1283,45 +1281,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     const text = clipboardEvent?.clipboardData?.getData(MIME_TEXT_PLAIN);
                     const html = clipboardEvent?.clipboardData?.getData(MIME_TEXT_HTML);
-                    const lexical = clipboardEvent?.clipboardData?.getData('application/x-lexical-editor');
-
-                    const selection = $getSelection();
-
-                    // if current selection is an empty quote, make sure a
-                    // paste with a single paragraph doesn't clear the quote formatting
-                    const anchorNode = selection.anchor.getNode();
-                    if (($isQuoteNode(anchorNode) || $isAsideNode(anchorNode)) && anchorNode.isEmpty() && selection && $isRangeSelection(selection) && selection.isCollapsed()) {
-                        let nodes;
-
-                        if (lexical) {
-                            const {namespace, nodes: pastedNodes} = JSON.parse(lexical);
-                            if (namespace === 'KoenigEditor') {
-                                // completely empty paragraph nodes can be copied when selection hits end of paragraph,
-                                // exclude those so they don't interfere
-                                const filteredNodes = pastedNodes?.filter?.(n => n.type === 'paragraph' && n.children.length > 0) || [];
-
-                                if (filteredNodes.length === 1 && filteredNodes[0].type === 'paragraph') {
-                                    nodes = $generateNodesFromSerializedNodes(filteredNodes[0].children);
-                                }
-                            }
-                        } else if (html) {
-                            const dom = new DOMParser().parseFromString(html, 'text/html');
-
-                            dom.querySelectorAll('body > br').forEach(br => br.remove());
-
-                            const pastedNodes = $generateNodesFromDOM(editor, dom);
-
-                            if (pastedNodes.length === 1 && $isParagraphNode(pastedNodes[0])) {
-                                nodes = pastedNodes[0].getChildren();
-                            }
-                        }
-
-                        if (nodes && Array.isArray(nodes) && nodes.length > 0) {
-                            $insertGeneratedNodes(editor, nodes, selection);
-                            return true;
-                        }
-                    }
-
                     // TODO: replace with better regex to include more protocols like mailto, ftp, etc
                     const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/);
 
