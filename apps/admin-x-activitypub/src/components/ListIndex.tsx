@@ -79,7 +79,7 @@ const ActivityPubComponent: React.FC = () => {
                     {activities && activities.slice().reverse().map(activity => (
                         activity.type === 'Create' && activity.object.type === 'Article' &&
                     <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
-                        <ObjectContentDisplay actor={activity.actor} object={activity.object}/>
+                        <ObjectContentDisplay actor={activity.actor} layout={selectedOption.value} object={activity.object} />
                     </li>
                     ))}
                 </ul>
@@ -92,7 +92,7 @@ const ActivityPubComponent: React.FC = () => {
         <Page>
             {!articleContent ? (
                 <ViewContainer
-                    actions={<ButtonGroup buttons={[
+                    actions={[<ButtonGroup buttons={[
                         {
                             icon: 'listview',
                             size: 'sm',
@@ -110,7 +110,7 @@ const ActivityPubComponent: React.FC = () => {
                                 setSelectedOption({label: 'Feed', value: 'feed'});
                             }
                         }
-                    ]} clearBg={false} link outlineOnMobile />}
+                    ]} clearBg={false} link outlineOnMobile />]}
                     firstOnPage={true}
                     primaryAction={{
                         title: 'Follow',
