@@ -24,19 +24,21 @@ export default (function viteDemoConfig() {
         optimizeDeps: {
             include: [
                 '@tryghost/kg-clean-basic-html',
+                '@tryghost/kg-default-transforms',
                 '@tryghost/kg-markdown-html-renderer',
-                '@tryghost/kg-simplemde'
+                '@tryghost/kg-simplemde',
+                '@tryghost/kg-unsplash-selector'
             ]
         },
         build: {
+            commonjsOptions: {
+                include: [/packages/, /node_modules/]
+            },
             sourcemap: true,
             rollupOptions: {
                 input: {
                     main: resolve(__dirname, 'index.html')
                 }
-            },
-            commonjsOptions: {
-                include: [/packages/, /node_modules/]
             }
         },
         test: {

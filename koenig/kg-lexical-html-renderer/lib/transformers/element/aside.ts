@@ -4,7 +4,6 @@ import type {ExportChildren} from '..';
 
 module.exports = {
     export(node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) {
-        /* c8 ignore next 3 */
         if (!$isAsideNode(node)) {
             return null;
         }

@@ -1,5 +1,5 @@
 import {LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {registerRemoveAtLinkNodesTransform} from '../../';
+import {registerRemoveAtLinkNodesTransform} from '../../build';
 import {assertTransform, createEditor} from '../utils';
 import {AtLinkNode, AtLinkSearchNode, ZWNJNode} from '@tryghost/kg-default-nodes';
 

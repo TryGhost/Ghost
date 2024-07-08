@@ -1,5 +1,5 @@
 import {LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {registerRemoveAlignmentTransform} from '../../';
+import {registerRemoveAlignmentTransform} from '../../build';
 import {assertTransform, createEditor} from '../utils';
 import {HeadingNode} from '@lexical/rich-text';
 

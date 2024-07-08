@@ -26,7 +26,6 @@ const exportList = function (node: ElementNode, options: RendererOptions, export
         const children = listNode.getChildren();
 
         for (const child of children) {
-            /* c8 ignore next 3 (our transforms fix this so it's hard to test)*/
             if (!$isListItemNode(child)) {
                 continue;
             }

@@ -4,18 +4,15 @@
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-lexical-html-renderer",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "cjs/index.js",
-  "module": "es/index.js",
-  "types": "types/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "compile": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json",
-    "build:clean": "rm -rf ./cjs ./es ./types ./*.tsbuildinfo",
-    "build": "yarn compile",
-    "prepare": "yarn build:clean && yarn build",
-    "pretest": "tsc",
+    "build": "tsc",
+    "prepare": "tsc",
+    "pretest": "yarn build",
     "test": "yarn test:unit && yarn test:types",
-    "test:unit": "NODE_ENV=testing c8 --src cjs --all --check-coverage --lines 96.57 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --lib --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test:types": "tsc --noEmit",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:code": "eslint *.js lib/ --ext .ts --cache",
@@ -23,11 +20,9 @@
     "posttest": "yarn lint"
   },
   "files": [
+    "build",
     "LICENSE",
-    "README.md",
-    "cjs/",
-    "es/",
-    "types/"
+    "README.md"
   ],
   "publishConfig": {
     "access": "public"
