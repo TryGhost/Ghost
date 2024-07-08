@@ -114,7 +114,7 @@ test.describe('Newsletter settings', async () => {
                 await modal.getByLabel('Sender email').fill('not-an-email');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(modal).toHaveText(/Invalid email/);
+                await expect(modal).toHaveText(/Enter a valid email address/);
 
                 await modal.getByLabel('Sender email').fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
@@ -191,7 +191,7 @@ test.describe('Newsletter settings', async () => {
                 await replyToEmail.fill('not-an-email');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(modal).toHaveText(/Invalid email/);
+                await expect(modal).toHaveText(/Enter a valid email address/);
 
                 await replyToEmail.fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
@@ -237,7 +237,7 @@ test.describe('Newsletter settings', async () => {
                 // Error case #1: add invalid email address
                 await senderEmail.fill('Harry Potter');
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(modal).toHaveText(/Invalid email/);
+                await expect(modal).toHaveText(/Enter a valid email address/);
 
                 // Error case #2: the sender email address doesn't match the custom sending domain
                 await senderEmail.fill('harry@potter.com');
