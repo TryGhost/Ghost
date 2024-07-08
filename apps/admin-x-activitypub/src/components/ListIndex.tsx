@@ -234,7 +234,6 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
         setIsLiked(!isLiked);
         setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
     };
-    console.log('ikonica ', actor.icon);
 
     if (layout === 'feed') {
         return (
@@ -243,7 +242,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                     <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-6' data-test-activity>
                         
                         <div className='relative z-10 mb-3 flex w-full items-center gap-3'>
-                            <img className='w-8' src={actor.icon}/>
+                            <img className='w-8' src={actor.icon.url}/>
                             <div>
                                 <p className='text-base font-bold' data-test-activity-heading>{actor.name}</p>
                                 <div className='*:text-base *:text-grey-900'>
@@ -278,7 +277,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                 {object && (
                     <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
                         <div className='relative z-10 mb-3 grid w-full grid-cols-[20px_auto_1fr_auto] items-center gap-2 text-base'>
-                            <img className='w-5' src={actor.icon}/>
+                            <img className='w-5' src={actor.icon.url}/>
                             <span className='truncate font-semibold'>{actor.name}</span>
                             {/* <span className='truncate text-grey-800'>{getUsername(actor)}</span> */}
                             <span className='ml-auto text-right text-grey-800'>{timestamp}</span>
