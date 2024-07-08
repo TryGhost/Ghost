@@ -103,7 +103,6 @@ const Sidebar: React.FC<{
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
-    const hasNewsletterExcerpt = useFeatureFlag('newsletterExcerpt');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
@@ -418,7 +417,7 @@ const Sidebar: React.FC<{
                         onChange={color => updateNewsletter({title_color: color})}
                     />}
                     <ToggleGroup gap='lg'>
-                        {(hasNewsletterExcerpt && newsletter.show_post_title_section) &&
+                        {newsletter.show_post_title_section &&
                             <Toggle
                                 checked={newsletter.show_excerpt}
                                 direction="rtl"

@@ -243,14 +243,16 @@ export default class DashboardStatsService extends Service {
             return [];
         }
 
+        const firstChartDay = moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+
         return this.memberAttributionStats.filter((stat) => {
             if (this.chartDays === 'all') {
                 return true;
             }
-            return stat.date >= moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+            return stat.date >= firstChartDay;
         }).reduce((acc, stat) => {
             const statSource = stat.source ?? '';
-            const existingSource = acc.find(s => s.source === statSource);
+            const existingSource = acc.find(s => s.source.toLowerCase() === statSource.toLowerCase());
             if (existingSource) {
                 existingSource.signups += stat.signups || 0;
                 existingSource.paidConversions += stat.paidConversions || 0;

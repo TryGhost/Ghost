@@ -1,5 +1,6 @@
 import {arrayMove} from '@dnd-kit/sortable';
 import {useEffect, useState} from 'react';
+import _ from 'lodash';
 
 export type SortableIndexedList<Item> = {
     items: Array<{ item: Item; id: string }>;
@@ -32,7 +33,7 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, c
             allItems.push(newItem);
         }
 
-        if (JSON.stringify(allItems) !== JSON.stringify(items)) {
+        if (!_.isEqual(JSON.parse(JSON.stringify(allItems)), JSON.parse(JSON.stringify(items)))) {
             setItems(allItems);
         }
     }, [editableItems, newItem, items, setItems, canAddNewItem]);

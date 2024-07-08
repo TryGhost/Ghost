@@ -30,15 +30,15 @@
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
     "lodash": "4.17.21",
-    "metascraper": "5.41.0",
-    "metascraper-author": "5.42.5",
-    "metascraper-description": "5.42.0",
-    "metascraper-image": "5.42.0",
-    "metascraper-logo": "5.42.0",
+    "metascraper": "5.45.15",
+    "metascraper-author": "5.45.10",
+    "metascraper-description": "5.45.10",
+    "metascraper-image": "5.45.10",
+    "metascraper-logo": "5.45.10",
     "metascraper-logo-favicon": "5.42.0",
-    "metascraper-publisher": "5.42.0",
-    "metascraper-title": "5.42.0",
-    "metascraper-url": "5.40.0",
+    "metascraper-publisher": "5.45.10",
+    "metascraper-title": "5.45.10",
+    "metascraper-url": "5.45.10",
     "tough-cookie": "4.1.4"
   }
 }
