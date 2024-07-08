@@ -27,7 +27,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('add-newsletter-modal');
         await modal.getByRole('button', {name: 'Create'}).click();
 
-        await expect(modal).toHaveText(/Name is required/);
+        await expect(modal).toHaveText(/A name is required for your newsletter/);
 
         // Shouldn't be necessary, but without these Playwright doesn't click Create the second time for some reason
         await modal.getByRole('button', {name: 'Cancel'}).click();
@@ -69,7 +69,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByPlaceholder('Weekly Roundup').fill('');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(modal).toHaveText(/Name is required/);
+        await expect(modal).toHaveText(/A name is required for your newsletter/);
 
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');
 
