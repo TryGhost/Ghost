@@ -1,4 +1,5 @@
 import React, {FocusEventHandler, useEffect, useState} from 'react';
+import validator from 'validator';
 import {Form, TextField} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {fullEmailAddress, getEmailDomain} from '@tryghost/admin-x-framework/api/site';
@@ -19,8 +20,9 @@ const AccountPage: React.FC<{
         let supportAddress = e.target.value;
 
         if (!supportAddress) {
-            setError('members_support_address', 'Please enter an email address');
-            return;
+            setError('members_support_address', 'Enter an email address');
+        } else if (!validator.isEmail(supportAddress)) {
+            setError('members_support_address', 'Enter a valid email address');
         } else {
             setError('members_support_address', '');
         }
