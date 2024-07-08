@@ -31,8 +31,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "7.24.5",
     "@babel/plugin-syntax-import-assertions": "^7.20.0",
-    "@lexical/headless": "0.14.2",
-    "@lexical/html": "0.14.2",
+    "@lexical/headless": "0.13.1",
+    "@lexical/html": "0.13.1",
     "@prettier/sync": "^0.3.0",
     "@rollup/plugin-babel": "6.0.4",
     "c8": "9.1.0",
@@ -45,15 +45,15 @@
     "sinon": "17.0.1"
   },
   "dependencies": {
-    "@lexical/clipboard": "0.14.2",
-    "@lexical/rich-text": "0.14.2",
-    "@lexical/selection": "0.14.2",
-    "@lexical/utils": "0.14.2",
+    "@lexical/clipboard": "0.13.1",
+    "@lexical/rich-text": "0.13.1",
+    "@lexical/selection": "0.13.1",
+    "@lexical/utils": "0.13.1",
     "@tryghost/kg-clean-basic-html": "4.1.1",
     "@tryghost/kg-markdown-html-renderer": "7.0.5",
     "html-minifier": "^4.0.0",
     "jsdom": "^24.0.0",
-    "lexical": "0.14.2",
+    "lexical": "0.13.1",
     "lodash": "^4.17.21",
     "luxon": "^3.3.0"
   }

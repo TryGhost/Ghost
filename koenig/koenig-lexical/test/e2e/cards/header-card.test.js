@@ -352,7 +352,7 @@ test.describe('Header card V1', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="full">
-                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="header">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="header">
                     <div>
                         <div>
                             <div data-kg="editor">
@@ -371,7 +371,7 @@ test.describe('Header card V1', async () => {
                             <div data-kg="editor">
                                 <div
                                     contenteditable="false"
-                                    role="textbox"
+                                role="textbox"
                                     spellcheck="true"
                                     data-lexical-editor="true"
                                     aria-autocomplete="none"
@@ -382,11 +382,10 @@ test.describe('Header card V1', async () => {
                         </div>
                         <div></div>
                     </div>
-                    <div data-kg-card-toolbar="header"></div>
                 </div>
             </div>
             <p><br /></p>
-        `, {ignoreCardToolbarContents: true});
+        `, {});
     });
 });
 

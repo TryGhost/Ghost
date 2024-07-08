@@ -53,7 +53,7 @@ test.describe('Product card', async () => {
                     data-kg-card="product">
                     <div>
                         <div>
-                            <img
+                            <img 
                                 alt="Product thumbnail"
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
@@ -392,7 +392,7 @@ test.describe('Product card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div
                     data-kg-card-editing="false"
-                    data-kg-card-selected="true"
+                    data-kg-card-selected="false"
                     data-kg-card="product">
                     <div>
                         <div>
@@ -450,7 +450,6 @@ test.describe('Product card', async () => {
                         </div>
                     </div>
                     <div></div>
-                    <div data-kg-card-toolbar="product"></div>
                 </div>
             </div>
             <p><br /></p>
