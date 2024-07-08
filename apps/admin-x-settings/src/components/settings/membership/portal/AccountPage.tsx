@@ -20,9 +20,9 @@ const AccountPage: React.FC<{
         let supportAddress = e.target.value;
 
         if (!supportAddress) {
-            setError('members_support_address', 'Please enter an email address');
+            setError('members_support_address', 'Enter an email address');
         } else if (!validator.isEmail(supportAddress)) {
-            setError('members_support_address', 'Please enter a valid email address');
+            setError('members_support_address', 'Enter a valid email address');
         } else {
             setError('members_support_address', '');
         }
