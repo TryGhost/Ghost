@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../lib/repositories/MemberRepository');
 const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('@tryghost/member-events');
-const {off} = require('process');
 
 const mockOfferRedemption = {
     add: sinon.stub(),
