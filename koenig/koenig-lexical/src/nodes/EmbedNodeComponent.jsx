@@ -71,10 +71,9 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
     const fetchMetadata = async (href) => {
         setLoading(true);
         let response;
-        const type = createdWithUrl ? '' : 'embed';
         try {
             // set the test data return values in fetchEmbed.js
-            response = await cardConfig.fetchEmbed(href, {type});
+            response = await cardConfig.fetchEmbed(href);
             // we may end up with a bookmark return if the url is valid but doesn't return an embed
             if (response.type === 'bookmark') {
                 editor.update(() => {
