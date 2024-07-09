@@ -32,6 +32,14 @@ const AccountWelcome = () => {
             return null;
         }
 
+        if (isComplimentary) {
+            return (
+                <div className='gh-portal-section'>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`You currently have a complimentary subscription`)}</p>
+                </div>
+            );
+        }
+
         if (subscriptionHasFreeTrial({sub: subscription})) {
             const trialEnd = getDateString(subscription.trial_end_at);
             return (
