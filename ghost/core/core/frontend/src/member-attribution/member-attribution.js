@@ -76,6 +76,8 @@ const LIMIT = 15;
         let sourceParam;
         let utmSourceParam;
         let utmMediumParam;
+        let referrerSource;
+
         try {
             // Fetch source/medium from query param
             const url = new URL(window.location.href);
@@ -83,11 +85,23 @@ const LIMIT = 15;
             sourceParam = url.searchParams.get('source');
             utmSourceParam = url.searchParams.get('utm_source');
             utmMediumParam = url.searchParams.get('utm_medium');
+
+            referrerSource = refParam || sourceParam || utmSourceParam || null;
+
+            // if referrerSource is not set, check to see if the url contains a hash like ghost.org/#/portal/signup?ref=ghost and pull the ref from the hash
+            if (!referrerSource && url.hash && url.hash.includes('#/portal')) {
+                const hashUrl = new URL(window.location.href.replace('/#/portal', ''));
+                refParam = hashUrl.searchParams.get('ref');
+                sourceParam = hashUrl.searchParams.get('source');
+                utmSourceParam = hashUrl.searchParams.get('utm_source');
+                utmMediumParam = hashUrl.searchParams.get('utm_medium');
+    
+                referrerSource = refParam || sourceParam || utmSourceParam || null;
+            }
         } catch (e) {
             console.error('[Member Attribution] Parsing referrer from querystring failed', e);
         }
 
-        const referrerSource = refParam || sourceParam || utmSourceParam || null;
         const referrerMedium = utmMediumParam || null;
         const referrerUrl = window.document.referrer || null;
 
