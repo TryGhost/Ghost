@@ -340,6 +340,11 @@ class OEmbedService {
                 ];
                 const oembed = _.pick(body, knownFields);
 
+                // Fallback to bookmark if it's a link type
+                if (oembed.type === 'link') {
+                    return;
+                }
+
                 // ensure we have required data for certain types
                 if (oembed.type === 'photo' && !oembed.url) {
                     return;

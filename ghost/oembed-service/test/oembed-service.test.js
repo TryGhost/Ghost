@@ -146,5 +146,31 @@ describe('oembed-service', function () {
             assert.equal(response.url, 'https://www.example.com');
             assert.equal(response.metadata.title, 'Example');
         });
+
+        it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
+            nock('https://www.example.com')
+                .get('/')
+                .query(true)
+                .reply(200, `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"><title>Example</title></head></html>`);
+
+            nock('https://www.example.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    type: 'link',
+                    version: '1.0',
+                    title: 'Test Title',
+                    author_name: 'Test Author',
+                    author_url: 'https://example.com/user/testauthor',
+                    url: 'https://www.example.com'
+                });
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.url, 'https://www.example.com');
+            assert.equal(response.metadata.title, 'Example');
+        });
     });
 });
