@@ -37,6 +37,6 @@
     "cheerio": "0.22.0",
     "handlebars": "4.7.8",
     "juice": "9.1.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   }
 }

@@ -131,7 +131,7 @@
     "liquid-wormhole": "3.0.1",
     "loader.js": "4.7.0",
     "miragejs": "0.1.48",
-    "moment-timezone": "0.5.23",
+    "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
     "papaparse": "5.3.2",
     "postcss-color-mod-function": "3.0.3",
@@ -161,7 +161,7 @@
     "ember-basic-dropdown": "6.0.2",
     "ember-in-viewport": "4.1.0",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   },
   "ember": {
     "edition": "octane"

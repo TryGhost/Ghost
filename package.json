@@ -47,7 +47,7 @@
     "@tryghost/logging": "2.4.15",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   },
   "renovate": {
     "extends": [

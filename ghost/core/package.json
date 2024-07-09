@@ -212,7 +212,7 @@
     "lodash": "4.17.21",
     "luxon": "3.4.4",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23",
+    "moment-timezone": "0.5.45",
     "multer": "1.4.4",
     "mysql2": "3.10.2",
     "nconf": "0.12.1",
@@ -270,7 +270,7 @@
     "@tryghost/logging": "2.4.15",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   },
   "nx": {
     "targets": {

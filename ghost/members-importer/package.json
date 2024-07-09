@@ -30,6 +30,6 @@
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/metrics": "1.0.34",
     "@tryghost/tpl": "0.1.30",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   }
 }

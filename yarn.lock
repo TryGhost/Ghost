@@ -24345,14 +24345,14 @@ module-details-from-path@^1.0.3:
   resolved "https://registry.yarnpkg.com/module-details-from-path/-/module-details-from-path-1.0.3.tgz#114c949673e2a8a35e9d35788527aa37b679da2b"
   integrity sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==
 
-moment-timezone@0.5.23, moment-timezone@0.5.34, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
-  version "0.5.23"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
-  integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
+moment-timezone@0.5.34, moment-timezone@0.5.45, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
+  version "0.5.45"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.45.tgz#cb685acd56bac10e69d93c536366eb65aa6bcf5c"
+  integrity sha512-HIWmqA86KcmCAhnMAN0wuDOARV/525R2+lOLotuGFzn4HO+FH+/645z2wx0Dt3iDv6/p61SIvKnDstISainhLQ==
   dependencies:
-    moment ">= 2.9.0"
+    moment "^2.29.4"
 
-moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, "moment@>= 2.9.0", moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.1:
+moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, moment@2.30.1, moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.1, moment@^2.29.4:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
