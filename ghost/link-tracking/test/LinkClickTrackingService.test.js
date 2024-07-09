@@ -6,7 +6,6 @@ const ObjectID = require('bson-objectid').default;
 const PostLink = require('../lib/PostLink');
 const {RedirectEvent} = require('@tryghost/link-redirects');
 const errors = require('@tryghost/errors');
-//const _ = require('lodash');
 
 describe('LinkClickTrackingService', function () {
     it('exists', function () {
@@ -261,7 +260,7 @@ describe('LinkClickTrackingService', function () {
         });
 
         //test for #parseLinkFilter method
-        it('correctly decodes and parses the filter for non encoded urls', async function () {
+        it('correctly decodes and parses the filter for encoded urls', async function () {
             const urlUtilsStub = {
                 absoluteToTransformReady: sinon.stub().returnsArg(0),
                 isSiteUrl: sinon.stub().returns(true)
