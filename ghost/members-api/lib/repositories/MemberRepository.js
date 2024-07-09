@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
+const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent, OfferRedemptionEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
@@ -77,6 +77,7 @@ module.exports = class MemberRepository {
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberProductEvent = MemberProductEvent;
+        this._OfferRedemption = OfferRedemption;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
@@ -86,16 +87,26 @@ module.exports = class MemberRepository {
         this._newslettersService = newslettersService;
         this._labsService = labsService;
 
-        DomainEvents.subscribe(SubscriptionCreatedEvent, async function (event) {
+        DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
             if (!event.data.offerId) {
                 return;
             }
 
-            await OfferRedemption.add({
+            // To be extra safe, check if the redemption already exists before adding it
+            const existingRedemption = await OfferRedemption.findOne({
                 member_id: event.data.memberId,
                 subscription_id: event.data.subscriptionId,
                 offer_id: event.data.offerId
             });
+
+            if (!existingRedemption) {
+                await OfferRedemption.add({
+                    member_id: event.data.memberId,
+                    subscription_id: event.data.subscriptionId,
+                    offer_id: event.data.offerId,
+                    created_at: event.timestamp || Date.now()
+                });
+            }
         });
     }
 
@@ -1062,6 +1073,18 @@ module.exports = class MemberRepository {
                 id: model.id
             });
 
+            // CASE: Existing free member subscribes to a paid tier with an offer
+            // Stripe doesn't send the discount/offer info in the subscription.created event
+            // So we need to record the offer redemption event upon updating the subscription here
+            if (model.get('offer_id') === null && subscriptionData.offer_id) {
+                const event = OfferRedemptionEvent.create({
+                    memberId: member.id,
+                    offerId: subscriptionData.offer_id,
+                    subscriptionId: updated.id
+                }, updated.get('created_at'));
+                this.dispatchEvent(event, options);
+            }
+
             if (model.get('mrr') !== updated.get('mrr') || model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
                 const originalMrrDelta = model.get('mrr');
                 const updatedMrrDelta = updated.get('mrr');
@@ -1129,7 +1152,7 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
 
-            const event = SubscriptionCreatedEvent.create({
+            const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
                 source,
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
@@ -1139,11 +1162,16 @@ module.exports = class MemberRepository {
                 batchId: options.batch_id
             });
 
-            if (offerId) {
-                logging.info(`Dispatching ${event.constructor.name} for member ${member.id} with offer ${offerId}`);
-            }
+            this.dispatchEvent(subscriptionCreatedEvent, options);
 
-            this.dispatchEvent(event, options);
+            if (offerId) {
+                const offerRedemptionEvent = OfferRedemptionEvent.create({
+                    memberId: member.id,
+                    offerId: offerId,
+                    subscriptionId: subscriptionModel.get('id')
+                });
+                this.dispatchEvent(offerRedemptionEvent, options);
+            }
 
             if (getStatus(subscriptionModel) === 'active') {
                 const activatedEvent = SubscriptionActivatedEvent.create({
