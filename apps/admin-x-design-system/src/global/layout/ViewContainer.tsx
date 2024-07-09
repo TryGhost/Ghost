@@ -179,8 +179,8 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarContainerClassName = clsx(
         'flex justify-between gap-5',
-        (type === 'page' && actions?.length) ? 'flex-col md:flex-row md:items-end' : 'items-end',
-        (firstOnPage && type === 'page') ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
+        (type === 'page' && actions?.length) ? (tabs?.length ? 'flex-col md:flex-row md:items-start' : 'flex-col md:flex-row md:items-end') : 'items-end',
+        (firstOnPage && type === 'page' && !tabs?.length) ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200 dark:border-grey-900',
         toolbarContainerClassName
     );
