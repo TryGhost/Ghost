@@ -20,7 +20,7 @@
   "devDependencies": {
     "c8": "8.0.1",
     "mocha": "10.2.0",
-    "moment": "2.29.4",
+    "moment": "2.30.1",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
