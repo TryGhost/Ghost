@@ -147,10 +147,12 @@
                                             {{/if}}
                                         {{/if}}
 
-                                        {{#unless sub.isComplimentary}}
+                                        {{#if sub.validityDetails}}
                                             <span class="gh-cp-membertier-renewal"> &ndash; </span>
                                             <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
-                                        {{/unless}}
+                                        {{/if}}
+
+                                   
 
                                     </div>
                                     <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
