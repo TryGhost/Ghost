@@ -35,10 +35,6 @@ module.exports = function (environment) {
 
         'ember-simple-auth': { },
 
-        'ember-websockets': {
-            socketIO: true
-        },
-
         '@sentry/ember': {
             disablePerformance: true,
             sentry: {}

@@ -26,7 +26,7 @@
   "dependencies": {
     "@tryghost/debug": "0.1.30",
     "@tryghost/logging": "2.4.15",
-    "@tryghost/metrics": "1.0.31",
+    "@tryghost/metrics": "1.0.34",
     "form-data": "4.0.0",
     "lodash": "4.17.21",
     "mailgun.js": "10.2.1"

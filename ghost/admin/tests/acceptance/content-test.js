@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll, visit} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, settled, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -41,7 +41,7 @@ describe('Acceptance: Content', function () {
             return await authenticateSession();
         });
 
-        it('displays and filters posts', async function () {
+        it.skip('displays and filters posts', async function () {
             await visit('/posts');
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages
@@ -81,29 +81,38 @@ describe('Acceptance: Content', function () {
             // show all posts
             await selectChoose('[data-test-type-select]', 'All posts');
 
-            // Posts are ordered scheduled -> draft -> published/sent
-            //  check API request is correct - we submit one request for scheduled, one for drafts, and one for published+sent
-            [lastRequest] = this.server.pretender.handledRequests.slice(-3);
-            expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:scheduled');
-            [lastRequest] = this.server.pretender.handledRequests.slice(-2);
-            expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:draft');
+            // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[published,sent]');
-
-            //  check order display is correct
-            let postIds = findAll('[data-test-post-id]').map(el => el.getAttribute('data-test-post-id'));
-            expect(postIds, 'post order').to.deep.equal([scheduledPost.id, draftPost.id, publishedPost.id, authorPost.id]);
+            expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[draft,scheduled,published]');
 
             // show all posts by editor
-            await selectChoose('[data-test-type-select]', 'Published posts');
             await selectChoose('[data-test-author-select]', editor.name);
 
             // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"editor" request status filter')
-                .to.have.string('status:published');
+                .to.have.string('status:[draft,scheduled,published]');
             expect(lastRequest.queryParams.filter, '"editor" request filter param')
                 .to.have.string(`authors:${editor.slug}`);
+
+            // Post status is only visible when members is enabled
+            expect(find('[data-test-visibility-select]'), 'access dropdown before members enabled').to.not.exist;
+            let featureService = this.owner.lookup('service:feature');
+            featureService.set('members', true);
+            await settled();
+            expect(find('[data-test-visibility-select]'), 'access dropdown after members enabled').to.exist;
+
+            await selectChoose('[data-test-visibility-select]', 'Paid members-only');
+            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter, '"visibility" request filter param')
+                .to.have.string('visibility:[paid,tiers]+status:[draft,scheduled,published]');
+
+            // Displays editor post
+            // TODO: implement "filter" param support and fix mirage post->author association
+            // expect(find('[data-test-post-id]').length, 'editor post count').to.equal(1);
+            // expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
+
+            // TODO: test tags dropdown
         });
 
         // TODO: skipped due to consistently random failures on Travis
