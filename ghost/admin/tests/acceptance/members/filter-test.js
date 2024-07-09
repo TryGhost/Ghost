@@ -276,7 +276,7 @@ describe('Acceptance: Members filtering', function () {
             expect(find(`${filterSelector} [data-test-select="members-filter-value"]`)).to.have.value('email-disabled');
         });
 
-        it.only('can filter by specific newsletter subscription when there are multiple newsletters', async function () {
+        it('can filter by specific newsletter subscription when there are multiple newsletters', async function () {
             // Create:
             // - 1 subscribed member to newsletter
             // - 1 subscribed member to newsletter with email disabled
