@@ -143,11 +143,21 @@
                                         {{else}}
                                             {{#if (or (eq sub.price.nickname "Monthly") (eq sub.price.nickname "Yearly"))}}
                                             {{else}}
-                                                <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}}</span><span class="gh-cp-membertier-renewal"> &ndash; </span>
+                                                <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}}</span>
                                             {{/if}}
                                         {{/if}}
 
-                                         <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
+                                        {{#if sub.trialUntil}}
+                                            <span class="gh-cp-membertier-renewal"> &ndash; </span>
+                                            <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
+                                        {{/if}}
+
+                                        {{#if sub.compExpiry}}
+                                            <span class="gh-cp-membertier-renewal"> &ndash; </span>
+                                            <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
+                                        {{/if}}
+
+                                         
                                     </div>
                                     <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
                                 </div>
