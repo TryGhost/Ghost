@@ -22,7 +22,6 @@ const GA_FEATURES = [
     'signupForm',
     'recommendations',
     'listUnsubscribeHeader',
-    'filterEmailDisabled',
     'newEmailAddresses',
     'internalLinking'
 ];
