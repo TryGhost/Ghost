@@ -277,7 +277,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                 {object && (
                     <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-5' data-test-activity>
                         <div className='relative z-10 mb-3 grid w-full grid-cols-[20px_auto_1fr_auto] items-center gap-2 text-base'>
-                            <img className='w-5' src={actor.icon.url}/>
+                            <img className='w-5' src={actor.icon?.url}/>
                             <span className='truncate font-semibold'>{actor.name}</span>
                             {/* <span className='truncate text-grey-800'>{getUsername(actor)}</span> */}
                             <span className='ml-auto text-right text-grey-800'>{timestamp}</span>
