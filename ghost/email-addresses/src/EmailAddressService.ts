@@ -48,10 +48,6 @@ export class EmailAddressService {
         return this.#getManagedEmailEnabled();
     }
 
-    get useNewEmailAddresses() {
-        return this.managedEmailEnabled || this.#labs.isSet('newEmailAddresses');
-    }
-
     get defaultFromEmail(): EmailAddress {
         return this.#getDefaultEmail();
     }
@@ -149,10 +145,10 @@ export class EmailAddressService {
         }
 
         if (!this.managedEmailEnabled) {
-            // Self hoster or legacy Ghost Pro
+            // Self hosters
             return {
                 allowed: true,
-                verificationEmailRequired: !this.useNewEmailAddresses // Self hosters don't need to verify email addresses
+                verificationEmailRequired: false
             };
         }
 

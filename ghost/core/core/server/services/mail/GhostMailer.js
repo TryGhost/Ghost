@@ -1,14 +1,12 @@
 // # Mail
 // Handles sending email for Ghost
 const _ = require('lodash');
-const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const metrics = require('@tryghost/metrics');
-const settingsHelpers = require('../settings-helpers');
 const emailAddress = require('../email-address');
 const messages = {
     title: 'Ghost at {domain}',
@@ -19,7 +17,6 @@ const messages = {
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
 const {EmailAddressParser} = require('@tryghost/email-addresses');
-const logging = require('@tryghost/logging');
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -32,45 +29,24 @@ function getDomain() {
  * @returns {{from: string, replyTo?: string|null}}
  */
 function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
-    if (settingsHelpers.useNewEmailAddresses()) {
-        if (!requestedFromAddress) {
-            // Use the default config
-            requestedFromAddress = emailAddress.service.defaultFromEmail;
-        }
-
-        // Clean up email addresses (checks whether sending is allowed + email address is valid)
-        const addresses = emailAddress.service.getAddressFromString(requestedFromAddress, requestedReplyToAddress);
-
-        // fill in missing name if not set
-        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title') : tpl(messages.title, {domain: getDomain()});
-        if (!addresses.from.name) {
-            addresses.from.name = defaultSiteTitle;
-        }
-
-        return {
-            from: EmailAddressParser.stringify(addresses.from),
-            replyTo: addresses.replyTo ? EmailAddressParser.stringify(addresses.replyTo) : null
-        };
-    }
-    const configAddress = config.get('mail') && config.get('mail').from;
-
-    const address = requestedFromAddress || configAddress;
-    // If we don't have a from address at all
-    if (!address) {
-        // Default to noreply@[blog.url]
-        return getFromAddress(`noreply@${getDomain()}`, requestedReplyToAddress);
+    if (!requestedFromAddress) {
+        // Use the default config
+        requestedFromAddress = emailAddress.service.defaultFromEmail;
     }
 
-    // If we do have a from address, and it's just an email
-    if (validator.isEmail(address, {require_tld: false})) {
-        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : tpl(messages.title, {domain: getDomain()});
-        return {
-            from: `"${defaultSiteTitle}" <${address}>`
-        };
+    // Clean up email addresses (checks whether sending is allowed + email address is valid)
+    const addresses = emailAddress.service.getAddressFromString(requestedFromAddress, requestedReplyToAddress);
+
+    // fill in missing name if not set
+    const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title') : tpl(messages.title, {domain: getDomain()});
+    if (!addresses.from.name) {
+        addresses.from.name = defaultSiteTitle;
     }
 
-    logging.warn(`Invalid from address used for sending emails: ${address}`);
-    return {from: address};
+    return {
+        from: EmailAddressParser.stringify(addresses.from),
+        replyTo: addresses.replyTo ? EmailAddressParser.stringify(addresses.replyTo) : null
+    };
 }
 
 /**
