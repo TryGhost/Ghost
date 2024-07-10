@@ -1,10 +1,13 @@
 /* eslint-disable ghost/ghost-custom/max-api-complexity */
 const path = require('path');
+const uuid = require('uuid');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
 
 const storage = require('../../adapters/storage');
 const config = require('../../../shared/config');
+
+const IMAGE_STATUS_EDITED = 'edited';
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -23,6 +26,13 @@ const controller = {
 
             // Trim _o from file name (not allowed suffix)
             frame.file.name = frame.file.name.replace(/_o(\.\w+?)$/, '$1');
+
+            // If this an edited version of an existing image, anonymise the name
+            if (frame.data.status === IMAGE_STATUS_EDITED) {
+                const ext = path.extname(frame.file.name);
+
+                frame.file.name = `${uuid.v4()}${ext}`;
+            }
 
             // CASE: image transform is not capable of transforming file (e.g. .gif)
             if (imageTransform.shouldResizeFileExtension(frame.file.ext) && imageOptimizationOptions.resize) {

@@ -6,7 +6,9 @@ import {
     ICON_EXTENSIONS,
     ICON_MIME_TYPES,
     IMAGE_EXTENSIONS,
-    IMAGE_MIME_TYPES
+    IMAGE_MIME_TYPES,
+    IMAGE_STATUS_EDITED,
+    IMAGE_STATUS_NEW
 } from 'ghost-admin/components/gh-image-uploader';
 import {all, task} from 'ember-concurrency';
 import {isArray} from '@ember/array';
@@ -95,7 +97,7 @@ export default Component.extend({
         this._uploadTrackers = [];
 
         if (!this.paramsHash) {
-            this.set('paramsHash', {purpose: 'image'});
+            this.set('paramsHash', {purpose: 'image', status: IMAGE_STATUS_NEW});
         }
 
         this.set('imageExtensions', IMAGE_EXTENSIONS);
@@ -332,6 +334,10 @@ export default Component.extend({
         Object.keys(this.paramsHash || {}).forEach((key) => {
             formData.append(key, this.paramsHash[key]);
         });
+
+        if (file.edited) {
+            formData.set('status', IMAGE_STATUS_EDITED);
+        }
 
         return formData;
     },
