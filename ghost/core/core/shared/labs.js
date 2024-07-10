@@ -21,7 +21,6 @@ const GA_FEATURES = [
     'announcementBar',
     'signupForm',
     'recommendations',
-    'listUnsubscribeHeader',
     'newEmailAddresses',
     'internalLinking'
 ];

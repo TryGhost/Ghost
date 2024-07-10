@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('services:routing:controllers:unsubscri
 const url = require('url');
 const members = require('../../../../server/services/members');
 const urlUtils = require('../../../../shared/url-utils');
-const labs = require('../../../../shared/labs');
 const logging = require('@tryghost/logging');
 
 module.exports = async function unsubscribeController(req, res) {
@@ -15,7 +14,7 @@ module.exports = async function unsubscribeController(req, res) {
         return res.end('Email address not found.');
     }
 
-    if (req.method === 'POST' && labs.isSet('listUnsubscribeHeader')) {
+    if (req.method === 'POST') {
         logging.info('[List-Unsubscribe] Received POST unsubscribe for ' + query.uuid + ', newsletter: ' + (query.newsletter ?? 'null') + ', comments: ' + (query.comments ?? 'false'));
 
         // Do an actual unsubscribe
