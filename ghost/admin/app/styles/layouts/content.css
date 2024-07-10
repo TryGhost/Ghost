@@ -843,6 +843,7 @@
     border-radius: var(--border-radius);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,.1);
     flex: 1;
+    align-items: flex-start;
     display: grid;
     grid-template-columns: 2fr 3fr;
     grid-gap: 24px;
@@ -1532,7 +1533,7 @@
     color: var(--green-d1);
 }
 
-@media screen and (max-width: 1280px) {
+@media screen and (max-width: 1200px) {
     .gh-post-analytics-box.resources {
         flex-direction: column;
     }
