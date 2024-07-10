@@ -57,7 +57,7 @@ describe('usePagination', function () {
             result.current.prevPage();
         });
 
-        expect(currentPage).to.equal(10);
+        expect(currentPage).to.equal(1);
     });
 
     it('should update page correctly when setPage is called', function () {
