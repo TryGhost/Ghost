@@ -842,13 +842,12 @@
     background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,.1);
-}
-
-.gh-post-analytics-resource {
     flex: 1;
+    align-items: flex-start;
     display: grid;
     grid-template-columns: 2fr 3fr;
     grid-gap: 24px;
+    min-width: 0;
 }
 
 .gh-post-analytics-resource .thumbnail {
@@ -1534,7 +1533,7 @@
     color: var(--green-d1);
 }
 
-@media screen and (max-width: 1080px) {
+@media screen and (max-width: 1200px) {
     .gh-post-analytics-box.resources {
         flex-direction: column;
     }
