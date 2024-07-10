@@ -145,6 +145,6 @@ describe('useSortableIndexedList', function () {
         });
 
         // Expect no additional calls because the items are deeply equal
-        expect(setItems.callCount).to.equal(10);
+        expect(setItems.callCount).to.equal(0);
     });
 });
