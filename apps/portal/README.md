@@ -26,45 +26,49 @@ The script also adds custom class names to this element for open and close state
 
 Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings) to read about ways in which Portal can be customized for your site.
 
-## Basic Setup
+## Develop
 
-This section is mostly relevant for core team only for active Portal development. Always use the unpkg link for testing/using latest released portal script.
+Run Portal within the Ghost monorepo with:
+```
+yarn dev --portal
+```
 
-- Run `yarn start:dev` to start Portal in development mode
-- Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-- To use the local Portal script in a local Ghost site
-  - Update `config.local.json` in Ghost repo to add "portal" config pointing to local dev server url as instructed on terminal.
-  - By default, this uses port `5368` for loading local Portal script on Ghost site. It's also possible to specify a custom port when running the script using - `--port=xxxx`.
+Alternatively, use  `yarn dev --all` to load Portal and other supported apps/services, see [dev.js](https://github.com/TryGhost/Ghost/blob/main/.github/scripts/dev.js) for more information.
 
-## Available Scripts
+---
 
-In the project directory, you can also run:
+To run Portal in a standalone fashion, use `yarn start` and open [http://localhost:3000](http://localhost:3000).
 
-### `yarn start`
+## Build
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+To create a production minified bundle in `umd/portal.min.js`:
+```
+yarn build
+```
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+## Test
 
-Start the portal server when developing Ghost by running Ghost (in root folder) via `yarn dev --all` or `yarn dev --portal`. This will host the portal JavaScript files, and makes sure that Ghost uses these locally hosted assets instead of the ones from the CDN.
+To run tests in watch mode:
+```
+yarn test
+```
 
-### `yarn build`
+## Release
 
-Creates the production single minified bundle for external use in `umd/portal.min.js`.  <br />
+A patch release can be rolled out instantly in production, whereas a minor/major release requires the Ghost monorepo to be updated and released. In either case, you need sufficient permissions to release `@tryghost` packages on NPM.
 
-### `yarn test`
+### Patch release
 
-Launches the test runner in the interactive watch mode.<br />
+1. Run `yarn ship` and select a patch version when prompted
+2. (Optional) Clear JsDelivr cache to get the new version out instantly ([docs](https://www.notion.so/ghost/How-to-clear-jsDelivr-CDN-cache-2930bdbac02946eca07ac23ab3199bfa?pvs=4)). Typically, you'll need to open `https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/portal.min.js` and
+`https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/main.css` in your browser, where `PORTAL_VERSION` is the latest minor version in `ghost/core/core/shared/config/defaults.json` ([code](https://github.com/TryGhost/Ghost/blob/0aef3d3beeebcd79a4bfd3ad27e0ac67554b5744/ghost/core/core/shared/config/defaults.json#L185))
 
-## Publish
+### Minor / major release
 
-Run `yarn ship` to publish new version of script.
+1. Run `yarn ship` and select a minor or major version when prompted
+2. Update the Portal version in `ghost/core/core/shared/config/defaults.json` to the new minor or major version ([code](https://github.com/TryGhost/Ghost/blob/0aef3d3beeebcd79a4bfd3ad27e0ac67554b5744/ghost/core/core/shared/config/defaults.json#L198))
+3. Wait until a new version of Ghost is released
 
-`yarn ship` is an alias for `npm publish`
+# Copyright & License
 
-- Builds the script with latest code using `yarn build` (prePublish)
-- Publishes package on npm as `@tryghost/portal` and creates an unpkg link for script at https://unpkg.com/@tryghost/portal@VERSION
-
-(Core team only)
+Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE).
