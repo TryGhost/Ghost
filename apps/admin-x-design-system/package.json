@@ -11,7 +11,8 @@
   "scripts": {
     "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
     "prepare": "yarn build",
-    "test": "yarn nx build && vitest run && yarn test:types",
+    "test": "yarn test:unit && yarn test:types",
+    "test:unit": "yarn nx build && vitest run",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
     "lint": "yarn lint:code && yarn lint:test",
