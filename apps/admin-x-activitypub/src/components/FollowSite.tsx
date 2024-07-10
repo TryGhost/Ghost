@@ -12,6 +12,16 @@ import {useState} from 'react';
 //     })
 // );
 
+async function getToken(): Promise<string | null> {
+    try {
+        const res = await fetch('/ghost/api/admin/identities/');
+        const json = await res.json();
+        return json.identities[0].token;
+    } catch (err) {
+        return null;
+    }
+}
+
 const FollowSite = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
@@ -34,9 +44,13 @@ const FollowSite = NiceModal.create(() => {
 
     const handleFollow = async () => {
         try {
+            const token = await getToken();
             const url = new URL(`.ghost/activitypub/actions/follow/${profileName}`, siteUrl);
             await fetch(url, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             // Perform the mutation
             // If successful, set the success state to true
