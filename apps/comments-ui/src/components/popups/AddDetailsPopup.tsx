@@ -119,7 +119,7 @@ const AddDetailsPopup = (props: Props) => {
         <div className="shadow-modal relative h-screen w-screen overflow-hidden rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" data-testid="profile-modal" onMouseDown={stopPropagation}>
             <div className="flex">
                 {/* <div className={`${isMobile() ? 'hidden' : 'w-[40%]'} flex-col items-center justify-center bg-[#1C1C1C]`}> */}
-                <div className={`flex hidden w-[40%] flex-col items-center justify-center bg-[#1C1C1C] sm:block`}>
+                <div className={`flex hidden w-[40%] flex-col items-center justify-center bg-[#1C1C1C] sm:block sm:p-8`}>
                     <div className="mt-[-1px] flex flex-col gap-9">
                         {renderExampleProfiles()}
                     </div>
