@@ -118,7 +118,14 @@ class ImageSize {
             if (FETCH_ONLY_FORMATS.includes(extension)) {
                 resolve(this._fetchImageSizeFromUrl(imageUrl));
             } else {
-                resolve(this._probeImageSizeFromUrl(imageUrl));
+                resolve(Promise.race([
+                    this._probeImageSizeFromUrl(imageUrl),
+                    new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            reject(new Error('Image size retrieval timed out'));
+                        }, this.NEEDLE_OPTIONS.response_timeout);
+                    })
+                ]));
             }
         });
     }
