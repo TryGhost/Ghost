@@ -687,19 +687,16 @@ class EmailRenderer {
                 getValue: (member) => {
                     return this.getMemberStatusText(member);
                 }
-            }
-        ];
-
-        baseDefinitions.push(
+            },
+            // List unsubscribe header to unsubcribe in one-click
             {
                 id: 'list_unsubscribe',
                 getValue: (member) => {
-                    // Same URL
                     return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
                 },
                 required: true // Used in email headers
             }
-        );
+        ];
 
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
