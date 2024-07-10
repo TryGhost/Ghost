@@ -18,7 +18,6 @@ export const searchKeywords = {
 const GrowthSettings: React.FC = () => {
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
     const hasRecommendations = useFeatureFlag('recommendations');
-    // const hasOffersLabs = useFeatureFlag('adminXOffers');
     const {config, settings} = useGlobalData();
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
