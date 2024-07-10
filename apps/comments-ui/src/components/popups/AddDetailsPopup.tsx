@@ -118,14 +118,12 @@ const AddDetailsPopup = (props: Props) => {
     return (
         <div className="shadow-modal relative h-screen w-screen overflow-hidden rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" data-testid="profile-modal" onMouseDown={stopPropagation}>
             <div className="flex">
-                {!isMobile() &&
-                    <div className={`flex w-[40%] flex-col items-center justify-center bg-[#1C1C1C]`}>
-                        <div className="mt-[-1px] flex flex-col gap-9">
-                            {renderExampleProfiles()}
-                        </div>
+                <div className={`hidden w-[50%] flex-col items-center justify-center bg-[#1C1C1C] sm:block sm:p-8`}>
+                    <div className="mt-[-1px] flex flex-col gap-9 text-left">
+                        {renderExampleProfiles()}
                     </div>
-                }
-                <div className={`${isMobile() ? 'w-full' : 'w-[60%]'} p-0 sm:p-8`}>
+                </div>
+                <div className={`p-0 sm:p-8`}>
                     <h1 className="mb-1 text-center font-sans text-[24px] font-bold tracking-tight text-black sm:text-left">{t('Complete your profile')}<span className="hidden sm:inline">.</span></h1>
                     <p className="pr-0 text-center font-sans text-base leading-9 text-neutral-500 sm:pr-10 sm:text-left">{t('Add context to your comment, share your name and expertise to foster a healthy discussion.')}</p>
                     <section className="mt-8 text-left">
