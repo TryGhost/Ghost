@@ -10,7 +10,7 @@ import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -97,6 +97,7 @@ const Sidebar: React.FC<{
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
+    const {mutateAsync: editSettings} = useEditSettings();
     const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
     const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'support_email_address']);
@@ -106,8 +107,15 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+    const activeNewsletters = newsletters.filter(n => n.status === 'active');
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -124,6 +132,18 @@ const Sidebar: React.FC<{
         return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
     };
 
+    const disableNewsletterSetting = async () => {
+        const updates: Setting[] = [
+            {key: 'editor_default_email_recipients', value: 'disabled'}
+        ];
+
+        try {
+            await editSettings(updates);
+        } catch (error) {
+            handleError(error);
+        }
+    }
+
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
             NiceModal.show(ConfirmationModal, {
@@ -136,6 +156,10 @@ const Sidebar: React.FC<{
                 okColor: 'red',
                 onOk: async (modal) => {
                     try {
+                        if (activeNewsletters.length === 1) {
+                            console.log("Time to disable");
+                            disableNewsletterSetting();
+                        }
                         await editNewsletter({...newsletter, status: 'archived'});
                         modal?.remove();
                         showToast({

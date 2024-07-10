@@ -18,6 +18,7 @@ const EmailSettings: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
+    //Todo: Chnage here to avoid hiding of Netwsletter Settings
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
