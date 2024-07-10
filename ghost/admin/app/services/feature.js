@@ -68,7 +68,6 @@ export default class FeatureService extends Service {
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('signupCard') signupCard;
-    @feature('signupForm') signupForm;
     @feature('collections') collections;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
