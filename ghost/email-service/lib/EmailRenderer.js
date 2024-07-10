@@ -690,18 +690,16 @@ class EmailRenderer {
             }
         ];
 
-        if (this.#labs.isSet('listUnsubscribeHeader')) {
-            baseDefinitions.push(
-                {
-                    id: 'list_unsubscribe',
-                    getValue: (member) => {
-                        // Same URL
-                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
-                    },
-                    required: true // Used in email headers
-                }
-            );
-        }
+        baseDefinitions.push(
+            {
+                id: 'list_unsubscribe',
+                getValue: (member) => {
+                    // Same URL
+                    return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                },
+                required: true // Used in email headers
+            }
+        );
 
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;

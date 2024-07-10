@@ -266,14 +266,6 @@ describe('Front-end members behavior', function () {
     });
 
     describe('Unsubscribe', function () {
-        beforeEach(function () {
-            mockManager.mockLabsEnabled('listUnsubscribeHeader');
-        });
-
-        afterEach(function () {
-            mockManager.restore();
-        });
-
         it('should redirect with uuid and action param', async function () {
             await request.get('/unsubscribe/?uuid=XXX')
                 .expect(302)
