@@ -17,7 +17,7 @@
     border-radius: 6px;
     border: 1px solid rgb(124 139 154 / 25%);
     overflow: hidden;
-    color: inherit;
+    color: #222;
 }
 
 .kg-bookmark-content {
