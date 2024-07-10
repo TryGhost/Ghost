@@ -5,7 +5,6 @@ import {User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const hasWebmentions = useFeatureFlag('webmentions');
-    const hasRecommendations = useFeatureFlag('recommendations');
 
     return (
         <SettingGroupContent>
@@ -28,7 +27,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                         setUserData?.({...user, mention_notifications: e.target.checked});
                     }}
                 />}
-                {hasRecommendations && <Toggle
+                <Toggle
                     checked={user.recommendation_notifications}
                     direction='rtl'
                     hint='Every time another publisher recommends you to their audience'
@@ -36,7 +35,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                     onChange={(e) => {
                         setUserData?.({...user, recommendation_notifications: e.target.checked});
                     }}
-                />}
+                />
                 <Toggle
                     checked={user.free_member_signup_notification}
                     direction='rtl'

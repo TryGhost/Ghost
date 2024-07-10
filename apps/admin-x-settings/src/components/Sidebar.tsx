@@ -111,7 +111,6 @@ const Sidebar: React.FC = () => {
     };
 
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
-    const hasRecommendations = useFeatureFlag('recommendations');
 
     const updateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter(e.target.value);
@@ -184,7 +183,7 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
-                    {hasRecommendations && <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
+                    <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
