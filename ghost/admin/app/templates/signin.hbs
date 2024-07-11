@@ -12,7 +12,7 @@
                     </header>
                 </div>
             {{else}}
-                <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
+                <form id="login" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
                     <header>
                         <div class="gh-site-icon" style={{site-icon-style}}></div>
                         <h1>{{this.config.blogTitle}}</h1>
