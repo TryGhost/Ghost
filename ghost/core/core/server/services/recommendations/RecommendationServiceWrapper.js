@@ -43,7 +43,6 @@ class RecommendationServiceWrapper {
             return;
         }
 
-        const labs = require('../../../shared/labs');
         const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
         const models = require('../../models');
@@ -146,10 +145,8 @@ class RecommendationServiceWrapper {
             service: this.incomingRecommendationService
         });
 
-        if (labs.isSet('recommendations')) {
-            this.service.init().catch(logging.error);
-            this.incomingRecommendationService.init().catch(logging.error);
-        }
+        this.service.init().catch(logging.error);
+        this.incomingRecommendationService.init().catch(logging.error);
 
         const PATH_SUFFIX = '/.well-known/recommendations.json';
 
@@ -169,12 +166,10 @@ class RecommendationServiceWrapper {
 
         // Listen for incoming webmentions
         DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
-            if (labs.isSet('recommendations')) {
-                // Check if this is a recommendation
-                if (event.data.mention.verified && isRecommendationUrl(event.data.mention.source)) {
-                    logging.info('[INCOMING RECOMMENDATION] Received recommendation from ' + event.data.mention.source);
-                    await this.incomingRecommendationService.sendRecommendationEmail(event.data.mention);
-                }
+            // Check if this is a recommendation
+            if (event.data.mention.verified && isRecommendationUrl(event.data.mention.source)) {
+                logging.info('[INCOMING RECOMMENDATION] Received recommendation from ' + event.data.mention.source);
+                await this.incomingRecommendationService.sendRecommendationEmail(event.data.mention);
             }
         });
     }

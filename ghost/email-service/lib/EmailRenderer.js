@@ -687,21 +687,16 @@ class EmailRenderer {
                 getValue: (member) => {
                     return this.getMemberStatusText(member);
                 }
+            },
+            // List unsubscribe header to unsubcribe in one-click
+            {
+                id: 'list_unsubscribe',
+                getValue: (member) => {
+                    return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                },
+                required: true // Used in email headers
             }
         ];
-
-        if (this.#labs.isSet('listUnsubscribeHeader')) {
-            baseDefinitions.push(
-                {
-                    id: 'list_unsubscribe',
-                    getValue: (member) => {
-                        // Same URL
-                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
-                    },
-                    required: true // Used in email headers
-                }
-            );
-        }
 
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
@@ -772,13 +767,8 @@ class EmailRenderer {
         registerHelpers(this.#handlebars, labs);
 
         // Partials
-        if (this.#labs.isSet('emailCustomization')) {
-            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
-            this.#handlebars.registerPartial('styles', cssPartialSource);
-        } else {
-            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles-old.hbs`), 'utf8');
-            this.#handlebars.registerPartial('styles', cssPartialSource);
-        }
+        const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
+        this.#handlebars.registerPartial('styles', cssPartialSource);
 
         const paywallPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `paywall.hbs`), 'utf8');
         this.#handlebars.registerPartial('paywall', paywallPartial);
@@ -793,13 +783,9 @@ class EmailRenderer {
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
-        if (this.#labs.isSet('emailCustomization')) {
-            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
-            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        } else {
-            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template-old.hbs`), 'utf8');
-            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        }
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
+        this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+    
         return this.#renderTemplate(data);
     }
 

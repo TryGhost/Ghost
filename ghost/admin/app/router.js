@@ -60,9 +60,6 @@ Router.map(function () {
         this.route('activitypub-x', {path: '/*sub'});
     });
 
-    // testing websockets
-    this.route('websockets');
-
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
         this.route('connect');

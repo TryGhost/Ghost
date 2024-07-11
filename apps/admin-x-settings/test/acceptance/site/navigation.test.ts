@@ -39,7 +39,7 @@ test.describe('Navigation settings', async () => {
         await secondaryNavigationTab.getByTestId('new-navigation-item').getByLabel('URL').fill('https://google.com');
         await secondaryNavigationTab.getByTestId('new-navigation-item').getByLabel('URL').blur();
 
-        await modal.getByRole('button', {name: 'OK'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(modal).not.toBeVisible();
 
@@ -68,7 +68,7 @@ test.describe('Navigation settings', async () => {
         await primaryItem.getByLabel('URL').press('Backspace');
         await primaryItem.getByLabel('URL').fill('google.com');
 
-        await modal.getByRole('button', {name: 'OK'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(primaryItem.getByText('You must specify a label')).toHaveCount(1);
         await expect(primaryItem.getByText('You must specify a valid URL or relative path')).toHaveCount(1);
@@ -149,7 +149,7 @@ test.describe('Navigation settings', async () => {
 
         await newItem.getByTestId('add-button').click();
 
-        await modal.getByRole('button', {name: 'Cancel'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
