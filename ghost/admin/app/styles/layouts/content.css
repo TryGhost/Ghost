@@ -865,6 +865,7 @@
 .gh-post-analytics-resource h3 {
     font-size: 1.8rem;
     font-weight: 700;
+    text-wrap: pretty;
 }
 
 .gh-post-analytics-box h4.gh-main-section-header.small {
