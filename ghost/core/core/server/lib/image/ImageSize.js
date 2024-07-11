@@ -120,9 +120,9 @@ class ImageSize {
             } else {
                 resolve(Promise.race([
                     this._probeImageSizeFromUrl(imageUrl),
-                    new Promise(() => {
+                    new Promise((res, rej) => {
                         setTimeout(() => {
-                            return Promise.reject(new errors.InternalServerError({
+                            rej(new errors.InternalServerError({
                                 message: 'Request timed out.',
                                 code: 'IMAGE_SIZE_URL'
                             }));
