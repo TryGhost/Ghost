@@ -42,8 +42,8 @@ const ActivityPubComponent: React.FC = () => {
             title: 'Inbox',
             contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'>
                 <ul className={`order-2 col-span-6 flex flex-col pb-8 lg:order-1 ${selectedOption.value === 'inbox' ? 'lg:col-span-4' : 'lg:col-span-3'}`}>
-                    {activities && activities.some(activity => activity.type === 'Create' && activity.object.type === 'Article') ? (activities.slice().reverse().map(activity => (
-                        activity.type === 'Create' && activity.object.type === 'Article' &&
+                    {activities && activities.some(activity => activity.type === 'Create' && (activity.object.type === 'Article' || activity.object.type === 'Note')) ? (activities.slice().reverse().map(activity => (
+                        activity.type === 'Create' && (activity.object.type === 'Article' || activity.object.type === 'Note') &&
                         <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
                             <ObjectContentDisplay actor={activity.actor} layout={selectedOption.value} object={activity.object}/>
                         </li>
@@ -222,6 +222,19 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
     const doc = parser.parseFromString(object.content || '', 'text/html');
 
     const plainTextContent = doc.body.textContent;
+    let previewContent = '';
+    if (object.preview) {
+        const previewDoc = parser.parseFromString(object.preview.content || '', 'text/html');
+        previewContent = previewDoc.body.textContent || '';
+    } else if (object.type === 'Note') {
+        previewContent = plainTextContent || '';
+    }
+
+    let image = object.image;
+    if (object.type === 'Note' && !image && object.attachment) {
+        image = object.attachment.url;
+    }
+
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -253,9 +266,9 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                         </div>
                         <div className='relative z-10 w-full gap-4'>
                             <div className='flex flex-col'>
-                                
-                                {object.image && <div className='relative mb-4'>
-                                    <img className='h-[300px] w-full rounded object-cover' src={object.image}/>
+
+                                {image && <div className='relative mb-4'>
+                                    <img className='h-[300px] w-full rounded object-cover' src={image}/>
                                 </div>}
                                 <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>
                                 <p className='mb-4 line-clamp-3 max-w-prose text-pretty text-md text-grey-900'>{plainTextContent}</p>
@@ -287,14 +300,14 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                                 <div className='flex w-full justify-between gap-4'>
                                     <Heading className='mb-1 line-clamp-2 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
                                 </div>
-                                <p className='mb-6 line-clamp-2 max-w-prose text-pretty text-md text-grey-800'>{object.preview?.content}</p>
+                                <p className='mb-6 line-clamp-2 max-w-prose text-pretty text-md text-grey-800'>{previewContent}</p>
                                 <div className='flex gap-2'>
                                     <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
                                     <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
                                 </div>
                             </div>
-                            {object.image && <div className='relative min-w-[33%] grow'>
-                                <img className='absolute h-full w-full rounded object-cover' height='140px' src={object.image} width='170px'/>
+                            {image && <div className='relative min-w-[33%] grow'>
+                                <img className='absolute h-full w-full rounded object-cover' height='140px' src={image} width='170px'/>
                             </div>}
                         </div>
                         <div className='absolute -inset-x-3 -inset-y-1 z-0 rounded transition-colors group-hover/article:bg-grey-50'></div>
