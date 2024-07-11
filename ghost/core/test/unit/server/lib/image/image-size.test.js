@@ -5,6 +5,7 @@ const path = require('path');
 const errors = require('@tryghost/errors');
 const fs = require('fs');
 const ImageSize = require('../../../../../core/server/lib/image/ImageSize');
+const probe = require('probe-image-size');
 
 describe('lib/image: image size', function () {
     // use a 1x1 gif in nock responses because it's really small and easy to work with
@@ -18,7 +19,7 @@ describe('lib/image: image size', function () {
     it('[success] should have an image size function', function () {
         const imageSize = new ImageSize({config: {
             get: () => {}
-        }, tpl: {}, storage: {}, storageUtils: {}, validator: {}, urlUtils: {}, request: {}});
+        }, tpl: {}, storage: {}, storageUtils: {}, validator: {}, urlUtils: {}, request: {}, probe});
         should.exist(imageSize.getImageSizeFromUrl);
         should.exist(imageSize.getImageSizeFromStoragePath);
     });
@@ -42,7 +43,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.true();
@@ -77,7 +78,7 @@ describe('lib/image: image size', function () {
                     });
                 }
                 return Promise.reject();
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.false();
@@ -107,7 +108,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.true();
@@ -138,7 +139,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMockNotFound.isDone().should.be.false();
@@ -188,7 +189,7 @@ describe('lib/image: image size', function () {
                     });
                 }
                 return Promise.reject();
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.true();
@@ -218,7 +219,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.true();
@@ -254,7 +255,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.true();
@@ -300,7 +301,7 @@ describe('lib/image: image size', function () {
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
-            }, request: {}});
+            }, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
                 requestMock.isDone().should.be.false();
@@ -328,7 +329,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
@@ -366,7 +367,7 @@ describe('lib/image: image size', function () {
                     return Promise.reject(new NotFound());
                 }
                 return Promise.reject();
-            }});
+            }}, probe);
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
@@ -387,7 +388,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => false
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
@@ -398,7 +399,7 @@ describe('lib/image: image size', function () {
                 }).catch(done);
         });
 
-        it('[failure] will timeout', function (done) {
+        it('[failure] will handle responses timing out', function (done) {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256';
 
             const requestMock = nock('https://static.wixstatic.com')
@@ -409,14 +410,18 @@ describe('lib/image: image size', function () {
             const imageSize = new ImageSize({config: {
                 get: (key) => {
                     if (key === 'times:getImageSizeTimeoutInMS') {
-                        return 1;
+                        return 10;
                     }
                 }
             }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {},
+            probe(reqUrl, options) {
+                // simulate probe the request timing out by probe's option
+                return probe(reqUrl, {...options, response_timeout: 1});
+            }});
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
@@ -441,7 +446,7 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: {}});
+            }, urlUtils: {}, request: {}, probe});
 
             imageSize.getImageSizeFromUrl(url)
                 .then(() => {
@@ -475,7 +480,7 @@ describe('lib/image: image size', function () {
                     });
                 }
                 return Promise.reject();
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromUrl(url)
                 .then(() => {
@@ -500,13 +505,45 @@ describe('lib/image: image size', function () {
                 isURL: () => true
             }, urlUtils: {}, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
                     should.exist(err);
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('Unknown Request error.');
+                    done();
+                }).catch(done);
+        });
+
+        it('[failure] handles probe being unresponsive', function (done) {
+            const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
+            const requestMock = nock('http://img.stockfresh.com')
+                .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+                .reply(200, GIF1x1);
+
+            const imageSize = new ImageSize({config: {
+                get: (key) => {
+                    if (key === 'times:getImageSizeTimeoutInMS') {
+                        return 1;
+                    }
+                }
+            }, tpl: {}, storage: {}, storageUtils: {
+                isLocalImage: () => false
+            }, validator: {
+                isURL: () => true
+            }, urlUtils: {}, request: {},
+            probe(reqUrl, options) {
+                // simulate probe being unresponsive by making the timeout longer than the request
+                return probe(reqUrl, {...options, response_timeout: 10});
+            }});
+
+            imageSize.getImageSizeFromUrl(url)
+                .catch(function (err) {
+                    requestMock.isDone().should.be.true();
+                    should.exist(err);
+                    err.errorType.should.be.equal('InternalServerError');
+                    err.message.should.be.equal('Probe unresponsive.');
                     done();
                 }).catch(done);
         });
@@ -542,7 +579,7 @@ describe('lib/image: image size', function () {
                 getSubdir: urlGetSubdirStub
             }, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
@@ -585,7 +622,7 @@ describe('lib/image: image size', function () {
                 getSubdir: urlGetSubdirStub
             }, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
@@ -628,7 +665,7 @@ describe('lib/image: image size', function () {
                 getSubdir: urlGetSubdirStub
             }, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
@@ -671,7 +708,7 @@ describe('lib/image: image size', function () {
                 getSubdir: urlGetSubdirStub
             }, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
                 should.exist(res);
@@ -711,7 +748,7 @@ describe('lib/image: image size', function () {
                 getSubdir: urlGetSubdirStub
             }, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
@@ -746,7 +783,7 @@ describe('lib/image: image size', function () {
                 getSubdir: urlGetSubdirStub
             }, request: () => {
                 return Promise.reject({});
-            }});
+            }, probe});
 
             imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
