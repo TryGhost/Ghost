@@ -4,7 +4,7 @@ const mentionsService = require('../../../core/server/services/mentions');
 const assert = require('assert/strict');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
-const {mockLabsDisabled, mockLabsEnabled, mockSetting} = require('../../utils/e2e-framework-mock-manager');
+const {mockLabsEnabled, mockSetting} = require('../../utils/e2e-framework-mock-manager');
 const ObjectId = require('bson-objectid').default;
 const {sendEmail, getDefaultNewsletter, getLastEmail} = require('../../utils/batch-email-utils');
 const urlUtils = require('../../utils/urlUtils');
@@ -125,7 +125,7 @@ describe('Email addresses', function () {
     beforeEach(async function () {
         emailMockReceiver = mockManager.mockMail();
         mockManager.mockMailgun();
-        mockLabsDisabled('newEmailAddresses');
+        mockLabsEnabled('newEmailAddresses');
 
         configureSite({
             siteUrl: 'http://blog.acme.com'
@@ -142,78 +142,7 @@ describe('Email addresses', function () {
         mockManager.restore();
     });
 
-    describe('Legacy setup', function () {
-        it('[STAFF] sends recommendation notification emails from mail.from', async function () {
-            await sendRecommendationNotification();
-            assertFromAddress('"Postmaster" <postmaster@examplesite.com>');
-        });
-
-        it('[STAFF] sends new member notification emails from ghost@domain', async function () {
-            await sendFreeMemberSignupNotification();
-            assertFromAddress('"Example Site" <ghost@blog.acme.com>');
-        });
-
-        it('[MEMBERS] send a comment reply notification from the generated noreply email address if support address is set to noreply', async function () {
-            mockSetting('members_support_address', 'noreply');
-
-            await sendCommentNotification();
-            assertFromAddress('"Example Site" <noreply@blog.acme.com>');
-        });
-
-        it('[MEMBERS] send a comment reply notification from the generated noreply email address if no support address is set', async function () {
-            mockSetting('members_support_address', '');
-
-            await sendCommentNotification();
-            assertFromAddress('"Example Site" <noreply@blog.acme.com>');
-        });
-
-        it('[MEMBERS] send a comment reply notification from the support address', async function () {
-            await sendCommentNotification();
-            assertFromAddress('"Example Site" <support@address.com>');
-        });
-
-        it('[NEWSLETTER] Allows to send a newsletter from any configured email address', async function () {
-            await configureNewsletter({
-                sender_email: 'anything@possible.com',
-                sender_name: 'Anything Possible',
-                sender_reply_to: 'newsletter'
-            });
-            await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <anything@possible.com>', '"Anything Possible" <anything@possible.com>');
-        });
-
-        it('[NEWSLETTER] Sends from a generated noreply by default', async function () {
-            await configureNewsletter({
-                sender_email: null,
-                sender_name: 'Anything Possible',
-                sender_reply_to: 'newsletter'
-            });
-            await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <noreply@blog.acme.com>', '"Anything Possible" <noreply@blog.acme.com>');
-        });
-
-        it('[NEWSLETTER] Can set the reply to to the support address', async function () {
-            await configureNewsletter({
-                sender_email: null,
-                sender_name: 'Anything Possible',
-                sender_reply_to: 'support'
-            });
-            await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <noreply@blog.acme.com>', 'support@address.com');
-        });
-
-        it('[NEWSLETTER] Uses site title as default sender name', async function () {
-            await configureNewsletter({
-                sender_email: null,
-                sender_name: null,
-                sender_reply_to: 'newsletter'
-            });
-            await sendNewsletter();
-            await assertFromAddressNewsletter('"Example Site" <noreply@blog.acme.com>', '"Example Site" <noreply@blog.acme.com>');
-        });
-    });
-
-    describe('Custom sending domain', function () {
+    describe('Pro customers with sending domain', function () {
         beforeEach(async function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', 'sendingdomain.com');
@@ -313,7 +242,7 @@ describe('Email addresses', function () {
         });
     });
 
-    describe('Managed email without custom sending domain', function () {
+    describe('Pro customers without custom sending domain', function () {
         beforeEach(async function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', undefined);
@@ -399,7 +328,7 @@ describe('Email addresses', function () {
         });
     });
 
-    describe('Self-hosted', function () {
+    describe('Self-hosters', function () {
         beforeEach(async function () {
             mockLabsEnabled('newEmailAddresses');
             configUtils.set('hostSettings:managedEmail:enabled', false);
