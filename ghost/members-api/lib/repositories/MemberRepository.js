@@ -1119,14 +1119,16 @@ module.exports = class MemberRepository {
                 if (this.isActiveSubscriptionStatus(originalStatus) && (updatedStatus === 'canceled' || updatedStatus === 'expired')) {
                     const context = options?.context || {};
                     const source = this._resolveContextSource(context);
+                    const cancelNow = updatedStatus === 'expired';
                     const canceledAt = new Date(subscription.canceled_at * 1000);
-                    const expiryAt = updatedStatus === 'expired' ? canceledAt : updated.get('current_period_end');
+                    const expiryAt = cancelNow ? canceledAt : updated.get('current_period_end');
 
                     const event = SubscriptionCancelledEvent.create({
                         source,
                         tierId: ghostProduct?.get('id'),
                         memberId: member.id,
                         subscriptionId: updated.get('id'),
+                        cancelNow,
                         canceledAt,
                         expiryAt
                     });

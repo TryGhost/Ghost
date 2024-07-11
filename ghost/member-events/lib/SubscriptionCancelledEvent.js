@@ -4,6 +4,7 @@
  * @prop {string} memberId
  * @prop {string} tierId
  * @prop {string} subscriptionId
+ * @prop {boolean} cancelNow
  * @prop {Date} expiryAt
  * @prop {Date} canceledAt
  */

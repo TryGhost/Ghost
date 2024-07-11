@@ -123,8 +123,7 @@ class StaffService {
                 member,
                 tier,
                 subscription,
-                expiryAt: event.data.expiryAt,
-                canceledAt: event.data.canceledAt
+                ...event.data
             });
         }
     }
