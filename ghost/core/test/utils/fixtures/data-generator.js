@@ -133,7 +133,8 @@ DataGenerator.Content = {
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
             password: 'Sl1m3rson99',
-            profile_image: 'https://example.com/super_photo.jpg'
+            profile_image: 'https://example.com/super_photo.jpg',
+            paid_subscription_canceled_notification: true
         },
         {
             // admin

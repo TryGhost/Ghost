@@ -3,7 +3,7 @@ module.exports = function (data) {
     return `
 Hey there,
 
-A paid member has just cancelled their subscription: "${data.memberData.name}"
+A paid member's subscription has just been canceled: "${data.memberData.name}"
 
 ---
 
