@@ -119,11 +119,11 @@ class StaffService {
                 attribution
             });
         } else if (type === SubscriptionCancelledEvent) {
-            subscription.canceledAt = event.timestamp;
             await this.emails.notifyPaidSubscriptionCanceled({
                 member,
                 tier,
-                subscription
+                subscription,
+                ...event.data
             });
         }
     }
