@@ -28,9 +28,10 @@ describe('UNIT: custom redirects validation', function () {
     });
 
     it('throws for an invalid redirects config having invalid RegExp in from field', function () {
+        const invalidRegex = '/\/invalid_regex\/(\/size\/[a-zA-Z0-9_-.]*\/[a-zA-Z0-9_-.]*\/[0-9]*\/[0-9]*\/)([a-zA-Z0-9_-.]*)/';
         const config = [{
             permanent: true,
-            from: '/invalid_regex/(/size/[a-zA-Z0-9_-.]*/[a-zA-Z0-9_-.]*/[0-9]*/[0-9]*/)([a-zA-Z0-9_-.]*)',
+            from: invalidRegex,
             to: '/'
         }];
 
@@ -38,16 +39,17 @@ describe('UNIT: custom redirects validation', function () {
             validate(config);
             should.fail('should have thrown');
         } catch (err) {
-            err.message.should.equal('Incorrect RegEx in redirects file.');
+            err.message.should.equal(`Invalid RegEx in redirects file: ${invalidRegex}`);
             err.errorDetails.redirect.should.equal(config[0]);
             err.errorDetails.invalid.should.be.true();
         }
     });
 
     it('throws for an invalid redirects config having unsafe RegExp in from field', function () {
+        const unsafeRegex = '^\/episodes\/([a-z0-9-]+)+\/$'; // Unsafe due to the surplus + at the end causing infinite backtracking
         const config = [{
             permanent: true,
-            from: '^\/episodes\/([a-z0-9-]+)+\/$', // Unsafe due to the surplus + at the end causing infinite backtracking
+            from: unsafeRegex,
             to: '/'
         }];
 
@@ -55,7 +57,7 @@ describe('UNIT: custom redirects validation', function () {
             validate(config);
             should.fail('should have thrown');
         } catch (err) {
-            err.message.should.equal('Incorrect RegEx in redirects file.');
+            err.message.should.equal(`Potentially unsafe RegEx in redirects file: ${unsafeRegex}`);
             err.errorDetails.redirect.should.equal(config[0]);
             err.errorDetails.unsafe.should.be.true();
             err.errorDetails.reason.should.equal('hitMaxBacktracks');

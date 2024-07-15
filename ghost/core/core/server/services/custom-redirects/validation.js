@@ -5,7 +5,8 @@ const {isSafePattern} = require('redos-detector');
 
 const messages = {
     redirectsWrongFormat: 'Incorrect redirects file format.',
-    invalidRedirectsFromRegex: 'Incorrect RegEx in redirects file.',
+    invalidRegex: 'Invalid RegEx in redirects file: {regex}',
+    unsafeRegex: 'Potentially unsafe RegEx in redirects file: {regex}',
     redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects'
 };
 
@@ -43,7 +44,7 @@ const validate = (redirects) => {
             new RegExp(redirect.from);
         } catch (error) {
             throw new errors.ValidationError({
-                message: tpl(messages.invalidRedirectsFromRegex),
+                message: tpl(messages.invalidRegex, {regex: redirect.from}),
                 errorDetails: {
                     redirect,
                     invalid: true
@@ -57,7 +58,7 @@ const validate = (redirects) => {
 
         if (analysis.safe === false) {
             throw new errors.ValidationError({
-                message: tpl(messages.invalidRedirectsFromRegex),
+                message: tpl(messages.unsafeRegex, {regex: redirect.from}),
                 errorDetails: {
                     redirect,
                     unsafe: true,
