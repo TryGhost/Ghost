@@ -19,13 +19,7 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm',
-    'recommendations',
-    'listUnsubscribeHeader',
-    'filterEmailDisabled',
     'newEmailAddresses',
-    'portalImprovements',
-    'newsletterExcerpt',
     'internalLinking'
 ];
 
@@ -45,7 +39,6 @@ const ALPHA_FEATURES = [
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
-    'websockets',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',

@@ -17,14 +17,12 @@ export const searchKeywords = {
 
 const GrowthSettings: React.FC = () => {
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
-    const hasRecommendations = useFeatureFlag('recommendations');
-    // const hasOffersLabs = useFeatureFlag('adminXOffers');
     const {config, settings} = useGlobalData();
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Growth'>
-            {hasRecommendations && <Recommendations keywords={searchKeywords.recommendations} />}
+            <Recommendations keywords={searchKeywords.recommendations} />
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
             {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
             {hasTipsAndDonations && <TipsOrDonations keywords={searchKeywords.tips} />}

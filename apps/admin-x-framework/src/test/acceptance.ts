@@ -76,7 +76,6 @@ const defaultLabFlags = {
     themeErrorsNotification: false,
     outboundLinkTagging: false,
     announcementBar: false,
-    signupForm: false,
     members: false
 };
 
