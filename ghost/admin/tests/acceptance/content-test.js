@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
-describe('Acceptance: Content', function () {
+describe.only('Acceptance: Content', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -41,97 +41,105 @@ describe('Acceptance: Content', function () {
             return await authenticateSession();
         });
 
-        it.skip('displays and filters posts', async function () {
-            await visit('/posts');
-            // Not checking request here as it won't be the last request made
-            // Displays all posts + pages
-            expect(findAll('[data-test-post-id]').length, 'all posts count').to.equal(4);
+        describe('displays and filter posts', function () {
+            it('displays posts', async function () {
+                await visit('/posts');
 
-            // show draft posts
-            await selectChoose('[data-test-type-select]', 'Draft posts');
+                const posts = findAll('[data-test-post-id]');
+                // displays all posts by default (all statuses) [no pages]
+                expect(posts.length, 'all posts count').to.equal(4);
 
-            // API request is correct
-            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
-            // Displays draft post
-            expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
-            expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
+                // note: atm the mirage backend doesn't support ordering of the results set
+            });
 
-            // show published posts
-            await selectChoose('[data-test-type-select]', 'Published posts');
+            it('can filter by status', async function () {
+                await visit('/posts');
 
-            // API request is correct
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
-            // Displays three published posts + pages
-            expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
-            expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
-            expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author published post').to.exist;
+                // show draft posts
+                await selectChoose('[data-test-type-select]', 'Draft posts');
 
-            // show scheduled posts
-            await selectChoose('[data-test-type-select]', 'Scheduled posts');
+                // API request is correct
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
+                // Displays draft post
+                expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
+                expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
+    
+                // show published posts
+                await selectChoose('[data-test-type-select]', 'Published posts');
+    
+                // API request is correct
+                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
+                // Displays three published posts + pages
+                expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
+                expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
+                expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author published post').to.exist;
+    
+                // show scheduled posts
+                await selectChoose('[data-test-type-select]', 'Scheduled posts');
+    
+                // API request is correct
+                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
+                // Displays scheduled post
+                expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
+                expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
+    
+                // show all posts
+                await selectChoose('[data-test-type-select]', 'All posts');
+    
+                // API request is correct
+                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[draft,scheduled,published,sent]');
+            });
 
-            // API request is correct
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
-            // Displays scheduled post
-            expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
-            expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
+            it('can filter by author', async function () {
+                await visit('/posts');
 
-            // show all posts
-            await selectChoose('[data-test-type-select]', 'All posts');
+                // show all posts by editor
+                await selectChoose('[data-test-author-select]', editor.name);
 
-            // API request is correct
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[draft,scheduled,published]');
+                // API request is correct
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, '"editor" request status filter')
+                    .to.have.string('status:[draft,scheduled,published,sent]');
+                expect(lastRequest.queryParams.filter, '"editor" request filter param')
+                    .to.have.string(`authors:${editor.slug}`);
+            });
 
-            // show all posts by editor
-            await selectChoose('[data-test-author-select]', editor.name);
+            it('can filter by visibility', async function () {
+                await visit('/posts');
 
-            // API request is correct
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"editor" request status filter')
-                .to.have.string('status:[draft,scheduled,published]');
-            expect(lastRequest.queryParams.filter, '"editor" request filter param')
-                .to.have.string(`authors:${editor.slug}`);
+                await selectChoose('[data-test-visibility-select]', 'Paid members-only');
 
-            // Post status is only visible when members is enabled
-            expect(find('[data-test-visibility-select]'), 'access dropdown before members enabled').to.not.exist;
-            let featureService = this.owner.lookup('service:feature');
-            featureService.set('members', true);
-            await settled();
-            expect(find('[data-test-visibility-select]'), 'access dropdown after members enabled').to.exist;
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, '"visibility" request filter param')
+                    .to.have.string('visibility:[paid,tiers]+status:[draft,scheduled,published,sent]');
+            });
 
-            await selectChoose('[data-test-visibility-select]', 'Paid members-only');
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"visibility" request filter param')
-                .to.have.string('visibility:[paid,tiers]+status:[draft,scheduled,published]');
+            it('can filter by tag', async function () {
+                this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+                this.server.create('tag', {name: 'A - First', slug: 'first'});
 
-            // Displays editor post
-            // TODO: implement "filter" param support and fix mirage post->author association
-            // expect(find('[data-test-post-id]').length, 'editor post count').to.equal(1);
-            // expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
+                await visit('/posts');
+                await clickTrigger('[data-test-tag-select]');
 
-            // TODO: test tags dropdown
-        });
+                let options = findAll('.ember-power-select-option');
 
-        // TODO: skipped due to consistently random failures on Travis
-        // options[0] is undefined
-        // https://github.com/TryGhost/Ghost/issues/10308
-        it.skip('sorts tags filter alphabetically', async function () {
-            this.server.create('tag', {name: 'B - Second', slug: 'second'});
-            this.server.create('tag', {name: 'Z - Last', slug: 'last'});
-            this.server.create('tag', {name: 'A - First', slug: 'first'});
+                // check that dropdown sorts alphabetically
+                expect(options[0].textContent.trim()).to.equal('All tags');
+                expect(options[1].textContent.trim()).to.equal('A - First');
+                expect(options[2].textContent.trim()).to.equal('B - Second');
+                expect(options[3].textContent.trim()).to.equal('Z - Last');
 
-            await visit('/posts');
-            await clickTrigger('[data-test-tag-select]');
-
-            let options = findAll('.ember-power-select-option');
-
-            expect(options[0].textContent.trim()).to.equal('All tags');
-            expect(options[1].textContent.trim()).to.equal('A - First');
-            expect(options[2].textContent.trim()).to.equal('B - Second');
-            expect(options[3].textContent.trim()).to.equal('Z - Last');
+                // select one
+                await selectChoose('[data-test-tag-select]', 'B - Second');
+                // affirm request
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.filter, 'request filter').to.have.string('tag:second');
+            });
         });
 
         it('can add and edit custom views', async function () {
