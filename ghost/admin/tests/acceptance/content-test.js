@@ -1,6 +1,7 @@
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll, settled, visit} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -140,6 +141,78 @@ describe.only('Acceptance: Content', function () {
                 let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 expect(lastRequest.queryParams.filter, 'request filter').to.have.string('tag:second');
             });
+        });
+
+        it.only('can perform bulk actions', async function () {
+            await visit('/posts');
+
+            // get all posts
+            const posts = findAll('[data-test-post-id]');
+            expect(posts.length, 'all posts count').to.equal(4);
+
+            const postThreeContainer = posts[2].parentElement; // draft post
+            const postFourContainer = posts[3].parentElement; // published post
+
+            await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+            await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+        
+            expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
+            expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
+
+            // NOTE: right clicks don't seem to work in these tests
+            //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+            await triggerEvent(postFourContainer, 'contextmenu');
+
+            let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+
+            let buttons = contextMenu.querySelectorAll('button');
+
+            // should have four options for a published post
+            expect(contextMenu, 'context menu').to.exist;
+            expect(buttons.length, 'context menu buttons').to.equal(4);
+            expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
+            expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature');
+            expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+            expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Delete');
+
+            // feature the post
+            await click(buttons[1]);
+
+            // API request is correct - note, we don't mock the actual model updates
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter, 'feature request id').to.equal(`id:['3','4']`);
+            expect(JSON.parse(lastRequest.requestBody).bulk.action, 'feature request action').to.equal('feature');
+            
+            // ensure ui shows these are now featured
+            expect(postThreeContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
+            expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
+
+            // unpublish the post
+            await triggerEvent(postFourContainer, 'contextmenu');
+
+            contextMenu = find('.gh-posts-context-menu');
+            buttons = contextMenu.querySelectorAll('button');
+
+            // should show unfeature option
+            expect(buttons.length, 'context menu buttons').to.equal(4);
+            expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
+            expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unfeature');
+
+            // unpublish post
+            await click(buttons[0]);
+            await click('[data-test-button="confirm"]');
+
+            // await this.pauseTest();
+
+            // API request is correct
+            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter, 'unpublish request id').to.contain(`id:['3','4']`);
+            expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unpublish request action').to.equal('unpublish');
+
+            // ensure ui shows these are now unpublished
+            // gh-content-entry-status shows status
+            expect(postThreeContainer.querySelector('.gh-content-entry-status').textContent.trim(), 'postFour status').to.equal('Draft');
+            expect(postFourContainer.querySelector('.gh-content-entry-status').textContent.trim(), 'postFour status').to.equal('Draft');
         });
 
         it('can add and edit custom views', async function () {

@@ -93,4 +93,12 @@ export default function mockPosts(server) {
     });
 
     server.del('/posts/:id/');
+
+    server.put('/posts/bulk/', function () {
+        // NOTE: this is not currently wired up to modify the mocked data stores 
+        //  *because we do not need it to* as we replicate the actions in the app state
+        // server.put('/posts/bulk/', function ({posts}, {queryParams}) {
+        // const action = JSON.parse(this.request.requestBody).bulk.action;
+        // const ids = extractFilterParam('id', queryParams.filter);
+    });
 }
