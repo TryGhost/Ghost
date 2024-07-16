@@ -100,9 +100,7 @@ export default function mockPosts(server) {
         posts.find(ids).destroy();
     });
 
-    server.put('/posts/bulk/', function ({posts, tags}, {queryParams, requestBody}) {
-        console.log(`> API -- bulk post action`);
-        
+    server.put('/posts/bulk/', function ({tags}, {requestBody}) {
         const bulk = JSON.parse(requestBody).bulk;
         const action = bulk.action;
         // const ids = extractFilterParam('id', queryParams.filter);

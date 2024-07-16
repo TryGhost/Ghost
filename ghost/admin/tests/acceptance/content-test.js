@@ -1,7 +1,7 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, typeIn, triggerKeyEvent, visit} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -195,7 +195,7 @@ describe('Acceptance: Content', function () {
             });
 
             describe('multiple posts', function () {
-                it.skip('can feature and unfeature posts', async function () {
+                it('can feature and unfeature posts', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -255,7 +255,7 @@ describe('Acceptance: Content', function () {
                     expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.not.exist;
                 });
 
-                it.skip('can add a tag to multiple posts', async function () {
+                it('can add a tag to multiple posts', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -301,7 +301,7 @@ describe('Acceptance: Content', function () {
                 
                 // NOTE: we do not seem to be loading the settings properly into the membersutil service, such that the members
                 //  service doesn't think members are enabled
-                it.skip('can change access to multiple posts', async function () {
+                it('can change access to multiple posts', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -328,8 +328,7 @@ describe('Acceptance: Content', function () {
                     // change access to the posts
                     let buttons = contextMenu.querySelectorAll('button');
                     let changeAccessButton = findButton('Change access', buttons);
-                    console.log(`changeAccessButton`, changeAccessButton);
-                    await this.pauseTest();
+
                     expect(changeAccessButton, 'change access button').to.exist;
                     await click(changeAccessButton);
                     
@@ -337,7 +336,7 @@ describe('Acceptance: Content', function () {
                     expect(changeAccessModal, 'change access modal').to.exist;
                 });
 
-                it.skip('can unpublish posts', async function () {
+                it('can unpublish posts', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -381,7 +380,7 @@ describe('Acceptance: Content', function () {
                     expect(postFourContainer.querySelector('.gh-content-entry-status').textContent, 'postThree status').to.contain('Draft');
                 });
 
-                it.skip('can delete posts', async function () {
+                it('can delete posts', async function () {
                     await visit('/posts');
 
                     // get all posts
