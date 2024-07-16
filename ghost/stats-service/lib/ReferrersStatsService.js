@@ -105,9 +105,9 @@ class ReferrersStatsService {
             .select(knex.raw(`DATE(created_at) as date`))
             .select(knex.raw(`COUNT(*) as paid_conversions`))
             .select(knex.raw(`referrer_source as source`))
+            .where('created_at', '>=', knex.raw(`DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)`))
             .groupBy('date', 'referrer_source')
             .orderBy('date');
-
         return rows;
     }
 
@@ -120,9 +120,9 @@ class ReferrersStatsService {
             .select(knex.raw(`DATE(created_at) as date`))
             .select(knex.raw(`COUNT(*) as signups`))
             .select(knex.raw(`referrer_source as source`))
+            .where('created_at', '>=', knex.raw(`DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)`))
             .groupBy('date', 'referrer_source')
             .orderBy('date');
-
         return rows;
     }
 }
