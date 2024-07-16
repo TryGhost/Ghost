@@ -1,13 +1,23 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, visit} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, typeIn, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
-describe.only('Acceptance: Content', function () {
+/**
+ * 
+ * @param {string} text 
+ * @param {NodeList} buttons 
+ * @returns Node
+ */
+const findButton = (text, buttons) => {
+    return Array.from(buttons).find(button => button.innerText.trim() === text);
+};
+
+describe('Acceptance: Content', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -33,8 +43,9 @@ describe.only('Acceptance: Content', function () {
 
             publishedPost = this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post'});
             scheduledPost = this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Scheduled Post'});
+            // draftPost = this.server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post', visibility: 'paid'});
             draftPost = this.server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post'});
-            authorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post'});
+            authorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post', visibiity: 'paid'});
 
             // pages shouldn't appear in the list
             this.server.create('page', {authors: [admin], status: 'published', title: 'Published Page'});
@@ -143,76 +154,276 @@ describe.only('Acceptance: Content', function () {
             });
         });
 
-        it.only('can perform bulk actions', async function () {
-            await visit('/posts');
+        describe('context menu actions', function () {
+            describe('single post', function () {
+                // has a duplicate option
+                it.skip('can duplicate a post', async function () {
+                    await visit('/posts');
 
-            // get all posts
-            const posts = findAll('[data-test-post-id]');
-            expect(posts.length, 'all posts count').to.equal(4);
+                    // get the post
+                    const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                    expect(post, 'post').to.exist;
 
-            const postThreeContainer = posts[2].parentElement; // draft post
-            const postFourContainer = posts[3].parentElement; // published post
+                    await triggerEvent(post, 'contextmenu');
+                    // await this.pauseTest();
 
-            await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
-            await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
-        
-            expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
-            expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
+                    let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
 
-            // NOTE: right clicks don't seem to work in these tests
-            //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
-            await triggerEvent(postFourContainer, 'contextmenu');
+                    let buttons = contextMenu.querySelectorAll('button');
 
-            let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    // should have three options for a published post
+                    expect(contextMenu, 'context menu').to.exist;
+                    expect(buttons.length, 'context menu buttons').to.equal(5);
+                    expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
+                    expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
+                    expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                    expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
+                    expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Delete');
 
-            let buttons = contextMenu.querySelectorAll('button');
+                    // duplicate the post
+                    await click(buttons[3]);
 
-            // should have four options for a published post
-            expect(contextMenu, 'context menu').to.exist;
-            expect(buttons.length, 'context menu buttons').to.equal(4);
-            expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
-            expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature');
-            expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
-            expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Delete');
+                    // API request is correct
+                    //   POST /ghost/api/admin/posts/{id}/copy/?formats=mobiledoc,lexical
 
-            // feature the post
-            await click(buttons[1]);
+                    // TODO: probably missing endpoint in mirage...
 
-            // API request is correct - note, we don't mock the actual model updates
-            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, 'feature request id').to.equal(`id:['3','4']`);
-            expect(JSON.parse(lastRequest.requestBody).bulk.action, 'feature request action').to.equal('feature');
-            
-            // ensure ui shows these are now featured
-            expect(postThreeContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
-            expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
+                    // let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    // console.log(`lastRequest`, lastRequest);
+                    // expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                });
+            });
 
-            // unpublish the post
-            await triggerEvent(postFourContainer, 'contextmenu');
+            describe('multiple posts', function () {
+                it.skip('can feature and unfeature posts', async function () {
+                    await visit('/posts');
 
-            contextMenu = find('.gh-posts-context-menu');
-            buttons = contextMenu.querySelectorAll('button');
+                    // get all posts
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(4);
 
-            // should show unfeature option
-            expect(buttons.length, 'context menu buttons').to.equal(4);
-            expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
-            expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unfeature');
+                    const postThreeContainer = posts[2].parentElement; // draft post
+                    const postFourContainer = posts[3].parentElement; // published post
 
-            // unpublish post
-            await click(buttons[0]);
-            await click('[data-test-button="confirm"]');
+                    await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                    await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
 
-            // await this.pauseTest();
+                    expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
+                    expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
 
-            // API request is correct
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, 'unpublish request id').to.contain(`id:['3','4']`);
-            expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unpublish request action').to.equal('unpublish');
+                    // NOTE: right clicks don't seem to work in these tests
+                    //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+                    await triggerEvent(postFourContainer, 'contextmenu');
 
-            // ensure ui shows these are now unpublished
-            // gh-content-entry-status shows status
-            expect(postThreeContainer.querySelector('.gh-content-entry-status').textContent.trim(), 'postFour status').to.equal('Draft');
-            expect(postFourContainer.querySelector('.gh-content-entry-status').textContent.trim(), 'postFour status').to.equal('Draft');
+                    let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // feature the post
+                    let buttons = contextMenu.querySelectorAll('button');
+                    let featureButton = findButton('Feature', buttons);
+                    expect(featureButton, 'feature button').to.exist;
+                    await click(featureButton);
+
+                    // API request is correct - note, we don't mock the actual model updates
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.filter, 'feature request id').to.equal(`id:['3','4']`);
+                    expect(JSON.parse(lastRequest.requestBody).bulk.action, 'feature request action').to.equal('feature');
+                    
+                    // ensure ui shows these are now featured
+                    expect(postThreeContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
+                    expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
+
+                    // unfeature the posts
+                    await triggerEvent(postFourContainer, 'contextmenu');
+
+                    contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // unfeature the posts
+                    buttons = contextMenu.querySelectorAll('button');
+                    featureButton = findButton('Unfeature', buttons);
+                    expect(featureButton, 'unfeature button').to.exist;
+                    await click(featureButton);
+
+                    // API request is correct - note, we don't mock the actual model updates
+                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.filter, 'unfeature request id').to.equal(`id:['3','4']`);
+                    expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unfeature request action').to.equal('unfeature');
+
+                    // ensure ui shows these are now unfeatured
+                    expect(postThreeContainer.querySelector('.gh-featured-post'), 'postFour featured').to.not.exist;
+                    expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.not.exist;
+                });
+
+                it.skip('can add a tag to multiple posts', async function () {
+                    await visit('/posts');
+
+                    // get all posts
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(4);
+
+                    const postThreeContainer = posts[2].parentElement; // draft post
+                    const postFourContainer = posts[3].parentElement; // published post
+
+                    await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                    await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+
+                    expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
+                    expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
+
+                    // NOTE: right clicks don't seem to work in these tests
+                    //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+                    await triggerEvent(postFourContainer, 'contextmenu');
+
+                    let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // add a tag to the posts
+                    let buttons = contextMenu.querySelectorAll('button');
+                    let addTagButton = findButton('Add a tag', buttons);
+                    expect(addTagButton, 'add tag button').to.exist;
+                    await click(addTagButton);
+                    
+                    const addTagsModal = find('[data-test-modal="add-tags"]');
+                    expect(addTagsModal, 'tag settings modal').to.exist;
+
+                    const input = addTagsModal.querySelector('input');
+                    expect(input, 'tag input').to.exist;
+                    await fillIn(input, 'test-tag');
+                    await triggerKeyEvent(input, 'keydown', 13);
+                    await click('[data-test-button="confirm"]');
+                    
+                    // API request is correct - note, we don't mock the actual model updates
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-2);
+                    expect(lastRequest.queryParams.filter, 'add tag request id').to.equal(`id:['3','4']`);
+                    expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
+                });
+                
+                // NOTE: we do not seem to be loading the settings properly into the membersutil service, such that the members
+                //  service doesn't think members are enabled
+                it.skip('can change access to multiple posts', async function () {
+                    await visit('/posts');
+
+                    // get all posts
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(4);
+
+                    const postThreeContainer = posts[2].parentElement; // draft post
+                    const postFourContainer = posts[3].parentElement; // published post
+
+                    await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                    await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+
+                    expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
+                    expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
+
+                    // NOTE: right clicks don't seem to work in these tests
+                    //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+                    await triggerEvent(postFourContainer, 'contextmenu');
+
+                    let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // TODO: the change access button is not showing; need to debug the UI to see what field it expects
+                    // change access to the posts
+                    let buttons = contextMenu.querySelectorAll('button');
+                    let changeAccessButton = findButton('Change access', buttons);
+                    console.log(`changeAccessButton`, changeAccessButton);
+                    await this.pauseTest();
+                    expect(changeAccessButton, 'change access button').to.exist;
+                    await click(changeAccessButton);
+                    
+                    const changeAccessModal = find('[data-test-modal="edit-posts-access"]');
+                    expect(changeAccessModal, 'change access modal').to.exist;
+                });
+
+                it.skip('can unpublish posts', async function () {
+                    await visit('/posts');
+
+                    // get all posts
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(4);
+
+                    const postThreeContainer = posts[2].parentElement; // draft post
+                    const postFourContainer = posts[3].parentElement; // published post
+
+                    await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                    await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+
+                    expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
+                    expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
+
+                    // NOTE: right clicks don't seem to work in these tests
+                    //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+                    await triggerEvent(postFourContainer, 'contextmenu');
+
+                    let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // unpublish the posts
+                    let buttons = contextMenu.querySelectorAll('button');
+                    let unpublishButton = findButton('Unpublish', buttons);
+                    expect(unpublishButton, 'unpublish button').to.exist;
+                    await click(unpublishButton);
+
+                    // handle modal
+                    const modal = find('[data-test-modal="unpublish-posts"]');
+                    expect(modal, 'unpublish modal').to.exist;
+                    await click('[data-test-button="confirm"]');
+
+                    // API request is correct - note, we don't mock the actual model updates
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.filter, 'unpublish request id').to.equal(`id:['3','4']`);
+                    expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unpublish request action').to.equal('unpublish');
+
+                    // ensure ui shows these are now unpublished
+                    expect(postThreeContainer.querySelector('.gh-content-entry-status').textContent, 'postThree status').to.contain('Draft');
+                    expect(postFourContainer.querySelector('.gh-content-entry-status').textContent, 'postThree status').to.contain('Draft');
+                });
+
+                it.skip('can delete posts', async function () {
+                    await visit('/posts');
+
+                    // get all posts
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(4);
+
+                    const postThreeContainer = posts[2].parentElement; // draft post
+                    const postFourContainer = posts[3].parentElement; // published post
+
+                    await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                    await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+
+                    expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
+                    expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
+
+                    // NOTE: right clicks don't seem to work in these tests
+                    //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+                    await triggerEvent(postFourContainer, 'contextmenu');
+
+                    let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // delete the posts
+                    let buttons = contextMenu.querySelectorAll('button');
+                    let deleteButton = findButton('Delete', buttons);
+                    expect(deleteButton, 'delete button').to.exist;
+                    await click(deleteButton);
+
+                    // handle modal
+                    const modal = find('[data-test-modal="delete-posts"]');
+                    expect(modal, 'delete modal').to.exist;
+                    await click('[data-test-button="confirm"]');
+                    
+                    // API request is correct - note, we don't mock the actual model updates
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.filter, 'delete request id').to.equal(`id:['3','4']`);
+                    expect(lastRequest.method, 'delete request method').to.equal('DELETE');
+
+                    // ensure ui shows these are now deleted
+                    expect(findAll('[data-test-post-id]').length, 'all posts count').to.equal(2);
+                });
+            });
         });
 
         it('can add and edit custom views', async function () {

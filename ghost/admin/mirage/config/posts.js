@@ -94,11 +94,32 @@ export default function mockPosts(server) {
 
     server.del('/posts/:id/');
 
-    server.put('/posts/bulk/', function () {
-        // NOTE: this is not currently wired up to modify the mocked data stores 
-        //  *because we do not need it to* as we replicate the actions in the app state
-        // server.put('/posts/bulk/', function ({posts}, {queryParams}) {
-        // const action = JSON.parse(this.request.requestBody).bulk.action;
+    server.del('/posts/', function ({posts}, {queryParams}) {
+        let ids = extractFilterParam('id', queryParams.filter);
+
+        posts.find(ids).destroy();
+    });
+
+    server.put('/posts/bulk/', function ({posts, tags}, {queryParams, requestBody}) {
+        console.log(`> API -- bulk post action`);
+        
+        const bulk = JSON.parse(requestBody).bulk;
+        const action = bulk.action;
         // const ids = extractFilterParam('id', queryParams.filter);
+
+        if (action === 'addTag') {
+            // create tag so we have an id from the server
+            const newTags = bulk.meta.tags;
+            
+            // check applied tags to see if any new ones should be created
+            newTags.forEach((tag) => {
+                if (!tag.id) {
+                    tags.create(tag);
+                }
+            });
+            // TODO: update the actual posts in the mock db
+            // const postsToUpdate = posts.find(ids);
+            // getting the posts is fine, but within this we CANNOT manipulate them (???) not even iterate with .forEach
+        }
     });
 }
