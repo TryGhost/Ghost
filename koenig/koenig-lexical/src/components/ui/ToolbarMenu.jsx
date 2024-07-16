@@ -68,7 +68,7 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, shortcutKeys, s
                 type="button"
                 onClick={onClick}
             >
-                <Icon className={`size-4 overflow-visible transition dark:text-white ${secondary ? 'stroke-2' : 'stroke-[2.5]'} ${isActive ? 'text-green-600 dark:text-green-600' : 'text-black dark:text-white'}`} />
+                <Icon className={`size-4 overflow-visible transition ${secondary ? 'stroke-2' : 'stroke-[2.5]'} ${isActive ? 'text-green-600 dark:text-green-600' : 'text-black dark:text-white'}`} />
             </button>
             <Tooltip label={label} shortcutKeys={shortcutKeys} />
         </li>
