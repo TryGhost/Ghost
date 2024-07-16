@@ -93,4 +93,31 @@ export default function mockPosts(server) {
     });
 
     server.del('/posts/:id/');
+
+    server.del('/posts/', function ({posts}, {queryParams}) {
+        let ids = extractFilterParam('id', queryParams.filter);
+
+        posts.find(ids).destroy();
+    });
+
+    server.put('/posts/bulk/', function ({tags}, {requestBody}) {
+        const bulk = JSON.parse(requestBody).bulk;
+        const action = bulk.action;
+        // const ids = extractFilterParam('id', queryParams.filter);
+
+        if (action === 'addTag') {
+            // create tag so we have an id from the server
+            const newTags = bulk.meta.tags;
+            
+            // check applied tags to see if any new ones should be created
+            newTags.forEach((tag) => {
+                if (!tag.id) {
+                    tags.create(tag);
+                }
+            });
+            // TODO: update the actual posts in the mock db
+            // const postsToUpdate = posts.find(ids);
+            // getting the posts is fine, but within this we CANNOT manipulate them (???) not even iterate with .forEach
+        }
+    });
 }
