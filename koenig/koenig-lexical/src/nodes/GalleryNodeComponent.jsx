@@ -88,7 +88,11 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         const uploadResult = await imageUploader.upload(strippedFiles);
         const uploadedImages = [...newImages];
 
-        // TODO: handle upload failures
+        if (!uploadResult) {
+            setErrorMessage('Something went wrong while uploading images. Please refresh the page and try again');
+            return;
+        }
+
         uploadResult.forEach((result) => {
             const image = uploadedImages.find(i => i.fileName === result.fileName);
 
