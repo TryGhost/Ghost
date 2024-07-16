@@ -40,16 +40,16 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     model(params) {
         const user = this.session.user;
-        let queryParams = {};
         let filterParams = {tag: params.tag, visibility: params.visibility};
         let paginationParams = {
             perPageParam: 'limit',
             totalPagesParam: 'meta.pagination.pages'
         };
-
+        
         // type filters are actually mapping statuses
         assign(filterParams, this._getTypeFilters(params.type));
-
+        let queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
+        
         if (params.type === 'featured') {
             filterParams.featured = true;
         }
