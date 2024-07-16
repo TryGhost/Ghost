@@ -337,6 +337,11 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                 PASTE_COMMAND,
                 (clipboardEvent) => {
                     const selection = $getSelection();
+
+                    if (!selection || document.activeElement !== editor.getRootElement()) {
+                        return false;
+                    }
+
                     const anchorNode = selection.anchor.getNode();
                     if ($isRangeSelection(selection) && ($isAtLinkNode(anchorNode) || $isAtLinkSearchNode(anchorNode))) {
                         clipboardEvent.preventDefault();

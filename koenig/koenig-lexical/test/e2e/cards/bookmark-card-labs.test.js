@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Bookmark card (labs: internalLinking)', async () => {
@@ -333,6 +333,20 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
         await assertHTML(page, html`
             <p><br /></p>
         `, {ignoreCardContents: true});
+    });
+
+    // AtLinkPlugin added a PASTE_COMMAND handler which didn't account for
+    // pastes occurring in input fields inside the main editor resulting in a TypeError
+    test('can paste into URL input', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'bookmark'});
+
+        const urlInput = await page.getByTestId('bookmark-url');
+        await expect(urlInput).toBeFocused();
+
+        await pasteText(page, 'https://ghost.org/');
+
+        expect(errors).toEqual([]);
     });
 
     // Searchable URL input ----------------------------------------------------
