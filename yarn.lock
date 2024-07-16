@@ -8078,10 +8078,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.3.8":
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.8.tgz#b635bc12ae84fca5c2973f3c213ee1b13129dae6"
-  integrity sha512-z8LmMYrOaAVD7BP8vUEidYfZ9gbupCaR2KPRBDHvAOl49AE4Mofy44aiEX3sejVJl1H4qwcPxzngO0pQeiZlaQ==
+"@tryghost/koenig-lexical@1.3.9":
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.9.tgz#0266a53c9aecd77e2b8297e9c026aaad939a71c6"
+  integrity sha512-GTA0FCkuBGO61dAR7MdRCK+G5XWzqffSVjGkLy00vi4MNAKqvgoAxf/Lnc71nkut7c1z2Y6z+ad0XahFgEc2oA==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
