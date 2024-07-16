@@ -109,16 +109,13 @@ describe('ReferrersStatsService', function () {
 
             const startDate = DateTime.now().minus({months: 1});
 
-            // Generate expected dates
             const expectedDates = [];
             for (let i = 0; i < 10; i++) {
                 expectedDates.push(startDate.plus({days: i}).toISODate());
             }
 
-            // Assertions
             assert.deepEqual(results.data.map(result => result.date), expectedDates);
 
-            // Finder function calls with dynamic dates
             const firstDayCounts = results.data.find(finder('Twitter', expectedDates[0]));
             const secondDayCounts = results.data.find(finder('Ghost Newsletter', expectedDates[1]));
             const thirdDayCounts = results.data.find(finder('Ghost Explore', expectedDates[2]));

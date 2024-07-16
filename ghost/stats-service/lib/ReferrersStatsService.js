@@ -109,7 +109,7 @@ class ReferrersStatsService {
             .where('created_at', '>=', ninetyDaysAgo)
             .groupBy('date', 'referrer_source')
             .orderBy('date');
-        
+
         return rows;
     }
 
