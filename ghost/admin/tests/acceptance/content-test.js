@@ -562,8 +562,6 @@ describe('Acceptance: Content', function () {
 
             await visit('/posts');
 
-            this.pauseTest();
-
             // nav bar contains default + custom views
             expect(find('[data-test-nav-custom="posts-Drafts"]')).to.exist;
             expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.exist;
