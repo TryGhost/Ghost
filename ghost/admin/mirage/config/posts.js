@@ -70,7 +70,6 @@ export default function mockPosts(server) {
         return posts.create(attrs);
     });
 
-    // TODO: handle authors filter
     server.get('/posts/', getPosts);
 
     server.get('/posts/:id/', function ({posts}, {params}) {
