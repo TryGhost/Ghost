@@ -17,6 +17,8 @@ const findButton = (text, buttons) => {
     return Array.from(buttons).find(button => button.innerText.trim() === text);
 };
 
+// NOTE: With accommodations for faster loading of posts in the UI, the requests to fetch the posts have been split into separate requests based
+//  on the status of the post. This means that the tests for filtering by status will have multiple requests to check against.
 describe('Acceptance: Content', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
@@ -43,7 +45,6 @@ describe('Acceptance: Content', function () {
 
             publishedPost = this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post'});
             scheduledPost = this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Scheduled Post'});
-            // draftPost = this.server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post', visibility: 'paid'});
             draftPost = this.server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post'});
             authorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post', visibiity: 'paid'});
 
@@ -61,7 +62,17 @@ describe('Acceptance: Content', function () {
                 // displays all posts by default (all statuses) [no pages]
                 expect(posts.length, 'all posts count').to.equal(4);
 
-                // note: atm the mirage backend doesn't support ordering of the results set
+                // make sure display is scheduled > draft > published/sent
+                expect(posts[0].querySelector('.gh-content-entry-title').textContent, 'post 1 title').to.contain('Scheduled Post');
+                expect(posts[1].querySelector('.gh-content-entry-title').textContent, 'post 2 title').to.contain('Draft Post');
+                expect(posts[2].querySelector('.gh-content-entry-title').textContent, 'post 3 title').to.contain('Published Post');
+                expect(posts[3].querySelector('.gh-content-entry-title').textContent, 'post 4 title').to.contain('Editor Published Post');
+                
+                // check API requests
+                let lastRequests = this.server.pretender.handledRequests.filter(request => request.url.includes('/posts/'));
+                expect(lastRequests[0].queryParams.filter, 'scheduled request filter').to.have.string('status:scheduled');
+                expect(lastRequests[1].queryParams.filter, 'drafts request filter').to.have.string('status:draft');
+                expect(lastRequests[2].queryParams.filter, 'published request filter').to.have.string('status:[published,sent]');
             });
 
             it('can filter by status', async function () {
@@ -97,13 +108,6 @@ describe('Acceptance: Content', function () {
                 // Displays scheduled post
                 expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
                 expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
-    
-                // show all posts
-                await selectChoose('[data-test-type-select]', 'All posts');
-    
-                // API request is correct
-                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[draft,scheduled,published,sent]');
             });
 
             it('can filter by author', async function () {
@@ -114,9 +118,9 @@ describe('Acceptance: Content', function () {
 
                 // API request is correct
                 let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"editor" request status filter')
+                expect(lastRequest.queryParams.allFilter, '"editor" request status filter')
                     .to.have.string('status:[draft,scheduled,published,sent]');
-                expect(lastRequest.queryParams.filter, '"editor" request filter param')
+                expect(lastRequest.queryParams.allFilter, '"editor" request filter param')
                     .to.have.string(`authors:${editor.slug}`);
             });
 
@@ -126,8 +130,8 @@ describe('Acceptance: Content', function () {
                 await selectChoose('[data-test-visibility-select]', 'Paid members-only');
 
                 let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"visibility" request filter param')
-                    .to.have.string('visibility:[paid,tiers]+status:[draft,scheduled,published,sent]');
+                expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
+                    .to.have.string('visibility:[paid,tiers]');
             });
 
             it('can filter by tag', async function () {
@@ -150,7 +154,7 @@ describe('Acceptance: Content', function () {
                 await selectChoose('[data-test-tag-select]', 'B - Second');
                 // affirm request
                 let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, 'request filter').to.have.string('tag:second');
+                expect(lastRequest.queryParams.allFilter, '"tag" request filter param').to.have.string('tag:second');
             });
         });
 
@@ -226,7 +230,7 @@ describe('Acceptance: Content', function () {
 
                     // API request is correct - note, we don't mock the actual model updates
                     let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, 'feature request id').to.equal(`id:['3','4']`);
+                    expect(lastRequest.queryParams.filter, 'feature request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                     expect(JSON.parse(lastRequest.requestBody).bulk.action, 'feature request action').to.equal('feature');
                     
                     // ensure ui shows these are now featured
@@ -247,7 +251,7 @@ describe('Acceptance: Content', function () {
 
                     // API request is correct - note, we don't mock the actual model updates
                     [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, 'unfeature request id').to.equal(`id:['3','4']`);
+                    expect(lastRequest.queryParams.filter, 'unfeature request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                     expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unfeature request action').to.equal('unfeature');
 
                     // ensure ui shows these are now unfeatured
@@ -295,7 +299,7 @@ describe('Acceptance: Content', function () {
                     
                     // API request is correct - note, we don't mock the actual model updates
                     let [lastRequest] = this.server.pretender.handledRequests.slice(-2);
-                    expect(lastRequest.queryParams.filter, 'add tag request id').to.equal(`id:['3','4']`);
+                    expect(lastRequest.queryParams.filter, 'add tag request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                     expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
                 });
                 
@@ -372,7 +376,7 @@ describe('Acceptance: Content', function () {
 
                     // API request is correct - note, we don't mock the actual model updates
                     let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, 'unpublish request id').to.equal(`id:['3','4']`);
+                    expect(lastRequest.queryParams.filter, 'unpublish request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                     expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unpublish request action').to.equal('unpublish');
 
                     // ensure ui shows these are now unpublished
@@ -416,7 +420,7 @@ describe('Acceptance: Content', function () {
                     
                     // API request is correct - note, we don't mock the actual model updates
                     let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, 'delete request id').to.equal(`id:['3','4']`);
+                    expect(lastRequest.queryParams.filter, 'delete request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                     expect(lastRequest.method, 'delete request method').to.equal('DELETE');
 
                     // ensure ui shows these are now deleted

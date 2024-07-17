@@ -48,25 +48,25 @@ export default class PostsRoute extends AuthenticatedRoute {
         
         // type filters are actually mapping statuses
         assign(filterParams, this._getTypeFilters(params.type));
-        let queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
         
         if (params.type === 'featured') {
             filterParams.featured = true;
         }
-
+        
         // authors and contributors can only view their own posts
         if (user.isAuthor) {
             filterParams.authors = user.slug;
         } else if (user.isContributor) {
             filterParams.authors = user.slug;
-        // otherwise we need to filter by author if present
+            // otherwise we need to filter by author if present
         } else if (params.author) {
             filterParams.authors = params.author;
         }
-
+        
         let perPage = this.perPage;
-
+        
         const filterStatuses = filterParams.status;
+        let queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
         let models = {};
         if (filterStatuses.includes('scheduled')) {
             let scheduledPostsParams = {...queryParams, order: params.order || 'published_at desc', filter: this._filterString({...filterParams, status: 'scheduled'})};
