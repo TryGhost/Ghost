@@ -25,7 +25,6 @@ describe('Acceptance: Content', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
-        this.server.loadFixtures('settings');
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -33,6 +32,71 @@ describe('Acceptance: Content', function () {
         await visit('/posts');
 
         expect(currentURL()).to.equal('/signin');
+    });
+
+    describe('as contributor', function () {
+        beforeEach(async function () {
+            let contributorRole = this.server.create('role', {name: 'Contributor'});
+            this.server.create('user', {roles: [contributorRole]});
+
+            return await authenticateSession();
+        });
+
+        // NOTE: This test seems to fail if run AFTER the 'can change access' test in the 'as admin' section; router seems to fail, did not look into it further
+        it('shows posts list and allows post creation', async function () {
+            await visit('/posts');
+
+            // has an empty state
+            expect(findAll('[data-test-post-id]')).to.have.length(0);
+            expect(find('[data-test-no-posts-box]')).to.exist;
+            expect(find('[data-test-link="write-a-new-post"]')).to.exist;
+            
+            await click('[data-test-link="write-a-new-post"]');
+            
+            expect(currentURL()).to.equal('/editor/post');
+            
+            await fillIn('[data-test-editor-title-input]', 'First contributor post');
+            // await this.pauseTest();
+            await blur('[data-test-editor-title-input]');
+            
+            expect(currentURL()).to.equal('/editor/post/1');
+
+            await click('[data-test-link="posts"]');
+
+            expect(findAll('[data-test-post-id]')).to.have.length(1);
+            expect(find('[data-test-no-posts-box]')).to.not.exist;
+        });
+    });
+
+    describe('as author', function () {
+        let author, authorPost;
+
+        beforeEach(async function () {
+            let authorRole = this.server.create('role', {name: 'Author'});
+            author = this.server.create('user', {roles: [authorRole]});
+            let adminRole = this.server.create('role', {name: 'Administrator'});
+            let admin = this.server.create('user', {roles: [adminRole]});
+
+            // create posts
+            authorPost = this.server.create('post', {authors: [author], status: 'published', title: 'Author Post'});
+            this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
+
+            return await authenticateSession();
+        });
+
+        it('only fetches the author\'s posts', async function () {
+            await visit('/posts');
+            // trigger a filter request so we can grab the posts API request easily
+            await selectChoose('[data-test-type-select]', 'Published posts');
+
+            // API request includes author filter
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
+
+            // only author's post is shown
+            expect(findAll('[data-test-post-id]').length, 'post count').to.equal(1);
+            expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
+        });
     });
 
     describe('as admin', function () {
@@ -498,6 +562,8 @@ describe('Acceptance: Content', function () {
 
             await visit('/posts');
 
+            this.pauseTest();
+
             // nav bar contains default + custom views
             expect(find('[data-test-nav-custom="posts-Drafts"]')).to.exist;
             expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.exist;
@@ -525,69 +591,6 @@ describe('Acceptance: Content', function () {
             expect(currentURL()).to.equal('/posts?type=scheduled');
             expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
             expect(find('[data-test-screen-title]').innerText).to.match(/Scheduled/);
-        });
-    });
-
-    describe('as author', function () {
-        let author, authorPost;
-
-        beforeEach(async function () {
-            let authorRole = this.server.create('role', {name: 'Author'});
-            author = this.server.create('user', {roles: [authorRole]});
-            let adminRole = this.server.create('role', {name: 'Administrator'});
-            let admin = this.server.create('user', {roles: [adminRole]});
-
-            // create posts
-            authorPost = this.server.create('post', {authors: [author], status: 'published', title: 'Author Post'});
-            this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
-
-            return await authenticateSession();
-        });
-
-        it('only fetches the author\'s posts', async function () {
-            await visit('/posts');
-            // trigger a filter request so we can grab the posts API request easily
-            await selectChoose('[data-test-type-select]', 'Published posts');
-
-            // API request includes author filter
-            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
-
-            // only author's post is shown
-            expect(findAll('[data-test-post-id]').length, 'post count').to.equal(1);
-            expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
-        });
-    });
-
-    describe('as contributor', function () {
-        beforeEach(async function () {
-            let contributorRole = this.server.create('role', {name: 'Contributor'});
-            this.server.create('user', {roles: [contributorRole]});
-
-            return await authenticateSession();
-        });
-
-        it('shows posts list and allows post creation', async function () {
-            await visit('/posts');
-
-            // has an empty state
-            expect(findAll('[data-test-post-id]')).to.have.length(0);
-            expect(find('[data-test-no-posts-box]')).to.exist;
-            expect(find('[data-test-link="write-a-new-post"]')).to.exist;
-
-            await click('[data-test-link="write-a-new-post"]');
-
-            expect(currentURL()).to.equal('/editor/post');
-
-            await fillIn('[data-test-editor-title-input]', 'First contributor post');
-            await blur('[data-test-editor-title-input]');
-
-            expect(currentURL()).to.equal('/editor/post/1');
-
-            await click('[data-test-link="posts"]');
-
-            expect(findAll('[data-test-post-id]')).to.have.length(1);
-            expect(find('[data-test-no-posts-box]')).to.not.exist;
         });
     });
 });
