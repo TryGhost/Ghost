@@ -410,7 +410,7 @@ describe('lib/image: image size', function () {
             const imageSize = new ImageSize({config: {
                 get: (key) => {
                     if (key === 'times:getImageSizeTimeoutInMS') {
-                        return 10;
+                        return 50;
                     }
                 }
             }, tpl: {}, storage: {}, storageUtils: {
@@ -535,7 +535,7 @@ describe('lib/image: image size', function () {
             }, urlUtils: {}, request: {},
             probe(reqUrl, options) {
                 // simulate probe being unresponsive by making the timeout longer than the request
-                return probe(reqUrl, {...options, response_timeout: 10});
+                return probe(reqUrl, {...options, response_timeout: 50});
             }});
 
             imageSize.getImageSizeFromUrl(url)
