@@ -27648,13 +27648,6 @@ redis-parser@^3.0.0:
   dependencies:
     redis-errors "^1.0.0"
 
-redos-detector@5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/redos-detector/-/redos-detector-5.1.0.tgz#67660c896a48490e80b35557f876a529680f0f8d"
-  integrity sha512-08en/ij0//HwKZdKlelRZGQKmQhmKMQPVJPD+1THfYm64mZhLPOG0NBa47+DrOF53DyaRsCFyD7JHJaYITnt9g==
-  dependencies:
-    regjsparser "0.10.0"
-
 reflect-metadata@0.1.14:
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/reflect-metadata/-/reflect-metadata-0.1.14.tgz#24cf721fe60677146bb77eeb0e1f9dece3d65859"
@@ -27775,13 +27768,6 @@ regjsgen@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/regjsgen/-/regjsgen-0.2.0.tgz#6c016adeac554f75823fe37ac05b92d5a4edb1f7"
   integrity sha512-x+Y3yA24uF68m5GA+tBjbGYo64xXVJpbToBaWCoSNSc1hdk6dfctaRWrNFTVJZIIhL5GxW8zwjoixbnifnK59g==
-
-regjsparser@0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/regjsparser/-/regjsparser-0.10.0.tgz#b1ed26051736b436f22fdec1c8f72635f9f44892"
-  integrity sha512-qx+xQGZVsy55CH0a1hiVwHmqjLryfh7wQyF5HO07XJ9f7dQMY/gPQHhlyDkIzJKC+x2fUCpCcUODUUUFrm7SHA==
-  dependencies:
-    jsesc "~0.5.0"
 
 regjsparser@^0.1.4:
   version "0.1.5"
