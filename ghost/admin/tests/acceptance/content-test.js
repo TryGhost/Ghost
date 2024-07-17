@@ -25,6 +25,7 @@ describe('Acceptance: Content', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+        this.server.loadFixtures('settings');
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -43,10 +44,10 @@ describe('Acceptance: Content', function () {
             let editorRole = this.server.create('role', {name: 'Editor'});
             editor = this.server.create('user', {roles: [editorRole]});
 
-            publishedPost = this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post'});
+            publishedPost = this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post', visibility: 'paid'});
             scheduledPost = this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Scheduled Post'});
             draftPost = this.server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post'});
-            authorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post', visibiity: 'paid'});
+            authorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post'});
 
             // pages shouldn't appear in the list
             this.server.create('page', {authors: [admin], status: 'published', title: 'Published Page'});
@@ -122,16 +123,27 @@ describe('Acceptance: Content', function () {
                     .to.have.string('status:[draft,scheduled,published,sent]');
                 expect(lastRequest.queryParams.allFilter, '"editor" request filter param')
                     .to.have.string(`authors:${editor.slug}`);
+
+                // Displays editor post
+                expect(findAll('[data-test-post-id]').length, 'editor count').to.equal(1);
             });
 
             it('can filter by visibility', async function () {
                 await visit('/posts');
 
                 await selectChoose('[data-test-visibility-select]', 'Paid members-only');
-
                 let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
                     .to.have.string('visibility:[paid,tiers]');
+                let posts = findAll('[data-test-post-id]');
+                expect(posts.length, 'all posts count').to.equal(1);
+            
+                await selectChoose('[data-test-visibility-select]', 'Public');
+                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
+                    .to.have.string('visibility:public');
+                posts = findAll('[data-test-post-id]');
+                expect(posts.length, 'all posts count').to.equal(3);
             });
 
             it('can filter by tag', async function () {
@@ -192,7 +204,7 @@ describe('Acceptance: Content', function () {
             });
 
             describe('multiple posts', function () {
-                it('can feature and unfeature posts', async function () {
+                it('can feature and unfeature', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -252,7 +264,7 @@ describe('Acceptance: Content', function () {
                     expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.not.exist;
                 });
 
-                it('can add a tag to multiple posts', async function () {
+                it('can add a tag', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -296,9 +308,7 @@ describe('Acceptance: Content', function () {
                     expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
                 });
                 
-                // NOTE: we do not seem to be loading the settings properly into the membersutil service, such that the members
-                //  service doesn't think members are enabled
-                it.skip('can change access to multiple posts', async function () {
+                it('can change access', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -314,26 +324,38 @@ describe('Acceptance: Content', function () {
                     expect(postFourContainer.getAttribute('data-selected'), 'postFour selected').to.exist;
                     expect(postThreeContainer.getAttribute('data-selected'), 'postThree selected').to.exist;
 
-                    // NOTE: right clicks don't seem to work in these tests
-                    //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
                     await triggerEvent(postFourContainer, 'contextmenu');
-
                     let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                     expect(contextMenu, 'context menu').to.exist;
-
-                    // TODO: the change access button is not showing; need to debug the UI to see what field it expects
-                    // change access to the posts
                     let buttons = contextMenu.querySelectorAll('button');
                     let changeAccessButton = findButton('Change access', buttons);
+                    
+                    expect(changeAccessButton, 'change access button').not.to.exist;
+                    
+                    const settingsService = this.owner.lookup('service:settings');
+                    await settingsService.set('membersEnabled', true);
+
+                    await triggerEvent(postFourContainer, 'contextmenu');
+                    contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                    expect(contextMenu, 'context menu').to.exist;
+                    buttons = contextMenu.querySelectorAll('button');
+                    changeAccessButton = findButton('Change access', buttons);
 
                     expect(changeAccessButton, 'change access button').to.exist;
                     await click(changeAccessButton);
-                    
+
                     const changeAccessModal = find('[data-test-modal="edit-posts-access"]');
-                    expect(changeAccessModal, 'change access modal').to.exist;
+                    const selectElement = changeAccessModal.querySelector('select');
+                    await fillIn(selectElement, 'members');
+                    await click('[data-test-button="confirm"]');
+
+                    // check API request
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.filter, 'change access request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
+                    expect(JSON.parse(lastRequest.requestBody).bulk.action, 'change access request action').to.equal('access');
                 });
 
-                it('can unpublish posts', async function () {
+                it('can unpublish', async function () {
                     await visit('/posts');
 
                     // get all posts
@@ -377,7 +399,7 @@ describe('Acceptance: Content', function () {
                     expect(postFourContainer.querySelector('.gh-content-entry-status').textContent, 'postThree status').to.contain('Draft');
                 });
 
-                it('can delete posts', async function () {
+                it('can delete', async function () {
                     await visit('/posts');
 
                     // get all posts

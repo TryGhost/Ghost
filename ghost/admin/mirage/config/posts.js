@@ -23,7 +23,6 @@ function extractTags(postAttrs, tags) {
     });
 }
 
-// TODO: handle authors filter
 export function getPosts({posts}, {queryParams}) {
     let {filter, page, limit} = queryParams;
 
@@ -31,15 +30,27 @@ export function getPosts({posts}, {queryParams}) {
     limit = +limit || 15;
 
     let statusFilter = extractFilterParam('status', filter);
+    let authorsFilter = extractFilterParam('authors', filter);
+    let visibilityFilter = extractFilterParam('visibility', filter);
 
     let collection = posts.all().filter((post) => {
         let matchesStatus = true;
+        let matchesAuthors = true;
+        let matchesVisibility = true;
 
         if (!isEmpty(statusFilter)) {
             matchesStatus = statusFilter.includes(post.status);
         }
 
-        return matchesStatus;
+        if (!isEmpty(authorsFilter)) {
+            matchesAuthors = authorsFilter.includes(post.authors.models[0].slug);
+        }
+
+        if (!isEmpty(visibilityFilter)) {
+            matchesVisibility = visibilityFilter.includes(post.visibility);
+        }
+
+        return matchesStatus && matchesAuthors && matchesVisibility;
     });
 
     return paginateModelCollection('posts', collection, page, limit);
@@ -122,7 +133,7 @@ export default function mockPosts(server) {
                     tags.create(tag);
                 }
             });
-            // TODO: update the actual posts in the mock db
+            // TODO: update the actual posts in the mock db if wanting to write tests where we navigate around (refresh model)
             // const postsToUpdate = posts.find(ids);
             // getting the posts is fine, but within this we CANNOT manipulate them (???) not even iterate with .forEach
         }
