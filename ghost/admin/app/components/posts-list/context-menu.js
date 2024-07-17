@@ -390,8 +390,10 @@ export default class PostsContextMenu extends Component {
             const data = result[this.type === 'post' ? 'posts' : 'pages'][0];
             const model = this.store.peekRecord(this.type, data.id);
 
-            // Update infinity list
-            this.selectionList.infinityModel.content.unshiftObject(model);
+            // Update infinity draft posts content - copied posts are always drafts
+            if (this.selectionList.infinityModel.draftPosts) {
+                this.selectionList.infinityModel.draftPosts.content.unshiftObject(model);
+            }
 
             // Show notification
             this.notifications.showNotification(this.#getToastMessage('duplicated'), {type: 'success'});

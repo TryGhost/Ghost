@@ -100,6 +100,13 @@ export default function mockPosts(server) {
         posts.find(ids).destroy();
     });
 
+    server.post('/posts/:id/copy/', function ({posts}, {params}) {
+        let post = posts.find(params.id);
+        let attrs = post.attrs;
+
+        return posts.create(attrs);
+    });
+
     server.put('/posts/bulk/', function ({tags}, {requestBody}) {
         const bulk = JSON.parse(requestBody).bulk;
         const action = bulk.action;

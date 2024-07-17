@@ -160,8 +160,7 @@ describe('Acceptance: Content', function () {
 
         describe('context menu actions', function () {
             describe('single post', function () {
-                // has a duplicate option
-                it.skip('can duplicate a post', async function () {
+                it('can duplicate a post', async function () {
                     await visit('/posts');
 
                     // get the post
@@ -169,13 +168,11 @@ describe('Acceptance: Content', function () {
                     expect(post, 'post').to.exist;
 
                     await triggerEvent(post, 'contextmenu');
-                    // await this.pauseTest();
 
                     let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
 
                     let buttons = contextMenu.querySelectorAll('button');
 
-                    // should have three options for a published post
                     expect(contextMenu, 'context menu').to.exist;
                     expect(buttons.length, 'context menu buttons').to.equal(5);
                     expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
@@ -187,14 +184,10 @@ describe('Acceptance: Content', function () {
                     // duplicate the post
                     await click(buttons[3]);
 
-                    // API request is correct
-                    //   POST /ghost/api/admin/posts/{id}/copy/?formats=mobiledoc,lexical
-
-                    // TODO: probably missing endpoint in mirage...
-
-                    // let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    // console.log(`lastRequest`, lastRequest);
-                    // expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(5);
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
                 });
             });
 
