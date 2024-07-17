@@ -46,7 +46,6 @@ export default class SelectionList {
      */
     get allFilter() {
         const models = this.infinityModel;
-        console.log(`models`, models);
         // grab filter from the first key in the infinityModel object (they should all be identical)
         for (const key in models) {
             return models[key].extraParams?.allFilter ?? '';
