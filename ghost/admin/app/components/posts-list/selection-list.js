@@ -18,7 +18,11 @@ export default class SelectionList {
     #clearOnNextUnfreeze = false;
 
     constructor(infinityModel) {
-        this.infinityModel = infinityModel ?? {content: []};
+        this.infinityModel = infinityModel ?? {
+            draftPosts: {
+                content: []
+            }
+        };
     }
 
     freeze() {
@@ -41,7 +45,12 @@ export default class SelectionList {
      * Returns an NQL filter for all items, not the selection
      */
     get allFilter() {
-        return this.infinityModel.extraParams?.filter ?? '';
+        const models = this.infinityModel;
+        // grab filter from the first key in the infinityModel object (they should all be identical)
+        for (const key in models) {
+            return models[key].extraParams?.allFilter ?? '';
+        }
+        return '';
     }
 
     /**
@@ -81,10 +90,13 @@ export default class SelectionList {
      * Keep in mind that when using CMD + A, we don't have all items in memory!
      */
     get availableModels() {
+        const models = this.infinityModel;
         const arr = [];
-        for (const item of this.infinityModel.content) {
-            if (this.isSelected(item.id)) {
-                arr.push(item);
+        for (const key in models) {
+            for (const item of models[key].content) {
+                if (this.isSelected(item.id)) {
+                    arr.push(item);
+                }
             }
         }
         return arr;
@@ -102,7 +114,13 @@ export default class SelectionList {
         if (!this.inverted) {
             return this.selectedIds.size;
         }
-        return Math.max((this.infinityModel.meta?.pagination?.total ?? 0) - this.selectedIds.size, 1);
+        
+        const models = this.infinityModel;
+        let total;
+        for (const key in models) {
+            total += models[key].meta?.pagination?.total;
+        }   
+        return Math.max((total ?? 0) - this.selectedIds.size, 1);
     }
 
     isSelected(id) {
@@ -147,9 +165,12 @@ export default class SelectionList {
 
     clearUnavailableItems() {
         const newSelection = new Set();
-        for (const item of this.infinityModel.content) {
-            if (this.selectedIds.has(item.id)) {
-                newSelection.add(item.id);
+        const models = this.infinityModel;
+        for (const key in models) {
+            for (const item of models[key].content) {
+                if (this.selectedIds.has(item.id)) {
+                    newSelection.add(item.id);
+                }
             }
         }
         this.selectedIds = newSelection;
@@ -181,37 +202,40 @@ export default class SelectionList {
         // todo
         let running = false;
 
-        for (const item of this.infinityModel.content) {
-            // Exlusing the last selected item
-            if (item.id === this.lastSelectedId || item.id === id) {
-                if (!running) {
-                    running = true;
+        const models = this.infinityModel;
+        for (const key in models) {
+            for (const item of this.models[key].content) {
+                // Exlusing the last selected item
+                if (item.id === this.lastSelectedId || item.id === id) {
+                    if (!running) {
+                        running = true;
 
-                    // Skip last selected on its own
-                    if (item.id === this.lastSelectedId) {
-                        continue;
-                    }
-                } else {
-                    // Still include id
-                    if (item.id === id) {
-                        this.lastShiftSelectionGroup.add(item.id);
-
-                        if (this.inverted) {
-                            this.selectedIds.delete(item.id);
-                        } else {
-                            this.selectedIds.add(item.id);
+                        // Skip last selected on its own
+                        if (item.id === this.lastSelectedId) {
+                            continue;
                         }
-                    }
-                    break;
-                }
-            }
+                    } else {
+                        // Still include id
+                        if (item.id === id) {
+                            this.lastShiftSelectionGroup.add(item.id);
 
-            if (running) {
-                this.lastShiftSelectionGroup.add(item.id);
-                if (this.inverted) {
-                    this.selectedIds.delete(item.id);
-                } else {
-                    this.selectedIds.add(item.id);
+                            if (this.inverted) {
+                                this.selectedIds.delete(item.id);
+                            } else {
+                                this.selectedIds.add(item.id);
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if (running) {
+                    this.lastShiftSelectionGroup.add(item.id);
+                    if (this.inverted) {
+                        this.selectedIds.delete(item.id);
+                    } else {
+                        this.selectedIds.add(item.id);
+                    }
                 }
             }
         }

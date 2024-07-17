@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import SelectionList from 'ghost-admin/utils/selection-list';
+import SelectionList from 'ghost-admin/components/posts-list/selection-list';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
