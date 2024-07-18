@@ -4,8 +4,9 @@ declare module '@tryghost/kg-default-nodes' {
 
     export interface RendererOptions {
         usedIdAttributes?: Record<string, number>;
-        dom?: import('jsdom').JSDOM,
-        type?: 'inner' | 'outer' | 'value'
+        dom?: import('jsdom').JSDOM;
+        type?: 'inner' | 'outer' | 'value';
+        target?: 'html' | 'email' | 'plaintext';
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +16,7 @@ declare module '@tryghost/kg-default-nodes' {
         // TODO: exportDOM override isn't directly compatible with base class, should fix when converting kg-default-nodes
         exportDOM(options: LexicalEditor | RendererOptions): {
             element: HTMLElement | HTMLInputElement | HTMLTextAreaElement;
-            type: 'inner' | 'outer' | 'value'
+            type: 'inner' | 'outer' | 'value';
         };
         hasDynamicData?(): boolean;
         getDynamicData?(options: RendererOptions): Promise<{key: number; data: unknown}>;

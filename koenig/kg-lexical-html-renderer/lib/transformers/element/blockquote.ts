@@ -9,6 +9,16 @@ module.exports = {
             return null;
         }
 
+        if (options.target === 'email') {
+            let children = exportChildren(node);
+
+            if (!children.startsWith('<p>')) {
+                children = `<p>${children}</p>`;
+            }
+
+            return `<blockquote>${children}</blockquote>`;
+        }
+
         return `<blockquote>${exportChildren(node)}</blockquote>`;
     }
 };

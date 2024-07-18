@@ -11,7 +11,7 @@ import getDynamicDataNodes from './get-dynamic-data-nodes';
 const {registerRemoveAtLinkNodesTransform} = require('@tryghost/kg-default-transforms');
 
 interface RenderOptions {
-    target?: 'html' | 'plaintext';
+    target?: 'html' | 'email' | 'plaintext';
     dom?: import('jsdom').JSDOM;
     // TODO: we should define some standard here once we move to more cards with dynamic data
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
