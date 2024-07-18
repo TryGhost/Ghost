@@ -259,7 +259,7 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} disabled={activeNewsletters.length == 1}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
