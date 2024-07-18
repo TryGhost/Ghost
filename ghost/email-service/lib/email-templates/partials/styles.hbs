@@ -157,8 +157,8 @@ dd {
 }
 
 blockquote {
-    margin: 2em 0 2em 0;
-    padding: 0 25px 0 25px;
+    margin: 0;
+    padding: 0;
     border-left: {{accentColor}} 2px solid;
     font-size: 17px;
     font-weight: 500;
@@ -168,7 +168,6 @@ blockquote {
 
 blockquote.kg-blockquote-alt {
     border-left: 0 none;
-    padding: 0 50px 0 50px;
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
@@ -176,8 +175,13 @@ blockquote.kg-blockquote-alt {
 }
 
 blockquote p {
-    margin: 0.8em 0;
+    margin: 2em 0;
+    padding: 0 25px;
     font-size: 1em;
+}
+
+blockquote.kg-blockquote-alt p {
+    padding: 0 50px;
 }
 
 blockquote small {
@@ -1574,17 +1578,21 @@ a[data-flickr-embed] img {
         font-size: 16px !important;
         line-height: 1.6em;
         margin-bottom: 0;
-        padding-left: 15px;
+    }
+
+    table.body blockquote p {
+        padding: 0 15px !important;
     }
 
     table.body blockquote.kg-blockquote-alt {
         border-left: 0 none !important;
         margin: 0 !important;
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-        padding-bottom: 1.5em !important;
         font-size: 18px !important;
         line-height: 1.4em !important;
+    }
+
+    table.body blockquote.kg-blockquote-alt p {
+        padding: 0 20px !important;
     }
 
     table.body hr {
