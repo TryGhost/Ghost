@@ -24,7 +24,8 @@ export function getSubscriptionData(sub) {
         trialUntil: trialUntil(sub)
     };
 
-    data.validityDetails = validityDetails(data);
+    data.priceLabel = priceLabel(data);
+    data.validityDetails = validityDetails(data, !!data.priceLabel);
 
     return data;
 }
@@ -77,22 +78,39 @@ export function trialUntil(sub) {
     return undefined;
 }
 
-export function validityDetails(data) {
-    if (data.isComplimentary && data.compExpiry) {
-        return `Expires ${data.compExpiry}`;
+export function validityDetails(data, separatorNeeded = false) {
+    const separator = separatorNeeded ? ' – ' : '';
+    const space = data.validUntil ? ' ' : '';
+
+    if (data.isComplimentary) {
+        if (data.compExpiry) {
+            return `${separator}Expires ${data.compExpiry}`;
+        } else {
+            return '';
+        }
     }
 
     if (data.hasEnded) {
-        return `Ended ${data.validUntil}`;
+        return `${separator}Ended${space}${data.validUntil}`;
     }
 
     if (data.willEndSoon) {
-        return `Has access until ${data.validUntil}`;
+        return `${separator}Has access until${space}${data.validUntil}`;
     }
 
     if (data.trialUntil) {
-        return `Ends ${data.trialUntil}`;
+        return `${separator}Ends ${data.trialUntil}`;
     }
 
-    return `Renews ${data.validUntil}`;
+    return `${separator}Renews${space}${data.validUntil}`;
+}
+
+export function priceLabel(data) {
+    if (data.trialUntil) {
+        return 'Free trial';
+    }
+
+    if (data.price.nickname && data.price.nickname.length > 0 && data.price.nickname !== 'Monthly' && data.price.nickname !== 'Yearly') {
+        return data.price.nickname;
+    }
 }
