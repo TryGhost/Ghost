@@ -10,7 +10,7 @@ import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -97,7 +97,6 @@ const Sidebar: React.FC<{
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
-    const {mutateAsync: editSettings} = useEditSettings();
     const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
     const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'support_email_address']);
@@ -260,7 +259,7 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} disabled={activeNewsletters.length == 1}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
