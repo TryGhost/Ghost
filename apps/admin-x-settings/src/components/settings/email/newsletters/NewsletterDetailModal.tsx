@@ -132,41 +132,8 @@ const Sidebar: React.FC<{
         return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
     };
 
-    const disableNewsletterSetting = async () => {
-        const updates: Setting[] = [
-            {key: 'editor_default_email_recipients', value: 'disabled'}
-        ];
-
-        try {
-            await editSettings(updates);
-        } catch (error) {
-            handleError(error);
-        }
-    }
-
     const confirmStatusChange = async () => {
-        if (newsletter.status === 'active' && activeNewsletters.length === 1) {
-            NiceModal.show(ConfirmationModal, {
-                title: 'Disable Newsletter Sending',
-                prompt: <>
-                    <p><strong>{newsletter.name}</strong> is your only active newsletter. Cannot archive all newsletters while newsletter sending is enabled. Would you like to disable newsletter sending?</p>
-                </>,
-                okLabel: 'Disable Newsletter Sending',
-                okColor: 'red',
-                onOk: async (modal) => {
-                    try {
-                        await disableNewsletterSetting();
-                        modal?.remove();
-                        showToast({
-                            type: 'success',
-                            message: 'Newsletter Sending Disabled'
-                        });
-                    } catch (e) {
-                        handleError(e);
-                    }
-                }
-            });
-        } else if (newsletter.status === 'active') {
+        if (newsletter.status === 'active') {
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
