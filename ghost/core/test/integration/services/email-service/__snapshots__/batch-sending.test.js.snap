@@ -313,7 +313,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -324,7 +325,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -992,7 +994,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -1003,7 +1006,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -1647,7 +1651,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -1658,7 +1663,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -2302,7 +2308,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -2313,7 +2320,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -2957,7 +2965,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -2968,7 +2977,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -3560,7 +3570,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -3571,7 +3582,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -4215,7 +4227,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -4226,7 +4239,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -4964,7 +4978,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -4975,7 +4990,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -7033,7 +7049,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -7044,7 +7061,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -7833,7 +7851,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -7844,7 +7863,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -8543,7 +8563,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -8554,7 +8575,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -9253,7 +9275,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -9264,7 +9287,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -9963,7 +9987,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -9974,7 +9999,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -10673,7 +10699,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -10684,7 +10711,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -11383,7 +11411,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -11394,7 +11423,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
@@ -12040,7 +12070,8 @@ table.body h2 span {
   }
 
   table.body blockquote p {
-    padding: 0 15px !important;
+    margin-right: 15px !important;
+    margin-left: 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
@@ -12051,7 +12082,8 @@ table.body h2 span {
   }
 
   table.body blockquote.kg-blockquote-alt p {
-    padding: 0 20px !important;
+    margin-right: 20px !important;
+    margin-left: 20px !important;
   }
 
   table.body hr {
