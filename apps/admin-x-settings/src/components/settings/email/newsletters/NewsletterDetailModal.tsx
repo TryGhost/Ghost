@@ -145,21 +145,43 @@ const Sidebar: React.FC<{
     }
 
     const confirmStatusChange = async () => {
-        if (newsletter.status === 'active') {
+        if (newsletter.status === 'active' && activeNewsletters.length === 1) {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Disable Newsletter Sending',
+                prompt: <>
+                    <p><strong>{newsletter.name}</strong> is your only active newsletter. Cannot archive all newsletters while newsletter sending is enabled. Would you like to disable newsletter sending?</p>
+                </>,
+                okLabel: 'Disable Newsletter Sending',
+                okColor: 'red',
+                onOk: async (modal) => {
+                    try {
+                        await disableNewsletterSetting();
+                        modal?.remove();
+                        showToast({
+                            type: 'success',
+                            message: 'Newsletter Sending Disabled'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    }
+                }
+            });
+        } else if (newsletter.status === 'active') {
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
+<<<<<<< HEAD
                     <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
                     <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
+=======
+                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
+                    <p><br></br>Existing posts previously sent as this newsletter will remain unchanged.</p>
+>>>>>>> f0fe8dbb14 (Changes)
                 </>,
                 okLabel: 'Archive',
                 okColor: 'red',
                 onOk: async (modal) => {
                     try {
-                        if (activeNewsletters.length === 1) {
-                            console.log("Time to disable");
-                            disableNewsletterSetting();
-                        }
                         await editNewsletter({...newsletter, status: 'archived'});
                         modal?.remove();
                         showToast({
