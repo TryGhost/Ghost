@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {compExpiry, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
+import {compExpiry, getSubscriptionData, isActive, isCanceled, isComplimentary, isSetToCancel, priceLabel, trialUntil, validUntil, validityDetails} from 'ghost-admin/utils/subscription-data';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -165,6 +165,26 @@ describe('Unit: Util: subscription-data', function () {
         });
     });
 
+    describe('priceLabel', function () {
+        it('returns "Free trial" for trial subscriptions', function () {
+            let data = {trialUntil: '31 May 2021'};
+            expect(priceLabel(data)).to.equal('Free trial');
+        });
+
+        it('returns nothing if the price nickname is the default "monthly" or "yearly"', function () {
+            let data = {price: {nickname: 'Monthly'}};
+            expect(priceLabel(data)).to.be.undefined;
+
+            data = {price: {nickname: 'Yearly'}};
+            expect(priceLabel(data)).to.be.undefined;
+        });
+
+        it('returns the price nickname for non-default prices', function () {
+            let data = {price: {nickname: 'Custom'}};
+            expect(priceLabel(data)).to.equal('Custom');
+        });
+    });
+
     describe('validityDetails', function () {
         it('returns "Expires {compExpiry}" for expired complimentary subscriptions', function () {
             let data = {
@@ -172,6 +192,14 @@ describe('Unit: Util: subscription-data', function () {
                 compExpiry: '31 May 2021'
             };
             expect(validityDetails(data)).to.equal('Expires 31 May 2021');
+        });
+
+        it('returns "" for forever complimentary subscriptions', function () {
+            let data = {
+                isComplimentary: true,
+                compExpiry: undefined
+            };
+            expect(validityDetails(data)).to.equal('');
         });
 
         it('returns "Ended {validUntil}" for canceled subscriptions', function () {
@@ -228,6 +256,7 @@ describe('Unit: Util: subscription-data', function () {
                 validUntil: '31 May 2021',
                 willEndSoon: false,
                 trialUntil: undefined,
+                priceLabel: undefined,
                 validityDetails: 'Renews 31 May 2021'
             });
         });
@@ -254,7 +283,8 @@ describe('Unit: Util: subscription-data', function () {
                 validUntil: '31 May 2222',
                 willEndSoon: false,
                 trialUntil: '31 May 2222',
-                validityDetails: 'Ends 31 May 2222'
+                priceLabel: 'Free trial',
+                validityDetails: ' – Ends 31 May 2222'
             });
         });
 
@@ -280,7 +310,8 @@ describe('Unit: Util: subscription-data', function () {
                 validUntil: '',
                 willEndSoon: false,
                 trialUntil: undefined,
-                validityDetails: 'Ended '
+                priceLabel: undefined,
+                validityDetails: 'Ended'
             });
         });
 
@@ -306,11 +337,42 @@ describe('Unit: Util: subscription-data', function () {
                 validUntil: '31 May 2021',
                 willEndSoon: true,
                 trialUntil: undefined,
+                priceLabel: undefined,
                 validityDetails: 'Has access until 31 May 2021'
             });
         });
 
-        it('returns the correct data for a complimentary subscription', function () {
+        it('returns the correct data for a complimentary subscription active forever', function () {
+            let sub = {
+                id: null,
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2021-05-31',
+                trial_end_at: null,
+                tier: {
+                    expiry_at: null
+                },
+                price: {
+                    currency: 'usd',
+                    amount: 0,
+                    nickname: 'Complimentary'
+                }
+            };
+            let data = getSubscriptionData(sub);
+
+            expect(data).to.include({
+                isComplimentary: true,
+                compExpiry: undefined,
+                hasEnded: false,
+                validUntil: '31 May 2021',
+                willEndSoon: false,
+                trialUntil: undefined,
+                priceLabel: 'Complimentary',
+                validityDetails: ''
+            });
+        });
+
+        it('returns the correct data for a complimentary subscription with an expiration date', function () {
             let sub = {
                 id: null,
                 status: 'active',
@@ -322,7 +384,8 @@ describe('Unit: Util: subscription-data', function () {
                 },
                 price: {
                     currency: 'usd',
-                    amount: 0
+                    amount: 0,
+                    nickname: 'Complimentary'
                 }
             };
             let data = getSubscriptionData(sub);
@@ -334,7 +397,8 @@ describe('Unit: Util: subscription-data', function () {
                 validUntil: '31 May 2021',
                 willEndSoon: false,
                 trialUntil: undefined,
-                validityDetails: 'Expires 31 May 2021'
+                priceLabel: 'Complimentary',
+                validityDetails: ' – Expires 31 May 2021'
             });
         });
     });
