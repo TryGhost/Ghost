@@ -310,17 +310,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -985,17 +989,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -1636,17 +1644,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -2287,17 +2299,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -2938,17 +2954,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -3537,17 +3557,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -4188,17 +4212,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -4933,17 +4961,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -6998,17 +7030,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -7794,17 +7830,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -8500,17 +8540,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -9206,17 +9250,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -9912,17 +9960,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -10618,17 +10670,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -11324,17 +11380,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
@@ -11977,17 +12037,21 @@ table.body h2 span {
     font-size: 16px !important;
     line-height: 1.6em;
     margin-bottom: 0;
-    padding-left: 15px;
+  }
+
+  table.body blockquote p {
+    padding: 0 15px !important;
   }
 
   table.body blockquote.kg-blockquote-alt {
     border-left: 0 none !important;
     margin: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 1.5em !important;
     font-size: 18px !important;
     line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    padding: 0 20px !important;
   }
 
   table.body hr {
