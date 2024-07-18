@@ -8,6 +8,16 @@ module.exports = {
             return null;
         }
 
+        if (options.target === 'email') {
+            let children = exportChildren(node);
+
+            if (!children.startsWith('<p>')) {
+                children = `<p>${children}</p>`;
+            }
+
+            return `<blockquote class="kg-blockquote-alt">${children}</blockquote>`;
+        }
+
         return `<blockquote class="kg-blockquote-alt">${exportChildren(node)}</blockquote>`;
     }
 };
