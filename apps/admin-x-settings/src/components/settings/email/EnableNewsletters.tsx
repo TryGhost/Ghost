@@ -16,7 +16,6 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const isDisabled = membersSignupAccess === 'none';
 
-    //Get function from here
     const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const updates: Setting[] = [
             {key: 'editor_default_email_recipients', value: (e.target.checked ? 'visibility' : 'disabled')}
