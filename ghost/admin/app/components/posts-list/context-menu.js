@@ -216,14 +216,11 @@ export default class PostsContextMenu extends Component {
         yield this.performBulkDestroy();
         this.notifications.showNotification(this.#getToastMessage('deleted'), {type: 'success'});
 
-        for (const key in this.selectionList.infinityModel) {
-            const remainingModels = this.selectionList.infinityModel[key].content.filter((model) => {
-                return !deletedModels.includes(model);
-            });
-            // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
-            this.infinity.replace(this.selectionList.infinityModel[key], remainingModels);
-        }
-        
+        const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
+            return !deletedModels.includes(model);
+        });
+        // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
+        this.infinity.replace(this.selectionList.infinityModel, remainingModels);
         this.selectionList.clearSelection({force: true});
         return true;
     }
@@ -250,7 +247,9 @@ export default class PostsContextMenu extends Component {
             }
         }
 
+        // Remove posts that no longer match the filter
         this.updateFilteredPosts();
+
         return true;
     }
 
@@ -283,17 +282,14 @@ export default class PostsContextMenu extends Component {
             ]
         });
 
-        // TODO: something is wrong in here
-        for (const key in this.selectionList.infinityModel) {
-            const remainingModels = this.selectionList.infinityModel[key].content.filter((model) => {
-                if (!updatedModels.find(u => u.id === model.id)) {
-                    return true;
-                }
-                return filterNql.queryJSON(model.serialize({includeId: true}));
-            });
-            // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
-            this.infinity.replace(this.selectionList.infinityModel[key], remainingModels);
-        }
+        const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
+            if (!updatedModels.find(u => u.id === model.id)) {
+                return true;
+            }
+            return filterNql.queryJSON(model.serialize({includeId: true}));
+        });
+        // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
+        this.infinity.replace(this.selectionList.infinityModel, remainingModels);
 
         this.selectionList.clearUnavailableItems();
     }
@@ -390,10 +386,8 @@ export default class PostsContextMenu extends Component {
             const data = result[this.type === 'post' ? 'posts' : 'pages'][0];
             const model = this.store.peekRecord(this.type, data.id);
 
-            // Update infinity draft posts content - copied posts are always drafts
-            if (this.selectionList.infinityModel.draftPosts) {
-                this.selectionList.infinityModel.draftPosts.content.unshiftObject(model);
-            }
+            // Update infinity list
+            this.selectionList.infinityModel.content.unshiftObject(model);
 
             // Show notification
             this.notifications.showNotification(this.#getToastMessage('duplicated'), {type: 'success'});
