@@ -221,7 +221,7 @@
     "probe-image-size": "7.2.3",
     "rss": "1.2.2",
     "sanitize-html": "2.13.0",
-    "semver": "7.6.2",
+    "semver": "7.6.3",
     "stoppable": "1.1.0",
     "uuid": "9.0.1",
     "ws": "8.18.0",
