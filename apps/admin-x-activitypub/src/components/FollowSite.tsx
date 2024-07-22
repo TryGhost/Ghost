@@ -1,65 +1,48 @@
 import NiceModal from '@ebay/nice-modal-react';
+import {ActivityPubAPI} from '../api/activitypub';
 import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useFollow} from '@tryghost/admin-x-framework/api/activitypub';
-import {useQueryClient} from '@tryghost/admin-x-framework';
+import {useMutation} from '@tanstack/react-query';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
-// const sleep = (ms: number) => (
-//     new Promise((resolve) => {
-//         setTimeout(resolve, ms);
-//     })
-// );
+function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
+    const api = new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+    return useMutation({
+        async mutationFn(username: string) {
+            return api.follow(username);
+        },
+        onSuccess,
+        onError
+    });
+}
 
 const FollowSite = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
-    const mutation = useFollow();
-    const client = useQueryClient();
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-
-    // mutation.isPending
-    // mutation.isError
-    // mutation.isSuccess
-    // mutation.mutate({username: '@index@site.com'})
-    // mutation.reset();
-
-    // State to manage the text field value
     const [profileName, setProfileName] = useState('');
-    // const [success, setSuccess] = useState(false);
     const [errorMessage, setError] = useState(null);
 
-    const handleFollow = async () => {
-        try {
-            const url = new URL(`.ghost/activitypub/actions/follow/${profileName}`, siteUrl);
-            await fetch(url, {
-                method: 'POST'
-            });
-            // Perform the mutation
-            // If successful, set the success state to true
-            // setSuccess(true);
-            showToast({
-                message: 'Site followed',
-                type: 'success'
-            });
+    async function onSuccess() {
+        showToast({
+            message: 'Site followed',
+            type: 'success'
+        });
 
-            // // Because we don't return the new follower data from the API, we need to wait a bit to let it process and then update the query.
-            // // This is a dirty hack and should be replaced with a better solution.
-            // await sleep(2000);
-
-            modal.remove();
-            // Refetch the following data.
-            // At this point it might not be updated yet, but it will be eventually.
-            await client.refetchQueries({queryKey: ['FollowingResponseData'], type: 'active'});
-            updateRoute('');
-        } catch (error) {
-            // If there's an error, set the error state
-            setError(errorMessage);
-        }
-    };
+        modal.remove();
+        updateRoute('');
+    }
+    async function onError() {
+        setError(errorMessage);
+    }
+    const mutation = useFollow('index', onSuccess, onError);
 
     return (
         <Modal
@@ -71,7 +54,7 @@ const FollowSite = NiceModal.create(() => {
             okLabel='Follow'
             size='sm'
             title='Follow a Ghost site'
-            onOk={handleFollow}
+            onOk={() => mutation.mutate(profileName)}
         >
             <div className='mt-3 flex flex-col gap-4'>
                 <TextField

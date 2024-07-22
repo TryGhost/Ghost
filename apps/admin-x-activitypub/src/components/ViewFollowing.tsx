@@ -1,26 +1,37 @@
-import {} from '@tryghost/admin-x-framework/api/activitypub';
 import NiceModal from '@ebay/nice-modal-react';
 import getUsername from '../utils/get-username';
+import {ActivityPubAPI} from '../api/activitypub';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
-import {FollowingResponseData, useBrowseFollowingForUser, useUnfollow} from '@tryghost/admin-x-framework/api/activitypub';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useQuery} from '@tanstack/react-query';
 
-interface ViewFollowingModalProps {
-    following: FollowingResponseData[],
-    animate?: boolean
+function useFollowingForUser(handle: string) {
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
+    const api = new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+    return useQuery({
+        queryKey: [`following:${handle}`],
+        async queryFn() {
+            return api.getFollowing();
+        }
+    });
 }
 
-const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> = ({}) => {
+const ViewFollowingModal: React.FC<RoutingModalProps> = ({}) => {
     const {updateRoute} = useRouting();
-    const mutation = useUnfollow();
 
-    const {data: {items = []} = {}} = useBrowseFollowingForUser('inbox');
+    const {data: items = []} = useFollowingForUser('index');
 
     const following = Array.isArray(items) ? items : [items];
     return (
         <Modal
             afterClose={() => {
-                mutation.reset();
                 updateRoute('');
             }}
             cancelLabel=''
@@ -33,7 +44,7 @@ const ViewFollowingModal: React.FC<RoutingModalProps & ViewFollowingModalProps> 
             <div className='mt-3 flex flex-col gap-4 pb-12'>
                 <List>
                     {following.map(item => (
-                        <ListItem action={<Button color='grey' label='Unfollow' link={true} onClick={() => mutation.mutate({username: getUsername(item)})} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsername(item)} id='list-item' title={item.name}></ListItem>
+                        <ListItem action={<Button color='grey' label='Unfollow' link={true} />} avatar={<Avatar image={item.icon} size='sm' />} detail={getUsername(item)} id='list-item' title={item.name}></ListItem>
                     ))}
                 </List>
                 {/* <Table>
