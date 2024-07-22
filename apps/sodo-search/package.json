@@ -85,7 +85,7 @@
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@vitejs/plugin-react": "4.2.1",
-    "jsdom": "24.1.0",
+    "jsdom": "24.1.1",
     "nock": "13.3.3",
     "vite": "4.5.3",
     "vite-plugin-svgr": "3.3.0",

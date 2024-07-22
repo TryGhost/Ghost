@@ -91,7 +91,7 @@
     "concurrently": "8.2.2",
     "cross-fetch": "4.0.0",
     "eslint-plugin-i18next": "6.0.3",
-    "jsdom": "24.1.0",
+    "jsdom": "24.1.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "vite": "4.5.3",
