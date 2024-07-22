@@ -25,6 +25,6 @@
   "dependencies": {
     "@tryghost/errors": "1.3.2",
     "@tryghost/tpl": "0.1.30",
-    "semver": "7.6.2"
+    "semver": "7.6.3"
   }
 }
