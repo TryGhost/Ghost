@@ -1,10 +1,11 @@
-// import NiceModal from '@ebay/nice-modal-react';
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import React, {useEffect, useRef, useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
-import {ActorProperties, ObjectProperties, useBrowseFollowersForUser, useBrowseFollowingForUser, useBrowseInboxForUser} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActivityPubAPI} from '../api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, Button, ButtonGroup, Heading, List, ListItem, Page, SelectOption, SettingValue, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useQuery} from '@tanstack/react-query';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ViewArticleProps {
@@ -12,13 +13,64 @@ interface ViewArticleProps {
     onBackToList: () => void;
 }
 
+function useBrowseInboxForUser(handle: string) {
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
+    const api = new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+    return useQuery({
+        queryKey: [`inbox:${handle}`],
+        async queryFn() {
+            return api.getInbox();
+        }
+    });
+}
+
+function useFollowersCountForUser(handle: string) {
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
+    const api = new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+    return useQuery({
+        queryKey: [`followersCount:${handle}`],
+        async queryFn() {
+            return api.getFollowersCount();
+        }
+    });
+}
+
+function useFollowingCountForUser(handle: string) {
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
+    const api = new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+    return useQuery({
+        queryKey: [`followingCount:${handle}`],
+        async queryFn() {
+            return api.getFollowingCount();
+        }
+    });
+}
+
 const ActivityPubComponent: React.FC = () => {
     const {updateRoute} = useRouting();
 
     // TODO: Replace with actual user ID
-    const {data: {items: activities = []} = {}} = useBrowseInboxForUser('index');
-    const {data: {totalItems: followingCount = 0} = {}} = useBrowseFollowingForUser('index');
-    const {data: {totalItems: followersCount = 0} = {}} = useBrowseFollowersForUser('index');
+    const {data: activities = []} = useBrowseInboxForUser('index');
+    const {data: followersCount = 0} = useFollowersCountForUser('index');
+    const {data: followingCount = 0} = useFollowingCountForUser('index');
 
     const [articleContent, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
