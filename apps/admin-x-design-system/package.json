@@ -43,7 +43,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
-    "jsdom": "24.1.0",
+    "jsdom": "24.1.1",
     "mocha": "10.2.0",
     "chai": "4.3.8",
     "react": "18.3.1",
