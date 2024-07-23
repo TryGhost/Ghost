@@ -56,9 +56,6 @@ const controller = {
             }
         },
         async query(frame) {
-            if(!frame.options.limit || frame.options.limit === 'all' || frame.options.limit > 100) {
-                frame.options.limit = 100;
-            }
             const page = await membersService.api.memberBREADService.browse(frame.options);
 
             return page;
