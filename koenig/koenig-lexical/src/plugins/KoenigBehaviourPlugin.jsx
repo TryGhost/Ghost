@@ -2,7 +2,7 @@ import React from 'react';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
-import {$createHeadingNode, $createQuoteNode, $isQuoteNode} from '@lexical/rich-text';
+import {$createHeadingNode, $createQuoteNode, $isQuoteNode, DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {$createLinkNode, $isLinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {
     $createNodeSelection,
@@ -1279,11 +1279,15 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
-                    const text = clipboardEvent?.clipboardData?.getData(MIME_TEXT_PLAIN);
-                    const html = clipboardEvent?.clipboardData?.getData(MIME_TEXT_HTML);
+                    const clipboardData = clipboardEvent.clipboardData;
+                    if (!clipboardData) {
+                        return false;
+                    }
+
+                    const text = clipboardData.getData(MIME_TEXT_PLAIN);
+
                     // TODO: replace with better regex to include more protocols like mailto, ftp, etc
                     const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/);
-
                     if (linkMatch) {
                         // avoid any conversion if we're pasting onto a card shortcut
                         const node = $getSelection()?.anchor.getNode();
@@ -1298,12 +1302,34 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    const html = clipboardData.getData(MIME_TEXT_HTML);
                     if (text && !html) {
                         clipboardEvent?.preventDefault();
                         editor.dispatchCommand(PASTE_MARKDOWN_COMMAND, {text, allowBr: true});
 
                         return true;
                     }
+
+                    // Override Lexical's default paste behaviour when copy/pasting images:
+                    //   - By default, Lexical ignores files if there is text/html or text/plain content in the clipboard
+                    //   - This causes images copied from e.g. Slack to not paste correctly
+                    //   - With this override, we allow pasting images when there is a single image file in the clipboard and if the text/html contains a <img /> tag
+                    //
+                    // Lexical code:
+                    // https://github.com/facebook/lexical/blob/main/packages/lexical-rich-text/src/index.ts#L492-L494
+                    // https://github.com/facebook/lexical/blob/main/packages/lexical-rich-text/src/index.ts#L1035
+                    const files = clipboardData.files ? Array.from(clipboardData.files) : [];
+                    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+                    const imgTagMatch = html && !!html.match(/<\s*img\b/gi);
+
+                    if (imageFiles.length === 1 && imgTagMatch) {
+                        clipboardEvent.preventDefault();
+                        editor.dispatchCommand(DRAG_DROP_PASTE, files);
+
+                        return true;
+                    }
+
+                    return false;
                 },
                 COMMAND_PRIORITY_LOW
             ),
