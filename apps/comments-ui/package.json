@@ -75,7 +75,7 @@
     "eslint-plugin-tailwindcss": "3.13.0",
     "jsdom": "24.1.1",
     "postcss": "8.4.39",
-    "tailwindcss": "3.4.5",
+    "tailwindcss": "3.4.6",
     "vite": "4.5.3",
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.3.0",
