@@ -117,7 +117,7 @@
     "husky": "8.0.3",
     "lint-staged": "15.2.7",
     "nx": "16.8.1",
-    "rimraf": "5.0.7",
+    "rimraf": "5.0.9",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
     "inquirer": "8.2.6"
