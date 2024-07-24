@@ -49,6 +49,7 @@ const defaultCardConfig = {
     feature: {
         collections: true,
         collectionsCard: true,
+        contentVisibility: true,
         internalLinking: false // default off, can be enabled with `?labs=internalLinking
     },
     deprecated: {

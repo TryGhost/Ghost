@@ -1,7 +1,7 @@
 require('../utils');
 const {JSDOM} = require('jsdom');
 const {createHeadlessEditor} = require('@lexical/headless');
-const {AtLinkSearchNode, $createAtLinkSearchNode, $isAtLinkNode, $isAtLinkSearchNode} = require('../../');
+const {AtLinkSearchNode, $createAtLinkSearchNode, $isAtLinkSearchNode} = require('../../');
 
 const editorNodes = [AtLinkSearchNode];
 

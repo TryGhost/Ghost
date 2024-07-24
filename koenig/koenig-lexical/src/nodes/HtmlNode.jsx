@@ -23,6 +23,10 @@ export class HtmlNode extends BaseHtmlNode {
         return HtmlCardIcon;
     }
 
+    constructor(dataset = {}, key) {
+        super(dataset, key);
+    }
+
     decorate() {
         return (
             <KoenigCardWrapper
@@ -33,6 +37,7 @@ export class HtmlNode extends BaseHtmlNode {
                 <HtmlNodeComponent
                     html={this.__html}
                     nodeKey={this.getKey()}
+                    visibility={this.__visibility}
                 />
             </KoenigCardWrapper>
         );

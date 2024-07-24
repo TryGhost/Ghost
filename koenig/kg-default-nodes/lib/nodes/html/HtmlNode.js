@@ -5,9 +5,19 @@ import {parseHtmlNode} from './html-parser';
 
 export class HtmlNode extends generateDecoratorNode({nodeType: 'html',
     properties: [
-        {name: 'html', default: '', urlType: 'html', wordCount: true}
+        {name: 'html', default: '', urlType: 'html', wordCount: true},
+        {name: 'visibility', default: {emailOnly: false, segment: ''}}
     ]}
 ) {
+    constructor({
+        html = '',
+        visibility = {emailOnly: false, segment: ''}
+    } = {}, key) {
+        super(key);
+        this.html = html;
+        this.visibility = visibility;
+    }
+
     static importDOM() {
         return parseHtmlNode(this);
     }

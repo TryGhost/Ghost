@@ -127,8 +127,9 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
 
     const getInitialPosition = useCallback((panelElem) => {
         const panelHeight = panelElem.offsetHeight;
-        const cardElement = positionToRef || document.querySelector('[data-kg-card-editing="true"]');
-
+        const cardElement = positionToRef ||
+                    document.querySelector('[data-kg-card-editing="true"]') ||
+                    document.querySelector('[data-kg-card-selected="true"]');
         if (!cardElement) {
             return;
         }
@@ -236,7 +237,11 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
         if (!ref || !ref.current) {
             return;
         }
-        setPosition(getInitialPosition(ref.current));
+        try {
+            setPosition(getInitialPosition(ref.current));
+        } catch (e) {
+            console.error(e); // eslint-disable-line no-console
+        }
     }, [getInitialPosition, setPosition, ref]);
 
     // account for wide cards using a transform so we need to adjust the origin position
