@@ -71,7 +71,7 @@
     "react-colorful": "5.6.1",
     "react-hot-toast": "2.4.1",
     "react-select": "5.8.0",
-    "tailwindcss": "3.4.5"
+    "tailwindcss": "3.4.6"
   },
   "peerDependencies": {
     "react": "^18.2.0",
