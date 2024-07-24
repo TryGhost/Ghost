@@ -46,7 +46,7 @@ test.describe('Portal', () => {
         test('Can donate with a fixed amount set and different currency', async ({sharedPage}) => {
             await sharedPage.goto('/ghost/#/settings');
 
-            const section = sharedPage.getByTestId('tips-or-donations');
+            const section = sharedPage.getByTestId('tips-and-donations');
 
             await section.getByRole('button', {name: 'Edit'}).click();
             await section.getByLabel('Suggested amount').fill('98');
