@@ -165,7 +165,7 @@ class I18n {
         let matchingString;
 
         // no path? no string
-        if (msgPath.length === 0 || !isString(msgPath)) {
+        if (!msgPath || msgPath.length === 0 || !isString(msgPath)) {
             this._handleEmptyKeyError();
             return '';
         }
