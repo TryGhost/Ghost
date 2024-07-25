@@ -25,11 +25,13 @@ import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from
 import {isInvalidError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
+import {slugify} from '@tryghost/string';
 import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
 // suffix that is applied to the title of a post when it has been duplicated
 const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
+
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
@@ -642,8 +644,7 @@ export default class LexicalEditorController extends Controller {
             if (!options.silent) {
                 let errorOrMessages = error || this.get('post.errors.messages');
                 this._showErrorAlert(prevStatus, this.get('post.status'), errorOrMessages);
-                // simulate a validation error for upstream tasks
-                throw undefined;
+                return;
             }
 
             return this.post;
@@ -861,39 +862,44 @@ export default class LexicalEditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // generate slug if post
-        //  - is new and doesn't have a title yet
-        //  - still has the default title
-        //  - previously had a title that ended with the duplicated post title suffix
-        if (
-            (post.get('isNew') && !currentTitle) ||
-            (currentTitle === DEFAULT_TITLE) ||
-            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
-        ) {
-            yield this.generateSlugTask.perform();
-        }
-
+        // always save updates automatically for drafts
         if (this.get('post.isDraft')) {
+            yield this.generateSlugTask.perform();
             yield this.autosaveTask.perform();
         }
 
         this.ui.updateDocumentTitle();
     }
 
+    /* 
+        // sync the post slug with the post title, except when:
+        // - the user has already typed a custom slug, which should not be overwritten
+        // - the post has been published, so that published URLs are not broken
+    */ 
     @enqueueTask
     *generateSlugTask() {
-        let title = this.get('post.titleScratch');
+        const currentTitle = this.get('post.title');
+        const newTitle = this.get('post.titleScratch');
+        const currentSlug = this.get('post.slug');
 
         // Only set an "untitled" slug once per post
-        if (title === DEFAULT_TITLE && this.get('post.slug')) {
+        if (newTitle === DEFAULT_TITLE && currentSlug) {
+            return;
+        }
+
+        // Update the slug unless the slug looks to be a custom slug or the title is a default/has been cleared out
+        if (
+            (currentSlug && slugify(currentTitle) !== currentSlug)
+            && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX))
+        ) {
             return;
         }
 
         try {
-            let slug = yield this.slugGenerator.generateSlug('post', title);
+            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle);
 
-            if (!isBlank(slug)) {
-                this.set('post.slug', slug);
+            if (!isBlank(newSlug)) {
+                this.set('post.slug', newSlug);
             }
         } catch (error) {
             // Nothing to do (would be nice to log this somewhere though),
@@ -1085,7 +1091,8 @@ export default class LexicalEditorController extends Controller {
                 && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted) {
+        //  but we should never autosave when leaving published or soon-to-be published content (scheduled); this should require the user to intervene
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted && post.get('status') === 'draft') {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
@@ -1124,6 +1131,7 @@ export default class LexicalEditorController extends Controller {
             if (this.post) {
                 Object.assign(this._leaveModalReason, {status: this.post.status});
             }
+            Sentry.captureMessage('showing leave editor modal', {extra: this._leaveModalReason});
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
@@ -1249,6 +1257,19 @@ export default class LexicalEditorController extends Controller {
         // additional guard in case we are trying to compare null with undefined
         if (scratch || lexical) {
             if (scratch !== lexical) {
+                // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
+                //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
+                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+
+                // // nullling is typically faster than delete
+                scratchChildNodes.forEach(child => child.direction = null);
+                lexicalChildNodes.forEach(child => child.direction = null);
+
+                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
+                    return false;
+                }
+
                 this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
             }

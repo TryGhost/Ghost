@@ -19,14 +19,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm',
-    'recommendations',
-    'listUnsubscribeHeader',
-    'filterEmailDisabled',
     'newEmailAddresses',
-    'portalImprovements',
-    'onboardingChecklist',
-    'newsletterExcerpt'
+    'internalLinking'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -35,7 +29,6 @@ const BETA_FEATURES = [
     'additionalPaymentMethods',
     'i18n',
     'activitypub',
-    'internalLinking',
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt'
@@ -46,7 +39,6 @@ const ALPHA_FEATURES = [
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
-    'websockets',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
@@ -54,8 +46,7 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'internalLinkingAtLinks',
-    'internalLinkingSearchImprovements'
+    'contentVisibility'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

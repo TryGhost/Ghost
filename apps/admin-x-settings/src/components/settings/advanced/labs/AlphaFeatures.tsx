@@ -16,10 +16,6 @@ const features = [{
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
 },{
-    title: 'Websockets',
-    description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
-    flag: 'websockets'
-},{
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
@@ -52,29 +48,17 @@ const features = [{
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
 },{
-    title: 'Onboarding checklist',
-    description: 'Onboarding checklist that helps new customers get started',
-    flag: 'onboardingChecklist'
-},{
     title: 'NestJS Playground',
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
-},{
-    title: 'Internal Linking @-links (internal alpha)',
-    description: 'Adds internal URL search when typing @ in the editor',
-    flag: 'internalLinkingAtLinks'
-},{
-    title: 'Internal Linking search improvements (internal alpha)',
-    description: 'Replaces Admin\'s search with flexsearch indexes',
-    flag: 'internalLinkingSearchImprovements'
 },{
     title: 'ActivityPub',
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
 },{
-    title: 'Excerpt in newsletter',
-    description: 'Showing excerpt in newsletter',
-    flag: 'newsletterExcerpt'
+    title: 'Content Visibility',
+    description: 'Enables content visibility in Emails',
+    flag: 'contentVisibility'
 }];
 
 const AlphaFeatures: React.FC = () => {

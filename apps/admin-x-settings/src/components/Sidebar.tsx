@@ -111,7 +111,6 @@ const Sidebar: React.FC = () => {
     };
 
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
-    const hasRecommendations = useFeatureFlag('recommendations');
 
     const updateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter(e.target.value);
@@ -143,7 +142,7 @@ const Sidebar: React.FC = () => {
                         unstyled
                         onChange={updateSearch}
                     />
-                    {filter ? <Button className='absolute right-3 top-3 p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                    {filter ? <Button className='absolute top-3 p-1 sm:right-14 tablet:right-3' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
                     }} /> : <div className='absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79] tablet:!visible tablet:right-3 tablet:!block'>/</div>}
@@ -184,10 +183,10 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
-                    {hasRecommendations && <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
+                    <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                    {hasTipsAndDonations && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
+                    {hasTipsAndDonations && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">

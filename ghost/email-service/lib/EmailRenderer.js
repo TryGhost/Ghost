@@ -419,6 +419,10 @@ class EmailRenderer {
             return {src, width, height};
         });
 
+        // Add a class to each figcaption so we can style them in the email
+        $('figcaption').each((i, elem) => !!($(elem).addClass('kg-card-figcaption')));
+        html = $.html();
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
@@ -683,21 +687,16 @@ class EmailRenderer {
                 getValue: (member) => {
                     return this.getMemberStatusText(member);
                 }
+            },
+            // List unsubscribe header to unsubcribe in one-click
+            {
+                id: 'list_unsubscribe',
+                getValue: (member) => {
+                    return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                },
+                required: true // Used in email headers
             }
         ];
-
-        if (this.#labs.isSet('listUnsubscribeHeader')) {
-            baseDefinitions.push(
-                {
-                    id: 'list_unsubscribe',
-                    getValue: (member) => {
-                        // Same URL
-                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
-                    },
-                    required: true // Used in email headers
-                }
-            );
-        }
 
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
@@ -768,13 +767,8 @@ class EmailRenderer {
         registerHelpers(this.#handlebars, labs);
 
         // Partials
-        if (this.#labs.isSet('emailCustomization')) {
-            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
-            this.#handlebars.registerPartial('styles', cssPartialSource);
-        } else {
-            const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles-old.hbs`), 'utf8');
-            this.#handlebars.registerPartial('styles', cssPartialSource);
-        }
+        const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
+        this.#handlebars.registerPartial('styles', cssPartialSource);
 
         const paywallPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `paywall.hbs`), 'utf8');
         this.#handlebars.registerPartial('paywall', paywallPartial);
@@ -789,13 +783,9 @@ class EmailRenderer {
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
-        if (this.#labs.isSet('emailCustomization')) {
-            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
-            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        } else {
-            const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template-old.hbs`), 'utf8');
-            this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        }
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
+        this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+    
         return this.#renderTemplate(data);
     }
 
@@ -1093,9 +1083,9 @@ class EmailRenderer {
             footerContent: newsletter.get('footer_content'),
 
             classes: {
-                title: 'post-title' + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
+                title: 'post-title' + ` ` + (post.get('custom_excerpt') ? 'post-title-with-excerpt' : 'post-title-no-excerpt') + (newsletter.get('title_font_category') === 'serif' ? ` post-title-serif` : ``) + (newsletter.get('title_alignment') === 'left' ? ` post-title-left` : ``),
                 titleLink: 'post-title-link' + (newsletter.get('title_alignment') === 'left' ? ` post-title-link-left` : ``),
-                excerpt: 'post-excerpt' + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
+                excerpt: 'post-excerpt' + ` ` + (newsletter.get('show_feature_image') && !!postFeatureImage ? 'post-excerpt-with-feature-image' : 'post-excerpt-no-feature-image') + ` ` + excerptFontClass + (newsletter.get('title_alignment') === 'left' ? ` post-excerpt-left` : ``),
                 meta: 'post-meta' + (newsletter.get('title_alignment') === 'left' ? ` post-meta-left` : ` post-meta-center`),
                 body: newsletter.get('body_font_category') === 'sans_serif' ? `post-content-sans-serif` : `post-content`
             },

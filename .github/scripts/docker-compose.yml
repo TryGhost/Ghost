@@ -27,3 +27,13 @@ services:
     ports:
       - "6379:6379"
     restart: always
+  jaeger:
+      image: jaegertracing/all-in-one:1.58
+      container_name: ghost-jaeger
+      ports:
+        - "4318:4318"
+        - "16686:16686"
+        - "9411:9411"
+      restart: always
+      environment:
+        COLLECTOR_ZIPKIN_HOST_PORT: :9411

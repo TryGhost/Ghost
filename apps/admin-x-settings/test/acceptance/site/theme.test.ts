@@ -168,7 +168,7 @@ test.describe('Theme settings', async () => {
         expect(lastApiRequests.uploadTheme).toBeTruthy();
     });
 
-    test('Limits uploading new themes', async ({page}) => {
+    test('Limits uploading new themes and redirect to /pro', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
@@ -206,6 +206,18 @@ test.describe('Theme settings', async () => {
         await modal.getByRole('button', {name: 'Upload theme'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to enable custom themes/);
+
+        const limitModal = page.getByTestId('limit-modal');
+
+        await limitModal.getByRole('button', {name: 'Upgrade'}).click();
+
+        // The route should be updated
+        const newPageUrl = page.url();
+        const newPageUrlObject = new URL(newPageUrl);
+        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
+
+        // expect the route to be updated to /pro
+        await expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
     });
 
     test('Prevents overwriting the default theme', async ({page}) => {

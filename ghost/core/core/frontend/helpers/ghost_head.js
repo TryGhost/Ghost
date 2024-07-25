@@ -296,6 +296,18 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
             }
 
+            if (options.data.site.accent_color) {
+                const accentColor = escapeExpression(options.data.site.accent_color);
+                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+
+                if (existingScriptIndex !== -1) {
+                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+                } else {
+                    head.push(styleTag);
+                }
+            }
+
             if (!_.isEmpty(globalCodeinjection)) {
                 head.push(globalCodeinjection);
             }
@@ -306,19 +318,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
-            }
-        }
-
-        // AMP template has style injected directly because there can only be one <style amp-custom> tag
-        if (options.data.site.accent_color && !_.includes(context, 'amp')) {
-            const accentColor = escapeExpression(options.data.site.accent_color);
-            const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
-
-            if (existingScriptIndex !== -1) {
-                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
-            } else {
-                head.push(styleTag);
             }
         }
 

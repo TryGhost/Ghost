@@ -73,7 +73,7 @@
     "c8": "8.0.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
-    "jsdom": "24.1.0",
+    "jsdom": "24.1.1",
     "mocha": "10.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -82,7 +82,7 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@sentry/react": "7.117.0",
+    "@sentry/react": "7.118.0",
     "@tanstack/react-query": "4.36.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@types/react": "18.3.3",
