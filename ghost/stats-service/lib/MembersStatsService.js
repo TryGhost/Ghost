@@ -36,6 +36,7 @@ class MembersStatsService {
      */
     async fetchAllStatusDeltas() {
         const knex = this.knex;
+        const ninetyDaysAgo = moment.utc().subtract(91, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
         const rows = await knex('members_status_events')
             .select(knex.raw('DATE(created_at) as date'))
             .select(knex.raw(`SUM(
@@ -56,8 +57,10 @@ class MembersStatsService {
                 WHEN from_status='free' THEN -1
                 ELSE 0 END
             ) as free_delta`))
+            .where('created_at', '>=', ninetyDaysAgo)
             .groupByRaw('DATE(created_at)')
-            .orderByRaw('DATE(created_at)');
+            //.orderByRaw('DATE(created_at)');
+        rows.sort((a, b) => new Date(a.date) - new Date(b.date));
         return rows;
     }
 
