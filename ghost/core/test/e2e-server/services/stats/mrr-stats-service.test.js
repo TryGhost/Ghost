@@ -209,14 +209,13 @@ describe('MRR Stats Service', function () {
             const results = await statsService.api.mrr.fetchAllDeltas();
     
             // Check that results are within the last 90 days
-            const isWithinLast90Days = (date) => moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
-    
+            const isWithinLast90Days = (date) => {
+                moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
+            };
             results.length.should.be.above(0);
-            results.forEach(result => {
+            results.forEach((result) => {
                 isWithinLast90Days(result.date).should.be.true();
             });
         });
-
     });
-
 });
