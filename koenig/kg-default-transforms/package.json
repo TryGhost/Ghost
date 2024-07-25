@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-transforms",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-transforms",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "@lexical/list": "0.13.1",
     "@lexical/rich-text": "0.13.1",
     "@lexical/utils": "0.13.1",
-    "@tryghost/kg-default-nodes": "1.1.8",
+    "@tryghost/kg-default-nodes": "1.1.9",
     "lexical": "0.13.1"
   }
 }
