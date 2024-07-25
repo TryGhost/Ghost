@@ -195,7 +195,6 @@ describe('MRR Stats Service', function () {
         });
 
         it('Returns deltas for the last 90 days', async function () {
-            // Create some members with subscriptions to generate deltas within the last 90 days
             const ninetyDaysAgo = moment().subtract(90, 'days').startOf('day');
             const ninetyFiveDaysAgo = moment().subtract(95, 'days').startOf('day');
             const eightyNineDaysAgo = moment().subtract(89, 'days').startOf('day');
