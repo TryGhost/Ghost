@@ -46,7 +46,7 @@ class MrrStatsService {
             .select(knex.raw('CAST(DATE(created_at) as CHAR) as date'))
             .select(knex.raw(`SUM(mrr_delta) as delta`))
             .where('created_at', '>=', ninetyDaysAgo)
-            .groupByRaw('CAST(DATE(created_at) as CHAR), currency');
+            .groupByRaw('CAST(DATE(created_at) as CHAR), currency')
         return rows;
     }
 
@@ -57,7 +57,7 @@ class MrrStatsService {
      */
     async getHistory() {
         // Fetch current total amounts and start counting from there
-        const totals = await this.getCurrentMrr(); //this is mrr
+        const totals = await this.getCurrentMrr();
 
         const rows = await this.fetchAllDeltas();
 
@@ -65,24 +65,7 @@ class MrrStatsService {
             const dateA = new Date(rowA.date);
             const dateB = new Date(rowB.date);
         
-            // Compare dates first
-            if (dateA < dateB) {
-                return -1;
-            }
-            if (dateA > dateB) {
-                return 1;
-            }
-        
-            // If dates are equal, compare currencies
-            if (rowA.currency < rowB.currency) {
-                return -1;
-            }
-            if (rowA.currency > rowB.currency) {
-                return 1;
-            }
-        
-            // If both dates and currencies are equal
-            return 0;
+            return dateA - dateB || rowA.currency.localeCompare(rowB.currency);
         });
 
         // Get today in UTC (default timezone)
