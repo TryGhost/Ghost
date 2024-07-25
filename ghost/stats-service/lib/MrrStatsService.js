@@ -46,7 +46,7 @@ class MrrStatsService {
             .select(knex.raw('CAST(DATE(created_at) as CHAR) as date'))
             .select(knex.raw(`SUM(mrr_delta) as delta`))
             .where('created_at', '>=', ninetyDaysAgo)
-            .groupByRaw('CAST(DATE(created_at) as CHAR), currency')
+            .groupByRaw('CAST(DATE(created_at) as CHAR), currency');
         return rows;
     }
 
