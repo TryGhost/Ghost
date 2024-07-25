@@ -58,9 +58,7 @@ class MembersStatsService {
                 ELSE 0 END
             ) as free_delta`))
             .where('created_at', '>=', ninetyDaysAgo)
-            .groupByRaw('DATE(created_at)')
-            //.orderByRaw('DATE(created_at)');
-        rows.sort((a, b) => new Date(a.date) - new Date(b.date));
+            .groupByRaw('DATE(created_at)');
         return rows;
     }
 
@@ -80,6 +78,7 @@ class MembersStatsService {
 
         const cumulativeResults = [];
 
+        rows.sort((a, b) => new Date(a.date) - new Date(b.date));
         // Loop in reverse order (needed to have correct sorted result)
         for (let i = rows.length - 1; i >= 0; i -= 1) {
             const row = rows[i];
