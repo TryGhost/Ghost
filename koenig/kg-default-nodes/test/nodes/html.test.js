@@ -171,20 +171,18 @@ describe('HtmlNode', function () {
         }));
 
         it('renders data-gh-segment attribute paid-members-only', editorTest(function () {
-            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {emailOnly: true, segment: 'status:paid'}});
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {emailOnly: true, segment: 'status:-free'}});
             const options = {
                 target: 'email'
             };
             const mergedOptions = {...exportOptions, ...options};
             const {element, type} = htmlNode.exportDOM(mergedOptions);
-            type.should.equal('value');
-        
-            // check if element has data-gh-segment attribute with value 'status:paid'
-            element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
-        
+            type.should.equal('html');
+
+            element.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
             // Ensure the attribute is set correctly
             const dataGhSegment = element.getAttribute('data-gh-segment');
-            dataGhSegment.should.equal('status:paid');
+            dataGhSegment.should.equal('status:-free');
         }));
 
         it('renders data-gh-segment attribute free-members-only', editorTest(function () {
@@ -194,9 +192,9 @@ describe('HtmlNode', function () {
             };
             const mergedOptions = {...exportOptions, ...options}; 
             const {element, type} = htmlNode.exportDOM(mergedOptions);
-            type.should.equal('value');
+            type.should.equal('html');
 
-            element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+            element.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
             const dataGhSegment = element.getAttribute('data-gh-segment');
             dataGhSegment.should.equal('status:free');
         }));

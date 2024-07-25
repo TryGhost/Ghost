@@ -20,7 +20,7 @@ export const useVisibilityToggle = (editor, nodeKey, initialVisibility) => {
         } else if (freeMemberVisibility && !paidMemberVisibility) {
             return 'status:free';
         } else if (paidMemberVisibility && !freeMemberVisibility) {
-            return 'status:paid';
+            return 'status:-free';
         } else {
             return 'status:-free+status:-paid';
         }

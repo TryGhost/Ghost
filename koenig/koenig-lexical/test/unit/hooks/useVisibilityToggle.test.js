@@ -57,7 +57,7 @@ describe('useVisibilityToggle', () => {
         });
 
         expect(result.current[3]).toBe(false); // freeMemberVisibility
-        expect(node.visibility.segment).toBe('status:paid');
+        expect(node.visibility.segment).toBe('status:-free');
     });
 
     it('should toggle paidMemberVisibility and update the node', () => {

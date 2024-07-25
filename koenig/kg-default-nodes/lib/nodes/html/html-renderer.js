@@ -18,15 +18,19 @@ export function renderHtmlNode(node, options = {}) {
     const textarea = document.createElement('textarea');
     textarea.value = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
 
-    if (segment && isEmailOnly) {
-        textarea.setAttribute('data-gh-segment', segment);
-    }
-
     if (isEmailOnly && options.target !== 'email') {
         return renderEmptyContainer(document);
     }
 
+    if (isEmailOnly && options.target === 'email') {
+        const container = document.createElement('div');
+        container.innerHTML = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+        if (segment) {
+            container.setAttribute('data-gh-segment', segment);
+        }
+        return {element: container, type: 'html'};
+    }
+
     // `type: 'value'` will render the value of the textarea element
-    // @see @tryghost/kg-lexical-html-renderer package
     return {element: textarea, type: 'value'};
 }
