@@ -1,5 +1,4 @@
 import React from 'react';
-import {SettingsPanel} from './SettingsPanel.jsx';
 import {Toggle} from './Toggle';
 import {useVisibilityToggle} from '../../hooks/useVisibilityToggle.js';
 
@@ -12,35 +11,33 @@ export function VisibilityDropdown({editor, nodeKey, visibility, isActive}) {
 
     if (isActive) {
         return (
-            <SettingsPanel>
-                <div className="flex w-[254px] flex-col gap-1 rounded-lg bg-white p-6 shadow-md">
-                    <div className="text-sm font-bold">Visibility</div>
-                    <ToggleSetting
-                        dataTestId='visibility-toggle-email-only'
-                        isChecked={emailVisibility}
-                        label="Show in email only"
-                        onChange={e => toggleEmail(e)} />
-                    {
-                        emailVisibility && (
-                            <>
-                                <hr className="mt-1 border-grey-250 pb-1 dark:border-white/5" />
-                                <ToggleSetting
-                                    dataTestId='visibility-toggle-free-members'
-                                    isChecked={freeMemberVisibility}
-                                    label="Free members"
-                                    onChange={e => toggleMembers(e, 'free')}
-                                />
-                                <ToggleSetting
-                                    dataTestId='visibility-toggle-paid-members'
-                                    isChecked={paidMemberVisibility}
-                                    label="Paid members"
-                                    onChange={e => toggleMembers(e, 'paid')}
-                                />
-                            </>
-                        )
-                    }
-                </div>
-            </SettingsPanel>
+            <div className="absolute left-1/2 top-0 z-[1001] flex w-[254px] -translate-x-1/2 flex-col gap-1 rounded-lg bg-white p-6 shadow-md">
+                <div className="text-sm font-bold">Visibility</div>
+                <ToggleSetting
+                    dataTestId='visibility-toggle-email-only'
+                    isChecked={emailVisibility}
+                    label="Show in email only"
+                    onChange={e => toggleEmail(e)} />
+                {
+                    emailVisibility && (
+                        <>
+                            <hr className="mt-1 border-grey-250 pb-1 dark:border-white/5" />
+                            <ToggleSetting
+                                dataTestId='visibility-toggle-free-members'
+                                isChecked={freeMemberVisibility}
+                                label="Free members"
+                                onChange={e => toggleMembers(e, 'free')}
+                            />
+                            <ToggleSetting
+                                dataTestId='visibility-toggle-paid-members'
+                                isChecked={paidMemberVisibility}
+                                label="Paid members"
+                                onChange={e => toggleMembers(e, 'paid')}
+                            />
+                        </>
+                    )
+                }
+            </div>
         );
     }
 }
