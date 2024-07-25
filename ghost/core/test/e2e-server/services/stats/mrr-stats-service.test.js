@@ -209,11 +209,11 @@ describe('MRR Stats Service', function () {
     
             // Check that results are within the last 90 days
             const isWithinLast90Days = (date) => {
-                moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
+                return moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
             };
             results.length.should.be.above(0);
             results.forEach((result) => {
-                isWithinLast90Days(result.date).should.be.true();
+                isWithinLast90Days(result.date).should.equal(true);
             });
         });
     });
