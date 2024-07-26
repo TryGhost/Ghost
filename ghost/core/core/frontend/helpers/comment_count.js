@@ -1,7 +1,9 @@
 const {SafeString} = require('../services/handlebars');
-const {html} = require('common-tags');
 
 module.exports = function commentCount(options) {
+    // Lazy require the dependency to keep boot fast
+    const {html} = require('common-tags');
+
     const empty = options.hash.empty === undefined ? '' : options.hash.empty;
     const singular = options.hash.singular === undefined ? 'comment' : options.hash.singular;
     const plural = options.hash.plural === undefined ? 'comments' : options.hash.plural;
