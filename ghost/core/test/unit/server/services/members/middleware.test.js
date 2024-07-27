@@ -5,7 +5,6 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
-const { get } = require('lodash');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
@@ -255,7 +254,7 @@ describe('Members Service Middleware', function () {
                 newsletters: [],
                 enable_comment_notifications: false,
                 status: 'free'
-            }
+            };
             sinon.stub(membersService, 'api').get(() => {
                 return {
                     members: {
