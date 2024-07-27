@@ -107,7 +107,7 @@ test.describe('Portal', () => {
             await portalFrame.locator('[data-test-button="manage-newsletters"]').click();
 
             // check amount of newsletterss
-            const newsletters = await portalFrame.locator('[data-test-toggle-wrapper="true"]');
+            const newsletters = await portalFrame.locator('[data-testid="toggle-wrapper"]');
             const count = await newsletters.count();
             await expect(count).toEqual(2);
 

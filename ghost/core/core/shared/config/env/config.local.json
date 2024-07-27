@@ -1,0 +1,21 @@
+{
+    "mail": {
+        "transport": "SMTP",
+        "options": {
+            "host": "smtp.mailgun.org",
+            "port": 587,
+            "secure": false,
+            "auth": {
+                "user": "postmaster@sandbox11203bf1f5024945bb3c0a222608d5b2.mailgun.org",
+                "pass": "f704798347daee99ef33066ac7085cff-7764770b-d3cff184"
+            }
+        }
+    },
+    "bulkEmail": {
+        "mailgun": {
+            "apiKey": "16f44184f29b2503c0f7360feef0889c-0f1db83d-37ffd0a2",
+            "baseUrl": "https://api.mailgun.net/v3/",
+            "domain": "sandbox11203bf1f5024945bb3c0a222608d5b2.mailgun.org"
+        }
+    }
+}
