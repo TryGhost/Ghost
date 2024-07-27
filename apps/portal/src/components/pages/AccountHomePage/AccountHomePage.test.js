@@ -1,6 +1,7 @@
 import {render, fireEvent} from '../../../utils/test-utils';
 import AccountHomePage from './AccountHomePage';
 import {site} from '../../../utils/fixtures';
+import {getSiteData} from '../../../utils/fixtures-generator';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -21,7 +22,8 @@ const setup = (overrides) => {
 
 describe('Account Home Page', () => {
     test('renders', () => {
-        const {logoutBtn, utils} = setup();
+        const siteData = getSiteData({commentsEnabled: 'off'});
+        const {logoutBtn, utils} = setup({site: siteData});
         expect(logoutBtn).toBeInTheDocument();
         expect(utils.queryByText('You\'re currently not receiving emails')).not.toBeInTheDocument();
         expect(utils.queryByText('Email newsletter')).toBeInTheDocument();

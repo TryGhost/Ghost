@@ -192,4 +192,95 @@ describe('Members Service Middleware', function () {
             res.redirect.firstCall.args[0].should.eql('/blah/?action=signin&success=true');
         });
     });
+
+    describe('updateMemberNewsletters', function () {
+        // let oldMembersService;
+        let req;
+        let res;
+
+        before(function () {
+            models.init();
+        });
+
+        beforeEach(function () {
+            req = {body: {newsletters: [], enable_comment_notifications: null}};
+            res = {writeHead: sinon.stub(), end: sinon.stub()};
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('returns 400 if no member uuid is part of the request', async function () {
+            req.query = {};
+
+            // Call the middleware
+            await membersMiddleware.updateMemberNewsletters(req, res);
+
+            // Check behavior
+            res.writeHead.calledOnce.should.be.true();
+            res.writeHead.firstCall.args[0].should.eql(400);
+            res.end.calledOnce.should.be.true();
+            res.end.firstCall.args[0].should.eql('Invalid member uuid');
+        });
+
+        it('returns 404 if member uuid is not found', async function () {
+            req.query = {uuid: 'test'};
+            sinon.stub(membersService, 'api').get(() => {
+                return {
+                    members: {
+                        get: sinon.stub().resolves()
+                    }
+                };
+            });
+
+            // Call the middleware
+            await membersMiddleware.updateMemberNewsletters(req, res);
+
+            // Check behavior
+            res.writeHead.calledOnce.should.be.true();
+            res.writeHead.firstCall.args[0].should.eql(404);
+            res.end.calledOnce.should.be.true();
+            res.end.firstCall.args[0].should.eql('Email address not found.');
+        });
+
+        it('attempts to update newsletters', async function () {
+            res.json = sinon.stub();
+            req.query = {uuid: 'test'};
+            const memberData = {
+                id: 'test',
+                email: 'test@email.com',
+                name: 'Test Name',
+                newsletters: [],
+                enable_comment_notifications: false,
+                status: 'free'
+            };
+            sinon.stub(membersService, 'api').get(() => {
+                return {
+                    members: {
+                        get: sinon.stub().resolves({id: 'test', email: 'test@email.com', get: () => 'test'}),
+                        update: sinon.stub().resolves({
+                            ...memberData,
+                            toJSON: () => JSON.stringify(memberData)
+                        })
+                    }
+                };
+            });
+            await membersMiddleware.updateMemberNewsletters(req, res);
+            // the stubbing of the api is difficult to test with the current design, so we just check that the response is sent
+            res.json.calledOnce.should.be.true();
+        });
+
+        it('returns 400 on error', async function () {
+            // use a malformed request to trigger an error
+            req = {};
+            await membersMiddleware.updateMemberNewsletters(req, res);
+
+            // Check behavior
+            res.writeHead.calledOnce.should.be.true();
+            res.writeHead.firstCall.args[0].should.eql(400);
+            res.end.calledOnce.should.be.true();
+            res.end.firstCall.args[0].should.eql('Failed to update newsletters');
+        });
+    });
 });

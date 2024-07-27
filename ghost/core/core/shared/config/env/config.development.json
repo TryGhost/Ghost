@@ -1,5 +1,17 @@
 {
     "url": "http://localhost:2368",
+    "mail": {
+        "from": "test@example.com",
+        "transport": "SMTP",
+        "options": {
+            "host": "127.0.0.1",
+            "port": 1025,
+            "auth": {
+                "user": "user",
+                "pass": "unsecure"
+            }
+        }
+    },
     "database": {
         "client": "sqlite3",
         "connection": {
