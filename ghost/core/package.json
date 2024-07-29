@@ -214,7 +214,7 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
     "multer": "1.4.4",
-    "mysql2": "3.10.3",
+    "mysql2": "3.11.0",
     "nconf": "0.12.1",
     "node-jose": "2.2.0",
     "path-match": "1.2.4",
