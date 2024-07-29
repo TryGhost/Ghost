@@ -85,11 +85,6 @@ export default class PostsController extends Controller {
         Object.assign(this, DEFAULT_QUERY_PARAMS.posts);
     }
 
-    get totalPosts() {
-        // TODO: this might be a problem for the new infinity models
-        return this.model.meta?.pagination?.total ?? 0;
-    }
-
     get showingAll() {
         const {type, author, tag, visibility} = this;
 

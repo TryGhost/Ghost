@@ -283,7 +283,6 @@ export default class PostsContextMenu extends Component {
             ]
         });
 
-        // TODO: something is wrong in here
         for (const key in this.selectionList.infinityModel) {
             const remainingModels = this.selectionList.infinityModel[key].content.filter((model) => {
                 if (!updatedModels.find(u => u.id === model.id)) {
