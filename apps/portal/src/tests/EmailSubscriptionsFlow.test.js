@@ -254,33 +254,4 @@ describe('Newsletter Subscriptions', () => {
             expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
         });
     });
-
-    // describe('navigating straight to /portal/account/newsletters', () => {
-    //     it('shows the newsletter management page when signed in', async () => {
-    //         const {popupFrame, triggerButton, queryAllByText, popupIframeDocument} = await setup({
-    //             site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
-    //             member: FixtureMember.subbedToNewsletter,
-    //             newsletters: Newsletters
-    //         });
-
-    //         const manageSubscriptionsButton = within(popupIframeDocument).queryByRole('button', {name: 'Manage'});
-    //         await userEvent.click(manageSubscriptionsButton);
-
-    //         const newsletter1 = within(popupIframeDocument).queryAllByText('Newsletter 1');
-    //         expect(newsletter1).toBeInTheDocument();
-    //     });
-
-    //     it('redirects to the sign in page when not signed in', async () => {
-    //         const {popupFrame, queryByTitle, popupIframeDocument} = await setup({
-    //             site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
-    //             member: FixtureMember.subbedToNewsletter,
-    //             newsletters: Newsletters
-    //         }, true);
-
-    //         // console.log(`popupFrame`, popupFrame);
-    //         // console.log(`queryByTitle`, queryByTitle);
-    //         // console.log(`popupIframeDocument`, popupIframeDocument);
-
-    //     });
-    // });
 });

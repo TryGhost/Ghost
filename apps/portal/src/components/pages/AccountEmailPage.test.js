@@ -112,6 +112,6 @@ describe('Account Email Page', () => {
             newsletters: newsletterData
         });
         const {mockOnActionFn} = setup({site: siteData, member: null});
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
+        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin', pageData: {redirect: window.location.href}});
     });
 });
