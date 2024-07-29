@@ -65,7 +65,7 @@
         "rollup-plugin-node-builtins": "2.1.2",
         "storybook": "7.6.20",
         "stylelint": "15.10.3",
-        "tailwindcss": "3.4.6",
+        "tailwindcss": "3.4.7",
         "vite": "4.5.3",
         "vite-plugin-commonjs": "0.10.1",
         "vite-plugin-svgr": "3.3.0",
