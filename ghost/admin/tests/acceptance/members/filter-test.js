@@ -1328,7 +1328,12 @@ describe('Acceptance: Members filtering', function () {
             expect(find('[data-test-button="add-label-selected"]'), 'add label to selected button').to.exist;
             expect(find('[data-test-button="remove-label-selected"]'), 'remove label from selected button').to.exist;
             expect(find('[data-test-button="unsubscribe-selected"]'), 'unsubscribe selected button').to.exist;
-            expect(find('[data-test-button="delete-selected"]'), 'delete selected button').to.exist;
+
+            /* NOTE: Bulk deletion is disabled temporarily when multiple filters are applied, due to a NQL limitation.
+            * Re-enable following line once we have fixed the root NQL limitation.
+            * See https://linear.app/tryghost/issue/ONC-203
+            */
+            // expect(find('[data-test-button="delete-selected"]'), 'delete selected button').to.exist;
 
             // filter is active and has # of filters
             expect(find('[data-test-button="members-filter-actions"] span'), 'filter button').to.have.class('gh-btn-label-green');
