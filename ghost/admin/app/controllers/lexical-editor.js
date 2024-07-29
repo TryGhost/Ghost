@@ -871,11 +871,11 @@ export default class LexicalEditorController extends Controller {
         this.ui.updateDocumentTitle();
     }
 
-    /* 
+    /*
         // sync the post slug with the post title, except when:
         // - the user has already typed a custom slug, which should not be overwritten
         // - the post has been published, so that published URLs are not broken
-    */ 
+    */
     @enqueueTask
     *generateSlugTask() {
         const currentTitle = this.get('post.title');
@@ -916,7 +916,7 @@ export default class LexicalEditorController extends Controller {
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
 
-        if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
+        if (this.post?.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
             yield this.store.query('collection', {limit: 'all'});
         }
 
