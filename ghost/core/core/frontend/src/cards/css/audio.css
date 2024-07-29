@@ -9,7 +9,10 @@
     min-height: 96px;
     border-radius: 6px;
     padding: 4px;
+    background: #fff;
+    color: #222;
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
 .kg-audio-card+.kg-audio-card {
