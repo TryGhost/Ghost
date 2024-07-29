@@ -143,6 +143,10 @@ describe('Acceptance: Members', function () {
                 .to.equal('example@domain.com');
         });
 
+        /* NOTE: Bulk deletion is disabled temporarily when multiple filters are applied, due to a NQL limitation.
+         * Delete this test once we have fixed the root NQL limitation.
+         * See https://linear.app/tryghost/issue/ONC-203
+        */
         it('cannot bulk delete members if more than 1 filter is selected', async function () {
             // Members with label
             const labelOne = this.server.create('label');
