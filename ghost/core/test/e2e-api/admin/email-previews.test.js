@@ -4,6 +4,7 @@ const assert = require('assert/strict');
 const sinon = require('sinon');
 const escapeRegExp = require('lodash/escapeRegExp');
 const should = require('should');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 // @TODO: factor out these requires
 const ObjectId = require('bson-objectid').default;
@@ -37,6 +38,7 @@ describe('Email Preview API', function () {
 
     beforeEach(function () {
         mockManager.mockMailgun();
+        sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-validation-key');
     });
 
     before(async function () {
