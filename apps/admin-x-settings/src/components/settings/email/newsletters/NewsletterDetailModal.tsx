@@ -106,8 +106,15 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+    const activeNewsletters = newsletters.filter(n => n.status === 'active');
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -129,8 +136,8 @@ const Sidebar: React.FC<{
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
-                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
-                    <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
+                    <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
+                    <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
                 okColor: 'red',
@@ -252,7 +259,7 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -546,17 +553,17 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
-                newErrors.sender_email = 'Invalid email';
+                newErrors.sender_email = 'Enter a valid email address';
             } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {
-                newErrors.sender_email = `Email must end with @${sendingDomain(config)}`;
+                newErrors.sender_email = `Email address must end with @${sendingDomain(config)}`;
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
-                newErrors.sender_reply_to = 'Invalid email';
+                newErrors.sender_reply_to = 'Enter a valid email address';
             }
 
             return newErrors;

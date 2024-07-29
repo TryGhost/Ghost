@@ -19,10 +19,6 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm',
-    'recommendations',
-    'listUnsubscribeHeader',
-    'filterEmailDisabled',
     'newEmailAddresses',
     'internalLinking'
 ];

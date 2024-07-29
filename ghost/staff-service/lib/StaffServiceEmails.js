@@ -122,7 +122,7 @@ class StaffServiceEmails {
         }
     }
 
-    async notifyPaidSubscriptionCanceled({member, tier, subscription}, options = {}) {
+    async notifyPaidSubscriptionCanceled({member, tier, subscription, cancelNow, expiryAt, canceledAt}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-canceled', options);
 
         for (const user of users) {
@@ -140,8 +140,9 @@ class StaffServiceEmails {
             };
 
             const subscriptionData = {
-                expiryAt: this.getFormattedDate(subscription.cancelAt),
-                canceledAt: this.getFormattedDate(subscription.canceledAt),
+                expiryAt: this.getFormattedDate(expiryAt),
+                cancelNow: cancelNow,
+                canceledAt: this.getFormattedDate(canceledAt),
                 cancellationReason: subscription.cancellationReason || ''
             };
 
