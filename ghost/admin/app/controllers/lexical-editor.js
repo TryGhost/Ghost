@@ -1264,7 +1264,6 @@ export default class LexicalEditorController extends Controller {
         let lexical = post.get('initLexicalScratch');
         let scratch = post.get('lexicalScratch');
 
-        console.log('lexical', lexical);
         // additional guard in case we are trying to compare null with undefined
         if (scratch || lexical) {
             if (scratch !== lexical) {
