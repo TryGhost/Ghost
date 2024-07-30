@@ -130,12 +130,12 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
 
     return (
         <koenig.KoenigComposer
+            darkMode={darkMode}
             nodes={koenig[nodes || 'DEFAULT_NODES']}
             onError={onError}
         >
             <koenig.KoenigComposableEditor
                 className='koenig-lexical koenig-lexical-editor-input'
-                darkMode={darkMode}
                 isSnippetsEnabled={false}
                 markdownTransformers={transformers[nodes || 'DEFAULT_NODES']}
                 placeholderClassName='koenig-lexical-editor-input-placeholder line-clamp-1'
