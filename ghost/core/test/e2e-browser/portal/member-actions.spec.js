@@ -106,8 +106,8 @@ test.describe('Portal', () => {
             await portalTriggerButton.click();
             await portalFrame.locator('[data-test-button="manage-newsletters"]').click();
 
-            // check amount of newsletterss
-            const newsletters = await portalFrame.locator('[data-test-toggle-wrapper="true"]');
+            // check amount of newsletters
+            const newsletters = await portalFrame.locator('.gh-portal-list-toggle-wrapper');
             const count = await newsletters.count();
             await expect(count).toEqual(2);
 

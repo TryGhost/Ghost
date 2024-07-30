@@ -66,7 +66,7 @@ export function getSiteData({
         portal_button_signup_text,
         portal_button_style,
         members_support_address,
-        comments_enabled: !!commentsEnabled,
+        comments_enabled: commentsEnabled !== 'off',
         newsletters,
         recommendations,
         recommendations_enabled: !!recommendationsEnabled

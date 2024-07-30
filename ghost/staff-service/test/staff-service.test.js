@@ -706,6 +706,9 @@ describe('StaffService', function () {
             let member;
             let tier;
             let subscription;
+            let expiryAt;
+            let canceledAt;
+            let cancelNow;
             before(function () {
                 member = {
                     name: 'Ghost',
@@ -722,31 +725,34 @@ describe('StaffService', function () {
                 subscription = {
                     amount: 5000,
                     currency: 'USD',
-                    interval: 'month',
-                    cancelAt: '2024-08-01T07:30:39.882Z',
-                    canceledAt: '2022-08-05T07:30:39.882Z'
+                    interval: 'month'
                 };
+
+                expiryAt = '2024-09-05T07:30:39.882Z';
+                canceledAt = '2022-08-05T07:30:39.882Z';
+                cancelNow = false;
             });
 
-            it('sends paid subscription cancel alert', async function () {
+            it('sends paid subscription cancel notification when sub is canceled at the end of billing period', async function () {
                 await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription: {
                     ...subscription,
                     cancellationReason: 'Changed my mind!'
-                }}, options);
+                }, expiryAt, canceledAt, cancelNow}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
 
                 mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
+                ).should.be.true();
+
+                // Expiration sentence is in the future tense
+                mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Subscription will expire on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
-                ).should.be.true();
-
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('1 Aug 2024'))
+                    sinon.match.has('html', sinon.match('5 Sep 2024'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -761,34 +767,68 @@ describe('StaffService', function () {
                 ).should.be.true();
             });
 
-            it('sends paid subscription cancel alert without reason', async function () {
-                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription}, options);
+            it('sends paid subscription cancel alert when sub is canceled without reason', async function () {
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, canceledAt, cancelNow}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
 
                 mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
+                ).should.be.true();
+
+                // Expiration sentence is in the future tense
+                mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Subscription will expire on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
+                    sinon.match.has('html', sinon.match('5 Sep 2024'))
                 ).should.be.true();
 
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('1 Aug 2024'))
-                ).should.be.true();
-
+                // Cancellation reason block is hidden
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: '))
                 ).should.be.false();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Cancellation reason'))
                 ).should.be.false();
+            });
 
-                // check preview text
+            it('sends paid subscription cancel alert when subscription is canceled immediately', async function () {
+                cancelNow = true;
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription: {
+                    ...subscription,
+                    cancellationReason: 'Payment failed'
+                }, expiryAt, canceledAt, cancelNow}, options);
+
+                mailStub.calledOnce.should.be.true();
+                testCommonPaidSubCancelMailData(stubs);
+
+                // We don't show "Canceled on" when subscription is canceled immediately
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('A paid member has just canceled their subscription.'))
+                    sinon.match.has('html', sinon.match('Canceled on'))
+                ).should.be.false();
+
+                // Expiration sentence is in the past tense
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Subscription expired on'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('5 Sep 2024'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', 'Offer')
+                ).should.be.false();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Cancellation reason'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Reason: Payment failed'))
                 ).should.be.true();
             });
         });

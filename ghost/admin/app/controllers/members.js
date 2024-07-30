@@ -209,6 +209,10 @@ export default class MembersController extends Controller {
         return uniqueColumns.splice(0, 2); // Maximum 2 columns
     }
 
+    get isMultiFiltered() {
+        return this.isFiltered && this.filters.length >= 2;
+    }
+
     includeTierQuery() {
         const availableFilters = this.filters.length ? this.filters : this.softFilters;
         return availableFilters.some((f) => {

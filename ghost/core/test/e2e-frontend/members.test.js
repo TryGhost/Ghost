@@ -9,7 +9,7 @@ const settingsCache = require('../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
 const models = require('../../core/server/models');
-const {mockManager, fixtureManager} = require('../utils/e2e-framework');
+const {fixtureManager} = require('../utils/e2e-framework');
 const DataGenerator = require('../utils/fixtures/data-generator');
 const members = require('../../core/server/services/members');
 
@@ -266,14 +266,6 @@ describe('Front-end members behavior', function () {
     });
 
     describe('Unsubscribe', function () {
-        beforeEach(function () {
-            mockManager.mockLabsEnabled('listUnsubscribeHeader');
-        });
-
-        afterEach(function () {
-            mockManager.restore();
-        });
-
         it('should redirect with uuid and action param', async function () {
             await request.get('/unsubscribe/?uuid=XXX')
                 .expect(302)

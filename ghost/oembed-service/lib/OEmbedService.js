@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const cheerio = require('cheerio');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
@@ -297,6 +296,9 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedData(url, html, cardType) {
+        // Lazy require the library to keep boot quick
+        const cheerio = require('cheerio');
+
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {

@@ -9,7 +9,10 @@ export default function AccountEmailPage() {
     useEffect(() => {
         if (!member) {
             onAction('switchPage', {
-                page: 'signin'
+                page: 'signin',
+                pageData: {
+                    redirect: window.location.href // This includes the search/fragment of the URL (#/portal/account) which is missing from the default referer header
+                }
             });
         }
     }, [member, onAction]);
