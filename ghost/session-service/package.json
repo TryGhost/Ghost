@@ -25,6 +25,6 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.3.2"
+    "@tryghost/errors": "1.3.5"
   }
 }
