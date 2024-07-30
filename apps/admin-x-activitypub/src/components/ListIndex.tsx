@@ -1,6 +1,7 @@
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import React, {useEffect, useRef, useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
+import getUsername from '../utils/get-username';
 import {ActivityPubAPI} from '../api/activitypub';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, Button, ButtonGroup, Heading, List, ListItem, Page, SelectOption, SettingValue, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
@@ -84,7 +85,7 @@ const ActivityPubComponent: React.FC = () => {
         setArticleContent(null);
     };
 
-    const [selectedOption, setSelectedOption] = useState<SelectOption>({label: 'Inbox', value: 'inbox'});
+    const [selectedOption, setSelectedOption] = useState<SelectOption>({label: 'Feed', value: 'feed'});
 
     const [selectedTab, setSelectedTab] = useState('inbox');
 
@@ -92,10 +93,10 @@ const ActivityPubComponent: React.FC = () => {
         {
             id: 'inbox',
             title: 'Inbox',
-            contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'>
-                <ul className={`order-2 col-span-6 flex flex-col pb-8 lg:order-1 ${selectedOption.value === 'inbox' ? 'lg:col-span-4' : 'lg:col-span-3'}`}>
-                    {activities && activities.some(activity => activity.type === 'Create' && activity.object.type === 'Article') ? (activities.slice().reverse().map(activity => (
-                        activity.type === 'Create' && activity.object.type === 'Article' &&
+            contents: <div className='w-full'>
+                <ul className='mx-auto flex max-w-[540px] flex-col py-8'>
+                    {activities && activities.some(activity => activity.type === 'Create' && (activity.object.type === 'Article' || activity.object.type === 'Note')) ? (activities.slice().reverse().map(activity => (
+                        activity.type === 'Create' && (activity.object.type === 'Article' || activity.object.type === 'Note') &&
                         <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
                             <ObjectContentDisplay actor={activity.actor} layout={selectedOption.value} object={activity.object}/>
                         </li>
@@ -109,7 +110,6 @@ const ActivityPubComponent: React.FC = () => {
                         </div>
                     </div>}
                 </ul>
-                <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
         },
         {
@@ -120,7 +120,6 @@ const ActivityPubComponent: React.FC = () => {
                     activity.type === 'Like' && <ListItem avatar={<Avatar image={activity.actor.icon?.url} size='sm' />} id='list-item' title={<div><span className='font-medium'>{activity.actor.name}</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>{activity.object.name}</span></div>}></ListItem>
                 ))}
             </List>
-            <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
         },
         {
@@ -135,8 +134,24 @@ const ActivityPubComponent: React.FC = () => {
                     </li>
                     ))}
                 </ul>
-                <Sidebar followersCount={followersCount} followingCount={followingCount} updateRoute={updateRoute} />
             </div>
+        },
+        {
+            id: 'profile',
+            title: 'Profile',
+            contents: <div><div className='rounded-xl bg-grey-50 p-6' id="ap-sidebar">
+                <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
+                <div className='grid grid-cols-2 gap-4'>
+                    <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                    </div>
+                    <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
+                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
+                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                    </div>
+                </div>
+            </div></div>
         }
     ];
 
@@ -148,18 +163,18 @@ const ActivityPubComponent: React.FC = () => {
                         {
                             icon: 'listview',
                             size: 'sm',
-                            iconColorClass: selectedOption.value === 'inbox' ? 'text-black' : 'text-grey-500',
+                            iconColorClass: selectedOption.value === 'feed' ? 'text-black' : 'text-grey-500',
                             onClick: () => {
-                                setSelectedOption({label: 'Inbox', value: 'inbox'});
+                                setSelectedOption({label: 'Feed', value: 'feed'});
                             }
     
                         },
                         {
                             icon: 'cardview',
                             size: 'sm',
-                            iconColorClass: selectedOption.value === 'feed' ? 'text-black' : 'text-grey-500',
+                            iconColorClass: selectedOption.value === 'inbox' ? 'text-black' : 'text-grey-500',
                             onClick: () => {
-                                setSelectedOption({label: 'Feed', value: 'feed'});
+                                setSelectedOption({label: 'Inbox', value: 'inbox'});
                             }
                         }
                     ]} clearBg={true} link outlineOnMobile />]}
@@ -188,35 +203,6 @@ const ActivityPubComponent: React.FC = () => {
         </Page>
     );
 };
-
-const Sidebar: React.FC<{followingCount: number, followersCount: number, updateRoute: (route: string) => void}> = ({followingCount, followersCount, updateRoute}) => (
-    <div className='order-1 col-span-6 flex flex-col gap-5 lg:order-2 lg:col-span-2 lg:col-start-5'>
-        <div className='rounded-xl bg-grey-50 p-6' id="ap-sidebar">
-            <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
-            <div className='grid grid-cols-2 gap-4'>
-                <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                </div>
-                <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
-                    <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
-                    <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                </div>
-            </div>
-        </div>
-        <div className='rounded-xl bg-grey-50 p-6'>
-            <header className='mb-4 flex items-center justify-between'>
-                <Heading level={5}>Explore</Heading>
-                <Button label='View all' link={true}/>
-            </header>
-            <List>
-                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='829 followers' hideActions={true} title='404 Media' />
-                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='791 followers' hideActions={true} title='The Browser' />
-                <ListItem action={<Button color='grey' label='Follow' link={true} onClick={() => {}} />} avatar={<Avatar image={`https://ghost.org/favicon.ico`} size='sm' />} detail='854 followers' hideActions={true} title='Welcome to Hell World' />
-            </List>
-        </div>
-    </div>
-);
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
     const site = useBrowseSite();
@@ -274,6 +260,60 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
     const doc = parser.parseFromString(object.content || '', 'text/html');
 
     const plainTextContent = doc.body.textContent;
+    let previewContent = '';
+    if (object.preview) {
+        const previewDoc = parser.parseFromString(object.preview.content || '', 'text/html');
+        previewContent = previewDoc.body.textContent || '';
+    } else if (object.type === 'Note') {
+        previewContent = plainTextContent || '';
+    }
+
+    const renderAttachment = () => {
+        let attachment;
+        if (object.image) {
+            attachment = object.image;
+        }
+
+        if (object.type === 'Note' && !attachment) {
+            attachment = object.attachment;
+        }
+
+        // const attachment = object.attachment;
+        if (!attachment) {
+            return null;
+        }
+
+        if (Array.isArray(attachment)) {
+            return (
+                <div className="attachment-gallery mt-2 grid auto-rows-[150px] grid-cols-2 gap-2">
+                    {attachment.map((item, index) => (
+                        <img key={item.url} alt={`attachment-${index}`} className='h-full w-full rounded-md object-cover' src={item.url} />
+                    ))}
+                </div>
+            );
+        }
+
+        switch (attachment.mediaType) {
+        case 'image/jpeg':
+        case 'image/png':
+        case 'image/gif':
+            return <img alt="attachment" className='mt-2 rounded-md outline outline-1 -outline-offset-1 outline-black/10' src={attachment.url} />;
+        case 'video/mp4':
+        case 'video/webm':
+            return <div className='relative mb-4 mt-2'>
+                <video className='h-[300px] w-full rounded object-cover' src={attachment.url} controls/>
+            </div>;
+            
+        case 'audio/mpeg':
+        case 'audio/ogg':
+            return <div className='relative mb-4 mt-2 w-full'>
+                <audio className='w-full' src={attachment.url} controls/>
+            </div>;
+        default:
+            return null;
+        }
+    };
+
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -291,34 +331,28 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
         return (
             <>
                 {object && (
-                    <div className='border-1 group/article relative z-10 flex cursor-pointer flex-col items-start justify-between border-b border-b-grey-200 py-6' data-test-activity>
-                        
-                        <div className='relative z-10 mb-3 flex w-full items-center gap-3'>
-                            <img className='w-8' src={actor.icon?.url}/>
-                            <div>
-                                <p className='text-base font-bold' data-test-activity-heading>{actor.name}</p>
-                                <div className='*:text-base *:text-grey-900'>
-                                    {/* <span className='truncate before:mx-1 before:content-["·"]'>{getUsername(actor)}</span> */}
-                                    <span>{timestamp}</span>
+                    <div className='group/article relative flex cursor-pointer items-start gap-4 pt-4'>
+                        <img className='z-10 w-9 rounded' src={actor.icon?.url}/>
+                        <div className='border-1 z-10 -mt-1 flex flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
+                            <div className='relative z-10 flex w-full overflow-visible text-[1.5rem]'>
+                                <p className='mr-1 truncate whitespace-nowrap font-bold' data-test-activity-heading>{actor.name}</p>
+                                <span className='truncate text-grey-700'>{getUsername(actor)}</span>
+                                <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]'>{timestamp}</span>
+                            </div>
+                            <div className='relative z-10 w-full gap-4'>
+                                <div className='flex flex-col'>
+                                    {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
+                                    <p className='text-pretty text-[1.5rem] text-grey-900'>{plainTextContent}</p>
+                                    {/* <p className='text-pretty text-md text-grey-900'>{object.content}</p> */}
+                                    {renderAttachment()}
+                                    <div className='mt-3 flex gap-2'>
+                                        <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                                        <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className='relative z-10 w-full gap-4'>
-                            <div className='flex flex-col'>
-                                
-                                {object.image && <div className='relative mb-4'>
-                                    <img className='h-[300px] w-full rounded object-cover' src={object.image}/>
-                                </div>}
-                                <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>
-                                <p className='mb-4 line-clamp-3 max-w-prose text-pretty text-md text-grey-900'>{plainTextContent}</p>
-                                <div className='flex gap-2'>
-                                    <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
-                                    <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className='absolute -inset-x-3 -inset-y-1 z-0 rounded transition-colors group-hover/article:bg-grey-100'></div>
-                        {/* <div className='absolute inset-0 z-0 rounded from-white to-grey-50 transition-colors group-hover/article:bg-gradient-to-r'></div> */}
+                        <div className='absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors group-hover/article:bg-grey-100'></div>
                     </div>
                 )}
             </>
@@ -339,15 +373,15 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                                 <div className='flex w-full justify-between gap-4'>
                                     <Heading className='mb-1 line-clamp-2 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
                                 </div>
-                                <p className='mb-6 line-clamp-2 max-w-prose text-pretty text-md text-grey-800'>{object.preview?.content}</p>
+                                <p className='mb-6 line-clamp-2 max-w-prose text-pretty text-md text-grey-800'>{previewContent}</p>
                                 <div className='flex gap-2'>
                                     <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
                                     <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
                                 </div>
                             </div>
-                            {object.image && <div className='relative min-w-[33%] grow'>
-                                <img className='absolute h-full w-full rounded object-cover' height='140px' src={object.image} width='170px'/>
-                            </div>}
+                            {/* {image && <div className='relative min-w-[33%] grow'>
+                                <img className='absolute h-full w-full rounded object-cover' height='140px' src={image} width='170px'/>
+                            </div>} */}
                         </div>
                         <div className='absolute -inset-x-3 -inset-y-1 z-0 rounded transition-colors group-hover/article:bg-grey-50'></div>
                         {/* <div className='absolute inset-0 z-0 rounded from-white to-grey-50 transition-colors group-hover/article:bg-gradient-to-r'></div> */}
