@@ -45,7 +45,7 @@ export class ActivityPubAPI {
             return [];
         }
         if ('items' in json) {
-            return Array.isArray(json?.items) ? json.items : [];
+            return Array.isArray(json.items) ? json.items : [json.items];
         }
         return [];
     }
@@ -60,7 +60,7 @@ export class ActivityPubAPI {
             return [];
         }
         if ('items' in json) {
-            return Array.isArray(json?.items) ? json.items : [];
+            return Array.isArray(json.items) ? json.items : [json.items];
         }
         return [];
     }
@@ -86,7 +86,7 @@ export class ActivityPubAPI {
             return [];
         }
         if ('items' in json) {
-            return Array.isArray(json?.items) ? json.items : [];
+            return Array.isArray(json.items) ? json.items : [json.items];
         }
         return [];
     }
