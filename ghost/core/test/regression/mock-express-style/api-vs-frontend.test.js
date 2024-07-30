@@ -1560,7 +1560,7 @@ describe('Frontend behavior tests', function () {
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                     response.template.should.eql('podcast/rss');
-                    response.headers['content-type'].should.eql('application/rss+xml; charset=utf-8');
+                    response.headers['content-type'].should.eql('application/rss+xml');
                     response.body.match(/<link>/g).length.should.eql(2);
                 });
         });
