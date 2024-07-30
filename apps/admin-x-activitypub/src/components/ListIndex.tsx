@@ -115,16 +115,6 @@ const ActivityPubComponent: React.FC = () => {
         {
             id: 'activity',
             title: 'Activity',
-            contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'><List className='col-span-4'>
-                {activities && activities.slice().reverse().map(activity => (
-                    activity.type === 'Like' && <ListItem avatar={<Avatar image={activity.actor.icon?.url} size='sm' />} id='list-item' title={<div><span className='font-medium'>{activity.actor.name}</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>{activity.object.name}</span></div>}></ListItem>
-                ))}
-            </List>
-            </div>
-        },
-        {
-            id: 'likes',
-            title: 'Likes',
             contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'>
                 <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
                     {activities && activities.slice().reverse().map(activity => (
@@ -134,6 +124,16 @@ const ActivityPubComponent: React.FC = () => {
                     </li>
                     ))}
                 </ul>
+            </div>
+        },
+        {
+            id: 'likes',
+            title: 'Likes',
+            contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'><List className='col-span-4'>
+                {activities && activities.slice().reverse().map(activity => (
+                    activity.type === 'Like' && <ListItem avatar={<Avatar image={activity.actor.icon?.url} size='sm' />} id='list-item' title={<div><span className='font-medium'>{activity.actor.name}</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>{activity.object.name}</span></div>}></ListItem>
+                ))}
+            </List>
             </div>
         },
         {
@@ -167,7 +167,7 @@ const ActivityPubComponent: React.FC = () => {
                             onClick: () => {
                                 setSelectedOption({label: 'Feed', value: 'feed'});
                             }
-    
+
                         },
                         {
                             icon: 'cardview',
@@ -191,9 +191,9 @@ const ActivityPubComponent: React.FC = () => {
                     tabs={tabs}
                     title='ActivityPub'
                     toolbarBorder={true}
-                    type='page' 
+                    type='page'
                     onTabChange={setSelectedTab}
-                >   
+                >
                 </ViewContainer>
 
             ) : (
@@ -303,7 +303,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
             return <div className='relative mb-4 mt-2'>
                 <video className='h-[300px] w-full rounded object-cover' src={attachment.url} controls/>
             </div>;
-            
+
         case 'audio/mpeg':
         case 'audio/ogg':
             return <div className='relative mb-4 mt-2 w-full'>
@@ -319,7 +319,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
 
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
-    
+
     const handleLikeClick = (event: React.MouseEvent<HTMLElement> | undefined) => {
         event?.stopPropagation();
         setIsClicked(true);
@@ -397,7 +397,7 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
 
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
-    
+
     const handleLikeClick = (event: React.MouseEvent<HTMLElement> | undefined) => {
         event?.stopPropagation();
         setIsClicked(true);
@@ -415,7 +415,7 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                     <div>
                         <Button icon='chevron-left' iconSize='xs' label='Inbox' data-test-back-button onClick={onBackToList}/>
                     </div>
-                    <div className='flex items-center justify-between'>  
+                    <div className='flex items-center justify-between'>
                     </div>
                     <div className='flex items-center justify-end gap-2'>
                         <div className='flex flex-row-reverse items-center gap-3'>
