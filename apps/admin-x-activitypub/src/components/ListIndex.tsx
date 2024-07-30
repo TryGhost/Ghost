@@ -113,7 +113,7 @@ const ActivityPubComponent: React.FC = () => {
                 <div className='w-full'>
                     {inboxTabActivities.length > 0 ? (
                         <ul className='mx-auto flex max-w-[540px] flex-col py-8'>
-                            {inboxTabActivities.map(activity => (
+                            {inboxTabActivities.reverse().map(activity => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
