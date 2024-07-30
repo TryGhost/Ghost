@@ -671,7 +671,8 @@ export default class KoenigLexicalEditor extends Component {
 
         const KGEditorComponent = ({isInitInstance}) => {
             const handleInitInstance = (data) => {
-                
+                // const newjson = JSON.stringify(data);
+                this.args.initLexicalScratch(data);
             };
             return (
                 <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
@@ -693,7 +694,7 @@ export default class KoenigLexicalEditor extends Component {
                             cursorDidExitAtTop={this.args.cursorDidExitAtTop}
                             placeholderText={this.args.placeholder}
                             darkMode={this.feature.nightShift}
-                            onChange={isInitInstance ? handleInitInstance : this.args.onChange}
+                            onChange={isInitInstance ? e => handleInitInstance(e) : this.args.onChange}
                             registerAPI={this.args.registerAPI}
                         />
                         <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
