@@ -17,7 +17,7 @@ const DesignSystemApp: React.FC<DesignSystemAppProps> = ({darkMode, fetchKoenigL
 
     return (
         <div className={appClassName} {...props}>
-            <DesignSystemProvider fetchKoenigLexical={fetchKoenigLexical}>
+            <DesignSystemProvider darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical}>
                 {children}
             </DesignSystemProvider>
         </div>
