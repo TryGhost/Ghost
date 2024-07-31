@@ -407,9 +407,7 @@ export default class LexicalEditorController extends Controller {
 
     @action
     initLexicalScratch(data) {
-        console.log(data);
         this.set('post.initLexicalScratch', JSON.stringify(data));
-        // this.set('post.lexicalScratch', JSON.stringify(data));
     }
 
     @action

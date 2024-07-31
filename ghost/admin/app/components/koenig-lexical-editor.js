@@ -671,7 +671,6 @@ export default class KoenigLexicalEditor extends Component {
 
         const KGEditorComponent = ({isInitInstance}) => {
             const handleInitInstance = (data) => {
-                // const newjson = JSON.stringify(data);
                 this.args.initLexicalScratch(data);
             };
             return (
