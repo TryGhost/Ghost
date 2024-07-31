@@ -98,10 +98,3 @@
     color: #30CF43;
 }
 
-.tier-name, .offer-name {
-    color: var(--accent-color)
-}
-
-.bg-accent {
-    background-color: var(--accent-color);
-}
