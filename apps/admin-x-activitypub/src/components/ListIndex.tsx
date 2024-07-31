@@ -14,6 +14,13 @@ interface ViewArticleProps {
     onBackToList: () => void;
 }
 
+type Activity = {
+    type: string,
+    object: {
+        type: string
+    }
+}
+
 function useBrowseInboxForUser(handle: string) {
     const site = useBrowseSite();
     const siteData = site.data?.site;
@@ -89,69 +96,127 @@ const ActivityPubComponent: React.FC = () => {
 
     const [selectedTab, setSelectedTab] = useState('inbox');
 
+    const inboxTabActivities = activities.filter((activity: Activity) => {
+        const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
+        const isAnnounce = activity.type === 'Announce' && activity.object.type === 'Note';
+
+        return isCreate || isAnnounce;
+    });
+    const activityTabActivities = activities.filter((activity: Activity) => activity.type === 'Create' && activity.object.type === 'Article');
+    const likeTabActivies = activities.filter((activity: Activity) => activity.type === 'Like');
+
     const tabs: ViewTab[] = [
         {
             id: 'inbox',
             title: 'Inbox',
-            contents: <div className='w-full'>
-                <ul className='mx-auto flex max-w-[540px] flex-col py-8'>
-                    {activities && activities.some(activity => activity.type === 'Create' && (activity.object.type === 'Article' || activity.object.type === 'Note')) ? (activities.slice().reverse().map(activity => (
-                        activity.type === 'Create' && (activity.object.type === 'Article' || activity.object.type === 'Note') &&
-                        <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
-                            <ObjectContentDisplay actor={activity.actor} layout={selectedOption.value} object={activity.object}/>
-                        </li>
-                    ))) : <div className='flex items-center justify-center text-center'>
-                        <div className='flex max-w-[32em] flex-col items-center justify-center gap-4'>
-                            <img alt='Ghost site logos' className='w-[220px]' src={ActivityPubWelcomeImage}/>
-                            <Heading className='text-balance' level={2}>Welcome to ActivityPub</Heading>
-                            <p className='text-pretty text-grey-800'>We’re so glad to have you on board! At the moment, you can follow other Ghost sites and enjoy their content right here inside Ghost.</p>
-                            <p className='text-pretty text-grey-800'>You can see all of the users on the right—find your favorite ones and give them a follow.</p>
-                            <Button color='green' label='Learn more' link={true}/>
+            contents: (
+                <div className='w-full'>
+                    {inboxTabActivities.length > 0 ? (
+                        <ul className='mx-auto flex max-w-[540px] flex-col py-8'>
+                            {inboxTabActivities.reverse().map(activity => (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                    onClick={() => handleViewContent(activity.object, activity.actor)}
+                                >
+                                    <ObjectContentDisplay
+                                        actor={activity.actor}
+                                        layout={selectedOption.value}
+                                        object={activity.object}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className='flex items-center justify-center text-center'>
+                            <div className='flex max-w-[32em] flex-col items-center justify-center gap-4'>
+                                <img
+                                    alt='Ghost site logos'
+                                    className='w-[220px]'
+                                    src={ActivityPubWelcomeImage}
+                                />
+                                <Heading className='text-balance' level={2}>
+                                    Welcome to ActivityPub
+                                </Heading>
+                                <p className='text-pretty text-grey-800'>
+                                    We’re so glad to have you on board! At the moment, you can follow other Ghost sites and enjoy their content right here inside Ghost.
+                                </p>
+                                <p className='text-pretty text-grey-800'>
+                                    You can see all of the users on the right—find your favorite ones and give them a follow.
+                                </p>
+                                <Button color='green' label='Learn more' link={true} />
+                            </div>
                         </div>
-                    </div>}
-                </ul>
-            </div>
+                    )}
+                </div>
+            )
         },
         {
             id: 'activity',
             title: 'Activity',
-            contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'>
-                <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
-                    {activities && activities.slice().reverse().map(activity => (
-                        activity.type === 'Create' && activity.object.type === 'Article' &&
-                    <li key={activity.id} data-test-view-article onClick={() => handleViewContent(activity.object, activity.actor)}>
-                        <ObjectContentDisplay actor={activity.actor} layout={selectedOption.value} object={activity.object} />
-                    </li>
-                    ))}
-                </ul>
-            </div>
+            contents: (
+                <div className='grid grid-cols-6 items-start gap-8 pt-8'>
+                    <ul className='order-2 col-span-6 flex flex-col lg:order-1 lg:col-span-4'>
+                        {activityTabActivities.reverse().map(activity => (
+                            <li
+                                key={activity.id}
+                                data-test-view-article
+                                onClick={() => handleViewContent(activity.object, activity.actor)}
+                            >
+                                <ObjectContentDisplay
+                                    actor={activity.actor}
+                                    layout={selectedOption.value}
+                                    object={activity.object}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )
         },
         {
             id: 'likes',
             title: 'Likes',
-            contents: <div className='grid grid-cols-6 items-start gap-8 pt-8'><List className='col-span-4'>
-                {activities && activities.slice().reverse().map(activity => (
-                    activity.type === 'Like' && <ListItem avatar={<Avatar image={activity.actor.icon?.url} size='sm' />} id='list-item' title={<div><span className='font-medium'>{activity.actor.name}</span><span className='text-grey-800'> liked your post </span><span className='font-medium'>{activity.object.name}</span></div>}></ListItem>
-                ))}
-            </List>
-            </div>
+            contents: (
+                <div className='grid grid-cols-6 items-start gap-8 pt-8'>
+                    <List className='col-span-4'>
+                        {likeTabActivies.reverse().map(activity => (
+                            <ListItem
+                                avatar={<Avatar image={activity.actor.icon?.url} size='sm' />}
+                                id='list-item'
+                                title={
+                                    <div>
+                                        <span className='font-medium'>{activity.actor.name}</span>
+                                        <span className='text-grey-800'> liked your post </span>
+                                        <span className='font-medium'>{activity.object.name}</span>
+                                    </div>
+                                }
+                            />
+                        ))}
+                    </List>
+                </div>
+            )
         },
         {
             id: 'profile',
             title: 'Profile',
-            contents: <div><div className='rounded-xl bg-grey-50 p-6' id="ap-sidebar">
-                <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
-                <div className='grid grid-cols-2 gap-4'>
-                    <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
-                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                    </div>
-                    <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
-                        <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
-                        <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+            contents: (
+                <div>
+                    <div className='rounded-xl bg-grey-50 p-6' id="ap-sidebar">
+                        <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
+                        <div className='grid grid-cols-2 gap-4'>
+                            <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
+                                <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
+                                <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                            </div>
+                            <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-followers')}>
+                                <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
+                                <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div></div>
+            )
         }
     ];
 
