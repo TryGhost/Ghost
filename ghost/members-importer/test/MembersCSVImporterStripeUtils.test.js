@@ -304,7 +304,8 @@ describe('MembersCSVImporterStripeUtils', function () {
             stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
-                GHOST_PRODUCT_STRIPE_PRICE_ID
+                GHOST_PRODUCT_STRIPE_PRICE_ID,
+                {prorationBehavior: 'none'}
             ).should.be.true();
         });
 
@@ -346,7 +347,8 @@ describe('MembersCSVImporterStripeUtils', function () {
             stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
-                NEW_STRIPE_PRICE_ID
+                NEW_STRIPE_PRICE_ID,
+                {prorationBehavior: 'none'}
             ).should.be.true();
         });
 
