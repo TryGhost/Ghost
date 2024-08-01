@@ -669,17 +669,14 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerDocId = cardConfig.post.id;
         const multiplayerUsername = this.session.user.name;
 
-        const [hasInitialised, setHasInitialised] = React.useState(false);
-
         const KGEditorComponent = ({isInitInstance}) => {
             const handleInitInstance = (data) => {
-                if (this.args.initLexical && isInitInstance && !hasInitialised) {
+                if (this.args.initLexical && isInitInstance) {
                     this.args.initLexical(data);
-                    setHasInitialised(true);
                 }
             };
             return (
-                <div style={isInitInstance && !hasInitialised ? {visibility: 'hidden', position: 'absolute'} : {}}>
+                <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
@@ -695,14 +692,14 @@ export default class KoenigLexicalEditor extends Component {
                     >
                         <KoenigEditor
                             editorResource={this.editorResource}
-                            cursorDidExitAtTop={this.args.cursorDidExitAtTop}
-                            placeholderText={this.args.placeholder}
-                            darkMode={this.feature.nightShift}
+                            cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
+                            placeholderText={isInitInstance ? null : this.args.placeholderText}
+                            darkMode={isInitInstance ? null : this.feature.nightShift}
                             onChange={isInitInstance ? e => handleInitInstance(e) : this.args.onChange}
-                            registerAPI={this.args.registerAPI}
+                            registerAPI={isInitInstance ? null : this.args.registerAPI}
                         />
-                        <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                        <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />
+                        <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
+                        <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
                     </KoenigComposer>
                 </div>
             );
@@ -713,9 +710,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KGEditorComponent />
-                        {
-                            !hasInitialised && <KGEditorComponent isInitInstance={true} /> 
-                        }
+                        <KGEditorComponent isInitInstance={true} /> 
                     </Suspense>
                 </ErrorHandler>
             </div>
