@@ -13,7 +13,7 @@ describe('{{asset}} helper', function () {
     const localSettingsCache = {};
 
     before(function () {
-        configUtils.set({assetHash: 'abc'});
+        configUtils.set({asset_hash: false});
         configUtils.set({useMinFiles: true});
 
         sinon.stub(settingsCache, 'get').callsFake(function (key) {
@@ -36,7 +36,7 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('/public/ghost.css?v=abc');
+            String(rendered).should.equal('/public/ghost.css');
         });
 
         it('handles custom favicon correctly', function () {
@@ -70,19 +70,19 @@ describe('{{asset}} helper', function () {
 
             rendered = asset('public/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/public/asset.js?v=abc');
+            String(rendered).should.equal('/public/asset.js');
         });
 
         it('handles theme assets correctly', function () {
             rendered = asset('js/asset.js');
             should.exist(rendered);
-            String(rendered).should.equal('/assets/js/asset.js?v=abc');
+            String(rendered).should.equal('/assets/js/asset.js');
         });
 
         it('handles hasMinFile assets correctly', function () {
             rendered = asset('js/asset.js', {hash: {hasMinFile: true}});
             should.exist(rendered);
-            String(rendered).should.equal('/assets/js/asset.min.js?v=abc');
+            String(rendered).should.equal('/assets/js/asset.min.js');
         });
     });
 
@@ -105,7 +105,37 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('http://127.0.0.1/public/ghost.css?v=abc');
+            String(rendered).should.equal('http://127.0.0.1/public/ghost.css');
+        });
+    });
+
+    describe('with asset_hash setting', function () {
+        after(async function () {
+            await configUtils.restore();
+        });
+
+        it('should have a hash parameter when null', function () {
+            configUtils.set('asset_hash', null);
+            rendered = asset('public/ghost.css');
+            String(rendered).should.equal(`/public/ghost.css?v=${configUtils.config.get('asset_hash')}`);
+        });
+
+        it('should have a random hash parameter when undefined', function () {
+            configUtils.set('asset_hash', undefined);
+            rendered = asset('public/ghost.css');
+            String(rendered).should.equal(`/public/ghost.css?v=${configUtils.config.get('asset_hash')}`);
+        });
+
+        it('should have a hash parameter when a string', function () {
+            configUtils.set('asset_hash', 'abcd1234');
+            rendered = asset('public/ghost.css');
+            String(rendered).should.equal('/public/ghost.css?v=abcd1234');
+        });
+
+        it('should have no hash parameter when false', function () {
+            configUtils.set('asset_hash', false);
+            rendered = asset('public/ghost.css');
+            String(rendered).should.equal('/public/ghost.css');
         });
     });
 });

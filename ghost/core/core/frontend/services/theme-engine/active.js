@@ -106,8 +106,9 @@ class ActiveTheme {
 
     mount(siteApp) {
         // reset the asset hash
-        // @TODO: set this on the theme instead of globally, or use proper file-based hash
-        config.set('assetHash', null);
+        // @TODO: use proper file-based hash
+        config.set('asset_hash', this.config('asset_hash'));
+
         // clear the view cache
         siteApp.cache = {};
         // Set the views and engine
