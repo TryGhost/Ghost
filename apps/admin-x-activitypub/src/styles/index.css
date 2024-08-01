@@ -23,3 +23,12 @@ animation: bump 0.3s ease-in-out;
 .ap-red-heart path {
     fill: #F50B23;
 }
+
+.ap-note-content a {
+  color: rgb(236 72 153) !important;
+}
+
+.ap-note-content a:hover {
+  color: rgb(219 39 119) !important;
+}
+
