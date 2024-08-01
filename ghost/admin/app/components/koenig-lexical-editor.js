@@ -669,17 +669,17 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerDocId = cardConfig.post.id;
         const multiplayerUsername = this.session.user.name;
 
+        const [hasInitialised, setHasInitialised] = React.useState(false);
+
         const KGEditorComponent = ({isInitInstance}) => {
             const handleInitInstance = (data) => {
-                try {
+                if (this.args.initLexical && isInitInstance && !hasInitialised) {
                     this.args.initLexical(data);
-                } catch (error) {
-                    console.log('unable to initialise, skipping'); // eslint-disable-line
-                    // This is a catch-all, however it's current implementation is to catch it when loading revisions
+                    setHasInitialised(true);
                 }
             };
             return (
-                <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
+                <div style={isInitInstance && !hasInitialised ? {visibility: 'hidden', position: 'absolute'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
@@ -713,7 +713,9 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} />
+                        {
+                            !hasInitialised && <KGEditorComponent isInitInstance={true} /> 
+                        }
                     </Suspense>
                 </ErrorHandler>
             </div>
