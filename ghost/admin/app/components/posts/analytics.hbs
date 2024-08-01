@@ -34,9 +34,13 @@
                         {{moment-format publishedAt "HH:mm"}}
                     {{/let}}
                 </div>
-                <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                    {{svg-jar "pen" title=""}}<span>Edit post</span>
-                </LinkTo>
+                <div style="display: flex; gap: 4px;">
+                    <button class="gh-post-list-cta edit">♻️<span>Refresh</span></button>
+                    <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>🔁<span>Share</span></button>
+                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                        {{svg-jar "pen" title=""}}<span>Edit post</span>
+                    </LinkTo>
+                </div>
             </div>
         </div>
     </GhCanvasHeader>
@@ -202,3 +206,12 @@
         </div>
     {{/if}}
 </section>
+
+{{#if this.showPublishFlowModal}}
+    <GhFullscreenModal
+        @modal="publish-flow"
+        @model={{this.post}}
+        @publishOptions={{this.publishOptions}}
+        @close={{this.togglePublishFlowModal}}
+        @modifier="action wide" />
+{{/if}}

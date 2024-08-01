@@ -91,6 +91,11 @@ export default class PublishFlowOptions extends Component {
 
         try {
             yield this.args.saveTask.perform();
+            if (this.args.publishOptions.isScheduled) {
+                window.location.href = '/ghost/#/posts/?success=true';
+            } else {
+                window.location.href = `/ghost/#/posts/analytics/${this.args.publishOptions.post.id}/?success=true`;
+            }
         } catch (e) {
             if (e === undefined && this.args.publishOptions.post.errors.length !== 0) {
                 // validation error

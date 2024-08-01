@@ -1,0 +1,155 @@
+{{#if this.post.featureImage}}
+    <figure class="modal-image">
+        <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+    </figure>
+{{/if}}
+
+<header class="modal-header">
+    <h1>
+        {{#unless this.post.isScheduled}}
+            <span>Boom! It's out there.</span>
+            <span>
+                {{#if this.post.emailOnly}}
+                    Your email has been sent.
+                {{else}}
+                    That's 100 posts published.
+                {{/if}}
+            </span>
+        {{else}}
+            <span>All set!</span>
+        {{/unless}}
+    </h1>
+</header>
+
+{{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+<a class="close" href role="button" title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</a>
+
+<div class="modal-body">
+    {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+        Keep up the good work. Now, share your post with the world!
+    {{else}}
+        {{#if this.post.isSent}}
+            It
+        {{else}}
+            {{if this.post.emailOnly "Your email" "Your post"}}
+        {{/if}}
+        {{if this.post.isScheduled "will be" "was"}}
+        {{#if this.post.emailOnly}}
+            sent to
+        {{else if this.post.willEmail}}
+            published on your site, and sent to
+        {{else}}
+            published on your site
+        {{/if}}
+
+        {{#if (or this.post.hasEmail this.post.willEmail)}}
+            {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                <strong>
+                    {{if (eq @recipientType "all") "all"}}
+
+                    {{format-number countFetcher.count}}
+
+                    {{!-- @recipientType = free/paid/all/specific --}}
+                    {{if (not-eq @recipientType "all") @recipientType}}
+
+                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                </strong>
+
+                of <strong>{{this.post.newsletter.name}}</strong>
+            {{/let}}
+        {{/if}}
+
+        {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
+            on
+            {{moment-format publishedAt "D MMM YYYY"}}
+            at
+            {{moment-format publishedAt "HH:mm"}}.
+        {{/let}}
+    {{/if}}
+</div>
+
+<footer class="modal-footer">
+    {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+        <button
+            class="gh-btn twitter"
+            type="button"
+            {{!-- {{on "click" this.close}} --}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>{{svg-jar "social-x"}}</span>
+        </button>
+        <button
+            class="gh-btn threads"
+            type="button"
+            {{!-- {{on "click" this.close}} --}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>{{svg-jar "social-threads"}}</span>
+        </button>
+        <button
+            class="gh-btn facebook"
+            type="button"
+            {{!-- {{on "click" this.close}} --}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>{{svg-jar "social-facebook"}}</span>
+        </button>
+        <button
+            class="gh-btn linkedin"
+            type="button"
+            {{!-- {{on "click" this.close}} --}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>{{svg-jar "social-linkedin"}}</span>
+        </button>
+        <button
+            class="gh-btn gh-btn-primary"
+            type="button"
+            {{!-- {{on "click" this.close}} --}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>{{svg-jar "twitter-link"}} Copy link</span>
+        </button>
+    {{else}}
+        {{#if this.post.emailOnly}}
+            {{#if this.post.isScheduled}}
+                <button
+                    class="gh-btn"
+                    type="button"
+                    {{!-- {{on "click" this.close}} --}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    <span>Unschedule</span>
+                </button>
+            {{else}}
+                <button
+                    class="gh-btn"
+                    type="button"
+                    {{!-- {{on "click" this.close}} --}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    <span>View in browser</span>
+                </button>
+            {{/if}}
+        {{else}}
+            <button
+                class="gh-btn"
+                type="button"
+                {{!-- {{on "click" this.close}} --}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Copy preview link</span>
+            </button>
+        {{/if}}
+        <button
+            class="gh-btn gh-btn-primary"
+            type="button"
+            {{!-- {{on "click" this.close}} --}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>OK</span>
+        </button>
+    {{/if}}
+</footer>

@@ -880,3 +880,109 @@
     height: 20px;
     margin-right: 6px;
 }
+
+/* Publish flow modal
+/* ---------------------------------------------------------- */
+
+.modal-publish-flow {
+    overflow: hidden;
+}
+
+.modal-publish-flow .modal-image {
+    aspect-ratio: 16 / 7.55;
+    overflow: hidden;
+    margin: -32px -32px 32px;
+}
+
+.modal-publish-flow .modal-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-publish-flow .modal-header {
+    margin: 0;
+}
+
+.modal-publish-flow .modal-header h1 {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-size: 3.2rem;
+    font-weight: 700;
+}
+
+.modal-publish-flow .modal-header h1 span:has(+ span) {
+    color: var(--green);
+}
+
+.modal-publish-flow .modal-body {
+    margin-top: 16px;
+    font-size: 1.8rem;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+}
+
+.modal-publish-flow .modal-footer .gh-btn {
+    height: 48px;
+    min-width: auto;
+}
+
+.modal-publish-flow .modal-footer .gh-btn span {
+    padding-inline: 16px;
+    font-size: 1.5rem;
+}
+
+.modal-publish-flow .modal-footer:has(.twitter) .gh-btn-primary {
+    flex-grow: 1;
+}
+
+.modal-publish-flow .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+    width: 56px;
+}
+
+.modal-publish-flow .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
+    font-size: 0;
+}
+
+.modal-publish-flow .modal-footer .gh-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.modal-publish-flow .modal-footer .gh-btn.twitter svg path {
+    fill: black;
+}
+
+.modal-publish-flow .modal-footer .gh-btn-primary svg {
+    position: relative;
+    top: -1px;
+}
+
+.modal-publish-flow .modal-footer .gh-btn-primary svg path {
+    fill: white
+}
+
+.modal-publish-flow:has(.modal-image) .close {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+}
+
+.modal-publish-flow:has(.modal-image) .close:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.modal-publish-flow:has(.modal-image) .close svg {
+    width: 14px;
+    height: 14px;
+}
+
+.modal-publish-flow:has(.modal-image) .close svg path {
+    fill: white;
+}
