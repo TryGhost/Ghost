@@ -334,10 +334,6 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
         previewContent = plainTextContent || '';
     }
 
-    console.log('Type', type);
-    console.log('Object', object);
-    console.log('Actor', actor);
-
     const renderAttachment = () => {
         let attachment;
         if (object.image) {
