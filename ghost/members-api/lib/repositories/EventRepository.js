@@ -507,6 +507,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
