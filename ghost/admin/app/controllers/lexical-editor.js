@@ -1297,7 +1297,6 @@ export default class LexicalEditorController extends Controller {
         // we've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
-
         if (hasDirtyAttributes) {
             this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
         }

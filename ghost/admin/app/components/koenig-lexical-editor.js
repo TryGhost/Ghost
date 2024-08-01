@@ -672,10 +672,10 @@ export default class KoenigLexicalEditor extends Component {
         const KGEditorComponent = ({isInitInstance}) => {
             const handleInitInstance = (data) => {
                 try {
-                    console.log('data-- ', data);
                     this.args.initLexical(data);
                 } catch (error) {
-                    this.onError(error); // eslint-disable-line
+                    console.log('unable to initialise, skipping'); // eslint-disable-line
+                    // This is a catch-all, however it's current implementation is to catch it when loading revisions
                 }
             };
             return (
