@@ -404,22 +404,22 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                     <div className='group/article relative cursor-pointer pt-4'>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-4 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                            <span className='z-10'>{actor.name} X reposted</span>
+                            <span className='z-10'>{actor.name} reposted</span>
                         </div>}
                         <div className='flex items-start gap-4'>
-                            <img className='z-10 w-10 rounded' src={actor.icon?.url}/>
+                            <img className='z-10 w-10 rounded' src={(type === 'Announce' && object.type === 'Note') ? (object.attributedTo.icon.url) : actor.icon?.url}/>
                             <div className='border-1 z-10 -mt-1 flex flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
                                 <div className='relative z-10 mb-2 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                                    <span className='mr-1 truncate whitespace-nowrap font-bold' data-test-activity-heading>{actor.name}</span>
+                                    <span className='mr-1 truncate whitespace-nowrap font-bold' data-test-activity-heading>{(type === 'Announce' && object.type === 'Note') ? object.attributedTo?.name : actor.name}</span>
                                     <div className='flex'>
-                                        <span className='truncate text-grey-700'>{getUsername(actor)}</span>
+                                        <span className='truncate text-grey-700'>{(type === 'Announce' && object.type === 'Note') ? getUsername(object.attributedTo) : getUsername(actor)}</span>
                                         <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]'>{timestamp}</span>
                                     </div>
                                 </div>
                                 <div className='relative z-10 w-full gap-4'>
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <p className='text-pretty text-[1.5rem] text-grey-900'>{plainTextContent}</p>
+                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                         {/* <p className='text-pretty text-md text-grey-900'>{object.content}</p> */}
                                         {renderAttachment()}
                                         <div className='mt-3 flex gap-2'>
