@@ -32,3 +32,7 @@ animation: bump 0.3s ease-in-out;
   color: rgb(219 39 119) !important;
 }
 
+.ap-note-content p + p {
+  margin-top: 1.5rem !important;
+}
+
