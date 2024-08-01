@@ -43,7 +43,7 @@ const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
     'post.lexicalScratch',
-    'post.initLexicalScratch',
+    // 'post.lexical', // the lexical object might be refreshed by the initial instance with new schema so it needs to be watched
     'post.titleScratch',
     'post.hasDirtyAttributes',
     'post.tags.[]',
@@ -406,8 +406,9 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    initLexicalScratch(data) {
-        this.set('post.initLexicalScratch', JSON.stringify(data));
+    initLexical(data) {
+        this.post.set('lexical', JSON.stringify(data));
+        this.post.set('hasDirtyAttributes', false); // we need to reset this so that the initilised state is not considered dirty
     }
 
     @action
@@ -1032,7 +1033,6 @@ export default class LexicalEditorController extends Controller {
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
         post.set('titleScratch', post.get('title'));
         post.set('lexicalScratch', post.get('lexical'));
-        // post.set('initLexicalScratch', post.get('lexical'));
 
         this._previousTagNames = this._tagNames;
 
@@ -1259,7 +1259,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         // scratch isn't an attr so needs a manual dirty check
-        let lexical = post.get('initLexicalScratch');
+        let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
 
         // additional guard in case we are trying to compare null with undefined

@@ -671,7 +671,12 @@ export default class KoenigLexicalEditor extends Component {
 
         const KGEditorComponent = ({isInitInstance}) => {
             const handleInitInstance = (data) => {
-                this.args.initLexicalScratch(data);
+                try {
+                    console.log('data-- ', data);
+                    this.args.initLexical(data);
+                } catch (error) {
+                    this.onError(error); // eslint-disable-line
+                }
             };
             return (
                 <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
