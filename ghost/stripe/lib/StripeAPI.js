@@ -698,20 +698,23 @@ module.exports = class StripeAPI {
      * @param {string} subscriptionId - The ID of the Subscription to modify
      * @param {string} id - The ID of the SubscriptionItem
      * @param {string} price - The ID of the new Price
+     * @param {object} [options={}] - Additional data to set on the subscription object
+     * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='always_invoice'] - The proration behavior to use. See [Stripe docs](https://docs.stripe.com/api/subscriptions/update#update_subscription-proration_behavior) for more info
+     * @param {string} [options.cancellationReason=null] - The user defined cancellation reason
      *
      * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
-    async updateSubscriptionItemPrice(subscriptionId, id, price) {
+    async updateSubscriptionItemPrice(subscriptionId, id, price, options = {}) {
         await this._rateLimitBucket.throttle();
         const subscription = await this._stripe.subscriptions.update(subscriptionId, {
-            proration_behavior: 'always_invoice',
+            proration_behavior: options.prorationBehavior || 'always_invoice',
             items: [{
                 id,
                 price
             }],
             cancel_at_period_end: false,
             metadata: {
-                cancellation_reason: null
+                cancellation_reason: options.cancellationReason ?? null
             }
         });
         return subscription;

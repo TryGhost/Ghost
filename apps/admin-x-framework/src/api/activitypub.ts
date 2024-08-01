@@ -9,7 +9,7 @@ export type FollowItem = {
 
 export type ObjectProperties = {
     '@context': string | (string | object)[];
-    type: 'Article' | 'Link';
+    type: 'Article' | 'Link' | 'Note';
     name: string;
     content: string;
     url?: string | undefined;

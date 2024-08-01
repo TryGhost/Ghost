@@ -88,7 +88,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const inputFields = (
         <SettingGroupContent columns={1}>
-            <div className='flex max-w-[220px] items-end gap-[.6rem]'>
+            <div className='flex max-w-[180px] items-end gap-[.6rem]'>
                 <CurrencyField
                     error={!!errors.donationsSuggestedAmount}
                     hint={errors.donationsSuggestedAmount}
@@ -132,7 +132,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description="Give your audience a one-time way to support your work, no membership required."
+            description="Give your audience a simple way to support your work with one-time payments."
             isEditing={isEditing}
             keywords={keywords}
             navid='tips-and-donations'

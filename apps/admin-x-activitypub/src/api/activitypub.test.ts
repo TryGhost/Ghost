@@ -95,7 +95,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Returns an the items array when the inbox is not empty', async function () {
+        test('Returns all the items array when the inbox is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -114,6 +114,49 @@ describe('ActivityPubAPI', function () {
                                  type: 'Note'
                              }
                          }]
+                     })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox();
+            const expected: Activity[] = [
+                {
+                    type: 'Create',
+                    object: {
+                        type: 'Note'
+                    }
+                }
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('Returns an array when the items key is a single object', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/inbox/index': {
+                    response:
+                     JSONResponse({
+                         type: 'Collection',
+                         items: {
+                             type: 'Create',
+                             object: {
+                                 type: 'Note'
+                             }
+                         }
                      })
                 }
             });
@@ -199,7 +242,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Returns an the items array when the following is not empty', async function () {
+        test('Returns all the items array when the following is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -215,6 +258,43 @@ describe('ActivityPubAPI', function () {
                          items: [{
                              type: 'Person'
                          }]
+                     })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFollowing();
+            const expected: Activity[] = [
+                {
+                    type: 'Person'
+                }
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('Returns an array when the items key is a single object', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/following/index': {
+                    response:
+                     JSONResponse({
+                         type: 'Collection',
+                         items: {
+                             type: 'Person'
+                         }
                      })
                 }
             });
@@ -297,7 +377,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Returns an the items array when the followers is not empty', async function () {
+        test('Returns all the items array when the followers is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -313,6 +393,43 @@ describe('ActivityPubAPI', function () {
                          items: [{
                              type: 'Person'
                          }]
+                     })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFollowers();
+            const expected: Activity[] = [
+                {
+                    type: 'Person'
+                }
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('Returns an array when the items key is a single object', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/followers/index': {
+                    response:
+                     JSONResponse({
+                         type: 'Collection',
+                         items: {
+                             type: 'Person'
+                         }
                      })
                 }
             });
