@@ -378,7 +378,7 @@ class OEmbedService {
             // We convert live URLs to watch URLs so we can go straight to the
             // oembed request via a known provider rather than going through the page fetch routine.
             const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
-            if (urlObject.hostname === 'www.youtube.com' && ytLiveRegex.test(urlObject.pathname)) {
+            if (urlObject.hostname.match(/(?:www\.)?youtube\.com/) && ytLiveRegex.test(urlObject.pathname)) {
                 const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
                 urlObject.pathname = '/watch';
                 urlObject.searchParams.set('v', videoId);
