@@ -43,7 +43,6 @@ const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
     'post.lexicalScratch',
-    // 'post.lexical', // the lexical object might be refreshed by the initial instance with new schema so it needs to be watched
     'post.titleScratch',
     'post.hasDirtyAttributes',
     'post.tags.[]',
