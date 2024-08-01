@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const cheerio = require('cheerio');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
@@ -297,6 +296,9 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedData(url, html, cardType) {
+        // Lazy require the library to keep boot quick
+        const cheerio = require('cheerio');
+
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
@@ -340,6 +342,11 @@ class OEmbedService {
                 ];
                 const oembed = _.pick(body, knownFields);
 
+                // Fallback to bookmark if it's a link type
+                if (oembed.type === 'link') {
+                    return;
+                }
+
                 // ensure we have required data for certain types
                 if (oembed.type === 'photo' && !oembed.url) {
                     return;
@@ -365,6 +372,18 @@ class OEmbedService {
     async fetchOembedDataFromUrl(url, type, options = {}) {
         try {
             const urlObject = new URL(url);
+
+            // YouTube has started not returning oembed <link>tags for some live URLs
+            // when fetched from an IP address that's in a non-EN region.
+            // We convert live URLs to watch URLs so we can go straight to the
+            // oembed request via a known provider rather than going through the page fetch routine.
+            const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
+            if (urlObject.hostname.match(/(?:www\.)?youtube\.com/) && ytLiveRegex.test(urlObject.pathname)) {
+                const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
+                urlObject.pathname = '/watch';
+                urlObject.searchParams.set('v', videoId);
+                url = urlObject.toString();
+            }
 
             // Trimming solves the difference of url validation between `new URL(url)`
             // and metascraper.

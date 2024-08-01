@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "html-validate": "8.20.1",
+    "html-validate": "8.21.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
@@ -37,6 +37,6 @@
     "cheerio": "0.22.0",
     "handlebars": "4.7.8",
     "juice": "9.1.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   }
 }

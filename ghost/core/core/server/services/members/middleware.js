@@ -110,7 +110,7 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
             }
 
             throw new errors.UnauthorizedError({
-                messsage: tpl(messages.missingUuid)
+                message: tpl(messages.missingUuid)
             });
         }
 
