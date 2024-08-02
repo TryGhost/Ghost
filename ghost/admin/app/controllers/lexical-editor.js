@@ -1235,7 +1235,6 @@ export default class LexicalEditorController extends Controller {
         _timedSaveTask;
 
     /* Private methods -------------------------------------------------------*/
-
     _hasDirtyAttributes() {
         let post = this.post;
 
@@ -1243,15 +1242,13 @@ export default class LexicalEditorController extends Controller {
             return false;
         }
 
-        // if the Adapter failed to save the post isError will be true
-        // and we should consider the post still dirty.
+        // If the Adapter failed to save the post, isError will be true, and we should consider the post still dirty.
         if (post.get('isError')) {
             this._leaveModalReason = {reason: 'isError', context: post.errors.messages};
             return true;
         }
 
-        // post.tags is an array so hasDirtyAttributes doesn't pick up
-        // changes unless the array ref is changed
+        // Post tags comparison
         let currentTags = (this._tagNames || []).join(', ');
         let previousTags = (this._previousTagNames || []).join(', ');
         if (currentTags !== previousTags) {
@@ -1259,59 +1256,32 @@ export default class LexicalEditorController extends Controller {
             return true;
         }
 
-        // titleScratch isn't an attr so needs a manual dirty check
+        // Title scratch comparison
         if (post.titleScratch !== post.title) {
             this._leaveModalReason = {reason: 'title is different', context: {current: post.title, scratch: post.titleScratch}};
             return true;
         }
 
-        // scratch isn't an attr so needs a manual dirty check
+        // Lexical and scratch comparison
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
-
-        // We have to get try get the init lexical from two area because,
-        // due to a race condition the initLexical in the post model might not be set yet
-        // and then in other cases such as restoring a past post, we can set the initLexical in the model
-        // which will then be used to compare with the scratch model
-
         let initLexical = post.get('initLexicalState') || this._initLexical;
 
-        // additional guard in case we are trying to compare null with undefined
-        if (scratch || lexical || initLexical) {
-        // Initially compare initLexical with scratch
-            if (initLexical && scratch) {
-                const initLexicalChildNodes = initLexical ? JSON.parse(initLexical).root?.children : [];
-                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+        let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+        let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+        let initLexicalChildNodes = initLexical ? JSON.parse(initLexical).root?.children : [];
 
-                initLexicalChildNodes.forEach(child => child.direction = null);
-                scratchChildNodes.forEach(child => child.direction = null);
+        lexicalChildNodes.forEach(child => child.direction = null);
+        scratchChildNodes.forEach(child => child.direction = null);
+        initLexicalChildNodes.forEach(child => child.direction = null);
 
-                if (JSON.stringify(initLexicalChildNodes) !== JSON.stringify(scratchChildNodes)) {
-                    this._leaveModalReason = {reason: 'initLexical is different from scratch', context: {initLexical, scratch}};
-                    return true;
-                }
+        // Compare initLexical with scratch
+        let isInitLexicalDirty = initLexical && scratch && JSON.stringify(initLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
-                if (initLexical === scratch) {
-                    return false;
-                }
-            }
+        // Compare lexical with scratch
+        let isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
-            // Future updates compare lexical with scratch
-            if (scratch && lexical) {
-                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
-                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
-
-                scratchChildNodes.forEach(child => child.direction = null);
-                lexicalChildNodes.forEach(child => child.direction = null);
-
-                if (JSON.stringify(scratchChildNodes) !== JSON.stringify(lexicalChildNodes)) {
-                    this._leaveModalReason = {reason: 'lexical is different from scratch', context: {current: lexical, scratch}};
-                    return true;
-                }
-            }
-        }
-
-        // new+unsaved posts always return `hasDirtyAttributes: true`
+        // New+unsaved posts always return `hasDirtyAttributes: true`
         // so we need a manual check to see if any
         if (post.get('isNew')) {
             let changedAttributes = Object.keys(post.changedAttributes());
@@ -1322,14 +1292,26 @@ export default class LexicalEditorController extends Controller {
             return changedAttributes.length ? true : false;
         }
 
-        // we've covered all the non-tracked cases we care about so fall
+        // We've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
         if (hasDirtyAttributes) {
             this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
+            return true;
         }
 
-        return hasDirtyAttributes;
+        // If either comparison is not dirty, return false
+        if (!isInitLexicalDirty || !isLexicalDirty) {
+            return false;
+        }
+
+        // If both comparisons are dirty, consider the post dirty
+        if (isInitLexicalDirty && isLexicalDirty) {
+            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {initLexical, lexical, scratch}};
+            return true;
+        }
+
+        return false;
     }
 
     _showSaveNotification(prevStatus, status, delayed) {

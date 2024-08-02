@@ -675,6 +675,7 @@ export default class KoenigLexicalEditor extends Component {
                     this.args.initLexical(data);
                 }
             };
+
             return (
                 <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
                     <KoenigComposer
