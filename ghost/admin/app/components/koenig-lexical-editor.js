@@ -682,7 +682,7 @@ export default class KoenigLexicalEditor extends Component {
                         cardConfig={cardConfig}
                         enableMultiplayer={enableMultiplayer}
                         fileUploader={{useFileUpload, fileTypes}}
-                        initialEditorState={this.args.lexical}
+                        initialEditorState={isInitInstance ? this.args.initLexicalState || this.args.lexical : this.args.lexical}
                         multiplayerUsername={multiplayerUsername}
                         multiplayerDocId={multiplayerDocId}
                         multiplayerEndpoint={multiplayerEndpoint}

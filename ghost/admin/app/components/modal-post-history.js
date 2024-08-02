@@ -130,6 +130,7 @@ export default class ModalPostHistory extends Component {
             updateEditor: () => {
                 const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
                 this.editorAPI.editorInstance.setEditorState(state);
+                set(this.post, 'initLexicalState', revision.lexical);
             },
             closePostHistoryModal: () => {
                 this.closeModal();

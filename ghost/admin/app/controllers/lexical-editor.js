@@ -43,6 +43,7 @@ const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
     'post.lexicalScratch',
+    'post.initLexicalState',
     'post.titleScratch',
     'post.hasDirtyAttributes',
     'post.tags.[]',
@@ -183,6 +184,8 @@ export default class LexicalEditorController extends Controller {
     _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
 
+    _initLexical = null;
+
     /* computed properties ---------------------------------------------------*/
 
     @alias('model')
@@ -285,6 +288,11 @@ export default class LexicalEditorController extends Controller {
         const titleTk = this.titleHasTk ? 1 : 0;
         const excerptTk = (this.feature.editorExcerpt && this.excerptHasTk) ? 1 : 0;
         return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
+    }
+
+    @computed('post.initLexicalState')
+    get initLexicalState() {
+        return this.post.initLexicalState;
     }
 
     @action
@@ -406,8 +414,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     initLexical(data) {
-        this.post.set('lexical', JSON.stringify(data));
-        this.post.set('hasDirtyAttributes', false); // we need to reset this so that the initilised state is not considered dirty
+        this.post.set('initLexicalState', JSON.stringify(data));
+        this._initLexical = JSON.stringify(data);
     }
 
     @action
@@ -1261,24 +1269,45 @@ export default class LexicalEditorController extends Controller {
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
 
+        // We have to get try get the init lexical from two area because,
+        // due to a race condition the initLexical in the post model might not be set yet
+        // and then in other cases such as restoring a past post, we can set the initLexical in the model
+        // which will then be used to compare with the scratch model
+
+        let initLexical = post.get('initLexicalState') || this._initLexical;
+
         // additional guard in case we are trying to compare null with undefined
-        if (scratch || lexical) {
-            if (scratch !== lexical) {
-                // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
-                //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
+        if (scratch || lexical || initLexical) {
+        // Initially compare initLexical with scratch
+            if (initLexical && scratch) {
+                const initLexicalChildNodes = initLexical ? JSON.parse(initLexical).root?.children : [];
+                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+
+                initLexicalChildNodes.forEach(child => child.direction = null);
+                scratchChildNodes.forEach(child => child.direction = null);
+
+                if (JSON.stringify(initLexicalChildNodes) !== JSON.stringify(scratchChildNodes)) {
+                    this._leaveModalReason = {reason: 'initLexical is different from scratch', context: {initLexical, scratch}};
+                    return true;
+                }
+
+                if (initLexical === scratch) {
+                    return false;
+                }
+            }
+
+            // Future updates compare lexical with scratch
+            if (scratch && lexical) {
                 const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
                 const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
 
-                // // nullling is typically faster than delete
                 scratchChildNodes.forEach(child => child.direction = null);
                 lexicalChildNodes.forEach(child => child.direction = null);
 
-                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
-                    return false;
+                if (JSON.stringify(scratchChildNodes) !== JSON.stringify(lexicalChildNodes)) {
+                    this._leaveModalReason = {reason: 'lexical is different from scratch', context: {current: lexical, scratch}};
+                    return true;
                 }
-
-                this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
-                return true;
             }
         }
 
