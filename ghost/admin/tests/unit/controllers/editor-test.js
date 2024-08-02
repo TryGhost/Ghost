@@ -208,7 +208,8 @@ describe('Unit: Controller: lexical-editor', function () {
                 titleScratch: 'this is a title',
                 status: 'published',
                 lexical: initialLexicalString,
-                lexicalScratch: initialLexicalString
+                lexicalScratch: initialLexicalString,
+                initLexicalState: initialLexicalString
             }));
 
             // synthetically update the lexicalScratch as if the editor itself made the modifications on loading the initial editorState
