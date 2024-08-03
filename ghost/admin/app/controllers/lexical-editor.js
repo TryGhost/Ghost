@@ -438,6 +438,11 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    registerSecondaryEditorAPI(API) {
+        this.secondaryEditorAPI = API;
+    }
+
+    @action
     clearFeatureImage() {
         this.post.set('featureImage', null);
         this.post.set('featureImageAlt', null);
@@ -1265,7 +1270,7 @@ export default class LexicalEditorController extends Controller {
         // Lexical and scratch comparison
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
-        let initLexical = post.get('initLexicalState') || this._initLexical;
+        let initLexical = this.initLexicalState;
 
         let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
         let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
@@ -1300,7 +1305,7 @@ export default class LexicalEditorController extends Controller {
             return true;
         }
 
-        // If either comparison is not dirty, return false
+        // If either comparison is not dirty, return false, because we scratch is always up to date.
         if (!isInitLexicalDirty || !isLexicalDirty) {
             return false;
         }

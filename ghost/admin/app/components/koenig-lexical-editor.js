@@ -683,7 +683,7 @@ export default class KoenigLexicalEditor extends Component {
                         cardConfig={cardConfig}
                         enableMultiplayer={enableMultiplayer}
                         fileUploader={{useFileUpload, fileTypes}}
-                        initialEditorState={isInitInstance ? this.args.initLexicalState || this.args.lexical : this.args.lexical}
+                        initialEditorState={this.args.lexical}
                         multiplayerUsername={multiplayerUsername}
                         multiplayerDocId={multiplayerDocId}
                         multiplayerEndpoint={multiplayerEndpoint}
@@ -697,7 +697,7 @@ export default class KoenigLexicalEditor extends Component {
                             placeholderText={isInitInstance ? null : this.args.placeholderText}
                             darkMode={isInitInstance ? null : this.feature.nightShift}
                             onChange={isInitInstance ? e => handleInitInstance(e) : this.args.onChange}
-                            registerAPI={isInitInstance ? null : this.args.registerAPI}
+                            registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
                         />
                         <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
                         <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
