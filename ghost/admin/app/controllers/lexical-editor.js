@@ -184,8 +184,6 @@ export default class LexicalEditorController extends Controller {
     _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
 
-    _initLexical = null;
-
     /* computed properties ---------------------------------------------------*/
 
     @alias('model')
@@ -414,8 +412,7 @@ export default class LexicalEditorController extends Controller {
 
     @action
     initLexical(data) {
-        this.post.set('initLexicalState', JSON.stringify(data));
-        this._initLexical = JSON.stringify(data);
+        this.post.set('initLexicalState', JSON.stringify(data)); // sets the initial lexical state from the secondary editor
     }
 
     @action
