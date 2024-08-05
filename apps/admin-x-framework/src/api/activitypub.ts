@@ -13,7 +13,7 @@ export type ObjectProperties = {
     name: string;
     content: string;
     url?: string | undefined;
-    attributedTo?: string | object[] | undefined;
+    attributedTo?: object | string | object[] | undefined;
     image?: string;
     published?: string;
     preview?: {type: string, content: string};
