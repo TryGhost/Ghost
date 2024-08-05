@@ -97,6 +97,11 @@ module.exports = class MailgunClient {
                 messageData['o:tracking-opens'] = true;
             }
 
+            // set the delivery time if specified
+            if (message.deliveryTime && message.deliveryTime instanceof Date) {
+                messageData['o:deliverytime'] = message.deliveryTime.toUTCString();
+            }
+
             const mailgunConfig = this.#getConfig();
             startTime = Date.now();
             const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
@@ -338,5 +343,22 @@ module.exports = class MailgunClient {
      */
     getBatchSize() {
         return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
+    }
+
+    /**
+     * Returns the configured target delivery window in seconds
+     * Ghost will attempt to deliver emails evenly distributed over this window
+     * 
+     * Defaults to 0 (no delay) if not set
+     * 
+     * @returns {number}
+     */
+    getTargetDeliveryWindow() {
+        const targetDeliveryWindow = this.#config.get('bulkEmail')?.targetDeliveryWindow;
+        // If targetDeliveryWindow is not set or is not a positive integer, return 0
+        if (targetDeliveryWindow === undefined || !Number.isInteger(parseInt(targetDeliveryWindow)) || parseInt(targetDeliveryWindow) < 0) {
+            return 0;
+        }
+        return parseInt(targetDeliveryWindow);
     }
 };
