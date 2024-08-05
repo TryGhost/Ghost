@@ -304,7 +304,7 @@ test.describe('Publishing', () => {
             await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
-            await adminPage.locator('[data-kg="editor"]').click();
+            await adminPage.locator('[data-kg="editor"]').first().click();
             await adminPage.waitForTimeout(200); //
             await adminPage.keyboard.type(' This is some updated text.');
 
