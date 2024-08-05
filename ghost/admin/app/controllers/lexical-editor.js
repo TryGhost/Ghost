@@ -1262,8 +1262,6 @@ export default class LexicalEditorController extends Controller {
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
         let secondaryLexical = post.get('secondaryLexicalState');
-        // let initLexical = this.secondaryEditorAPI?.editorInstance?.getEditorState().toJSON();
-        // initLexical = JSON.stringify(initLexical);
 
         let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
         let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
@@ -1298,7 +1296,7 @@ export default class LexicalEditorController extends Controller {
             return true;
         }
 
-        // If either comparison is not dirty, return false, because we scratch is always up to date.
+        // If either comparison is not dirty, return false, because scratch is always up to date.
         if (!isSecondaryDirty || !isLexicalDirty) {
             return false;
         }
