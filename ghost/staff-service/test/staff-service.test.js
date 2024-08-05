@@ -149,6 +149,12 @@ describe('StaffService', function () {
             }
         };
 
+        const blogIcon = {
+            getIconUrl: () => {
+                return 'https://ghost.example/siteicon.png';
+            }
+        };
+
         const settingsHelpers = {
             getDefaultEmailDomain: () => {
                 return 'ghost.example';
@@ -184,6 +190,7 @@ describe('StaffService', function () {
                 },
                 settingsCache,
                 urlUtils,
+                blogIcon,
                 settingsHelpers,
                 labs
             });
@@ -220,6 +227,7 @@ describe('StaffService', function () {
                     DomainEvents,
                     settingsCache,
                     urlUtils,
+                    blogIcon,
                     settingsHelpers
                 });
                 service.subscribeEvents();
@@ -339,6 +347,7 @@ describe('StaffService', function () {
                     },
                     settingsCache,
                     urlUtils,
+                    blogIcon,
                     settingsHelpers,
                     labs: {
                         isSet: () => {
