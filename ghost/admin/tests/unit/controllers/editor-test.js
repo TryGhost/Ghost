@@ -229,8 +229,8 @@ describe('Unit: Controller: lexical-editor', function () {
 
         it('dirty is false if initlexical and scratch matches, but lexical is outdated', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            const lexicalStringNoNullDirection = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            const lexicalStringUpdatedContent = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
 
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('post', EmberObject.create({
@@ -238,13 +238,35 @@ describe('Unit: Controller: lexical-editor', function () {
                 titleScratch: 'this is a title',
                 status: 'published',
                 lexical: initialLexicalString,
-                lexicalScratch: lexicalStringNoNullDirection,
-                initLexicalState: lexicalStringUpdatedContent
+                lexicalScratch: lexicalScratch,
+                initLexicalState: secondLexicalInstance
             }));
 
             let isDirty = controller.get('hasDirtyAttributes');
 
             expect(isDirty).to.be.false;
+        });
+
+        it('dirty is true if initLexical and lexical does not match scratch', async function () {
+            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content1234","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                title: 'this is a title',
+                titleScratch: 'this is a title',
+                status: 'published',
+                lexical: initialLexicalString,
+                lexicalScratch: lexicalScratch,
+                initLexicalState: secondLexicalInstance
+            }));
+
+            controller.send('updateScratch',JSON.parse(lexicalScratch));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+
+            expect(isDirty).to.be.true;
         });
     });
 });
