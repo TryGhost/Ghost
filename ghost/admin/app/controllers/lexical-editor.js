@@ -1267,7 +1267,10 @@ export default class LexicalEditorController extends Controller {
         // Lexical and scratch comparison
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
-        let initLexical = this.initLexicalState;
+        // let initLexical = this.initLexicalState;
+        let initLexical = this.secondaryEditorAPI?.editorInstance?.getEditorState().toJSON();
+        // convert initLexical to string
+        initLexical = JSON.stringify(initLexical);
 
         let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
         let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
