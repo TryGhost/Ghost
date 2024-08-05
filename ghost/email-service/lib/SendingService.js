@@ -83,10 +83,11 @@ class SendingService {
      * @param {string|null} data.segment
      * @param {string|null} data.emailId
      * @param {MemberLike[]} data.members
+     * @param {Date} data.deliveryTime
      * @param {EmailSendingOptions} options
      * @returns {Promise<EmailProviderSuccessResponse>}
     */
-    async send({post, newsletter, segment, members, emailId}, options) {
+    async send({post, newsletter, segment, members, emailId, deliveryTime}, options) {
         const cacheId = emailId + '-' + (segment ?? 'null');
         const isTestEmail = options.isTestEmail ?? false;
 
@@ -122,7 +123,8 @@ class SendingService {
             plaintext: emailBody.plaintext,
             recipients,
             emailId: emailId,
-            replacementDefinitions: emailBody.replacements
+            replacementDefinitions: emailBody.replacements,
+            deliveryTime
         }, {
             clickTrackingEnabled: !!options.clickTrackingEnabled,
             openTrackingEnabled: !!options.openTrackingEnabled

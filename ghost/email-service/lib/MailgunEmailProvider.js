@@ -92,7 +92,8 @@ class MailgunEmailProvider {
             replyTo,
             emailId,
             recipients,
-            replacementDefinitions
+            replacementDefinitions,
+            deliveryTime
         } = data;
 
         logging.info(`Sending email to ${recipients.length} recipients`);
@@ -110,6 +111,10 @@ class MailgunEmailProvider {
                 track_opens: !!options.openTrackingEnabled,
                 track_clicks: !!options.clickTrackingEnabled
             };
+
+            if (deliveryTime && deliveryTime instanceof Date) {
+                messageData.deliveryTime = deliveryTime;
+            }
 
             // create recipient data for Mailgun using replacement definitions
             const recipientData = recipients.reduce((acc, recipient) => {

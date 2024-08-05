@@ -360,14 +360,19 @@ class BatchSendingService {
 
         // Loop batches and send them via the EmailProvider
         let succeededCount = 0;
-        const queue = batches.slice();
+        const queue = batches.slice().map((batch, index) => {
+            return {batchIndex: index, ...batch};
+        });
 
         // Bind this
         let runNext;
+        let startTime = new Date();
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache})) {
+                const deliveryDelay = batch.batchIndex * 5000; // 5 seconds delay between each batch
+                const deliveryTime = new Date(startTime.getTime() + deliveryDelay);
+                if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache, deliveryTime})) {
                     succeededCount += 1;
                 }
                 await runNext();
@@ -394,7 +399,7 @@ class BatchSendingService {
      * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
-    async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache}) {
+    async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache, deliveryTime}) {
         logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
         // Check the status of the email batch in a 'for update' transaction
@@ -436,7 +441,8 @@ class BatchSendingService {
                     post,
                     newsletter,
                     segment: batch.get('member_segment'),
-                    members
+                    members,
+                    deliveryTime
                 }, {
                     openTrackingEnabled: !!email.get('track_opens'),
                     clickTrackingEnabled: !!email.get('track_clicks'),

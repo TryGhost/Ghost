@@ -97,6 +97,11 @@ module.exports = class MailgunClient {
                 messageData['o:tracking-opens'] = true;
             }
 
+            // set the delivery time if specified
+            if (message.deliveryTime && message.deliveryTime instanceof Date) {
+                messageData['o:deliverytime'] = message.deliveryTime.toUTCString();
+            }
+
             const mailgunConfig = this.#getConfig();
             startTime = Date.now();
             const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
