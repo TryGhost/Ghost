@@ -1,10 +1,8 @@
 import Component from '@glimmer/component';
-import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
-import {use} from 'ember-could-get-used-to-this';
 
 /**
  * @typedef {import('../../services/dashboard-stats').SourceAttributionCount} SourceAttributionCount
@@ -37,19 +35,15 @@ export default class Analytics extends Component {
     @tracked showPublishFlowModal = false;
     displayOptions = DISPLAY_OPTIONS;
 
-    @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
-
     constructor() {
         super(...arguments);
-        this.checkUrlParameter();
+        this.checkPublishFlowModal();
     }
 
-    checkUrlParameter() {
-        const currentURL = this.router.currentURL;
-        const url = new URL(window.location.origin + currentURL);
-        const successParam = url.searchParams.get('success');
-        if (successParam === 'true') {
+    checkPublishFlowModal() {
+        if (localStorage.getItem('ghost-last-published-post')) {
             this.showPublishFlowModal = true;
+            localStorage.removeItem('ghost-last-published-post');
         }
     }
 
@@ -164,28 +158,6 @@ export default class Analytics extends Component {
 
     @action
     togglePublishFlowModal() {
-        if (this.showPublishFlowModal) {
-            const hash = window.location.hash;
-
-            // Extract the part before '?' and the query parameters
-            const [path, queryParamsString] = hash.split('?');
-
-            // If there are query parameters, proceed to modify them
-            if (queryParamsString) {
-                const searchParams = new URLSearchParams(queryParamsString);
-
-                // Remove the 'success' parameter
-                searchParams.delete('success');
-
-                // Construct the new hash fragment
-                const newQueryParamsString = searchParams.toString();
-                const newHash = newQueryParamsString ? `${path}?${newQueryParamsString}` : path;
-
-                // Update the URL without reloading the page
-                window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${newHash}`);
-            }
-        }
-
         this.showPublishFlowModal = !this.showPublishFlowModal;
     }
 

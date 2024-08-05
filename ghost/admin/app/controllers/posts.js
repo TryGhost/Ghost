@@ -4,7 +4,6 @@ import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const TYPES = [{
@@ -69,8 +68,6 @@ export default class PostsController extends Controller {
     @tracked tag = null;
     @tracked order = null;
     @tracked selectionList = new SelectionList(this.postsInfinityModel);
-    @tracked showPublishFlowModal = false;
-    @tracked latestScheduledPost = null;
 
     availableTypes = TYPES;
     availableVisibilities = VISIBILITIES;
@@ -84,29 +81,8 @@ export default class PostsController extends Controller {
 
     constructor() {
         super(...arguments);
-        this.checkUrlParameter();
-
-        this.router.on('routeDidChange', () => {
-            this.checkUrlParameter();
-        });
-
-        this.getLatestScheduledPost.perform();
 
         Object.assign(this, DEFAULT_QUERY_PARAMS.posts);
-    }
-
-    checkUrlParameter() {
-        const hash = window.location.hash; // Get the full hash fragment
-        const queryParamsString = hash.split('?')[1]; // Get the part after '?'
-
-        if (queryParamsString) {
-            const searchParams = new URLSearchParams(queryParamsString);
-            const successParam = searchParams.get('success');
-
-            if (successParam === 'true') {
-                this.showPublishFlowModal = true;
-            }
-        }
     }
 
     get showingAll() {
@@ -189,16 +165,5 @@ export default class PostsController extends Controller {
     @action
     openEditor(post) {
         this.router.transitionTo('lexical-editor.edit', 'post', post.id);
-    }
-
-    @action
-    togglePublishFlowModal() {
-        this.showPublishFlowModal = !this.showPublishFlowModal;
-    }
-
-    @task
-    *getLatestScheduledPost() {
-        const result = yield this.store.query('post', {filter: 'status:scheduled', limit: 1});
-        this.latestScheduledPost = result.toArray()[0];
     }
 }

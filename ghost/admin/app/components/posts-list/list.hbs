@@ -43,3 +43,11 @@
 >
     <PostsList::ContextMenu @menu={{menu}} />
 </GhContextMenu>
+
+{{#if this.showPublishFlowModal}}
+    <GhFullscreenModal
+        @modal="publish-flow"
+        @model={{this.latestScheduledPost}}
+        @close={{this.togglePublishFlowModal}}
+        @modifier="action wide" />
+{{/if}}
