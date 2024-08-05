@@ -227,7 +227,7 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(isDirty).to.be.true;
         });
 
-        it('dirty is false if initlexical and scratch matches, but lexical is outdated', async function () {
+        it('dirty is false if secondaryLexical and scratch matches, but lexical is outdated', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
@@ -247,7 +247,7 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(isDirty).to.be.false;
         });
 
-        it('dirty is true if initLexical and lexical does not match scratch', async function () {
+        it('dirty is true if secondaryLexical and lexical does not match scratch', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content1234","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
