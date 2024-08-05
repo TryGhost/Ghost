@@ -209,7 +209,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 status: 'published',
                 lexical: initialLexicalString,
                 lexicalScratch: initialLexicalString,
-                initLexicalState: initialLexicalString
+                secondaryLexicalState: initialLexicalString
             }));
 
             // synthetically update the lexicalScratch as if the editor itself made the modifications on loading the initial editorState
@@ -239,7 +239,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 status: 'published',
                 lexical: initialLexicalString,
                 lexicalScratch: lexicalScratch,
-                initLexicalState: secondLexicalInstance
+                secondaryLexicalState: secondLexicalInstance
             }));
 
             let isDirty = controller.get('hasDirtyAttributes');
@@ -259,7 +259,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 status: 'published',
                 lexical: initialLexicalString,
                 lexicalScratch: lexicalScratch,
-                initLexicalState: secondLexicalInstance
+                secondaryLexicalState: secondLexicalInstance
             }));
 
             controller.send('updateScratch',JSON.parse(lexicalScratch));

@@ -670,12 +670,6 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerUsername = this.session.user.name;
 
         const KGEditorComponent = ({isInitInstance}) => {
-            const handleInitInstance = (data) => {
-                if (this.args.initLexical && isInitInstance) {
-                    this.args.initLexical(data);
-                }
-            };
-
             return (
                 <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
                     <KoenigComposer
@@ -696,7 +690,7 @@ export default class KoenigLexicalEditor extends Component {
                             cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
                             placeholderText={isInitInstance ? null : this.args.placeholderText}
                             darkMode={isInitInstance ? null : this.feature.nightShift}
-                            onChange={isInitInstance ? e => handleInitInstance(e) : this.args.onChange}
+                            onChange={isInitInstance ? this.args.updateSecondaryInstanceModel : this.args.onChange}
                             registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
                         />
                         <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />

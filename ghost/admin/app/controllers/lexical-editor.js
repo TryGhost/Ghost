@@ -43,7 +43,6 @@ const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
     'post.lexicalScratch',
-    'post.initLexicalState',
     'post.titleScratch',
     'post.hasDirtyAttributes',
     'post.tags.[]',
@@ -288,11 +287,6 @@ export default class LexicalEditorController extends Controller {
         return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
     }
 
-    @computed('post.initLexicalState')
-    get initLexicalState() {
-        return this.post.initLexicalState;
-    }
-
     @action
     updateScratch(lexical) {
         this.set('post.lexicalScratch', JSON.stringify(lexical));
@@ -301,6 +295,11 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
+    }
+
+    @action
+    updateSecondaryInstanceModel(lexical) {
+        this.set('post.secondaryLexicalState', JSON.stringify(lexical));
     }
 
     @action
@@ -408,11 +407,6 @@ export default class LexicalEditorController extends Controller {
     @action
     updatePostTkCount(count) {
         this.set('postTkCount', count);
-    }
-
-    @action
-    initLexical(data) {
-        this.post.set('initLexicalState', JSON.stringify(data)); // sets the initial lexical state from the secondary editor
     }
 
     @action
@@ -1267,21 +1261,20 @@ export default class LexicalEditorController extends Controller {
         // Lexical and scratch comparison
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
-        // let initLexical = this.initLexicalState;
-        let initLexical = this.secondaryEditorAPI?.editorInstance?.getEditorState().toJSON();
-        // convert initLexical to string
-        initLexical = JSON.stringify(initLexical);
+        let secondaryLexical = post.get('secondaryLexicalState');
+        // let initLexical = this.secondaryEditorAPI?.editorInstance?.getEditorState().toJSON();
+        // initLexical = JSON.stringify(initLexical);
 
         let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
         let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
-        let initLexicalChildNodes = initLexical ? JSON.parse(initLexical).root?.children : [];
+        let secondaryLexicalChildNodes = secondaryLexical ? JSON.parse(secondaryLexical).root?.children : [];
 
         lexicalChildNodes.forEach(child => child.direction = null);
         scratchChildNodes.forEach(child => child.direction = null);
-        initLexicalChildNodes.forEach(child => child.direction = null);
+        secondaryLexicalChildNodes.forEach(child => child.direction = null);
 
         // Compare initLexical with scratch
-        let isInitLexicalDirty = initLexical && scratch && JSON.stringify(initLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
+        let isSecondaryDirty = secondaryLexical && scratch && JSON.stringify(secondaryLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
         // Compare lexical with scratch
         let isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
@@ -1306,13 +1299,13 @@ export default class LexicalEditorController extends Controller {
         }
 
         // If either comparison is not dirty, return false, because we scratch is always up to date.
-        if (!isInitLexicalDirty || !isLexicalDirty) {
+        if (!isSecondaryDirty || !isLexicalDirty) {
             return false;
         }
 
         // If both comparisons are dirty, consider the post dirty
-        if (isInitLexicalDirty && isLexicalDirty) {
-            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {initLexical, lexical, scratch}};
+        if (isSecondaryDirty && isLexicalDirty) {
+            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {secondaryLexical, lexical, scratch}};
             return true;
         }
 
