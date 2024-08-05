@@ -95,7 +95,9 @@
             @placeholder={{@bodyPlaceholder}}
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
+            @updateSecondaryInstanceModel={{@updateSecondaryInstanceModel}}
             @registerAPI={{this.registerEditorAPI}}
+            @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
             @cursorDidExitAtTop={{if this.feature.editorExcerpt this.focusExcerpt this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
             @updatePostTkCount={{@updatePostTkCount}}

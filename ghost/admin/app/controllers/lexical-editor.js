@@ -298,6 +298,11 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    updateSecondaryInstanceModel(lexical) {
+        this.set('post.secondaryLexicalState', JSON.stringify(lexical));
+    }
+
+    @action
     updateTitleScratch(title) {
         this.set('post.titleScratch', title);
     }
@@ -421,6 +426,11 @@ export default class LexicalEditorController extends Controller {
     @action
     registerEditorAPI(API) {
         this.editorAPI = API;
+    }
+
+    @action
+    registerSecondaryEditorAPI(API) {
+        this.secondaryEditorAPI = API;
     }
 
     @action
@@ -1221,7 +1231,6 @@ export default class LexicalEditorController extends Controller {
         _timedSaveTask;
 
     /* Private methods -------------------------------------------------------*/
-
     _hasDirtyAttributes() {
         let post = this.post;
 
@@ -1229,8 +1238,7 @@ export default class LexicalEditorController extends Controller {
             return false;
         }
 
-        // if the Adapter failed to save the post isError will be true
-        // and we should consider the post still dirty.
+        // If the Adapter failed to save the post, isError will be true, and we should consider the post still dirty.
         if (post.get('isError')) {
             this._leaveModalReason = {reason: 'isError', context: post.errors.messages};
             return true;
@@ -1245,37 +1253,32 @@ export default class LexicalEditorController extends Controller {
             return true;
         }
 
-        // titleScratch isn't an attr so needs a manual dirty check
+        // Title scratch comparison
         if (post.titleScratch !== post.title) {
             this._leaveModalReason = {reason: 'title is different', context: {current: post.title, scratch: post.titleScratch}};
             return true;
         }
 
-        // scratch isn't an attr so needs a manual dirty check
+        // Lexical and scratch comparison
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
-        // additional guard in case we are trying to compare null with undefined
-        if (scratch || lexical) {
-            if (scratch !== lexical) {
-                // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
-                //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
-                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
-                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+        let secondaryLexical = post.get('secondaryLexicalState');
 
-                // // nullling is typically faster than delete
-                scratchChildNodes.forEach(child => child.direction = null);
-                lexicalChildNodes.forEach(child => child.direction = null);
+        let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+        let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+        let secondaryLexicalChildNodes = secondaryLexical ? JSON.parse(secondaryLexical).root?.children : [];
 
-                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
-                    return false;
-                }
+        lexicalChildNodes.forEach(child => child.direction = null);
+        scratchChildNodes.forEach(child => child.direction = null);
+        secondaryLexicalChildNodes.forEach(child => child.direction = null);
 
-                this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
-                return true;
-            }
-        }
+        // Compare initLexical with scratch
+        let isSecondaryDirty = secondaryLexical && scratch && JSON.stringify(secondaryLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
-        // new+unsaved posts always return `hasDirtyAttributes: true`
+        // Compare lexical with scratch
+        let isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
+
+        // New+unsaved posts always return `hasDirtyAttributes: true`
         // so we need a manual check to see if any
         if (post.get('isNew')) {
             let changedAttributes = Object.keys(post.changedAttributes());
@@ -1286,15 +1289,26 @@ export default class LexicalEditorController extends Controller {
             return changedAttributes.length ? true : false;
         }
 
-        // we've covered all the non-tracked cases we care about so fall
+        // We've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
-
         if (hasDirtyAttributes) {
             this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
+            return true;
         }
 
-        return hasDirtyAttributes;
+        // If either comparison is not dirty, return false, because scratch is always up to date.
+        if (!isSecondaryDirty || !isLexicalDirty) {
+            return false;
+        }
+
+        // If both comparisons are dirty, consider the post dirty
+        if (isSecondaryDirty && isLexicalDirty) {
+            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {secondaryLexical, lexical, scratch}};
+            return true;
+        }
+
+        return false;
     }
 
     _showSaveNotification(prevStatus, status, delayed) {

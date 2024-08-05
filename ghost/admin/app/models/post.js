@@ -136,6 +136,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     scratch: null,
     lexicalScratch: null,
     titleScratch: null,
+    //This is used to store the initial lexical state from the
+    // secondary editor to get the schema up to date in case its outdated
+    secondaryLexicalState: null,
 
     // For use by date/time pickers - will be validated then converted to UTC
     // on save. Updated by an observer whenever publishedAtUTC changes.
