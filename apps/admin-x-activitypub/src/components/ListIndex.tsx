@@ -4,7 +4,7 @@ import articleBodyStyles from './articleBodyStyles';
 import getUsername from '../utils/get-username';
 import {ActivityPubAPI} from '../api/activitypub';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Avatar, Button, ButtonGroup, Heading, List, ListItem, Page, SelectOption, SettingValue, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, ButtonGroup, Heading, Icon, List, ListItem, Page, SelectOption, SettingValue, ViewContainer, ViewTab} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useQuery} from '@tanstack/react-query';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -123,6 +123,7 @@ const ActivityPubComponent: React.FC = () => {
                                         actor={activity.actor}
                                         layout={selectedOption.value}
                                         object={activity.object}
+                                        type={activity.type}
                                     />
                                 </li>
                             ))}
@@ -167,6 +168,7 @@ const ActivityPubComponent: React.FC = () => {
                                     actor={activity.actor}
                                     layout={selectedOption.value}
                                     object={activity.object}
+                                    type={activity.object.type}
                                 />
                             </li>
                         ))}
@@ -320,7 +322,7 @@ ${image &&
     );
 };
 
-const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProperties, layout: string }> = ({actor, object, layout}) => {
+const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProperties, layout: string, type: string }> = ({actor, object, layout, type}) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(object.content || '', 'text/html');
 
@@ -392,27 +394,40 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
         setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
     };
 
+    let author = actor;
+    if (type === 'Announce' && object.type === 'Note') {
+        author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
+    }
+
     if (layout === 'feed') {
         return (
             <>
                 {object && (
-                    <div className='group/article relative flex cursor-pointer items-start gap-4 pt-4'>
-                        <img className='z-10 w-9 rounded' src={actor.icon?.url}/>
-                        <div className='border-1 z-10 -mt-1 flex flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
-                            <div className='relative z-10 flex w-full overflow-visible text-[1.5rem]'>
-                                <p className='mr-1 truncate whitespace-nowrap font-bold' data-test-activity-heading>{actor.name}</p>
-                                <span className='truncate text-grey-700'>{getUsername(actor)}</span>
-                                <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]'>{timestamp}</span>
-                            </div>
-                            <div className='relative z-10 w-full gap-4'>
-                                <div className='flex flex-col'>
-                                    {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                    <p className='text-pretty text-[1.5rem] text-grey-900'>{plainTextContent}</p>
-                                    {/* <p className='text-pretty text-md text-grey-900'>{object.content}</p> */}
-                                    {renderAttachment()}
-                                    <div className='mt-3 flex gap-2'>
-                                        <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
-                                        <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
+                    <div className='group/article relative cursor-pointer pt-4'>
+                        {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-4 text-grey-700'>
+                            <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
+                            <span className='z-10'>{actor.name} reposted</span>
+                        </div>}
+                        <div className='flex items-start gap-4'>
+                            <img className='z-10 w-10 rounded' src={author.icon?.url}/>
+                            <div className='border-1 z-10 -mt-1 flex flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
+                                <div className='relative z-10 mb-2 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                                    <span className='mr-1 truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                    <div className='flex'>
+                                        <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]'>{timestamp}</span>
+                                    </div>
+                                </div>
+                                <div className='relative z-10 w-full gap-4'>
+                                    <div className='flex flex-col'>
+                                        {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
+                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
+                                        {/* <p className='text-pretty text-md text-grey-900'>{object.content}</p> */}
+                                        {renderAttachment()}
+                                        <div className='mt-3 flex gap-2'>
+                                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                                            <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
