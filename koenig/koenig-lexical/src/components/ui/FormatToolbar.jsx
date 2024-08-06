@@ -56,7 +56,6 @@ export default function FormatToolbar({
     isLinkSelected,
     onLinkClick,
     onSnippetClick,
-    arrowStyles,
     hiddenFormats = []
 }) {
     const [isBold, setIsBold] = React.useState(false);
@@ -174,7 +173,7 @@ export default function FormatToolbar({
     };
 
     return (
-        <ToolbarMenu arrowStyles={arrowStyles}>
+        <ToolbarMenu>
             <ToolbarMenuItem
                 data-kg-toolbar-button="bold"
                 hide={hideBold}

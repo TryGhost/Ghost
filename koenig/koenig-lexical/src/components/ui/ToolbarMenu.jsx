@@ -39,7 +39,7 @@ export const TOOLBAR_ICONS = {
     remove: TrashIcon
 };
 
-export function ToolbarMenu({children, hide, arrowStyles, ...props}) {
+export function ToolbarMenu({children, hide, ...props}) {
     if (hide) {
         return null;
     }

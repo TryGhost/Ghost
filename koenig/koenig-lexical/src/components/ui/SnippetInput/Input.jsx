@@ -1,7 +1,7 @@
 import CloseIcon from '../../../assets/icons/kg-close.svg?react';
 import React from 'react';
 
-export const Input = ({value, onChange, onClear, onKeyDown, arrowStyles}) => {
+export const Input = ({value, onChange, onClear, onKeyDown}) => {
     return (
         <div className="relative m-0 flex items-center justify-evenly gap-1 rounded-lg bg-white font-sans text-md font-normal text-black shadow-md dark:bg-grey-950">
             <input

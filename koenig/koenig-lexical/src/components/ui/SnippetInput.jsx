@@ -9,8 +9,7 @@ export function SnippetInput({
     onCreateSnippet,
     onUpdateSnippet,
     onClose,
-    snippets = [],
-    arrowStyles
+    snippets = []
 }) {
     const snippetRef = useRef(null);
     const [isCreateButtonActive, setIsCreateButtonActive] = useState(true);
@@ -121,7 +120,6 @@ export function SnippetInput({
             onClick={e => e.stopPropagation()} // prevents card from losing selected state
         >
             <Input
-                arrowStyles={arrowStyles}
                 value={value}
                 onChange={onChange}
                 onClear={onClose}

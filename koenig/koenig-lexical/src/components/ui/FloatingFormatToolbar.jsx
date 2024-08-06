@@ -33,25 +33,16 @@ export function FloatingFormatToolbar({
     const isInternalLinkingEnabled = cardConfig?.feature?.internalLinking || false;
 
     const toolbarRef = React.useRef(null);
-    const [arrowStyles, setArrowStyles] = React.useState(null);
 
     const internalLinkingToolbarVisible = toolbarItemType === toolbarItemTypes.link && isInternalLinkingEnabled;
-
-    const updateArrowStyles = React.useCallback(() => {
-        const styles = getArrowPositionStyles({ref: toolbarRef, selectionRangeRect});
-        setArrowStyles(styles);
-    }, [selectionRangeRect]);
 
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
     const showToolbarIfHidden = React.useCallback((e) => {
         if (toolbarItemType && toolbarRef.current?.style.opacity === '0') {
             toolbarRef.current.style.opacity = '1';
-            updateArrowStyles();
         }
-    }, [toolbarItemType, updateArrowStyles]);
-
-    // TODO: Arrow not updating position on selection change (select all)
+    }, [toolbarItemType]);
 
     React.useEffect(() => {
         const toggle = (e) => {
@@ -158,18 +149,15 @@ export function FloatingFormatToolbar({
                 isVisible={!!toolbarItemType}
                 shouldReposition={toolbarItemType !== toolbarItemTypes.text} // format toolbar shouldn't reposition when applying formats
                 toolbarRef={toolbarRef}
-                onReposition={updateArrowStyles}
             >
                 {isSnippetToolbar && (
                     <SnippetActionToolbar
-                        arrowStyles={arrowStyles}
                         onClose={handleActionToolbarClose}
                     />
                 )}
 
                 {(isLinkToolbar && !isInternalLinkingEnabled) && (
                     <LinkActionToolbar
-                        arrowStyles={arrowStyles}
                         href={href}
                         onClose={handleActionToolbarClose}
                     />
@@ -177,7 +165,6 @@ export function FloatingFormatToolbar({
 
                 {showTextToolbar && (
                     <FormatToolbar
-                        arrowStyles={arrowStyles}
                         editor={editor}
                         hiddenFormats={hiddenFormats}
                         isLinkSelected={!!href || (isInternalLinkingEnabled && isLinkToolbar)}
@@ -198,28 +185,4 @@ export function FloatingFormatToolbar({
             )}
         </>
     );
-}
-
-function getArrowPositionStyles({ref, selectionRangeRect}) {
-    const ARROW_WIDTH = 8;
-
-    if (!ref.current || !selectionRangeRect) {
-        return {};
-    }
-    const selectionLeft = selectionRangeRect.left;
-    const toolbarRect = ref.current.getClientRects()[0];
-    const toolbarLeft = toolbarRect.left;
-    const arrowLeftPosition = (selectionLeft - toolbarLeft) + selectionRangeRect?.width / 2 - ARROW_WIDTH;
-    const max = toolbarRect.width - (ARROW_WIDTH * 3);
-    const min = ARROW_WIDTH / 2;
-
-    if (arrowLeftPosition > max) {
-        return {left: `${max}px`};
-    }
-
-    if (arrowLeftPosition < min) {
-        return {left: `${min}px`};
-    }
-
-    return ({left: `${Math.round(arrowLeftPosition)}px`});
 }
