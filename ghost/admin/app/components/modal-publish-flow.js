@@ -37,9 +37,27 @@ export default class ModalPublishFlow extends ModalComponent {
         window.open(`http://www.linkedin.com/shareArticle?mini=true&url=${encodeURI(this.post.url)}`, '_blank');
     }
 
+    @action
+    viewInBrowser() {
+        window.open(this.post.url, '_blank');
+    }
+
+    @action
+    close(event) {
+        event?.preventDefault?.();
+        this.closeModal();
+    }
+
     @task
-    *handleCopyClick() {
+    *handleCopyLink() {
         copyTextToClipboard(this.post.url);
+        yield timeout(1000);
+        return true;
+    }
+
+    @task
+    *handleCopyPreviewLink() {
+        copyTextToClipboard(this.post.previewUrl);
         yield timeout(1000);
         return true;
     }

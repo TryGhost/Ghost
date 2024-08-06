@@ -106,7 +106,7 @@
         </button>
         <GhTaskButton
             @buttonText="Copy link"
-            @task={{this.handleCopyClick}}
+            @task={{this.handleCopyLink}}
             @successText="Link copied"
             @class="gh-btn gh-btn-primary gh-btn-icon" />
     {{else}}
@@ -124,26 +124,23 @@
                 <button
                     class="gh-btn"
                     type="button"
-                    {{!-- {{on "click" this.close}} --}}
+                    {{on "click" this.viewInBrowser}}
                     {{on "mousedown" (optional this.noop)}}
                 >
                     <span>View in browser</span>
                 </button>
             {{/if}}
         {{else}}
-            <button
-                class="gh-btn"
-                type="button"
-                {{!-- {{on "click" this.close}} --}}
-                {{on "mousedown" (optional this.noop)}}
-            >
-                <span>Copy preview link</span>
-            </button>
+            <GhTaskButton
+                @buttonText="Copy preview link"
+                @task={{this.handleCopyPreviewLink}}
+                @successText="Link copied"
+                @class="gh-btn gh-btn-icon" />
         {{/if}}
         <button
             class="gh-btn gh-btn-primary"
             type="button"
-            {{!-- {{on "click" this.close}} --}}
+            {{on "click" this.close}}
             {{on "mousedown" (optional this.noop)}}
         >
             <span>OK</span>
