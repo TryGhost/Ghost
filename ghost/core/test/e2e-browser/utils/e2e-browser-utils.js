@@ -423,7 +423,7 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     await page.locator('[data-test-editor-title-input]').fill(title);
 
     // wait for editor to be ready
-    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
+    await expect(page.locator('[data-lexical-editor="true"]').first()).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');

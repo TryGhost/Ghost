@@ -78,7 +78,7 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
     await page.locator('[data-test-editor-title-input]').fill(title);
 
     // wait for editor to be ready
-    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
+    await expect(page.locator('[data-lexical-editor="true"]').first()).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
@@ -304,7 +304,7 @@ test.describe('Publishing', () => {
             await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
-            await adminPage.locator('[data-kg="editor"]').click();
+            await adminPage.locator('[data-kg="editor"]').first().click();
             await adminPage.waitForTimeout(200); //
             await adminPage.keyboard.type(' This is some updated text.');
 
