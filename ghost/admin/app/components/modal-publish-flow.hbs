@@ -5,14 +5,14 @@
 {{/if}}
 
 <header class="modal-header">
-    <h1>{{this.post.title}}
+    <h1>
         {{#unless this.post.isScheduled}}
             <span>Boom! It's out there.</span>
             <span>
                 {{#if this.post.emailOnly}}
                     Your email has been sent.
                 {{else}}
-                    That's 100 posts published.
+                    That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
                 {{/if}}
             </span>
         {{else}}

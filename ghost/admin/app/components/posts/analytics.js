@@ -33,6 +33,7 @@ export default class Analytics extends Component {
     @tracked showSuccess;
     @tracked updateLinkId;
     @tracked showPublishFlowModal = false;
+    @tracked postCount = null;
     displayOptions = DISPLAY_OPTIONS;
 
     constructor() {
@@ -42,7 +43,8 @@ export default class Analytics extends Component {
 
     checkPublishFlowModal() {
         if (localStorage.getItem('ghost-last-published-post')) {
-            this.showPublishFlowModal = true;
+            this.fetchPostCountTask.perform();
+            // this.showPublishFlowModal = true;
             localStorage.removeItem('ghost-last-published-post');
         }
     }
@@ -319,6 +321,19 @@ export default class Analytics extends Component {
     *_fetchMentions() {
         const filter = `resource_id:'${this.post.id}'+resource_type:post`;
         this.mentions = yield this.store.query('mention', {limit: 5, order: 'created_at desc', filter});
+    }
+
+    @task
+    *fetchPostCountTask() {
+        if (!this.post.emailOnly) {
+            const result = yield this.store.query('post', {filter: 'status:published', limit: 1});
+            let count = result.meta.pagination.total;
+
+            count += 1; // account for the new post
+
+            this.postCount = count;
+        }
+        this.showPublishFlowModal = true;
     }
 
     get showLinks() {

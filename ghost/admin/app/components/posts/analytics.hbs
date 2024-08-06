@@ -210,7 +210,10 @@
 {{#if this.showPublishFlowModal}}
     <GhFullscreenModal
         @modal="publish-flow"
-        @model={{this.post}}
+        @model={{hash
+            post=this.post
+            postCount=this.postCount
+        }}
         @close={{this.togglePublishFlowModal}}
         @modifier="action wide" />
 {{/if}}
