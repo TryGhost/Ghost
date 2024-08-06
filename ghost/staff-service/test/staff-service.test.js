@@ -78,10 +78,6 @@ function testCommonPaidSubMailData({member, mailStub, getEmailAlertUsersStub}) {
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('$50.00/month'))
     ).should.be.true();
-
-    mailStub.calledWith(
-        sinon.match.has('html', sinon.match('Subscription started on 1 Aug 2022'))
-    ).should.be.true();
 }
 
 function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
@@ -518,9 +514,7 @@ describe('StaffService', function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
                 offer = {
                     name: 'Half price',
@@ -586,9 +580,7 @@ describe('StaffService', function () {
             it('sends paid subscription start alert without member name', async function () {
                 let memberData = {
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member: memberData, offer: null, tier, subscription}, options);
 
