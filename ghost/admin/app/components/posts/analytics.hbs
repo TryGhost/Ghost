@@ -48,9 +48,9 @@
                     <span class="dropdown">
                         <GhDropdownButton
                             @dropdownName="analytics-actions-menu"
-                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @classNames="gh-post-list-cta gh-btn gh-btn-icon icon-only gh-btn-action-icon"
                             @title="Analytics Actions"
-                            data-test-button="member-actions"
+                            data-test-button="analytics-actions"
                         >
                             <span>
                                 {{svg-jar "dotdotdot"}}
@@ -66,8 +66,8 @@
                                 <button
                                     class="mr2"
                                     type="button"
-                                    {{on "click" this.toggleImpersonateMemberModal}}
-                                    data-test-button="impersonate"
+                                    {{!-- {{on "click" this.toggleImpersonateMemberModal}} --}}
+                                    data-test-button="edit-post"
                                 >
                                     <span>Edit post</span>
                                 </button>
@@ -76,8 +76,8 @@
                                 <button
                                     type="button"
                                     class="mr2"
-                                    {{on "click" this.confirmLogoutMember}}
-                                    data-test-button="logout-member"
+                                    {{!-- {{on "click" this.confirmLogoutMember}} --}}
+                                    data-test-button="view-post"
                                 >
                                     <span>View in browser</span>
                                 </button>
@@ -86,8 +86,8 @@
                                 <button
                                     type="button"
                                     class="mr2"
-                                    {{on "click" this.confirmDeleteMember}}
-                                    data-test-button="delete-member"
+                                    {{on "click" this.deletePosts}}
+                                    data-test-button="delete-post"
                                 >
                                     <span class="red">Delete post</span>
                                 </button>
