@@ -15,10 +15,10 @@ export default class PostsList extends Component {
         this.checkPublishFlowModal();
     }
 
-    checkPublishFlowModal() {
+    async checkPublishFlowModal() {
         if (localStorage.getItem('ghost-last-scheduled-post')) {
-            this.getLatestScheduledPost.perform();
-            // this.showPublishFlowModal = true;
+            await this.getLatestScheduledPost.perform();
+            this.showPublishFlowModal = true;
             localStorage.removeItem('ghost-last-scheduled-post');
         }
     }
@@ -36,6 +36,5 @@ export default class PostsList extends Component {
     *getLatestScheduledPost() {
         const result = yield this.store.query('post', {filter: `id:${localStorage.getItem('ghost-last-scheduled-post')}`, limit: 1});
         this.latestScheduledPost = result.toArray()[0];
-        this.showPublishFlowModal = true;
     }
 }

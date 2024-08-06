@@ -41,10 +41,10 @@ export default class Analytics extends Component {
         this.checkPublishFlowModal();
     }
 
-    checkPublishFlowModal() {
+    async checkPublishFlowModal() {
         if (localStorage.getItem('ghost-last-published-post')) {
-            this.fetchPostCountTask.perform();
-            // this.showPublishFlowModal = true;
+            await this.fetchPostCountTask.perform();
+            this.showPublishFlowModal = true;
             localStorage.removeItem('ghost-last-published-post');
         }
     }
@@ -333,7 +333,6 @@ export default class Analytics extends Component {
 
             this.postCount = count;
         }
-        this.showPublishFlowModal = true;
     }
 
     get showLinks() {

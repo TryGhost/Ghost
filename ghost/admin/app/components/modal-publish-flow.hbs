@@ -1,4 +1,4 @@
-{{#if this.post.featureImage}}
+{{#if (and this.post.featureImage (not this.post.emailOnly))}}
     <figure class="modal-image">
         <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
     </figure>
@@ -75,7 +75,7 @@
         <button
             class="gh-btn twitter"
             type="button"
-            {{!-- {{on "click" this.close}} --}}
+            {{on "click" this.handleTwitter}}
             {{on "mousedown" (optional this.noop)}}
         >
             <span>{{svg-jar "social-x"}}</span>
@@ -83,7 +83,7 @@
         <button
             class="gh-btn threads"
             type="button"
-            {{!-- {{on "click" this.close}} --}}
+            {{on "click" this.handleThreads}}
             {{on "mousedown" (optional this.noop)}}
         >
             <span>{{svg-jar "social-threads"}}</span>
@@ -91,7 +91,7 @@
         <button
             class="gh-btn facebook"
             type="button"
-            {{!-- {{on "click" this.close}} --}}
+            {{on "click" this.handleFacebook}}
             {{on "mousedown" (optional this.noop)}}
         >
             <span>{{svg-jar "social-facebook"}}</span>
@@ -99,19 +99,16 @@
         <button
             class="gh-btn linkedin"
             type="button"
-            {{!-- {{on "click" this.close}} --}}
+            {{on "click" this.handleLinkedIn}}
             {{on "mousedown" (optional this.noop)}}
         >
             <span>{{svg-jar "social-linkedin"}}</span>
         </button>
-        <button
-            class="gh-btn gh-btn-primary"
-            type="button"
-            {{!-- {{on "click" this.close}} --}}
-            {{on "mousedown" (optional this.noop)}}
-        >
-            <span>{{svg-jar "twitter-link"}} Copy link</span>
-        </button>
+        <GhTaskButton
+            @buttonText="Copy link"
+            @task={{this.handleCopyClick}}
+            @successText="Link copied"
+            @class="gh-btn gh-btn-primary gh-btn-icon" />
     {{else}}
         {{#if this.post.emailOnly}}
             {{#if this.post.isScheduled}}
