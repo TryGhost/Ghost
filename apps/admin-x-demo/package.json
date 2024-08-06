@@ -32,7 +32,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@testing-library/react": "14.1.0",
+    "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.3.3",
