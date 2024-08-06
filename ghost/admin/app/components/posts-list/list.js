@@ -34,7 +34,7 @@ export default class PostsList extends Component {
 
     @task
     *getLatestScheduledPost() {
-        const result = yield this.store.query('post', {filter: 'status:scheduled', limit: 1});
+        const result = yield this.store.query('post', {filter: `id:${localStorage.getItem('ghost-last-scheduled-post')}`, limit: 1});
         this.latestScheduledPost = result.toArray()[0];
     }
 }

@@ -909,7 +909,7 @@
     display: flex;
     flex-direction: column;
     margin: 0;
-    font-size: 3.2rem;
+    /* font-size: 3.2rem; */
     font-weight: 700;
 }
 
@@ -919,19 +919,19 @@
 
 .modal-publish-flow .modal-body {
     margin-top: 16px;
-    font-size: 1.8rem;
+    /* font-size: 1.8rem; */
     line-height: 1.4;
-    letter-spacing: -0.005em;
+    /* letter-spacing: -0.005em; */
 }
 
 .modal-publish-flow .modal-footer .gh-btn {
-    height: 48px;
+    /* height: 48px; */
     min-width: auto;
 }
 
 .modal-publish-flow .modal-footer .gh-btn span {
-    padding-inline: 16px;
-    font-size: 1.5rem;
+    /* padding-inline: 16px;
+    font-size: 1.5rem; */
 }
 
 .modal-publish-flow .modal-footer:has(.twitter) .gh-btn-primary {
