@@ -1534,6 +1534,10 @@
     transition: all .1s linear;
 }
 
+span.dropdown .gh-post-list-cta > span {
+    padding: 0;
+}
+
 .gh-post-list-cta.edit.is-hovered > *,
 .gh-post-list-cta.edit.is-hovered:hover > *,
 .gh-post-list-cta.edit:not(.is-hovered):hover > *  {
