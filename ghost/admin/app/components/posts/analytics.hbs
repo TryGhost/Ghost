@@ -41,9 +41,12 @@
                     <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
                         {{svg-jar "share" title="Share post"}}<span>Share</span>
                     </button>
-                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                     <button class="gh-post-list-cta edit">
+                        {{svg-jar "dotdotdot" title="More"}}
+                    </button>
+                    {{!-- <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
                         {{svg-jar "pen" title="Edit post"}}<span>Edit post</span>
-                    </LinkTo>
+                    </LinkTo> --}}
                 </div>
             </div>
         </div>
