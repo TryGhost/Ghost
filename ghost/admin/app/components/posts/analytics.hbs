@@ -36,13 +36,13 @@
                 </div>
                 <div style="display: flex; gap: 4px;">
                     <button class="gh-post-list-cta edit">
-                        {{svg-jar "reload" title=""}}<span>Refresh</span>
+                        {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
                     </button>
                     <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
-                        {{svg-jar "pen" title=""}}<span>Share</span>
+                        {{svg-jar "share" title="Share post"}}<span>Share</span>
                     </button>
                     <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                        {{svg-jar "pen" title=""}}<span>Edit post</span>
+                        {{svg-jar "pen" title="Edit post"}}<span>Edit post</span>
                     </LinkTo>
                 </div>
             </div>
