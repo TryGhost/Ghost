@@ -41,12 +41,59 @@
                     <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
                         {{svg-jar "share" title="Share post"}}<span>Share</span>
                     </button>
-                     <button class="gh-post-list-cta edit">
-                        {{svg-jar "dotdotdot" title="More"}}
-                    </button>
                     {{!-- <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
                         {{svg-jar "pen" title="Edit post"}}<span>Edit post</span>
                     </LinkTo> --}}
+
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="analytics-actions-menu"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Analytics Actions"
+                            data-test-button="member-actions"
+                        >
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="analytics-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-analytics-actions-menu dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <li>
+                                <button
+                                    class="mr2"
+                                    type="button"
+                                    {{on "click" this.toggleImpersonateMemberModal}}
+                                    data-test-button="impersonate"
+                                >
+                                    <span>Edit post</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.confirmLogoutMember}}
+                                    data-test-button="logout-member"
+                                >
+                                    <span>View in browser</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.confirmDeleteMember}}
+                                    data-test-button="delete-member"
+                                >
+                                    <span class="red">Delete post</span>
+                                </button>
+                            </li>
+                        </GhDropdown>
+                    </span>
                 </div>
             </div>
         </div>
