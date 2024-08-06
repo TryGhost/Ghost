@@ -909,7 +909,7 @@
     display: flex;
     flex-direction: column;
     margin: 0;
-    /* font-size: 3.2rem; */
+    font-size: 2.6rem;
     font-weight: 700;
 }
 
@@ -938,6 +938,10 @@
     flex-grow: 1;
 }
 
+.modal-publish-flow .modal-footer:has(.twitter) .gh-btn {
+    height: 40px;
+}
+
 .modal-publish-flow .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
     width: 56px;
 }
@@ -955,14 +959,14 @@
     fill: black;
 }
 
-.modal-publish-flow .modal-footer .gh-btn-primary svg {
+/* .modal-publish-flow .modal-footer .gh-btn-primary svg {
     position: relative;
     top: -1px;
 }
 
 .modal-publish-flow .modal-footer .gh-btn-primary svg path {
     fill: white
-}
+} */
 
 .modal-publish-flow:has(.modal-image) .close {
     display: flex;
