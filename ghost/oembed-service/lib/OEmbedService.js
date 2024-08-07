@@ -373,6 +373,18 @@ class OEmbedService {
         try {
             const urlObject = new URL(url);
 
+            // YouTube has started not returning oembed <link>tags for some live URLs
+            // when fetched from an IP address that's in a non-EN region.
+            // We convert live URLs to watch URLs so we can go straight to the
+            // oembed request via a known provider rather than going through the page fetch routine.
+            const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
+            if (urlObject.hostname.match(/(?:www\.)?youtube\.com/) && ytLiveRegex.test(urlObject.pathname)) {
+                const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
+                urlObject.pathname = '/watch';
+                urlObject.searchParams.set('v', videoId);
+                url = urlObject.toString();
+            }
+
             // Trimming solves the difference of url validation between `new URL(url)`
             // and metascraper.
             url = url.trim();

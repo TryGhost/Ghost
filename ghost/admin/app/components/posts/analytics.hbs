@@ -35,11 +35,64 @@
                     {{/let}}
                 </div>
                 <div style="display: flex; gap: 4px;">
-                    <button class="gh-post-list-cta edit">♻️<span>Refresh</span></button>
-                    <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>🔁<span>Share</span></button>
-                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                        {{svg-jar "pen" title=""}}<span>Edit post</span>
-                    </LinkTo>
+                    <button class="gh-post-list-cta edit">
+                        {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
+                    </button>
+                    <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
+                        {{svg-jar "share" title="Share post"}}<span>Share</span>
+                    </button>
+                    {{!-- <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                        {{svg-jar "pen" title="Edit post"}}<span>Edit post</span>
+                    </LinkTo> --}}
+
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="analytics-actions-menu"
+                            @classNames="gh-post-list-cta edit gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Analytics Actions"
+                            data-test-button="analytics-actions"
+                        >
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="analytics-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-analytics-actions-menu dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    data-test-button="edit-post">
+                                        {{!-- <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title=""></LinkTo> --}}
+                                        <span>Edit post</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{!-- {{on "click" this.confirmLogoutMember}} --}}
+                                    data-test-button="view-post"
+                                >
+                                    <span>View in browser</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.deletePosts}}
+                                    data-test-button="delete-post"
+                                >
+                                    <span class="red">Delete post</span>
+                                </button>
+                            </li>
+                        </GhDropdown>
+                    </span>
                 </div>
             </div>
         </div>
