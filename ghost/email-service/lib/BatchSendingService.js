@@ -360,9 +360,7 @@ class BatchSendingService {
 
         // Loop batches and send them via the EmailProvider
         let succeededCount = 0;
-        const queue = batches.slice().map((batch, index) => {
-            return {batchIndex: index, ...batch};
-        });
+        const queue = batches.slice();
 
         // Bind this
         let runNext;
@@ -370,7 +368,8 @@ class BatchSendingService {
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                const deliveryDelay = batch.batchIndex * 5000; // 5 seconds delay between each batch
+                const index = batches.indexOf(batch);
+                const deliveryDelay = Math.abs(index * 5000);
                 const deliveryTime = new Date(startTime.getTime() + deliveryDelay);
                 if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache, deliveryTime})) {
                     succeededCount += 1;

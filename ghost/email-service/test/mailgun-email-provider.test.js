@@ -27,6 +27,8 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
+            
+            const deliveryTime = new Date();
 
             const response = await mailgunEmailProvider.send({
                 subject: 'Hi',
@@ -35,6 +37,7 @@ describe('Mailgun Email Provider', function () {
                 from: 'ghost@example.com',
                 replyTo: 'ghost@example.com',
                 emailId: '123',
+                deliveryTime,
                 recipients: [
                     {
                         email: 'member@example.com',
@@ -68,6 +71,7 @@ describe('Mailgun Email Provider', function () {
                     from: 'ghost@example.com',
                     replyTo: 'ghost@example.com',
                     id: '123',
+                    deliveryTime,
                     track_opens: true,
                     track_clicks: true
                 },

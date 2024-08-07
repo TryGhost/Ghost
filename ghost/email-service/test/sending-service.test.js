@@ -53,6 +53,8 @@ describe('Sending service', function () {
                 emailProvider
             });
 
+            const deliveryTime = new Date();
+
             const response = await sendingService.send({
                 post: {},
                 newsletter: {},
@@ -63,7 +65,8 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: 'John'
                     }
-                ]
+                ],
+                deliveryTime
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true
@@ -78,6 +81,7 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
+                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -109,6 +113,8 @@ describe('Sending service', function () {
                 emailProvider
             });
 
+            const deliveryTime = new Date();
+
             const response = await sendingService.send({
                 post: {},
                 newsletter: {},
@@ -119,7 +125,8 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: undefined
                     }
-                ]
+                ],
+                deliveryTime
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true
@@ -134,6 +141,7 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
+                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -166,6 +174,8 @@ describe('Sending service', function () {
                 emailProvider
             });
 
+            const deliveryTime = new Date();
+
             const response = await sendingService.send({
                 post: {},
                 newsletter: {},
@@ -176,7 +186,8 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: 'John'
                     }
-                ]
+                ],
+                deliveryTime
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true,
@@ -193,6 +204,7 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
+                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -228,7 +240,8 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: 'John'
                     }
-                ]
+                ],
+                deliveryTime
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true,
@@ -244,6 +257,7 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
+                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -278,6 +292,8 @@ describe('Sending service', function () {
                 emailProvider
             });
 
+            const deliveryTime = new Date();
+
             const response = await sendingService.send({
                 post: {},
                 newsletter: {},
@@ -292,7 +308,8 @@ describe('Sending service', function () {
                         email: 'member+invalid@example.com�',
                         name: 'John'
                     }
-                ]
+                ],
+                deliveryTime
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true
@@ -307,6 +324,7 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
+                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
