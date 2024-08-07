@@ -32,6 +32,7 @@ export default class Analytics extends Component {
     @tracked sortColumn = 'signups';
     @tracked showSuccess;
     @tracked updateLinkId;
+    @tracked _post = null;
     @tracked showPublishFlowModal = false;
     @tracked postCount = null;
     displayOptions = DISPLAY_OPTIONS;
@@ -50,7 +51,11 @@ export default class Analytics extends Component {
     }
 
     get post() {
-        return this.args.post;
+        return this._post ?? this.args.post;
+    }
+
+    set post(value) {
+        this._post = value;
     }
 
     get allowedDisplayOptions() {
@@ -333,6 +338,12 @@ export default class Analytics extends Component {
 
             this.postCount = count;
         }
+    }
+
+    @task
+    *fetchPostTask() {
+        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, limit: 1});
+        this.post = result.toArray()[0];
     }
 
     get showLinks() {

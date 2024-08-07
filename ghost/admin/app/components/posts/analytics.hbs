@@ -35,7 +35,7 @@
                     {{/let}}
                 </div>
                 <div style="display: flex; gap: 4px;">
-                    <button class="gh-post-list-cta edit">
+                    <button class="gh-post-list-cta edit" {{on "click" this.fetchPostTask.perform}}>
                         {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
                     </button>
                     <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
@@ -85,7 +85,7 @@
                                 <button
                                     type="button"
                                     class="mr2"
-                                    {{on "click" this.deletePosts}}
+                                    {{!-- {{on "click" this.deletePosts}} --}}
                                     data-test-button="delete-post"
                                 >
                                     <span class="red">Delete post</span>
