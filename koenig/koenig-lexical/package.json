@@ -72,7 +72,7 @@
     "@storybook/react-vite": "7.6.19",
     "@storybook/test-runner": "^0.18.0",
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "6.4.5",
+    "@testing-library/jest-dom": "6.4.8",
     "@testing-library/react": "^16.0.0",
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/helpers": "1.1.90",
