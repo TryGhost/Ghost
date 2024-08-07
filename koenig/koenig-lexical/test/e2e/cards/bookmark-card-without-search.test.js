@@ -10,7 +10,7 @@ test.describe('Bookmark card', async () => {
     });
 
     test.beforeEach(async () => {
-        await initialize({page});
+        await initialize({page, uri: '/#/?content=false&searchLinks=false'});
     });
 
     test.afterAll(async () => {

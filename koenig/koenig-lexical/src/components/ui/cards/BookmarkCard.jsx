@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {UrlInput} from '../UrlInput';
+import {UrlSearchInput} from '../UrlSearchInput';
 
 export function BookmarkCard({
     author,
@@ -22,7 +23,8 @@ export function BookmarkCard({
     captionEditorInitialState,
     isSelected,
     isLoading,
-    urlError
+    urlError,
+    searchLinks
 }) {
     if (url && !urlError && title) {
         return (
@@ -54,20 +56,39 @@ export function BookmarkCard({
             </div>
         );
     }
-    return (
-        <UrlInput
-            dataTestId="bookmark-url"
-            handleClose={handleClose}
-            handlePasteAsLink={handlePasteAsLink}
-            handleRetry={handleRetry}
-            handleUrlChange={handleUrlChange}
-            handleUrlSubmit={handleUrlSubmit}
-            hasError={urlError}
-            isLoading={isLoading}
-            placeholder={urlPlaceholder}
-            value={urlInputValue}
-        />
-    );
+
+    if (typeof searchLinks === 'function') {
+        return (
+            <UrlSearchInput
+                dataTestId="bookmark-url"
+                handleClose={handleClose}
+                handlePasteAsLink={handlePasteAsLink}
+                handleRetry={handleRetry}
+                handleUrlChange={handleUrlChange}
+                handleUrlSubmit={handleUrlSubmit}
+                hasError={urlError}
+                isLoading={isLoading}
+                placeholder={urlPlaceholder}
+                searchLinks={searchLinks}
+                value={urlInputValue}
+            />
+        );
+    } else {
+        return (
+            <UrlInput
+                dataTestId="bookmark-url"
+                handleClose={handleClose}
+                handlePasteAsLink={handlePasteAsLink}
+                handleRetry={handleRetry}
+                handleUrlChange={handleUrlChange}
+                handleUrlSubmit={handleUrlSubmit}
+                hasError={urlError}
+                isLoading={isLoading}
+                placeholder={urlPlaceholder}
+                value={urlInputValue}
+            />
+        );
+    }
 }
 
 export function BookmarkIcon({src}) {
@@ -95,7 +116,8 @@ BookmarkCard.propTypes = {
     captionEditorInitialState: PropTypes.object,
     isSelected: PropTypes.bool,
     isLoading: PropTypes.bool,
-    urlError: PropTypes.bool
+    urlError: PropTypes.bool,
+    searchLinks: PropTypes.func
 };
 
 BookmarkIcon.propTypes = {

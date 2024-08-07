@@ -1,8 +1,9 @@
 import React from 'react';
 import trackEvent from '../../utils/analytics';
 import {$getSelection} from 'lexical';
-import {InputListGroup, InputListItem} from './InputListCopy';
+import {InputListGroup} from './InputList';
 import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
+import {LinkInputSearchItem} from './LinkInputSearchItem';
 import {getScrollParent} from '../../utils/getScrollParent';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -98,7 +99,7 @@ export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query,
 
     const getItem = (item, selected, onMouseOver, scrollIntoView) => {
         return (
-            <InputListItem
+            <LinkInputSearchItem
                 key={item.value}
                 dataTestId={testId}
                 highlightString={query}

@@ -49,12 +49,12 @@ const defaultCardConfig = {
     feature: {
         collections: true,
         collectionsCard: true,
-        contentVisibility: true,
-        internalLinking: false // default off, can be enabled with `?labs=internalLinking
+        contentVisibility: true
     },
     deprecated: {
         headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
     },
+    // this enables the internal linking feature, can be disabled with `/#/?searchLinks=false`
     searchLinks: async (term) => {
         // default to showing latest posts when search is empty
         // no delay to simulate posts being pre-loaded in editor
@@ -307,10 +307,9 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         collections,
         fetchCollectionPosts,
         feature: {
-            ...defaultCardConfig.feature,
-            internalLinking: searchParams.get('labs')?.includes('internalLinking'),
-            internalLinkingAtLinks: searchParams.get('labs')?.includes('internalLinking')
-        }
+            ...defaultCardConfig.feature
+        },
+        searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks
     };
 
     return (

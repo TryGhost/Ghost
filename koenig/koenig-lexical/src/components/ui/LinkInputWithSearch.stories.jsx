@@ -1,10 +1,10 @@
 import React from 'react';
 
-import {LinkInputCopy} from './LinkInputCopy';
+import {LinkInputWithSearch} from './LinkInputWithSearch';
 
 const story = {
-    title: 'Toolbar/LinkInputCopy',
-    component: LinkInputCopy,
+    title: 'Toolbar/LinkInputWithSearch',
+    component: LinkInputWithSearch,
     parameters: {
         status: {
             type: 'functional'
@@ -16,7 +16,7 @@ export default story;
 const Template = (args) => {
     return (
         <div className="flex">
-            <LinkInputCopy {...args} />
+            <LinkInputWithSearch {...args} />
         </div>
     );
 };

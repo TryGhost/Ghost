@@ -221,7 +221,56 @@ test.describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        test('can create link', async function () {
+        test('can create link (with search)', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('link');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">link</span>
+                </p>
+            `);
+
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.up('Shift');
+
+            const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="link"] button`;
+
+            // Add the link
+            await page.click(buttonSelector);
+            await expect(page.getByTestId('link-input')).toBeVisible();
+            await expect(page.getByTestId('link-input')).toBeFocused();
+            await page.keyboard.type('https://ghost.org/');
+            await page.keyboard.press('Enter');
+            await expect(page.locator('[data-kg-floating-toolbar]')).not.toBeVisible();
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <a href="https://ghost.org/" rel="noreferrer" dir="ltr">
+                       <span data-lexical-text="true">link</span>
+                    </a>
+                </p>
+            `);
+
+            // TODO: assert link is not selected
+
+            // Edit the link
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.up('Shift');
+            await page.click(buttonSelector);
+            await expect(page.getByTestId('link-input')).toHaveValue('https://ghost.org/');
+        });
+
+        test('can create link (without search)', async function () {
+            await initialize({page, uri: '/#/?content=false&searchLinks=false'});
             await focusEditor(page);
             await page.keyboard.type('link');
 

@@ -5,8 +5,7 @@ import trackEvent from '../utils/analytics.js';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {BookmarkCard} from '../components/ui/cards/BookmarkCard';
-import {BookmarkCardWithSearch} from '../components/ui/cards/BookmarkCardWithSearch.jsx';
+import {BookmarkCard} from '../components/ui/cards/BookmarkCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
 import {isInternalUrl} from '../utils/isInternalUrl.js';
@@ -157,58 +156,33 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const DefaultBookmarkCard = (
-        <BookmarkCard
-            author={author}
-            captionEditor={captionEditor}
-            captionEditorInitialState={captionEditorInitialState}
-            description={description}
-            handleClose={handleClose}
-            handlePasteAsLink={handlePasteAsLink}
-            handleRetry={handleRetry}
-            handleUrlChange={handleUrlChange}
-            handleUrlSubmit={handleUrlSubmit}
-            icon={icon}
-            isLoading={loading}
-            isSelected={isSelected}
-            publisher={publisher}
-            thumbnail={thumbnail}
-            title={title}
-            url={url}
-            urlError={urlError}
-            urlInputValue={urlInputValue}
-            urlPlaceholder={`Paste URL to add bookmark content...`}
-        />
-    );
-
-    const LabsBookmarkCard = (
-        <BookmarkCardWithSearch
-            author={author}
-            captionEditor={captionEditor}
-            captionEditorInitialState={captionEditorInitialState}
-            description={description}
-            handleClose={handleClose}
-            handlePasteAsLink={handlePasteAsLink}
-            handleRetry={handleRetry}
-            handleUrlChange={handleUrlChange}
-            handleUrlSubmit={handleUrlSubmit}
-            icon={icon}
-            isLoading={loading}
-            isSelected={isSelected}
-            publisher={publisher}
-            searchLinks={cardConfig.searchLinks}
-            thumbnail={thumbnail}
-            title={title}
-            url={url}
-            urlError={urlError}
-            urlInputValue={urlInputValue}
-            urlPlaceholder={`Paste URL or search posts and pages...`}
-        />
-    );
+    const searchEnabled = typeof cardConfig?.searchLinks === 'function';
 
     return (
         <>
-            {cardConfig.feature?.internalLinking ? LabsBookmarkCard : DefaultBookmarkCard}
+            <BookmarkCard
+                author={author}
+                captionEditor={captionEditor}
+                captionEditorInitialState={captionEditorInitialState}
+                description={description}
+                handleClose={handleClose}
+                handlePasteAsLink={handlePasteAsLink}
+                handleRetry={handleRetry}
+                handleUrlChange={handleUrlChange}
+                handleUrlSubmit={handleUrlSubmit}
+                icon={icon}
+                isLoading={loading}
+                isSelected={isSelected}
+                publisher={publisher}
+                searchLinks={cardConfig?.searchLinks}
+                thumbnail={thumbnail}
+                title={title}
+                url={url}
+                urlError={urlError}
+                urlInputValue={urlInputValue}
+                urlPlaceholder={searchEnabled ? `Paste URL or search posts and pages...` : `Paste URL to add bookmark content...`}
+            />
+
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
                 isVisible={showSnippetToolbar}

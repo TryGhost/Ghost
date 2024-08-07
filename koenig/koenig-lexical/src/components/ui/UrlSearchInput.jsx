@@ -1,7 +1,8 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
 import trackEvent from '../../utils/analytics';
-import {InputListCopy} from './InputListCopy';
+import {InputList} from './InputList';
+import {LinkInputSearchItem} from './LinkInputSearchItem';
 import {useSearchLinks} from '../../hooks/useSearchLinks';
 
 export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading, searchLinks}) {
@@ -52,8 +53,13 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
         handleUrlChange(inputValue);
     };
 
-    const onSelectEvent = (selectedValue, type) => {
-        handleUrlSubmit(selectedValue, type);
+    const onSelectEvent = (selectedItemOrValue, type) => {
+        if (selectedItemOrValue === null) {
+            return;
+        }
+
+        const url = selectedItemOrValue && typeof selectedItemOrValue === 'string' ? selectedItemOrValue : selectedItemOrValue.value;
+        handleUrlSubmit(url, type);
     };
 
     const handleKeyDown = (event) => {
@@ -63,11 +69,30 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
         }
     };
 
+    const getItem = (item, selected, onMouseOver, scrollIntoView) => {
+        return (
+            <LinkInputSearchItem
+                key={item.value}
+                dataTestId={dataTestId}
+                highlightString={value}
+                item={item}
+                scrollIntoView={scrollIntoView}
+                selected={selected}
+                onClick={onSelectEvent}
+                onMouseOver={onMouseOver}
+            />
+        );
+    };
+
     return (
         <div className="not-kg-prose" onKeyDown={handleKeyDown}>
-            <InputListCopy
+            <InputList
                 autoFocus={true}
                 dataTestId={dataTestId}
+                dropdownClassName='z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white px-2 py-1 shadow-md dark:bg-grey-950'
+                dropdownPlacementBottomClass='mt-[.6rem] rounded-md'
+                dropdownPlacementTopClass='top-[-.6rem] -translate-y-full rounded-md'
+                getItem={getItem}
                 inputClassName={`w-full rounded-md border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
                 isLoading={isSearching}
                 listOptions={listOptions}

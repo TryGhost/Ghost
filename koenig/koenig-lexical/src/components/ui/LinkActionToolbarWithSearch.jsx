@@ -4,13 +4,13 @@ import React from 'react';
 import trackEvent from '../../utils/analytics.js';
 import {$createRangeSelection, $getSelection, $setSelection} from 'lexical';
 import {$getSelectionRangeRect} from '../../utils/$getSelectionRangeRect.js';
-import {LinkInputCopy} from './LinkInputCopy.jsx';
+import {LinkInputWithSearch} from './LinkInputWithSearch.jsx';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {getScrollParent} from '../../utils/getScrollParent.js';
 import {isInternalUrl} from '../../utils/isInternalUrl.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function LinkActionToolbarCopy({anchorElem, href, onClose, ...props}) {
+export function LinkActionToolbarWithSearch({anchorElem, href, onClose, ...props}) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = React.useContext(KoenigComposerContext);
 
@@ -124,7 +124,7 @@ export function LinkActionToolbarCopy({anchorElem, href, onClose, ...props}) {
     return (
         <Portal>
             <div ref={linkToolbarRef} className="not-kg-prose fixed z-[10000]">
-                <LinkInputCopy
+                <LinkInputWithSearch
                     cancel={onClose}
                     href={href}
                     update={onLinkUpdate}

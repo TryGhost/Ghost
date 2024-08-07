@@ -5,7 +5,7 @@ import React from 'react';
 import debounce from 'lodash/debounce';
 import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND} from 'lexical';
 import {LinkActionToolbar} from './LinkActionToolbar.jsx';
-import {LinkActionToolbarCopy} from './LinkActionToolbarCopy.jsx';
+import {LinkActionToolbarWithSearch} from './LinkActionToolbarWithSearch.jsx';
 import {SnippetActionToolbar} from './SnippetActionToolbar';
 import {mergeRegister} from '@lexical/utils';
 
@@ -29,11 +29,11 @@ export function FloatingFormatToolbar({
     hiddenFormats = []
 }) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const isInternalLinkingEnabled = cardConfig?.feature?.internalLinking || false;
+    const isLinkSearchEnabled = typeof cardConfig?.searchLinks === 'function' || false;
 
     const toolbarRef = React.useRef(null);
 
-    const internalLinkingToolbarVisible = toolbarItemType === toolbarItemTypes.link && isInternalLinkingEnabled;
+    const isLinkSearchToolbarVisible = toolbarItemType === toolbarItemTypes.link && isLinkSearchEnabled;
 
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
@@ -135,7 +135,13 @@ export function FloatingFormatToolbar({
     const isLinkToolbar = toolbarItemTypes.link === toolbarItemType;
     const isTextToolbar = toolbarItemTypes.text === toolbarItemType;
 
-    const showTextToolbar = isTextToolbar || (isInternalLinkingEnabled && isLinkToolbar);
+    const showTextToolbar = isTextToolbar || (isLinkSearchEnabled && isLinkToolbar);
+
+    // When link searching is enabled the link toolbar has alternative styling
+    // where the search input and results are displayed below the format toolbar.
+    //
+    // When link searching is disabled the link input toolbar visually replaces
+    // the format toolbar.
 
     return (
         <>
@@ -155,7 +161,7 @@ export function FloatingFormatToolbar({
                     />
                 )}
 
-                {(isLinkToolbar && !isInternalLinkingEnabled) && (
+                {(isLinkToolbar && !isLinkSearchEnabled) && (
                     <LinkActionToolbar
                         href={href}
                         onClose={handleActionToolbarClose}
@@ -166,7 +172,7 @@ export function FloatingFormatToolbar({
                     <FormatToolbar
                         editor={editor}
                         hiddenFormats={hiddenFormats}
-                        isLinkSelected={!!href || (isInternalLinkingEnabled && isLinkToolbar)}
+                        isLinkSelected={!!href || (isLinkSearchEnabled && isLinkToolbar)}
                         isSnippetsEnabled={isSnippetsEnabled}
                         onLinkClick={() => setToolbarItemType(toolbarItemTypes.link)}
                         onSnippetClick={() => setToolbarItemType(toolbarItemTypes.snippet)}
@@ -175,8 +181,8 @@ export function FloatingFormatToolbar({
 
             </FloatingToolbar>
 
-            {internalLinkingToolbarVisible && (
-                <LinkActionToolbarCopy
+            {isLinkSearchToolbarVisible && (
+                <LinkActionToolbarWithSearch
                     anchorElem={anchorElem}
                     href={href}
                     onClose={handleActionToolbarClose}

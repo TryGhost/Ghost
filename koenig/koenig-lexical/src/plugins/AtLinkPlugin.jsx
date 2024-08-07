@@ -477,8 +477,8 @@ export const AtLinkPlugin = () => {
     const [editor] = useLexicalComposerContext();
 
     // do nothing if we haven't been passed a way to search internal links
-    const betaEnabled = cardConfig?.feature?.internalLinking && cardConfig?.feature?.internalLinkingAtLinks;
-    if (!cardConfig?.searchLinks || !betaEnabled) {
+    const enabled = typeof cardConfig?.searchLinks === 'function';
+    if (!enabled) {
         return null;
     }
 

@@ -1,9 +1,13 @@
 import React from 'react';
 
 export function Delayed({children, waitBeforeShow = 500}) {
-    const [show, setShow] = React.useState(false);
+    const [show, setShow] = React.useState(waitBeforeShow === 0);
 
     React.useEffect(() => {
+        if (show) {
+            return;
+        }
+
         const timeout = setTimeout(() => {
             setShow(true);
         }, waitBeforeShow);
@@ -11,7 +15,7 @@ export function Delayed({children, waitBeforeShow = 500}) {
         return () => {
             clearTimeout(timeout);
         };
-    }, [waitBeforeShow]);
+    }, [show, waitBeforeShow]);
 
     return show ? children : null;
 }

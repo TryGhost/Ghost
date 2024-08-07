@@ -21,9 +21,9 @@ export function Input({autoFocus, className, dataTestId, value, onChange, ...pro
         // setting a value via state immediately after mounting results in React's
         // autoFocus not working, so we need to manually focus the input
         if (shouldFocusOnUpdate.current) {
-            shouldFocusOnUpdate.current = false;
             const timeoutId = setTimeout(() => {
                 if (inputRef.current) {
+                    shouldFocusOnUpdate.current = false;
                     inputRef.current.focus();
                 }
             }, 0);

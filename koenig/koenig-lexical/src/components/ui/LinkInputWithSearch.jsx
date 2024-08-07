@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import trackEvent from '../../utils/analytics';
 import {Input} from './Input';
-import {InputListGroup, InputListItem, InputListLoadingItem} from './InputListCopy';
+import {InputListGroup, InputListLoadingItem} from './InputList';
 import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
+import {LinkInputSearchItem} from './LinkInputSearchItem';
 import {useSearchLinks} from '../../hooks/useSearchLinks';
 
-export function LinkInputCopy({href, update, cancel}) {
+export function LinkInputWithSearch({href, update, cancel}) {
     const {cardConfig: {searchLinks}} = React.useContext(KoenigComposerContext);
 
     // store the href/query in state so we can update it without affecting the saved editor value
@@ -58,7 +59,7 @@ export function LinkInputCopy({href, update, cancel}) {
 
     const getItem = (item, selected, onMouseOver, scrollIntoView) => {
         return (
-            <InputListItem
+            <LinkInputSearchItem
                 key={item.value}
                 dataTestId={testId}
                 highlightString={_href}
@@ -119,6 +120,6 @@ export function LinkInputCopy({href, update, cancel}) {
     );
 }
 
-LinkInputCopy.propTypes = {
+LinkInputWithSearch.propTypes = {
     href: PropTypes.string
 };

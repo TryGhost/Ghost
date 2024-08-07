@@ -1,4 +1,5 @@
 import React, {useLayoutEffect} from 'react';
+import clsx from 'clsx';
 import debounce from 'lodash/debounce';
 
 /**
@@ -8,16 +9,17 @@ import debounce from 'lodash/debounce';
  * Displays the dropdown above or below the parent element, depending on the space available in the viewport.
  * The parent should be positioned relative.
  */
-export function DropdownContainer({children}) {
+export function DropdownContainer({
+    dataTestId,
+    className = 'z-[-1] max-h-[30vh] w-full overflow-y-auto border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900',
+    placementTopClass = 'top-[2px] -translate-y-full rounded-t-md border-b-0',
+    placementBottomClass = 'mt-[-2px] rounded-b-md border-t-0',
+    children,
+    ...props
+}) {
     const divRef = React.useRef(null);
 
     const [placement, setPlacement] = React.useState('bottom');
-
-    let placementClasses = 'mt-[-2px] rounded-b-md border-t-0';
-
-    if (placement === 'top') {
-        placementClasses = 'top-[2px] -translate-y-full rounded-t-md border-b-0';
-    }
 
     const updatePlacement = () => {
         if (!divRef || !divRef.current) {
@@ -56,7 +58,17 @@ export function DropdownContainer({children}) {
     }, []);
 
     return (
-        <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900`}>
+        <ul
+            ref={divRef}
+            className={clsx(
+                'absolute',
+                placement === 'top' && placementTopClass,
+                placement === 'bottom' && placementBottomClass,
+                className
+            )}
+            data-testid={`${dataTestId}-dropdown`}
+            {...props}
+        >
             {children}
         </ul>
     );

@@ -1,7 +1,7 @@
 import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
-test.describe('Bookmark card (labs: internalLinking)', async () => {
+test.describe('Bookmark card (with searchLinks)', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
     let errors;
@@ -16,7 +16,7 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
 
     test.beforeEach(async () => {
         errors = [];
-        await initialize({page, uri: '/#/?content=false&labs=internalLinking'});
+        await initialize({page});
     });
 
     test.afterAll(async () => {
@@ -352,16 +352,146 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
     // Searchable URL input ----------------------------------------------------
 
     test.describe('Search', function () {
-        test.fixme('shows default options when first opening', async function () {});
-        test.fixme('filters options whilst typing', async function () {});
-        test.fixme('can change selected item with arrow keys', async function () {});
-        test.fixme('inserts selected item on enter', async function () {});
+        test('shows default options when opening', async function () {
+            await page.mouse.move(0,0); // was triggering hover state on option after the first
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                  <div
+                    data-kg-card-editing="false"
+                    data-kg-card-selected="true"
+                    data-kg-card="bookmark">
+                    <div>
+                      <div>
+                        <div><input placeholder="Paste URL or search posts and pages..." value="" /></div>
+                        <ul>
+                          <li><div>Latest posts</div></li>
+                          <li aria-selected="true" role="option">
+                            <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
+                            <span>
+                              <span title="Members only"><svg></svg></span>
+                              <span>8 May 2024</span>
+                            </span>
+                          </li>
+                          <li aria-selected="false" role="option">
+                            <span><span>Robotics Renaissance: How Automation is Transforming Industries</span></span>
+                          </li>
+                          <li aria-selected="false" role="option">
+                            <span><span>Biodiversity Conservation in Fragile Ecosystems</span></span>
+                          </li>
+                          <li aria-selected="false" role="option">
+                            <span><span>Unveiling the Crisis of Plastic Pollution: Analyzing Its Profound Impact on the Environment</span></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p><br /></p>
+            `);
+        });
+
+        test('shows metadata on selected items', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await assertHTML(page, html`
+                <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
+                <span>
+                  <span title="Members only"><svg></svg></span>
+                  <span>8 May 2024</span>
+                </span>
+            `, {selector: '[data-testid="bookmark-url-listOption"][aria-selected="true"]'});
+
+            await page.keyboard.press('ArrowDown');
+
+            // first item no longer shows metadata
+
+            await assertHTML(page, html`
+                <span><span>Remote Work's Impact on Job Markets and Employment</span></span>
+            `, {selector: '[data-testid="bookmark-url-listOption"]'});
+
+            // second now-selected item shows metadata
+            await assertHTML(page, html`
+                <span><span>Robotics Renaissance: How Automation is Transforming Industries</span></span>
+                <span>
+                  <span title="Specific tiers only"><svg></svg></span>
+                  <span>2 May 2024</span>
+                </span>
+            `, {selector: '[data-testid="bookmark-url-listOption"][aria-selected="true"]'});
+        });
+
+        test('highlights matches in results', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('Emoji');
+
+            await expect(page.locator('[data-testid="bookmark-url-listOption"]')).toBeVisible();
+            await expect(page.locator('span.font-bold').first()).toHaveText('Emoji');
+        });
+
+        test('does not crash with regexp chars in search', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('[');
+
+            await expect(page.locator('[data-testid="bookmark-url-dropdown"]')).toBeVisible();
+        });
+
+        test('filters options whilst typing', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await page.keyboard.type('e');
+
+            await expect(page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]')).toContainText('TK Reminders');
+
+            await page.keyboard.type('mo');
+
+            await expect(page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]')).toContainText('✨ Emoji autocomplete ✨');
+        });
+
+        test('can change selected item with arrow keys', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+            await expect(page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]')).toContainText('Remote Work\'s Impact on Job Markets and Employment');
+            await page.keyboard.press('ArrowDown');
+            await expect(page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]')).toContainText('Robotics Renaissance: How Automation is Transforming Industries');
+            await page.keyboard.press('ArrowUp');
+            await expect(page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]')).toContainText('Remote Work\'s Impact on Job Markets and Employment');
+        });
+
+        test('inserts selected item on enter', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+            await page.keyboard.type('Emoji');
+            await expect(page.locator('[data-testid="bookmark-url-listOption"][aria-selected="true"]')).toContainText('✨ Emoji autocomplete ✨');
+            await page.keyboard.press('Enter');
+
+            // NOTE: this doesn't test for the right item being inserted because
+            // the demo app always inserts a mocked oembed response
+            await expect(page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
+            await expect(page.getByTestId('bookmark-container')).toBeVisible();
+        });
 
         test('inserts item on click', async function () {
             await focusEditor(page);
             await insertCard(page, {cardName: 'bookmark'});
             await page.click('[data-testid="bookmark-url-listOption"]:nth-child(2)');
 
+            // NOTE: this doesn't test for the right item being inserted because
+            // the demo app always inserts a mocked oembed response
             await expect(page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
             await expect(page.getByTestId('bookmark-container')).toBeVisible();
         });
@@ -378,6 +508,32 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
             await expect(page.getByText('Enter URL to create link')).toBeVisible();
 
             expect(errors).toEqual([]);
+        });
+
+        [
+            'http',
+            '#test',
+            '/test',
+            'mailto:'
+        ].forEach((expected) => {
+            test(`handles URL-like inputs (${expected})`, async function () {
+                await focusEditor(page);
+                await insertCard(page, {cardName: 'bookmark'});
+                await expect(page.getByTestId('bookmark-url-dropdown')).toBeVisible();
+
+                await page.keyboard.type(expected);
+                await expect(page.getByTestId('input-list-spinner')).not.toBeVisible();
+
+                await assertHTML(page, html`
+                    <li><div>Link to web page</div></li>
+                    <li aria-selected="true" role="option">
+                    <span>
+                        <svg></svg>
+                        <span>${expected}</span>
+                    </span>
+                    </li>
+                `, {selector: '[data-testid="bookmark-url-dropdown"]'});
+            });
         });
     });
 });

@@ -7,7 +7,7 @@ import {ColorIndicator, ColorPicker} from './ColorPicker';
 import {ColorOptionButtons} from './ColorOptionButtons';
 import {Dropdown} from './Dropdown';
 import {Input} from './Input';
-import {InputList} from './InputList';
+import {InputList, InputListItem} from './InputList.jsx';
 import {MediaUploader} from './MediaUploader';
 import {MultiSelectDropdown} from './MultiSelectDropdown';
 import {Slider} from './Slider.jsx';
@@ -114,12 +114,46 @@ export function InputUrlSetting({dataTestId, label, value, onChange}) {
  * @returns
  */
 export function InputListSetting({dataTestId, description, label, listOptions, onChange, placeholder, value}) {
+    function onClick(item) {
+        onChange(item.value);
+    }
+
+    const getItem = (item, selected, onMouseOver, scrollIntoView) => {
+        return (
+            <InputListItem
+                key={item.value}
+                className={clsx(
+                    selected && 'bg-grey-100',
+                    'cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black'
+                )}
+                dataTestId={dataTestId}
+                item={item}
+                scrollIntoView={scrollIntoView}
+                selected={selected}
+                onClick={onClick}
+                onMouseOver={onMouseOver}
+            >
+                <span className="block text-sm font-semibold leading-tight text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
+                <span className="block truncate text-xs leading-tight text-grey-700 dark:text-grey-600" data-testid={`${dataTestId}-listOption-${item.value}`}>
+                    {item.value}
+                </span>
+            </InputListItem>
+        );
+    };
+
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
-            <InputList dataTestId={dataTestId} listOptions={listOptions} placeholder={placeholder} value={value} onChange={onChange} />
+            <InputList
+                dataTestId={dataTestId}
+                getItem={getItem}
+                listOptions={listOptions}
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+            />
             {description &&
-                    <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
+                <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
         </div>
     );
@@ -145,7 +179,7 @@ export function DropdownSetting({label, description, value, menu, onChange, data
 /**
  *
  * @param {object} options
- * @param {T[]} options.items The curretly selected items
+ * @param {T[]} options.items The currently selected items
  * @param {T[]} options.availableItems The items available for selection
  * @param {boolean} options.allowAdd Whether to allow adding new items
  * @returns
