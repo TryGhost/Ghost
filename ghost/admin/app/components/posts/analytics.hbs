@@ -38,9 +38,11 @@
                     <button class="gh-post-list-cta edit" {{on "click" this.fetchPostTask.perform}}>
                         {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
                     </button>
-                    <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
-                        {{svg-jar "share" title="Share post"}}<span>Share</span>
-                    </button>
+                    {{#unless this.post.emailOnly}}
+                        <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
+                            {{svg-jar "share" title="Share post"}}<span>Share</span>
+                        </button>
+                    {{/unless}}
                     {{!-- <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
                         {{svg-jar "pen" title="Edit post"}}<span>Edit post</span>
                     </LinkTo> --}}
@@ -266,7 +268,9 @@
         @model={{hash
             post=this.post
             postCount=this.postCount
+            showPostCount=this.showPostCount
         }}
+        @haha="haha"
         @close={{this.togglePublishFlowModal}}
         @modifier="action wide" />
 {{/if}}

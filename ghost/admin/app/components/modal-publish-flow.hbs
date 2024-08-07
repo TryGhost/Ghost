@@ -12,7 +12,11 @@
                 {{#if this.post.emailOnly}}
                     Your email has been sent.
                 {{else}}
-                    That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
+                    {{#if this.showPostCount}}
+                        That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
+                    {{else}}
+                        Opened from the analytics
+                    {{/if}}
                 {{/if}}
             </span>
         {{else}}

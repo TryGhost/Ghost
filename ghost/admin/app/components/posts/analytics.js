@@ -35,6 +35,7 @@ export default class Analytics extends Component {
     @tracked _post = null;
     @tracked showPublishFlowModal = false;
     @tracked postCount = null;
+    @tracked showPostCount = false;
     displayOptions = DISPLAY_OPTIONS;
 
     constructor() {
@@ -45,6 +46,7 @@ export default class Analytics extends Component {
     async checkPublishFlowModal() {
         if (localStorage.getItem('ghost-last-published-post')) {
             await this.fetchPostCountTask.perform();
+            this.showPostCount = true;
             this.showPublishFlowModal = true;
             localStorage.removeItem('ghost-last-published-post');
         }
@@ -165,6 +167,7 @@ export default class Analytics extends Component {
 
     @action
     togglePublishFlowModal() {
+        this.showPostCount = false;
         this.showPublishFlowModal = !this.showPublishFlowModal;
     }
 

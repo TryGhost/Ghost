@@ -17,6 +17,10 @@ export default class ModalPublishFlow extends ModalComponent {
         return this.model.postCount;
     }
 
+    get showPostCount() {
+        return this.model.showPostCount;
+    }
+
     @action
     handleTwitter() {
         window.open(`https://twitter.com/intent/tweet?url=${encodeURI(this.post.url)}`, '_blank');
