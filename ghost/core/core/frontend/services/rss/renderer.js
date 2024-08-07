@@ -9,7 +9,7 @@ module.exports.render = function render(res, baseUrl, data) {
     return rssCache
         .getXML(baseUrl, rssData)
         .then(function then(feedXml) {
-            res.set('Content-Type', 'text/xml; charset=UTF-8');
+            res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
             res.send(feedXml);
         });
 };

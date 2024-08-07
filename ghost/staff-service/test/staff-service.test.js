@@ -78,10 +78,6 @@ function testCommonPaidSubMailData({member, mailStub, getEmailAlertUsersStub}) {
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('$50.00/month'))
     ).should.be.true();
-
-    mailStub.calledWith(
-        sinon.match.has('html', sinon.match('Subscription started on 1 Aug 2022'))
-    ).should.be.true();
 }
 
 function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
@@ -149,6 +145,12 @@ describe('StaffService', function () {
             }
         };
 
+        const blogIcon = {
+            getIconUrl: () => {
+                return 'https://ghost.example/siteicon.png';
+            }
+        };
+
         const settingsHelpers = {
             getDefaultEmailDomain: () => {
                 return 'ghost.example';
@@ -184,6 +186,7 @@ describe('StaffService', function () {
                 },
                 settingsCache,
                 urlUtils,
+                blogIcon,
                 settingsHelpers,
                 labs
             });
@@ -220,6 +223,7 @@ describe('StaffService', function () {
                     DomainEvents,
                     settingsCache,
                     urlUtils,
+                    blogIcon,
                     settingsHelpers
                 });
                 service.subscribeEvents();
@@ -339,6 +343,7 @@ describe('StaffService', function () {
                     },
                     settingsCache,
                     urlUtils,
+                    blogIcon,
                     settingsHelpers,
                     labs: {
                         isSet: () => {
@@ -430,9 +435,6 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
                 ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
-                ).should.be.true();
             });
 
             it('sends free member signup alert without member name', async function () {
@@ -455,18 +457,13 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('🥳 Free member signup: member@example.com'))
                 ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
-                ).should.be.true();
             });
 
             it('sends free member signup alert with attribution', async function () {
                 const member = {
                     name: 'Ghost',
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
 
                 const attribution = {
@@ -486,9 +483,6 @@ describe('StaffService', function () {
                 ).should.be.true();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
-                ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -520,9 +514,7 @@ describe('StaffService', function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
                 offer = {
                     name: 'Half price',
@@ -588,9 +580,7 @@ describe('StaffService', function () {
             it('sends paid subscription start alert without member name', async function () {
                 let memberData = {
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member: memberData, offer: null, tier, subscription}, options);
 

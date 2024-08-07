@@ -43,8 +43,8 @@
     "prepare": "husky install .github/hooks"
   },
   "resolutions": {
-    "@tryghost/errors": "1.3.2",
-    "@tryghost/logging": "2.4.15",
+    "@tryghost/errors": "1.3.5",
+    "@tryghost/logging": "2.4.18",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45"
@@ -115,9 +115,9 @@
     "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
-    "lint-staged": "15.2.7",
+    "lint-staged": "15.2.8",
     "nx": "16.8.1",
-    "rimraf": "5.0.9",
+    "rimraf": "5.0.10",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
     "inquirer": "8.2.6"

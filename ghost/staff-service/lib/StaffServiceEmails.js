@@ -5,12 +5,13 @@ const glob = require('glob');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, blogIcon, urlUtils, labs}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsHelpers = settingsHelpers;
         this.settingsCache = settingsCache;
+        this.blogIcon = blogIcon;
         this.urlUtils = urlUtils;
         this.labs = labs;
 
@@ -44,6 +45,7 @@ class StaffServiceEmails {
                 attributionUrl: attribution?.url || '',
                 referrerSource: attribution?.referrerSource,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl(true),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -103,6 +105,7 @@ class StaffServiceEmails {
                 offerData,
                 subscriptionData,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl(true),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -153,6 +156,7 @@ class StaffServiceEmails {
                 tierData,
                 subscriptionData,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl(true),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -182,6 +186,7 @@ class StaffServiceEmails {
 
         return {
             siteTitle: this.settingsCache.get('title'),
+            siteIconUrl: this.blogIcon.getIconUrl(true),
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             accentColor: this.settingsCache.get('accent_color'),
@@ -282,6 +287,7 @@ class StaffServiceEmails {
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
+                siteIconUrl: this.blogIcon.getIconUrl(true),
                 siteDomain: this.siteDomain,
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
