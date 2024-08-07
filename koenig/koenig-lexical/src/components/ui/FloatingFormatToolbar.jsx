@@ -26,7 +26,6 @@ export function FloatingFormatToolbar({
     isSnippetsEnabled,
     toolbarItemType,
     setToolbarItemType,
-    selectionRangeRect,
     hiddenFormats = []
 }) {
     const {cardConfig} = React.useContext(KoenigComposerContext);

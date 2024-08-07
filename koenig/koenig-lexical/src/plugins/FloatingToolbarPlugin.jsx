@@ -1,6 +1,5 @@
 import React from 'react';
 import {$getSelection, $isParagraphNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_MODIFIER_COMMAND} from 'lexical';
-import {$getSelectionRangeRect} from '../utils/$getSelectionRangeRect';
 import {$isAtLinkSearchNode} from '@tryghost/kg-default-nodes';
 import {$isLinkNode} from '@lexical/link';
 import {FloatingFormatToolbar, toolbarItemTypes} from '../components/ui/FloatingFormatToolbar';
@@ -15,7 +14,6 @@ export default function FloatingToolbarPlugin({anchorElem = document.body, isSni
 
 function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenFormats = []) {
     const [toolbarItemType, setToolbarItemType] = React.useState(null);
-    const [selectionRangeRect, setSelectionRangeRect] = React.useState(null);
     const [href, setHref] = React.useState(null);
 
     const setToolbarType = React.useCallback(() => {
@@ -49,9 +47,6 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
                 return;
             }
 
-            // save selection range rect to calculate toolbar arrow position
-            setSelectionRangeRect($getSelectionRangeRect({selection, editor}));
-
             const anchorNode = getSelectedNode(selection);
             const parent = anchorNode.getParent();
 
@@ -83,20 +78,6 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
             document.removeEventListener('selectionchange', setToolbarType);
         };
     }, [setToolbarType, toolbarItemType]);
-
-    // this causes the toolbar arrow position to update when the selection changes programmatically,
-    //  e.g. when clicking the edit button in the link toolbar
-    React.useEffect(() => {
-        return editor.registerUpdateListener(() => {
-            editor.getEditorState().read(() => {
-                const selection = $getSelection();
-                // save selection range rect to calculate toolbar arrow position
-                if (toolbarItemType && $isRangeSelection(selection)) {
-                    setSelectionRangeRect($getSelectionRangeRect({selection, editor}));
-                }
-            });
-        });
-    }, [editor, toolbarItemType]);
 
     React.useEffect(() => {
         editor.registerCommand(
@@ -147,7 +128,6 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
                 hiddenFormats={hiddenFormats}
                 href={href}
                 isSnippetsEnabled={isSnippetsEnabled}
-                selectionRangeRect={selectionRangeRect}
                 setToolbarItemType={setToolbarItemType}
                 toolbarItemType={toolbarItemType}
             />
