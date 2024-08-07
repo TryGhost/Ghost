@@ -54,7 +54,7 @@ export function EmailCtaCard({
         <>
             <div className="w-full pb-6">
                 {/* Segment */}
-                <div className="pb-7 pt-1 font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
+                <div className="pb-7 pt-[.6rem] font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
                     {segmentName}
                 </div>
 

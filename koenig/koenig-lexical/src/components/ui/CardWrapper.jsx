@@ -46,8 +46,8 @@ export const CardWrapper = React.forwardRef(({
     return (
         <>
             {IndicatorIcon &&
-                <div className="sticky top-0">
-                    <IndicatorIcon className="absolute left-[-6rem] top-[.6rem] size-6 text-grey" />
+                <div className="sticky top-0 lg:top-8">
+                    <IndicatorIcon className="absolute left-[-6rem] top-[.6rem] size-5 text-grey" />
                 </div>
             }
             <div
