@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import DeletePostModal from '../modals/delete-post';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
@@ -25,6 +26,7 @@ export default class Analytics extends Component {
     @service feature;
     @service store;
     @service router;
+    @service modals;
 
     @tracked sources = null;
     @tracked links = null;
@@ -169,6 +171,13 @@ export default class Analytics extends Component {
     togglePublishFlowModal() {
         this.showPostCount = false;
         this.showPublishFlowModal = !this.showPublishFlowModal;
+    }
+
+    @action
+    confirmDeleteMember() {
+        this.modals.open(DeletePostModal, {
+            post: this.post
+        });
     }
 
     updateLinkData(linksData) {

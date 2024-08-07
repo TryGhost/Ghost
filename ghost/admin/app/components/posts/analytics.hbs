@@ -63,31 +63,19 @@
                             @name="analytics-actions-menu"
                             @tagName="ul"
                             @classNames="gh-analytics-actions-menu dropdown-menu dropdown-triangle-top-right"
+                            @closeOnClick={{true}}
                         >
                             <li>
-                                <button
-                                    type="button"
-                                    class="mr2"
-                                    data-test-button="edit-post">
-                                        {{!-- <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title=""></LinkTo> --}}
-                                        <span>Edit post</span>
-                                </button>
+                                <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
+                            </li>
+                            <li>
+                                <a href="{{this.post.url}}" target="_blank" rel="noreferrer">View in browser</a>
                             </li>
                             <li>
                                 <button
                                     type="button"
                                     class="mr2"
-                                    {{!-- {{on "click" this.confirmLogoutMember}} --}}
-                                    data-test-button="view-post"
-                                >
-                                    <span>View in browser</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    type="button"
-                                    class="mr2"
-                                    {{!-- {{on "click" this.deletePosts}} --}}
+                                    {{on "click" this.confirmDeleteMember}}
                                     data-test-button="delete-post"
                                 >
                                     <span class="red">Delete post</span>
