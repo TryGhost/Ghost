@@ -2,6 +2,7 @@ const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
+    'bn', // Bengali
     'bg', // Bulgarian
     'bs', // Bosnian
     'ca', // Catalan
