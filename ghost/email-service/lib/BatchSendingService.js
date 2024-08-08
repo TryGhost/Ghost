@@ -221,7 +221,9 @@ class BatchSendingService {
     async getBatches(email) {
         logging.info(`Getting batches for email ${email.id}`);
 
-        return await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
+        const batches = await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
+        // findAll returns a bookshelf collection, we want to return a plain array to align with the createBatches method
+        return batches.slice();
     }
 
     /**
