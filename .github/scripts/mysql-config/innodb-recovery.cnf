@@ -1,0 +1,2 @@
+[mysqld]
+innodb_force_recovery = 6
