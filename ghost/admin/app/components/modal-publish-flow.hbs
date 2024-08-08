@@ -120,6 +120,7 @@
                 <button
                     class="gh-btn"
                     type="button"
+                    {{on "click" this.revertToDraftTask.perform}}
                     {{on "mousedown" (optional this.noop)}}
                 >
                     <span>Unschedule</span>

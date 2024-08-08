@@ -8,7 +8,7 @@ export default class PostsList extends Component {
     @service store;
 
     @tracked showPublishFlowModal = false;
-    @tracked latestScheduledPost = null;
+    latestScheduledPost = null;
 
     constructor() {
         super(...arguments);

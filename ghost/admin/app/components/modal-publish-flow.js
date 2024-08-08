@@ -1,11 +1,14 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
+import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 export default class ModalPublishFlow extends ModalComponent {
     @service store;
+    @service router;
+    @service notifications;
 
     classNames = ['modal-publish-flow', ...this.classNames];
 
@@ -64,5 +67,33 @@ export default class ModalPublishFlow extends ModalComponent {
         copyTextToClipboard(this.post.previewUrl);
         yield timeout(1000);
         return true;
+    }
+
+    @task
+    *revertToDraftTask() {
+        const currentPost = this.model.post;
+        const originalStatus = currentPost.status;
+        const originalPublishedAtUTC = currentPost.publishedAtUTC;
+
+        try {
+            if (currentPost.isScheduled) {
+                currentPost.publishedAtUTC = null;
+            }
+
+            currentPost.status = 'draft';
+            currentPost.emailOnly = false;
+
+            yield currentPost.save();
+            this.router.transitionTo('lexical-editor.edit', 'post', currentPost.id);
+
+            const postType = capitalize(currentPost.displayName);
+            this.notifications.showNotification(`${postType} reverted to a draft.`, {type: 'success'});
+
+            return true;
+        } catch (e) {
+            currentPost.status = originalStatus;
+            currentPost.publishedAtUTC = originalPublishedAtUTC;
+            throw e;
+        }
     }
 }
