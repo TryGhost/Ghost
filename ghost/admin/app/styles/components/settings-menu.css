@@ -368,6 +368,10 @@ li.nav-list-item .for-switch.x-small label {
     letter-spacing: 0;
 }
 
+.post-setting-custom-excerpt textarea.error {
+    border-color: var(--red);
+}
+
 .settings-menu-content .gh-seo-preview-title {
     white-space: inherit;
 }
