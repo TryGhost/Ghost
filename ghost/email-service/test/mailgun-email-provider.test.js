@@ -37,7 +37,6 @@ describe('Mailgun Email Provider', function () {
                 from: 'ghost@example.com',
                 replyTo: 'ghost@example.com',
                 emailId: '123',
-                deliveryTime,
                 recipients: [
                     {
                         email: 'member@example.com',
@@ -59,7 +58,8 @@ describe('Mailgun Email Provider', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             should(response.id).eql('provider-123');
             should(sendStub.calledOnce).be.true();

@@ -65,11 +65,11 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: 'John'
                     }
-                ],
-                deliveryTime
+                ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -81,7 +81,6 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
-                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -102,7 +101,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
         });
@@ -125,11 +125,11 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: undefined
                     }
-                ],
-                deliveryTime
+                ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -141,7 +141,6 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
-                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -162,7 +161,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
         });
@@ -186,11 +186,11 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: 'John'
                     }
-                ],
-                deliveryTime
+                ]
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true,
+                deliveryTime,
                 emailBodyCache
             });
             assert.equal(response.id, 'provider-123');
@@ -204,7 +204,6 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
-                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -225,7 +224,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
 
@@ -240,11 +240,11 @@ describe('Sending service', function () {
                         email: 'member@example.com',
                         name: 'John'
                     }
-                ],
-                deliveryTime
+                ]
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true,
+                deliveryTime,
                 emailBodyCache
             });
             assert.equal(response2.id, 'provider-123');
@@ -257,7 +257,6 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
-                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -278,7 +277,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
 
@@ -308,11 +308,11 @@ describe('Sending service', function () {
                         email: 'member+invalid@example.com�',
                         name: 'John'
                     }
-                ],
-                deliveryTime
+                ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -324,7 +324,6 @@ describe('Sending service', function () {
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
                     emailId: '123',
-                    deliveryTime,
                     replacementDefinitions: [
                         {
                             id: 'name',
@@ -345,7 +344,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
         });
