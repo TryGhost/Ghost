@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import DeletePostModal from '../modals/delete-post';
+// import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
@@ -27,6 +28,7 @@ export default class Analytics extends Component {
     @service store;
     @service router;
     @service modals;
+    @service notifications;
 
     @tracked sources = null;
     @tracked links = null;
@@ -356,6 +358,17 @@ export default class Analytics extends Component {
     *fetchPostTask() {
         const result = yield this.store.query('post', {filter: `id:${this.post.id}`, limit: 1});
         this.post = result.toArray()[0];
+
+        // const publishedAt = this.post.publishedAtUTC;
+        // const fiveMinutesAgo = moment().subtract(5, 'minutes');
+
+        // if (this.post.email && this.post.email.openedCount === 0 && publishedAt.isAfter(fiveMinutesAgo)) {
+        if (this.post.email) {
+            this.notifications.showNotification('Post analytics refreshing', {
+                description: 'It can take up to five minutes for all data to show.',
+                type: 'success'
+            });
+        }
     }
 
     get showLinks() {
