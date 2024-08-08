@@ -28,7 +28,7 @@ services:
       - "6379:6379"
     restart: always
   jaeger:
-      image: jaegertracing/all-in-one:1.58
+      image: jaegertracing/all-in-one:1.59
       container_name: ghost-jaeger
       ports:
         - "4318:4318"
