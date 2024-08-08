@@ -41,6 +41,7 @@ test.describe('Html card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
                     <div>
+                        <div>Shown in email to free subscribers</div>
                         <div><p>test content</p></div>
                         <div></div>
                     </div>
@@ -74,6 +75,7 @@ test.describe('Html card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
                     <div>
+                        <div>Shown in email to free subscribers</div>
                         <div><div><span style="fullscreen-inner">Loading...</span></div></div>
                         <div></div>
                     </div>
@@ -165,6 +167,7 @@ test.describe('Html card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
                     <div>
+                        <div>Shown in email to free subscribers</div>
                         <div class="min-h-[3.5vh] whitespace-normal">
                             Here are some words
                         </div>
