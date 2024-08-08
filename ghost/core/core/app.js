@@ -37,6 +37,7 @@ const rootApp = () => {
     app.use(maintenanceMiddleware);
 
     return app;
+    // REMOVE THIS
 };
 
 module.exports = rootApp;
