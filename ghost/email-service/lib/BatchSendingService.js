@@ -223,7 +223,7 @@ class BatchSendingService {
 
         const batches = await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
         // findAll returns a bookshelf collection, we want to return a plain array to align with the createBatches method
-        return batches.slice();
+        return batches.models;
     }
 
     /**
