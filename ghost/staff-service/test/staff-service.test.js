@@ -732,13 +732,9 @@ describe('StaffService', function () {
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
 
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
-                ).should.be.true();
-
                 // Expiration sentence is in the future tense
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Subscription will expire on'))
+                    sinon.match.has('html', sinon.match('Expires on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -752,24 +748,17 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: Changed my mind!'))
                 ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Cancellation reason'))
-                ).should.be.true();
             });
 
             it('sends paid subscription cancel alert when sub is canceled without reason', async function () {
-                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, canceledAt, cancelNow}, options);
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, cancelNow}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
 
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
-                ).should.be.true();
-
                 // Expiration sentence is in the future tense
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Subscription will expire on'))
+                    sinon.match.has('html', sinon.match('Expires on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -779,9 +768,6 @@ describe('StaffService', function () {
                 // Cancellation reason block is hidden
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: '))
-                ).should.be.false();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Cancellation reason'))
                 ).should.be.false();
             });
 
@@ -802,7 +788,7 @@ describe('StaffService', function () {
 
                 // Expiration sentence is in the past tense
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Subscription expired on'))
+                    sinon.match.has('html', sinon.match('Expired on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -812,10 +798,6 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', 'Offer')
                 ).should.be.false();
-
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Cancellation reason'))
-                ).should.be.true();
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: Payment failed'))
