@@ -68,6 +68,7 @@
 @media (max-width: 1450px) {
     .members-list-container-stretch {
         min-height: calc(100vh - 176px);
+        overflow: hidden;
     }
 }
 
