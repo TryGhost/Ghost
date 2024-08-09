@@ -15,13 +15,16 @@ import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
+export const IMAGE_STATUS_NEW = 'new';
+export const IMAGE_STATUS_EDITED = 'edited';
+
 export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp';
 export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
-export const IMAGE_PARAMS = {purpose: 'image'};
+export const IMAGE_PARAMS = {purpose: 'image', status: IMAGE_STATUS_NEW};
 
 export const ICON_EXTENSIONS = ['gif', 'ico', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
 export const ICON_MIME_TYPES = 'image/x-icon,image/vnd.microsoft.icon,image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp';
-export const ICON_PARAMS = {purpose: 'icon'};
+export const ICON_PARAMS = {purpose: 'icon', status: IMAGE_STATUS_NEW};
 
 export default Component.extend({
     ajax: service(),

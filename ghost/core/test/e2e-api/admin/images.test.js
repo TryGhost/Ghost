@@ -14,6 +14,9 @@ const {imageSize} = require('../../../core/server/lib/image');
 const configUtils = require('../../utils/configUtils');
 const logging = require('@tryghost/logging');
 
+const IMAGE_STATUS_NEW = 'new';
+const IMAGE_STATUS_EDITED = 'edited';
+
 const images = [];
 let agent, frontendAgent, ghostServer;
 /**
@@ -23,9 +26,10 @@ let agent, frontendAgent, ghostServer;
  * @param {string} options.filename
  * @param {string} options.contentType
  * @param {string} [options.ref]
+ * @param {string} [options.status]
  * @returns
  */
-const uploadImageRequest = ({fileContents, filename, contentType, ref}) => {
+const uploadImageRequest = ({fileContents, filename, contentType, ref, status = IMAGE_STATUS_NEW}) => {
     const form = new FormData();
     form.append('file', fileContents, {
         filename,
@@ -33,6 +37,8 @@ const uploadImageRequest = ({fileContents, filename, contentType, ref}) => {
     });
 
     form.append('purpose', 'image');
+    form.append('status', status);
+
     if (ref) {
         form.append('ref', ref);
     }
@@ -399,5 +405,22 @@ describe('Images API', function () {
                 }]
             });
         sinon.assert.calledOnce(loggingStub);
+    });
+
+    it('Anonymizes the name of an edited image', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const fileContents = await fs.readFile(originalFilePath);
+        const filename = 'foobarbaz.png';
+
+        const {body} = await uploadImageRequest({fileContents, filename, contentType: 'image/png', status: IMAGE_STATUS_EDITED})
+            .expectStatus(201);
+
+        const name = body.images[0].url.split('/').pop();
+
+        // Assert that name has been changed
+        assert.equal(name !== filename, true);
+
+        // Assert that name is a UUID v4
+        assert.match(name, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.png$/);
     });
 });

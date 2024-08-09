@@ -15,7 +15,7 @@ import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framewor
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
-import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getImageUrl, ImageStatus, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
@@ -246,9 +246,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     };
 
-    const handleImageUpload = async (image: string, file: File) => {
+    const handleImageUpload = async (image: string, file: File, status: ImageStatus = ImageStatus.NEW) => {
         try {
-            const imageUrl = getImageUrl(await uploadImage({file}));
+            const imageUrl = getImageUrl(await uploadImage({file, status}));
 
             switch (image) {
             case 'cover_image':
@@ -383,7 +383,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                             openEditor: async () => editor.openEditor({
                                                 image: formState.profile_image || '',
                                                 handleSave: async (file:File) => {
-                                                    handleImageUpload('profile_image', file);
+                                                    handleImageUpload('profile_image', file, ImageStatus.EDITED);
                                                 }
                                             })
                                         }
@@ -421,7 +421,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         openEditor: async () => editor.openEditor({
                                             image: formState.cover_image || '',
                                             handleSave: async (file:File) => {
-                                                handleImageUpload('cover_image', file);
+                                                handleImageUpload('cover_image', file, ImageStatus.EDITED);
                                             }
                                         })
                                     }

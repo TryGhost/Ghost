@@ -4,7 +4,7 @@ import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ImageUpload, SettingGroupContent, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getImageUrl, ImageStatus, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -82,7 +82,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 openEditor: async () => editor.openEditor({
                                     image: twitterImage || '',
                                     handleSave: async (file:File) => {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        const imageUrl = getImageUrl(await uploadImage({file, status: ImageStatus.EDITED}));
                                         updateSetting('twitter_image', imageUrl);
                                     }
                                 })
