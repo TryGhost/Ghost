@@ -1,9 +1,9 @@
 {
-    "Email sent": "",
-    "Now check your email!": "",
-    "Please enter a valid email address": "",
-    "Something went wrong, please try again.": "",
-    "Subscribe": "",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "",
-    "Your email address": ""
+    "Email sent": "Лист надіслано",
+    "Now check your email!": "Тепер перевірте вашу електронну пошту!",
+    "Please enter a valid email address": "Будь ласка, введіть реальну адресу електронної пошти",
+    "Something went wrong, please try again.": "Щось пішло не так. Будь ласка, спробуйте ще раз.",
+    "Subscribe": "Підписатись",
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Щоб завершити реєстрацію, натисніть на посилання підтвердження в листі. Якщо лист не надійшов протягом 3 хвилин, перевірте папку «Спам»!",
+    "Your email address": "Ваша електронна пошта"
 }
