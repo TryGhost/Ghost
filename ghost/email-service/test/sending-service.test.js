@@ -53,6 +53,8 @@ describe('Sending service', function () {
                 emailProvider
             });
 
+            const deliveryTime = new Date();
+
             const response = await sendingService.send({
                 post: {},
                 newsletter: {},
@@ -66,7 +68,8 @@ describe('Sending service', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -98,7 +101,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
         });
@@ -108,6 +112,8 @@ describe('Sending service', function () {
                 emailRenderer,
                 emailProvider
             });
+
+            const deliveryTime = new Date();
 
             const response = await sendingService.send({
                 post: {},
@@ -122,7 +128,8 @@ describe('Sending service', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -154,7 +161,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
         });
@@ -165,6 +173,8 @@ describe('Sending service', function () {
                 emailRenderer,
                 emailProvider
             });
+
+            const deliveryTime = new Date();
 
             const response = await sendingService.send({
                 post: {},
@@ -180,6 +190,7 @@ describe('Sending service', function () {
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true,
+                deliveryTime,
                 emailBodyCache
             });
             assert.equal(response.id, 'provider-123');
@@ -213,7 +224,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
 
@@ -232,6 +244,7 @@ describe('Sending service', function () {
             }, {
                 clickTrackingEnabled: true,
                 openTrackingEnabled: true,
+                deliveryTime,
                 emailBodyCache
             });
             assert.equal(response2.id, 'provider-123');
@@ -264,7 +277,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
 
@@ -277,6 +291,8 @@ describe('Sending service', function () {
                 emailRenderer,
                 emailProvider
             });
+
+            const deliveryTime = new Date();
 
             const response = await sendingService.send({
                 post: {},
@@ -295,7 +311,8 @@ describe('Sending service', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -327,7 +344,8 @@ describe('Sending service', function () {
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    deliveryTime
                 }
             ));
         });
@@ -371,6 +389,19 @@ describe('Sending service', function () {
             });
             assert.equal(sendingService.getMaximumRecipients(), 12);
             sinon.assert.calledOnce(emailProvider.getMaximumRecipients);
+        });
+    });
+
+    describe('getBatchDelay', function () {
+        it('returns the batch delay of the email provider', function () {
+            const emailProvider = {
+                getBatchDelay: sinon.stub().returns(0)
+            };
+            const sendingService = new SendingService({
+                emailProvider
+            });
+            assert.equal(sendingService.getBatchDelay(), 0);
+            sinon.assert.calledOnce(emailProvider.getBatchDelay);
         });
     });
 });

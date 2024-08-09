@@ -221,7 +221,9 @@ class BatchSendingService {
     async getBatches(email) {
         logging.info(`Getting batches for email ${email.id}`);
 
-        return await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
+        const batches = await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
+        // findAll returns a bookshelf collection, we want to return a plain array to align with the createBatches method
+        return batches.models;
     }
 
     /**
@@ -355,6 +357,8 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
 
+        const BATCH_DELAY = this.#sendingService.getBatchDelay(); // delay between batches in milliseconds
+
         // Reuse same HTML body if we send an email to the same segment
         const emailBodyCache = new EmailBodyCache();
 
@@ -364,10 +368,17 @@ class BatchSendingService {
 
         // Bind this
         let runNext;
+        let startTime = new Date();
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache})) {
+                let deliveryTime = undefined;
+                if (BATCH_DELAY > 0) {
+                    const index = batches.indexOf(batch);
+                    const deliveryDelay = Math.abs(index * BATCH_DELAY);
+                    deliveryTime = new Date(startTime.getTime() + deliveryDelay);
+                }
+                if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache, deliveryTime})) {
                     succeededCount += 1;
                 }
                 await runNext();
@@ -394,7 +405,7 @@ class BatchSendingService {
      * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter}} data
      * @returns {Promise<boolean>} True when succeeded, false when failed with an error
      */
-    async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache}) {
+    async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache, deliveryTime}) {
         logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
         // Check the status of the email batch in a 'for update' transaction
@@ -440,6 +451,7 @@ class BatchSendingService {
                 }, {
                     openTrackingEnabled: !!email.get('track_opens'),
                     clickTrackingEnabled: !!email.get('track_clicks'),
+                    deliveryTime,
                     emailBodyCache
                 });
             }, {...this.#MAILGUN_API_RETRY_CONFIG, description: `Sending email batch ${originalBatch.id}`});

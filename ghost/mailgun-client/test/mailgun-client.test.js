@@ -58,6 +58,22 @@ describe('MailgunClient', function () {
         assert(typeof mailgunClient.getBatchSize() === 'number');
     });
 
+    it('exports a number for configurable batch delay', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000,
+            batchDelay: 1000
+        });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        assert(typeof mailgunClient.getBatchDelay() === 'number');
+    });
+
     it('can connect via config', function () {
         const configStub = sinon.stub(config, 'get');
         configStub.withArgs('bulkEmail').returns({

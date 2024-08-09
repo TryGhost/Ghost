@@ -97,6 +97,11 @@ module.exports = class MailgunClient {
                 messageData['o:tracking-opens'] = true;
             }
 
+            // set the delivery time if specified
+            if (message.deliveryTime && message.deliveryTime instanceof Date) {
+                messageData['o:deliverytime'] = message.deliveryTime.toUTCString();
+            }
+
             const mailgunConfig = this.#getConfig();
             startTime = Date.now();
             const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
@@ -321,5 +326,16 @@ module.exports = class MailgunClient {
      */
     getBatchSize() {
         return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
+    }
+
+    /**
+     * Returns the configurated delay between batches in milliseconds
+     * 
+     * Defaults to 0 (no delay) if not set
+     * 
+     * @returns {number}
+     */
+    getBatchDelay() {
+        return this.#config.get('bulkEmail')?.batchDelay ?? 0;
     }
 };

@@ -29,6 +29,7 @@ const logging = require('@tryghost/logging');
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {Date} deliveryTime
  * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
  */
 
@@ -73,6 +74,15 @@ class SendingService {
 
     getMaximumRecipients() {
         return this.#emailProvider.getMaximumRecipients();
+    }
+
+    /**
+     * Returns the configured delay between batches in milliseconds
+     * 
+     * @returns {number}
+     */
+    getBatchDelay() {
+        return this.#emailProvider.getBatchDelay();
     }
 
     /**
@@ -125,7 +135,8 @@ class SendingService {
             replacementDefinitions: emailBody.replacements
         }, {
             clickTrackingEnabled: !!options.clickTrackingEnabled,
-            openTrackingEnabled: !!options.openTrackingEnabled
+            openTrackingEnabled: !!options.openTrackingEnabled,
+            deliveryTime: options.deliveryTime
         });
     }
 
