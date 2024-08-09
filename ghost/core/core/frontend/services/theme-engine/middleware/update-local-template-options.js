@@ -9,7 +9,7 @@ function updateLocalTemplateOptions(req, res, next) {
 
     // adjust @site.url for http/https based on the incoming request
     const siteData = {
-        url: urlUtils.urlFor('home', {trailingSlash: false}, true)
+        url: urlUtils.urlFor('home', {trailingSlash: true}, true)
     };
 
     // @TODO: it would be nicer if this was proper middleware somehow...
