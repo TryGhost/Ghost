@@ -225,7 +225,7 @@ describe('ActivityPubAPI', function () {
                 'https://activitypub.api/.ghost/activitypub/following/index': {
                     response: JSONResponse({
                         type: 'Collection',
-                        items: []
+                        orderedItems: []
                     })
                 }
             });
@@ -255,46 +255,9 @@ describe('ActivityPubAPI', function () {
                     response:
                      JSONResponse({
                          type: 'Collection',
-                         items: [{
+                         orderedItems: [{
                              type: 'Person'
                          }]
-                     })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-            const expected: Activity[] = [
-                {
-                    type: 'Person'
-                }
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('Returns an array when the items key is a single object', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/following/index': {
-                    response:
-                     JSONResponse({
-                         type: 'Collection',
-                         items: {
-                             type: 'Person'
-                         }
                      })
                 }
             });
@@ -360,7 +323,7 @@ describe('ActivityPubAPI', function () {
                 'https://activitypub.api/.ghost/activitypub/followers/index': {
                     response: JSONResponse({
                         type: 'Collection',
-                        items: []
+                        orderedItems: []
                     })
                 }
             });
@@ -390,46 +353,9 @@ describe('ActivityPubAPI', function () {
                     response:
                      JSONResponse({
                          type: 'Collection',
-                         items: [{
+                         orderedItems: [{
                              type: 'Person'
                          }]
-                     })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowers();
-            const expected: Activity[] = [
-                {
-                    type: 'Person'
-                }
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('Returns an array when the items key is a single object', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/followers/index': {
-                    response:
-                     JSONResponse({
-                         type: 'Collection',
-                         items: {
-                             type: 'Person'
-                         }
                      })
                 }
             });
