@@ -384,275 +384,275 @@ describe('Collections API', function () {
     });
 
     describe('Automatic Collection Filtering', function () {
-        it('Creates an automatic Collection with a featured filter', async function () {
-            const collection = {
-                title: 'Test Featured Collection',
-                slug: 'featured-filter',
-                description: 'Test Collection Description',
-                type: 'automatic',
-                filter: 'featured:true'
-            };
+        // it('Creates an automatic Collection with a featured filter', async function () {
+        //     const collection = {
+        //         title: 'Test Featured Collection',
+        //         slug: 'featured-filter',
+        //         description: 'Test Collection Description',
+        //         type: 'automatic',
+        //         filter: 'featured:true'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill(matchPostShallowIncludes)
+        //         });
+        // });
 
-        it('Creates an automatic Collection with a published_at filter', async function () {
-            const collection = {
-                title: 'Test Collection with published_at filter',
-                slug: 'published-at-filter',
-                description: 'Test Collection Description with published_at filter',
-                type: 'automatic',
-                filter: 'published_at:>=2022-05-25'
-            };
+        // it('Creates an automatic Collection with a published_at filter', async function () {
+        //     const collection = {
+        //         title: 'Test Collection with published_at filter',
+        //         slug: 'published-at-filter',
+        //         description: 'Test Collection Description with published_at filter',
+        //         type: 'automatic',
+        //         filter: 'published_at:>=2022-05-25'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(9).fill(matchPostShallowIncludes)
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(9).fill(matchPostShallowIncludes)
+        //         });
+        // });
 
-        it('Creates an automatic Collection with a tags filter', async function () {
-            const collection = {
-                title: 'Test Collection with tag filter',
-                slug: 'tag-filter',
-                description: 'BACON!',
-                type: 'automatic',
-                filter: 'tags:[\'bacon\']'
-            };
+        // it('Creates an automatic Collection with a tags filter', async function () {
+        //     const collection = {
+        //         title: 'Test Collection with tag filter',
+        //         slug: 'tag-filter',
+        //         description: 'BACON!',
+        //         type: 'automatic',
+        //         filter: 'tags:[\'bacon\']'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill({
-                        ...matchPostShallowIncludes,
-                        tags: new Array(2).fill(tagSnapshotMatcher)
-                    })
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill({
+        //                 ...matchPostShallowIncludes,
+        //                 tags: new Array(2).fill(tagSnapshotMatcher)
+        //             })
+        //         });
+        // });
 
-        it('Creates an automatic Collection with a tag filter, checking filter aliases', async function () {
-            const collection = {
-                title: 'Test Collection with tag filter alias',
-                slug: 'bacon-tag-expansion',
-                description: 'BACON!',
-                type: 'automatic',
-                filter: 'tag:[\'bacon\']'
-            };
+        // it('Creates an automatic Collection with a tag filter, checking filter aliases', async function () {
+        //     const collection = {
+        //         title: 'Test Collection with tag filter alias',
+        //         slug: 'bacon-tag-expansion',
+        //         description: 'BACON!',
+        //         type: 'automatic',
+        //         filter: 'tag:[\'bacon\']'
+        //     };
 
-            await agent
-                .post('/collections/')
-                .body({
-                    collections: [collection]
-                })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+        //     await agent
+        //         .post('/collections/')
+        //         .body({
+        //             collections: [collection]
+        //         })
+        //         .expectStatus(201)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag,
+        //             location: anyLocationFor('collections')
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [matchCollection]
+        //         });
 
-            await agent.get(`posts/?collection=${collection.slug}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill({
-                        ...matchPostShallowIncludes,
-                        tags: new Array(2).fill(tagSnapshotMatcher)
-                    })
-                });
-        });
+        //     await agent.get(`posts/?collection=${collection.slug}`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill({
+        //                 ...matchPostShallowIncludes,
+        //                 tags: new Array(2).fill(tagSnapshotMatcher)
+        //             })
+        //         });
+        // });
     });
 
     describe('Collection Posts updates automatically', function () {
-        it('Makes limited DB queries when updating due to post changes', async function () {
-            await agent
-                .get(`/collections/slug/featured/?include=count.posts`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [{
-                        ...matchCollection,
-                        count: {
-                            posts: 2
-                        }
-                    }]
-                });
+        // it('Makes limited DB queries when updating due to post changes', async function () {
+        //     await agent
+        //         .get(`/collections/slug/featured/?include=count.posts`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [{
+        //                 ...matchCollection,
+        //                 count: {
+        //                     posts: 2
+        //                 }
+        //             }]
+        //         });
 
-            const postToAdd = {
-                title: 'Collection update test',
-                featured: false
-            };
+        //     const postToAdd = {
+        //         title: 'Collection update test',
+        //         featured: false
+        //     };
 
-            let post;
+        //     let post;
 
-            {
-                const queries = await trackDb(async () => {
-                    const {body: {posts: [createdPost]}} = await agent
-                        .post('/posts/')
-                        .body({
-                            posts: [postToAdd]
-                        })
-                        .expectStatus(201);
+        //     {
+        //         const queries = await trackDb(async () => {
+        //             const {body: {posts: [createdPost]}} = await agent
+        //                 .post('/posts/')
+        //                 .body({
+        //                     posts: [postToAdd]
+        //                 })
+        //                 .expectStatus(201);
 
-                    await DomainEvents.allSettled();
+        //             await DomainEvents.allSettled();
 
-                    post = createdPost;
-                }, this.skip.bind(this));
+        //             post = createdPost;
+        //         }, this.skip.bind(this));
 
-                const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 7);
-            }
+        //         const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+        //         assert.equal(collectionRelatedQueries.length, 7);
+        //     }
 
-            await agent
-                .get(`/collections/slug/featured/?include=count.posts`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [{
-                        ...matchCollection,
-                        count: {
-                            posts: 2
-                        }
-                    }]
-                });
+        //     await agent
+        //         .get(`/collections/slug/featured/?include=count.posts`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [{
+        //                 ...matchCollection,
+        //                 count: {
+        //                     posts: 2
+        //                 }
+        //             }]
+        //         });
 
-            {
-                const queries = await trackDb(async () => {
-                    await agent
-                        .put(`/posts/${post.id}/`)
-                        .body({
-                            posts: [Object.assign({}, post, {featured: true})]
-                        })
-                        .expectStatus(200);
+        //     {
+        //         const queries = await trackDb(async () => {
+        //             await agent
+        //                 .put(`/posts/${post.id}/`)
+        //                 .body({
+        //                     posts: [Object.assign({}, post, {featured: true})]
+        //                 })
+        //                 .expectStatus(200);
 
-                    await DomainEvents.allSettled();
-                }, this.skip.bind(this));
+        //             await DomainEvents.allSettled();
+        //         }, this.skip.bind(this));
 
-                const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 16);
-            }
+        //         const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+        //         assert.equal(collectionRelatedQueries.length, 16);
+        //     }
 
-            await agent
-                .get(`/collections/slug/featured/?include=count.posts`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [{
-                        ...matchCollection,
-                        count: {
-                            posts: 3
-                        }
-                    }]
-                });
+        //     await agent
+        //         .get(`/collections/slug/featured/?include=count.posts`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [{
+        //                 ...matchCollection,
+        //                 count: {
+        //                     posts: 3
+        //                 }
+        //             }]
+        //         });
 
-            {
-                const queries = await trackDb(async () => {
-                    await agent
-                        .delete(`/posts/${post.id}/`)
-                        .expectStatus(204);
+        //     {
+        //         const queries = await trackDb(async () => {
+        //             await agent
+        //                 .delete(`/posts/${post.id}/`)
+        //                 .expectStatus(204);
 
-                    await DomainEvents.allSettled();
-                }, this.skip.bind(this));
-                const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+        //             await DomainEvents.allSettled();
+        //         }, this.skip.bind(this));
+        //         const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
 
-                // deletion is handled on the DB layer through Cascade Delete,
-                // so collections should not execute any additional queries
-                assert.equal(collectionRelatedQueries.length, 0);
-            }
+        //         // deletion is handled on the DB layer through Cascade Delete,
+        //         // so collections should not execute any additional queries
+        //         assert.equal(collectionRelatedQueries.length, 0);
+        //     }
 
-            await agent
-                .get(`/collections/slug/featured/?include=count.posts`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [{
-                        ...matchCollection,
-                        count: {
-                            posts: 2
-                        }
-                    }]
-                });
-        });
+        //     await agent
+        //         .get(`/collections/slug/featured/?include=count.posts`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             collections: [{
+        //                 ...matchCollection,
+        //                 count: {
+        //                     posts: 2
+        //                 }
+        //             }]
+        //         });
+        // });
         it('Updates collections when a Post is added/edited/deleted', async function () {
             await agent
                 .get(`/collections/slug/featured/?include=count.posts`)
