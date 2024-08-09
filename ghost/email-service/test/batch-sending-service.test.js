@@ -681,7 +681,13 @@ describe('Batch Sending Service', function () {
 
     describe('sendBatches', function () {
         it('Works for a single batch', async function () {
-            const service = new BatchSendingService({});
+            const service = new BatchSendingService({
+                sendingService: {
+                    getBatchDelay() {
+                        return 0;
+                    }
+                }
+            });
             const sendBatch = sinon.stub(service, 'sendBatch').callsFake(() => {
                 return Promise.resolve(true);
             });
@@ -700,7 +706,13 @@ describe('Batch Sending Service', function () {
         });
 
         it('Works for more than 2 batches', async function () {
-            const service = new BatchSendingService({});
+            const service = new BatchSendingService({
+                sendingService: {
+                    getBatchDelay() {
+                        return 0;
+                    }
+                }
+            });
             let runningCount = 0;
             let maxRunningCount = 0;
             const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
@@ -723,8 +735,51 @@ describe('Batch Sending Service', function () {
             assert.equal(maxRunningCount, 2);
         });
 
+        it('Works with a batchDelay > 0', async function () {
+            const service = new BatchSendingService({
+                sendingService: {
+                    getBatchDelay() {
+                        return 1000;
+                    }
+                }
+            });
+            let runningCount = 0;
+            let maxRunningCount = 0;
+            const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
+                runningCount += 1;
+                maxRunningCount = Math.max(maxRunningCount, runningCount);
+                await sleep(5);
+                runningCount -= 1;
+                return Promise.resolve(true);
+            });
+            const batches = new Array(101).fill(0).map(() => createModel({}));
+            await service.sendBatches({
+                email: createModel({}),
+                batches,
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+            sinon.assert.callCount(sendBatch, 101);
+            const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
+            const deliveryTimes = sendBatch.getCalls().map(call => call.args[0].deliveryTime);
+            deliveryTimes.forEach((time, i) => {
+                assert(time instanceof Date);
+                if (i > 0) {
+                    assert(time - deliveryTimes[i - 1] >= 1000);
+                }
+            });
+            assert.deepEqual(sendBatches, batches);
+            assert.equal(maxRunningCount, 2);
+        });
+
         it('Throws error if all batches fail', async function () {
-            const service = new BatchSendingService({});
+            const service = new BatchSendingService({
+                sendingService: {
+                    getBatchDelay() {
+                        return 0;
+                    }
+                }
+            });
             let runningCount = 0;
             let maxRunningCount = 0;
             const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
@@ -748,7 +803,13 @@ describe('Batch Sending Service', function () {
         });
 
         it('Throws error if a single batch fails', async function () {
-            const service = new BatchSendingService({});
+            const service = new BatchSendingService({
+                sendingService: {
+                    getBatchDelay() {
+                        return 0;
+                    }
+                }
+            });
             let runningCount = 0;
             let maxRunningCount = 0;
             let callCount = 0;

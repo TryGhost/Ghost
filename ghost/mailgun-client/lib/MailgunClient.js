@@ -327,4 +327,15 @@ module.exports = class MailgunClient {
     getBatchSize() {
         return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
     }
+
+    /**
+     * Returns the configurated delay between batches in milliseconds
+     * 
+     * Defaults to 0 (no delay) if not set
+     * 
+     * @returns {number}
+     */
+    getBatchDelay() {
+        return this.#config.get('bulkEmail')?.batchDelay ?? 0;
+    }
 };

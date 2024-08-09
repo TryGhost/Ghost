@@ -246,4 +246,23 @@ describe('Mailgun Email Provider', function () {
             assert.equal(provider.getMaximumRecipients(), 1000);
         });
     });
+
+    describe('getBatchDelay', function () {
+        let mailgunClient;
+        let getBatchDelayStub;
+
+        it('returns 1000', function () {
+            getBatchDelayStub = sinon.stub().returns(0);
+
+            mailgunClient = {
+                getBatchDelay: getBatchDelayStub
+            };
+            
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            assert.equal(provider.getBatchDelay(), 0);
+        });
+    });
 });

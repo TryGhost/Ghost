@@ -177,6 +177,15 @@ class MailgunEmailProvider {
     getMaximumRecipients() {
         return this.#mailgunClient.getBatchSize();
     }
+
+    /**
+     * Returns the configured delay between batches in milliseconds
+     * 
+     * @returns {number}
+     */
+    getBatchDelay() {
+        return this.#mailgunClient.getBatchDelay();
+    }
 }
 
 module.exports = MailgunEmailProvider;

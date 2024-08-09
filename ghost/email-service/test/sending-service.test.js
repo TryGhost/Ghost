@@ -391,4 +391,17 @@ describe('Sending service', function () {
             sinon.assert.calledOnce(emailProvider.getMaximumRecipients);
         });
     });
+
+    describe('getBatchDelay', function () {
+        it('returns the batch delay of the email provider', function () {
+            const emailProvider = {
+                getBatchDelay: sinon.stub().returns(0)
+            };
+            const sendingService = new SendingService({
+                emailProvider
+            });
+            assert.equal(sendingService.getBatchDelay(), 0);
+            sinon.assert.calledOnce(emailProvider.getBatchDelay);
+        });
+    });
 });

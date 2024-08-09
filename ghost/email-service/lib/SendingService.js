@@ -77,6 +77,15 @@ class SendingService {
     }
 
     /**
+     * Returns the configured delay between batches in milliseconds
+     * 
+     * @returns {number}
+     */
+    getBatchDelay() {
+        return this.#emailProvider.getBatchDelay();
+    }
+
+    /**
      * Send a given post, rendered for a given newsletter and segment to the members provided in the list
      * @param {object} data
      * @param {Post} data.post

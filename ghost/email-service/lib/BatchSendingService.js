@@ -357,6 +357,8 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
 
+        const BATCH_DELAY = this.#sendingService.getBatchDelay(); // delay between batches in milliseconds
+
         // Reuse same HTML body if we send an email to the same segment
         const emailBodyCache = new EmailBodyCache();
 
@@ -370,9 +372,12 @@ class BatchSendingService {
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                const index = batches.indexOf(batch);
-                const deliveryDelay = Math.abs(index * 5000);
-                const deliveryTime = new Date(startTime.getTime() + deliveryDelay);
+                let deliveryTime = undefined;
+                if (BATCH_DELAY > 0) {
+                    const index = batches.indexOf(batch);
+                    const deliveryDelay = Math.abs(index * BATCH_DELAY);
+                    deliveryTime = new Date(startTime.getTime() + deliveryDelay);
+                }
                 if (await this.sendBatch({email, batch, post, newsletter, emailBodyCache, deliveryTime})) {
                     succeededCount += 1;
                 }
@@ -442,11 +447,11 @@ class BatchSendingService {
                     post,
                     newsletter,
                     segment: batch.get('member_segment'),
-                    members,
-                    deliveryTime
+                    members
                 }, {
                     openTrackingEnabled: !!email.get('track_opens'),
                     clickTrackingEnabled: !!email.get('track_clicks'),
+                    deliveryTime,
                     emailBodyCache
                 });
             }, {...this.#MAILGUN_API_RETRY_CONFIG, description: `Sending email batch ${originalBatch.id}`});
