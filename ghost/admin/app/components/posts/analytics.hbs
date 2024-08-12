@@ -246,15 +246,3 @@
         </div>
     {{/if}}
 </section>
-
-{{#if this.showPublishFlowModal}}
-    <GhFullscreenModal
-        @modal="publish-flow"
-        @model={{hash
-            post=this.post
-            postCount=this.postCount
-            showPostCount=this.showPostCount
-        }}
-        @close={{this.togglePublishFlowModal}}
-        @modifier="action wide" />
-{{/if}}

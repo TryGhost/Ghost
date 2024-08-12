@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 import DeletePostModal from '../modals/delete-post';
-// import moment from 'moment-timezone';
+import PostSuccessModal from '../modal-post-success';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
@@ -37,7 +37,6 @@ export default class Analytics extends Component {
     @tracked showSuccess;
     @tracked updateLinkId;
     @tracked _post = null;
-    @tracked showPublishFlowModal = false;
     @tracked postCount = null;
     @tracked showPostCount = false;
     displayOptions = DISPLAY_OPTIONS;
@@ -47,11 +46,19 @@ export default class Analytics extends Component {
         this.checkPublishFlowModal();
     }
 
+    openPublishFlowModal() {
+        this.modals.open(PostSuccessModal, {
+            post: this.post,
+            postCount: this.postCount,
+            showPostCount: this.showPostCount
+        });
+    }
+
     async checkPublishFlowModal() {
         if (localStorage.getItem('ghost-last-published-post')) {
             await this.fetchPostCountTask.perform();
             this.showPostCount = true;
-            this.showPublishFlowModal = true;
+            this.openPublishFlowModal();
             localStorage.removeItem('ghost-last-published-post');
         }
     }
@@ -172,7 +179,7 @@ export default class Analytics extends Component {
     @action
     togglePublishFlowModal() {
         this.showPostCount = false;
-        this.showPublishFlowModal = !this.showPublishFlowModal;
+        this.openPublishFlowModal();
     }
 
     @action

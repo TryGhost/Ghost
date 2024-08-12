@@ -1,27 +1,29 @@
-import ModalComponent from 'ghost-admin/components/modal-base';
+import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
 import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
-export default class ModalPublishFlow extends ModalComponent {
+export default class PostSuccessModal extends Component {
     @service store;
     @service router;
     @service notifications;
 
-    classNames = ['modal-publish-flow', ...this.classNames];
+    static modalOptions = {
+        className: 'fullscreen-modal-wide fullscreen-modal-action modal-post-success'
+    };
 
     get post() {
-        return this.model.post;
+        return this.args.data.post;
     }
 
     get postCount() {
-        return this.model.postCount;
+        return this.args.data.postCount;
     }
 
     get showPostCount() {
-        return this.model.showPostCount;
+        return this.args.data.showPostCount;
     }
 
     @action
@@ -49,12 +51,6 @@ export default class ModalPublishFlow extends ModalComponent {
         window.open(this.post.url, '_blank');
     }
 
-    @action
-    close(event) {
-        event?.preventDefault?.();
-        this.closeModal();
-    }
-
     @task
     *handleCopyLink() {
         copyTextToClipboard(this.post.url);
@@ -71,7 +67,7 @@ export default class ModalPublishFlow extends ModalComponent {
 
     @task
     *revertToDraftTask() {
-        const currentPost = this.model.post;
+        const currentPost = this.post;
         const originalStatus = currentPost.status;
         const originalPublishedAtUTC = currentPost.publishedAtUTC;
 

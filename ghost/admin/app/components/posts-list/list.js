@@ -1,13 +1,12 @@
 import Component from '@glimmer/component';
-import {action} from '@ember/object';
+import PostSuccessModal from '../modal-post-success';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
 export default class PostsList extends Component {
     @service store;
+    @service modals;
 
-    @tracked showPublishFlowModal = false;
     latestScheduledPost = null;
 
     constructor() {
@@ -18,18 +17,15 @@ export default class PostsList extends Component {
     async checkPublishFlowModal() {
         if (localStorage.getItem('ghost-last-scheduled-post')) {
             await this.getLatestScheduledPost.perform();
-            this.showPublishFlowModal = true;
+            this.modals.open(PostSuccessModal, {
+                post: this.latestScheduledPost
+            });
             localStorage.removeItem('ghost-last-scheduled-post');
         }
     }
 
     get list() {
         return this.args.list;
-    }
-
-    @action
-    togglePublishFlowModal() {
-        this.showPublishFlowModal = !this.showPublishFlowModal;
     }
 
     @task
