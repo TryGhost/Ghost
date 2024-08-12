@@ -45,7 +45,7 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
-    "@babel/core": "7.24.5",
+    "@babel/core": "7.25.2",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@codemirror/lang-css": "6.2.1",
     "@codemirror/lang-html": "6.4.9",

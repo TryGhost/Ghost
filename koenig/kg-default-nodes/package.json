@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.24.5",
-    "@babel/plugin-syntax-import-assertions": "^7.20.0",
+    "@babel/plugin-syntax-import-assertions": "^7.24.1",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
     "@prettier/sync": "^0.3.0",
