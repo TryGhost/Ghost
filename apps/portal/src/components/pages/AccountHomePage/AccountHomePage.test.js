@@ -48,4 +48,11 @@ describe('Account Home Page', () => {
         fireEvent.click(manageBtn);
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'accountEmail'});
     });
+
+    test('hides Newsletter toggle if newsletters are disabled', () => {
+        const siteData = getSiteData({editorDefaultEmailRecipients: 'disabled'});
+        const {logoutBtn, utils} = setup({site: siteData});
+        expect(logoutBtn).toBeInTheDocument();
+        expect(utils.queryByText('Email newsletter')).not.toBeInTheDocument();
+    });
 });

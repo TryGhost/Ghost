@@ -86,6 +86,10 @@ export function getNewsletterFromUuid({site, uuid}) {
     });
 }
 
+export function hasNewsletterSendingEnabled({site}) {
+    return site?.editor_default_email_recipients === 'visibility';
+}
+
 export function allowCompMemberUpgrade({member}) {
     return member?.subscriptions?.[0]?.tier?.expiry_at !== undefined;
 }

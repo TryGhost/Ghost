@@ -12,6 +12,7 @@ Object {
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "default_email_address": "noreply@127.0.0.1",
     "description": "Thoughts, stories and ideas",
+    "editor_default_email_recipients": "visibility",
     "facebook": "ghost",
     "firstpromoter_account": null,
     "icon": null,
