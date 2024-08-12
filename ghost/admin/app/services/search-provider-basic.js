@@ -36,7 +36,7 @@ export const SEARCHABLES = [
     }
 ];
 
-export default class SearchProviderService extends Service {
+export default class SearchProviderBasicService extends Service {
     @service ajax;
     @service notifications;
     @service store;

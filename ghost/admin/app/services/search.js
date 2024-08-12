@@ -8,16 +8,16 @@ export default class SearchService extends Service {
     @service ajax;
     @service feature;
     @service notifications;
-    @service searchProvider;
-    @service searchProviderBeta;
+    @service searchProviderBasic;
+    @service searchProviderFlex;
+    @service settings;
     @service store;
 
     isContentStale = true;
 
     get provider() {
-        return this.feature.internalLinking
-            ? this.searchProviderBeta
-            : this.searchProvider;
+        const isEnglish = this.settings.locale?.toLowerCase().startsWith('en') ?? true;
+        return isEnglish ? this.searchProviderFlex : this.searchProviderBasic;
     }
 
     @action
