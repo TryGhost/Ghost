@@ -85,7 +85,7 @@
     "@tryghost/kg-unsplash-selector": "0.2.2",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@uiw/react-codemirror": "^4.22.0",
+    "@uiw/react-codemirror": "^4.23.0",
     "@vitejs/plugin-react": "4.3.1",
     "@vitest/coverage-c8": "0.33.0",
     "@vitest/ui": "1.6.0",
