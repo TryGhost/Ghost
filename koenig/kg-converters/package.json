@@ -32,7 +32,7 @@
   "devDependencies": {
     "@rollup/plugin-babel": "6.0.4",
     "c8": "9.1.0",
-    "mocha": "10.4.0",
+    "mocha": "10.7.3",
     "rollup": "4.20.0",
     "sinon": "17.0.1"
   },

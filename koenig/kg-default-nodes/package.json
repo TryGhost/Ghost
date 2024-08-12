@@ -29,7 +29,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.24.5",
+    "@babel/eslint-parser": "7.25.1",
     "@babel/plugin-syntax-import-assertions": "^7.24.1",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
@@ -37,8 +37,8 @@
     "@rollup/plugin-babel": "6.0.4",
     "c8": "9.1.0",
     "html-minifier": "^4.0.0",
-    "mocha": "10.4.0",
-    "prettier": "3.2.5",
+    "mocha": "10.7.3",
+    "prettier": "3.3.3",
     "rollup": "4.20.0",
     "rollup-plugin-svg": "2.0.0",
     "should": "13.2.3",
