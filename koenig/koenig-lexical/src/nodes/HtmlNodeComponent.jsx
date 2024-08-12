@@ -64,9 +64,7 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
             {
                 isContentVisibilityEnabled &&
                 (
-
                     <VisibilityDropdown editor={editor} isActive={showVisibilityDropdown} nodeKey={nodeKey} visibility={visibility} />
-
                 )
             }
 

@@ -41,8 +41,9 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                     if (!skipClick.current && containerRef.current.contains(event.target)) {
                         const cardNode = $getNodeByKey(nodeKey);
                         const clickedDifferentEditor = !cardNode;
+                        const clickedToolbar = event.target.closest('[data-kg-allow-clickthrough="false"]');
 
-                        if (isSelected && (cardNode?.hasEditMode?.() && !isEditing)) {
+                        if (isSelected && (cardNode?.hasEditMode?.() && !isEditing && !clickedToolbar)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
                         } else if (!isSelected) {
                             editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});

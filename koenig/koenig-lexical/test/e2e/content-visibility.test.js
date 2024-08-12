@@ -29,5 +29,38 @@ test.describe('Content Visibility', async () => {
             await expect(page.locator('[data-kg-card-toolbar="html"]')).toBeVisible();
             await expect(page.locator('[data-kg-card-toolbar="html"] [aria-label="Visibility"]')).toBeVisible();
         });
+
+        test('toolbar shows visibility options on click', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            // button is highlighted
+            await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'true');
+
+            // settings are visible
+            await expect(card.getByTestId('visibility-settings')).toBeVisible();
+        });
+
+        test('clicking on settings does not transition into edit mode', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+            await card.getByTestId('visibility-settings').click();
+
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+        });
     });
 });
