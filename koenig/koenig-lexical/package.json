@@ -70,7 +70,7 @@
     "@storybook/addon-mdx-gfm": "7.6.20",
     "@storybook/react": "7.6.20",
     "@storybook/react-vite": "7.6.20",
-    "@storybook/test-runner": "^0.18.0",
+    "@storybook/test-runner": "^0.19.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "6.4.8",
     "@testing-library/react": "^16.0.0",
