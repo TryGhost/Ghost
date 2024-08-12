@@ -78,6 +78,17 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
         }
 
         /**
+         * Returns default values for any properties, allowing our editor code
+         * to detect when a property has been changed
+         */
+        static getPropertyDefaults() {
+            return properties.reduce((obj, prop) => {
+                obj[prop.name] = prop.default;
+                return obj;
+            }, {});
+        }
+
+        /**
          * Transforms URLs contained in the payload to relative paths (`__GHOST_URL__/relative/path/`),
          * so that URLs to be changed without having to update the database
          * @see https://github.com/TryGhost/SDK/tree/main/packages/url-utils

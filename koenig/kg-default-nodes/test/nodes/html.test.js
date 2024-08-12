@@ -95,6 +95,20 @@ describe('HtmlNode', function () {
         }));
     });
 
+    describe('getPropertyDefaults', function () {
+        it('returns the correct default values', editorTest(function () {
+            const defaults = HtmlNode.getPropertyDefaults();
+
+            defaults.should.deepEqual({
+                html: '',
+                visibility: {
+                    emailOnly: false,
+                    segment: ''
+                }
+            });
+        }));
+    });
+
     describe('clone', function () {
         it('returns a copy of the current node', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
@@ -190,7 +204,7 @@ describe('HtmlNode', function () {
             const options = {
                 target: 'email'
             };
-            const mergedOptions = {...exportOptions, ...options}; 
+            const mergedOptions = {...exportOptions, ...options};
             const {element, type} = htmlNode.exportDOM(mergedOptions);
             type.should.equal('html');
 

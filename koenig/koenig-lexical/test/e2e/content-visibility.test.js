@@ -41,9 +41,6 @@ test.describe('Content Visibility', async () => {
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            // button is highlighted
-            await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'true');
-
             // settings are visible
             await expect(card.getByTestId('visibility-settings')).toBeVisible();
         });
@@ -61,6 +58,25 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-settings').click();
 
             await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+        });
+
+        test('changing a setting puts icon in active state', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            // button is not highlighted
+            await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'false');
+
+            await card.locator('[aria-label="Visibility"]').click();
+            await card.locator('[data-testid="visibility-toggle-email-only"]').click();
+
+            // button is highlighted
+            await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'true');
         });
     });
 });

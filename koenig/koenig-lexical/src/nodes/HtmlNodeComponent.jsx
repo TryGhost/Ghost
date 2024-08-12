@@ -5,6 +5,7 @@ import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
+import {HtmlNode} from './HtmlNode.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VisibilityDropdown} from '../components/ui/VisibilityDropdown.jsx';
@@ -14,9 +15,12 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
+
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
     const [showVisibilityDropdown, setShowVisibilityDropdown] = React.useState(false);
+
+    const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
+    const isContentVisibilityActive = JSON.stringify(visibility) !== JSON.stringify(HtmlNode.getPropertyDefaults().visibility);
 
     const updateHtml = (value) => {
         editor.update(() => {
@@ -85,7 +89,12 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
                     {
                         isContentVisibilityEnabled &&
                         <>
-                            <ToolbarMenuItem icon="visibility" isActive={showVisibilityDropdown && cardContext.isSelected} label="Visibility" onClick={handleVisibilityToggle} />
+                            <ToolbarMenuItem
+                                icon={isContentVisibilityActive ? 'visibilityActive' : 'visibility'}
+                                isActive={isContentVisibilityActive}
+                                label="Visibility"
+                                onClick={handleVisibilityToggle}
+                            />
                             <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                         </>
                     }
