@@ -112,8 +112,47 @@
                 @showIcon={{true}}
                 @successText="Link copied"
                 @class="gh-btn gh-btn-primary gh-btn-icon" />
-        {{else}}
-            {{#if this.post.emailOnly}}
+        {{/if}}
+
+        {{#if (and this.post.isScheduled (not this.post.emailOnly))}}
+            <GhTaskButton
+                    @buttonText="Copy preview link"
+                    @task={{this.handleCopyPreviewLink}}
+                    @successText="Link copied"
+                    @class="gh-btn gh-btn-icon" />
+            <button
+                class="gh-btn gh-btn-primary"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>OK</span>
+            </button>
+        {{/if}}
+
+        {{#if (and this.post.isSent (not this.post.isPublished))}}
+            <button
+                class="gh-btn gh-btn-primary"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>OK</span>
+            </button>
+        {{/if}}
+
+        {{#if (and this.post.isScheduled this.post.emailOnly)}}
+            <button
+                class="gh-btn gh-btn-primary"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>OK</span>
+            </button>
+        {{/if}}
+
+            {{!-- {{#if this.post.emailOnly}}
                 {{#unless this.post.isScheduled}}
                     <button
                         class="gh-btn"
@@ -139,6 +178,6 @@
             >
                 <span>OK</span>
             </button>
-        {{/if}}
+        {{/if}} --}}
     </footer>
 </div>
