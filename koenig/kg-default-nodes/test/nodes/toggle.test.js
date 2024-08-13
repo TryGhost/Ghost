@@ -43,7 +43,7 @@ describe('ToggleNode', function () {
 
     it('matches node with $isToggleNode', editorTest(function () {
         const toggleNode = $createToggleNode(dataset);
-        $isToggleNode(toggleNode).should.be.true;
+        $isToggleNode(toggleNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -105,7 +105,7 @@ describe('ToggleNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const toggleNode = $createToggleNode(dataset);
-            toggleNode.hasEditMode().should.be.true;
+            toggleNode.hasEditMode().should.be.true();
         }));
     });
 

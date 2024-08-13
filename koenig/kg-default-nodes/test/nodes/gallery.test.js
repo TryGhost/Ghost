@@ -175,7 +175,7 @@ describe('GalleryNode', function () {
     describe('hasEditMode', function () {
         it('returns false', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
-            galleryNode.hasEditMode().should.be.false;
+            galleryNode.hasEditMode().should.be.false();
         }));
     });
 

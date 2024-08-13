@@ -73,7 +73,7 @@ describe('CollectionNode', function () {
 
     it('matches node with $isCollectionNode', editorTest(function () {
         const collectionNode = $createCollectionNode(dataset);
-        $isCollectionNode(collectionNode).should.be.true;
+        $isCollectionNode(collectionNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -127,7 +127,7 @@ describe('CollectionNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const collectionNode = $createCollectionNode(dataset);
-            collectionNode.hasEditMode().should.be.true;
+            collectionNode.hasEditMode().should.be.true();
         }));
     });
 

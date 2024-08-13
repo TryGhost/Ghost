@@ -45,7 +45,7 @@ describe('HeaderNode', function () {
 
         it('matches node with $isHeaderNode', editorTest(function () {
             const headerNode = $createHeaderNode(dataset);
-            $isHeaderNode(headerNode).should.be.true;
+            $isHeaderNode(headerNode).should.be.true();
         }));
 
         describe('data access', function () {
@@ -128,7 +128,7 @@ describe('HeaderNode', function () {
         describe('hasEditMode', function () {
             it('returns true', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
-                headerNode.hasEditMode().should.be.true;
+                headerNode.hasEditMode().should.be.true();
             }));
         });
 
@@ -210,7 +210,7 @@ describe('HeaderNode', function () {
                 node.backgroundImageSrc.should.equal('https://example.com/image.jpg');
                 node.header.should.equal('Header');
                 node.subheader.should.equal('Subheader');
-                node.buttonEnabled.should.be.true;
+                node.buttonEnabled.should.be.true();
                 node.buttonUrl.should.equal('https://example.com');
                 node.buttonText.should.equal('Button');
             }));
@@ -298,7 +298,7 @@ describe('HeaderNode', function () {
 
         it('matches node with $isHeaderNode', editorTest(function () {
             const headerNode = $createHeaderNode(dataset);
-            $isHeaderNode(headerNode).should.be.true;
+            $isHeaderNode(headerNode).should.be.true();
         }));
 
         describe('data access', function () {
@@ -306,7 +306,7 @@ describe('HeaderNode', function () {
                 const node = $createHeaderNode(dataset);
                 node.version.should.equal(2);
                 node.backgroundImageSrc.should.equal('https://example.com/image.jpg');
-                node.buttonEnabled.should.be.true;
+                node.buttonEnabled.should.be.true();
                 node.buttonText.should.equal('The button');
                 node.buttonUrl.should.equal('https://example.com/');
                 node.header.should.equal('This is the header card');
@@ -318,7 +318,7 @@ describe('HeaderNode', function () {
                 node.buttonColor.should.equal('#000000');
                 node.buttonTextColor.should.equal('#FFFFFF');
                 node.layout.should.equal('full');
-                node.swapped.should.be.false;
+                node.swapped.should.be.false();
             }));
 
             it('has setters for all properties', editorTest(function () {
@@ -339,7 +339,7 @@ describe('HeaderNode', function () {
                 node.swapped = true;
 
                 node.backgroundImageSrc.should.equal('https://example.com/image2.jpg');
-                node.buttonEnabled.should.be.false;
+                node.buttonEnabled.should.be.false();
                 node.buttonText.should.equal('The button 2');
                 node.buttonUrl.should.equal('https://example.com/2');
                 node.header.should.equal('This is the header card 2');
@@ -351,7 +351,7 @@ describe('HeaderNode', function () {
                 node.buttonColor.should.equal('#000001');
                 node.buttonTextColor.should.equal('#FFFFFF');
                 node.layout.should.equal('full');
-                node.swapped.should.be.true;
+                node.swapped.should.be.true();
             }));
         });
 
@@ -380,7 +380,7 @@ describe('HeaderNode', function () {
                 node.textColor.should.equal('#abcdef');
                 node.header.should.equal('Header');
                 node.subheader.should.equal('Subheader');
-                node.buttonEnabled.should.be.true;
+                node.buttonEnabled.should.be.true();
                 node.buttonUrl.should.equal('https://example.com');
                 node.buttonText.should.equal('Button');
                 node.buttonTextColor.should.equal('#abcdef');
@@ -433,7 +433,7 @@ describe('HeaderNode', function () {
         describe('hasEditMode', function () {
             it('returns true', editorTest(function () {
                 const headerNode = $createHeaderNode(dataset);
-                headerNode.hasEditMode().should.be.true;
+                headerNode.hasEditMode().should.be.true();
             }));
         });
 

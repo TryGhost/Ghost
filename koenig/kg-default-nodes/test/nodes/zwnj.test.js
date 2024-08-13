@@ -27,6 +27,6 @@ describe('ZWNJNode', function () {
 
     it('matches node with $isZWNJNode', editorTest(function () {
         const zwnjNode = $createZWNJNode();
-        $isZWNJNode(zwnjNode).should.be.true;
+        $isZWNJNode(zwnjNode).should.be.true();
     }));
 });

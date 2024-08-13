@@ -44,7 +44,7 @@ describe('FileNode', function () {
 
     it('can match node with FileNode', editorTest(function () {
         const node = $createFileNode(dataset);
-        $isFileNode(node).should.be.true;
+        $isFileNode(node).should.be.true();
     }));
 
     describe('data access', function (){
@@ -117,7 +117,7 @@ describe('FileNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const fileNode = $createFileNode(dataset);
-            fileNode.hasEditMode().should.be.true;
+            fileNode.hasEditMode().should.be.true();
         }));
     });
 

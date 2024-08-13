@@ -50,7 +50,7 @@ describe('BookmarkNode', function () {
 
     it('matches node with $isBookmarkNode', editorTest(function () {
         const bookmarkNode = $createBookmarkNode(dataset);
-        $isBookmarkNode(bookmarkNode).should.be.true;
+        $isBookmarkNode(bookmarkNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -143,7 +143,7 @@ describe('BookmarkNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
-            bookmarkNode.hasEditMode().should.be.true;
+            bookmarkNode.hasEditMode().should.be.true();
         }));
     });
 
@@ -151,9 +151,9 @@ describe('BookmarkNode', function () {
         it('returns true if url is empty', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
-            bookmarkNode.isEmpty().should.be.false;
+            bookmarkNode.isEmpty().should.be.false();
             bookmarkNode.url = '';
-            bookmarkNode.isEmpty().should.be.true;
+            bookmarkNode.isEmpty().should.be.true();
         }));
     });
 

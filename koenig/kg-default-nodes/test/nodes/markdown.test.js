@@ -38,7 +38,7 @@ describe('MarkdownNode', function () {
 
     it('matches node with $isImageNode', editorTest(function () {
         const markdownNode = $createMarkdownNode(dataset);
-        $isMarkdownNode(markdownNode).should.be.true;
+        $isMarkdownNode(markdownNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -70,9 +70,9 @@ describe('MarkdownNode', function () {
         it('returns true if markdown is empty', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            markdownNode.isEmpty().should.be.false;
+            markdownNode.isEmpty().should.be.false();
             markdownNode.markdown = '';
-            markdownNode.isEmpty().should.be.true;
+            markdownNode.isEmpty().should.be.true();
         }));
     });
 
@@ -104,7 +104,7 @@ describe('MarkdownNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
-            markdownNode.hasEditMode().should.be.true;
+            markdownNode.hasEditMode().should.be.true();
         }));
     });
 

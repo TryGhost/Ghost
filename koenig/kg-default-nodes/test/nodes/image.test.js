@@ -54,7 +54,7 @@ describe('ImageNode', function () {
 
     it('matches node with $isImageNode', editorTest(function () {
         const imageNode = $createImageNode(dataset);
-        $isImageNode(imageNode).should.be.true;
+        $isImageNode(imageNode).should.be.true();
     }));
 
     describe('data access', function () {

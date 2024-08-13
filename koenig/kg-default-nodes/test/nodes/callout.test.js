@@ -43,7 +43,7 @@ describe('CalloutNode', function () {
 
     it('can match node with calloutNode', editorTest(function () {
         const node = $createCalloutNode(dataset);
-        $isCalloutNode(node).should.be.true;
+        $isCalloutNode(node).should.be.true();
     }));
 
     describe('data access', function (){
@@ -97,7 +97,7 @@ describe('CalloutNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const calloutNode = $createCalloutNode(dataset);
-            calloutNode.hasEditMode().should.be.true;
+            calloutNode.hasEditMode().should.be.true();
         }));
     });
 

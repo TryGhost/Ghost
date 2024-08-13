@@ -39,7 +39,7 @@ describe('HtmlNode', function () {
 
     it('matches node with $isImageNode', editorTest(function () {
         const htmlNode = $createHtmlNode(dataset);
-        $isHtmlNode(htmlNode).should.be.true;
+        $isHtmlNode(htmlNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -74,9 +74,9 @@ describe('HtmlNode', function () {
         it('has isEmpty() convenience method', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
 
-            htmlNode.isEmpty().should.be.false;
+            htmlNode.isEmpty().should.be.false();
             htmlNode.html = '';
-            htmlNode.isEmpty().should.be.true;
+            htmlNode.isEmpty().should.be.true();
         }));
     });
 
@@ -84,9 +84,9 @@ describe('HtmlNode', function () {
         it('returns true if markdown is empty', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
 
-            htmlNode.isEmpty().should.be.false;
-            htmlNode.markdown = '';
-            htmlNode.isEmpty().should.be.true;
+            htmlNode.isEmpty().should.be.false();
+            htmlNode.html = '';
+            htmlNode.isEmpty().should.be.true();
         }));
     });
 
@@ -133,7 +133,7 @@ describe('HtmlNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
-            htmlNode.hasEditMode().should.be.true;
+            htmlNode.hasEditMode().should.be.true();
         }));
     });
 

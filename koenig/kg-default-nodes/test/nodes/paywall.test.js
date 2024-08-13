@@ -40,7 +40,7 @@ describe('PaywallNode', function () {
 
     it('matches node with $isPaywallNode', editorTest(function () {
         const paywallNode = $createPaywallNode(dataset);
-        $isPaywallNode(paywallNode).should.be.true;
+        $isPaywallNode(paywallNode).should.be.true();
     }));
 
     describe('exportJSON', function () {

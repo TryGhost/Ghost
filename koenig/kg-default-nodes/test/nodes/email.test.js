@@ -38,7 +38,7 @@ describe('EmailNode', function () {
 
     it('matches node with $isEmailNode', editorTest(function () {
         const emailNode = $createEmailNode(dataset);
-        $isEmailNode(emailNode).should.be.true;
+        $isEmailNode(emailNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -94,7 +94,7 @@ describe('EmailNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const emailNode = $createEmailNode(dataset);
-            emailNode.hasEditMode().should.be.true;
+            emailNode.hasEditMode().should.be.true();
         }));
     });
 

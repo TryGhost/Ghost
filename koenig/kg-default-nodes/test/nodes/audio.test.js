@@ -44,7 +44,7 @@ describe('AudioNode', function () {
 
     it('matches node with $isAudioNode', editorTest(function () {
         const audioNode = $createAudioNode(dataset);
-        $isAudioNode(audioNode).should.be.true;
+        $isAudioNode(audioNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -120,7 +120,7 @@ describe('AudioNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const audioNode = $createAudioNode(dataset);
-            audioNode.hasEditMode().should.be.true;
+            audioNode.hasEditMode().should.be.true();
         }));
     });
 

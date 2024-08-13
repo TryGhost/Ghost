@@ -27,17 +27,17 @@ describe('TKNode', function () {
 
     it('matches node with $isTKNode', editorTest(function () {
         const tkNode = $createTKNode();
-        $isTKNode(tkNode).should.be.true;
+        $isTKNode(tkNode).should.be.true();
     }));
 
     it('is a text entity', editorTest(function () {
         const tkNode = $createTKNode();
-        tkNode.isTextEntity().should.be.true;
+        tkNode.isTextEntity().should.be.true();
     }));
 
     it('can not insert text before', editorTest(function () {
         const tkNode = $createTKNode();
-        tkNode.canInsertTextBefore().should.be.false;
+        tkNode.canInsertTextBefore().should.be.false();
     }));
 
     describe('exportJSON', function () {

@@ -50,7 +50,7 @@ describe('SignupNode', function () {
 
     it('matches node with $isSignupNode', editorTest(function () {
         const signupNode = $createSignupNode(dataset);
-        $isSignupNode(signupNode).should.be.true;
+        $isSignupNode(signupNode).should.be.true();
     }));
 
     describe('clone', function () {
@@ -66,7 +66,7 @@ describe('SignupNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
-            signupNode.hasEditMode().should.be.true;
+            signupNode.hasEditMode().should.be.true();
         }));
     });
 
@@ -674,7 +674,7 @@ describe('SignupNode', function () {
                 try {
                     const [signupNode] = $getRoot().getChildren();
 
-                    $isSignupNode(signupNode).should.be.true;
+                    $isSignupNode(signupNode).should.be.true();
                     done();
                 } catch (e) {
                     done(e);

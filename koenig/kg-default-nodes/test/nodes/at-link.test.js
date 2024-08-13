@@ -39,7 +39,7 @@ describe('AtLinkNode', function () {
 
     it('matches node with $isAtLinkNode', editorTest(function () {
         const atLinkNode = $createAtLinkNode();
-        $isAtLinkNode(atLinkNode).should.be.true;
+        $isAtLinkNode(atLinkNode).should.be.true();
     }));
 
     it('can be constructed with link format', editorTest(function () {
@@ -79,13 +79,13 @@ describe('AtLinkNode', function () {
             {theme: {atLink: 'multiple classes'}},
             editor
         );
-        dom.classList.contains('multiple').should.be.true;
-        dom.classList.contains('classes').should.be.true;
+        dom.classList.contains('multiple').should.be.true();
+        dom.classList.contains('classes').should.be.true();
     }));
 
     it('never updates dom after creation', editorTest(function () {
         const atLinkNode = $createAtLinkNode();
-        atLinkNode.updateDOM().should.be.false;
+        atLinkNode.updateDOM().should.be.false();
     }));
 
     it('can get and set link format', editorTest(function () {
@@ -110,11 +110,11 @@ describe('AtLinkNode', function () {
 
     it('is inline', editorTest(function () {
         const atLinkNode = $createAtLinkNode();
-        atLinkNode.isInline().should.be.true;
+        atLinkNode.isInline().should.be.true();
     }));
 
     it('cannot be empty', editorTest(function () {
         const atLinkNode = $createAtLinkNode();
-        atLinkNode.canBeEmpty().should.be.false;
+        atLinkNode.canBeEmpty().should.be.false();
     }));
 });

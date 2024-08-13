@@ -39,7 +39,7 @@ describe('AtLinkSearchNode', function () {
 
     it('matches node with $isAtLinkSearchNode', editorTest(function () {
         const atLinkSearchNode = $createAtLinkSearchNode();
-        $isAtLinkSearchNode(atLinkSearchNode).should.be.true;
+        $isAtLinkSearchNode(atLinkSearchNode).should.be.true();
     }));
 
     it('can be constructed with text and placeholder', editorTest(function () {
@@ -80,8 +80,8 @@ describe('AtLinkSearchNode', function () {
     it('renders using theme classes and default placeholder', editorTest(function () {
         const atLinkNode = $createAtLinkSearchNode();
         const dom = atLinkNode.createDOM(config);
-        dom.classList.contains('multiple').should.be.true;
-        dom.classList.contains('classes').should.be.true;
+        dom.classList.contains('multiple').should.be.true();
+        dom.classList.contains('classes').should.be.true();
         dom.dataset.placeholder.should.equal('Find a post, tag or author');
     }));
 
@@ -134,7 +134,7 @@ describe('AtLinkSearchNode', function () {
 
     it('cannot have format', editorTest(function () {
         const atLinkSearchNode = $createAtLinkSearchNode();
-        atLinkSearchNode.canHaveFormat().should.be.false;
+        atLinkSearchNode.canHaveFormat().should.be.false();
     }));
 
     it('can set custom placeholder', editorTest(function () {

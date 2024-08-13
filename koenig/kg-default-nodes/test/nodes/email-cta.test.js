@@ -44,7 +44,7 @@ describe('EmailCtaNode', function () {
 
     it('matches node with $isEmailCtaNode', editorTest(function () {
         const emailCtaNode = $createEmailCtaNode(dataset);
-        $isEmailCtaNode(emailCtaNode).should.be.true;
+        $isEmailCtaNode(emailCtaNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -131,7 +131,7 @@ describe('EmailCtaNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const emailCtaNode = $createEmailCtaNode(dataset);
-            emailCtaNode.hasEditMode().should.be.true;
+            emailCtaNode.hasEditMode().should.be.true();
         }));
     });
 

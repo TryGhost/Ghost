@@ -49,7 +49,7 @@ describe('VideoNode', function () {
 
     it('matches node with $isVideoNode', editorTest(function () {
         const videoNode = $createVideoNode(dataset);
-        $isVideoNode(videoNode).should.be.true;
+        $isVideoNode(videoNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -68,7 +68,7 @@ describe('VideoNode', function () {
             videoNode.thumbnailWidth.should.equal(dataset.thumbnailWidth);
             videoNode.thumbnailHeight.should.equal(dataset.thumbnailHeight);
             videoNode.cardWidth.should.equal('regular');
-            videoNode.loop.should.be.false;
+            videoNode.loop.should.be.false();
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -122,9 +122,9 @@ describe('VideoNode', function () {
             videoNode.cardWidth = 'wide';
             videoNode.cardWidth.should.equal('wide');
 
-            videoNode.loop.should.be.false;
+            videoNode.loop.should.be.false();
             videoNode.loop = true;
-            videoNode.loop.should.be.true;
+            videoNode.loop.should.be.true();
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -219,7 +219,7 @@ describe('VideoNode', function () {
                     videoNode.thumbnailWidth.should.equal(dataset.thumbnailWidth);
                     videoNode.thumbnailHeight.should.equal(dataset.thumbnailHeight);
                     videoNode.cardWidth.should.equal('wide');
-                    videoNode.loop.should.be.true;
+                    videoNode.loop.should.be.true();
 
                     done();
                 } catch (e) {
@@ -373,7 +373,7 @@ describe('VideoNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const videoNode = $createVideoNode(dataset);
-            videoNode.hasEditMode().should.be.true;
+            videoNode.hasEditMode().should.be.true();
         }));
     });
 
@@ -390,7 +390,7 @@ describe('VideoNode', function () {
             nodes[0].thumbnailSrc.should.equal('/content/images/2022/11/koenig-lexical.jpg');
             nodes[0].customThumbnailSrc.should.equal('');
             nodes[0].duration.should.equal(60);
-            nodes[0].loop.should.be.false;
+            nodes[0].loop.should.be.false();
             nodes[0].caption.should.equal('Video caption');
             nodes[0].cardWidth.should.equal('regular');
         }));

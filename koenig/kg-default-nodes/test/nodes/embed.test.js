@@ -64,7 +64,7 @@ describe('EmbedNode', function () {
 
     it('matches node with $isEmbedNode', editorTest(function () {
         const embedNode = $createEmbedNode(dataset);
-        $isEmbedNode(embedNode).should.be.true;
+        $isEmbedNode(embedNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -140,20 +140,20 @@ describe('EmbedNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
-            embedNode.hasEditMode().should.be.true;
+            embedNode.hasEditMode().should.be.true();
         }));
     });
 
     describe('isEmpty', function () {
-        it('returns true if url or html are empty', editorTest(function () {
+        it('returns true if url and html are empty', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
 
-            embedNode.isEmpty().should.be.false;
+            embedNode.isEmpty().should.be.false();
             embedNode.url = '';
-            embedNode.isEmpty().should.be.true;
-            embedNode.url = dataset.url;
+            embedNode.isEmpty().should.be.false();
+            embedNode.url = '';
             embedNode.html = '';
-            embedNode.isEmpty().should.be.true;
+            embedNode.isEmpty().should.be.true();
         }));
     });
 

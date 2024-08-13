@@ -37,7 +37,7 @@ describe('HorizontalNode', function () {
 
     it('matches node with $isHorizontalRuleNode', editorTest(function () {
         const hrNode = $createHorizontalRuleNode();
-        $isHorizontalRuleNode(hrNode).should.be.true;
+        $isHorizontalRuleNode(hrNode).should.be.true();
     }));
 
     describe('exportDOM', function () {

@@ -40,7 +40,7 @@ describe('ButtonNode', function () {
 
     it('matches node with $isButtonNode', editorTest(function () {
         const buttonNode = $createButtonNode(dataset);
-        $isButtonNode(buttonNode).should.be.true;
+        $isButtonNode(buttonNode).should.be.true();
     }));
 
     describe('data access', function () {
@@ -106,7 +106,7 @@ describe('ButtonNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
-            buttonNode.hasEditMode().should.be.true;
+            buttonNode.hasEditMode().should.be.true();
         }));
     });
 

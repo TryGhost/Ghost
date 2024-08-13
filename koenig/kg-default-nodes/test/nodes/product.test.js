@@ -60,7 +60,7 @@ describe('ProductNode', function () {
 
     it('matches node with $isProductNode', editorTest(function () {
         const productNode = $createProductNode(dataset);
-        $isProductNode(productNode).should.be.true;
+        $isProductNode(productNode).should.be.true();
     }));
 
     describe('data access', function () {

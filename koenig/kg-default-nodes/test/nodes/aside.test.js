@@ -32,7 +32,7 @@ describe('AsideNode', function () {
 
     it('matches node with $isAsideNode', editorTest(function () {
         const asideNode = $createAsideNode();
-        $isAsideNode(asideNode).should.be.true;
+        $isAsideNode(asideNode).should.be.true();
     }));
 
     describe('importDOM', function () {
