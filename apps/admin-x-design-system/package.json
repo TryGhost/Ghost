@@ -36,7 +36,7 @@
     "@storybook/react": "7.6.20",
     "@storybook/react-vite": "7.6.4",
     "@storybook/testing-library": "0.2.2",
-    "@testing-library/react": "14.1.0",
+    "@testing-library/react": "14.3.1",
     "@testing-library/react-hooks" : "8.0.1",
     "@vitejs/plugin-react": "4.2.1",
     "c8": "8.0.1",

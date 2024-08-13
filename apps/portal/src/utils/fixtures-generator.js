@@ -39,6 +39,7 @@ export function getSiteData({
     portalButtonSignupText: portal_button_signup_text = 'Subscribe now',
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
+    editorDefaultEmailRecipients: editor_default_email_recipients = 'visibility',
     newsletters = [],
     commentsEnabled,
     recommendations = [],
@@ -69,7 +70,8 @@ export function getSiteData({
         comments_enabled: commentsEnabled !== 'off',
         newsletters,
         recommendations,
-        recommendations_enabled: !!recommendationsEnabled
+        recommendations_enabled: !!recommendationsEnabled,
+        editor_default_email_recipients
     };
 }
 

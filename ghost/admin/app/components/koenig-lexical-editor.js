@@ -452,8 +452,6 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
-                internalLinking: this.feature.internalLinking,
-                internalLinkingAtLinks: this.feature.internalLinking,
                 contentVisibility: this.feature.contentVisibility
             },
             deprecated: { // todo fix typo
@@ -705,7 +703,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} /> 
+                        <KGEditorComponent isInitInstance={true} />
                     </Suspense>
                 </ErrorHandler>
             </div>
