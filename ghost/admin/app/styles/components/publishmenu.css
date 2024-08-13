@@ -906,8 +906,9 @@
     display: flex;
     flex-direction: column;
     margin: 0;
-    font-size: 2.6rem;
+    font-size: 3.2rem;
     font-weight: 700;
+    letter-spacing: -0.04em;
 }
 
 .modal-post-success .modal-header h1 span:has(+ span) {
