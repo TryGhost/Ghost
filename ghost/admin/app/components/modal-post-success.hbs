@@ -1,5 +1,5 @@
 <div class="modal-content">
-    {{#if (and this.post.featureImage (not this.post.emailOnly))}}
+    {{#if this.post.featureImage}}
         <figure class="modal-image">
             <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
         </figure>
