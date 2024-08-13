@@ -73,17 +73,17 @@ module.exports = class EmailAnalyticsService {
     /**
      * Returns the timestamp of the last event we processed. Defaults to now minus 30 minutes if we have no data yet.
      */
-    async getLastEventTimestamp() {
-        return this.#fetchLatestNonOpenedData?.lastEventTimestamp ?? (await this.queries.getLastSeenEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
+    async getLastNonOpenedEventTimestamp() {
+        return this.#fetchLatestNonOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(['delivered','failed'])) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
     }
 
-    async getLastSeenOpenedEventTimestamp() {
-        return this.#fetchLatestOpenedData?.lastEventTimestamp ?? (await this.queries.getLastSeenOpenedEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
+    async getLastOpenedEventTimestamp() {
+        return this.#fetchLatestOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(['opened'])) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
     }
 
     async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        const begin = await this.getLastSeenOpenedEventTimestamp();
+        const begin = await this.getLastOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
         if (end <= begin) {
@@ -104,7 +104,7 @@ module.exports = class EmailAnalyticsService {
 
     async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        const begin = await this.getLastEventTimestamp();
+        const begin = await this.getLastNonOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
         if (end <= begin) {
