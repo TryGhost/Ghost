@@ -1,7 +1,9 @@
 <div class="modal-content">
-      <figure class="modal-image">
-          <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
-      </figure>
+       {{#if (this.post.featureImage)}}
+        <figure class="modal-image">
+            <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{/if}}
 
     <header class="modal-header">
         <h1>
