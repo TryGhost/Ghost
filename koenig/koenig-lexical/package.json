@@ -59,7 +59,7 @@
     "@lexical/selection": "0.13.1",
     "@lexical/text": "0.13.1",
     "@lexical/utils": "0.13.1",
-    "@lezer/highlight": "^1.1.3",
+    "@lezer/highlight": "^1.2.0",
     "@playwright/test": "^1.33.0",
     "@prettier/sync": "^0.3.0",
     "@sentry/vite-plugin": "2.22.0",
