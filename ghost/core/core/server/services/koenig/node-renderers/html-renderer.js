@@ -9,7 +9,8 @@ export function renderHtmlNode(node, options = {}) {
 
     const segment = node.visibility.segment || '';
 
-    const isEmailOnly = node.visibility.emailOnly;
+    const showOnEmail = node.visibility.showOnEmail;
+    const showOnWeb = node.visibility.showOnWeb;
 
     if (!html) {
         return renderEmptyContainer(document);
@@ -17,6 +18,27 @@ export function renderHtmlNode(node, options = {}) {
 
     const textarea = document.createElement('textarea');
     textarea.value = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+
+    if (segment) {
+        textarea.setAttribute('data-gh-segment', segment);
+    }
+
+    const isEmailOnly = !showOnWeb && showOnEmail;
+    const isWebOnly = showOnWeb && !showOnEmail;
+    const showOnWebAndEmail = showOnEmail && showOnWeb;
+    const showNowhere = !showOnEmail && !showOnWeb;
+
+    if (showNowhere) {
+        return renderEmptyContainer(document);
+    }
+
+    if (isWebOnly && options.target !== 'email') {
+        return {element: textarea, type: 'value'};
+    }
+
+    if (isWebOnly && options.target === 'email') {
+        return renderEmptyContainer(document);
+    }
 
     if (isEmailOnly && options.target !== 'email') {
         return renderEmptyContainer(document);
@@ -31,6 +53,23 @@ export function renderHtmlNode(node, options = {}) {
         return {element: container, type: 'html'};
     }
 
+    if (isWebOnly && options.target === 'email') {
+        return renderEmptyContainer(document);
+    }
+
+    if (showOnWebAndEmail) {
+        if (options.target === 'email') {
+            const container = document.createElement('div');
+            container.innerHTML = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+            if (segment) {
+                container.setAttribute('data-gh-segment', segment);
+            }
+            return {element: container, type: 'html'};
+        }
+
+        return {element: textarea, type: 'value'};
+    }
+
     // `type: 'value'` will render the value of the textarea element
-    return {element: textarea, type: 'value'};
+    // return {element: textarea, type: 'value'};
 }
