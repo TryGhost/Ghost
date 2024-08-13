@@ -59,6 +59,10 @@ const features = [{
     title: 'Content Visibility',
     description: 'Enables content visibility in Emails',
     flag: 'contentVisibility'
+},{
+    title: 'Publish Flow — End Screen',
+    description: 'Enables improved publish flow',
+    flag: 'publishFlowEndScreen'
 }];
 
 const AlphaFeatures: React.FC = () => {

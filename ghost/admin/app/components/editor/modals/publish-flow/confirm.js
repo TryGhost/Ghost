@@ -13,6 +13,7 @@ function isString(str) {
 
 export default class PublishFlowOptions extends Component {
     @service settings;
+    @service feature;
 
     @tracked errorMessage;
 
@@ -91,12 +92,14 @@ export default class PublishFlowOptions extends Component {
 
         try {
             yield this.args.saveTask.perform();
-            if (this.args.publishOptions.isScheduled) {
-                localStorage.setItem('ghost-last-scheduled-post', this.args.publishOptions.post.id);
-                window.location.href = '/ghost/#/posts?type=scheduled';
-            } else {
-                localStorage.setItem('ghost-last-published-post', this.args.publishOptions.post.id);
-                window.location.href = `/ghost/#/posts/analytics/${this.args.publishOptions.post.id}`;
+            if (this.feature.publishFlowEndScreen) {
+                if (this.args.publishOptions.isScheduled) {
+                    localStorage.setItem('ghost-last-scheduled-post', this.args.publishOptions.post.id);
+                    window.location.href = '/ghost/#/posts?type=scheduled';
+                } else {
+                    localStorage.setItem('ghost-last-published-post', this.args.publishOptions.post.id);
+                    window.location.href = `/ghost/#/posts/analytics/${this.args.publishOptions.post.id}`;
+                }
             }
         } catch (e) {
             if (e === undefined && this.args.publishOptions.post.errors.length !== 0) {

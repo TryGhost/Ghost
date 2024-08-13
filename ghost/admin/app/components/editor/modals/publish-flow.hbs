@@ -45,13 +45,14 @@
                 @close={{@close}}
             />
         {{else if this.isComplete}}
-            {{!-- <Editor::Modals::PublishFlow::Confirm
-                @publishOptions={{@data.publishOptions}}
-                @recipientType={{this.recipientType}}
-                @saveTask={{this.saveTask}}
-                @cancel={{this.toggleConfirm}}
-                @close={{@close}}
-            /> --}}
+            {{#unless (feature "publishFlowEndScreen")}}
+                <Editor::Modals::PublishFlow::Complete
+                    @publishOptions={{@data.publishOptions}}
+                    @recipientType={{this.recipientType}}
+                    @postCount={{this.postCount}}
+                    @close={{@close}}
+                />
+            {{/unless}}
         {{else}}
             <Editor::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}

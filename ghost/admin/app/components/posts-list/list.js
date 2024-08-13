@@ -6,12 +6,15 @@ import {task} from 'ember-concurrency';
 export default class PostsList extends Component {
     @service store;
     @service modals;
+    @service feature;
 
     latestScheduledPost = null;
 
     constructor() {
         super(...arguments);
-        this.checkPublishFlowModal();
+        if (this.feature.publishFlowEndScreen) {
+            this.checkPublishFlowModal();
+        }
     }
 
     async checkPublishFlowModal() {

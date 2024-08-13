@@ -79,6 +79,7 @@ export default class FeatureService extends Service {
     @feature('internalLinking') internalLinking;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
+    @feature('publishFlowEndScreen') publishFlowEndScreen;
 
     _user = null;
 

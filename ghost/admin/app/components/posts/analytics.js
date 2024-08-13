@@ -43,7 +43,9 @@ export default class Analytics extends Component {
 
     constructor() {
         super(...arguments);
-        this.checkPublishFlowModal();
+        if (this.feature.publishFlowEndScreen) {
+            this.checkPublishFlowModal();
+        }
     }
 
     openPublishFlowModal() {
@@ -64,7 +66,11 @@ export default class Analytics extends Component {
     }
 
     get post() {
-        return this._post ?? this.args.post;
+        if (this.feature.publishFlowEndScreen) {
+            return this._post ?? this.args.post;
+        }
+
+        return this.args.post;
     }
 
     set post(value) {
