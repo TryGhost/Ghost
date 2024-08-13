@@ -114,7 +114,24 @@
                 @class="gh-btn gh-btn-primary gh-btn-icon" />
         {{else}}
             {{#if this.post.emailOnly}}
-                <button
+                {{#unless this.post.isScheduled}}
+                    <button
+                        class="gh-btn"
+                        type="button"
+                        {{on "click" this.viewInBrowser}}
+                        {{on "mousedown" (optional this.noop)}}
+                    >
+                        <span>View in browser</span>
+                    </button>
+                {{/unless}}
+            {{else}}
+                <GhTaskButton
+                    @buttonText="Copy preview link"
+                    @task={{this.handleCopyPreviewLink}}
+                    @successText="Link copied"
+                    @class="gh-btn gh-btn-icon" />
+            {{/if}}
+            <button
                 class="gh-btn gh-btn-primary"
                 type="button"
                 {{on "click" @close}}
@@ -122,7 +139,6 @@
             >
                 <span>OK</span>
             </button>
-            {{/if}}
         {{/if}}
     </footer>
 </div>
