@@ -22118,10 +22118,10 @@ linkifyjs@^4.1.0:
   resolved "https://registry.yarnpkg.com/linkifyjs/-/linkifyjs-4.1.1.tgz#73d427e3bbaaf4ca8e71c589ad4ffda11a9a5fde"
   integrity sha512-zFN/CTVmbcVef+WaDXT63dNzzkfRBKT1j464NJQkV7iSgJU0sLBus9W0HBwnXK13/hf168pbrx/V/bjEHOXNHA==
 
-lint-staged@15.2.8:
-  version "15.2.8"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-15.2.8.tgz#5e19eb7b4dbb922f56fafb4635b44ee3c92f7322"
-  integrity sha512-PUWFf2zQzsd9EFU+kM1d7UP+AZDbKFKuj+9JNVTBkhUFhbg4MAt6WfyMMwBfM4lYqd4D2Jwac5iuTu9rVj4zCQ==
+lint-staged@15.2.9:
+  version "15.2.9"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-15.2.9.tgz#bf70d40b6b192df6ad756fb89822211615e0f4da"
+  integrity sha512-BZAt8Lk3sEnxw7tfxM7jeZlPRuT4M68O0/CwZhhaw6eeWu0Lz5eERE3m386InivXB64fp/mDID452h48tvKlRQ==
   dependencies:
     chalk "~5.3.0"
     commander "~12.1.0"
