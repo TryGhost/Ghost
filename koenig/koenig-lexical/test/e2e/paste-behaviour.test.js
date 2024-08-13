@@ -376,10 +376,44 @@ test.describe('Paste behaviour', async () => {
 
             await assertHTML(page, html`
                 <p dir="ltr">
-                    <span data-lexical-text="true">First</span>
+                <span data-lexical-text="true">
+                    Start of the article. Here is the 1st paragraph, followed by a line break then a paragraph.
+                </span>
                 </p>
                 <p dir="ltr">
-                    <span data-lexical-text="true">Second</span>
+                <span data-lexical-text="true">
+                    Here is the 2nd paragraph, followed by a linebreak then a heading.
+                </span>
+                </p>
+                <h1 dir="ltr"><span data-lexical-text="true">Heading 1</span></h1>
+                <p dir="ltr">
+                <span data-lexical-text="true">
+                    Here is the 3rd paragraph, followed by a linebreak and a list.
+                </span>
+                </p>
+                <ul>
+                <li value="1" dir="ltr">
+                    <br />
+                    <span data-lexical-text="true">List item 1</span>
+                    <br />
+                    <span data-lexical-text="true"></span>
+                </li>
+                <li value="2" dir="ltr">
+                    <br />
+                    <span data-lexical-text="true">List item 2</span>
+                    <br />
+                    <span data-lexical-text="true"></span>
+                </li>
+                </ul>
+                <p dir="ltr">
+                <span data-lexical-text="true">
+                    Here is the 4th paragraph, NOT followed by linebreaks.
+                </span>
+                </p>
+                <p dir="ltr">
+                <span data-lexical-text="true">
+                    Here is the 5th paragraph. End of the article.
+                </span>
                 </p>
                 <p><br /></p>
             `);

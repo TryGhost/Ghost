@@ -246,17 +246,21 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('removes extra empty paragraphs', function () {
         const input = html`
-            <b style="font-weight:normal;" id="docs-internal-guid-c78cbc4e-7fff-3259-7cfe-a58c824763cf">
+            <b style="font-weight:normal;" id="docs-internal-guid-53c161b0-7fff-55f3-a893-721115583111">
                 <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;">
-                    <span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the start of an article</span>
+                    <span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Start of the article. Here is the 1st paragraph, followed by a line break then a paragraph.</span>
                 </p>
                 <br />
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;">
-                    <span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the next paragraph with an extra line break since you need to do that in Google docs.</span>
-                </p>
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;">
-                    <span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is a paragraph without an extra line break.</span>
-                </p>
+                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 2nd paragraph, followed by a linebreak then a heading.</span></p><br />
+                <h1 dir="ltr" style="line-height:1.38;margin-top:20pt;margin-bottom:6pt;"><span style="font-size:20pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Heading 1</span></h1><br />
+                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 3rd paragraph, followed by a linebreak and a list.</span></p><br />
+                <ul style="margin-top:0;margin-bottom:0;padding-inline-start:48px;">
+                    <li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;" aria-level="1"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;" role="presentation"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">List item 1</span></p></li>
+                    <li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;" aria-level="1"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;" role="presentation"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">List item 2</span></p></li>
+                </ul>
+                <br />
+                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 4th paragraph, NOT followed by linebreaks.</span></p>
+                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 5th paragraph. End of the article.</span></p>
             </b>
             <br class="Apple-interchange-newline">
         `;
@@ -273,7 +277,7 @@ describe('HTMLtoLexical: Google Docs', function () {
                                 format: 0,
                                 mode: 'normal',
                                 style: '',
-                                text: 'Here is the start of an article',
+                                text: 'Start of the article. Here is the 1st paragraph, followed by a line break then a paragraph.',
                                 type: 'extended-text',
                                 version: 1
                             }
@@ -291,7 +295,7 @@ describe('HTMLtoLexical: Google Docs', function () {
                                 format: 0,
                                 mode: 'normal',
                                 style: '',
-                                text: 'Here is the next paragraph with an extra line break since you need to do that in Google docs.',
+                                text: 'Here is the 2nd paragraph, followed by a linebreak then a heading.',
                                 type: 'extended-text',
                                 version: 1
                             }
@@ -309,7 +313,114 @@ describe('HTMLtoLexical: Google Docs', function () {
                                 format: 0,
                                 mode: 'normal',
                                 style: '',
-                                text: 'Here is a paragraph without an extra line break.',
+                                text: 'Heading 1',
+                                type: 'extended-text',
+                                version: 1
+                            }
+                        ],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'extended-heading',
+                        version: 1,
+                        tag: 'h1'
+                    },
+                    {
+                        children: [
+                            {
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: 'Here is the 3rd paragraph, followed by a linebreak and a list.',
+                                type: 'extended-text',
+                                version: 1
+                            }
+                        ],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    },
+                    {
+                        children: [
+                            {
+                                checked: undefined,
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'List item 1',
+                                        type: 'extended-text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: null,
+                                format: '',
+                                indent: 0,
+                                type: 'listitem',
+                                version: 1,
+                                value: 1
+                            },
+                            {
+                                checked: undefined,
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'List item 2',
+                                        type: 'extended-text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: null,
+                                format: '',
+                                indent: 0,
+                                type: 'listitem',
+                                version: 1,
+                                value: 2
+                            }
+                        ],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'list',
+                        version: 1,
+                        listType: 'bullet',
+                        start: 1,
+                        tag: 'ul'
+                    },
+                    {
+                        children: [
+                            {
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: 'Here is the 4th paragraph, NOT followed by linebreaks.',
+                                type: 'extended-text',
+                                version: 1
+                            }
+                        ],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    },
+                    {
+                        children: [
+                            {
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: 'Here is the 5th paragraph. End of the article.',
                                 type: 'extended-text',
                                 version: 1
                             }
