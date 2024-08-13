@@ -23,7 +23,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessa
                 )
                 : <div>
                     {isContentVisibilityEnabled &&
-                        <div className="pb-2 pt-[.6rem] font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
+                        <div className="py-[.6rem] font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
                             {visibilityMessage ? visibilityMessage : 'Shown in email to free subscribers'}
                         </div>}
                     <HtmlDisplay html={html} />

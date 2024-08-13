@@ -14,7 +14,6 @@ export function VisibilityDropdown({editor, nodeKey, visibility, isActive, visib
     if (isActive) {
         return (
             <div className="not-kg-prose absolute left-1/2 top-0 z-[1001] flex w-[254px] -translate-x-1/2 flex-col gap-1 rounded-lg bg-white p-6 shadow-md" data-kg-allow-clickthrough="false" data-testid="visibility-settings">
-                <div className="text-sm font-bold">Visibility</div>
                 <ToggleSetting
                     dataTestId='visibility-toggle-web-only'
                     isChecked={webVisibility}
