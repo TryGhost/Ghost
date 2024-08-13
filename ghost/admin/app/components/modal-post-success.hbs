@@ -7,7 +7,9 @@
 
     <header class="modal-header">
         <h1>
-            {{#unless this.post.isScheduled}}
+            {{#if this.post.isScheduled}}
+                <span>All set!</span>
+            {{else}}
                 <span>Boom! It's out there.</span>
                 <span>
                     {{#if this.post.emailOnly}}
@@ -20,9 +22,7 @@
                         {{/if}}
                     {{/if}}
                 </span>
-            {{else}}
-                <span>All set!</span>
-            {{/unless}}
+            {{/if}}
         </h1>
     </header>
 
@@ -63,7 +63,7 @@
                 {{/let}}
             {{/if}}
 
-            {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
                 on
                 {{moment-format publishedAt "D MMM YYYY"}}
                 at

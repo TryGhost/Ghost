@@ -34,19 +34,15 @@
                         {{moment-format publishedAt "HH:mm"}}
                     {{/let}}
                 </div>
-                {{#unless (feature "publishFlowEndScreen")}}
-                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                        {{svg-jar "pen" title=""}}<span>Edit post</span>
-                    </LinkTo>
-                {{else}}
+                {{#if (feature "publishFlowEndScreen")}}
                     <div style="display: flex; gap: 4px;">
                         {{#if (feature "publishFlowEndScreen")}}
-                            <button class="gh-post-list-cta edit" {{on "click" this.fetchPostTask.perform}}>
+                            <button type="button" class="gh-post-list-cta edit" {{on "click" this.fetchPostTask.perform}}>
                                 {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
                             </button>
                         {{/if}}
                         {{#unless this.post.emailOnly}}
-                            <button class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
+                            <button type="button" class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
                                 {{svg-jar "share" title="Share post"}}<span>Share</span>
                             </button>
                         {{/unless}}
@@ -73,7 +69,7 @@
                                     <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
                                 </li>
                                 <li>
-                                    <a href="{{this.post.url}}" target="_blank" rel="noreferrer">View in browser</a>
+                                    <a href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
                                 </li>
                                 <li>
                                     <button
@@ -88,7 +84,11 @@
                             </GhDropdown>
                         </span>
                     </div>
-                {{/unless}}
+                {{else}}
+                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                        {{svg-jar "pen" title=""}}<span>Edit post</span>
+                    </LinkTo>
+                {{/if}}
             </div>
         </div>
     </GhCanvasHeader>
