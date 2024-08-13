@@ -371,4 +371,24 @@ describe('HtmlNode', function () {
             node.getTextContent().should.equal('<script>const test = true;</script>\n\n');
         }));
     });
+
+    describe('getIsVisibilityActive', function () {
+        it('returns true when showOnEmail is false', editorTest(function () {
+            const node = $createHtmlNode();
+            node.visibility = {showOnEmail: false, showOnWeb: true, segment: 'status:-free'};
+            node.getIsVisibilityActive().should.be.true();
+        }));
+
+        it('returns true when showOnWeb is false', editorTest(function () {
+            const node = $createHtmlNode();
+            node.visibility = {showOnEmail: true, showOnWeb: false, segment: 'status:-free'};
+            node.getIsVisibilityActive().should.be.true();
+        }));
+
+        it('returns false when both showOnEmail and showOnWeb is true', editorTest(function () {
+            const node = $createHtmlNode();
+            node.visibility = {showOnEmail: true, showOnWeb: true, segment: 'status:-free'};
+            node.getIsVisibilityActive().should.be.false();
+        }));
+    });
 });

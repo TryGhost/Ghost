@@ -211,6 +211,21 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
 
             return text ? `${text}\n\n` : '';
         }
+
+        /**
+         * Returns true/false for whether the node's visibility property
+         * is active or not. Always false if a node has no visibility property
+         * @returns {boolean}
+         */
+        getIsVisibilityActive() {
+            if (!properties.some(prop => prop.name === 'visibility')) {
+                return false;
+            }
+
+            const self = this.getLatest();
+            return self.__visibility.showOnEmail === false
+                || self.__visibility.showOnWeb === false;
+        }
     }
 
     /**

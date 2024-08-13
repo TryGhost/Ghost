@@ -5,7 +5,6 @@ import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
-import {HtmlNode} from './HtmlNode.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VisibilityDropdown} from '../components/ui/VisibilityDropdown.jsx';
@@ -21,7 +20,9 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
     const [showVisibilityDropdown, setShowVisibilityDropdown] = React.useState(false);
 
     const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
-    const isContentVisibilityActive = JSON.stringify(visibility) !== JSON.stringify(HtmlNode.getPropertyDefaults().visibility);
+    const isContentVisibilityActive = editor.getEditorState().read(() => {
+        return $getNodeByKey(nodeKey).getIsVisibilityActive();
+    });
 
     const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, message] = useVisibilityToggle(editor, nodeKey, visibility);
 

@@ -111,4 +111,11 @@ describe('HorizontalNode', function () {
             node.getTextContent().should.equal('---\n\n');
         }));
     });
+
+    describe('getIsVisibilityActive', function () {
+        it('returns false (has no visibility property)', editorTest(function () {
+            const node = $createHorizontalRuleNode();
+            node.getIsVisibilityActive().should.be.false();
+        }));
+    });
 });
