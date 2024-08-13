@@ -7464,22 +7464,22 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-blockquote/-/extension-blockquote-2.6.0.tgz#3f0a80ebd82e1f5d174c24f9794e22ac3184c072"
   integrity sha512-/rYTYnn7fk/LBixLv7R1fEee3JDrDo3VHEJ+gBGuyLXcNaYtzWuRfqdeIraNSOuhzHffWQ5dg1oxpVFrVrd6AQ==
 
-"@tiptap/extension-bubble-menu@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-bubble-menu/-/extension-bubble-menu-2.6.0.tgz#91fb19abd94a4dcbd8816c89285d8b3a0dd6c098"
-  integrity sha512-d8LiaWVRCa3jc26OOCGTGLtJhbTlylokAJvKK1U0IGoX/jjzwWIypg6FZawYB2Fj0JANdTD100e7xDfLTOLLKg==
+"@tiptap/extension-bubble-menu@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-bubble-menu/-/extension-bubble-menu-2.6.1.tgz#8a6777000cdf74d5319a66dc5c283bdac94e00b4"
+  integrity sha512-lIXilRlvQ2P4rnJ3zp5VM5JB3UG4w/SlSMkXHmOAf8S67aGqH9DHqDI3p2Twp+5ylsg/f0Q3evY/rftD51mNSw==
   dependencies:
     tippy.js "^6.3.7"
 
-"@tiptap/extension-document@2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-document/-/extension-document-2.6.0.tgz#5c21fcb40dcbabdfedc54bd17f964ec2a28164c8"
-  integrity sha512-aKyKCaErlZSOav2mttktvbyYhpgNfQcEvrupkDuRYRsdy1CH5h66Of1Vc2F9z/NgZvkyJLWWv2T7fwyAYnMnYw==
+"@tiptap/extension-document@2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-document/-/extension-document-2.6.1.tgz#ff5797960248e32c24e1070b9bdb86349a201a37"
+  integrity sha512-BKuyzzmxzs9Rm/LpwriluMjBQvZhM0kcvtWsIGchzmBdoyPQwOtZxItnqSJeGzgJzqdp5otVeLb6PAP/PlPs3g==
 
-"@tiptap/extension-floating-menu@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-floating-menu/-/extension-floating-menu-2.6.0.tgz#6dd656ce00e80d5312dacc7fe472d3233ccddad7"
-  integrity sha512-eFmDaJJgGC+PBdRwfWSTzNfJR5Z0udPjHUf4pJosz2PcIg6wzeAxJyELzprk8qWNKbrxDm0CeJ0nz4uXxECdVw==
+"@tiptap/extension-floating-menu@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-floating-menu/-/extension-floating-menu-2.6.1.tgz#af5178fe1c180328ec10ff93434f5edbea62d073"
+  integrity sha512-HVTK9tpFM5umb8J1YbhwJr/Cf7UPSLqZO3dA+MulVxBt9fD4Z+zNbLkhm57rbRZ68DIA0RL57FgFvdxlFCZA4A==
   dependencies:
     tippy.js "^6.3.7"
 
@@ -7500,10 +7500,10 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-paragraph/-/extension-paragraph-2.6.0.tgz#721921477e3785c0a0abf132ea109e67bcea9fae"
   integrity sha512-ztmgfCSaCGFCR4VudA91WJDEQrpXH2FirQrJSaoOOwk3OfrNSSvcbqAhTmxJHl8e7aFwuR5eH8wbIxKw9In3Kg==
 
-"@tiptap/extension-placeholder@2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-placeholder/-/extension-placeholder-2.6.0.tgz#9110ca221dae0b68706c7feaaf6a8071639d0e64"
-  integrity sha512-PzAsG3y2L6ZXxIfoD5Qf1HOvuwQPdOw8C+I7tcPwvOgYow8+slJ3kZbURoXw3dT/BtiPXmZ6DequX2wHgl+bjg==
+"@tiptap/extension-placeholder@2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-placeholder/-/extension-placeholder-2.6.1.tgz#01f6c83fe0560b5d5ab1e64dc238904e87317d46"
+  integrity sha512-YwgpKaPoZgYZ/56Yig6PylGHJwfcY+IhraifOx4sYphi/ZamUAgSGhsOYz4l9T/0zzIRLvLYlMsHNgtuN6Iupg==
 
 "@tiptap/extension-text@2.6.0":
   version "2.6.0"
@@ -7534,13 +7534,13 @@
     prosemirror-transform "^1.9.0"
     prosemirror-view "^1.33.9"
 
-"@tiptap/react@2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@tiptap/react/-/react-2.6.0.tgz#98285416584713261fb66d8101962e5bda9350c3"
-  integrity sha512-oTCkR+X3qJTi3DsbJzymjhOhlrhrP/yrocXL7dc/N7TzMmdLdLcYei8sOJeds9hCPAixLZAdrG4RUfKAaz7/Qw==
+"@tiptap/react@2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/react/-/react-2.6.1.tgz#77d47730fa0054aeba78488b96e8a486eea2fed2"
+  integrity sha512-Mq0zhPiR3YZ3IlCtGhNsrXkyK12df71qgvlbWi3KMtcQFU+JWV18qpOyDMK4PxPpPgicKTYlAn57k7HBqtTZ6w==
   dependencies:
-    "@tiptap/extension-bubble-menu" "^2.6.0"
-    "@tiptap/extension-floating-menu" "^2.6.0"
+    "@tiptap/extension-bubble-menu" "^2.6.1"
+    "@tiptap/extension-floating-menu" "^2.6.1"
     "@types/use-sync-external-store" "^0.0.6"
     use-sync-external-store "^1.2.2"
 
