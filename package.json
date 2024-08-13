@@ -115,7 +115,7 @@
     "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
-    "lint-staged": "15.2.8",
+    "lint-staged": "15.2.9",
     "nx": "16.8.1",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
