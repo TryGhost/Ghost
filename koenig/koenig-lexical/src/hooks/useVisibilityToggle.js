@@ -1,12 +1,6 @@
 import {$getNodeByKey} from 'lexical';
-import {useEffect, useState} from 'react';
 
-export const useVisibilityToggle = (editor, nodeKey, initialVisibility, cardConfig) => {
-    const [emailVisibility, setEmailVisibility] = useState(initialVisibility.showOnEmail);
-    const [webVisibility, setWebVisibility] = useState(initialVisibility.showOnWeb);
-    const [segment, setSegment] = useState(initialVisibility.segment);
-    const [message, setMessage] = useState('');
-
+export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const isStripeEnabled = cardConfig?.stripeEnabled;
 
     const dropdownOptions = () => {
@@ -24,38 +18,46 @@ export const useVisibilityToggle = (editor, nodeKey, initialVisibility, cardConf
         }
     };
 
-    const updateMessage = () => {
-        let segmentLabel = 'all subscribers';
+    let isVisibilityActive = false;
+    let showOnWeb = true;
+    let showOnEmail = true;
+    let segment = '';
+    let message = '';
+
+    editor.getEditorState().read(() => {
+        const htmlNode = $getNodeByKey(nodeKey);
+        const visibility = htmlNode.visibility;
+
+        isVisibilityActive = htmlNode.getIsVisibilityActive();
+        showOnWeb = visibility.showOnWeb;
+        showOnEmail = visibility.showOnEmail;
+        segment = visibility.segment;
+    });
+
+    if (isVisibilityActive) {
+        let segmentLabel = '';
 
         if (segment === 'status:free') {
-            segmentLabel = 'free subscribers';
+            segmentLabel = 'free members';
         } else if (segment === 'status:-free') {
-            segmentLabel = 'paid subscribers';
+            segmentLabel = 'paid members';
         }
 
-        let combinedMessage = '';
-
-        if (emailVisibility && webVisibility) {
-            combinedMessage = `Shown on web and in email to ${segmentLabel}`;
-        } else if (emailVisibility) {
-            combinedMessage = `Only shown in email to ${segmentLabel}`;
-        } else if (webVisibility) {
-            combinedMessage = `Only shown on web`;
-        } else {
-            combinedMessage = 'Hidden from both email and web';
+        if (!showOnWeb && !showOnEmail) {
+            message = 'Hidden from both email and web';
+        } else if (showOnWeb && !showOnEmail) {
+            message = 'Shown on web only';
+        } else if (showOnWeb && showOnEmail && segmentLabel) {
+            message = `Shown on web and email to ${segmentLabel}`;
+        } else if (!showOnWeb && showOnEmail && !segmentLabel) {
+            message = 'Shown in email only';
+        } else if (!showOnWeb && showOnEmail && segmentLabel) {
+            message = `Shown in email to ${segmentLabel}`;
         }
-
-        setMessage(combinedMessage);
-    };
-
-    useEffect(() => {
-        updateMessage();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [emailVisibility, webVisibility, segment]);
+    }
 
     const toggleEmail = (e) => {
         editor.update(() => {
-            setEmailVisibility(e.target.checked);
             const node = $getNodeByKey(nodeKey);
             node.visibility = {...node.visibility, showOnEmail: e.target.checked};
         });
@@ -63,7 +65,6 @@ export const useVisibilityToggle = (editor, nodeKey, initialVisibility, cardConf
 
     const toggleWeb = (e) => {
         editor.update(() => {
-            setWebVisibility(e.target.checked);
             const node = $getNodeByKey(nodeKey);
             node.visibility = {...node.visibility, showOnWeb: e.target.checked};
         });
@@ -71,11 +72,10 @@ export const useVisibilityToggle = (editor, nodeKey, initialVisibility, cardConf
 
     const toggleSegment = (name) => {
         editor.update(() => {
-            setSegment(name);
             const node = $getNodeByKey(nodeKey);
             node.visibility = {...node.visibility, segment: name};
         });
     };
 
-    return [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions(), message];
+    return [toggleEmail, toggleSegment, toggleWeb, segment, showOnEmail, showOnWeb, dropdownOptions(), message];
 };

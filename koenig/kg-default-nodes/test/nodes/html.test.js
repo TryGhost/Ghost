@@ -383,19 +383,25 @@ describe('HtmlNode', function () {
     describe('getIsVisibilityActive', function () {
         it('returns true when showOnEmail is false', editorTest(function () {
             const node = $createHtmlNode();
-            node.visibility = {showOnEmail: false, showOnWeb: true, segment: 'status:-free'};
+            node.visibility = {showOnEmail: false, showOnWeb: true, segment: ''};
             node.getIsVisibilityActive().should.be.true();
         }));
 
         it('returns true when showOnWeb is false', editorTest(function () {
             const node = $createHtmlNode();
-            node.visibility = {showOnEmail: true, showOnWeb: false, segment: 'status:-free'};
+            node.visibility = {showOnEmail: true, showOnWeb: false, segment: ''};
             node.getIsVisibilityActive().should.be.true();
         }));
 
-        it('returns false when both showOnEmail and showOnWeb is true', editorTest(function () {
+        it('returns true when segment is not empty', editorTest(function () {
             const node = $createHtmlNode();
             node.visibility = {showOnEmail: true, showOnWeb: true, segment: 'status:-free'};
+            node.getIsVisibilityActive().should.be.true();
+        }));
+
+        it('returns false when both showOnEmail and showOnWeb are true and segment is blank', editorTest(function () {
+            const node = $createHtmlNode();
+            node.visibility = {showOnEmail: true, showOnWeb: true, segment: ''};
             node.getIsVisibilityActive().should.be.false();
         }));
     });

@@ -3,6 +3,7 @@ import HtmlEditor from './HtmlCard/HtmlEditor';
 import KoenigComposerContext from '../../../context/KoenigComposerContext.jsx';
 import PropTypes from 'prop-types';
 import React from 'react';
+import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
 export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessage}) {
@@ -22,10 +23,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessa
                     </>
                 )
                 : <div>
-                    {isContentVisibilityEnabled &&
-                        <div className="py-[.6rem] font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
-                            {visibilityMessage ? visibilityMessage : 'Shown in email to free subscribers'}
-                        </div>}
+                    {isContentVisibilityEnabled && <CardVisibilityMessage message={visibilityMessage} />}
                     <HtmlDisplay html={html} />
                     <div className="absolute inset-0 z-50 mt-0"></div>
                 </div>

@@ -224,7 +224,8 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
 
             const self = this.getLatest();
             return self.__visibility.showOnEmail === false
-                || self.__visibility.showOnWeb === false;
+                || self.__visibility.showOnWeb === false
+                || self.__visibility.segment !== '';
         }
     }
 

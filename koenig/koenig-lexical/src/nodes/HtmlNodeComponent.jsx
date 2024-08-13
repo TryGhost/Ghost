@@ -23,7 +23,7 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
         return $getNodeByKey(nodeKey).getIsVisibilityActive();
     });
 
-    const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, message] = useVisibilityToggle(editor, nodeKey, visibility, cardConfig);
+    const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, visibilityMessage] = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     const visibilityProps = {
         toggleEmail,
@@ -75,14 +75,20 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
                 nodeKey={nodeKey}
                 unsplashConf={cardConfig.unsplash}
                 updateHtml={updateHtml}
-                visibilityMessage={message}
+                visibilityMessage={visibilityMessage}
                 onBlur={onBlur}
             />
 
             {
                 isContentVisibilityEnabled &&
                 (
-                    <VisibilityDropdown editor={editor} isActive={showVisibilityDropdown} nodeKey={nodeKey} visibility={visibility} visibilityProps={visibilityProps} />
+                    <VisibilityDropdown
+                        editor={editor}
+                        isActive={showVisibilityDropdown}
+                        nodeKey={nodeKey}
+                        visibility={visibility}
+                        visibilityProps={visibilityProps}
+                    />
                 )
             }
 
