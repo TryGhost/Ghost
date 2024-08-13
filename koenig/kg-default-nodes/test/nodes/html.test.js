@@ -64,7 +64,8 @@ describe('HtmlNode', function () {
             htmlNodeDataset.should.deepEqual({
                 ...dataset,
                 visibility: {
-                    emailOnly: false,
+                    showOnEmail: true,
+                    showOnWeb: true,
                     segment: ''
                 }
             });
@@ -102,7 +103,8 @@ describe('HtmlNode', function () {
             defaults.should.deepEqual({
                 html: '',
                 visibility: {
-                    emailOnly: false,
+                    showOnEmail: true,
+                    showOnWeb: true,
                     segment: ''
                 }
             });
@@ -184,8 +186,8 @@ describe('HtmlNode', function () {
             element.value.should.equal('\n<!--kg-card-begin: html-->\n<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>\n<!--kg-card-end: html-->\n');
         }));
 
-        it('renders data-gh-segment attribute paid-members-only', editorTest(function () {
-            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {emailOnly: true, segment: 'status:-free'}});
+        it('renders data-gh-segment attribute paid-members-only emails', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: false, segment: 'status:-free'}});
             const options = {
                 target: 'email'
             };
@@ -199,8 +201,8 @@ describe('HtmlNode', function () {
             dataGhSegment.should.equal('status:-free');
         }));
 
-        it('renders data-gh-segment attribute free-members-only', editorTest(function () {
-            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {emailOnly: true, segment: 'status:free'}});
+        it('renders data-gh-segment attribute free-members-only email', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: false, segment: 'status:free'}});
             const options = {
                 target: 'email'
             };
@@ -213,9 +215,66 @@ describe('HtmlNode', function () {
             dataGhSegment.should.equal('status:free');
         }));
 
-        it('renders an empty span if target is not email and is emailOnly', editorTest(function () {
-            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {emailOnly: true}});
+        it('renders on web if showOnWeb is true and showOnEmail is false', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: false, showOnWeb: true, segment: ''}});
             const {element, type} = htmlNode.exportDOM(exportOptions);
+            type.should.equal('value');
+
+            element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+        }));
+
+        it('renders on email if showOnEmail is true and showOnWeb is false', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: false, segment: ''}});
+            const options = {
+                target: 'email'
+            };
+            const mergedOptions = {...exportOptions, ...options};
+            const {element, type} = htmlNode.exportDOM(mergedOptions);
+            type.should.equal('html');
+
+            element.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+        }));
+
+        it('renders both on web and email if showOnEmail and showOnWeb are true', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: true, segment: ''}});
+            const {element, type} = htmlNode.exportDOM(exportOptions);
+
+            type.should.equal('value');
+
+            element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+
+            const options = {
+                target: 'email'
+            };
+
+            const mergedOptions = {...exportOptions, ...options};
+
+            const {element: emailElement, type: emailType} = htmlNode.exportDOM(mergedOptions);
+
+            emailType.should.equal('html');
+
+            emailElement.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+        }));
+
+        it('does not render on web if showOnWeb is false', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: false, showOnWeb: false, segment: ''}});
+            const {element, type} = htmlNode.exportDOM(exportOptions);
+
+            type.should.equal('inner');
+
+            element.outerHTML.should.equal('<span></span>');
+        }));
+
+        it('does not render on email if showOnEmail is false', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: false, showOnWeb: false, segment: ''}});
+            const options = {
+                target: 'email'
+            };
+
+            const mergedOptions = {...exportOptions, ...options};
+
+            const {element, type} = htmlNode.exportDOM(mergedOptions);
+
             type.should.equal('inner');
 
             element.outerHTML.should.equal('<span></span>');
@@ -261,7 +320,8 @@ describe('HtmlNode', function () {
                 version: 1,
                 html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
                 visibility: {
-                    emailOnly: false,
+                    showOnEmail: true,
+                    showOnWeb: true,
                     segment: ''
                 }
             });

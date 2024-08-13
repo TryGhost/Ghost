@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
-export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
+export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessage}) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
 
@@ -24,7 +24,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
                 : <div>
                     {isContentVisibilityEnabled &&
                         <div className="pb-2 pt-[.6rem] font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
-                            Shown in email to free subscribers
+                            {visibilityMessage ? visibilityMessage : 'Shown in email to free subscribers'}
                         </div>}
                     <HtmlDisplay html={html} />
                     <div className="absolute inset-0 z-50 mt-0"></div>
@@ -49,5 +49,6 @@ HtmlCard.propTypes = {
     updateHtml: PropTypes.func,
     isEditing: PropTypes.bool,
     darkMode: PropTypes.bool,
-    contentVisibility: PropTypes.element
+    contentVisibility: PropTypes.element,
+    visibilityMessage: PropTypes.string
 };

@@ -20,7 +20,7 @@ function Item({item, selected, onChange}) {
 
     return (
         <li key={item.name} className={`${selectionClass} !mb-1 hover:bg-grey-100 dark:hover:bg-grey-950`}>
-            <button className="size-full cursor-pointer px-3 py-1 text-left dark:text-white" type="button" onMouseDownCapture={event => handleOptionMouseDown(event, item.name)}>{item.label}</button>
+            <button className="size-full cursor-pointer px-3 py-1 text-left dark:text-white" data-test-value={item.name} type="button" onMouseDownCapture={event => handleOptionMouseDown(event, item.name)}>{item.label}</button>
         </li>
     );
 }
@@ -41,6 +41,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
         // Prevent losing focus when clicking the dropdown
         // needed on Safari
         event.preventDefault();
+        event.stopPropagation();
     };
 
     const handleBlur = () => {

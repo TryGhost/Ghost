@@ -10,6 +10,7 @@ import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VisibilityDropdown} from '../components/ui/VisibilityDropdown.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
 export function HtmlNodeComponent({nodeKey, html, visibility}) {
     const [editor] = useLexicalComposerContext();
@@ -21,6 +22,18 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
 
     const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
     const isContentVisibilityActive = JSON.stringify(visibility) !== JSON.stringify(HtmlNode.getPropertyDefaults().visibility);
+
+    const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, message] = useVisibilityToggle(editor, nodeKey, visibility);
+
+    const visibilityProps = {
+        toggleEmail,
+        toggleSegment,
+        toggleWeb,
+        segment,
+        emailVisibility,
+        webVisibility,
+        dropdownOptions
+    };
 
     const updateHtml = (value) => {
         editor.update(() => {
@@ -62,13 +75,14 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
                 nodeKey={nodeKey}
                 unsplashConf={cardConfig.unsplash}
                 updateHtml={updateHtml}
+                visibilityMessage={message}
                 onBlur={onBlur}
             />
 
             {
                 isContentVisibilityEnabled &&
                 (
-                    <VisibilityDropdown editor={editor} isActive={showVisibilityDropdown} nodeKey={nodeKey} visibility={visibility} />
+                    <VisibilityDropdown editor={editor} isActive={showVisibilityDropdown} nodeKey={nodeKey} visibility={visibility} visibilityProps={visibilityProps} />
                 )
             }
 

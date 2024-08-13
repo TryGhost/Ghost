@@ -6,12 +6,12 @@ import {parseHtmlNode} from './html-parser';
 export class HtmlNode extends generateDecoratorNode({nodeType: 'html',
     properties: [
         {name: 'html', default: '', urlType: 'html', wordCount: true},
-        {name: 'visibility', default: {emailOnly: false, segment: ''}}
+        {name: 'visibility', default: {showOnEmail: true, showOnWeb: true, segment: ''}}
     ]}
 ) {
     constructor({
         html = '',
-        visibility = {emailOnly: false, segment: ''}
+        visibility = {showOnEmail: true, showOnWeb: true, segment: ''}
     } = {}, key) {
         super(key);
         this.html = html;

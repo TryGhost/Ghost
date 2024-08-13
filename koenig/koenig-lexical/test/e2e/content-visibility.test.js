@@ -78,5 +78,136 @@ test.describe('Content Visibility', async () => {
             // button is highlighted
             await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'true');
         });
+
+        test('visibility settings - defaults to show on email and web and all subscribers', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await expect(card.locator('div').first()).toContainText('Shown on web and in email to all subscribers');
+        });
+
+        test('can toggle visibility settings - show on web is off', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await card.locator('[data-testid="visibility-toggle-web-only"]').click();
+            // it should now contain the message "Only shown in email to all subscribers"
+
+            await expect(card.locator('div').first()).toContainText('Only shown in email to all subscribers');
+        });
+
+        test('can toggle visibility settings - show on email is off', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await card.locator('[data-testid="visibility-toggle-email-only"]').click();
+            // it should now contain the message "Only shown on web"
+
+            await expect(card.locator('div').first()).toContainText('Only shown on web');
+        });
+
+        test('can toggle visibility settings - show on email and web and all subscribers', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await expect(card.locator('div').first()).toContainText('Shown on web and in email to all subscribers');
+        });
+
+        test('can toggle visibility settings segments - free subscribers', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await card.locator('[data-testid="visibility-dropdown-segment"]').click();
+
+            await card.locator('[data-test-value="status:free"]').click();
+
+            await expect(card.locator('div').first()).toContainText('Shown on web and in email to free subscribers');
+        });
+
+        test('can toggle visibility settings segments - paid subscribers', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await card.locator('[data-testid="visibility-dropdown-segment"]').click();
+            await card.locator('[data-test-value="status:-free"]').click();
+
+            await expect(card.locator('div').first()).toContainText('Shown on web and in email to paid subscribers');
+        });
+
+        test('can toggle visibility settings segments - all subscribers', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await card.locator('[data-testid="visibility-dropdown-segment"]').click();
+            await card.locator('[data-test-value=""]').click();
+
+            await expect(card.locator('div').first()).toContainText('Shown on web and in email to all subscribers');
+        });
+
+        test('can toggle visibility - disable everything', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+
+            const card = page.locator('[data-kg-card="html"]');
+
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await card.locator('[data-testid="visibility-toggle-web-only"]').click();
+            await card.locator('[data-testid="visibility-toggle-email-only"]').click();
+
+            await expect(card.locator('div').first()).toContainText('Hidden from both email and web');
+        });
     });
 });
