@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import DeletePostModal from '../modals/delete-post';
-import PostSuccessModal from '../modal-post-success';
+import PostShareModal from '../modal-post-share';
+import PostSuccessModal from '../modal-post-success'; 
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
@@ -61,6 +62,23 @@ export default class Analytics extends Component {
             await this.fetchPostCountTask.perform();
             this.showPostCount = true;
             this.openPublishFlowModal();
+            localStorage.removeItem('ghost-last-published-post');
+        }
+    }
+
+    openShareModal() {
+        this.modals.open(PostShareModal, {
+            post: this.post,
+            postCount: this.postCount,
+            showPostCount: this.showPostCount
+        });
+    }
+
+    async checkShareModal() {
+        if (localStorage.getItem('ghost-last-published-post')) {
+            await this.fetchPostCountTask.perform();
+            this.showPostCount = true;
+            this.openShareModal();
             localStorage.removeItem('ghost-last-published-post');
         }
     }
@@ -186,6 +204,12 @@ export default class Analytics extends Component {
     togglePublishFlowModal() {
         this.showPostCount = false;
         this.openPublishFlowModal();
+    }
+
+    @action
+    toggleShareModal() {
+        this.showPostCount = false;
+        this.openShareModal();
     }
 
     @action

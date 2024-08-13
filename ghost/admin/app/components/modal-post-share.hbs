@@ -1,0 +1,59 @@
+<div class="modal-content">
+      <figure class="modal-image">
+          <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+      </figure>
+
+    <header class="modal-header">
+        <h1>
+          <span>Your post is out there.</span>
+          <span>Share it with the world!</span>
+        </h1>
+    </header>
+
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+      Spread the word and share your post with your audience.
+    </div>
+
+    <footer class="modal-footer">
+      <button
+          class="gh-btn twitter"
+          type="button"
+          {{on "click" this.handleTwitter}}
+          {{on "mousedown" (optional this.noop)}}
+      >
+          <span>{{svg-jar "social-x"}}</span>
+      </button>
+      <button
+          class="gh-btn threads"
+          type="button"
+          {{on "click" this.handleThreads}}
+          {{on "mousedown" (optional this.noop)}}
+      >
+          <span>{{svg-jar "social-threads"}}</span>
+      </button>
+      <button
+          class="gh-btn facebook"
+          type="button"
+          {{on "click" this.handleFacebook}}
+          {{on "mousedown" (optional this.noop)}}
+      >
+          <span>{{svg-jar "social-facebook"}}</span>
+      </button>
+      <button
+          class="gh-btn linkedin"
+          type="button"
+          {{on "click" this.handleLinkedIn}}
+          {{on "mousedown" (optional this.noop)}}
+      >
+          <span>{{svg-jar "social-linkedin"}}</span>
+      </button>
+      <GhTaskButton
+          @buttonText="Copy link"
+          @task={{this.handleCopyLink}}
+          @showIcon={{true}}
+          @successText="Link copied"
+          @class="gh-btn gh-btn-primary gh-btn-icon" />
+    </footer>
+</div>
