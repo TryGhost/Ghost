@@ -143,51 +143,133 @@ describe('Acceptance: Members', function () {
                 .to.equal('example@domain.com');
         });
 
-        /* NOTE: Bulk deletion is disabled temporarily when multiple filters are applied, due to a NQL limitation.
-         * Delete this test once we have fixed the root NQL limitation.
-         * See https://linear.app/tryghost/issue/ONC-203
+        /* Due to a limitation with NQL when multiple member filters are used in combination, we currently have a safeguard around member bulk deletion.
+        *  Member bulk deletion is not permitted when:
+        *   1) Multiple newsletters exist, and 2 or more newsletter filters are in use
+        *   2) If any of the following Stripe filters are used, even once:
+        *     - Billing period
+        *     - Stripe subscription status
+        *     - Paid start date
+        *     - Next billing date
+        *     - Subscription started on post/page
+        *     - Offers
+        *
+        * See code: ghost/admin/app/controllers/members.js:isBulkDeletePermitted
+        * See issue https://linear.app/tryghost/issue/ENG-1484 for more context
+        *
+        * TODO: delete this block of tests once the guardrail has been removed
         */
-        it('cannot bulk delete members if more than 1 filter is selected', async function () {
-            // Members with label
-            const labelOne = this.server.create('label');
-            const labelTwo = this.server.create('label');
-            this.server.createList('member', 2, {labels: [labelOne]});
-            this.server.createList('member', 2, {labels: [labelOne, labelTwo]});
+        describe('[Temp] Guardrail against bulk deletion', function () {
+            it('cannot bulk delete members if more than 1 newsletter filter is used', async function () {
+                // Create two newsletters and members subscribed to 1 or 2 newsletters
+                const newsletterOne = this.server.create('newsletter');
+                const newsletterTwo = this.server.create('newsletter');
+                this.server.createList('member', 2).forEach(member => member.update({newsletters: [newsletterOne], email_disabled: 0}));
+                this.server.createList('member', 2).forEach(member => member.update({newsletters: [newsletterOne, newsletterTwo], email_disabled: 0}));
 
-            await visit('/members');
-            expect(findAll('[data-test-member]').length).to.equal(4);
+                await visit('/members');
+                expect(findAll('[data-test-member]').length).to.equal(4);
 
-            // The delete button should not be visible by default
-            await click('[data-test-button="members-actions"]');
-            expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+                // The delete button should not be visible by default
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
 
-            // Apply a single filter
-            await click('[data-test-button="members-filter-actions"]');
-            await fillIn('[data-test-members-filter="0"] [data-test-select="members-filter"]', 'label');
-            await click('.gh-member-label-input input');
-            await click(`[data-test-label-filter="${labelOne.name}"]`);
-            await click(`[data-test-button="members-apply-filter"]`);
+                // Apply a first filter
+                await click('[data-test-button="members-filter-actions"]');
+                await fillIn('[data-test-members-filter="0"] [data-test-select="members-filter"]', `newsletters.slug:${newsletterOne.slug}`);
+                await click(`[data-test-button="members-apply-filter"]`);
 
-            expect(findAll('[data-test-member]').length).to.equal(4);
-            expect(currentURL()).to.equal(`/members?filter=label%3A%5B${labelOne.slug}%5D`);
+                expect(findAll('[data-test-member]').length).to.equal(4);
+                expect(currentURL()).to.equal(`/members?filter=(newsletters.slug%3A${newsletterOne.slug}%2Bemail_disabled%3A0)`);
 
-            await click('[data-test-button="members-actions"]');
-            expect(find('[data-test-button="delete-selected"]')).to.exist;
+                // Bulk deletion is permitted
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.exist;
 
-            // Apply a second filter
-            await click('[data-test-button="members-filter-actions"]');
-            await click('[data-test-button="add-members-filter"]');
+                // Apply a second filter
+                await click('[data-test-button="members-filter-actions"]');
+                await click('[data-test-button="add-members-filter"]');
+                await fillIn('[data-test-members-filter="1"] [data-test-select="members-filter"]', `newsletters.slug:${newsletterTwo.slug}`);
+                await click(`[data-test-button="members-apply-filter"]`);
 
-            await fillIn('[data-test-members-filter="1"] [data-test-select="members-filter"]', 'label');
-            await click('[data-test-members-filter="1"] .gh-member-label-input input');
-            await click(`[data-test-members-filter="1"] [data-test-label-filter="${labelTwo.name}"]`);
-            await click(`[data-test-button="members-apply-filter"]`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                expect(currentURL()).to.equal(`/members?filter=(newsletters.slug%3A${newsletterOne.slug}%2Bemail_disabled%3A0)%2B(newsletters.slug%3A${newsletterTwo.slug}%2Bemail_disabled%3A0)`);
 
-            expect(findAll('[data-test-member]').length).to.equal(2);
-            expect(currentURL()).to.equal(`/members?filter=label%3A%5B${labelOne.slug}%5D%2Blabel%3A%5B${labelTwo.slug}%5D`);
+                // Bulk deletion is not permitted anymore
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+            });
 
-            await click('[data-test-button="members-actions"]');
-            expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+            it('can bulk delete members if a non-Stripe subscription filter is in use (member tier, status)', async function () {
+                const tier = this.server.create('tier', {id: 'qwerty123456789'});
+                this.server.createList('member', 2, {status: 'free'});
+                this.server.createList('member', 2, {status: 'paid', tiers: [tier]});
+
+                await visit('/members');
+                expect(findAll('[data-test-member]').length).to.equal(4);
+
+                // The delete button should not be visible by default
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 1) Membership tier filter: permitted
+                await visit(`/members?filter=tier_id:[${tier.id}]`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.exist;
+
+                // 2) Member status filter: permitted
+                await visit('/members?filter=status%3Afree');
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.exist;
+            });
+
+            it('cannot bulk delete members if a Stripe subscription filter is in use', async function () {
+                // Create free and paid members
+                const tier = this.server.create('tier');
+                const offer = this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
+                this.server.createList('member', 2, {status: 'free'});
+                this.server.createList('member', 2, {status: 'paid'}).forEach(member => this.server.create('subscription', {member, planInterval: 'month', status: 'active', start_date: '2000-01-01T00:00:00.000Z', current_period_end: '2000-02-01T00:00:00.000Z', offer: offer, tier: tier}));
+                this.server.createList('member', 2, {status: 'paid'}).forEach(member => this.server.create('subscription', {member, planInterval: 'year', status: 'active'}));
+
+                await visit('/members');
+                expect(findAll('[data-test-member]').length).to.equal(6);
+
+                // The delete button should not be visible by default
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 1) Stripe billing period filter: not permitted
+                await visit('/members?filter=subscriptions.plan_interval%3Amonth');
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 2) Stripe subscription status filter: not permitted
+                await visit('/members?filter=subscriptions.status%3Aactive');
+                expect(findAll('[data-test-member]').length).to.equal(4);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 3) Stripe paid start date filter: not permitted
+                await visit(`/members?filter=subscriptions.start_date%3A>'1999-01-01%2005%3A59%3A59'`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 4) Next billing date filter: not permitted
+                await visit(`/members?filter=subscriptions.current_period_end%3A>'2000-01-01%2005%3A59%3A59'`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 5) Offers redeemed filter: not permitted
+                await visit('/members?filter=' + encodeURIComponent(`offer_redemptions:'${offer.id}'`));
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+            });
         });
 
         it('can bulk delete members', async function () {

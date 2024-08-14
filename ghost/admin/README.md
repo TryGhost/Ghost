@@ -12,7 +12,7 @@ Run all tests in the browser by running `yarn dev` in the Ghost monorepo and vis
 
 ---
 
-Tip: You can use `await this.pauseTest()` in your tests to temporarily pause the execution of browser tests. Use the browser console to inspect and debug the DOM, then resume tests by running `resumeTest()` directly in the browser console ([docs](https://guides.emberjs.com/v3.28.0/testing/testing-application/#toc_debugging-your-tests))
+Tip: You can use `this.timeout(0); await this.pauseTest();` in your tests to temporarily pause the execution of browser tests. Use the browser console to inspect and debug the DOM, then resume tests by running `resumeTest()` directly in the browser console ([docs](https://guides.emberjs.com/v3.28.0/testing/testing-application/#toc_debugging-your-tests))
 
 
 ### Running tests in the CLI

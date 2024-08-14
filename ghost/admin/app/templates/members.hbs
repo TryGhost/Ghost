@@ -104,14 +104,14 @@
                                         </button>
                                     </li>
                                 {{/if}}
-                                {{#unless this.isMultiFiltered}}
+                                {{#if this.isBulkDeletePermitted}}
                                     <li class="divider"></li>
                                     <li>
                                         <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
                                             <span class="red">Delete selected members ({{this.members.length}})</span>
                                         </button>
                                     </li>
-                                {{/unless}}
+                                {{/if}}
                             {{/if}}
                         </GhDropdown>
                     </span>

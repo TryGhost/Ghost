@@ -137,6 +137,10 @@ class Filter {
         return this.properties.options ?? [];
     }
 
+    get group() {
+        return this.properties.group;
+    }
+
     get isValid() {
         if (Array.isArray(this.value)) {
             return !!this.value.length;
