@@ -154,10 +154,10 @@ describe('Acceptance: Members', function () {
         *     - Subscription started on post/page
         *     - Offers
         *
-        * See code: /members/controllers/members.js:isBulkDeletePermitted
+        * See code: ghost/admin/app/controllers/members.js:isBulkDeletePermitted
         * See issue https://linear.app/tryghost/issue/ENG-1484 for more context
         *
-        * Delete these test once the guardrail has been removed
+        * TODO: delete this block of tests once the guardrail has been removed
         */
         describe('[Temp] Guardrail against bulk deletion', function () {
             it('cannot bulk delete members if more than 1 newsletter filter is used', async function () {
