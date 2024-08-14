@@ -50,8 +50,8 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     return (
         <>
             <MainNavigation />
-            <div className='z-0 flex w-full flex-col'>
-                <div className='rounded-xl bg-grey-50 p-6' id='ap-sidebar'>
+            <div className='z-0 flex w-full flex-col items-center'>
+                <div className='mx-auto mt-8 w-full max-w-[560px] rounded-xl bg-grey-50 p-6' id='ap-sidebar'>
                     <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
                     <div className='grid grid-cols-2 gap-4'>
                         <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/profile/following')}>

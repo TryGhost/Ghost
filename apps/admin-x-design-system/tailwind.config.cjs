@@ -166,6 +166,16 @@ module.exports = {
                         transform: 'translateY(0px)'
                     }
                 },
+                modalInFromRight: {
+                    '0%': {
+                        transform: 'translateX(32px)',
+                        opacity: '0'
+                    },
+                    '100%': {
+                        transform: 'translateX(0px)',
+                        opacity: '1'
+                    }
+                },
                 modalInReverse: {
                     '0%': {
                         transform: 'translateY(-32px)'
@@ -192,6 +202,7 @@ module.exports = {
                 'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
                 'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
                 'modal-in': 'modalIn 0.25s ease forwards',
+                'modal-in-from-right': 'modalInFromRight 0.25s ease forwards',
                 'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
                 spin: 'spin 1s linear infinite'
             },

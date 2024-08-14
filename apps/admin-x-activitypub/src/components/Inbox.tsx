@@ -1,6 +1,8 @@
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
+import ArticleModal from './ArticleModal';
 import FeedItem from './FeedItem';
 import MainNavigation from './ds/MainNavigation';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Activity} from './Activity';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -24,6 +26,9 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties) => {
         setArticleContent(object);
         setArticleActor(actor);
+        NiceModal.show(ArticleModal, {
+            object: object
+        });
     };
 
     return (
@@ -32,7 +37,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
             <div className='z-0 flex w-full flex-col'>
                 <div className='w-full'>
                     {inboxTabActivities.length > 0 ? (
-                        <ul className='mx-auto flex max-w-[540px] flex-col py-8'>
+                        <ul className='mx-auto flex max-w-[560px] flex-col py-8'>
                             {inboxTabActivities.reverse().map(activity => (
                                 <li
                                     key={activity.id}
