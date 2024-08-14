@@ -1,7 +1,7 @@
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import ArticleModal from './ArticleModal';
 import FeedItem from './FeedItem';
-import MainNavigation from './ds/MainNavigation';
+import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Activity} from './Activity';

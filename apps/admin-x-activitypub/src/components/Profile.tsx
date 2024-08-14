@@ -1,4 +1,4 @@
-import MainNavigation from './ds/MainNavigation';
+import MainNavigation from './navigation/MainNavigation';
 import React from 'react';
 import {ActivityPubAPI} from '../api/activitypub';
 import {SettingValue} from '@tryghost/admin-x-design-system';

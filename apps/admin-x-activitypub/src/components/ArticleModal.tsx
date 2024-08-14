@@ -1,4 +1,4 @@
-import MainHeader from './ds/MainHeader';
+import MainHeader from './navigation/MainHeader';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import articleBodyStyles from './articleBodyStyles';

@@ -1,4 +1,4 @@
-import MainNavigation from './ds/MainNavigation';
+import MainNavigation from './navigation/MainNavigation';
 import React from 'react';
 import {Avatar} from '@tryghost/admin-x-design-system';
 
