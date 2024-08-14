@@ -32,7 +32,7 @@ const ViewFollowingModal: React.FC<RoutingModalProps> = ({}) => {
     return (
         <Modal
             afterClose={() => {
-                updateRoute('');
+                updateRoute('profile');
             }}
             cancelLabel=''
             footer={false}

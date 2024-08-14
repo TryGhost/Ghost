@@ -51,7 +51,7 @@ const ViewFollowersModal: React.FC<RoutingModalProps> = ({}) => {
         <Modal
             afterClose={() => {
                 mutation.reset();
-                updateRoute('');
+                updateRoute('profile');
             }}
             cancelLabel=''
             footer={false}
