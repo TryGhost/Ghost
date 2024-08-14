@@ -1314,6 +1314,2390 @@ https://ghost.org/?via=pbg-newsletter&ref=127.0.0.1
 }
 `;
 
+exports[`Can send cards via email renders the golden post correctly (labs flag: contentVisibility) 1 1`] = `
+Object {
+  "html": "<!doctype html>
+<html>
+    <head>
+        <meta name=\\"viewport\\" content=\\"width=device-width\\">
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>A random test post</title>
+        <style>
+.post-title-link {
+  color: #15212A;
+  display: block;
+  text-align: center;
+  margin-top: 32px;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #738a94;
+  text-decoration: underline !important;
+}
+.kg-nft-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  line-height: 1.3em;
+  padding-top: 4px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+.kg-twitter-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 15px;
+  padding: 8px;
+  line-height: 1.3em;
+}
+.kg-audio-link {
+  color: #738a94 !important;
+}
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.body .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5em !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .btn table {
+    width: 100% !important;
+  }
+
+  table.body .btn a {
+    width: 100% !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table.body .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.body .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.body .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.body .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.body .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.body .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.body .post-meta,
+table.body .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2em;
+  }
+
+  table.body .post-meta,
+table.body .view-online {
+    width: 100% !important;
+  }
+
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.body .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.body .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.body .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1em !important;
+  }
+
+  table.feedback-buttons {
+    display: none !important;
+  }
+
+  table.feedback-buttons-mobile {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.body .feedback-button-mobile-text {
+    font-size: 13px !important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body .kg-bookmark-card {
+    width: 90vw;
+  }
+
+  table.body .kg-bookmark-thumbnail {
+    display: none !important;
+  }
+
+  table.body .kg-bookmark-metadata span {
+    font-size: 13px !important;
+  }
+
+  table.body .kg-embed-card {
+    max-width: 90vw !important;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3em !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22em !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25em !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3em !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4em !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4em !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6em;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  table.body .kg-header-card.kg-v2 span {
+    font-size: inherit !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-content {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+    padding-top: 52px !important;
+    padding-bottom: 52px !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
+    font-size: 2.2em !important;
+    line-height: 1.1 !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
+    line-height: 1.3em !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+
+  .btn-primary table td:hover {
+    background-color: #34495e !important;
+  }
+
+  .btn-primary a:hover {
+    background-color: #34495e !important;
+    border-color: #34495e !important;
+  }
+}
+</style>
+    </head>
+    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
+
+This is block quote
+
+This is a...different block quote
+
+
+This is a heading!
+
+
+Here&#39;s a smaller heading.
+
+
+A heading
+
+
+and a paragraph (in markdown!)
+
+
+
+
+A paragraph inside an HTML card.
+
+
+And another one, with some bold text.
+
+
+
+Ghost: Independent technology for modern publishingBeautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.Ghost - The Profes</span>
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 100%;\\" bgcolor=\\"#fff\\">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+            <![endif]-->
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                        <!-- START CENTERED WHITE CONTAINER -->
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+
+                            <!-- START MAIN CONTENT AREA -->
+                            <tr>
+                                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                            <tr class=\\"header-image-row\\">
+                                                <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
+                                                </td>
+                                            </tr>
+
+                                            <tr class=\\"site-info-row\\">
+                                                <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
+                                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
+                                                            <tr>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #738a94; font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                            </tr>
+
+                                                    </table>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
+                                                    <table class=\\"post-meta-wrapper\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 32px;\\">
+                                                        <tr>
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; font-weight: 400; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
+                                                                By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
+                                                            </td>
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+
+                                        <tr class=\\"post-content-row\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e5eff5; max-width: 600px;\\" valign=\\"top\\">
+                                                <!-- POST CONTENT START -->
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #738a94;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-weight: 700;\\">A heading</h1>
+<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
+<div>
+<!--kg-card-begin: html-->
+<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">A paragraph inside an HTML card.</p>
+<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">And another one, with some <b>bold</b> text.</p>
+<!--kg-card-end: html-->
+</div><hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; border: 0; border-top: 1px solid #e5eff5;\\"><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
+        <!--[if !mso !vml]-->
+            <div class=\\"kg-card kg-bookmark-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0; width: 100%; background: #ffffff;\\">
+                <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Oxygen, Ubuntu, Cantarell, &#39;Open Sans&#39;, &#39;Helvetica Neue&#39;, sans-serif; border-radius: 3px; border: 1px solid #e5eff5; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                    <div class=\\"kg-bookmark-content\\" style=\\"display: inline-block; width: 100%; padding: 20px;\\">
+                        <div class=\\"kg-bookmark-title\\" style=\\"color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;\\">Ghost: Independent technology for modern publishing</div>
+                        <div class=\\"kg-bookmark-description\\" style=\\"display: -webkit-box; overflow-y: hidden; margin-top: 12px; max-height: 40px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400; -webkit-line-clamp: 2; -webkit-box-orient: vertical;\\">Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.</div>
+                        <div class=\\"kg-bookmark-metadata\\" style=\\"display: flex; flex-wrap: wrap; align-items: center; margin-top: 14px; color: #15212A; font-size: 13px; font-weight: 400;\\">
+                            <img class=\\"kg-bookmark-icon\\" src=\\"https://ghost.org/favicon.ico\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; margin-right: 8px; width: 22px; height: 22px;\\" width=\\"22\\" height=\\"22\\">
+                            <span class=\\"kg-bookmark-author\\" src=\\"Ghost - The Professional Publishing Platform\\" style=\\"line-height: 1.5em;\\">Ghost - The Professional Publishing Platform</span>
+                            
+                        </div>
+                    </div>
+                    <div class=\\"kg-bookmark-thumbnail\\" style=\\"min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 2px 2px 0; background-image: url(&#39;https://ghost.org/images/meta/ghost.png&#39;);\\">
+                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
+                </a>
+                <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">My favorite website.</span></p></div>
+            </div>
+        <!--[endif]-->
+        <!--[if vml]>
+            <table class=\\"kg-card kg-bookmark-card--outlook\\" style=\\"margin: 0; padding: 0; width: 100%; border: 1px solid #e5eff5; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; border-collapse: collapse; border-spacing: 0;\\" width=\\"100%\\">
+                <tr>
+                    <td width=\\"100%\\" style=\\"padding: 20px;\\">
+                        <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                            <tr>
+                                <td class=\\"kg-bookmark-title--outlook\\">
+                                    <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;\\">
+                                        Ghost: Independent technology for modern publishing
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class=\\"kg-bookmark-description--outlook\\">
+                                        <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; margin-top: 12px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400;\\">
+                                            Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class=\\"kg-bookmark-metadata--outlook\\" style=\\"padding-top: 14px; color: #15212A; font-size: 13px; font-weight: 400; line-height: 1.5em;\\">
+                                    <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                        <tr>
+                                            
+                                                <td valign=\\"middle\\" class=\\"kg-bookmark-icon--outlook\\" style=\\"padding-right: 8px; font-size: 0; line-height: 1.5em;\\">
+                                                    <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; color: #15212A;\\">
+                                                        <img src=\\"https://ghost.org/favicon.ico\\" width=\\"22\\" height=\\"22\\" alt=\\" \\">
+                                                    </a>
+                                                </td>
+                                            
+                                            <td valign=\\"middle\\" class=\\"kg-bookmark-byline--outlook\\">
+                                                <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; color: #15212A;\\">
+                                                    Ghost - The Professional Publishing Platform
+                                                    
+                                                    
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 20px 28px; border-radius: 3px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
+        border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
+            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
+        </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e5eff5;\\" width=\\"100%\\">
+                <tbody><tr>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                            <tbody><tr>
+                                <td width=\\"60\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;\\" target=\\"_blank\\">
+                                        
+                                        <img src=\\"https://static.ghost.org/v4.0.0/images/audio-file-icon.png\\" class=\\"kg-audio-thumbnail placeholder\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 24px; height: 24px; padding: 18px; border-radius: 2px; background-color: #FF1A75;\\" width=\\"24\\" height=\\"24\\">
+                                        
+                                    </a>
+                                </td>
+                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; position: relative; vertical-align: center;\\" valign=\\"center\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\"></a>
+                                    <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                        <tbody><tr>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                                    <tbody><tr>
+                                                        <td width=\\"24\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
+                                                        </td>
+                                                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #15171A;\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #738a94;\\"> &#x2022; Click to play audio</span></a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody></table>
+                                            </td>
+                                        </tr>
+                                    </tbody></table>
+                                </td>
+                            </tr>
+                        </tbody></table>
+                    </td>
+                </tr>
+            </tbody></table><div class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\">
+            <!--[if !mso !vml]-->
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+                <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; background: url(&#39;https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg&#39;) left top / cover; mso-hide: all;\\">
+                    <tbody><tr style=\\"mso-hide: all\\">
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
+                            <img src=\\"https://img.spacergif.org/v1/150x338/0a/spacer.png\\" alt width=\\"100%\\" border=\\"0\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;\\" height=\\"auto\\">
+                        </td>
+                        <td width=\\"50%\\" align=\\"center\\" valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle; mso-hide: all;\\">
+                            <div class=\\"kg-video-play-button\\" style=\\"height: 2em; width: 3em; margin: 0 auto; border-radius: 10px; padding: 1em 0.8em 0.6em 1em; font-size: 1em; background-color: rgba(0,0,0,0.85); mso-hide: all;\\"><div style=\\"display: block; width: 0; height: 0; margin: 0 auto; line-height: 0px; border-color: transparent transparent transparent white; border-style: solid; border-width: 0.8em 0 0.8em 1.5em; mso-hide: all;\\"></div></div>
+                        </td>
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; mso-hide: all;\\" valign=\\"top\\">&#xA0;</td>
+                    </tr>
+                </tbody></table>
+            </a>
+            <!--[endif]-->
+
+            <!--[if vml]>
+            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,338\\" coordorigin=\\"0,0\\" href=\\"http://127.0.0.1:2369/404/\\" style=\\"width:600px;height:338px;\\">
+                <v:rect fill=\\"t\\" stroked=\\"f\\" style=\\"position:absolute;width:600;height:338;\\"><v:fill src=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" type=\\"frame\\"/></v:rect>
+                <v:oval fill=\\"t\\" strokecolor=\\"white\\" strokeweight=\\"4px\\" style=\\"position:absolute;left:261;top:130;width:78;height:78\\"><v:fill color=\\"black\\" opacity=\\"30%\\" /></v:oval>
+                <v:shape coordsize=\\"24,32\\" path=\\"m,l,32,24,16,xe\\" fillcolor=\\"white\\" stroked=\\"f\\" style=\\"position:absolute;left:289;top:152;width:30;height:34;\\" />
+            </v:group>
+            <![endif]-->
+
+            <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A lovely video of a woman on the beach doing nothing.</span></p></div>
+        </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 20px; border: 1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;\\" width=\\"100%\\">
+            
+                <tbody><tr>
+                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <img src=\\"https://main.ghost.org/content/images/2023/12/ghost-logo.png\\" width=\\"560\\" height=\\"180\\" style=\\"-ms-interpolation-mode: bicubic; display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;\\" border=\\"0\\">
+                    </td>
+                </tr>
+            
+            <tr>
+                <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                    <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                </td>
+            </tr>
+            
+                <tr style=\\"padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;\\">
+                    <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                        <img src=\\"https://static.ghost.org/v4.0.0/images/star-rating-5.png\\" style=\\"-ms-interpolation-mode: bicubic; max-width: 100%; border: none; width: 96px;\\" border=\\"0\\" width=\\"96\\">
+                    </td>
+                </tr>
+            
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                    <div style=\\"padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">with Ghost</span></p></div>
+                </td>
+            </tr>
+            
+                <tr>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; display: table; width: 100%; padding-top: 16px;\\">
+                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"background-color: #FF1A75; border-color: #FF1A75; overflow-wrap: anywhere; border: solid 1px; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 0; text-decoration: none; color: #FFFFFF; width: 100%; text-align: center;\\" target=\\"_blank\\"><span style=\\"display: block;padding: 12px 25px;\\">Click here</span></a>
+                        </div>
+                    </td>
+                </tr>
+            
+        </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
+            
+            <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
+                
+            </div>
+        </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+                <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; background: url(&#39;https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg&#39;) left top / cover; mso-hide: all;\\">
+                    <tbody><tr style=\\"mso-hide: all\\">
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
+                            <img src=\\"https://img.spacergif.org/v1/150x450/0a/spacer.png\\" alt width=\\"100%\\" border=\\"0\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;\\" height=\\"auto\\">
+                        </td>
+                        <td width=\\"50%\\" align=\\"center\\" valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle; mso-hide: all;\\">
+                            <div class=\\"kg-video-play-button\\" style=\\"height: 2em; width: 3em; margin: 0 auto; border-radius: 10px; padding: 1em 0.8em 0.6em 1em; font-size: 1em; background-color: rgba(0,0,0,0.85); mso-hide: all;\\"><div style=\\"display: block; width: 0; height: 0; margin: 0 auto; line-height: 0px; border-color: transparent transparent transparent white; border-style: solid; border-width: 0.8em 0 0.8em 1.5em; mso-hide: all;\\"></div></div>
+                        </td>
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; mso-hide: all;\\" valign=\\"top\\">&#xA0;</td>
+                    </tr>
+                </tbody></table>
+            </a>
+            <!--[endif]-->
+
+            <!--[if vml]>
+            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,450\\" coordorigin=\\"0,0\\" href=\\"https://www.youtube.com/watch?v=jfKfPfyJRdk\\" style=\\"width:600px;height:450px;\\">
+                <v:rect fill=\\"t\\" stroked=\\"f\\" style=\\"position:absolute;width:600;height:450;\\"><v:fill src=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" type=\\"frame\\"/></v:rect>
+                <v:oval fill=\\"t\\" strokecolor=\\"white\\" strokeweight=\\"4px\\" style=\\"position:absolute;left:261;top:186;width:78;height:78\\"><v:fill color=\\"black\\" opacity=\\"30%\\" /></v:oval>
+                <v:shape coordsize=\\"24,32\\" path=\\"m,l,32,24,16,xe\\" fillcolor=\\"white\\" stroked=\\"f\\" style=\\"position:absolute;left:289;top:208;width:30;height:34;\\" />
+            </v:group>
+            <![endif]--></div><div></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Some text.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">A blockquote</p></blockquote><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Some more text.</p><div class=\\"kg-card kg-code-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><pre style=\\"white-space: pre-wrap; overflow: auto; background: #15212A; padding: 15px; border-radius: 3px; line-height: 1.2em; color: #ffffff;\\"><code class=\\"language-javascript\\" style=\\"font-size: 0.9em;\\">console.log(&#39;Hello world!&#39;);</code></pre><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A tiny little script.</span></p></div></div><table cellspacing=\\"0\\" cellpadding=\\"4\\" border=\\"0\\" class=\\"kg-file-card\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 0 1.5em 0; border-radius: 3px; border: 1px solid #e5eff5;\\">
+            <tbody><tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                    <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                        <tbody><tr>
+                            <td valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle;\\">
+                                
+                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
+                                </td></tr></tbody></table>
+                                
+                                
+                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-description\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 2px; font-size: 15px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #738a94;\\" target=\\"_blank\\">A tiny text file.</a>
+                                </td></tr></tbody></table>
+                                
+                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-meta\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; font-size: 13px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #738a94;\\" target=\\"_blank\\"><span class=\\"kg-file-name\\" style=\\"font-weight: 500; color: #15212A;\\">test.txt</span> &#x2022; 16 Bytes</a>
+                                </td></tr></tbody></table>
+                            </td>
+                            <td width=\\"80\\" valign=\\"middle\\" class=\\"kg-file-thumbnail\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; position: relative; vertical-align: middle; text-align: center; border-radius: 2px; background-color: #FF1A75;\\" align=\\"center\\" bgcolor=\\"#FF1A75\\">
+                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\">
+                                    <img src=\\"https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png\\" style=\\"border: none; -ms-interpolation-mode: bicubic; margin-top: 6px; height: 24px; width: 24px; max-width: 24px;\\" width=\\"24\\" height=\\"24\\">
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody></table>
+                </td>
+            </tr>
+        </tbody></table>
+                                                <!-- POST CONTENT END -->
+
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- END MAIN CONTENT AREA -->
+
+
+
+
+                            <tr>
+                                <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
+                                        <tr>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                        </tr>
+
+                                            <tr>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                            </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>
+",
+  "plaintext": "
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+Ghost [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+By Joe Bloggs • date
+
+
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+
+This is just a simple paragraph, no frills.
+
+> This is block quote
+
+> This is a...different block quote
+
+
+This is a heading!
+
+
+Here's a smaller heading.
+
+A lovely cow
+
+
+A heading
+
+
+and a paragraph (in markdown!)
+
+
+
+
+A paragraph inside an HTML card.
+
+
+And another one, with some bold text.
+
+
+
+----------------------------------------
+
+A gallery.
+
+
+
+
+
+
+Ghost: Independent technology for modern publishing
+Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.
+
+
+Ghost - The Professional Publishing Platform
+
+
+
+
+
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+My favorite website.
+
+
+
+
+Hey Vinz,
+
+
+
+Click me, I'm a button! [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+💡I had an idea...
+
+
+Spoiler alert!
+
+
+Just kidding
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+Sample [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+1:45 • Click to play audio [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+A lovely video of a woman on the beach doing nothing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Make a blog!
+
+
+
+
+
+
+
+
+
+
+
+
+
+with Ghost
+
+
+
+
+
+
+
+
+Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+Good news everyone!
+
+
+This header renders properly in all email clients!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+Some text.
+
+> A blockquote
+
+Some more text.
+
+console.log('Hello world!');
+
+A tiny little script.
+
+
+
+
+
+
+
+
+
+
+
+
+
+test [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+A tiny text file. [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&newsletter=requested-newsletter-uuid]
+
+
+
+https://ghost.org/?via=pbg-newsletter&ref=127.0.0.1
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+",
+}
+`;
+
+exports[`Can send cards via email renders the golden post correctly (no labs flags) 1 1`] = `
+Object {
+  "html": "<!doctype html>
+<html>
+    <head>
+        <meta name=\\"viewport\\" content=\\"width=device-width\\">
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>A random test post</title>
+        <style>
+.post-title-link {
+  color: #15212A;
+  display: block;
+  text-align: center;
+  margin-top: 32px;
+}
+.post-title-link-left {
+  text-align: left;
+}
+.view-online-link {
+  word-wrap: none;
+  white-space: nowrap;
+  color: #738a94;
+  text-decoration: underline !important;
+}
+.kg-nft-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  line-height: 1.3em;
+  padding-top: 4px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+.kg-twitter-link {
+  display: block;
+  text-decoration: none !important;
+  color: #15212A !important;
+  font-family: inherit !important;
+  font-size: 15px;
+  padding: 8px;
+  line-height: 1.3em;
+}
+.kg-audio-link {
+  color: #738a94 !important;
+}
+@media only screen and (max-width: 620px) {
+  table.body {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .mobile-only {
+    display: initial !important;
+  }
+
+  .hide-desktop {
+    display: initial !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td {
+    font-size: 16px;
+  }
+
+  table.body .post-excerpt {
+    font-size: 16px !important;
+  }
+
+  table.body .kg-callout-card {
+    padding: 16px 24px !important;
+  }
+
+  table.body .kg-callout-text {
+    font-size: 16px !important;
+    line-height: 1.5em !important;
+  }
+
+  table.body pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-spacing: 10px 0 !important;
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .btn table {
+    width: 100% !important;
+  }
+
+  table.body .btn a {
+    width: 100% !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table.body .site-icon {
+    padding-top: 0 !important;
+  }
+
+  table.body .site-info {
+    padding-top: 24px !important;
+  }
+
+  table.body .post-title-link {
+    margin-top: 24px !important;
+  }
+
+  table.body .post-meta-wrapper {
+    padding-bottom: 24px !important;
+  }
+
+  table.body .site-icon img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  table.body .site-url a {
+    font-size: 13px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.body .post-meta,
+table.body .post-meta-date {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.2em;
+  }
+
+  table.body .post-meta,
+table.body .view-online {
+    width: 100% !important;
+  }
+
+  table.body .post-meta-left,
+table.body .post-meta-left.view-online {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online-mobile {
+    display: table-row !important;
+  }
+
+  table.body .post-meta-left.view-online-mobile,
+table.body .post-meta-left.view-online-mobile .view-online {
+    text-align: left !important;
+  }
+
+  table.body .post-meta.view-online.desktop {
+    display: none !important;
+  }
+
+  table.body .view-online {
+    text-decoration: underline;
+  }
+
+  table.body .footer p,
+table.body .footer p span {
+    font-size: 13px !important;
+  }
+
+  table.body .view-online-link,
+table.body .footer,
+table.body .footer a {
+    font-size: 13px !important;
+  }
+
+  table.body .post-title a {
+    font-size: 26px !important;
+    line-height: 1.1em !important;
+  }
+
+  table.feedback-buttons {
+    display: none !important;
+  }
+
+  table.feedback-buttons-mobile {
+    display: table !important;
+    width: 100% !important;
+    max-width: 390px;
+  }
+
+  table.body .feedback-button-mobile-text {
+    font-size: 13px !important;
+  }
+
+  table.body .latest-posts-header {
+    font-size: 12px !important;
+  }
+
+  table.body .latest-post-title {
+    padding-right: 8px !important;
+  }
+
+  table.body .latest-post h4,
+table.body .latest-post h4 span {
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
+  }
+
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  table.body .subscription-box h3 {
+    font-size: 14px !important;
+  }
+
+  table.body .subscription-box p,
+table.body .subscription-box p span {
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details,
+table.body .manage-subscription {
+    display: inline-block;
+    width: 100%;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  table.body .subscription-details {
+    padding-bottom: 12px;
+  }
+
+  table.body .kg-bookmark-card {
+    width: 90vw;
+  }
+
+  table.body .kg-bookmark-thumbnail {
+    display: none !important;
+  }
+
+  table.body .kg-bookmark-metadata span {
+    font-size: 13px !important;
+  }
+
+  table.body .kg-embed-card {
+    max-width: 90vw !important;
+  }
+
+  table.body h1 {
+    font-size: 32px !important;
+    line-height: 1.3em !important;
+  }
+
+  table.body h2,
+table.body h2 span {
+    font-size: 26px !important;
+    line-height: 1.22em !important;
+  }
+
+  table.body h3 {
+    font-size: 21px !important;
+    line-height: 1.25em !important;
+  }
+
+  table.body h4 {
+    font-size: 19px !important;
+    line-height: 1.3em !important;
+  }
+
+  table.body h5 {
+    font-size: 16px !important;
+    line-height: 1.4em !important;
+  }
+
+  table.body h6 {
+    font-size: 16px !important;
+    line-height: 1.4em !important;
+  }
+
+  table.body blockquote {
+    font-size: 16px !important;
+    line-height: 1.6em;
+    margin-bottom: 0;
+  }
+
+  table.body blockquote p {
+    margin-right: 15px !important;
+    margin-left: 15px !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt {
+    border-left: 0 none !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.4em !important;
+  }
+
+  table.body blockquote.kg-blockquote-alt p {
+    margin-right: 20px !important;
+    margin-left: 20px !important;
+  }
+
+  table.body hr {
+    margin: 2em 0 !important;
+  }
+
+  table.body .kg-header-card.kg-v2 span {
+    font-size: inherit !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-content {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+    padding-top: 52px !important;
+    padding-bottom: 52px !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-heading {
+    font-size: 2.2em !important;
+    line-height: 1.1 !important;
+  }
+
+  table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
+    line-height: 1.3em !important;
+  }
+
+  .feature-image-caption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption {
+    font-size: 13px!important;
+  }
+
+  .kg-card-figcaption p,
+.kg-card-figcaption p span {
+    font-size: 13px!important;
+  }
+}
+@media all {
+  .subscription-details p.hidden {
+    display: none !important;
+  }
+
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .apple-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+
+  .btn-primary table td:hover {
+    background-color: #34495e !important;
+  }
+
+  .btn-primary a:hover {
+    background-color: #34495e !important;
+    border-color: #34495e !important;
+  }
+}
+</style>
+    </head>
+    <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
+
+This is block quote
+
+This is a...different block quote
+
+
+This is a heading!
+
+
+Here&#39;s a smaller heading.
+
+
+A heading
+
+
+and a paragraph (in markdown!)
+
+
+
+
+A paragraph inside an HTML card.
+
+
+And another one, with some bold text.
+
+
+
+Ghost: Independent technology for modern publishingBeautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.Ghost - The Profes</span>
+        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 100%;\\" bgcolor=\\"#fff\\">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"600\\">
+            <![endif]-->
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+                <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; display: block; max-width: 600px; margin: 0 auto;\\" valign=\\"top\\">
+                    <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px;\\">
+                        <!-- START CENTERED WHITE CONTAINER -->
+                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"main\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border-radius: 3px; border-spacing: 20px 0; width: 100%;\\">
+
+                            <!-- START MAIN CONTENT AREA -->
+                            <tr>
+                                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                            <tr class=\\"header-image-row\\">
+                                                <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 24px; padding-bottom: 16px;\\" valign=\\"top\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
+                                                </td>
+                                            </tr>
+
+                                            <tr class=\\"site-info-row\\">
+                                                <td class=\\"site-info\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 32px;\\" valign=\\"top\\">
+                                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
+                                                            <tr>
+                                                                <td class=\\"site-url \\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-title\\" style=\\"text-decoration: none; color: #15212A; overflow-wrap: anywhere;\\" target=\\"_blank\\">Ghost</a></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class=\\"site-url site-url-bottom-padding\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 16px; letter-spacing: -0.1px; font-weight: 700; text-transform: uppercase; text-align: center; padding-bottom: 12px;\\" valign=\\"top\\" align=\\"center\\"><div style=\\"width: 100% !important;\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"site-subtitle\\" style=\\"text-decoration: none; color: #738a94; font-size: 13px; font-weight: 400; text-transform: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">Daily newsletter</a></div></td>
+                                                            </tr>
+
+                                                    </table>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; width: 100%;\\" width=\\"100%\\" valign=\\"top\\">
+                                                    <table class=\\"post-meta-wrapper\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-bottom: 32px;\\">
+                                                        <tr>
+                                                            <td height=\\"20\\" class=\\"post-meta post-meta-center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; font-weight: 400; text-align: center; padding: 0;\\" valign=\\"top\\" align=\\"center\\">
+                                                                By Joe Bloggs &#x2022; <span class=\\"post-meta-date\\" style=\\"white-space: nowrap;\\">date </span>
+                                                            </td>
+                                                            <td class=\\"post-meta post-meta-center view-online desktop\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; font-weight: 400; text-align: center; display: none;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class=\\"post-meta post-meta-center view-online-mobile\\" style=\\"color: #738a94; font-size: 13px; font-weight: 400; text-align: center;\\" align=\\"center\\">
+                                                            <td height=\\"20\\" class=\\"view-online\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; font-size: 13px; font-weight: 400; text-align: center; text-decoration: underline;\\" valign=\\"top\\" align=\\"center\\">
+                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"view-online-link\\" style=\\"word-wrap: none; white-space: nowrap; color: #738a94; overflow-wrap: anywhere; text-decoration: underline;\\" target=\\"_blank\\">View in browser</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+
+                                        <tr class=\\"post-content-row\\">
+                                            <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #15212A; padding-bottom: 20px; border-bottom: 1px solid #e5eff5; max-width: 600px;\\" valign=\\"top\\">
+                                                <!-- POST CONTENT START -->
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is just a simple paragraph, no frills.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">This is block quote</p></blockquote><blockquote class=\\"kg-blockquote-alt\\" style=\\"margin: 0; padding: 0; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px; border-left: 0 none; text-align: center; font-size: 1.2em; font-style: italic; color: #738a94;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; margin-right: 50px; margin-left: 50px; padding: 0;\\">This is a...different block quote</p></blockquote><h2 id=\\"this-is-a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 32px;\\">This is a heading!</h2><h3 id=\\"heres-a-smaller-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;\\">Here&#39;s a smaller heading.</h3><div class=\\"kg-card kg-image-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><img src=\\"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg\\" class=\\"kg-image\\" alt=\\"Cows eat grass.\\" loading=\\"lazy\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; height: auto; width: auto;\\" width=\\"auto\\" height=\\"auto\\"><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><span style=\\"text-align: center; white-space: pre-wrap;\\">A lovely cow</span></div></div><h1 id=\\"a-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 42px; font-weight: 700;\\">A heading</h1>
+<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">and a paragraph (in markdown!)</p>
+
+<!--kg-card-begin: html-->
+<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">A paragraph inside an HTML card.</p>
+<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">And another one, with some <b>bold</b> text.</p>
+<!--kg-card-end: html-->
+<hr style=\\"position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; border: 0; border-top: 1px solid #e5eff5;\\"><div class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><div class=\\"kg-gallery-container\\" style=\\"margin-top: -20px;\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&amp;w=2070&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\\" width=\\"600\\" height=\\"400\\" loading=\\"lazy\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; padding-top: 20px; width: 100%; height: auto;\\"></div></div></div><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A gallery.</span></p></div></div><div>
+        <!--[if !mso !vml]-->
+            <div class=\\"kg-card kg-bookmark-card kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0; width: 100%; background: #ffffff;\\">
+                <a class=\\"kg-bookmark-container\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"display: flex; min-height: 148px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Oxygen, Ubuntu, Cantarell, &#39;Open Sans&#39;, &#39;Helvetica Neue&#39;, sans-serif; border-radius: 3px; border: 1px solid #e5eff5; overflow-wrap: anywhere; color: #FF1A75; text-decoration: none;\\" target=\\"_blank\\">
+                    <div class=\\"kg-bookmark-content\\" style=\\"display: inline-block; width: 100%; padding: 20px;\\">
+                        <div class=\\"kg-bookmark-title\\" style=\\"color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;\\">Ghost: Independent technology for modern publishing</div>
+                        <div class=\\"kg-bookmark-description\\" style=\\"display: -webkit-box; overflow-y: hidden; margin-top: 12px; max-height: 40px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400; -webkit-line-clamp: 2; -webkit-box-orient: vertical;\\">Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.</div>
+                        <div class=\\"kg-bookmark-metadata\\" style=\\"display: flex; flex-wrap: wrap; align-items: center; margin-top: 14px; color: #15212A; font-size: 13px; font-weight: 400;\\">
+                            <img class=\\"kg-bookmark-icon\\" src=\\"https://ghost.org/favicon.ico\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; margin-right: 8px; width: 22px; height: 22px;\\" width=\\"22\\" height=\\"22\\">
+                            <span class=\\"kg-bookmark-author\\" src=\\"Ghost - The Professional Publishing Platform\\" style=\\"line-height: 1.5em;\\">Ghost - The Professional Publishing Platform</span>
+                            
+                        </div>
+                    </div>
+                    <div class=\\"kg-bookmark-thumbnail\\" style=\\"min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 2px 2px 0; background-image: url(&#39;https://ghost.org/images/meta/ghost.png&#39;);\\">
+                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
+                </a>
+                <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">My favorite website.</span></p></div>
+            </div>
+        <!--[endif]-->
+        <!--[if vml]>
+            <table class=\\"kg-card kg-bookmark-card--outlook\\" style=\\"margin: 0; padding: 0; width: 100%; border: 1px solid #e5eff5; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; border-collapse: collapse; border-spacing: 0;\\" width=\\"100%\\">
+                <tr>
+                    <td width=\\"100%\\" style=\\"padding: 20px;\\">
+                        <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                            <tr>
+                                <td class=\\"kg-bookmark-title--outlook\\">
+                                    <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;\\">
+                                        Ghost: Independent technology for modern publishing
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class=\\"kg-bookmark-description--outlook\\">
+                                        <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; margin-top: 12px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400;\\">
+                                            Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class=\\"kg-bookmark-metadata--outlook\\" style=\\"padding-top: 14px; color: #15212A; font-size: 13px; font-weight: 400; line-height: 1.5em;\\">
+                                    <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                        <tr>
+                                            
+                                                <td valign=\\"middle\\" class=\\"kg-bookmark-icon--outlook\\" style=\\"padding-right: 8px; font-size: 0; line-height: 1.5em;\\">
+                                                    <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; color: #15212A;\\">
+                                                        <img src=\\"https://ghost.org/favicon.ico\\" width=\\"22\\" height=\\"22\\" alt=\\" \\">
+                                                    </a>
+                                                </td>
+                                            
+                                            <td valign=\\"middle\\" class=\\"kg-bookmark-byline--outlook\\">
+                                                <a href=\\"https://ghost.org\\" style=\\"text-decoration: none; color: #15212A;\\">
+                                                    Ghost - The Professional Publishing Platform
+                                                    
+                                                    
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <div class=\\"kg-bookmark-spacer--outlook\\" style=\\"height: 1.5em;\\">&nbsp;</div>
+        <![endif]--></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Hey </span><span>Vinz</span><span style=\\"white-space: pre-wrap;\\">,</span></p><!--members-only--><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; width: 100%; display: table;\\"><table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"0\\" align=\\"center\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\" width=\\"auto\\"><tr><td align=\\"center\\" style=\\"font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; background-color: #FF1A75;\\" valign=\\"top\\" bgcolor=\\"#FF1A75\\"><a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #FFFFFF;\\" target=\\"_blank\\">Click me, I&#39;m a button!</a></td></tr></table></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"></p><div class=\\"kg-card kg-callout-card kg-callout-card-blue\\" style=\\"display: flex; margin: 0 0 1.5em 0; padding: 20px 28px; border-radius: 3px; background: #E9F6FB;\\"><div class=\\"kg-callout-emoji\\" style=\\"padding-right: 12px; font-size: 20px;\\">&#x1F4A1;</div><div class=\\"kg-callout-text\\">I had an idea...</div></div><div style=\\"background: transparent;
+        border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;\\">
+            <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top: 0px;\\"><span style=\\"white-space: pre-wrap;\\">Spoiler alert!</span></h4>
+            <div style=\\"font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">Just kidding</span></p></div>
+        </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" class=\\"kg-audio-card\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 auto 1.5em; border-radius: 3px; border: 1px solid #e5eff5;\\" width=\\"100%\\">
+                <tbody><tr>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                        <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                            <tbody><tr>
+                                <td width=\\"60\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;\\" target=\\"_blank\\">
+                                        
+                                        <img src=\\"https://static.ghost.org/v4.0.0/images/audio-file-icon.png\\" class=\\"kg-audio-thumbnail placeholder\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 24px; height: 24px; padding: 18px; border-radius: 2px; background-color: #FF1A75;\\" width=\\"24\\" height=\\"24\\">
+                                        
+                                    </a>
+                                </td>
+                                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; position: relative; vertical-align: center;\\" valign=\\"center\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\"></a>
+                                    <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                        <tbody><tr>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-title\\" style=\\"display: block; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; font-size: 16px; font-weight: 600; line-height: 18px; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">Sample</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                                                    <tbody><tr>
+                                                        <td width=\\"24\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-play-button\\" style=\\"display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor; overflow-wrap: anywhere; text-decoration: underline; color: #15212A;\\" target=\\"_blank\\"></a>
+                                                        </td>
+                                                        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle;\\" valign=\\"middle\\">
+                                                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-audio-duration\\" style=\\"display: block; font-size: 13px; overflow-wrap: anywhere; text-decoration: none; color: #15171A;\\" target=\\"_blank\\">1:45<span class=\\"kg-audio-link\\" style=\\"color: #738a94;\\"> &#x2022; Click to play audio</span></a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody></table>
+                                            </td>
+                                        </tr>
+                                    </tbody></table>
+                                </td>
+                            </tr>
+                        </tbody></table>
+                    </td>
+                </tr>
+            </tbody></table><div class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" style=\\"margin: 0 0 1.5em; padding: 0;\\">
+            <!--[if !mso !vml]-->
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+                <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; background: url(&#39;https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg&#39;) left top / cover; mso-hide: all;\\">
+                    <tbody><tr style=\\"mso-hide: all\\">
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
+                            <img src=\\"https://img.spacergif.org/v1/150x338/0a/spacer.png\\" alt width=\\"100%\\" border=\\"0\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;\\" height=\\"auto\\">
+                        </td>
+                        <td width=\\"50%\\" align=\\"center\\" valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle; mso-hide: all;\\">
+                            <div class=\\"kg-video-play-button\\" style=\\"height: 2em; width: 3em; margin: 0 auto; border-radius: 10px; padding: 1em 0.8em 0.6em 1em; font-size: 1em; background-color: rgba(0,0,0,0.85); mso-hide: all;\\"><div style=\\"display: block; width: 0; height: 0; margin: 0 auto; line-height: 0px; border-color: transparent transparent transparent white; border-style: solid; border-width: 0.8em 0 0.8em 1.5em; mso-hide: all;\\"></div></div>
+                        </td>
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; mso-hide: all;\\" valign=\\"top\\">&#xA0;</td>
+                    </tr>
+                </tbody></table>
+            </a>
+            <!--[endif]-->
+
+            <!--[if vml]>
+            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,338\\" coordorigin=\\"0,0\\" href=\\"http://127.0.0.1:2369/404/\\" style=\\"width:600px;height:338px;\\">
+                <v:rect fill=\\"t\\" stroked=\\"f\\" style=\\"position:absolute;width:600;height:338;\\"><v:fill src=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" type=\\"frame\\"/></v:rect>
+                <v:oval fill=\\"t\\" strokecolor=\\"white\\" strokeweight=\\"4px\\" style=\\"position:absolute;left:261;top:130;width:78;height:78\\"><v:fill color=\\"black\\" opacity=\\"30%\\" /></v:oval>
+                <v:shape coordsize=\\"24,32\\" path=\\"m,l,32,24,16,xe\\" fillcolor=\\"white\\" stroked=\\"f\\" style=\\"position:absolute;left:289;top:152;width:30;height:34;\\" />
+            </v:group>
+            <![endif]-->
+
+            <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A lovely video of a woman on the beach doing nothing.</span></p></div>
+        </div><table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding: 20px; border: 1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;\\" width=\\"100%\\">
+            
+                <tbody><tr>
+                    <td align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <img src=\\"https://main.ghost.org/content/images/2023/12/ghost-logo.png\\" width=\\"560\\" height=\\"180\\" style=\\"-ms-interpolation-mode: bicubic; display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;\\" border=\\"0\\">
+                    </td>
+                </tr>
+            
+            <tr>
+                <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                    <h4 style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; margin: 1.8em 0 0.5em 0; line-height: 1.2em; font-weight: 700; font-size: 22px; margin-top: 0; margin-bottom: 0;\\"><span style=\\"white-space: pre-wrap;\\">Make a blog!</span></h4>
+                </td>
+            </tr>
+            
+                <tr style=\\"padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;\\">
+                    <td valign=\\"top\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\">
+                        <img src=\\"https://static.ghost.org/v4.0.0/images/star-rating-5.png\\" style=\\"-ms-interpolation-mode: bicubic; max-width: 100%; border: none; width: 96px;\\" border=\\"0\\" width=\\"96\\">
+                    </td>
+                </tr>
+            
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                    <div style=\\"padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;\\"><p dir=\\"ltr\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">with Ghost</span></p></div>
+                </td>
+            </tr>
+            
+                <tr>
+                    <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; padding-top: 0; padding-bottom: 0; margin-bottom: 0; padding-bottom: 0;\\" valign=\\"top\\">
+                        <div class=\\"btn btn-accent\\" style=\\"box-sizing: border-box; display: table; width: 100%; padding-top: 16px;\\">
+                            <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"background-color: #FF1A75; border-color: #FF1A75; overflow-wrap: anywhere; border: solid 1px; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 0; text-decoration: none; color: #FFFFFF; width: 100%; text-align: center;\\" target=\\"_blank\\"><span style=\\"display: block;padding: 12px 25px;\\">Click here</span></a>
+                        </div>
+                    </td>
+                </tr>
+            
+        </tbody></table><div class=\\"kg-header-card kg-v2\\" style=\\"margin: 0 0 1.5em 0; padding: 0; color: #FFFFFF; text-align: center; background-color: #000000;\\">
+            
+            <div class=\\"kg-header-card-content\\" style=\\"padding: 80px 48px;\\">
+                <h2 class=\\"kg-header-card-heading\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; font-size: 3em; font-weight: 700; margin: 0; line-height: 1em; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">Good news everyone!</span></h2>
+                <p class=\\"kg-header-card-subheading\\" style=\\"line-height: 1.6em; margin: 0.75em 0 0; color: #FFFFFF;\\"><span style=\\"white-space: pre-wrap;\\">This header renders properly in </span><i><em class=\\"italic\\" style=\\"white-space: pre-wrap;\\">all</em></i><span style=\\"white-space: pre-wrap;\\"> email clients!</span></p>
+                
+            </div>
+        </div><div class=\\"kg-card kg-embed-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><!--[if !mso !vml]-->
+            <a class=\\"kg-video-preview\\" href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" aria-label=\\"Play video\\" style=\\"background-color: #1d1f21; background-image: radial-gradient(circle at center, #5b5f66, #1d1f21); display: block; overflow-wrap: anywhere; color: #FF1A75; mso-hide: all; text-decoration: none;\\" target=\\"_blank\\">
+                <table cellpadding=\\"0\\" cellspacing=\\"0\\" border=\\"0\\" width=\\"100%\\" background=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" role=\\"presentation\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-size: cover; min-height: 200px; background: url(&#39;https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg&#39;) left top / cover; mso-hide: all;\\">
+                    <tbody><tr style=\\"mso-hide: all\\">
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; visibility: hidden; mso-hide: all;\\" valign=\\"top\\">
+                            <img src=\\"https://img.spacergif.org/v1/150x450/0a/spacer.png\\" alt width=\\"100%\\" border=\\"0\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;\\" height=\\"auto\\">
+                        </td>
+                        <td width=\\"50%\\" align=\\"center\\" valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle; mso-hide: all;\\">
+                            <div class=\\"kg-video-play-button\\" style=\\"height: 2em; width: 3em; margin: 0 auto; border-radius: 10px; padding: 1em 0.8em 0.6em 1em; font-size: 1em; background-color: rgba(0,0,0,0.85); mso-hide: all;\\"><div style=\\"display: block; width: 0; height: 0; margin: 0 auto; line-height: 0px; border-color: transparent transparent transparent white; border-style: solid; border-width: 0.8em 0 0.8em 1.5em; mso-hide: all;\\"></div></div>
+                        </td>
+                        <td width=\\"25%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; mso-hide: all;\\" valign=\\"top\\">&#xA0;</td>
+                    </tr>
+                </tbody></table>
+            </a>
+            <!--[endif]-->
+
+            <!--[if vml]>
+            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,450\\" coordorigin=\\"0,0\\" href=\\"https://www.youtube.com/watch?v=jfKfPfyJRdk\\" style=\\"width:600px;height:450px;\\">
+                <v:rect fill=\\"t\\" stroked=\\"f\\" style=\\"position:absolute;width:600;height:450;\\"><v:fill src=\\"https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg\\" type=\\"frame\\"/></v:rect>
+                <v:oval fill=\\"t\\" strokecolor=\\"white\\" strokeweight=\\"4px\\" style=\\"position:absolute;left:261;top:186;width:78;height:78\\"><v:fill color=\\"black\\" opacity=\\"30%\\" /></v:oval>
+                <v:shape coordsize=\\"24,32\\" path=\\"m,l,32,24,16,xe\\" fillcolor=\\"white\\" stroked=\\"f\\" style=\\"position:absolute;left:289;top:208;width:30;height:34;\\" />
+            </v:group>
+            <![endif]--></div><div></div><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Some text.</p><blockquote style=\\"margin: 0; padding: 0; border-left: #FF1A75 2px solid; font-size: 17px; font-weight: 500; line-height: 1.6em; letter-spacing: -0.2px;\\"><p style=\\"line-height: 1.6em; margin: 2em 25px; font-size: 1em; padding: 0;\\">A blockquote</p></blockquote><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Some more text.</p><div class=\\"kg-card kg-code-card\\" style=\\"margin: 0 0 1.5em; padding: 0;\\"><pre style=\\"white-space: pre-wrap; overflow: auto; background: #15212A; padding: 15px; border-radius: 3px; line-height: 1.2em; color: #ffffff;\\"><code class=\\"language-javascript\\" style=\\"font-size: 0.9em;\\">console.log(&#39;Hello world!&#39;);</code></pre><div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">A tiny little script.</span></p></div></div><table cellspacing=\\"0\\" cellpadding=\\"4\\" border=\\"0\\" class=\\"kg-file-card\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; width: 100%; margin: 0 0 1.5em 0; border-radius: 3px; border: 1px solid #e5eff5;\\">
+            <tbody><tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                    <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                        <tbody><tr>
+                            <td valign=\\"middle\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; vertical-align: middle;\\">
+                                
+                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-title\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 8px; font-size: 17px; font-weight: bold; line-height: 1.3em; overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">test</a>
+                                </td></tr></tbody></table>
+                                
+                                
+                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-description\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 2px; font-size: 15px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #738a94;\\" target=\\"_blank\\">A tiny text file.</a>
+                                </td></tr></tbody></table>
+                                
+                                <table cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\"><tbody><tr><td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
+                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"kg-file-meta\\" style=\\"display: block; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; font-size: 13px; line-height: 1.4em; overflow-wrap: anywhere; text-decoration: none; color: #738a94;\\" target=\\"_blank\\"><span class=\\"kg-file-name\\" style=\\"font-weight: 500; color: #15212A;\\">test.txt</span> &#x2022; 16 Bytes</a>
+                                </td></tr></tbody></table>
+                            </td>
+                            <td width=\\"80\\" valign=\\"middle\\" class=\\"kg-file-thumbnail\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; color: #15212A; position: relative; vertical-align: middle; text-align: center; border-radius: 2px; background-color: #FF1A75;\\" align=\\"center\\" bgcolor=\\"#FF1A75\\">
+                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; color: #FF1A75; text-decoration: underline; display: block; top: 0; right: 0; bottom: 0; left: 0;\\" target=\\"_blank\\">
+                                    <img src=\\"https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png\\" style=\\"border: none; -ms-interpolation-mode: bicubic; margin-top: 6px; height: 24px; width: 24px; max-width: 24px;\\" width=\\"24\\" height=\\"24\\">
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody></table>
+                </td>
+            </tr>
+        </tbody></table>
+                                                <!-- POST CONTENT END -->
+
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- END MAIN CONTENT AREA -->
+
+
+
+
+                            <tr>
+                                <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
+                                    <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
+                                        <tr>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                        </tr>
+
+                                            <tr>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter&amp;ref=127.0.0.1\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                            </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">&#xA0;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>
+",
+  "plaintext": "
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+Ghost [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+By Joe Bloggs • date
+
+
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+
+This is just a simple paragraph, no frills.
+
+> This is block quote
+
+> This is a...different block quote
+
+
+This is a heading!
+
+
+Here's a smaller heading.
+
+A lovely cow
+
+
+A heading
+
+
+and a paragraph (in markdown!)
+
+
+
+
+A paragraph inside an HTML card.
+
+
+And another one, with some bold text.
+
+
+
+----------------------------------------
+
+A gallery.
+
+
+
+
+
+
+Ghost: Independent technology for modern publishing
+Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.
+
+
+Ghost - The Professional Publishing Platform
+
+
+
+
+
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+My favorite website.
+
+
+
+
+Hey Vinz,
+
+
+
+Click me, I'm a button! [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+💡I had an idea...
+
+
+Spoiler alert!
+
+
+Just kidding
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+Sample [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+1:45 • Click to play audio [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+A lovely video of a woman on the beach doing nothing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Make a blog!
+
+
+
+
+
+
+
+
+
+
+
+
+
+with Ghost
+
+
+
+
+
+
+
+
+Click here [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+
+
+
+Good news everyone!
+
+
+This header renders properly in all email clients!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+[http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+Some text.
+
+> A blockquote
+
+Some more text.
+
+console.log('Hello world!');
+
+A tiny little script.
+
+
+
+
+
+
+
+
+
+
+
+
+
+test [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+A tiny text file. [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+test.txt • 16 Bytes [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
+
+
+
+
+
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&newsletter=requested-newsletter-uuid]
+
+
+
+https://ghost.org/?via=pbg-newsletter&ref=127.0.0.1
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+",
+}
+`;
+
 exports[`Can send cards via email renders the golden post correctly 1 1`] = `
 Object {
   "html": "<!doctype html>
