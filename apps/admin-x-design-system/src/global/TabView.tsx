@@ -141,7 +141,7 @@ function TabView<ID extends string = string>({
     };
 
     return (
-        <TabsPrimitive.Root className={containerClassName} data-testid={testId} defaultValue={selectedTab}>
+        <TabsPrimitive.Root className={containerClassName} data-testid={testId} value={selectedTab}>
             <TabList
                 border={border}
                 buttonBorder={buttonBorder}
