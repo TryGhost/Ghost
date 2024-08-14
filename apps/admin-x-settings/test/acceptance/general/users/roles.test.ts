@@ -67,7 +67,7 @@ test.describe('User roles', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        await modal.locator('input[value=editor]').check();
+        await modal.locator('button[value=editor]').click();
 
         await modal.getByRole('button', {name: 'Save'}).click();
 
