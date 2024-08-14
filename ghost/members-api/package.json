@@ -23,7 +23,7 @@
     "@tryghost/member-attribution": "0.0.0",
     "@types/node-jose": "1.1.13",
     "c8": "8.0.1",
-    "jwk-to-pem": "2.0.5",
+    "jwk-to-pem": "2.0.6",
     "mocha": "10.2.0",
     "nock": "13.3.3",
     "should": "13.2.3",
