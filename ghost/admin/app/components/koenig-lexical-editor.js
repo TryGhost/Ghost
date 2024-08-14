@@ -441,6 +441,16 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
+        const checkStripeEnabled = () => {
+            const hasDirectKeys = !!(this.settings.stripeSecretKey && this.settings.stripePublishableKey);
+            const hasConnectKeys = !!(this.settings.stripeConnectSecretKey && this.settings.stripeConnectPublishableKey);
+
+            if (this.config.stripeDirect) {
+                return hasDirectKeys;
+            }
+            return hasDirectKeys || hasConnectKeys;
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -461,7 +471,8 @@ export default class KoenigLexicalEditor extends Component {
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
-            siteUrl: this.config.getSiteUrl('/')
+            siteUrl: this.config.getSiteUrl('/'),
+            stripeEnabled: checkStripeEnabled() // returns a boolean
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
