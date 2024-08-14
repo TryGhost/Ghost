@@ -11,7 +11,7 @@ export default class PostSuccessModal extends Component {
     @service notifications;
 
     static modalOptions = {
-        className: 'fullscreen-modal-wide fullscreen-modal-action modal-post-success'
+        className: 'fullscreen-modal-action modal-post-success'
     };
 
     get post() {

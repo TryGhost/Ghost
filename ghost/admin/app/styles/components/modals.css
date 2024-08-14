@@ -65,6 +65,11 @@
     max-width: 720px;
 }
 
+.modal-post-success {
+    width: 100%;
+    max-width: 640px;
+}
+
 .fullscreen-modal-narrow {
     width: 100%;
     max-width: 420px;
