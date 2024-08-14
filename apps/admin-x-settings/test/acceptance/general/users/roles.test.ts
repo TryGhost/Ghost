@@ -57,7 +57,7 @@ test.describe('User roles', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('users');
-        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+        const activeTab = section.locator('[role=tabpanel]:not([hidden])');
 
         await section.getByRole('tab', {name: 'Authors'}).click();
 
