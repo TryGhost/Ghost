@@ -31,7 +31,7 @@ const Popover: React.FC<PopoverProps> = ({
                     {trigger}
                 </PopoverPrimitive.Trigger>
             </PopoverPrimitive.Anchor>
-            <PopoverPrimitive.Content align={position} className="z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none dark:bg-grey-900 dark:text-white" side="bottom" onClick={handleContentClick}>
+            <PopoverPrimitive.Content align={position} className="z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none dark:bg-grey-900 dark:text-white" data-testid='popover-content' side="bottom" onClick={handleContentClick}>
                 {children}
             </PopoverPrimitive.Content>
         </PopoverPrimitive.Root>
