@@ -8,12 +8,12 @@ export interface CheckboxProps {
     title?: string;
     label: string;
     value: string;
-    onChange: (checked: boolean | undefined) => void;
+    onChange: (checked: boolean) => void;
     disabled?: boolean;
     error?: boolean;
     hint?: React.ReactNode;
     key?: string;
-    checked?: boolean | undefined;
+    checked?: boolean;
     separator?: boolean;
 }
 
