@@ -1,5 +1,9 @@
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
+import Inbox from './Inbox';
+import Notifications from './Notifications';
+import Profile from './Profile';
 import React, {useEffect, useRef, useState} from 'react';
+import Search from './Search';
 import articleBodyStyles from './articleBodyStyles';
 import getRelativeTimestamp from '../utils/get-relative-timestamp';
 import getUsername from '../utils/get-username';
@@ -224,51 +228,77 @@ const ActivityPubComponent: React.FC = () => {
     ];
 
     return (
-        <Page>
-            {!articleContent ? (
-                <ViewContainer
-                    actions={[<ButtonGroup buttons={[
-                        {
-                            icon: 'listview',
-                            size: 'sm',
-                            iconColorClass: selectedOption.value === 'feed' ? 'text-black' : 'text-grey-500',
-                            onClick: () => {
-                                setSelectedOption({label: 'Feed', value: 'feed'});
-                            }
-
-                        },
-                        {
-                            icon: 'cardview',
-                            size: 'sm',
-                            iconColorClass: selectedOption.value === 'inbox' ? 'text-black' : 'text-grey-500',
-                            onClick: () => {
-                                setSelectedOption({label: 'Inbox', value: 'inbox'});
-                            }
-                        }
-                    ]} clearBg={true} link outlineOnMobile />]}
-                    firstOnPage={true}
-                    primaryAction={{
-                        title: 'Follow',
-                        onClick: () => {
+        <>
+            <div className='sticky top-0 border-b border-grey-200 py-8'>
+                <div className='grid h-8 grid-cols-3'>
+                    <div className='col-[2/3] flex items-center justify-center gap-9'>
+                        <Button icon='home' iconColorClass={selectedTab === 'inbox' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => setSelectedTab('inbox')} />
+                        <Button icon='magnifying-glass' iconColorClass={selectedTab === 'search' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => setSelectedTab('search')} />
+                        <Button icon='bell' iconColorClass={selectedTab === 'notifications' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => setSelectedTab('notifications')} />
+                        <Button icon='user' iconColorClass={selectedTab === 'profile' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => setSelectedTab('profile')} />
+                    </div>
+                    <div className='col-[3/4] flex items-center justify-end px-8'>
+                        <Button color='black' icon='add' label="Follow" onClick={() => {
                             updateRoute('follow-site');
-                        },
-                        icon: 'add'
-                    }}
-                    selectedTab={selectedTab}
-                    stickyHeader={true}
-                    tabs={tabs}
-                    title='ActivityPub'
-                    toolbarBorder={true}
-                    type='page'
-                    onTabChange={setSelectedTab}
-                >
-                </ViewContainer>
+                        }} />
+                    </div>
+                </div>
+            </div>
+            <div className='flex w-full flex-col overflow-y-auto overflow-x-hidden'>
+                {selectedTab === 'inbox' && <Inbox />}
+                {selectedTab === 'search' && <Search />}
+                {selectedTab === 'notifications' && <Notifications />}
+                {selectedTab === 'profile' && <Profile />}
+            </div>
 
-            ) : (
-                <ViewArticle object={articleContent} onBackToList={handleBackToList} />
-            )}
+            ---
 
-        </Page>
+            <Page>
+                {!articleContent ? (
+                    <ViewContainer
+                        actions={[<ButtonGroup buttons={[
+                            {
+                                icon: 'listview',
+                                size: 'sm',
+                                iconColorClass: selectedOption.value === 'feed' ? 'text-black' : 'text-grey-500',
+                                onClick: () => {
+                                    setSelectedOption({label: 'Feed', value: 'feed'});
+                                }
+
+                            },
+                            {
+                                icon: 'cardview',
+                                size: 'sm',
+                                iconColorClass: selectedOption.value === 'inbox' ? 'text-black' : 'text-grey-500',
+                                onClick: () => {
+                                    setSelectedOption({label: 'Inbox', value: 'inbox'});
+                                }
+                            }
+                        ]} clearBg={true} link outlineOnMobile />]}
+                        firstOnPage={true}
+                        primaryAction={{
+                            title: 'Follow',
+                            onClick: () => {
+                                updateRoute('follow-site');
+                            },
+                            icon: 'add'
+                        }}
+                        selectedTab={selectedTab}
+                        stickyHeader={true}
+                        tabs={tabs}
+                        title='ActivityPub'
+                        toolbarBorder={true}
+                        type='page'
+                        onTabChange={setSelectedTab}
+                    >
+                    </ViewContainer>
+
+                ) : (
+                    <ViewArticle object={articleContent} onBackToList={handleBackToList} />
+                )}
+
+            </Page>
+        </>
     );
 };
 
