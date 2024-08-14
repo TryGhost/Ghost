@@ -2,6 +2,7 @@ const path = require('path');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
+const labs = require('../../shared/labs');
 const storage = require('../adapters/storage');
 
 let nodes;
@@ -99,7 +100,10 @@ module.exports = {
                     && imageTransform.shouldResizeFileExtension(ext)
                     && typeof storage.getStorage('images').saveRaw === 'function';
             },
-            getCollectionPosts
+            getCollectionPosts,
+            feature: {
+                contentVisibility: labs.isSet('contentVisibility')
+            }
         }, userOptions);
 
         return await this.lexicalHtmlRenderer.render(lexical, options);
