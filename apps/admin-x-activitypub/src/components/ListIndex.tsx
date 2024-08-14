@@ -1,6 +1,7 @@
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import React, {useEffect, useRef, useState} from 'react';
 import articleBodyStyles from './articleBodyStyles';
+import getRelativeTimestamp from '../utils/get-relative-timestamp';
 import getUsername from '../utils/get-username';
 import {ActivityPubAPI} from '../api/activitypub';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -204,7 +205,7 @@ const ActivityPubComponent: React.FC = () => {
             title: 'Profile',
             contents: (
                 <div>
-                    <div className='rounded-xl bg-grey-50 p-6' id="ap-sidebar">
+                    <div className='rounded-xl bg-grey-50 p-6' id='ap-sidebar'>
                         <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
                         <div className='grid grid-cols-2 gap-4'>
                             <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/view-following')}>
@@ -285,15 +286,15 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, html: str
     ${cssContent}
   </head>
   <body>
-    <header class="gh-article-header gh-canvas">
-        <h1 class="gh-article-title is-title" data-test-article-heading>${heading}</h1>
+    <header class='gh-article-header gh-canvas'>
+        <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
 ${image &&
-        `<figure class="gh-article-image">
-            <img src="${image}" alt="${heading}" />
+        `<figure class='gh-article-image'>
+            <img src='${image}' alt='${heading}' />
         </figure>`
 }
     </header>
-    <div class="gh-content gh-canvas is-body">
+    <div class='gh-content gh-canvas is-body'>
       ${html}
     </div>
   </body>
@@ -312,15 +313,71 @@ ${image &&
             <iframe
                 ref={iframeRef}
                 className={`h-[calc(100vh_-_3vmin_-_4.8rem_-_2px)]`}
-                height="100%"
-                id="gh-ap-article-iframe"
-                title="Embedded Content"
-                width="100%"
+                height='100%'
+                id='gh-ap-article-iframe'
+                title='Embedded Content'
+                width='100%'
             >
             </iframe>
         </div>
     );
 };
+
+function renderAttachment(object: ObjectProperties) {
+    let attachment;
+    if (object.image) {
+        attachment = object.image;
+    }
+
+    if (object.type === 'Note' && !attachment) {
+        attachment = object.attachment;
+    }
+
+    if (!attachment) {
+        return null;
+    }
+
+    if (Array.isArray(attachment)) {
+        const attachmentCount = attachment.length;
+
+        let gridClass = '';
+        if (attachmentCount === 1) {
+            gridClass = 'grid-cols-1'; // Single image, full width
+        } else if (attachmentCount === 2) {
+            gridClass = 'grid-cols-2'; // Two images, side by side
+        } else if (attachmentCount === 3 || attachmentCount === 4) {
+            gridClass = 'grid-cols-2'; // Three or four images, two per row
+        }
+
+        return (
+            <div className={`attachment-gallery mt-2 grid auto-rows-[150px] ${gridClass} gap-2`}>
+                {attachment.map((item, index) => (
+                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                ))}
+            </div>
+        );
+    }
+
+    switch (attachment.mediaType) {
+    case 'image/jpeg':
+    case 'image/png':
+    case 'image/gif':
+        return <img alt='attachment' className='mt-2 rounded-md outline outline-1 -outline-offset-1 outline-black/10' src={attachment.url} />;
+    case 'video/mp4':
+    case 'video/webm':
+        return <div className='relative mb-4 mt-2'>
+            <video className='h-[300px] w-full rounded object-cover' src={attachment.url}/>
+        </div>;
+
+    case 'audio/mpeg':
+    case 'audio/ogg':
+        return <div className='relative mb-4 mt-2 w-full'>
+            <audio className='w-full' src={attachment.url} controls/>
+        </div>;
+    default:
+        return null;
+    }
+}
 
 const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProperties, layout: string, type: string }> = ({actor, object, layout, type}) => {
     const parser = new DOMParser();
@@ -335,54 +392,10 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
         previewContent = plainTextContent || '';
     }
 
-    const renderAttachment = () => {
-        let attachment;
-        if (object.image) {
-            attachment = object.image;
-        }
-
-        if (object.type === 'Note' && !attachment) {
-            attachment = object.attachment;
-        }
-
-        // const attachment = object.attachment;
-        if (!attachment) {
-            return null;
-        }
-
-        if (Array.isArray(attachment)) {
-            return (
-                <div className="attachment-gallery mt-2 grid auto-rows-[150px] grid-cols-2 gap-2">
-                    {attachment.map((item, index) => (
-                        <img key={item.url} alt={`attachment-${index}`} className='h-full w-full rounded-md object-cover' src={item.url} />
-                    ))}
-                </div>
-            );
-        }
-
-        switch (attachment.mediaType) {
-        case 'image/jpeg':
-        case 'image/png':
-        case 'image/gif':
-            return <img alt="attachment" className='mt-2 rounded-md outline outline-1 -outline-offset-1 outline-black/10' src={attachment.url} />;
-        case 'video/mp4':
-        case 'video/webm':
-            return <div className='relative mb-4 mt-2'>
-                <video className='h-[300px] w-full rounded object-cover' src={attachment.url} controls/>
-            </div>;
-
-        case 'audio/mpeg':
-        case 'audio/ogg':
-            return <div className='relative mb-4 mt-2 w-full'>
-                <audio className='w-full' src={attachment.url} controls/>
-            </div>;
-        default:
-            return null;
-        }
-    };
-
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
+
+    const date = new Date(object?.published ?? new Date());
 
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
@@ -404,18 +417,20 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
             <>
                 {object && (
                     <div className='group/article relative cursor-pointer pt-4'>
-                        {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-4 text-grey-700'>
+                        {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className='flex items-start gap-4'>
+                        <div className='flex items-start gap-3'>
                             <img className='z-10 w-10 rounded' src={author.icon?.url}/>
-                            <div className='border-1 z-10 -mt-1 flex flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
+                            <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
                                 <div className='relative z-10 mb-2 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                                    <span className='mr-1 truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                    <div className='flex'>
+                                        <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                                    </div>
                                     <div className='flex'>
                                         <span className='truncate text-grey-700'>{getUsername(author)}</span>
-                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]'>{timestamp}</span>
                                     </div>
                                 </div>
                                 <div className='relative z-10 w-full gap-4'>
@@ -423,9 +438,9 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                         {/* <p className='text-pretty text-md text-grey-900'>{object.content}</p> */}
-                                        {renderAttachment()}
+                                        {renderAttachment(object)}
                                         <div className='mt-3 flex gap-2'>
-                                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
                                             <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
                                         </div>
                                     </div>
@@ -455,7 +470,7 @@ const ObjectContentDisplay: React.FC<{actor: ActorProperties, object: ObjectProp
                                 </div>
                                 <p className='mb-6 line-clamp-2 max-w-prose text-pretty text-md text-grey-800'>{previewContent}</p>
                                 <div className='flex gap-2'>
-                                    <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                                    <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
                                     <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
                                 </div>
                             </div>
@@ -499,14 +514,19 @@ const ViewArticle: React.FC<ViewArticleProps> = ({object, onBackToList}) => {
                     </div>
                     <div className='flex items-center justify-end gap-2'>
                         <div className='flex flex-row-reverse items-center gap-3'>
-                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id="like" size='md' unstyled={true} onClick={handleLikeClick}/>
+                            <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
                             <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
                         </div>
                         <Button hideLabel={true} icon='arrow-top-right' iconSize='xs' label='Visit site' onClick={() => updateRoute('/')}/>
                     </div>
                 </div>
                 <div className='mx-[-4.8rem] mb-[-4.8rem] w-auto'>
-                    <ArticleBody heading={object.name} html={object.content} image={object?.image}/>
+                    {object.type === 'Note' && (
+                        <div className='mx-auto max-w-[600px]'>
+                            {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                            {renderAttachment(object)}
+                        </div>)}
+                    {object.type === 'Article' && <ArticleBody heading={object.name} html={object.content} image={object?.image}/>}
                 </div>
             </ViewContainer>
         </Page>
