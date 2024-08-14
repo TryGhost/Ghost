@@ -46,6 +46,7 @@ const defaultCardConfig = {
     siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,
     siteUrl: window.location.origin,
     membersEnabled: true,
+    stripeEnabled: true,
     feature: {
         collections: true,
         collectionsCard: true,
@@ -307,9 +308,11 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         collections,
         fetchCollectionPosts,
         feature: {
-            ...defaultCardConfig.feature
+            ...defaultCardConfig.feature,
+            contentVisibility: searchParams.get('labs')?.includes('contentVisibility') || defaultCardConfig.feature.contentVisibility
         },
-        searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks
+        searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
+        stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled
     };
 
     return (

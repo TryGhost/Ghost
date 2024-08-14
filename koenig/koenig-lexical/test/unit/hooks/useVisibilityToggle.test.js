@@ -12,6 +12,7 @@ describe('useVisibilityToggle', () => {
     let editor;
     let node;
     let initialVisibility;
+    let cardConfig;
 
     beforeEach(() => {
         node = {
@@ -29,6 +30,10 @@ describe('useVisibilityToggle', () => {
             showOnWeb: true,
             segment: ''
         };
+
+        cardConfig = {
+            stripeEnabled: true
+        };
     });
 
     // These are the return values of useVisibilityToggle
@@ -45,7 +50,7 @@ describe('useVisibilityToggle', () => {
     // 7 is message state
 
     it('should initialize visibility states based on initialVisibility', () => {
-        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility));
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility, cardConfig));
 
         expect(result.current[3]).toBe(initialVisibility.segment); // segment
         expect(result.current[4]).toBe(initialVisibility.showOnEmail); // emailVisibility
@@ -61,7 +66,7 @@ describe('useVisibilityToggle', () => {
     });
 
     it('should toggleEmail and be able to update the node', () => {
-        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility));
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility, cardConfig));
 
         act(() => {
             result.current[0]({target: {checked: false}}); // toggleEmail
@@ -73,7 +78,7 @@ describe('useVisibilityToggle', () => {
     });
 
     it('should toggleWeb and be able to update the node', () => {
-        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility));
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility, cardConfig));
 
         act(() => {
             result.current[2]({target: {checked: false}}); // toggleWeb
@@ -85,7 +90,7 @@ describe('useVisibilityToggle', () => {
     });
 
     it('should toggleSegment and be able to update the node', () => {
-        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility));
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility, cardConfig));
 
         act(() => {
             result.current[1]('status:free'); // toggleSegment
@@ -97,7 +102,7 @@ describe('useVisibilityToggle', () => {
     });
 
     it('should update the message correctly when both toggles are off', () => {
-        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility));
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility, cardConfig));
 
         act(() => {
             result.current[0]({target: {checked: false}}); // toggleEmail
@@ -107,5 +112,13 @@ describe('useVisibilityToggle', () => {
         expect(result.current[4]).toBe(false); // emailVisibility
         expect(result.current[5]).toBe(false); // webVisibility
         expect(result.current[7]).toBe('Hidden from both email and web'); // message
+    });
+
+    it('does not return dropdownOptions if stripe is not enabled', () => {
+        cardConfig.stripeEnabled = false;
+
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', initialVisibility, cardConfig));
+
+        expect(result.current[6]).toBeUndefined(); // dropdownOptions
     });
 });

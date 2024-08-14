@@ -26,7 +26,7 @@ export function VisibilityDropdown({editor, nodeKey, visibility, isActive, visib
                     label="Show in email"
                     onChange={e => toggleEmail(e)} />
                 {
-                    emailVisibility && (
+                    emailVisibility && dropdownOptions && (
                         <>
                             <Dropdown
                                 dataTestId={'visibility-dropdown-segment'}

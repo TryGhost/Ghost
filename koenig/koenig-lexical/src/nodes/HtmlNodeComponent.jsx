@@ -15,7 +15,6 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
-
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
     const [showVisibilityDropdown, setShowVisibilityDropdown] = React.useState(false);
 
@@ -24,7 +23,7 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
         return $getNodeByKey(nodeKey).getIsVisibilityActive();
     });
 
-    const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, message] = useVisibilityToggle(editor, nodeKey, visibility);
+    const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, message] = useVisibilityToggle(editor, nodeKey, visibility, cardConfig);
 
     const visibilityProps = {
         toggleEmail,

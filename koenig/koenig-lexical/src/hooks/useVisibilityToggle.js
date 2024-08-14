@@ -1,21 +1,28 @@
 import {$getNodeByKey} from 'lexical';
 import {useEffect, useState} from 'react';
-export const useVisibilityToggle = (editor, nodeKey, initialVisibility) => {
+
+export const useVisibilityToggle = (editor, nodeKey, initialVisibility, cardConfig) => {
     const [emailVisibility, setEmailVisibility] = useState(initialVisibility.showOnEmail);
     const [webVisibility, setWebVisibility] = useState(initialVisibility.showOnWeb);
     const [segment, setSegment] = useState(initialVisibility.segment);
     const [message, setMessage] = useState('');
 
-    const dropdownOptions = [{
-        label: 'All subscribers',
-        name: ''
-    }, {
-        label: 'Free subscribers',
-        name: 'status:free'
-    }, {
-        label: 'Paid subscribers',
-        name: 'status:-free'
-    }];
+    const isStripeEnabled = cardConfig?.stripeEnabled;
+
+    const dropdownOptions = () => {
+        if (isStripeEnabled) {
+            return [{
+                label: 'All subscribers',
+                name: ''
+            }, {
+                label: 'Free subscribers',
+                name: 'status:free'
+            }, {
+                label: 'Paid subscribers',
+                name: 'status:-free'
+            }];
+        }
+    };
 
     const updateMessage = () => {
         let segmentLabel = 'all subscribers';
@@ -70,5 +77,5 @@ export const useVisibilityToggle = (editor, nodeKey, initialVisibility) => {
         });
     };
 
-    return [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, message];
+    return [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions(), message];
 };
