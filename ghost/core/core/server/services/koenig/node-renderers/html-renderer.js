@@ -7,17 +7,24 @@ export function renderHtmlNode(node, options = {}) {
 
     const html = node.html;
 
-    const segment = node.visibility.segment || '';
-
-    const showOnEmail = node.visibility.showOnEmail;
-    const showOnWeb = node.visibility.showOnWeb;
-
     if (!html) {
         return renderEmptyContainer(document);
     }
 
+    const wrappedHtml = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+
     const textarea = document.createElement('textarea');
-    textarea.value = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+    textarea.value = wrappedHtml;
+
+    if (!options.feature?.contentVisibility) {
+        // `type: 'value'` will render the value of the textarea element
+        return {element: textarea, type: 'value'};
+    }
+
+    const segment = node.visibility.segment || '';
+
+    const showOnEmail = node.visibility.showOnEmail;
+    const showOnWeb = node.visibility.showOnWeb;
 
     if (segment) {
         textarea.setAttribute('data-gh-segment', segment);
@@ -46,7 +53,7 @@ export function renderHtmlNode(node, options = {}) {
 
     if (isEmailOnly && options.target === 'email') {
         const container = document.createElement('div');
-        container.innerHTML = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+        container.innerHTML = wrappedHtml;
         if (segment) {
             container.setAttribute('data-gh-segment', segment);
         }
@@ -60,7 +67,7 @@ export function renderHtmlNode(node, options = {}) {
     if (showOnWebAndEmail) {
         if (options.target === 'email') {
             const container = document.createElement('div');
-            container.innerHTML = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+            container.innerHTML = wrappedHtml;
             if (segment) {
                 container.setAttribute('data-gh-segment', segment);
             }
@@ -69,7 +76,4 @@ export function renderHtmlNode(node, options = {}) {
 
         return {element: textarea, type: 'value'};
     }
-
-    // `type: 'value'` will render the value of the textarea element
-    // return {element: textarea, type: 'value'};
 }
