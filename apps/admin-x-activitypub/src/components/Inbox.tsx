@@ -4,7 +4,7 @@ import FeedItem from './FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Activity} from './Activity';
+import {Activity} from './ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
 import {useBrowseInboxForUser} from '../MainContent';

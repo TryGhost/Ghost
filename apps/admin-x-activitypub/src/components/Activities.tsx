@@ -2,9 +2,9 @@ import MainNavigation from './navigation/MainNavigation';
 import React from 'react';
 import {Avatar} from '@tryghost/admin-x-design-system';
 
-interface NotificationsProps {}
+interface ActivitiesProps {}
 
-const Notifications: React.FC<NotificationsProps> = ({}) => {
+const Activities: React.FC<ActivitiesProps> = ({}) => {
     return (
         <>
             <MainNavigation />
@@ -19,4 +19,4 @@ const Notifications: React.FC<NotificationsProps> = ({}) => {
     );
 };
 
-export default Notifications;
+export default Activities;

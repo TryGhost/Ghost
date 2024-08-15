@@ -1,5 +1,5 @@
+import Activities from './components/Activities';
 import Inbox from './components/Inbox';
-import Notifications from './components/Notifications';
 import Profile from './components/Profile';
 import Search from './components/Search';
 import {ActivityPubAPI} from './api/activitypub';
@@ -31,8 +31,8 @@ const MainContent = () => {
     case 'search':
         return <Search />;
         break;
-    case 'notifications':
-        return <Notifications />;
+    case 'activity':
+        return <Activities />;
         break;
     case 'profile':
         return <Profile />;
