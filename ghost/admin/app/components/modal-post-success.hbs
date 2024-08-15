@@ -66,7 +66,7 @@
 
             {{#if (or this.post.hasEmail this.post.willEmail)}}
                 {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
-                    <strong>
+                    <strong class="nowrap">
                         {{if (eq @recipientType "all") "all"}}
 
                         {{format-number countFetcher.count}}
