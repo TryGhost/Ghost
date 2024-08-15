@@ -885,8 +885,8 @@
 /* ---------------------------------------------------------- */
 
 .modal-post-success {
-    max-width: 640px;
-    --padding: 40px;
+    max-width: 600px;
+    --padding: 36px;
     --radius: 12px;
 }
 
@@ -917,7 +917,7 @@
     display: flex;
     flex-direction: column;
     margin: 0;
-    font-size: 3.6rem;
+    font-size: 3.2rem;
     font-weight: 700;
     letter-spacing: -0.03em;
 }
@@ -927,10 +927,15 @@
 }
 
 .modal-post-success .modal-body {
-    margin-top: 16px;
-    font-size: 1.8rem;
+    margin-top: 10px;
+    font-size: 1.6rem;
     line-height: 1.4;
-    letter-spacing: -0.002em;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+}
+
+.modal-post-success .modal-body strong.nowrap {
+    text-wrap: nowrap;
 }
 
 .modal-post-success .modal-footer {
@@ -940,7 +945,7 @@
 
 .modal-post-success .modal-footer .gh-btn {
     min-width: 64px;
-    height: 44px;
+    height: 40px;
     border-radius: 4px;
 }
 
@@ -950,7 +955,7 @@
 
 .modal-post-success .modal-footer .gh-btn span {
     padding-inline: 18px;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
 }
 
 .modal-post-success .modal-footer .gh-btn-primary {
