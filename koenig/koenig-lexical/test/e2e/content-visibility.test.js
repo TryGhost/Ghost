@@ -17,12 +17,17 @@ test.describe('Content Visibility', async () => {
     });
 
     test.describe('HTML card', async function () {
-        test('toolbar shows content visibility icon', async function () {
+        async function insertHtmlCard() {
             await focusEditor(page);
             await insertCard(page, {cardName: 'html'});
             await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
             await page.keyboard.type('Testing');
             await page.keyboard.press('Meta+Enter');
+            return page.locator('[data-kg-card="html"]');
+        }
+
+        test('toolbar shows content visibility icon', async function () {
+            await insertHtmlCard();
 
             await expect(page.locator('[data-kg-card="html"]')).toHaveAttribute('data-kg-card-selected', 'true');
             await expect(page.locator('[data-kg-card="html"]')).toHaveAttribute('data-kg-card-editing', 'false');
@@ -31,13 +36,7 @@ test.describe('Content Visibility', async () => {
         });
 
         test('toolbar shows visibility options on click', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
@@ -46,13 +45,7 @@ test.describe('Content Visibility', async () => {
         });
 
         test('clicking on settings does not transition into edit mode', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
             await card.getByTestId('visibility-settings').click();
@@ -61,32 +54,20 @@ test.describe('Content Visibility', async () => {
         });
 
         test('changing a setting puts icon in active state', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             // button is not highlighted
             await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'false');
 
             await card.locator('[aria-label="Visibility"]').click();
-            await card.locator('[data-testid="visibility-toggle-email-only"]').click();
+            await card.getByTestId('visibility-show-on-email-Toggle').click();
 
             // button is highlighted
             await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'true');
         });
 
         test('visibility settings - defaults to show on email and web and all subscribers', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
@@ -94,45 +75,27 @@ test.describe('Content Visibility', async () => {
         });
 
         test('can toggle visibility settings - show on web is off', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            await card.locator('[data-testid="visibility-toggle-web-only"]').click();
+            await card.getByTestId('visibility-show-on-web-Toggle').click();
 
             await expect(card.getByTestId('visibility-message')).toContainText('Shown in email only');
         });
 
         test('can toggle visibility settings - show on email is off', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            await card.locator('[data-testid="visibility-toggle-email-only"]').click();
+            await card.getByTestId('visibility-show-on-email-Toggle').click();
 
             await expect(card.getByTestId('visibility-message')).toContainText('Shown on web only');
         });
 
         test('can toggle visibility settings - show on email and web and all subscribers', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
@@ -140,17 +103,11 @@ test.describe('Content Visibility', async () => {
         });
 
         test('can toggle visibility settings segments - free subscribers', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            await card.locator('[data-testid="visibility-dropdown-segment"]').click();
+            await card.getByTestId('visibility-dropdown-segment').click();
 
             await card.locator('[data-test-value="status:free"]').click();
 
@@ -158,68 +115,54 @@ test.describe('Content Visibility', async () => {
         });
 
         test('can toggle visibility settings segments - paid subscribers', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            await card.locator('[data-testid="visibility-dropdown-segment"]').click();
+            await card.getByTestId('visibility-dropdown-segment').click();
             await card.locator('[data-test-value="status:-free"]').click();
 
             await expect(card.getByTestId('visibility-message')).toContainText('Shown on web and email to paid members');
         });
 
         test('can toggle visibility settings segments - all subscribers', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            await card.locator('[data-testid="visibility-dropdown-segment"]').click();
+            await card.getByTestId('visibility-dropdown-segment').click();
             await card.locator('[data-test-value=""]').click();
 
             await expect(card.getByTestId('visibility-message')).not.toBeVisible();
         });
 
         test('can toggle visibility - disable everything', async function () {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
 
-            await card.locator('[data-testid="visibility-toggle-web-only"]').click();
-            await card.locator('[data-testid="visibility-toggle-email-only"]').click();
+            await card.getByTestId('visibility-show-on-web-Toggle').click();
+            await card.getByTestId('visibility-show-on-email-Toggle').click();
 
             await expect(card.getByTestId('visibility-message')).toContainText('Hidden from both email and web');
         });
 
         test('can toggle visibility - subscriber settings hidden when stripe is not enabled', async function () {
             await initialize({page, uri: '/#/?content=false&labs=contentVisibility&stripe=false'});
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-
-            const card = page.locator('[data-kg-card="html"]');
+            const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
-            await expect(card.locator('[data-testid="visibility-dropdown-segment"]')).not.toBeVisible();
+            await expect(card.getByTestId('visibility-dropdown-segment')).not.toBeVisible();
+        });
+
+        test('can click toggle label to change visibility settings', async function () {
+            const card = await insertHtmlCard();
+            await card.locator('[aria-label="Visibility"]').click();
+
+            await expect(page.getByTestId('visibility-show-on-web-Toggle').locator('input')).toBeChecked();
+            // click on the surrounding label rather than the inner label/input
+            await page.getByTestId('visibility-show-on-web').click();
+            await expect(page.getByTestId('visibility-show-on-web-Toggle').locator('input')).not.toBeChecked();
         });
     });
 });

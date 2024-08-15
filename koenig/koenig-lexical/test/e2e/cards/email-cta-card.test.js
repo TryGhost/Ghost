@@ -213,7 +213,7 @@ test.describe('Email card', async () => {
             await focusEditor(page);
             await insertEmailCard(page);
 
-            await expect(await page.getByTestId('settings-panel')).toBeVisible();
+            await expect(page.getByTestId('settings-panel')).toBeVisible();
         });
 
         test('allows to center content', async function () {
@@ -236,7 +236,7 @@ test.describe('Email card', async () => {
             // Dividers are enabled by default
             const dividersSettings = await page.getByTestId('dividers-settings');
             await expect(dividersSettings).toBeVisible();
-            await expect(await page.locator('[data-testid="dividers-settings"] input').isChecked()).toBeTruthy();
+            await expect(page.locator('[data-testid="dividers-settings"] input')).toBeChecked();
 
             // Check that the dividers are rendered
             const topDivider = await page.getByTestId('top-divider');
@@ -252,6 +252,24 @@ test.describe('Email card', async () => {
             await expect(bottomDivider).toBeHidden();
         });
 
+        test('allows click on toggle label to toggle checkbox', async function () {
+            await focusEditor(page);
+            await insertEmailCard(page);
+
+            // Dividers are enabled by default
+            const dividersSettings = await page.getByTestId('dividers-settings');
+            await expect(dividersSettings).toBeVisible();
+            await expect(page.locator('[data-testid="dividers-settings"] input')).toBeChecked();
+
+            await page.getByText('Separators').click();
+
+            await expect(page.locator('[data-testid="dividers-settings"] input')).not.toBeChecked();
+
+            await page.getByText('Separators').click();
+
+            await expect(page.locator('[data-testid="dividers-settings"] input')).toBeChecked();
+        });
+
         test('allows to show/hide a button', async function () {
             await focusEditor(page);
             await insertEmailCard(page);
@@ -259,7 +277,7 @@ test.describe('Email card', async () => {
             // Button is disabled by default
             const buttonSettings = await page.getByTestId('button-settings');
             await expect(buttonSettings).toBeVisible();
-            await expect(await page.locator('[data-testid="button-settings"] input').isChecked()).toBeFalsy();
+            await expect(page.locator('[data-testid="button-settings"] input')).not.toBeChecked();
 
             // Check that the button is hidden by default
             const button = await page.getByTestId('cta-button');
@@ -328,7 +346,7 @@ test.describe('Email card', async () => {
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        <label>
                             <div>
                                 <div>Separators</div>
                             </div>
@@ -338,9 +356,9 @@ test.describe('Email card', async () => {
                                   <div></div>
                                 </label>
                             </div>
-                        </div>
+                        </label>
                         <hr>
-                        <div>
+                        <label>
                             <div>
                                 <div>Button</div>
                             </div>
@@ -350,7 +368,7 @@ test.describe('Email card', async () => {
                                   <div></div>
                                 </label>
                             </div>
-                        </div>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -431,7 +449,7 @@ test.describe('Email card', async () => {
         await page.keyboard.type('/snippet');
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
-        await expect(await page.locator('[data-kg-card="email-cta"]')).toHaveCount(2);
+        await expect(page.locator('[data-kg-card="email-cta"]')).toHaveCount(2);
     });
 
     test('keeps focus on previous editor when changing size opts', async function () {
