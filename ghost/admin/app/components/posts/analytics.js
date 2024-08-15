@@ -361,8 +361,6 @@ export default class Analytics extends Component {
             const result = yield this.store.query('post', {filter: 'status:published', limit: 1});
             let count = result.meta.pagination.total;
 
-            count += 1; // account for the new post
-
             this.postCount = count;
         }
     }
@@ -372,10 +370,6 @@ export default class Analytics extends Component {
         const result = yield this.store.query('post', {filter: `id:${this.post.id}`, limit: 1});
         this.post = result.toArray()[0];
 
-        // const publishedAt = this.post.publishedAtUTC;
-        // const fiveMinutesAgo = moment().subtract(5, 'minutes');
-
-        // if (this.post.email && this.post.email.openedCount === 0 && publishedAt.isAfter(fiveMinutesAgo)) {
         if (this.post.email) {
             this.notifications.showNotification('Post analytics refreshing', {
                 description: 'It can take up to five minutes for all data to show.',
