@@ -949,6 +949,7 @@
 }
 
 .modal-post-success .modal-footer .gh-btn span {
+    padding-inline: 18px;
     font-size: 1.6rem;
 }
 
