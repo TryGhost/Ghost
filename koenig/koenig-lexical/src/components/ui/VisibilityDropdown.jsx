@@ -19,7 +19,7 @@ export function VisibilityDropdown({editor, nodeKey, visibility, isActive, visib
                     isChecked={webVisibility}
                     label="Show on web"
                     onChange={e => toggleWeb(e)} />
-                <hr className="mt-1 border-grey-250 pb-1 dark:border-white/5" />
+                <hr className="-mx-6 my-2 border-grey-250 dark:border-white/5" />
                 <ToggleSetting
                     dataTestId='visibility-show-on-email'
                     isChecked={emailVisibility}
