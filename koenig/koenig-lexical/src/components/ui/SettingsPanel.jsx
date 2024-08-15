@@ -32,7 +32,7 @@ export function SettingsPanel({children, darkMode, cardWidth}) {
 
 export function ToggleSetting({label, description, isChecked, onChange, dataTestId}) {
     return (
-        <label className="mt-2 flex min-h-[3rem] w-full items-center justify-between text-[1.3rem] first:mt-0">
+        <label className="mt-2 flex min-h-[3rem] w-full cursor-pointer items-center justify-between text-[1.3rem] first:mt-0">
             <div>
                 <div className="font-bold text-grey-900 dark:text-grey-300">{label}</div>
                 {description &&

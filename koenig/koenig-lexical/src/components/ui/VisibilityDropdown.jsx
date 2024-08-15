@@ -44,7 +44,7 @@ export function VisibilityDropdown({editor, nodeKey, visibility, isActive, visib
 
 function ToggleSetting({label, isChecked, onChange, dataTestId}) {
     return (
-        <label className="flex min-h-[3rem] w-full items-center justify-between text-sm" data-testid={dataTestId}>
+        <label className="flex min-h-[3rem] w-full cursor-pointer items-center justify-between text-sm" data-testid={dataTestId}>
             <span className="block text-grey-900 dark:text-grey-300">{label}</span>
             <div className="flex shrink-0 pl-2">
                 <Toggle dataTestId={`${dataTestId}-Toggle`} isChecked={isChecked} onChange={onChange} />
