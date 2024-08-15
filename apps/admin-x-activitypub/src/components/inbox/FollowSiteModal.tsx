@@ -1,5 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
-import {ActivityPubAPI} from '../api/activitypub';
+import {ActivityPubAPI} from '../../api/activitypub';
 import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useMutation} from '@tanstack/react-query';

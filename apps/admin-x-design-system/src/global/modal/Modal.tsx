@@ -18,6 +18,7 @@ export interface ModalProps {
     size?: ModalSize;
     width?: 'full' | number;
     height?: 'full' | number;
+    align?: 'center' | 'left' | 'right';
 
     testId?: string;
     title?: string;
@@ -52,6 +53,7 @@ export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
+    align = 'center',
     width,
     height,
     testId,
@@ -188,10 +190,14 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        'relative z-50 flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        align === 'center' && 'mx-auto',
+        align === 'left' && 'mr-auto',
+        align === 'right' && 'ml-auto',
         size !== 'bleed' && 'rounded',
         formSheet ? 'shadow-md' : 'shadow-xl',
-        (animate && !formSheet && !animationFinished) && 'animate-modal-in',
+        (animate && !formSheet && !animationFinished && align === 'center') && 'animate-modal-in',
+        (animate && !formSheet && !animationFinished && align === 'right') && 'animate-modal-in-from-right',
         (formSheet && !animationFinished) && 'animate-modal-in-reverse',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
