@@ -10,7 +10,13 @@
             {{#if this.post.isScheduled}}
                 <span>All set!</span>
             {{else}}
-                <span>Boom! It's out there.</span>
+                <span>
+                    {{#if this.showPostCount}}
+                        Boom! It's out there.
+                    {{else}}
+                        Your post is out there.
+                    {{/if}}
+                </span>
                 <span>
                     {{#if this.post.emailOnly}}
                         Your email has been sent.
@@ -18,7 +24,7 @@
                         {{#if this.showPostCount}}
                             That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
                         {{else}}
-                        Tell your audience about it!
+                            Share it with the world!
                         {{/if}}
                     {{/if}}
                 </span>
@@ -29,46 +35,50 @@
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
-        {{#if (and this.post.isPublished (not this.post.emailOnly))}}
-            Keep up the good work. Now, share your post with the world!
-        {{else}}
-            {{#if this.post.isSent}}
-                It
+        {{#if this.showPostCount}}
+            {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+                Keep up the good work. Now, share your post with the world!
             {{else}}
-                {{if this.post.emailOnly "Your email" "Your post"}}
-            {{/if}}
-            {{if this.post.isScheduled "will be" "was"}}
-            {{#if this.post.emailOnly}}
-                sent to
-            {{else if this.post.willEmail}}
-                published on your site, and sent to
-            {{else}}
-                published on your site
-            {{/if}}
+                {{#if this.post.isSent}}
+                    It
+                {{else}}
+                    {{if this.post.emailOnly "Your email" "Your post"}}
+                {{/if}}
+                {{if this.post.isScheduled "will be" "was"}}
+                {{#if this.post.emailOnly}}
+                    sent to
+                {{else if this.post.willEmail}}
+                    published on your site, and sent to
+                {{else}}
+                    published on your site
+                {{/if}}
 
-            {{#if (or this.post.hasEmail this.post.willEmail)}}
-                {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
-                    <strong>
-                        {{if (eq @recipientType "all") "all"}}
+                {{#if (or this.post.hasEmail this.post.willEmail)}}
+                    {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                        <strong>
+                            {{if (eq @recipientType "all") "all"}}
 
-                        {{format-number countFetcher.count}}
+                            {{format-number countFetcher.count}}
 
-                        {{!-- @recipientType = free/paid/all/specific --}}
-                        {{if (not-eq @recipientType "all") @recipientType}}
+                            {{!-- @recipientType = free/paid/all/specific --}}
+                            {{if (not-eq @recipientType "all") @recipientType}}
 
-                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
-                    </strong>
+                            {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                        </strong>
 
-                    of <strong>{{this.post.newsletter.name}}</strong>
+                        of <strong>{{this.post.newsletter.name}}</strong>
+                    {{/let}}
+                {{/if}}
+
+                {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                    on
+                    {{moment-format publishedAt "D MMM YYYY"}}
+                    at
+                    {{moment-format publishedAt "HH:mm"}}.
                 {{/let}}
             {{/if}}
-
-            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
-                on
-                {{moment-format publishedAt "D MMM YYYY"}}
-                at
-                {{moment-format publishedAt "HH:mm"}}.
-            {{/let}}
+        {{else}}
+            Spread the word to your audience and increase your reach.
         {{/if}}
     </div>
 
