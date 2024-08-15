@@ -299,6 +299,38 @@ describe('Acceptance: Posts / Pages', function () {
                         const clipboardContent = await navigator.clipboard.readText();
                         expect(clipboardContent).to.equal('http://localhost:4200/published-post/');
                     });
+
+                    it('can copy a preview link', async function () {
+                        await visit('/posts');
+
+                        // get the post
+                        const post = find(`[data-test-post-id="${draftPost.id}"]`);
+                        expect(post, 'post').to.exist;
+
+                        await triggerEvent(post, 'contextmenu');
+
+                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+
+                        let buttons = contextMenu.querySelectorAll('button');
+
+                        expect(contextMenu, 'context menu').to.exist;
+                        expect(buttons.length, 'context menu buttons').to.equal(5);
+                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy preview link');
+                        expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
+                        expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                        expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
+                        expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Delete');
+
+                        // Copy the preview link
+                        await click(buttons[0]);
+
+                        // Check that the notification is displayed
+                        expect(find('[data-test-text="notification-content"]')).to.contain.text('Preview link copied');
+
+                        // Check that the clipboard contains the right content
+                        const clipboardContent = await navigator.clipboard.readText();
+                        expect(clipboardContent).to.equal(`http://localhost:4200/p/${draftPost.uuid}/`);
+                    });
                 });
 
                 describe('multiple posts', function () {
