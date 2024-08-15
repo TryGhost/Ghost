@@ -8,9 +8,9 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
 /**
- * 
- * @param {string} text 
- * @param {NodeList} buttons 
+ *
+ * @param {string} text
+ * @param {NodeList} buttons
  * @returns Node
  */
 const findButton = (text, buttons) => {
@@ -30,7 +30,7 @@ describe('Acceptance: Posts / Pages', function () {
     describe('posts', function () {
         it('redirects to signin when not authenticated', async function () {
             await invalidateSession();
-    
+
             await visit('/posts');
             expect(currentURL()).to.equal('/signin');
         });
@@ -51,14 +51,14 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(findAll('[data-test-post-id]')).to.have.length(0);
                 expect(find('[data-test-no-posts-box]')).to.exist;
                 expect(find('[data-test-link="write-a-new-post"]')).to.exist;
-                
+
                 await click('[data-test-link="write-a-new-post"]');
-                
+
                 expect(currentURL()).to.equal('/editor/post');
-                
+
                 await fillIn('[data-test-editor-title-input]', 'First contributor post');
                 await blur('[data-test-editor-title-input]');
-                
+
                 expect(currentURL()).to.equal('/editor/post/1');
 
                 await click('[data-test-link="posts"]');
@@ -132,7 +132,7 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(posts[1].querySelector('.gh-content-entry-title').textContent, 'post 2 title').to.contain('Draft Post');
                     expect(posts[2].querySelector('.gh-content-entry-title').textContent, 'post 3 title').to.contain('Published Post');
                     expect(posts[3].querySelector('.gh-content-entry-title').textContent, 'post 4 title').to.contain('Editor Published Post');
-                    
+
                     // check API requests
                     let lastRequests = this.server.pretender.handledRequests.filter(request => request.url.includes('/posts/'));
                     expect(lastRequests[0].queryParams.filter, 'scheduled request filter').to.have.string('status:scheduled');
@@ -152,10 +152,10 @@ describe('Acceptance: Posts / Pages', function () {
                     // Displays draft post
                     expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
                     expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
-        
+
                     // show published posts
                     await selectChoose('[data-test-type-select]', 'Published posts');
-        
+
                     // API request is correct
                     [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                     expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
@@ -163,10 +163,10 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
                     expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
                     expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author published post').to.exist;
-        
+
                     // show scheduled posts
                     await selectChoose('[data-test-type-select]', 'Scheduled posts');
-        
+
                     // API request is correct
                     [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                     expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
@@ -201,7 +201,7 @@ describe('Acceptance: Posts / Pages', function () {
                         .to.have.string('visibility:[paid,tiers]');
                     let posts = findAll('[data-test-post-id]');
                     expect(posts.length, 'all posts count').to.equal(1);
-                
+
                     await selectChoose('[data-test-visibility-select]', 'Public');
                     [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                     expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
@@ -291,6 +291,13 @@ describe('Acceptance: Posts / Pages', function () {
 
                         // Copy the post link
                         await click(buttons[0]);
+
+                        // Check that the notification is displayed
+                        expect(find('[data-test-text="notification-content"]')).to.contain.text('Post link copied');
+
+                        // Check that the clipboard contains the right content
+                        const clipboardContent = await navigator.clipboard.readText();
+                        expect(clipboardContent).to.equal('http://localhost:4200/published-post/');
                     });
                 });
 
@@ -328,7 +335,7 @@ describe('Acceptance: Posts / Pages', function () {
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'feature request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'feature request action').to.equal('feature');
-                        
+
                         // ensure ui shows these are now featured
                         expect(postThreeContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
                         expect(postFourContainer.querySelector('.gh-featured-post'), 'postFour featured').to.exist;
@@ -383,7 +390,7 @@ describe('Acceptance: Posts / Pages', function () {
                         let addTagButton = findButton('Add a tag', buttons);
                         expect(addTagButton, 'add tag button').to.exist;
                         await click(addTagButton);
-                        
+
                         const addTagsModal = find('[data-test-modal="add-tags"]');
                         expect(addTagsModal, 'tag settings modal').to.exist;
 
@@ -392,13 +399,13 @@ describe('Acceptance: Posts / Pages', function () {
                         await fillIn(input, 'test-tag');
                         await triggerKeyEvent(input, 'keydown', 13);
                         await click('[data-test-button="confirm"]');
-                        
+
                         // API request is correct - note, we don't mock the actual model updates
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-2);
                         expect(lastRequest.queryParams.filter, 'add tag request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
                     });
-                    
+
                     // TODO: Skip for now. This causes the member creation test to fail ('New member' text doesn't show... ???).
                     it.skip('can change access', async function () {
                         await visit('/posts');
@@ -421,9 +428,9 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(contextMenu, 'context menu').to.exist;
                         let buttons = contextMenu.querySelectorAll('button');
                         let changeAccessButton = findButton('Change access', buttons);
-                        
+
                         expect(changeAccessButton, 'change access button').not.to.exist;
-                        
+
                         const settingsService = this.owner.lookup('service:settings');
                         await settingsService.set('membersEnabled', true);
 
@@ -524,7 +531,7 @@ describe('Acceptance: Posts / Pages', function () {
                         const modal = find('[data-test-modal="delete-posts"]');
                         expect(modal, 'delete modal').to.exist;
                         await click('[data-test-button="confirm"]');
-                        
+
                         // API request is correct - note, we don't mock the actual model updates
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'delete request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
