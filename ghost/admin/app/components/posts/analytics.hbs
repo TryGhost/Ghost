@@ -42,7 +42,7 @@
                             </button>
                         {{/if}}
                         {{#unless this.post.emailOnly}}
-                            <button type="button" class="gh-post-list-cta edit" {{on "click" this.togglePublishFlowModal}}>
+                            <button type="button" class="gh-post-list-cta edit share" {{on "click" this.togglePublishFlowModal}}>
                                 {{svg-jar "share" title="Share post"}}<span>Share</span>
                             </button>
                         {{/unless}}
@@ -66,15 +66,15 @@
                                 @closeOnClick={{true}}
                             >
                                 <li>
-                                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
+                                    <LinkTo @class="edit-post" @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
                                 </li>
                                 <li>
-                                    <a href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
+                                    <a class="view-browser" href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
                                 </li>
                                 <li>
                                     <button
                                         type="button"
-                                        class="mr2"
+                                        class="delete-post mr2"
                                         {{on "click" this.confirmDeleteMember}}
                                         data-test-button="delete-post"
                                     >

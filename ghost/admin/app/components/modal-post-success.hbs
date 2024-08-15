@@ -121,18 +121,18 @@
                 @task={{this.handleCopyLink}}
                 @showIcon={{true}}
                 @successText="Link copied"
-                @class="gh-btn gh-btn-primary gh-btn-icon" />
+                @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
         {{else}}
             {{#if (and this.post.isScheduled (not this.post.emailOnly))}}
                 <GhTaskButton
                     @buttonText="Copy preview link"
                     @task={{this.handleCopyPreviewLink}}
                     @successText="Link copied"
-                    @class="gh-btn gh-btn-icon" />
+                    @class="gh-btn gh-btn-icon copy-preview-link" />
             {{/if}}
 
             <button
-                class="gh-btn gh-btn-primary"
+                class="gh-btn gh-btn-primary dismiss"
                 type="button"
                 {{on "click" @close}}
                 {{on "mousedown" (optional this.noop)}}
