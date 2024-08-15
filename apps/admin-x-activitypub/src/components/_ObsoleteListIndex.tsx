@@ -22,7 +22,7 @@ type Activity = {
     }
 }
 
-function useBrowseInboxForUser(handle: string) {
+export function useBrowseInboxForUser(handle: string) {
     const site = useBrowseSite();
     const siteData = site.data?.site;
     const siteUrl = siteData?.url ?? window.location.origin;
@@ -224,51 +224,53 @@ const ActivityPubComponent: React.FC = () => {
     ];
 
     return (
-        <Page>
-            {!articleContent ? (
-                <ViewContainer
-                    actions={[<ButtonGroup buttons={[
-                        {
-                            icon: 'listview',
-                            size: 'sm',
-                            iconColorClass: selectedOption.value === 'feed' ? 'text-black' : 'text-grey-500',
-                            onClick: () => {
-                                setSelectedOption({label: 'Feed', value: 'feed'});
+        <>
+            <Page>
+                {!articleContent ? (
+                    <ViewContainer
+                        actions={[<ButtonGroup buttons={[
+                            {
+                                icon: 'listview',
+                                size: 'sm',
+                                iconColorClass: selectedOption.value === 'feed' ? 'text-black' : 'text-grey-500',
+                                onClick: () => {
+                                    setSelectedOption({label: 'Feed', value: 'feed'});
+                                }
+
+                            },
+                            {
+                                icon: 'cardview',
+                                size: 'sm',
+                                iconColorClass: selectedOption.value === 'inbox' ? 'text-black' : 'text-grey-500',
+                                onClick: () => {
+                                    setSelectedOption({label: 'Inbox', value: 'inbox'});
+                                }
                             }
-
-                        },
-                        {
-                            icon: 'cardview',
-                            size: 'sm',
-                            iconColorClass: selectedOption.value === 'inbox' ? 'text-black' : 'text-grey-500',
+                        ]} clearBg={true} link outlineOnMobile />]}
+                        firstOnPage={true}
+                        primaryAction={{
+                            title: 'Follow',
                             onClick: () => {
-                                setSelectedOption({label: 'Inbox', value: 'inbox'});
-                            }
-                        }
-                    ]} clearBg={true} link outlineOnMobile />]}
-                    firstOnPage={true}
-                    primaryAction={{
-                        title: 'Follow',
-                        onClick: () => {
-                            updateRoute('follow-site');
-                        },
-                        icon: 'add'
-                    }}
-                    selectedTab={selectedTab}
-                    stickyHeader={true}
-                    tabs={tabs}
-                    title='ActivityPub'
-                    toolbarBorder={true}
-                    type='page'
-                    onTabChange={setSelectedTab}
-                >
-                </ViewContainer>
+                                updateRoute('follow-site');
+                            },
+                            icon: 'add'
+                        }}
+                        selectedTab={selectedTab}
+                        stickyHeader={true}
+                        tabs={tabs}
+                        title='ActivityPub'
+                        toolbarBorder={true}
+                        type='page'
+                        onTabChange={setSelectedTab}
+                    >
+                    </ViewContainer>
 
-            ) : (
-                <ViewArticle object={articleContent} onBackToList={handleBackToList} />
-            )}
+                ) : (
+                    <ViewArticle object={articleContent} onBackToList={handleBackToList} />
+                )}
 
-        </Page>
+            </Page>
+        </>
     );
 };
 
