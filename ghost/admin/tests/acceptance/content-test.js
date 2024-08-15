@@ -1,4 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
+import sinon from 'sinon';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
@@ -25,6 +26,10 @@ describe('Acceptance: Posts / Pages', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+    });
+
+    this.afterEach(function () {
+        sinon.restore();
     });
 
     describe('posts', function () {
@@ -268,6 +273,8 @@ describe('Acceptance: Posts / Pages', function () {
                     });
 
                     it('can copy a post link', async function () {
+                        sinon.stub(navigator.clipboard, 'writeText').resolves();
+
                         await visit('/posts');
 
                         // get the post
@@ -296,11 +303,13 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(find('[data-test-text="notification-content"]')).to.contain.text('Post link copied');
 
                         // Check that the clipboard contains the right content
-                        const clipboardContent = await navigator.clipboard.readText();
-                        expect(clipboardContent).to.equal('http://localhost:4200/published-post/');
+                        expect(navigator.clipboard.writeText.calledOnce).to.be.true;
+                        expect(navigator.clipboard.writeText.firstCall.args[0]).to.equal(`http://localhost:4200/${publishedPost.slug}/`);
                     });
 
                     it('can copy a preview link', async function () {
+                        sinon.stub(navigator.clipboard, 'writeText').resolves();
+
                         await visit('/posts');
 
                         // get the post
@@ -328,8 +337,8 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(find('[data-test-text="notification-content"]')).to.contain.text('Preview link copied');
 
                         // Check that the clipboard contains the right content
-                        const clipboardContent = await navigator.clipboard.readText();
-                        expect(clipboardContent).to.equal(`http://localhost:4200/p/${draftPost.uuid}/`);
+                        expect(navigator.clipboard.writeText.calledOnce).to.be.true;
+                        expect(navigator.clipboard.writeText.firstCall.args[0]).to.equal(`http://localhost:4200/p/${draftPost.uuid}/`);
                     });
                 });
 
