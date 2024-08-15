@@ -111,7 +111,7 @@ test.describe('Content Visibility', async () => {
 
             await card.locator('[data-test-value="status:free"]').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web and email to free members');
+            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web and email to free subscribers');
         });
 
         test('can toggle visibility settings segments - paid subscribers', async function () {
@@ -122,7 +122,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-dropdown-segment').click();
             await card.locator('[data-test-value="status:-free"]').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web and email to paid members');
+            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web and email to paid subscribers');
         });
 
         test('can toggle visibility settings segments - all subscribers', async function () {

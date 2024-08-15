@@ -105,7 +105,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[3]).toBe('status:free'); // segment
         expect(node.visibility.segment).toBe('status:free');
-        expect(result.current[7]).toBe('Shown on web and email to free members'); // message
+        expect(result.current[7]).toBe('Shown on web and email to free subscribers'); // message
     });
 
     it('should update the message correctly when both toggles are off', () => {

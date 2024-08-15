@@ -38,9 +38,9 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
         let segmentLabel = '';
 
         if (segment === 'status:free') {
-            segmentLabel = 'free members';
+            segmentLabel = 'free subscribers';
         } else if (segment === 'status:-free') {
-            segmentLabel = 'paid members';
+            segmentLabel = 'paid subscribers';
         }
 
         if (!showOnWeb && !showOnEmail) {
