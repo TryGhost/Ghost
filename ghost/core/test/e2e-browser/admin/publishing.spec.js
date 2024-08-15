@@ -284,6 +284,28 @@ test.describe('Publishing', () => {
         });
     });
 
+    test.describe('Lexical Rendering', () => {
+        test.describe.configure({retries: 1});
+
+        test('Renders Lexical editor', async ({sharedPage: adminPage}) => {
+            await adminPage.goto('/ghost');
+
+            await createPostDraft(adminPage, {title: 'Lexical editor test', body: 'This is my post body.'});
+
+            // Check if the lexical editor is present
+            expect(await adminPage.locator('[data-kg="editor"]').first()).toBeVisible();
+        });
+
+        test('Renders secondary hidden lexical editor', async ({sharedPage: adminPage}) => {
+            await adminPage.goto('/ghost');
+
+            await createPostDraft(adminPage, {title: 'Secondary lexical editor test', body: 'This is my post body.'});
+
+            // Check if the secondary lexical editor exists but is hidden.
+            expect(await adminPage.locator('[data-secondary-instance="true"]')).toBeHidden();
+        });
+    });
+
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
 
