@@ -46,7 +46,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
-    'publishFlowEndScreen'
+    'publishFlowEndScreen',
+    'postAnalyticsRefresh'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

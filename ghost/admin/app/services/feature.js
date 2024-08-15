@@ -79,6 +79,7 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
     @feature('publishFlowEndScreen') publishFlowEndScreen;
+    @feature('postAnalyticsRefresh') postAnalyticsRefresh;
 
     _user = null;
 

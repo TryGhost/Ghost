@@ -36,7 +36,7 @@
                 </div>
                 {{#if (feature "publishFlowEndScreen")}}
                     <div style="display: flex; gap: 8px;">
-                        {{#if (feature "publishFlowEndScreen")}}
+                        {{#if (feature "postAnalyticsRefresh")}}
                             <button type="button" class="gh-post-list-cta edit" {{on "click" this.fetchPostTask.perform}}>
                                 {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
                             </button>

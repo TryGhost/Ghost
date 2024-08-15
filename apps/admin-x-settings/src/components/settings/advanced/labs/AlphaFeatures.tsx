@@ -63,6 +63,10 @@ const features = [{
     title: 'Publish Flow — End Screen',
     description: 'Enables improved publish flow',
     flag: 'publishFlowEndScreen'
+},{
+    title: 'Post Analytics — Refresh',
+    description: 'Adds a refresh button to the post analytics screen',
+    flag: 'postAnalyticsRefresh'
 }];
 
 const AlphaFeatures: React.FC = () => {
