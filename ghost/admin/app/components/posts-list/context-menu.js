@@ -45,8 +45,11 @@ const messages = {
         single: '{Type} duplicated',
         multiple: '{count} {type}s duplicated'
     },
-    copied: {
+    copiedPostUrl: {
         single: 'Post link copied'
+    },
+    copiedPreviewUrl: {
+        single: 'Preview link copied'
     }
 };
 
@@ -81,6 +84,11 @@ export default class PostsContextMenu extends Component {
     @action
     async copyPostLink() {
         this.menu.performTask(this.copyPostLinkTask);
+    }
+
+    @action
+    async copyPreviewLink() {
+        this.menu.performTask(this.copyPreviewLinkTask);
     }
 
     @action
@@ -415,7 +423,15 @@ export default class PostsContextMenu extends Component {
     @task
     *copyPostLinkTask() {
         copyTextToClipboard(this.selectionList.availableModels[0].url);
-        this.notifications.showNotification(this.#getToastMessage('copied'), {type: 'success'});
+        this.notifications.showNotification(this.#getToastMessage('copiedPostUrl'), {type: 'success'});
+        yield timeout(1000);
+        return true;
+    }
+
+    @task
+    *copyPreviewLinkTask() {
+        copyTextToClipboard(this.selectionList.availableModels[0].url);
+        this.notifications.showNotification(this.#getToastMessage('copiedPreviewUrl'), {type: 'success'});
         yield timeout(1000);
         return true;
     }

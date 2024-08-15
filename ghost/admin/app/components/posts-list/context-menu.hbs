@@ -13,6 +13,14 @@
                 <span>{{svg-jar "undo"}}Unpublish</span>
             </button>
         </li>
+    {{else}}
+        {{#if this.canCopySelection}}
+            <li>
+                <button class="mr2" type="button" {{on "click" this.copyPreviewLink}}>
+                    <span>{{svg-jar "link"}}Copy preview link</span>
+                </button>
+            </li>
+        {{/if}}
     {{/if}}
     {{#if this.canFeatureSelection}}
         {{#if this.shouldFeatureSelection }}
