@@ -250,20 +250,47 @@ describe('Acceptance: Posts / Pages', function () {
                         let buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(5);
-                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
-                        expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
-                        expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
-                        expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Delete');
+                        expect(buttons.length, 'context menu buttons').to.equal(6);
+                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
+                        expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
+                        expect(buttons[2].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
+                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                        expect(buttons[4].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
+                        expect(buttons[5].innerText.trim(), 'context menu button 5').to.contain('Delete');
 
                         // duplicate the post
-                        await click(buttons[3]);
+                        await click(buttons[4]);
 
                         const posts = findAll('[data-test-post-id]');
                         expect(posts.length, 'all posts count').to.equal(5);
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                    });
+
+                    it('can copy a post link', async function () {
+                        await visit('/posts');
+
+                        // get the post
+                        const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                        expect(post, 'post').to.exist;
+
+                        await triggerEvent(post, 'contextmenu');
+
+                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+
+                        let buttons = contextMenu.querySelectorAll('button');
+
+                        expect(contextMenu, 'context menu').to.exist;
+                        expect(buttons.length, 'context menu buttons').to.equal(6);
+                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
+                        expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
+                        expect(buttons[2].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
+                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                        expect(buttons[4].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
+                        expect(buttons[5].innerText.trim(), 'context menu button 5').to.contain('Delete');
+
+                        // Copy the post link
+                        await click(buttons[0]);
                     });
                 });
 

@@ -3,11 +3,12 @@ import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
+import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -43,6 +44,9 @@ const messages = {
     duplicated: {
         single: '{Type} duplicated',
         multiple: '{count} {type}s duplicated'
+    },
+    copied: {
+        single: 'Post link copied'
     }
 };
 
@@ -72,6 +76,11 @@ export default class PostsContextMenu extends Component {
             return tpl(messages[type].single, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
         }
         return tpl(messages[type].multiple, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
+    }
+
+    @action
+    async copyPostLink() {
+        this.menu.performTask(this.copyPostLinkTask);
     }
 
     @action
@@ -400,6 +409,14 @@ export default class PostsContextMenu extends Component {
             this.notifications.showAPIError(error, {key: `${this.type}.copy.failed`});
         }
 
+        return true;
+    }
+
+    @task
+    *copyPostLinkTask() {
+        copyTextToClipboard(this.selectionList.availableModels[0].url);
+        this.notifications.showNotification(this.#getToastMessage('copied'), {type: 'success'});
+        yield timeout(1000);
         return true;
     }
 
