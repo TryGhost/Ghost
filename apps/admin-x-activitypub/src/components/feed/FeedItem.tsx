@@ -1,6 +1,7 @@
+import APAvatar from '../global/APAvatar';
 import React, {useState} from 'react';
-import getRelativeTimestamp from '../utils/get-relative-timestamp';
-import getUsername from '../utils/get-username';
+import getRelativeTimestamp from '../../utils/get-relative-timestamp';
+import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 
@@ -110,7 +111,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type}) => {
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
                         <div className='flex items-start gap-3'>
-                            {author.icon?.url ? <img className='z-10 w-10 rounded' src={author.icon?.url}/> : <div className='z-10 rounded-full bg-grey-100 p-3'><Icon name='user' size={18} /></div>}
+                            <APAvatar author={author} />
                             <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity>
                                 <div className='relative z-10 mb-2 flex w-full flex-col overflow-visible text-[1.5rem]'>
                                     <div className='flex'>

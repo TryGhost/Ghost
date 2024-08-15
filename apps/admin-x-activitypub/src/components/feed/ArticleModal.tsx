@@ -1,7 +1,7 @@
-import MainHeader from './navigation/MainHeader';
+import MainHeader from '../navigation/MainHeader';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import articleBodyStyles from './articleBodyStyles';
+import articleBodyStyles from '../articleBodyStyles';
 import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {renderAttachment} from './FeedItem';

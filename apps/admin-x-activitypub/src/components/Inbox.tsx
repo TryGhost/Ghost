@@ -1,10 +1,10 @@
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
-import ArticleModal from './ArticleModal';
-import FeedItem from './FeedItem';
+import ArticleModal from './feed/ArticleModal';
+import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Activity} from './ActivityItem';
+import {Activity} from './activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
 import {useBrowseInboxForUser} from '../MainContent';
