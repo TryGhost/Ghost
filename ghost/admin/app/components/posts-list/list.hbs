@@ -1,5 +1,5 @@
 <MultiList::List @model={{@list}} class="posts-list gh-list {{unless @model "no-posts"}} feature-memberAttribution" as |list| >
-    {{!-- always order as scheduled, draft, remainder --}}    
+    {{!-- always order as scheduled, draft, remainder --}}
     {{#if (or @model.scheduledInfinityModel (or @model.draftInfinityModel @model.publishedAndSentInfinityModel))}}
         {{#if @model.scheduledInfinityModel}}
             {{#each @model.scheduledInfinityModel as |post|}}
