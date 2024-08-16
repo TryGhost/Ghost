@@ -208,8 +208,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 titleScratch: 'this is a title',
                 status: 'published',
                 lexical: initialLexicalString,
-                lexicalScratch: initialLexicalString,
-                secondaryLexicalState: initialLexicalString
+                lexicalScratch: initialLexicalString
             }));
 
             // synthetically update the lexicalScratch as if the editor itself made the modifications on loading the initial editorState
@@ -224,48 +223,6 @@ describe('Unit: Controller: lexical-editor', function () {
 
             // this should NOT result in the post being dirty - while lexical !== lexicalScratch, we ignore the direction field
             isDirty = controller.get('hasDirtyAttributes');
-            expect(isDirty).to.be.true;
-        });
-
-        it('dirty is false if secondaryLexical and scratch matches, but lexical is outdated', async function () {
-            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-
-            let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                title: 'this is a title',
-                titleScratch: 'this is a title',
-                status: 'published',
-                lexical: initialLexicalString,
-                lexicalScratch: lexicalScratch,
-                secondaryLexicalState: secondLexicalInstance
-            }));
-
-            let isDirty = controller.get('hasDirtyAttributes');
-
-            expect(isDirty).to.be.false;
-        });
-
-        it('dirty is true if secondaryLexical and lexical does not match scratch', async function () {
-            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content1234","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-            const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
-
-            let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                title: 'this is a title',
-                titleScratch: 'this is a title',
-                status: 'published',
-                lexical: initialLexicalString,
-                lexicalScratch: lexicalScratch,
-                secondaryLexicalState: secondLexicalInstance
-            }));
-
-            controller.send('updateScratch',JSON.parse(lexicalScratch));
-
-            let isDirty = controller.get('hasDirtyAttributes');
-
             expect(isDirty).to.be.true;
         });
     });
