@@ -73,7 +73,6 @@
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
                 @onBodyChange={{this.updateScratch}}
-                @updateSecondaryInstanceModel={{this.updateSecondaryInstanceModel}}
                 @headerOffset={{editor.headerHeight}}
                 @scrollContainerSelector=".gh-koenig-editor"
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
@@ -98,7 +97,6 @@
                 }}
                 @postType={{this.post.displayName}}
                 @registerAPI={{this.registerEditorAPI}}
-                @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
                 @savePostTask={{this.savePostTask}}
             />
 
@@ -138,7 +136,6 @@
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
                 @editorAPI={{this.editorAPI}}
-                @secondaryEditorAPI={{this.secondaryEditorAPI}}
                 @toggleSettingsMenu={{this.toggleSettingsMenu}}
             />
         {{/if}}
