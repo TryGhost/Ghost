@@ -1278,11 +1278,21 @@ export default class LexicalEditorController extends Controller {
         // Compare lexical with scratch
         let isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
+        // If either comparison is not dirty, return false, because scratch is always up to date.
+        if (!isSecondaryDirty || !isLexicalDirty) {
+            return false;
+        }
+
+        // If both comparisons are dirty, consider the post dirty
+        if (isSecondaryDirty && isLexicalDirty) {
+            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {secondaryLexical, lexical, scratch}};
+            return true;
+        }
+
         // New+unsaved posts always return `hasDirtyAttributes: true`
         // so we need a manual check to see if any
         if (post.get('isNew')) {
-            let changedAttributes = Object.keys(post.changedAttributes());
-
+            let changedAttributes = Object.keys(post.changedAttributes() || {});
             if (changedAttributes.length) {
                 this._leaveModalReason = {reason: 'post.changedAttributes.length > 0', context: post.changedAttributes()};
             }
@@ -1297,18 +1307,7 @@ export default class LexicalEditorController extends Controller {
             return true;
         }
 
-        // If either comparison is not dirty, return false, because scratch is always up to date.
-        if (!isSecondaryDirty || !isLexicalDirty) {
-            return false;
-        }
-
-        // If both comparisons are dirty, consider the post dirty
-        if (isSecondaryDirty && isLexicalDirty) {
-            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {secondaryLexical, lexical, scratch}};
-            return true;
-        }
-
-        return false;
+        return hasDirtyAttributes;
     }
 
     _showSaveNotification(prevStatus, status, delayed) {

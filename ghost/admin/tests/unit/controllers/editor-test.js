@@ -195,6 +195,60 @@ describe('Unit: Controller: lexical-editor', function () {
     });
 
     describe('hasDirtyAttributes', function () {
+        it('detects new post with changed attributes as dirty (autosave)', async function () {
+            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content updated","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                isNew: true,
+                title: '',
+                titleScratch: '',
+                status: 'draft',
+                lexical: initialLexicalString,
+                lexicalScratch: lexicalScratch,
+                secondaryLexicalState: initialLexicalString
+            }));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+            expect(isDirty).to.be.true;
+        });
+
+        it('does not detect new post as dirty when there are no changes', async function () {
+            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                isNew: true,
+                title: '',
+                titleScratch: '',
+                status: 'draft',
+                lexical: initialLexicalString,
+                lexicalScratch: initialLexicalString,
+                secondaryLexicalState: initialLexicalString
+            }));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+            expect(isDirty).to.be.false;
+        });
+
+        it.only('marks isNew post as dirty when lexicalScratch differs from lexical and secondaryLexical', async function () {
+            const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content scratch","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                isNew: true,
+                title: '',
+                titleScratch: '',
+                status: 'draft',
+                lexical: initialLexicalString,
+                lexicalScratch: lexicalScratch,
+                secondaryLexicalState: initialLexicalString,
+                changedAttributes: () => ({title: ['', 'New Title']})
+            }));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+            expect(isDirty).to.be.true;
+        });
+
         it('Changes in the direction field in the lexical string are not considered dirty', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
