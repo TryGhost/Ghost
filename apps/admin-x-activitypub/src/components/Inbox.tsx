@@ -27,7 +27,8 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         setArticleContent(object);
         setArticleActor(actor);
         NiceModal.show(ArticleModal, {
-            object: object
+            object: object,
+            actor: actor
         });
     };
 
