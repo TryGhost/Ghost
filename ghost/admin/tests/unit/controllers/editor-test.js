@@ -230,7 +230,7 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(isDirty).to.be.false;
         });
 
-        it.only('marks isNew post as dirty when lexicalScratch differs from lexical and secondaryLexical', async function () {
+        it('marks isNew post as dirty when lexicalScratch differs from lexical and secondaryLexical', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content scratch","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             let controller = this.owner.lookup('controller:lexical-editor');
