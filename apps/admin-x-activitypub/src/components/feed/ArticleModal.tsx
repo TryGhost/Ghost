@@ -1,14 +1,15 @@
+import FeedItem from './FeedItem';
 import MainHeader from '../navigation/MainHeader';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Modal} from '@tryghost/admin-x-design-system';
-import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {renderAttachment} from './FeedItem';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 interface ArticleModalProps {
     object: ObjectProperties;
+    actor: ActorProperties;
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
@@ -62,7 +63,7 @@ ${image &&
     );
 };
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor}) => {
     const modal = useModal();
     return (
         <Modal
@@ -82,8 +83,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object}) => {
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
                     <div className='mx-auto max-w-[580px]'>
-                        {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
-                        {renderAttachment(object)}
+                        <FeedItem actor={actor} layout='modal' object={object} type='Note'/>
+                        {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
+                        {/* {renderAttachment(object)} */}
                     </div>)}
                 {object.type === 'Article' && <ArticleBody heading={object.name} html={object.content} image={object?.image}/>}
             </div>
