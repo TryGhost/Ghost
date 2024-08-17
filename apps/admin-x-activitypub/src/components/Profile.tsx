@@ -1,10 +1,10 @@
+import APAvatar from './global/APAvatar';
 import MainNavigation from './navigation/MainNavigation';
-import React from 'react';
+import React, {useState} from 'react';
 import {ActivityPubAPI} from '../api/activitypub';
-import {SettingValue} from '@tryghost/admin-x-design-system';
+import {Heading, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useQuery} from '@tanstack/react-query';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ProfileProps {}
 
@@ -43,17 +43,67 @@ function useFollowingCountForUser(handle: string) {
 }
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {updateRoute} = useRouting();
     const {data: followersCount = 0} = useFollowersCountForUser('index');
     const {data: followingCount = 0} = useFollowingCountForUser('index');
+
+    type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
+
+    const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+
+    const tabs = [
+        {
+            id: 'posts',
+            title: 'Posts',
+            contents: (<div><NoValueLabel icon='pen'>
+                You haven’t posted anything yet.
+            </NoValueLabel></div>),
+            counter: 240
+        },
+        {
+            id: 'likes',
+            title: 'Likes',
+            contents: (<div><NoValueLabel icon='heart'>
+                You haven’t liked anything yet.
+            </NoValueLabel></div>),
+            counter: 27
+        },
+        {
+            id: 'following',
+            title: 'Following',
+            contents: (<div><NoValueLabel icon='user-add'>
+                You haven’t followed anyone yet.
+            </NoValueLabel></div>),
+            counter: followingCount
+        },
+        {
+            id: 'followers',
+            title: 'Followers',
+            contents: (<div><NoValueLabel icon='user-add'>
+                Nobody’s following you yet. Their loss!
+            </NoValueLabel></div>),
+            counter: followersCount
+        }
+    ].filter(Boolean) as Tab<ProfileTab>[];
 
     return (
         <>
             <MainNavigation />
             <div className='z-0 flex w-full flex-col items-center'>
-                <div className='mx-auto mt-8 w-full max-w-[560px] rounded-xl bg-grey-50 p-6' id='ap-sidebar'>
-                    <div className='mb-4 border-b border-b-grey-200 pb-4'><SettingValue key={'your-username'} heading={'Your username'} value={'@index@localplaceholder.com'}/></div>
-                    <div className='grid grid-cols-2 gap-4'>
+                <div className='mx-auto mt-8 w-full max-w-[560px]' id='ap-sidebar'>
+                    <div className='h-[200px] w-full rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
+                    </div>
+                    <div className='-mt-8 px-4'>
+                        <div className='inline-flex rounded-lg border-4 border-white'>
+                            <APAvatar size='lg' />
+                        </div>
+                        <Heading className='mt-4' level={3}>John Doe</Heading>
+                        <span className='mt-1 text-[1.5rem] text-grey-800'>@index@site.com</span>
+                        <p className='mt-3 text-[1.5rem]'>This is a summary/bio/etc which could be kinda long in certain cases but not always, so...</p>
+                        <a className='mt-3 block text-[1.5rem] underline' href='#'>www.coolsite.com</a>
+                        <TabView<'posts' | 'likes' | 'following' | 'followers'> containerClassName='mt-6' selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+                    </div>
+
+                    {/* <div className='grid grid-cols-2 gap-4'>
                         <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/profile/following')}>
                             <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
                             <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
@@ -62,7 +112,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                             <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
                             <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </>
