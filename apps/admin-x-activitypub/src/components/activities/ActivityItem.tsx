@@ -19,6 +19,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({children}) => {
             <div className='flex w-full items-center gap-3 border-b border-grey-100 py-4'>
                 {childrenArray[0]}
                 {childrenArray[1]}
+                {childrenArray[2]}
             </div>
         </div>
     );
