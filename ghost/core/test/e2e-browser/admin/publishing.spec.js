@@ -78,7 +78,7 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
     await page.locator('[data-test-editor-title-input]').fill(title);
 
     // wait for editor to be ready
-    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
+    await expect(page.locator('[data-lexical-editor="true"]').first()).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
@@ -284,6 +284,28 @@ test.describe('Publishing', () => {
         });
     });
 
+    test.describe('Lexical Rendering', () => {
+        test.describe.configure({retries: 1});
+
+        test('Renders Lexical editor', async ({sharedPage: adminPage}) => {
+            await adminPage.goto('/ghost');
+
+            await createPostDraft(adminPage, {title: 'Lexical editor test', body: 'This is my post body.'});
+
+            // Check if the lexical editor is present
+            expect(await adminPage.locator('[data-kg="editor"]').first()).toBeVisible();
+        });
+
+        test('Renders secondary hidden lexical editor', async ({sharedPage: adminPage}) => {
+            await adminPage.goto('/ghost');
+
+            await createPostDraft(adminPage, {title: 'Secondary lexical editor test', body: 'This is my post body.'});
+
+            // Check if the secondary lexical editor exists but is hidden.
+            expect(await adminPage.locator('[data-secondary-instance="true"]')).toBeHidden();
+        });
+    });
+
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
 
@@ -304,7 +326,7 @@ test.describe('Publishing', () => {
             await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
-            await adminPage.locator('[data-kg="editor"]').click();
+            await adminPage.locator('[data-kg="editor"]').first().click();
             await adminPage.waitForTimeout(200); //
             await adminPage.keyboard.type(' This is some updated text.');
 

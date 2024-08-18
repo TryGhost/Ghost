@@ -76,9 +76,10 @@ export default class FeatureService extends Service {
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('adminXDemo') adminXDemo;
     @feature('ActivityPub') ActivityPub;
-    @feature('internalLinking') internalLinking;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
+    @feature('publishFlowEndScreen') publishFlowEndScreen;
+    @feature('postAnalyticsRefresh') postAnalyticsRefresh;
 
     _user = null;
 

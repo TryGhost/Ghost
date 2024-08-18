@@ -880,3 +880,128 @@
     height: 20px;
     margin-right: 6px;
 }
+
+/* Publish flow modal
+/* ---------------------------------------------------------- */
+
+.modal-post-success {
+    max-width: 600px;
+    --padding: 36px;
+    --radius: 12px;
+}
+
+.modal-post-success .modal-content {
+    padding: var(--padding);
+    border-radius: var(--radius);
+}
+
+.modal-post-success .modal-image {
+    aspect-ratio: 16 / 7.55;
+    overflow: hidden;
+    margin: calc(var(--padding) * -1) calc(var(--padding) * -1) var(--padding);
+}
+
+.modal-post-success .modal-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.modal-post-success .modal-header {
+    margin: 0;
+}
+
+.modal-post-success .modal-header h1 {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-size: 3.2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.modal-post-success .modal-header h1 span:has(+ span) {
+    color: var(--green);
+}
+
+.modal-post-success .modal-body {
+    margin-top: 10px;
+    font-size: 1.6rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+}
+
+.modal-post-success .modal-body strong.nowrap {
+    text-wrap: nowrap;
+}
+
+.modal-post-success .modal-footer {
+    gap: 16px;
+    margin-top: var(--padding);
+}
+
+.modal-post-success .modal-footer .gh-btn {
+    min-width: 64px;
+    height: 40px;
+    border-radius: 4px;
+}
+
+.modal-post-success .modal-footer .gh-btn:not(:first-child) {
+    margin: 0;
+}
+
+.modal-post-success .modal-footer .gh-btn span {
+    padding-inline: 18px;
+    font-size: 1.4rem;
+}
+
+.modal-post-success .modal-footer .gh-btn-primary {
+    min-width: 80px;
+}
+
+.modal-post-success .modal-footer:has(.twitter) .gh-btn-primary {
+    flex-grow: 1;
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+    width: 56px;
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
+    font-size: 0;
+}
+
+.modal-post-success .modal-footer .gh-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.modal-post-success .modal-footer .gh-btn.twitter svg path {
+    fill: black;
+}
+
+.modal-post-success:has(.modal-image) .close {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+}
+
+.modal-post-success:has(.modal-image) .close:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.modal-post-success:has(.modal-image) .close svg {
+    width: 14px;
+    height: 14px;
+}
+
+.modal-post-success:has(.modal-image) .close svg path {
+    fill: white;
+}

@@ -25,11 +25,11 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.3.2",
-    "@tryghost/logging": "2.4.15",
+    "@tryghost/errors": "1.3.5",
+    "@tryghost/logging": "2.4.18",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/metrics": "1.0.34",
-    "@tryghost/tpl": "0.1.30",
+    "@tryghost/tpl": "0.1.32",
     "moment-timezone": "0.5.45"
   }
 }

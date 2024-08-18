@@ -776,6 +776,17 @@
     border-radius: var(--border-radius);
 }
 
+.gh-analytics-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 0;
+}
+
+.gh-analytics-actions-menu.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
+}
+
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
 .gh-post-analytics-box.gh-post-analytics-mentions {
@@ -865,6 +876,7 @@
 .gh-post-analytics-resource h3 {
     font-size: 1.8rem;
     font-weight: 700;
+    text-wrap: pretty;
 }
 
 .gh-post-analytics-box h4.gh-main-section-header.small {
@@ -1520,6 +1532,10 @@
     padding: 0 0 0 0.75rem;
     color: var(--darkgrey-l1);
     transition: all .1s linear;
+}
+
+span.dropdown .gh-post-list-cta > span {
+    padding: 0;
 }
 
 .gh-post-list-cta.edit.is-hovered > *,

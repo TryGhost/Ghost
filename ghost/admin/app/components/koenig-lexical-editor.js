@@ -320,7 +320,7 @@ export default class KoenigLexicalEditor extends Component {
             const donationLink = () => {
                 if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
                     return [{
-                        label: 'Tip or donation',
+                        label: 'Tips and donations',
                         value: '#/portal/support'
                     }];
                 }
@@ -441,6 +441,16 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
+        const checkStripeEnabled = () => {
+            const hasDirectKeys = !!(this.settings.stripeSecretKey && this.settings.stripePublishableKey);
+            const hasConnectKeys = !!(this.settings.stripeConnectSecretKey && this.settings.stripeConnectPublishableKey);
+
+            if (this.config.stripeDirect) {
+                return hasDirectKeys;
+            }
+            return hasDirectKeys || hasConnectKeys;
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -452,8 +462,6 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
-                internalLinking: this.feature.internalLinking,
-                internalLinkingAtLinks: this.feature.internalLinking,
                 contentVisibility: this.feature.contentVisibility
             },
             deprecated: { // todo fix typo
@@ -463,7 +471,8 @@ export default class KoenigLexicalEditor extends Component {
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
-            siteUrl: this.config.getSiteUrl('/')
+            siteUrl: this.config.getSiteUrl('/'),
+            stripeEnabled: checkStripeEnabled() // returns a boolean
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 

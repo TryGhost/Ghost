@@ -160,7 +160,7 @@ describe('Newsletter Subscriptions', () => {
 
         fireEvent.click(unsubscribeAllButton);
 
-        expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: []});
+        expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
         // Verify the local state shows the newsletter as unsubscribed
         let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
         let newsletter1Toggle = newsletterToggles[0];

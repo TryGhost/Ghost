@@ -34,7 +34,7 @@ export function beforeSend(event, hint) {
             delete event.tags.ajax_url;
         }
 
-        // Do not report poshog-js errors to Sentry
+        // Do not report posthog-js errors to Sentry
         if (hint && hint.originalException && hint.originalException.stack) {
             if (hint.originalException.stack.includes('/posthog-js/')) {
                 return null;

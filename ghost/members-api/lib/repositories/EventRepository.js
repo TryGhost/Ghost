@@ -151,6 +151,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'newsletter'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -193,6 +194,7 @@ module.exports = class EventRepository {
                 'stripeSubscription.stripePrice.stripeProduct.product'
             ],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -245,6 +247,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -277,6 +280,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -314,6 +318,7 @@ module.exports = class EventRepository {
                 'tagAttribution'
             ],
             filter: 'subscriptionCreatedEvent.id:null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -368,6 +373,7 @@ module.exports = class EventRepository {
                 'tagAttribution'
             ],
             filter: 'member_id:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -416,6 +422,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'post', 'parent'],
             filter: 'member_id:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -449,6 +456,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'link', 'link.post'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -499,6 +507,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -537,6 +546,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'post'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -571,6 +581,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: filterStr,
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -613,6 +624,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'delivered_at:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -655,6 +667,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'opened_at:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -697,6 +710,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -730,6 +744,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'failed_at:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -772,6 +787,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
