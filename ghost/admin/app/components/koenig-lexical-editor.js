@@ -678,34 +678,43 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerDocId = cardConfig.post.id;
         const multiplayerUsername = this.session.user.name;
 
+        const KGEditorComponent = ({isInitInstance}) => {
+            return (
+                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {width: 0, height: 0, overflow: 'hidden'} : {}}>
+                    <KoenigComposer
+                        editorResource={this.editorResource}
+                        cardConfig={cardConfig}
+                        enableMultiplayer={enableMultiplayer}
+                        fileUploader={{useFileUpload, fileTypes}}
+                        initialEditorState={this.args.lexical}
+                        multiplayerUsername={multiplayerUsername}
+                        multiplayerDocId={multiplayerDocId}
+                        multiplayerEndpoint={multiplayerEndpoint}
+                        onError={this.onError}
+                        darkMode={this.feature.nightShift}
+                        isTKEnabled={true}
+                    >
+                        <KoenigEditor
+                            editorResource={this.editorResource}
+                            cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
+                            placeholderText={isInitInstance ? null : this.args.placeholderText}
+                            darkMode={isInitInstance ? null : this.feature.nightShift}
+                            onChange={isInitInstance ? this.args.updateSecondaryInstanceModel : this.args.onChange}
+                            registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
+                        />
+                        <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
+                        <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
+                    </KoenigComposer>
+                </div>
+            );
+        };
+
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer
-                            editorResource={this.editorResource}
-                            cardConfig={cardConfig}
-                            enableMultiplayer={enableMultiplayer}
-                            fileUploader={{useFileUpload, fileTypes}}
-                            initialEditorState={this.args.lexical}
-                            multiplayerUsername={multiplayerUsername}
-                            multiplayerDocId={multiplayerDocId}
-                            multiplayerEndpoint={multiplayerEndpoint}
-                            onError={this.onError}
-                            darkMode={this.feature.nightShift}
-                            isTKEnabled={true}
-                        >
-                            <KoenigEditor
-                                editorResource={this.editorResource}
-                                cursorDidExitAtTop={this.args.cursorDidExitAtTop}
-                                placeholderText={this.args.placeholder}
-                                darkMode={this.feature.nightShift}
-                                onChange={this.args.onChange}
-                                registerAPI={this.args.registerAPI}
-                            />
-                            <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                            <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />
-                        </KoenigComposer>
+                        <KGEditorComponent />
+                        <KGEditorComponent isInitInstance={true} />
                     </Suspense>
                 </ErrorHandler>
             </div>
