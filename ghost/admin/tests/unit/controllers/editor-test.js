@@ -322,5 +322,62 @@ describe('Unit: Controller: lexical-editor', function () {
 
             expect(isDirty).to.be.true;
         });
+
+        it('dirty is false if no Post', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', null);
+
+            let isDirty = controller.get('hasDirtyAttributes');
+
+            expect(isDirty).to.be.false;
+        });
+
+        it('returns true if current tags differ from previous tags', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                tags: [{name: 'test'}],
+                tagsString: 'test',
+                changedAttributes: () => ({tags: [[{name: 'test'}], [{name: 'changed'}]]})
+            }));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+
+            expect(isDirty).to.be.true;
+        });
+
+        it('returns false when the post is new but has no changed attributes', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                isNew: true,
+                title: '',
+                titleScratch: '',
+                status: 'draft',
+                lexical: '',
+                lexicalScratch: '',
+                secondaryLexicalState: '',
+                changedAttributes: () => ({}) // no changes
+            }));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+            expect(isDirty).to.be.false;
+        });
+
+        it('skips new post check if post is not new', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('post', EmberObject.create({
+                isNew: false,
+                title: 'Sample Title',
+                titleScratch: 'Sample Title',
+                status: 'draft',
+                lexical: '',
+                lexicalScratch: '',
+                secondaryLexicalState: '',
+                changedAttributes: () => ({})
+            }));
+
+            let isDirty = controller.get('hasDirtyAttributes');
+            // The test passes if no errors occur and it doesn't return true for new post condition
+            expect(isDirty).to.be.false;
+        });
     });
 });
