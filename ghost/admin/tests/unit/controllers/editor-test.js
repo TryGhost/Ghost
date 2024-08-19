@@ -10,6 +10,17 @@ import {task} from 'ember-concurrency';
 describe('Unit: Controller: lexical-editor', function () {
     setupTest();
 
+    let createPost;
+
+    const _createPost = function (attrs) {
+        const store = this.owner.lookup('service:store');
+        return store.createRecord('post', attrs);
+    };
+
+    beforeEach(function () {
+        createPost = _createPost.bind(this);
+    });
+
     describe('generateSlug', function () {
         it('should generate a slug and set it on the post', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
@@ -18,7 +29,7 @@ describe('Unit: Controller: lexical-editor', function () {
                     return RSVP.resolve(`${str}-slug`);
                 }
             }));
-            controller.set('post', EmberObject.create({slug: ''}));
+            controller.set('post', createPost({slug: ''}));
 
             controller.set('post.titleScratch', 'title');
             await settled();
@@ -37,7 +48,7 @@ describe('Unit: Controller: lexical-editor', function () {
                     return RSVP.resolve(`${str}-slug`);
                 }
             }));
-            controller.set('post', EmberObject.create({slug: 'whatever'}));
+            controller.set('post', createPost({slug: 'whatever'}));
 
             expect(controller.get('post.slug')).to.equal('whatever');
 
@@ -54,7 +65,7 @@ describe('Unit: Controller: lexical-editor', function () {
                     return RSVP.resolve(`${str}-slug`);
                 }
             }));
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 slug: '',
                 title: '(Untitled)',
                 titleScratch: 'title'
@@ -73,7 +84,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 }
             }));
 
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 slug: '',
                 title: 'title (Copy)',
                 titleScratch: 'newTitle'
@@ -92,7 +103,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 }
             }));
 
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 slug: 'custom-slug',
                 title: 'original title',
                 titleScratch: 'newTitle'
@@ -113,7 +124,7 @@ describe('Unit: Controller: lexical-editor', function () {
                     return RSVP.resolve(`${str}-slug`);
                 }
             }));
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 slug: 'somepost',
                 title: 'somepost',
                 titleScratch: 'newtitle'
@@ -143,7 +154,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 yield RSVP.resolve();
             }));
 
-            controller.set('post', EmberObject.create({isDraft: true}));
+            controller.set('post', createPost({isDraft: true}));
 
             expect(controller.get('post.isDraft')).to.be.true;
             expect(controller.get('post.titleScratch')).to.not.be.ok;
@@ -159,7 +170,7 @@ describe('Unit: Controller: lexical-editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 title: 'a title',
                 isPublished: true
             }));
@@ -180,7 +191,7 @@ describe('Unit: Controller: lexical-editor', function () {
         it('should have count 0 for no TK', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            controller.set('post', EmberObject.create({titleScratch: 'this is a title'}));
+            controller.set('post', createPost({titleScratch: 'this is a title'}));
 
             expect(controller.get('tkCount')).to.equal(0);
         });
@@ -188,7 +199,7 @@ describe('Unit: Controller: lexical-editor', function () {
         it('should count TK reminders in the title', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            controller.set('post', EmberObject.create({titleScratch: 'this is a TK'}));
+            controller.set('post', createPost({titleScratch: 'this is a TK'}));
 
             expect(controller.get('tkCount')).to.equal(1);
         });
@@ -203,7 +214,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const lexicalStringUpdatedContent = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
 
             // we can't seem to call setPost directly, so we have to set the post manually
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 title: 'this is a title',
                 titleScratch: 'this is a title',
                 status: 'published',
