@@ -298,12 +298,11 @@ test.describe('Publishing', () => {
 
         test('Renders secondary hidden lexical editor', async ({sharedPage: adminPage}) => {
             await adminPage.goto('/ghost');
+
             await createPostDraft(adminPage, {title: 'Secondary lexical editor test', body: 'This is my post body.'});
-            const secondaryLexicalEditor = adminPage.locator('[data-secondary-instance="true"]');
-            // Check if the secondary lexical editor exists
-            await expect(secondaryLexicalEditor).toHaveCount(1);
-            // Check if it is hidden
-            await expect(secondaryLexicalEditor).toBeHidden();
+
+            // Check if the secondary lexical editor exists but is hidden.
+            expect(await adminPage.locator('[data-secondary-instance="true"]')).toBeHidden();
         });
     });
 

@@ -15,7 +15,6 @@ export default class GhKoenigEditorLexical extends Component {
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
     editorAPI = null;
-    secondaryEditorAPI = null;
     skipFocusEditor = false;
 
     @tracked titleIsHovered = false;
@@ -231,12 +230,6 @@ export default class GhKoenigEditorLexical extends Component {
     registerEditorAPI(API) {
         this.editorAPI = API;
         this.args.registerAPI(API);
-    }
-
-    @action
-    registerSecondaryEditorAPI(API) {
-        this.secondaryEditorAPI = API;
-        this.args.registerSecondaryAPI(API);
     }
 
     // focus the editor when the editor canvas is clicked below the editor content,
