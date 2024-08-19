@@ -3,6 +3,7 @@ import Hint from '../Hint';
 import React, {FocusEventHandler, useId} from 'react';
 import clsx from 'clsx';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
+import * as FormPrimitive from '@radix-ui/react-form';
 
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
@@ -105,11 +106,15 @@ const TextField: React.FC<TextFieldProps> = ({
         {...props} />;
 
     field = (
-        <div className={fieldContainerClasses}>
-            {inputField}
-            {!unstyled && !clearBg && <div className={bgClasses ? bgClasses : ''}></div>}
-            {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
-        </div>
+        <FormPrimitive.Field name={id} asChild>
+            <FormPrimitive.Control asChild>
+                <div className={fieldContainerClasses}>
+                    {inputField}
+                    {!unstyled && !clearBg && <div className={bgClasses ? bgClasses : ''}></div>}
+                    {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
+                </div>
+            </FormPrimitive.Control>
+        </FormPrimitive.Field>
     );
 
     hintClassName = clsx(
@@ -124,14 +129,20 @@ const TextField: React.FC<TextFieldProps> = ({
 
     if (title || hint) {
         return (
-            <div className={containerClassName}>
-                {field}
-                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-                {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
-            </div>
+            <FormPrimitive.Root asChild>
+                <div className={containerClassName}>
+                    {field}
+                    {title && <Heading className={hideTitle ? 'sr-only' : 'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                    {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
+                </div>
+            </FormPrimitive.Root>
         );
     } else {
-        return (field);
+        return (
+            <FormPrimitive.Root asChild>
+                {field}
+            </FormPrimitive.Root>
+        );
     }
 };
 

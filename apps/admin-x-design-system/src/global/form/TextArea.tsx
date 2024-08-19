@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 import Heading from '../Heading';
 import Hint from '../Hint';
+import * as FormPrimitive from '@radix-ui/react-form';
 
 type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 type FontStyles = 'sans' | 'mono';
@@ -80,23 +81,29 @@ const TextArea: React.FC<TextAreaProps> = ({
     }
 
     return (
-        <div className='flex flex-col'>
-            <textarea
-                ref={inputRef}
-                className={styles}
-                id={id}
-                maxLength={maxLength}
-                placeholder={placeholder}
-                rows={rows}
-                value={value}
-                onBlur={handleBlur}
-                onChange={onChange}
-                onFocus={handleFocus}
-                {...props}>
-            </textarea>
-            {title && <Heading className={'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
-        </div>
+        <FormPrimitive.Root asChild>
+            <div className='flex flex-col'>
+                <FormPrimitive.Field name={id} asChild>
+                    <FormPrimitive.Control asChild>
+                        <textarea
+                            ref={inputRef}
+                            className={styles}
+                            id={id}
+                            maxLength={maxLength}
+                            placeholder={placeholder}
+                            rows={rows}
+                            value={value}
+                            onBlur={handleBlur}
+                            onChange={onChange}
+                            onFocus={handleFocus}
+                            {...props}>
+                        </textarea>
+                    </FormPrimitive.Control>
+                </FormPrimitive.Field>
+                {title && <Heading className={'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
+            </div>
+        </FormPrimitive.Root>
     );
 };
 
