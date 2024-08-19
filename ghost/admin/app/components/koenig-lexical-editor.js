@@ -680,7 +680,7 @@ export default class KoenigLexicalEditor extends Component {
 
         const KGEditorComponent = ({isInitInstance}) => {
             return (
-                <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
+                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {width: 0, height: 0, overflow: 'hidden'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
@@ -714,7 +714,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} /> 
+                        <KGEditorComponent isInitInstance={true} />
                     </Suspense>
                 </ErrorHandler>
             </div>
