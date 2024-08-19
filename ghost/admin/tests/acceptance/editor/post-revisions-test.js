@@ -33,7 +33,8 @@ describe('Acceptance: Post revisions', function () {
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'hour'),
-            reason: 'explicit_save'
+            reason: 'explicit_save',
+            lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"New body","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'
         });
         this.server.create('post-revision', {
             post,
@@ -45,10 +46,9 @@ describe('Acceptance: Post revisions', function () {
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'day'),
-            reason: 'initial_revision'
+            reason: 'initial_revision',
+            lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Old body","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'
         });
-
-        // this.timeout(0);
 
         await visit(`/editor/post/${post.id}`);
 
@@ -109,7 +109,8 @@ describe('Acceptance: Post revisions', function () {
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'hour'),
-            reason: 'explicit_save'
+            reason: 'explicit_save',
+            lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"New body","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'
         });
         this.server.create('post-revision', {
             post,
@@ -118,7 +119,8 @@ describe('Acceptance: Post revisions', function () {
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'day'),
-            reason: 'initial_revision'
+            reason: 'initial_revision',
+            lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Old body","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'
         });
 
         await visit(`/editor/post/${post.id}`);

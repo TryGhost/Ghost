@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {blur, click, currentURL, fillIn, find, waitUntil} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {invalidateSession} from 'ember-simple-auth/test-support';
@@ -18,15 +18,21 @@ describe('Acceptance: Lexical editor', function () {
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
+
         await visit('/editor/post/');
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    describe('new post', function () {
-        // TODO: test it actually loads the editor
+    describe('with new post', function () {
         it('loads editor', async function () {
             await visit('/editor/post/');
             expect(currentURL(), 'currentURL').to.equal('/editor/post/');
+
+            await waitFor('[data-secondary-instance="false"] [data-lexical-editor]');
+            // find the placeholder div
+            const xpath = '//div[text()="Begin writing your post..."]';
+            const match = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+            expect(match.singleNodeValue).to.exist;
         });
 
         it('can leave editor without unsaved changes modal', async function () {
@@ -72,7 +78,16 @@ describe('Acceptance: Lexical editor', function () {
         it('saves on content change');
     });
 
-    describe('existing post', function () {
+    describe('with existing post', function () {
+        it('loads editor', async function () {
+            const post = this.server.create('post', {lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"This is a test","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'});
+            await visit(`/editor/post/${post.id}`);
+            expect(currentURL(), 'currentURL').to.equal(`/editor/post/${post.id}`);
+            await waitFor('[data-secondary-instance="false"] [data-lexical-editor]');
+            // find the post content
+            expect(find('[data-secondary-instance="false"] [data-lexical-editor]')).to.contain.text('This is a test');
+        });
+
         it('does not save post on title blur', async function () {
             const post = this.server.create('post', {status: 'published'});
             const originalTitle = post.title;
