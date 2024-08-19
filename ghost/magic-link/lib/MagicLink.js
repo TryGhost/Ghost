@@ -60,7 +60,6 @@ class MagicLink {
      */
     async sendMagicLink(options) {
         this.sentry.captureMessage(`[Magic Link] Generating magic link`, {extra: options});
-        console.log(`MAGIC LINK LIB sendMagicLink`,options);
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
