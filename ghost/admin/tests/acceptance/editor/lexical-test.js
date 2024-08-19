@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {blur, currentURL, fillIn, find, waitUntil} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, waitUntil} from '@ember/test-helpers';
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {invalidateSession} from 'ember-simple-auth/test-support';
@@ -27,6 +27,13 @@ describe('Acceptance: Lexical editor', function () {
         it('loads editor', async function () {
             await visit('/editor/post/');
             expect(currentURL(), 'currentURL').to.equal('/editor/post/');
+        });
+
+        it('can leave editor without unsaved changes modal', async function () {
+            await visit('/editor/post/');
+            await click('[data-test-link="posts"]');
+            expect(find('[data-test-modal="unsaved-post-changes"]')).to.not.exist;
+            expect(currentURL(), 'currentURL').to.equal('/posts');
         });
 
         it('saves on title change', async function () {
