@@ -214,7 +214,7 @@ const Modal: React.FC<ModalProps> = ({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[200] -mb-4 bg-white !pb-4 dark:bg-black'
+            'sticky top-0 z-[300] -mb-4 bg-white !pb-4 dark:bg-black'
         );
     }
 

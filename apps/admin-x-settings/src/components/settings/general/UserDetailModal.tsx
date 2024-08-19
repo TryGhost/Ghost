@@ -85,7 +85,7 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserMenuTrigger = () => (
+const UserMenuTrigger = (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <span className='sr-only'>Actions</span>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -435,7 +435,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 }}
                             >Upload cover image</ImageUpload>
                             {showMenu && <div className="z-10">
-                                <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
+                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger} />
                             </div>}
                         </div>
                     </div>

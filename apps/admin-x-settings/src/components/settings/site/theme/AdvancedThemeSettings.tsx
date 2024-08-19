@@ -158,7 +158,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     return (
         <div className='-mr-3 flex items-center gap-4'>
             {actions}
-            <Menu items={menuItems} position='left' triggerButtonProps={buttonProps} />
+            <Menu items={menuItems} position='start' triggerButtonProps={buttonProps} />
         </div>
     );
 };
