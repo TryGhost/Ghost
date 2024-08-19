@@ -441,6 +441,16 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
+        const checkStripeEnabled = () => {
+            const hasDirectKeys = !!(this.settings.stripeSecretKey && this.settings.stripePublishableKey);
+            const hasConnectKeys = !!(this.settings.stripeConnectSecretKey && this.settings.stripeConnectPublishableKey);
+
+            if (this.config.stripeDirect) {
+                return hasDirectKeys;
+            }
+            return hasDirectKeys || hasConnectKeys;
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -461,7 +471,8 @@ export default class KoenigLexicalEditor extends Component {
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
-            siteUrl: this.config.getSiteUrl('/')
+            siteUrl: this.config.getSiteUrl('/'),
+            stripeEnabled: checkStripeEnabled() // returns a boolean
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
@@ -667,43 +678,34 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerDocId = cardConfig.post.id;
         const multiplayerUsername = this.session.user.name;
 
-        const KGEditorComponent = ({isInitInstance}) => {
-            return (
-                <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
-                    <KoenigComposer
-                        editorResource={this.editorResource}
-                        cardConfig={cardConfig}
-                        enableMultiplayer={enableMultiplayer}
-                        fileUploader={{useFileUpload, fileTypes}}
-                        initialEditorState={this.args.lexical}
-                        multiplayerUsername={multiplayerUsername}
-                        multiplayerDocId={multiplayerDocId}
-                        multiplayerEndpoint={multiplayerEndpoint}
-                        onError={this.onError}
-                        darkMode={this.feature.nightShift}
-                        isTKEnabled={true}
-                    >
-                        <KoenigEditor
-                            editorResource={this.editorResource}
-                            cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
-                            placeholderText={isInitInstance ? null : this.args.placeholderText}
-                            darkMode={isInitInstance ? null : this.feature.nightShift}
-                            onChange={isInitInstance ? this.args.updateSecondaryInstanceModel : this.args.onChange}
-                            registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
-                        />
-                        <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
-                        <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
-                    </KoenigComposer>
-                </div>
-            );
-        };
-
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} />
+                        <KoenigComposer
+                            editorResource={this.editorResource}
+                            cardConfig={cardConfig}
+                            enableMultiplayer={enableMultiplayer}
+                            fileUploader={{useFileUpload, fileTypes}}
+                            initialEditorState={this.args.lexical}
+                            multiplayerUsername={multiplayerUsername}
+                            multiplayerDocId={multiplayerDocId}
+                            multiplayerEndpoint={multiplayerEndpoint}
+                            onError={this.onError}
+                            darkMode={this.feature.nightShift}
+                            isTKEnabled={true}
+                        >
+                            <KoenigEditor
+                                editorResource={this.editorResource}
+                                cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                                placeholderText={this.args.placeholder}
+                                darkMode={this.feature.nightShift}
+                                onChange={this.args.onChange}
+                                registerAPI={this.args.registerAPI}
+                            />
+                            <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
+                            <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />
+                        </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>
             </div>

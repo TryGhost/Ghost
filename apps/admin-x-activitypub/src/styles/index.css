@@ -29,7 +29,8 @@ animation: bump 0.3s ease-in-out;
 }
 
 .ap-note-content a:hover {
-  color: rgb(219 39 119) !important;
+  color: rgb(190, 25, 99) !important;
+  text-decoration: underline !important;
 }
 
 .ap-note-content p + p {

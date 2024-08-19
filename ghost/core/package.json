@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.89.1",
+  "version": "5.89.3",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -67,7 +67,7 @@
     "@opentelemetry/sdk-metrics": "1.25.1",
     "@opentelemetry/sdk-node": "0.52.1",
     "@opentelemetry/sdk-trace-node": "1.25.1",
-    "@sentry/node": "7.118.0",
+    "@sentry/node": "7.119.0",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -110,10 +110,10 @@
     "@tryghost/kg-card-factory": "5.0.5",
     "@tryghost/kg-converters": "1.0.6",
     "@tryghost/kg-default-atoms": "5.0.3",
-    "@tryghost/kg-default-cards": "10.0.8",
-    "@tryghost/kg-default-nodes": "1.1.12",
-    "@tryghost/kg-html-to-lexical": "1.1.13",
-    "@tryghost/kg-lexical-html-renderer": "1.1.15",
+    "@tryghost/kg-default-cards": "10.0.9",
+    "@tryghost/kg-default-nodes": "1.1.15",
+    "@tryghost/kg-html-to-lexical": "1.1.16",
+    "@tryghost/kg-lexical-html-renderer": "1.1.18",
     "@tryghost/kg-mobiledoc-html-renderer": "7.0.6",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/link-redirects": "0.0.0",
@@ -230,7 +230,7 @@
     "yjs": "13.6.18"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.118.0",
+    "@sentry/profiling-node": "7.119.0",
     "@tryghost/html-to-mobiledoc": "3.1.2",
     "sqlite3": "5.1.7"
   },

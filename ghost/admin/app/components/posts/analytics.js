@@ -1,4 +1,6 @@
 import Component from '@glimmer/component';
+import DeletePostModal from '../modals/delete-post';
+import PostSuccessModal from '../modal-post-success';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
@@ -24,6 +26,9 @@ export default class Analytics extends Component {
     @service utils;
     @service feature;
     @service store;
+    @service router;
+    @service modals;
+    @service notifications;
 
     @tracked sources = null;
     @tracked links = null;
@@ -31,10 +36,45 @@ export default class Analytics extends Component {
     @tracked sortColumn = 'signups';
     @tracked showSuccess;
     @tracked updateLinkId;
+    @tracked _post = null;
+    @tracked postCount = null;
+    @tracked showPostCount = false;
     displayOptions = DISPLAY_OPTIONS;
 
+    constructor() {
+        super(...arguments);
+        if (this.feature.publishFlowEndScreen) {
+            this.checkPublishFlowModal();
+        }
+    }
+
+    openPublishFlowModal() {
+        this.modals.open(PostSuccessModal, {
+            post: this.post,
+            postCount: this.postCount,
+            showPostCount: this.showPostCount
+        });
+    }
+
+    async checkPublishFlowModal() {
+        if (localStorage.getItem('ghost-last-published-post')) {
+            await this.fetchPostCountTask.perform();
+            this.showPostCount = true;
+            this.openPublishFlowModal();
+            localStorage.removeItem('ghost-last-published-post');
+        }
+    }
+
     get post() {
+        if (this.feature.publishFlowEndScreen) {
+            return this._post ?? this.args.post;
+        }
+
         return this.args.post;
+    }
+
+    set post(value) {
+        this._post = value;
     }
 
     get allowedDisplayOptions() {
@@ -140,6 +180,19 @@ export default class Analytics extends Component {
         } else {
             this.mentions = [];
         }
+    }
+
+    @action
+    togglePublishFlowModal() {
+        this.showPostCount = false;
+        this.openPublishFlowModal();
+    }
+
+    @action
+    confirmDeleteMember() {
+        this.modals.open(DeletePostModal, {
+            post: this.post
+        });
     }
 
     updateLinkData(linksData) {
@@ -300,6 +353,29 @@ export default class Analytics extends Component {
     *_fetchMentions() {
         const filter = `resource_id:'${this.post.id}'+resource_type:post`;
         this.mentions = yield this.store.query('mention', {limit: 5, order: 'created_at desc', filter});
+    }
+
+    @task
+    *fetchPostCountTask() {
+        if (!this.post.emailOnly) {
+            const result = yield this.store.query('post', {filter: 'status:published', limit: 1});
+            let count = result.meta.pagination.total;
+
+            this.postCount = count;
+        }
+    }
+
+    @task
+    *fetchPostTask() {
+        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, limit: 1});
+        this.post = result.toArray()[0];
+
+        if (this.post.email) {
+            this.notifications.showNotification('Post analytics refreshing', {
+                description: 'It can take up to five minutes for all data to show.',
+                type: 'success'
+            });
+        }
     }
 
     get showLinks() {

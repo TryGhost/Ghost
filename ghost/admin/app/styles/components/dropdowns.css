@@ -393,7 +393,8 @@ Post context menu
     stroke-width: 1.8px;
 }
 
-.gh-posts-context-menu li:last-child::before {
+.gh-posts-context-menu li:last-child::before,
+.gh-analytics-actions-menu li:last-child::before {
     display: block;
     position: relative;
     content: "";
