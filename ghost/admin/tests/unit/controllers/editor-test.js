@@ -210,8 +210,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content updated","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                isNew: true,
+            controller.set('post', createPost({
                 title: '',
                 titleScratch: '',
                 status: 'draft',
@@ -220,15 +219,14 @@ describe('Unit: Controller: lexical-editor', function () {
                 secondaryLexicalState: initialLexicalString
             }));
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.true;
         });
 
         it('does not detect new post as dirty when there are no changes', async function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                isNew: true,
+            controller.set('post', createPost({
                 title: '',
                 titleScratch: '',
                 status: 'draft',
@@ -237,7 +235,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 secondaryLexicalState: initialLexicalString
             }));
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.false;
         });
 
@@ -245,8 +243,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const initialLexicalString = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             const lexicalScratch = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content scratch","type": "extended-text","version": 1}],"direction": null,"format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                isNew: true,
+            controller.set('post', createPost({
                 title: '',
                 titleScratch: '',
                 status: 'draft',
@@ -256,7 +253,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 changedAttributes: () => ({title: ['', 'New Title']})
             }));
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.true;
         });
 
@@ -281,14 +278,14 @@ describe('Unit: Controller: lexical-editor', function () {
             controller.send('updateScratch',JSON.parse(lexicalStringNoNullDirection));
 
             // this should NOT result in the post being dirty - while lexical !== lexicalScratch, we ignore the direction field
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.false;
 
             // now we try a synthetic change in the actual text content that should result in a dirty post
             controller.send('updateScratch',JSON.parse(lexicalStringUpdatedContent));
 
             // this should NOT result in the post being dirty - while lexical !== lexicalScratch, we ignore the direction field
-            isDirty = controller.get('hasDirtyAttributes');
+            isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.true;
         });
 
@@ -298,7 +295,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
 
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 title: 'this is a title',
                 titleScratch: 'this is a title',
                 status: 'published',
@@ -307,7 +304,7 @@ describe('Unit: Controller: lexical-editor', function () {
                 secondaryLexicalState: secondLexicalInstance
             }));
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.false;
         });
@@ -318,7 +315,7 @@ describe('Unit: Controller: lexical-editor', function () {
             const secondLexicalInstance = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Here's some new text","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
 
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
+            controller.set('post', createPost({
                 title: 'this is a title',
                 titleScratch: 'this is a title',
                 status: 'published',
@@ -329,7 +326,7 @@ describe('Unit: Controller: lexical-editor', function () {
 
             controller.send('updateScratch',JSON.parse(lexicalScratch));
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.true;
         });
@@ -338,55 +335,70 @@ describe('Unit: Controller: lexical-editor', function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('post', null);
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.false;
         });
 
         it('returns true if current tags differ from previous tags', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                tags: [{name: 'test'}],
-                tagsString: 'test',
-                changedAttributes: () => ({tags: [[{name: 'test'}], [{name: 'changed'}]]})
-            }));
+            const tag1 = this.owner.lookup('service:store').createRecord('tag', {id: 1, name: 'test'});
+            const tag2 = this.owner.lookup('service:store').createRecord('tag', {id: 2, name: 'changed'});
+            const post = createPost({
+                tags: [tag1],
+                authors: [],
+                postRevisions: []
+            });
+            const postJson = {...post.serialize(), id: 1};
+            this.owner.lookup('service:store').unloadRecord(post);
+            this.owner.lookup('service:store').pushPayload({posts: [postJson]});
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            const savedPost = this.owner.lookup('service:store').peekRecord('post', 1);
+            controller.set('post', savedPost);
+
+            savedPost.tags = [tag1, tag2];
+
+            let isDirty = controller.hasDirtyAttributes;
 
             expect(isDirty).to.be.true;
         });
 
         it('returns false when the post is new but has no changed attributes', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                isNew: true,
+            controller.set('post', createPost({
                 title: '',
                 titleScratch: '',
                 status: 'draft',
                 lexical: '',
                 lexicalScratch: '',
-                secondaryLexicalState: '',
-                changedAttributes: () => ({}) // no changes
+                secondaryLexicalState: ''
             }));
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
             expect(isDirty).to.be.false;
         });
 
         it('skips new post check if post is not new', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('post', EmberObject.create({
-                isNew: false,
+            const post = createPost({
                 title: 'Sample Title',
-                titleScratch: 'Sample Title',
                 status: 'draft',
                 lexical: '',
-                lexicalScratch: '',
-                secondaryLexicalState: '',
-                changedAttributes: () => ({})
-            }));
+                tags: [],
+                authors: [],
+                postRevisions: []
+            });
+            const postJson = {...post.serialize(), id: 1};
+            this.owner.lookup('service:store').unloadRecord(post);
+            this.owner.lookup('service:store').pushPayload({posts: [postJson]});
+            // scratch attrs are not serialized/deserialized so need to be set manually
+            const savedPost = this.owner.lookup('service:store').peekRecord('post', 1);
+            savedPost.titleScratch = 'Sample Title';
+            savedPost.lexicalScratch = '';
+            savedPost.secondaryLexicalState = '';
+            controller.set('post', savedPost);
 
-            let isDirty = controller.get('hasDirtyAttributes');
+            let isDirty = controller.hasDirtyAttributes;
             // The test passes if no errors occur and it doesn't return true for new post condition
             expect(isDirty).to.be.false;
         });
