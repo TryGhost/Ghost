@@ -323,6 +323,13 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
+    @task
+    *saveExcerptTask() {
+        if (this.post.status === 'draft') {
+            yield this.autosaveTask.perform();
+        }
+    }
+
     // updates local willPublish/Schedule values, does not get applied to
     // the post's `status` value until a save is triggered
     @action

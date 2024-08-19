@@ -71,4 +71,47 @@ describe('Acceptance: Lexical editor', function () {
         // TODO: requires editor to be loading
         it('saves on content change');
     });
+
+    describe('existing post', function () {
+        it('does not save post on title blur', async function () {
+            const post = this.server.create('post', {status: 'published'});
+            const originalTitle = post.title;
+
+            await visit('/editor/post/1');
+            await fillIn('[data-test-editor-title-input]', 'Change test');
+            await blur('[data-test-editor-title-input]');
+
+            expect(find('[data-test-editor-post-status]')).not.to.contain.text('Saved');
+            expect(post.status, 'post status').to.equal('published');
+            expect(post.title, 'saved title').to.equal(originalTitle);
+
+            await click('[data-test-link="posts"]');
+
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
+
+            expect(currentURL(), 'currentURL').to.equal(`/editor/post/1`);
+        });
+
+        it('does not save post on excerpt blur', async function () {
+            // excerpt is not shown by default
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            const post = this.server.create('post', {status: 'published'});
+            const originalExcerpt = post.excerpt;
+
+            await visit('/editor/post/1');
+            await fillIn('[data-test-textarea="excerpt"]', 'Change test');
+            await blur('[data-test-textarea="excerpt"]');
+
+            expect(find('[data-test-editor-post-status]')).not.to.contain.text('Saved');
+            expect(post.status, 'post status').to.equal('published');
+            expect(post.excerpt, 'saved excerpt').to.equal(originalExcerpt);
+
+            await click('[data-test-link="posts"]');
+
+            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
+
+            expect(currentURL(), 'currentURL').to.equal(`/editor/post/1`);
+        });
+    });
 });
