@@ -983,18 +983,25 @@
     fill: black;
 }
 
+.modal-post-success .close {
+    top: 24px;
+    right: 24px;
+}
+
 .modal-post-success:has(.modal-image) .close {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 32px;
     height: 32px;
-    background-color: rgba(0, 0, 0, 0.2);
+    top: 16px;
+    right: 16px;
+    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 50%;
 }
 
 .modal-post-success:has(.modal-image) .close:hover {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .modal-post-success:has(.modal-image) .close svg {
