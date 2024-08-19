@@ -1,0 +1,10 @@
+routes:
+
+collections:
+ /:
+   permalink: /{primary_tag}/{slug}/
+   template: index
+
+taxonomies:
+ tag: /tag/{slug}/
+ author: /author/{slug}/

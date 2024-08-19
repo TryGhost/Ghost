@@ -80,3 +80,41 @@ describe('Custom Frontend routing', function () {
             .expect(assertCorrectFrontendHeaders);
     });
 });
+
+describe('Custom frontend routing - edge cases', function () {
+    let request;
+
+    before(async function () {
+        const routesFilePath = path.join(configUtils.config.get('paths:appRoot'), 'test/utils/fixtures/settings/edgecaseroutes.yaml');
+        await configUtils.restore();
+        await testUtils.stopGhost();
+
+        await testUtils.startGhost({
+            forceStart: true,
+            routesFilePath,
+            subdir: false
+        });
+
+        request = supertest.agent(configUtils.config.get('url'));
+    });
+
+    after(async function () {
+        await testUtils.stopGhost();
+    });
+
+    it('should prioritize taxonomies over collections', async function () {
+        const tag = await testUtils.createTag({
+            tag: {
+                slug: 'cheese'
+            }
+        });
+        await testUtils.createPost({
+            post: {
+                tags: [tag],
+                slug: 'cheese'
+            }
+        });
+        await request.get('/tag/cheese/')
+            .expect(200);
+    });
+});
