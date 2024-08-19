@@ -147,7 +147,7 @@ test.describe('Admin', () => {
 
                 const portalSettings = sharedPage.getByTestId('portal-modal');
 
-                await portalSettings.locator('input[type=checkbox]').first().waitFor();
+                await portalSettings.locator('button[role="checkbox"]').first().waitFor();
 
                 await expect(portalSettings.getByLabel(tierName).first()).toBeHidden();
 
@@ -172,7 +172,7 @@ test.describe('Admin', () => {
 
                 const portalSettings = sharedPage.getByTestId('portal-modal');
 
-                await portalSettings.locator('input[type=checkbox]').first().waitFor();
+                await portalSettings.locator('button[role="checkbox"]').first().waitFor();
 
                 await expect(portalSettings.getByLabel(tierName).first()).toBeVisible();
 
