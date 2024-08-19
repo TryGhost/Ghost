@@ -5,6 +5,7 @@ const verifyEmailTemplate = require('./emails/verify-email');
 const debug = require('@tryghost/debug')('services:newsletters');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const sentry = require('../../../shared/sentry');
 
 const messages = {
     nameAlreadyExists: 'A newsletter with the same name already exists',
@@ -84,7 +85,8 @@ class NewslettersService {
             getSigninURL,
             getText,
             getHTML,
-            getSubject
+            getSubject,
+            sentry
         });
     }
 
