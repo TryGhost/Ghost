@@ -1,12 +1,9 @@
-import * as TabsPrimitive from '@radix-ui/react-tabs';
 import clsx from 'clsx';
 import React from 'react';
-import Icon from './Icon';
 
 export type Tab<ID = string> = {
     id: ID;
     title: string;
-    icon?: string;
     counter?: number | null;
     tabWrapperClassName?: string;
     containerClassName?: string;
@@ -23,8 +20,8 @@ export interface TabButtonProps<ID = string> {
     id: ID,
     title: string;
     onClick?: (e:React.MouseEvent<HTMLButtonElement>) => void;
+    selected: boolean;
     border?: boolean;
-    icon?: string;
     counter?: number | null;
 }
 
@@ -32,26 +29,29 @@ export const TabButton: React.FC<TabButtonProps> = ({
     id,
     title,
     onClick,
+    selected,
     border,
-    icon,
     counter
 }) => {
     return (
-        <TabsPrimitive.Trigger
+        <button
+            key={id}
+            aria-selected={selected}
             className={clsx(
-                '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-md font-medium text-grey-700 transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] data-[state=active]:font-bold data-[state=active]:text-black dark:text-white [&>span]:data-[state=active]:text-black',
-                border && 'border-b-2 border-transparent hover:border-grey-500 data-[state=active]:border-black data-[state=active]:dark:border-white'
+                '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] dark:text-white',
+                border && 'border-b-[3px]',
+                selected && border ? 'border-black dark:border-white' : 'border-transparent hover:border-grey-500',
+                selected && 'font-bold'
             )}
             id={id}
             role='tab'
             title={title}
-            value={id}
+            type="button"
             onClick={onClick}
         >
-            {icon && <Icon className='mb-0.5 mr-1.5 inline' name={icon} size='sm' />}
             {title}
-            {(typeof counter === 'number') && <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-medium text-grey-800 dark:bg-grey-900 dark:text-grey-300'>{counter}</span>}
-        </TabsPrimitive.Trigger>
+            {(typeof counter === 'number') && <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-normal text-grey-800 dark:bg-grey-900 dark:text-grey-300'>{counter}</span>}
+        </button>
     );
 };
 
@@ -71,6 +71,7 @@ export const TabList: React.FC<TabListProps> = ({
     handleTabChange,
     border,
     buttonBorder,
+    selectedTab,
     topRightContent
 }) => {
     const containerClasses = clsx(
@@ -81,26 +82,24 @@ export const TabList: React.FC<TabListProps> = ({
         border && 'border-b border-grey-300 dark:border-grey-900'
     );
     return (
-        <TabsPrimitive.List>
-            <div className={containerClasses} role='tablist'>
-                {tabs.map(tab => (
-                    <div>
-                        <TabButton
-                            border={buttonBorder}
-                            counter={tab.counter}
-                            icon={tab.icon}
-                            id={tab.id}
-                            title={tab.title}
-                            onClick={handleTabChange}
-                        />
-                    </div>
-                ))}
-                {topRightContent !== null ?
-                    <div className='ml-auto'>{topRightContent}</div> :
-                    null
-                }
-            </div>
-        </TabsPrimitive.List>
+        <div className={containerClasses} role='tablist'>
+            {tabs.map(tab => (
+                <div>
+                    <TabButton
+                        border={buttonBorder}
+                        counter={tab.counter}
+                        id={tab.id}
+                        selected={selectedTab === tab.id}
+                        title={tab.title}
+                        onClick={handleTabChange}
+                    />
+                </div>
+            ))}
+            {topRightContent !== null ?
+                <div className='ml-auto'>{topRightContent}</div> :
+                null
+            }
+        </div>
     );
 };
 
@@ -141,7 +140,7 @@ function TabView<ID extends string = string>({
     };
 
     return (
-        <TabsPrimitive.Root className={containerClassName} data-testid={testId} value={selectedTab}>
+        <section className={containerClassName} data-testid={testId}>
             <TabList
                 border={border}
                 buttonBorder={buttonBorder}
@@ -153,12 +152,16 @@ function TabView<ID extends string = string>({
             />
             {tabs.map((tab) => {
                 return (
-                    <TabsPrimitive.Content className={tab.tabWrapperClassName} value={tab.id}>
-                        <div className={tab.containerClassName}>{tab.contents}</div>
-                    </TabsPrimitive.Content>
+                    <>
+                        {tab.contents &&
+                            <div key={tab.id} className={`${selectedTab === tab.id ? 'block' : 'hidden'} ${tab.tabWrapperClassName}`} role='tabpanel'>
+                                <div className={tab.containerClassName}>{tab.contents}</div>
+                            </div>
+                        }
+                    </>
                 );
             })}
-        </TabsPrimitive.Root>
+        </section>
     );
 };
 

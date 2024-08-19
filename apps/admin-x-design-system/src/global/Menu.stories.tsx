@@ -24,7 +24,7 @@ export const Default: Story = {
     args: {
         trigger: <Button color='black' label="Click"></Button>,
         items: items,
-        position: 'start'
+        position: 'left'
     },
     decorators: [
         ThisStory => (
@@ -37,7 +37,7 @@ export const Right: Story = {
     args: {
         trigger: <Button color='black' label="Click"></Button>,
         items: items,
-        position: 'end'
+        position: 'right'
     },
     decorators: [
         ThisStory => (

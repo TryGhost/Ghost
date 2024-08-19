@@ -20,7 +20,7 @@ const Menu: React.FC<MenuProps> = ({
     trigger,
     triggerButtonProps,
     items,
-    position = 'start'
+    position = 'left'
 }) => {
     if (!trigger) {
         trigger = <Button icon='ellipsis' label='Menu' hideLabel {...triggerButtonProps} />;

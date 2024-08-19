@@ -30,7 +30,7 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     testId?: string;
 }
 
-const Button: React.FC<ButtonProps> = React.forwardRef(({
+const Button: React.FC<ButtonProps> = ({
     testId,
     size = 'md',
     label = '',
@@ -51,7 +51,7 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
     outlineOnMobile = false,
     onClick,
     ...props
-}, ref) => {
+}) => {
     if (!color) {
         color = 'clear';
     }
@@ -155,12 +155,9 @@ const Button: React.FC<ButtonProps> = React.forwardRef(({
         disabled: disabled,
         type: 'button',
         onClick: onClick,
-        ref: ref,
         ...props}, buttonChildren);
 
     return buttonElement;
-});
-
-Button.displayName = 'Button';
+};
 
 export default Button;

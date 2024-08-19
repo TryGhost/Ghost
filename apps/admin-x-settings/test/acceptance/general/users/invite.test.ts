@@ -61,7 +61,7 @@ test.describe('User invitations', async () => {
         // Successful invitation
 
         await modal.getByLabel('Email address').fill('newuser@test.com');
-        await modal.locator('button[value=author]').click();
+        await modal.locator('input[value=author]').check();
         await modal.getByRole('button', {name: 'Retry'}).click();
 
         await expect(page.getByTestId('toast-success')).toHaveText(/Invitation sent/);
@@ -174,11 +174,11 @@ test.describe('User invitations', async () => {
 
         const modal = page.getByTestId('invite-user-modal');
 
-        await modal.locator('button[value=author]').click();
+        await modal.locator('input[value=author]').check();
 
         await expect(modal).toHaveText(/Your plan does not support more staff/);
 
-        await modal.locator('button[value=contributor]').click();
+        await modal.locator('input[value=contributor]').check();
 
         await expect(modal).not.toHaveText(/Your plan does not support more staff/);
     });
