@@ -6,27 +6,15 @@ module.exports = function (Bookshelf) {
         getFilteredCollection: function getFilteredCollection(options) {
 
             const filteredCollection = this.forge();
-            filteredCollection.query((qb) => {
-                console.log("Here is the a: " + qb.toString());
-            });
 
             // Apply model-specific query behavior
             filteredCollection.applyCustomQuery(options);
-            filteredCollection.query((qb) => {
-                console.log("Here is the b: " + qb.toString());
-            });
 
             // Add Filter behavior
             //filteredCollection.applyDefaultAndCustomFilters(options);
-            filteredCollection.query((qb) => {
-                console.log("Here is the c: " + qb.toString());
-            });
 
             // Apply model-specific search behavior
             filteredCollection.applySearchQuery(options);
-            filteredCollection.query((qb) => {
-                console.log("Here is the d: " + qb.toString());
-            });
 
             return filteredCollection;
         },

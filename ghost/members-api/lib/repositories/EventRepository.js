@@ -557,15 +557,15 @@ module.exports = class EventRepository {
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
             whereRaw: `created_at < '2024-08-16' and rn = 1`,
-            orderRaw: `created_at desc, id desc`,
-            cte: {
+            //orderRaw: `created_at desc, id desc`,
+            cte: [{
                 name: `PostClicks`,
                 query: postClicksQuery
             },
-            cte2: {
+            {
                 name: `FirstClicks`,
                 query: firstClicksQuery
-            },
+            }],
             from: `FirstClicks`,
             order: ``
         };

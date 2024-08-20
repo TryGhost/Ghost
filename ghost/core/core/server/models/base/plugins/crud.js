@@ -112,12 +112,6 @@ module.exports = function (Bookshelf) {
                 options.order = this.orderDefaultOptions();
             }
 
-            //console.log("See the query: " + this.query.toString());
-            console.log("Here is the options: " + JSON.stringify(options));
-            itemCollection.query((qb) => {
-                console.log("Here is the query: " + qb.toString());
-            });
-
             if (options.selectRaw) {
                 itemCollection.query((qb) => {
                     qb.select(qb.client.raw(options.selectRaw));
@@ -130,21 +124,17 @@ module.exports = function (Bookshelf) {
                 });
             }
 
-            if (unfilteredOptions.cte) {
-                itemCollection.query((qb) => {
-                    qb.with(unfilteredOptions.cte.name, unfilteredOptions.cte.query);
-                });
-            }
-            
-            if (unfilteredOptions.cte2) {
-                itemCollection.query((qb) => {
-                    qb.with(unfilteredOptions.cte2.name, unfilteredOptions.cte2.query);
+            if (Array.isArray(options.cte)) {
+                options.cte.forEach(cte => {
+                    itemCollection.query((qb) => {
+                        qb.with(cte.name, cte.query);
+                    });
                 });
             }
 
-            if (unfilteredOptions.from) {
+            if (options.from) {
                 itemCollection.query((qb) => {
-                    qb.from(unfilteredOptions.from);
+                    qb.from(options.from);
                 });
             }
 
