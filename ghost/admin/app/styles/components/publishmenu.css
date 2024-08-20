@@ -944,6 +944,9 @@
 }
 
 .modal-post-success .modal-footer .gh-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-width: 64px;
     height: 40px;
     border-radius: 4px;
