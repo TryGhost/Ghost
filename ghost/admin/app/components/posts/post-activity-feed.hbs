@@ -11,7 +11,7 @@
             </div>
         {{/if}}
 
-        {{#if (and (not eventsFetcher.data) (not eventsFetcher.isLoading))}}
+        {{#if (not eventsFetcher.data)}}
             <div class="gh-dashboard-list-body">
                 <div class="gh-post-activity-feed-empty">
                     <div class="attribution-list-empty">
