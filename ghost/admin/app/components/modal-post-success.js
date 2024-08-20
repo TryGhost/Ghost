@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {action} from '@ember/object';
 import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -27,29 +26,16 @@ export default class PostSuccessModal extends Component {
         return this.args.data.showPostCount;
     }
 
-    @action
-    handleTwitter() {
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(this.post.url)}`, '_blank');
+    get encodedTitle() {
+        return encodeURIComponent(this.post.title);
     }
 
-    @action
-    handleThreads() {
-        window.open(`https://threads.net/intent/post?text=${encodeURI(this.post.url)}`, '_blank');
+    get encodedUrl() {
+        return encodeURIComponent(this.post.url);
     }
 
-    @action
-    handleFacebook() {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(this.post.url)}`, '_blank');
-    }
-
-    @action
-    handleLinkedIn() {
-        window.open(`http://www.linkedin.com/shareArticle?mini=true&url=${encodeURI(this.post.url)}`, '_blank');
-    }
-
-    @action
-    viewInBrowser() {
-        window.open(this.post.url, '_blank');
+    get encodedTitleAndUrl() {
+        return encodeURIComponent(`${this.post.title} ${this.post.url}`);
     }
 
     @task
