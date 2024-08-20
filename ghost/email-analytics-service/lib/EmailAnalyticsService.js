@@ -231,9 +231,9 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.begin
      * @param {Date} options.end
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-     * @param {String[]} [options.events] Only fetch these events
+     * @param {String[]} [options.eventTypes] Only fetch these events, ['delivered', 'opened', 'failed', 'unsubscribed', 'complained']
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, events = null}) {
+    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         logging.info('[EmailAnalytics] Fetching from ' + begin.toISOString() + ' until ' + end.toISOString() + ' (maxEvents: ' + maxEvents + ')');
 
@@ -278,7 +278,7 @@ module.exports = class EmailAnalyticsService {
 
         try {
             for (const provider of this.providers) {
-                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events});
+                await provider.fetchLatest(processBatch, {begin, end, maxEvents, eventTypes});
             }
 
             logging.info('[EmailAnalytics] Fetching finished');
