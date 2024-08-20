@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
@@ -289,6 +289,75 @@ test.describe('User profile', async () => {
         await expect(modal.getByLabel(/New paid members/)).toBeHidden();
         await expect(modal.getByLabel(/Paid member cancellations/)).toBeHidden();
         await expect(modal.getByLabel(/Milestones/)).toBeHidden();
+    });
+
+    test('Shows donation notification option when Stripe enabled', async ({page}) => {
+        toggleLabsFlag('tipsAndDonations', true);
+
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(modal.getByLabel(/Tips & donations/)).toBeVisible();
+        await expect(modal.getByLabel(/Tips & donations/)).toHaveAttribute('aria-checked', 'true');
+
+        await modal.getByLabel(/Tips & donations/).uncheck();
+
+        await expect(modal.getByLabel(/Tips & donations/)).toHaveAttribute('aria-checked', 'false');
+
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editUser?.body).toMatchObject({
+            users: [{
+                donation_notifications: false
+            }]
+        });
+    });
+
+    test('Hides donation notification option when Stripe disabled', async ({page}) => {
+        toggleLabsFlag('tipsAndDonations', true);
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(modal.getByLabel(/Tips & donations/)).not.toBeVisible();
     });
 
     test('Warns when leaving without saving', async ({page}) => {
