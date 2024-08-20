@@ -17,7 +17,7 @@ module.exports = function (Bookshelf) {
             });
 
             // Add Filter behavior
-            filteredCollection.applyDefaultAndCustomFilters(options);
+            //filteredCollection.applyDefaultAndCustomFilters(options);
             filteredCollection.query((qb) => {
                 console.log("Here is the c: " + qb.toString());
             });

@@ -516,7 +516,7 @@ module.exports = class EventRepository {
                 redirects r ON mce.redirect_id = r.id
             WHERE
                 r.post_id = ?
-    `, ['66a6e891e3f68c00017c202f']);
+    `, ['66bdd37e7d8ad47169c8198d']);
 
         const firstClicksQuery = knex.raw(`
             SELECT
@@ -535,12 +535,11 @@ module.exports = class EventRepository {
                     AND inner_mce.redirect_id IN (
                         SELECT redirect_id
                         FROM PostClicks
-                        WHERE id = FirstClicks.id
                     )`;
         options = {
             ...options,
-            //withRelated: ['member'],
-            //filter: 'custom:true',
+            withRelated: ['member'],
+            filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
@@ -550,14 +549,15 @@ module.exports = class EventRepository {
                 ...mapKeys({
                     'data.created_at': 'created_at',
                     'data.member_id': 'member_id',
-                    'data.post_id': 'post_id'
+                    'data.post_id': 'pi'
                 })
             ),
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
-            whereRaw: `rn = 1`,
+            whereRaw: `created_at < '2024-08-16' and rn = 1`,
+            orderRaw: `created_at desc, id desc`,
             cte: {
                 name: `PostClicks`,
                 query: postClicksQuery
@@ -566,7 +566,8 @@ module.exports = class EventRepository {
                 name: `FirstClicks`,
                 query: firstClicksQuery
             },
-            from: `FirstClicks`
+            from: `FirstClicks`,
+            order: ``
         };
 
         const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
