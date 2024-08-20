@@ -92,21 +92,22 @@
 
     <footer class="modal-footer">
         {{#if (and this.post.isPublished (not this.post.emailOnly))}}
-            <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer">
+            <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                 <span>{{svg-jar "social-x"}}</span>
             </a>
-            <a href="https://threads.net/intent/post?text={{this.encodedTitleAndUrl}}" class="gh-btn threads" target="_blank" rel="noopener noreferrer">
+            <a href="https://threads.net/intent/post?text={{this.encodedTitleAndUrl}}" class="gh-btn threads" target="_blank" rel="noopener noreferrer" title="Share on Threads">
                 <span>{{svg-jar "social-threads"}}</span>
             </a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u={{this.encodedUrl}}" class="gh-btn facebook" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{this.encodedUrl}}" class="gh-btn facebook" target="_blank" rel="noopener noreferrer" title="Share on Facebook">
                 <span>{{svg-jar "social-facebook"}}</span>
             </a>
-            <a href="http://www.linkedin.com/shareArticle?mini=true&title={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn linkedin" target="_blank" rel="noopener noreferrer">
+            <a href="http://www.linkedin.com/shareArticle?mini=true&title={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn linkedin" target="_blank" rel="noopener noreferrer" title="Share on LinkedIn">
                 <span>{{svg-jar "social-linkedin"}}</span>
             </a>
             <GhTaskButton
                 @buttonText="Copy link"
-                @task={{this.handleCopyLink}}
+                @title="Copy link"
+                @task={{this.handleCopyLink}}                
                 @showIcon={{true}}
                 @successText="Link copied"
                 @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
@@ -125,7 +126,7 @@
                 {{on "click" @close}}
                 {{on "mousedown" (optional this.noop)}}
             >
-                <span>OK</span>
+                <span>Close</span>
             </button>
         {{/if}}
     </footer>
