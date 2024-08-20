@@ -62,7 +62,7 @@
     "@lezer/highlight": "^1.2.0",
     "@playwright/test": "^1.33.0",
     "@prettier/sync": "^0.3.0",
-    "@sentry/vite-plugin": "2.22.0",
+    "@sentry/vite-plugin": "2.22.2",
     "@storybook/addon-actions": "7.6.20",
     "@storybook/addon-essentials": "7.6.20",
     "@storybook/addon-interactions": "7.6.20",
