@@ -278,7 +278,7 @@ module.exports = class EmailAnalyticsService {
 
         try {
             for (const provider of this.providers) {
-                await provider.fetchLatest(processBatch, {begin, end, maxEvents, eventTypes});
+                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
             }
 
             logging.info('[EmailAnalytics] Fetching finished');
