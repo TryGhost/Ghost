@@ -188,6 +188,10 @@ async function matchEmailSnapshot() {
         {
             match: linkRegexp,
             replacement: 'http://127.0.0.1:2369/r/xxxxxx'
+        },
+        {
+            match: /key=[0-9a-f]+/g,
+            replacement: 'key=xxxxxx'
         }
     ];
 
