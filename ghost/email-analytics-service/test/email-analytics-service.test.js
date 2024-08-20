@@ -46,9 +46,6 @@ describe('EmailAnalyticsService', function () {
             const result = await service.getLastNonOpenedEventTimestamp();
             result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
         });
-
-        it.skip('returns the cached value before the fallback', async function () {
-        });
     });
 
     describe('getLastSeenOpenedEventTimestamp', function () {
@@ -76,41 +73,6 @@ describe('EmailAnalyticsService', function () {
 
         it.skip('returns the cached value before the fallback', async function () {
         });
-    });
-
-    describe('fetching events', function () {
-        beforeEach(function () {
-
-        });
-
-        describe('fetchLatestOpenedEvents', function () {
-            it('fetches opened events', async function () {
-                const service = new EmailAnalyticsService({
-                    queries: {
-                        getLastEventTimestamp: sinon.stub().resolves(null)
-                    }
-                });
-
-                await service.fetchLatestOpenedEvents();
-
-                service.queries.fetchLatestEvents.calledOnce.should.be.true();
-            });
-        });
-
-        describe('fetchLatestNonOpenedEvents', function () {
-        });
-
-        describe('fetchMissing', function () {
-        });
-
-        describe('fetchScheduled', function () {
-        });
-    });
-
-    describe('schedule', function () {
-    });
-
-    describe('cancelScheduled', function () {
     });
 
     describe('processEventBatch', function () {
