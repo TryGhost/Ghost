@@ -23,7 +23,7 @@ describe('EmailEventStorage', function () {
     before(async function () {
         // Stub queries before boot
         const queries = require('../../../../core/server/services/email-analytics/lib/queries');
-        sinon.stub(queries, 'getLastSeenEventTimestamp').callsFake(async function () {
+        sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
             // This is required because otherwise the last event timestamp will be now, and that is too close to NOW to start fetching new events
             return new Date(2000, 0, 1);
         });
@@ -78,7 +78,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestNonOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -125,7 +125,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestNonOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -170,7 +170,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('opened_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -250,7 +250,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -346,7 +346,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -439,7 +439,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('failed_at'), null, 'This test requires a failed email recipient');
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -529,7 +529,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -645,7 +645,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -747,7 +747,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -849,7 +849,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -951,7 +951,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1015,7 +1015,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1074,7 +1074,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1118,7 +1118,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
     });
 
@@ -1132,7 +1132,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 0);
     });
 });
