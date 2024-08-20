@@ -1486,7 +1486,7 @@
     width: 56px;
 }
 
-.gh-post-analytics-header .gh-post-list-cta {
+.gh-post-analytics-header .gh-post-list-cta.edit {
     margin-top: -14px;
     margin-right: 0;
 }
