@@ -8,6 +8,9 @@ test.describe('Portal', () => {
             // go to website and open portal
             await sharedPage.goto('/#/portal/support');
 
+            const totalAmount = sharedPage.getByTestId('product-summary-total-amount');
+            await expect(totalAmount).toHaveText('$5.00');
+            await sharedPage.getByText('Change amount').click();
             await sharedPage.locator('#customUnitAmount').fill('12.50');
             await sharedPage.locator('#email').fill('member-donation-test-1@ghost.org');
             await completeStripeSubscription(sharedPage);
@@ -34,6 +37,7 @@ test.describe('Portal', () => {
             await sharedPage.goto('#/portal/support');
 
             // Don't need to fill email as it's already filled
+            await sharedPage.getByText('Change amount').click();
             await sharedPage.locator('#customUnitAmount').fill('12.50');
             await completeStripeSubscription(sharedPage);
 
