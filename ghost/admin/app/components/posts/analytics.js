@@ -376,6 +376,8 @@ export default class Analytics extends Component {
                 type: 'success'
             });
         }
+
+        return true;
     }
 
     get showLinks() {
