@@ -75,6 +75,44 @@ describe('EmailAnalyticsService', function () {
         });
     });
 
+    describe('Fetching events', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+        describe('fetchLatestOpenedEvents', function () {
+            it('fetches only opened events', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });                
+                await service.fetchLatestOpenedEvents();
+                fetchLatestSpy.calledOnce.should.be.true();
+                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
+            });
+        });
+        describe('fetchLatestNonOpenedEvents', function () {
+            it('fetches only non-opened events', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });                
+                await service.fetchLatestNonOpenedEvents();
+                fetchLatestSpy.calledOnce.should.be.true();
+                fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
+            });
+        });
+    });
+
     describe('processEventBatch', function () {
         let eventProcessor;
         beforeEach(function () {
