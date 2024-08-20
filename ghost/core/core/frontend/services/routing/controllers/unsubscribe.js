@@ -3,6 +3,8 @@ const url = require('url');
 const members = require('../../../../server/services/members');
 const urlUtils = require('../../../../shared/url-utils');
 const logging = require('@tryghost/logging');
+const settingsHelpers = require('../../../../server/services/settings-helpers');
+const crypto = require('crypto');
 
 module.exports = async function unsubscribeController(req, res) {
     debug('unsubscribeController');
@@ -19,6 +21,17 @@ module.exports = async function unsubscribeController(req, res) {
 
         // Do an actual unsubscribe
         try {
+            if (!query.key) {
+                logging.warn('[List-Unsubscribe] Unsubscribe failed due to missing verification key for ' + query.uuid);
+                return res.status(400).end();
+            }
+            const membersKey = settingsHelpers.getMembersValidationKey();
+            const memberHmac = crypto.createHmac('sha256', membersKey).update(query.uuid).digest('hex');
+            if (memberHmac !== query.key) {
+                logging.warn('[List-Unsubscribe] Unsubscribe failed due to invalid key for ' + query.uuid);
+                return res.status(400).end();
+            }
+
             const member = await members.api.members.get({uuid: query.uuid}, {withRelated: ['newsletters']});
             if (member) {
                 if (query.comments) {
@@ -59,6 +72,9 @@ module.exports = async function unsubscribeController(req, res) {
     }
     if (query.comments) {
         redirectUrl.searchParams.append('comments', query.comments);
+    }
+    if (query.key) {
+        redirectUrl.searchParams.append('key', query.key);
     }
     redirectUrl.searchParams.append('action', 'unsubscribe');
 

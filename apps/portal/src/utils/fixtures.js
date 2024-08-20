@@ -121,6 +121,29 @@ export const site = getSiteData({
             subscribe_on_signup: false,
             paid: false
         }
+    ],
+    posts: [
+        {
+            id: 'post_66aacfe061c94e10eb6e4fc1',
+            title: 'Post 1',
+            excerpt: 'Post excerpt',
+            slug: 'post-1',
+            featured: false
+        },
+        {
+            id: 'post_66aacfe04f14b8dbb56c5721',
+            title: 'Post 2',
+            excerpt: 'Post excerpt',
+            slug: 'post-2',
+            featured: false
+        },
+        {
+            id: 'post_66aacfe03d609460819af18c',
+            title: 'Post 3',
+            excerpt: 'Post excerpt',
+            slug: 'post-3',
+            featured: false
+        }
     ]
 });
 

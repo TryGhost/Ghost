@@ -26,6 +26,104 @@ Object {
 }
 `;
 
+exports[`Members Feedback Authentication Allows authentication via uuid (+ key) 1: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "score": 1,
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Authentication Allows authentication via uuid (+ key) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "132",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Authentication Thorws for invalid key 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Invalid key.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Authentication Throws for invalid uuid 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Invalid key.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Authentication Throws for missing key 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Invalid key.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Authentication Throws for nonexisting uuid 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Invalid key.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
 exports[`Members Feedback Can add feedback 1: [body] 1`] = `
 Object {
   "feedback": Array [

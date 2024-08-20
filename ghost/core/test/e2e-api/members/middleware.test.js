@@ -3,6 +3,8 @@ const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = requ
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const should = require('should');
+const sinon = require('sinon');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 let membersAgent;
 
@@ -60,8 +62,11 @@ describe('Comments API', function () {
             let member = await models.Member.findOne({id: fixtureManager.get('members', 0).id}, {require: true});
             member.get('enable_comment_notifications').should.eql(true, 'This test requires the initial value to be true');
 
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const hmac = crypto.createHmac('sha256', 'test').update(member.get('uuid')).digest('hex');
+
             await membersAgent
-                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}`)
+                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}&key=${hmac}`)
                 .body({
                     enable_comment_notifications: false
                 })
@@ -179,9 +184,12 @@ describe('Comments API', function () {
             member = await models.Member.findOne({id: member.id}, {require: true});
             member.get('enable_comment_notifications').should.eql(false);
 
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const hmac = crypto.createHmac('sha256', 'test').update(member.get('uuid')).digest('hex');
+
             // Via updateMemberNewsletters
             await membersAgent
-                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}`)
+                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}&key=${hmac}`)
                 .body({
                     enable_comment_notifications: true
                 })

@@ -790,12 +790,12 @@ Object {
       "failed_count": 0,
       "feedback_enabled": false,
       "from": "support@example.com",
-      "html": "<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hey Jamie, Hey Jamie,</p><a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=preview\\">Unsubscribe</a>",
+      "html": "<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hey Jamie, Hey Jamie,</p><a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=preview\\">Unsubscribe</a>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "newsletter_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "opened_count": 0,
       "plaintext": "Hey Jamie, Hey Jamie
-Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=preview]",
+Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=preview]",
       "post_id": "618ba1ffbe2896088840a6e3",
       "recipient_filter": "all",
       "reply_to": null,
@@ -817,7 +817,7 @@ exports[`Emails API Does default replacements on the HTML body of an old email 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "923",
+  "content-length": "1061",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

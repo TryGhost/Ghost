@@ -211,7 +211,8 @@ describe('Members Service Middleware', function () {
             sinon.restore();
         });
 
-        it('returns 400 if no member uuid is part of the request', async function () {
+        // auth happens prior to this middleware
+        it('returns 404 if no member uuid is part of the request', async function () {
             req.query = {};
 
             // Call the middleware
@@ -219,11 +220,12 @@ describe('Members Service Middleware', function () {
 
             // Check behavior
             res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(400);
+            res.writeHead.firstCall.args[0].should.eql(404);
             res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Invalid member uuid');
+            res.end.firstCall.args[0].should.eql('Email address not found.');
         });
 
+        // auth happens prior to this middleware
         it('returns 404 if member uuid is not found', async function () {
             req.query = {uuid: 'test'};
             sinon.stub(membersService, 'api').get(() => {
@@ -246,8 +248,8 @@ describe('Members Service Middleware', function () {
 
         it('attempts to update newsletters', async function () {
             res.json = sinon.stub();
-            req.query = {uuid: 'test'};
-            const memberData = {
+            // member data appended if authed via uuid+key or session
+            req.member = {
                 id: 'test',
                 email: 'test@email.com',
                 name: 'Test Name',
@@ -258,10 +260,9 @@ describe('Members Service Middleware', function () {
             sinon.stub(membersService, 'api').get(() => {
                 return {
                     members: {
-                        get: sinon.stub().resolves({id: 'test', email: 'test@email.com', get: () => 'test'}),
                         update: sinon.stub().resolves({
-                            ...memberData,
-                            toJSON: () => JSON.stringify(memberData)
+                            ...req.member,
+                            toJSON: () => JSON.stringify(req.member)
                         })
                     }
                 };
@@ -273,7 +274,22 @@ describe('Members Service Middleware', function () {
 
         it('returns 400 on error', async function () {
             // use a malformed request to trigger an error
-            req = {};
+            // member data appended if authed via uuid+key or session
+            req.member = {
+                id: undefined,
+                email: 'test@email.com',
+                name: 'Test Name',
+                newsletters: [],
+                enable_comment_notifications: false,
+                status: 'free'
+            };
+            sinon.stub(membersService, 'api').get(() => {
+                return {
+                    members: {
+                        update: sinon.stub().rejects(new Error('Test Error'))
+                    }
+                };
+            });
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior

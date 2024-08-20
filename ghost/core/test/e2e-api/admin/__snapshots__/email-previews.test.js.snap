@@ -605,7 +605,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -749,7 +749,7 @@ Another email card with a similar replacement, Jamie
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -778,7 +778,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24595",
+  "content-length": "24733",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1302,7 +1302,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1463,7 +1463,7 @@ Header Level 3
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -1492,7 +1492,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "29375",
+  "content-length": "29513",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2042,7 +2042,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -2180,7 +2180,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -2222,7 +2222,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24349",
+  "content-length": "24487",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3108,7 +3108,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3253,7 +3253,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -3295,7 +3295,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25132",
+  "content-length": "25270",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4207,7 +4207,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -4352,7 +4352,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -4394,7 +4394,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25132",
+  "content-length": "25270",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
