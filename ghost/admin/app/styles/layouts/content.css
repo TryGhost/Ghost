@@ -776,6 +776,17 @@
     border-radius: var(--border-radius);
 }
 
+.gh-analytics-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 0;
+}
+
+.gh-analytics-actions-menu.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
+}
+
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
 .gh-post-analytics-box.gh-post-analytics-mentions {
@@ -842,13 +853,12 @@
     background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,.1);
-}
-
-.gh-post-analytics-resource {
     flex: 1;
+    align-items: flex-start;
     display: grid;
     grid-template-columns: 2fr 3fr;
     grid-gap: 24px;
+    min-width: 0;
 }
 
 .gh-post-analytics-resource .thumbnail {
@@ -866,6 +876,7 @@
 .gh-post-analytics-resource h3 {
     font-size: 1.8rem;
     font-weight: 700;
+    text-wrap: pretty;
 }
 
 .gh-post-analytics-box h4.gh-main-section-header.small {
@@ -1523,6 +1534,10 @@
     transition: all .1s linear;
 }
 
+span.dropdown .gh-post-list-cta > span {
+    padding: 0;
+}
+
 .gh-post-list-cta.edit.is-hovered > *,
 .gh-post-list-cta.edit.is-hovered:hover > *,
 .gh-post-list-cta.edit:not(.is-hovered):hover > *  {
@@ -1534,7 +1549,7 @@
     color: var(--green-d1);
 }
 
-@media screen and (max-width: 1080px) {
+@media screen and (max-width: 1200px) {
     .gh-post-analytics-box.resources {
         flex-direction: column;
     }

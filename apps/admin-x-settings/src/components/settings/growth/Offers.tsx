@@ -13,7 +13,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
     {offerTitle, tier, cadence, redemptions, type, amount, currency, offerId, offerCode, goToOfferEdit}) => {
     const {discountOffer} = getOfferDiscount(type, amount, cadence, currency || 'USD', tier);
     return <div className='group flex h-full cursor-pointer flex-col justify-between gap-4 break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[187px]' onClick={() => goToOfferEdit(offerId)}>
-        <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>{offerTitle}</span>
+        <span className='text-[1.65rem] font-bold leading-tight tracking-tight text-black dark:text-white'>{offerTitle}</span>
         <div className='flex flex-col'>
             <span className={`text-sm font-semibold uppercase`}>{discountOffer}</span>
             <div className='flex gap-1 text-xs'>

@@ -5,6 +5,7 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -490,6 +491,38 @@ describe('Acceptance: Editor', function () {
             ).to.equal(0);
         });
 
+        it('handles in-editor excerpt update and validation', async function () {
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            let post = this.server.create('post', {authors: [author], customExcerpt: 'Existing excerpt'});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(find('[data-test-textarea="excerpt"]'), 'initial textarea').to.be.visible;
+            expect(find('[data-test-textarea="excerpt"]'), 'initial textarea').to.have.value('Existing excerpt');
+
+            await fillIn('[data-test-textarea="excerpt"]', 'New excerpt');
+            expect(find('[data-test-textarea="excerpt"]'), 'updated textarea').to.have.value('New excerpt');
+
+            await triggerEvent('[data-test-textarea="excerpt"]', 'keydown', {
+                key: 's',
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            expect(post.customExcerpt, 'saved excerpt').to.equal('New excerpt');
+
+            await fillIn('[data-test-textarea="excerpt"]', Array(302).join('a'));
+
+            expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.exist;
+            expect(find('[data-test-error="excerpt"]')).to.have.trimmed.text('Excerpt cannot be longer than 300 characters.');
+
+            await fillIn('[data-test-textarea="excerpt"]', Array(300).join('a'));
+
+            expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.not.exist;
+        });
+
         // https://github.com/TryGhost/Ghost/issues/11786
         // NOTE: Flaky test with moving to Lexical editor, skipping for now
         it.skip('save shortcut works when tags/authors field is focused', async function () {
@@ -591,6 +624,40 @@ describe('Acceptance: Editor', function () {
             // check for TK indicator
             expect(
                 find('[data-testid="tk-indicator"]'),
+                'TK indicator text'
+            ).to.exist;
+
+            // click publish to see if confirmation comes up
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-modal="tk-reminder"]'),
+                'TK reminder modal'
+            ).to.exist;
+        });
+
+        it('handles TKs in excerpt', async function () {
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            const post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-textarea="excerpt"]').value,
+                'initial excerpt'
+            ).to.equal('');
+
+            await fillIn('[data-test-textarea="excerpt"]', 'Test TK excerpt');
+
+            expect(
+                find('[data-test-textarea="excerpt"]').value,
+                'excerpt after typing'
+            ).to.equal('Test TK excerpt');
+
+            // check for TK indicator
+            expect(
+                find('[data-testid="tk-indicator-excerpt"]'),
                 'TK indicator text'
             ).to.exist;
 

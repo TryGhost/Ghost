@@ -1,7 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 import {ReactNode} from 'react';
 
-import {Toaster} from 'react-hot-toast';
 import Button from './Button';
 import {ShowToastProps, showToast} from './Toast';
 
@@ -25,7 +24,6 @@ const meta = {
     tags: ['autodocs'],
     decorators: [(_story: () => ReactNode) => (
         <>
-            <Toaster />
             {_story()}
         </>
     )]

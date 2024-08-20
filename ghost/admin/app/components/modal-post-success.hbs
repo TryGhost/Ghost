@@ -1,0 +1,152 @@
+<div class="modal-content">
+    {{#if this.post.featureImage}}
+        <figure class="modal-image">
+            <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{else if this.post.twitterImage}}
+        <figure class="modal-image">
+            <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{else if this.post.ogImage}}
+        <figure class="modal-image">
+            <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{/if}}
+
+    <header class="modal-header">
+        <h1>
+            {{#if this.post.isScheduled}}
+                <span>All set!</span>
+            {{else}}
+                <span>
+                    {{#if this.showPostCount}}
+                        Boom! It's out there.
+                    {{else}}
+                        Your post is out there.
+                    {{/if}}
+                </span>
+                <span>
+                    {{#if this.post.emailOnly}}
+                        Your email has been sent.
+                    {{else}}
+                        {{#if this.showPostCount}}
+                            That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
+                        {{else}}
+                            Share it with the world!
+                        {{/if}}
+                    {{/if}}
+                </span>
+            {{/if}}
+        </h1>
+    </header>
+
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+            {{#if this.showPostCount}}
+                Keep up the good work. Now, share your post with the world!
+            {{else}}
+                Spread the word to your audience and increase your reach.
+            {{/if}}
+        {{else}}
+            {{#if this.post.isSent}}
+                It
+            {{else}}
+                {{if this.post.emailOnly "Your email" "Your post"}}
+            {{/if}}
+            {{if this.post.isScheduled "will be" "was"}}
+            {{#if this.post.emailOnly}}
+                sent to
+            {{else if this.post.willEmail}}
+                published on your site, and sent to
+            {{else}}
+                published on your site
+            {{/if}}
+
+            {{#if (or this.post.hasEmail this.post.willEmail)}}
+                {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                    <strong class="nowrap">
+                        {{if (eq @recipientType "all") "all"}}
+
+                        {{format-number countFetcher.count}}
+
+                        {{!-- @recipientType = free/paid/all/specific --}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>
+
+                    of <strong>{{this.post.newsletter.name}}</strong>
+                {{/let}}
+            {{/if}}
+
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                on
+                {{moment-format publishedAt "D MMM YYYY"}}
+                at
+                {{moment-format publishedAt "HH:mm"}}.
+            {{/let}}
+        {{/if}}
+    </div>
+
+    <footer class="modal-footer">
+        {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+            <button
+                class="gh-btn twitter"
+                type="button"
+                {{on "click" this.handleTwitter}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>{{svg-jar "social-x"}}</span>
+            </button>
+            <button
+                class="gh-btn threads"
+                type="button"
+                {{on "click" this.handleThreads}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>{{svg-jar "social-threads"}}</span>
+            </button>
+            <button
+                class="gh-btn facebook"
+                type="button"
+                {{on "click" this.handleFacebook}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>{{svg-jar "social-facebook"}}</span>
+            </button>
+            <button
+                class="gh-btn linkedin"
+                type="button"
+                {{on "click" this.handleLinkedIn}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>{{svg-jar "social-linkedin"}}</span>
+            </button>
+            <GhTaskButton
+                @buttonText="Copy link"
+                @task={{this.handleCopyLink}}
+                @showIcon={{true}}
+                @successText="Link copied"
+                @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
+        {{else}}
+            {{#if (and this.post.isScheduled (not this.post.emailOnly))}}
+                <GhTaskButton
+                    @buttonText="Copy preview link"
+                    @task={{this.handleCopyPreviewLink}}
+                    @successText="Link copied"
+                    @class="gh-btn gh-btn-icon copy-preview-link" />
+            {{/if}}
+
+            <button
+                class="gh-btn gh-btn-primary dismiss"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>OK</span>
+            </button>
+        {{/if}}
+    </footer>
+</div>

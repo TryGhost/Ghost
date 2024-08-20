@@ -39,6 +39,7 @@ export function getSiteData({
     portalButtonSignupText: portal_button_signup_text = 'Subscribe now',
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
+    editorDefaultEmailRecipients: editor_default_email_recipients = 'visibility',
     newsletters = [],
     commentsEnabled,
     recommendations = [],
@@ -66,10 +67,11 @@ export function getSiteData({
         portal_button_signup_text,
         portal_button_style,
         members_support_address,
-        comments_enabled: !!commentsEnabled,
+        comments_enabled: commentsEnabled !== 'off',
         newsletters,
         recommendations,
-        recommendations_enabled: !!recommendationsEnabled
+        recommendations_enabled: !!recommendationsEnabled,
+        editor_default_email_recipients
     };
 }
 
@@ -261,13 +263,14 @@ export function getFreeProduct({
 }
 
 export function getBenefits({numOfBenefits}) {
+    const timestamp = Date.now();
     const random = Math.floor(Math.random() * 100);
 
     const beenfits = [
-        getBenefitData({name: `Limited early adopter pricing #${random}`}),
-        getBenefitData({name: `Latest gear reviews #${random}`}),
-        getBenefitData({name: `Weekly email newsletter #${random}`}),
-        getBenefitData({name: `Listen to my podcast #${random}`})
+        getBenefitData({name: `Limited early adopter pricing #${random}-${timestamp}`}),
+        getBenefitData({name: `Latest gear reviews #${random}-${timestamp}`}),
+        getBenefitData({name: `Weekly email newsletter #${random}-${timestamp}`}),
+        getBenefitData({name: `Listen to my podcast #$${random}-${timestamp}`})
     ];
     return beenfits.slice(0, numOfBenefits);
 }

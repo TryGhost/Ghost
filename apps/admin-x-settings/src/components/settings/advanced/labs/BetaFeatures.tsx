@@ -16,8 +16,12 @@ const BetaFeatures: React.FC = () => {
     return (
         <List titleSeparator={false}>
             <LabItem
+                action={<FeatureToggle flag="editorExcerpt" />}
+                detail={<>Adds the excerpt input below the post title in the editor</>}
+                title='Show post excerpt inline' />
+            <LabItem
                 action={<FeatureToggle flag="additionalPaymentMethods" />}
-                detail={<>Enable support for PayPal, iDEAL, WeChat Pay and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                detail={<>Enable support for CashApp, iDEAL, Bancontact, and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Additional payment methods' />
             <LabItem
                 action={<FeatureToggle flag='i18n' />}

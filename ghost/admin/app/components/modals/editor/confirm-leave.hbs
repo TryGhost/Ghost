@@ -1,4 +1,4 @@
-<div class="modal-content">
+<div class="modal-content" data-test-modal="unsaved-post-changes">
     <header class="modal-header">
         <h1>Are you sure you want to leave this page?</h1>
     </header>
@@ -14,8 +14,8 @@
     </div>
 
     <div class="modal-footer">
-        <button class="gh-btn" type="button" {{on "click" @close}}><span>Stay</span></button>
-        <button class="gh-btn gh-btn-red" type="button" {{on "click" (fn @close true)}}><span>Leave</span></button>
+        <button class="gh-btn" data-test-stay-button type="button" {{on "click" @close}}><span>Stay</span></button>
+        <button class="gh-btn gh-btn-red" data-test-leave-button type="button" {{on "click" (fn @close true)}}><span>Leave</span></button>
     </div>
 
 </div>

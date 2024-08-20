@@ -85,7 +85,7 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserMenuTrigger = () => (
+const UserMenuTrigger = (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <span className='sr-only'>Actions</span>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -112,10 +112,6 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         },
         onSave: async (values) => {
             await updateUser?.(values);
-        },
-        onSavedStateReset: () => {
-            mainModal.remove();
-            navigateOnClose();
         },
         onSaveError: handleError
     });
@@ -353,9 +349,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
             buttonsDisabled={okProps.disabled}
+            cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
-            okLabel={okProps.label || 'Save & close'}
+            okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
@@ -438,7 +435,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 }}
                             >Upload cover image</ImageUpload>
                             {showMenu && <div className="z-10">
-                                <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
+                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger} />
                             </div>}
                         </div>
                     </div>

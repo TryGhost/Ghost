@@ -47,8 +47,8 @@ function removeSourceFormats(frame) {
  */
 function selectAllAllowedColumns(frame) {
     if (!frame.options.columns && !frame.options.selectRaw) {
-        // Because we're returning columns directly from the table we need to remove info columns like @@UNIQUE_CONSTRAINTS@@
-        frame.options.selectRaw = _.keys(_.omit(postsSchema, ['lexical','mobiledoc','@@UNIQUE_CONSTRAINTS@@'])).join(',');
+        // Because we're returning columns directly from the schema we need to remove info columns like @@UNIQUE_CONSTRAINTS@@ and @@INDEXES@@
+        frame.options.selectRaw = _.keys(_.omit(postsSchema, ['lexical','mobiledoc','@@INDEXES@@','@@UNIQUE_CONSTRAINTS@@'])).join(',');
     } else if (frame.options.columns) {
         frame.options.columns = frame.options.columns.filter((column) => {
             return !['mobiledoc', 'lexical'].includes(column);
@@ -92,18 +92,11 @@ function defaultRelations(frame) {
 }
 
 function setDefaultOrder(frame) {
-    let includesOrderedRelations = false;
-
-    if (frame.options.withRelated) {
-        const orderedRelations = ['author', 'authors', 'tag', 'tags'];
-        includesOrderedRelations = _.intersection(orderedRelations, frame.options.withRelated).length > 0;
-    }
-
-    if (!frame.options.order && !includesOrderedRelations && frame.options.filter) {
+    if (!frame.options.order && frame.options.filter) {
         frame.options.autoOrder = slugFilterOrder('posts', frame.options.filter);
     }
 
-    if (!frame.options.order && !frame.options.autoOrder && !includesOrderedRelations) {
+    if (!frame.options.order && !frame.options.autoOrder) {
         frame.options.order = 'published_at desc';
     }
 }

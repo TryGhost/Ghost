@@ -9,7 +9,7 @@ const settingsCache = require('../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
 const models = require('../../core/server/models');
-const {mockManager, fixtureManager} = require('../utils/e2e-framework');
+const {fixtureManager} = require('../utils/e2e-framework');
 const DataGenerator = require('../utils/fixtures/data-generator');
 const members = require('../../core/server/services/members');
 
@@ -125,11 +125,10 @@ describe('Front-end members behavior', function () {
                 .expect(400);
         });
 
-        //TODO: Remove 500 expect once tests are wired up with Stripe
-        it('should not throw 400 for using offer id on members create checkout session endpoint', async function () {
+        it('should error for using an invalid offer id on members create checkout session endpoint', async function () {
             await request.post('/members/api/create-stripe-checkout-session')
                 .send({
-                    offerId: '62826b1b6dccb3e3e997ebd4',
+                    offerId: 'invalid',
                     identity: null,
                     metadata: {
                         name: 'Jamie Larsen'
@@ -139,7 +138,7 @@ describe('Front-end members behavior', function () {
                     tierId: null,
                     cadence: null
                 })
-                .expect(500);
+                .expect(400);
         });
 
         it('should error for invalid data on members create update session endpoint', async function () {
@@ -267,14 +266,6 @@ describe('Front-end members behavior', function () {
     });
 
     describe('Unsubscribe', function () {
-        beforeEach(function () {
-            mockManager.mockLabsEnabled('listUnsubscribeHeader');
-        });
-
-        afterEach(function () {
-            mockManager.restore();
-        });
-
         it('should redirect with uuid and action param', async function () {
             await request.get('/unsubscribe/?uuid=XXX')
                 .expect(302)
