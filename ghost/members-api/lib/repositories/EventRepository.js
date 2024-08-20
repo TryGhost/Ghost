@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const mingo = require('mingo');
+const db = require('../../../core/core/server/data/db');
 const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys} = require('@tryghost/mongo-utils');
 
 /**
@@ -489,24 +490,57 @@ module.exports = class EventRepository {
      * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
      */
     async getAggregatedClickEvents(options = {}, filter) {
-        // This counts all clicks for a member for the same post
-        const postClickQuery = `SELECT count(distinct A.redirect_id)
-            FROM members_click_events A
-            LEFT JOIN redirects A_r on A_r.id = A.redirect_id
-            LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
-            WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
+        // // This counts all clicks for a member for the same post
+        // const postClickQuery = `SELECT count(distinct A.redirect_id)
+        //     FROM members_click_events A
+        //     LEFT JOIN redirects A_r on A_r.id = A.redirect_id
+        //     LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
+        //     WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
 
-        // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
-        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id)
-            FROM members_click_events A
-            LEFT JOIN redirects A_r on A_r.id = A.redirect_id
-            LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
-            WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
+        // // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
+        // const postClickQueryPreceding = `SELECT count(distinct A.redirect_id)
+        //     FROM members_click_events A
+        //     LEFT JOIN redirects A_r on A_r.id = A.redirect_id
+        //     LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
+        //     WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
 
+        const knex = db.knex;
+        const postClicksQuery = knex.raw(`SELECT
+                mce.id,
+                mce.member_id,
+                mce.redirect_id,
+                mce.created_at
+            FROM
+                members_click_events mce
+            INNER JOIN
+                redirects r ON mce.redirect_id = r.id
+            WHERE
+                r.post_id = ?
+    `, ['66a6e891e3f68c00017c202f']);
+
+        const firstClicksQuery = knex.raw(`
+            SELECT
+                id,
+                member_id,
+                redirect_id,
+                created_at,
+                ROW_NUMBER() OVER (PARTITION BY member_id ORDER BY created_at, id) AS rn
+            FROM
+                PostClicks
+        `);
+
+        const mainQuery = `SELECT COUNT(DISTINCT redirect_id)
+                    FROM PostClicks AS inner_mce
+                    WHERE inner_mce.member_id = FirstClicks.member_id
+                    AND inner_mce.redirect_id IN (
+                        SELECT redirect_id
+                        FROM PostClicks
+                        WHERE id = FirstClicks.id
+                    )`;
         options = {
             ...options,
-            withRelated: ['member'],
-            filter: 'custom:true',
+            //withRelated: ['member'],
+            //filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
@@ -522,8 +556,17 @@ module.exports = class EventRepository {
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
-            selectRaw: `id, member_id, created_at, (${postClickQuery}) as count__clicks`,
-            whereRaw: `(${postClickQueryPreceding}) = 0`
+            selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
+            whereRaw: `rn = 1`,
+            cte: {
+                name: `PostClicks`,
+                query: postClicksQuery
+            },
+            cte2: {
+                name: `FirstClicks`,
+                query: firstClicksQuery
+            },
+            from: `FirstClicks`
         };
 
         const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);

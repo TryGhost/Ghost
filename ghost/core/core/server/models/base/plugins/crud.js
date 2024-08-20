@@ -2,6 +2,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 const tpl = require('@tryghost/tpl');
+const JsonImporter = require('@tryghost/data-generator/lib/utils/JsonImporter');
 
 const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
@@ -81,6 +82,9 @@ module.exports = function (Bookshelf) {
         findPage: async function findPage(unfilteredOptions) {
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             const itemCollection = this.getFilteredCollection(options);
+            itemCollection.query((qb) => {
+                console.log("Here is the query123: " + qb.toString());
+            });
             const requestedColumns = options.columns;
             // make sure we include plaintext and custom_excerpt if excerpt is requested
             requiredForExcerpt(requestedColumns);
@@ -108,6 +112,12 @@ module.exports = function (Bookshelf) {
                 options.order = this.orderDefaultOptions();
             }
 
+            //console.log("See the query: " + this.query.toString());
+            console.log("Here is the options: " + JSON.stringify(options));
+            itemCollection.query((qb) => {
+                console.log("Here is the query: " + qb.toString());
+            });
+
             if (options.selectRaw) {
                 itemCollection.query((qb) => {
                     qb.select(qb.client.raw(options.selectRaw));
@@ -117,6 +127,24 @@ module.exports = function (Bookshelf) {
             if (options.whereRaw) {
                 itemCollection.query((qb) => {
                     qb.whereRaw(options.whereRaw);
+                });
+            }
+
+            if (unfilteredOptions.cte) {
+                itemCollection.query((qb) => {
+                    qb.with(unfilteredOptions.cte.name, unfilteredOptions.cte.query);
+                });
+            }
+            
+            if (unfilteredOptions.cte2) {
+                itemCollection.query((qb) => {
+                    qb.with(unfilteredOptions.cte2.name, unfilteredOptions.cte2.query);
+                });
+            }
+
+            if (unfilteredOptions.from) {
+                itemCollection.query((qb) => {
+                    qb.from(unfilteredOptions.from);
                 });
             }
 
