@@ -92,38 +92,18 @@
 
     <footer class="modal-footer">
         {{#if (and this.post.isPublished (not this.post.emailOnly))}}
-            <button
-                class="gh-btn twitter"
-                type="button"
-                {{on "click" this.handleTwitter}}
-                {{on "mousedown" (optional this.noop)}}
-            >
+            <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer">
                 <span>{{svg-jar "social-x"}}</span>
-            </button>
-            <button
-                class="gh-btn threads"
-                type="button"
-                {{on "click" this.handleThreads}}
-                {{on "mousedown" (optional this.noop)}}
-            >
+            </a>
+            <a href="https://threads.net/intent/post?text={{this.encodedTitleAndUrl}}" class="gh-btn threads" target="_blank" rel="noopener noreferrer">
                 <span>{{svg-jar "social-threads"}}</span>
-            </button>
-            <button
-                class="gh-btn facebook"
-                type="button"
-                {{on "click" this.handleFacebook}}
-                {{on "mousedown" (optional this.noop)}}
-            >
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{this.encodedUrl}}" class="gh-btn facebook" target="_blank" rel="noopener noreferrer">
                 <span>{{svg-jar "social-facebook"}}</span>
-            </button>
-            <button
-                class="gh-btn linkedin"
-                type="button"
-                {{on "click" this.handleLinkedIn}}
-                {{on "mousedown" (optional this.noop)}}
-            >
+            </a>
+            <a href="http://www.linkedin.com/shareArticle?mini=true&title={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn linkedin" target="_blank" rel="noopener noreferrer">
                 <span>{{svg-jar "social-linkedin"}}</span>
-            </button>
+            </a>
             <GhTaskButton
                 @buttonText="Copy link"
                 @task={{this.handleCopyLink}}
