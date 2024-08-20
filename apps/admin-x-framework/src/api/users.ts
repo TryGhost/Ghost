@@ -33,6 +33,7 @@ export type User = {
     mention_notifications: boolean;
     recommendation_notifications: boolean;
     milestone_notifications: boolean;
+    donation_notifications: boolean;
     roles: UserRole[];
     url: string;
 }
