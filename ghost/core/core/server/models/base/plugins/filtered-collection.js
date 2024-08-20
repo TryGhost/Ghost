@@ -4,7 +4,6 @@
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({}, {
         getFilteredCollection: function getFilteredCollection(options) {
-
             const filteredCollection = this.forge();
 
             // Apply model-specific query behavior

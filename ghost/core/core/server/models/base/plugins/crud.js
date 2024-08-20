@@ -2,7 +2,6 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 const tpl = require('@tryghost/tpl');
-const JsonImporter = require('@tryghost/data-generator/lib/utils/JsonImporter');
 
 const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
@@ -82,9 +81,6 @@ module.exports = function (Bookshelf) {
         findPage: async function findPage(unfilteredOptions) {
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             const itemCollection = this.getFilteredCollection(options);
-            itemCollection.query((qb) => {
-                console.log("Here is the query123: " + qb.toString());
-            });
             const requestedColumns = options.columns;
             // make sure we include plaintext and custom_excerpt if excerpt is requested
             requiredForExcerpt(requestedColumns);
