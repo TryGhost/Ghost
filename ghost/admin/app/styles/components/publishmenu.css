@@ -939,7 +939,7 @@
     line-height: 1.4;
     letter-spacing: -0.01em;
     text-wrap: pretty;
-    padding: 24px;
+    padding: 16px 24px;
 }
 
 .modal-post-success .modal-body p {
@@ -952,6 +952,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;  
     overflow: hidden;
+    margin: 0 0 16px 0; 
 }
 
 .modal-post-success .email {
@@ -969,6 +970,11 @@
 
 .modal-post-success .modal-body .gh-post-details .gh-post-bookmark-site-name {
     font-weight: 600;
+    flex-shrink: 0;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .modal-post-success .modal-body .gh-post-bookmark-site-icon {
@@ -981,7 +987,7 @@
 }
 
 .modal-post-success .modal-footer {
-    background: var(--whitegrey);
+    background: var(--whitegrey-l2);
     margin-top: 0;
     gap: 16px;
     padding: 16px 24px;
