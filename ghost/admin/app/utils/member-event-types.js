@@ -1,4 +1,4 @@
-const ALL_EVENT_TYPES = [
+export const ALL_EVENT_TYPES = [
     {event: 'signup_event', icon: 'filter-dropdown-signups', name: 'Signups', group: 'auth'},
     {event: 'login_event', icon: 'filter-dropdown-logins', name: 'Logins', group: 'auth'},
     {event: 'subscription_event', icon: 'filter-dropdown-paid-subscriptions', name: 'Paid subscriptions', group: 'payments'},
