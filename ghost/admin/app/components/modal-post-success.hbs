@@ -145,18 +145,21 @@
                         @buttonText="Copy preview link"
                         @task={{this.handleCopyPreviewLink}}
                         @showIcon={{true}}
+                        @idleIcon="link"
                         @successText="Link copied"
                         @class="gh-btn gh-btn-icon copy-preview-link" />
-                {{/if}}
 
-                <button
-                    class="gh-btn gh-btn-primary dismiss"
-                    type="button"
-                    {{on "click" @close}}
-                    {{on "mousedown" (optional this.noop)}}
-                >
-                    <span>Close</span>
-                </button>
+                    {{else}}
+                    <button
+                        class="gh-btn gh-btn-primary dismiss"
+                        type="button"
+                        {{on "click" @close}}
+                        {{on "mousedown" (optional this.noop)}}
+                    >
+                        <span>Close</span>
+                    </button>
+                {{/if}}
+                
             {{/if}}
         </footer>
     </div>
