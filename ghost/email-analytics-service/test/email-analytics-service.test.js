@@ -16,10 +16,22 @@ describe('EmailAnalyticsService', function () {
             const service = new EmailAnalyticsService({});
             const result = service.getStatus();
             result.should.deepEqual({
-                latest: null,
-                missing: null,
-                scheduled: null,
-                latestOpened: null
+                latest: {
+                    jobName: 'email-analytics-latest-others',
+                    running: false
+                },
+                latestOpened: {
+                    jobName: 'email-analytics-latest-opened',
+                    running: false
+                },
+                missing: {
+                    jobName: 'email-analytics-missing',
+                    running: false
+                },
+                scheduled: {
+                    jobName: 'email-analytics-scheduled',
+                    running: false
+                }
             });
         });
     });
@@ -84,7 +96,9 @@ describe('EmailAnalyticsService', function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
                     queries: {
-                        getLastEventTimestamp: sinon.stub().resolves()
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
                     },
                     providers: [{
                         fetchLatest: fetchLatestSpy
@@ -100,7 +114,9 @@ describe('EmailAnalyticsService', function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
                     queries: {
-                        getLastEventTimestamp: sinon.stub().resolves()
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
                     },
                     providers: [{
                         fetchLatest: fetchLatestSpy
