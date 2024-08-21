@@ -16,6 +16,10 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
         const expansions = [{
             key: 'post_id',
             replacement: 'link.post_id'
+        },
+        {
+            key: 'data.created_at',
+            replacement: 'created_at'
         }];
 
         return expansions;

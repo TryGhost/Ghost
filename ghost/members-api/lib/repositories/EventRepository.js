@@ -16,6 +16,31 @@ function replaceCustomFilterTransformer(filter) {
     };
 }
 
+function removeTypeFilter(filterString) {
+    // Regular expression to match '+type:[...]'
+    const typeFilterRegex = /\+type:\[[^\]]+\]/;
+
+    // Replace the matched '+type:[...]' with an empty string
+    let modifiedFilter = filterString.replace(typeFilterRegex, '');
+
+    return modifiedFilter;
+}
+
+function removePostFilter(filterString) {
+    // Regular expression to match '+type:[...]'
+    const typeFilterRegex = /\+data.post_id:\s*'[^']+'/;
+
+    // Replace the matched '+type:[...]' with an empty string
+    let modifiedFilter = filterString.replace(typeFilterRegex, '');
+
+    const typeFilterRegex2 = /data.post_id:\s*'[^']+'/;
+
+    // Replace the matched '+type:[...]' with an empty string
+    modifiedFilter = filterString.replace(typeFilterRegex2, '');
+
+    return modifiedFilter;
+}
+
 module.exports = class EventRepository {
     constructor({
         DonationPaymentEvent,
@@ -491,7 +516,20 @@ module.exports = class EventRepository {
      */
     async getAggregatedClickEvents(options = {}, filter) {
         const knex = db.knex;
-        const postId = filter.$and.find(condition => condition['data.post_id'])['data.post_id'];
+        let postId;
+
+        if (filter.$and) {
+            // Case when there is an $and condition
+            postId = filter.$and.find(condition => condition['data.post_id'])?.['data.post_id'];
+        } else {
+            // Case when there's no $and condition, directly look for data.post_id
+            postId = filter['data.post_id'];
+        }
+        console.log("options.filter : " + options.filter);
+        options.filter = removeTypeFilter(options.filter);
+        console.log("options.filter 1 : " + options.filter);
+        options.filter = removePostFilter(options.filter);
+        console.log("options.filter 2 : " + options.filter);
 
         const postClicksQuery = knex.raw(`SELECT
                     mce.id,
@@ -527,14 +565,14 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: ['member'],
-            filter: '',
+            //filter: '',
             filterRelations: false,
             useBasicCount: true,
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
-            whereRaw: `created_at < '2024-08-25' and rn = 1`,
+            whereRaw: `rn = 1`,
             //orderRaw: `created_at desc, id desc`,
             cte: [{
                 name: `PostClicks`,
