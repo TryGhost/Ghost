@@ -947,6 +947,15 @@
     line-height: 1.5em;
 }
 
+.modal-post-success .modal-body p.post-excerpt {
+    -webkit-line-clamp: 3;
+}
+
+.modal-post-success .modal-body .email {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
 .modal-post-success .modal-body .gh-post-details {
     display: flex;
     align-items: center;
