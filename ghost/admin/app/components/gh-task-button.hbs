@@ -15,14 +15,18 @@
         </span>
     {{/if}}
 
-    {{#if (and this.idleIcon (not (or this.isRunning this.isSuccess this.isFailure)))}}
-        <span data-test-task-button-state="idle">
-            {{#if this.showIcon}}
+    {{#if (and this.isIdle (not (or this.isRunning this.isSuccess this.isFailure)))}}
+    <span data-test-task-button-state="idle">
+        {{#if this.showIcon}}
+            {{#if this.idleIcon}}
                 {{svg-jar this.idleIcon}}
             {{/if}}
-            {{this.buttonText}}
-        </span>
-    {{/if}}
+        {{/if}}
+        {{this.buttonText}}
+    </span>
+{{/if}}
+
+
     {{#if this.isSuccess}}
         <span {{did-insert this.handleReset}} data-test-task-button-state="success">
             {{#if this.showIcon}}
