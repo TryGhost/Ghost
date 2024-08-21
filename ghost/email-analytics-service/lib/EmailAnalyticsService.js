@@ -207,7 +207,10 @@ module.exports = class EmailAnalyticsService {
                 // Cancel the running fetch
                 this.#fetchScheduledData.canceled = true;
             } else {
-                this.#fetchScheduledData = null;
+                this.#fetchScheduledData = {
+                    running: false,
+                    jobName: 'email-analytics-scheduled'
+                };
             }
         }
     }
@@ -220,12 +223,15 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<number>} The number of events fetched.
      */
     async fetchScheduled({maxEvents = Infinity} = {}) {
+        console.log(this.#fetchScheduledData);
         if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
             // Nothing scheduled
+            console.log('[EmailAnalytics] Nothing scheduled');
             return 0;
         }
 
         if (this.#fetchScheduledData.canceled) {
+            console.log('[EmailAnalytics] FetchScheduled canceled');
             // Skip for now
             this.#fetchScheduledData = null;
             return 0;
@@ -242,14 +248,20 @@ module.exports = class EmailAnalyticsService {
         if (end <= begin) {
             // Skip for now
             logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
-            this.#fetchScheduledData = null;
+            this.#fetchScheduledData = {
+                running: false,
+                jobName: 'email-analytics-scheduled'
+            };
             return 0;
         }
 
         const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
         if (count === 0 || this.#fetchScheduledData.canceled) {
             // Reset the scheduled fetch
-            this.#fetchScheduledData = null;
+            this.#fetchScheduledData = {
+                running: false,
+                jobName: 'email-analytics-scheduled'
+            };
         }
 
         this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'completed', this.#fetchScheduledData.lastEventTimestamp);
@@ -282,6 +294,13 @@ module.exports = class EmailAnalyticsService {
         let processingResult = new EventProcessingResult();
         let error = null;
 
+        /**
+         * Process a batch of events
+         * @param {Array<Object>} events - Array of event objects to process
+         * @param {EventProcessingResult} processingResult - Object to store the processing results
+         * @param {FetchData} fetchData - Object containing fetch operation data
+         * @returns {Promise<void>}
+         */
         const processBatch = async (events) => {
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
             await this.processEventBatch(events, processingResult, fetchData);
