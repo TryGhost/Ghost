@@ -645,7 +645,7 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(find('[data-test-nav-custom="posts-My posts"]')).to.exist;
 
                 // screen has default title and sidebar is showing inactive custom view
-                expect(find('[data-test-screen-title]')).to.have.rendered.text('Posts');
+                expect(find('[data-test-screen-title]')).to.have.rendered.trimmed.text('Posts');
                 expect(find('[data-test-nav="posts"]')).to.have.class('active');
 
                 // clicking sidebar custom view link works
@@ -657,7 +657,7 @@ describe('Acceptance: Posts / Pages', function () {
                 // clicking the main posts link resets
                 await click('[data-test-nav="posts"]');
                 expect(currentURL()).to.equal('/posts');
-                expect(find('[data-test-screen-title]')).to.have.rendered.text('Posts');
+                expect(find('[data-test-screen-title]')).to.have.rendered.trimmed.text('Posts');
                 expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.not.have.class('active');
 
                 // changing a filter to match a custom view shows custom view
