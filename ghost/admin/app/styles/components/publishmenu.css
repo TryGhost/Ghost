@@ -974,7 +974,7 @@
     gap: 16px;
     padding: 16px 24px;
     border-top: 1px solid var(--lightgrey-l1);
-    border-radius: 0 0 var(--radius) var(--radius);
+    border-radius: 0 0 8px 8px;
 }
 
 .modal-post-success .modal-footer .gh-btn {
