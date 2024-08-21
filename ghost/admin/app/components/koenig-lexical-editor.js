@@ -680,7 +680,7 @@ export default class KoenigLexicalEditor extends Component {
 
         const KGEditorComponent = ({isInitInstance}) => {
             return (
-                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {width: 0, height: 0, overflow: 'hidden'} : {}}>
+                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
