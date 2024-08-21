@@ -210,8 +210,6 @@ export default class SelectionList {
         const modelOrder = ['scheduledInfinityModel', 'draftInfinityModel', 'publishedAndSentInfinityModel'];
         const models = this.infinityModel;
 
-        const newSelectedIds = new Set(this.selectedIds);
-
         for (const modelKey of modelOrder) {
             const model = models[modelKey];
             if (!model?.content || model.content.length === 0) {
@@ -227,20 +225,21 @@ export default class SelectionList {
                         }
                     } else {
                         this.lastShiftSelectionGroup.add(item.id);
-                        this.inverted ? newSelectedIds.delete(item.id) : newSelectedIds.add(item.id);
+                        this.inverted ? this.selectedIds.delete(item.id) : this.selectedIds.add(item.id);
                         return;
                     }
                 }
 
                 if (running) {
                     this.lastShiftSelectionGroup.add(item.id);
-                    this.inverted ? newSelectedIds.delete(item.id) : newSelectedIds.add(item.id);
+                    this.inverted ? this.selectedIds.delete(item.id) : this.selectedIds.add(item.id);
                 }
             }
         }
 
-        // Update selectedIds with the new Set
-        this.selectedIds = newSelectedIds;
+        // Force update
+        // eslint-disable-next-line no-self-assign
+        this.selectedIds = this.selectedIds;
     }
 
     selectAll() {
