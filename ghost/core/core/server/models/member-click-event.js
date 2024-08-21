@@ -21,7 +21,10 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
         return expansions;
     },
 
-    filterRelations() {
+    filterRelations(options) {
+        if(options && options.filterRelations === false) {
+            return {};
+        }
         return {
             link: {
                 // Mongo-knex doesn't support belongsTo relations

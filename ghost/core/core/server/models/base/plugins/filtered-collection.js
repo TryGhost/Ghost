@@ -10,7 +10,7 @@ module.exports = function (Bookshelf) {
             filteredCollection.applyCustomQuery(options);
 
             // Add Filter behavior
-            //filteredCollection.applyDefaultAndCustomFilters(options);
+            filteredCollection.applyDefaultAndCustomFilters(options);
 
             // Apply model-specific search behavior
             filteredCollection.applySearchQuery(options);

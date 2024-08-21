@@ -540,19 +540,20 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: ['member'],
-            filter: 'custom:true',
+            filter: '',
+            filterRelations: false,
             useBasicCount: true,
-            mongoTransformer: chainTransformers(
-                // First set the filter manually
-                replaceCustomFilterTransformer(filter),
+            // mongoTransformer: chainTransformers(
+            //     // First set the filter manually
+            //     replaceCustomFilterTransformer(filter),
 
-                // Map the used keys in that filter
-                ...mapKeys({
-                    'data.created_at': 'created_at',
-                    'data.member_id': 'member_id',
-                    'data.post_id': 'post_id'
-                })
-            ),
+            //     // Map the used keys in that filter
+            //     ...mapKeys({
+            //         'data.created_at': 'created_at',
+            //         'data.member_id': 'member_id',
+            //         'data.post_id': 'post_id'
+            //     })
+            // ),
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
@@ -570,6 +571,7 @@ module.exports = class EventRepository {
             from: `FirstClicks`,
             order: ``
         };
+        console.log("See the filters: " + options.filter);
 
         const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
 
