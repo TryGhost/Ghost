@@ -56,10 +56,8 @@
                 </div>
             {{/if}}
                 <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
-                <div class="gh-post-bookmark-authors">{{this.post.authors}}</div>
+                <div class="gh-post-bookmark-authors">{{this.authorNames}}</div>
             </div>
-
-            
         </div>
 
         <footer class="modal-footer">
@@ -77,10 +75,11 @@
                     <span>{{svg-jar "social-linkedin"}}</span>
                 </a>
                 <GhTaskButton
+                    @showIcon={{true}}
+                    @idleIcon="link"
                     @buttonText="Copy link"
                     @title="Copy link"
                     @task={{this.handleCopyLink}}                
-                    @showIcon={{true}}
                     @successText="Link copied"
                     @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
             {{else}}
