@@ -20,6 +20,10 @@ const errors = require('@tryghost/errors');
  * @typedef {FetchData & {schedule?: {begin: Date, end: Date}}} FetchDataScheduled
  */
 
+/**
+ * @typedef {'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained'} EmailAnalyticsEvent
+ */
+
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
 
@@ -259,7 +263,7 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.begin - Start date for fetching events
      * @param {Date} options.end - End date for fetching events
      * @param {number} [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-     * @param {string[]} [options.eventTypes] - Array of event types to fetch. Possible values: 'delivered', 'opened', 'failed', 'unsubscribed', 'complained'. If not provided, all event types are fetched.
+     * @param {EmailAnalyticsEvent[]} [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
      * @returns {Promise<number>} The number of events fetched
      */
     async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {

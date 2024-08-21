@@ -6,6 +6,7 @@ const {default: ObjectID} = require('bson-objectid');
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
 
 /** @typedef {'email-analytics-latest-opened'|'email-analytics-latest-others'|'email-analytics-missing'|'email-analytics-scheduled'} EmailAnalyticsJobName */
+/** @typedef {'delivered'|'opened'|'failed'} EmailAnalyticsEvent */
 
 module.exports = {
     async shouldFetchStats() {
@@ -17,7 +18,7 @@ module.exports = {
     /**
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
      * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
-     * @param {string[]} events - The email analytics events to consider (default: ['delivered', 'opened', 'failed']).
+     * @param {EmailAnalyticsEvent[]} [events=['delivered', 'opened', 'failed']] - The email analytics events to consider.
      * @returns {Promise<Date|null>} The timestamp of the last seen event, or null if no events are found.
      */
     async getLastEventTimestamp(jobName, events = ['delivered', 'opened', 'failed']) {
