@@ -1,18 +1,4 @@
 <div class="modal-content">
-    {{#if this.post.featureImage}}
-        <figure class="modal-image">
-            <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
-        </figure>
-    {{else if this.post.twitterImage}}
-        <figure class="modal-image">
-            <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
-        </figure>
-    {{else if this.post.ogImage}}
-        <figure class="modal-image">
-            <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
-        </figure>
-    {{/if}}
-
     <header class="modal-header">
         <h1>
             {{#if this.post.isScheduled}}
@@ -39,6 +25,20 @@
             {{/if}}
         </h1>
     </header>
+    
+    {{#if this.post.featureImage}}
+        <figure class="modal-image">
+            <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{else if this.post.twitterImage}}
+        <figure class="modal-image">
+            <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{else if this.post.ogImage}}
+        <figure class="modal-image">
+            <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
+        </figure>
+    {{/if}}
 
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
