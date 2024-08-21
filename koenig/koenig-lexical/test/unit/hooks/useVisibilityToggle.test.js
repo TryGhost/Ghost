@@ -77,7 +77,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[4]).toBe(false); // emailVisibility
         expect(node.visibility.showOnEmail).toBe(false);
-        expect(result.current[7]).toBe('Shown on web only'); // message
+        expect(result.current[7]).toBe('Only shown on web'); // message
     });
 
     it('should toggleWeb and be able to update the node', () => {
@@ -91,7 +91,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[5]).toBe(false); // webVisibility
         expect(node.visibility.showOnWeb).toBe(false);
-        expect(result.current[7]).toBe('Shown in email only'); // message
+        expect(result.current[7]).toBe('Only shown in email'); // message
     });
 
     it('should toggleSegment and be able to update the node', () => {
@@ -105,7 +105,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[3]).toBe('status:free'); // segment
         expect(node.visibility.segment).toBe('status:free');
-        expect(result.current[7]).toBe('Shown on web and email to free subscribers'); // message
+        expect(result.current[7]).toBe('Shown on web, and to free subscribers only in email'); // message
     });
 
     it('should update the message correctly when both toggles are off', () => {
