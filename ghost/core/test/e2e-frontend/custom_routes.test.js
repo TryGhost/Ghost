@@ -103,19 +103,13 @@ describe('Custom frontend routing - edge cases', function () {
     });
 
     it('should prioritize taxonomies over collections', async function () {
-        // If both a collection and a taxonomy match the given route, the taxonomy should take precedence 
-        const tag = await testUtils.createTag({
-            tag: {
-                slug: 'cheese'
-            }
-        });
-        await testUtils.createPost({
-            post: {
-                tags: [tag],
-                slug: 'cheese'
-            }
-        });
-        await request.get('/tag/cheese/')
+        // Create a tag and a post with the same slug
+        const slug = 'cheese';
+        await testUtils.createTag({tag: {slug}});
+        await testUtils.createPost({post: {tags: [{slug}], slug}});
+
+        // Test that the tag route takes precedence
+        await request.get(`/tag/${slug}/`)
             .expect(200);
     });
 });
