@@ -890,6 +890,12 @@
     --radius: 12px;
 }
 
+.modal-post-success .gh-post-card {
+    border-radius: var(--radius);
+    border: 1px solid var(--lightgrey-l1);
+    margin: 36px 0 0 0;
+}
+
 .modal-post-success .modal-content {
     padding: var(--padding);
     border-radius: var(--radius);
@@ -898,7 +904,6 @@
 .modal-post-success .modal-image {
     aspect-ratio: 16 / 7.55;
     overflow: hidden;
-    
 }
 
 .modal-post-success .modal-image img {
@@ -932,6 +937,12 @@
     line-height: 1.4;
     letter-spacing: -0.01em;
     text-wrap: pretty;
+    padding: 24px;
+}
+
+.modal-post-success .modal-body .gh-post-bookmark-site-icon {
+    width: 32px;
+    height: 32px;
 }
 
 .modal-post-success .modal-body strong.nowrap {
@@ -940,7 +951,11 @@
 
 .modal-post-success .modal-footer {
     gap: 16px;
+    padding: 16px 24px;
     margin-top: var(--padding);
+    background: var(--lightgrey-l1);
+    border-top: 1px solid var(--lightgrey-l1);
+    border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .modal-post-success .modal-footer .gh-btn {
