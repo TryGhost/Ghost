@@ -490,34 +490,21 @@ module.exports = class EventRepository {
      * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
      */
     async getAggregatedClickEvents(options = {}, filter) {
-        // // This counts all clicks for a member for the same post
-        // const postClickQuery = `SELECT count(distinct A.redirect_id)
-        //     FROM members_click_events A
-        //     LEFT JOIN redirects A_r on A_r.id = A.redirect_id
-        //     LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
-        //     WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
-
-        // // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
-        // const postClickQueryPreceding = `SELECT count(distinct A.redirect_id)
-        //     FROM members_click_events A
-        //     LEFT JOIN redirects A_r on A_r.id = A.redirect_id
-        //     LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
-        //     WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
-
         const knex = db.knex;
         const postId = filter.$and.find(condition => condition['data.post_id'])['data.post_id'];
+
         const postClicksQuery = knex.raw(`SELECT
-                mce.id,
-                mce.member_id,
-                mce.redirect_id,
-                mce.created_at
-            FROM
-                members_click_events mce
-            INNER JOIN
-                redirects r ON mce.redirect_id = r.id
-            WHERE
-                r.post_id = ?
-    `, [`${postId}`]);
+                    mce.id,
+                    mce.member_id,
+                    mce.redirect_id,
+                    mce.created_at
+                FROM
+                    members_click_events mce
+                INNER JOIN
+                    redirects r ON mce.redirect_id = r.id
+                WHERE
+                    r.post_id = ?
+        `, [`${postId}`]);
 
         const firstClicksQuery = knex.raw(`
             SELECT
@@ -543,17 +530,6 @@ module.exports = class EventRepository {
             filter: '',
             filterRelations: false,
             useBasicCount: true,
-            // mongoTransformer: chainTransformers(
-            //     // First set the filter manually
-            //     replaceCustomFilterTransformer(filter),
-
-            //     // Map the used keys in that filter
-            //     ...mapKeys({
-            //         'data.created_at': 'created_at',
-            //         'data.member_id': 'member_id',
-            //         'data.post_id': 'post_id'
-            //     })
-            // ),
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
@@ -568,10 +544,9 @@ module.exports = class EventRepository {
                 name: `FirstClicks`,
                 query: firstClicksQuery
             }],
-            from: `FirstClicks`,
-            order: ``
+            from: 'FirstClicks',
+            order: ''
         };
-        console.log("See the filters: " + options.filter);
 
         const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
 

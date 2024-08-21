@@ -22,7 +22,7 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
     },
 
     filterRelations(options) {
-        if(options && options.filterRelations === false) {
+        if (options && options.filterRelations === false) {
             return {};
         }
         return {

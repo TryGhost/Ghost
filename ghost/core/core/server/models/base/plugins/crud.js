@@ -121,7 +121,7 @@ module.exports = function (Bookshelf) {
             }
 
             if (Array.isArray(options.cte)) {
-                options.cte.forEach(cte => {
+                options.cte.forEach((cte) => {
                     itemCollection.query((qb) => {
                         qb.with(cte.name, cte.query);
                     });
