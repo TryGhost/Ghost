@@ -505,6 +505,7 @@ module.exports = class EventRepository {
         //     WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
 
         const knex = db.knex;
+        const postId = filter.$and.find(condition => condition['data.post_id'])['data.post_id'];
         const postClicksQuery = knex.raw(`SELECT
                 mce.id,
                 mce.member_id,
@@ -516,7 +517,7 @@ module.exports = class EventRepository {
                 redirects r ON mce.redirect_id = r.id
             WHERE
                 r.post_id = ?
-    `, ['66bdd37e7d8ad47169c8198d']);
+    `, [`${postId}`]);
 
         const firstClicksQuery = knex.raw(`
             SELECT
@@ -549,14 +550,14 @@ module.exports = class EventRepository {
                 ...mapKeys({
                     'data.created_at': 'created_at',
                     'data.member_id': 'member_id',
-                    'data.post_id': 'pi'
+                    'data.post_id': 'post_id'
                 })
             ),
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
-            whereRaw: `created_at < '2024-08-16' and rn = 1`,
+            whereRaw: `created_at < '2024-08-25' and rn = 1`,
             //orderRaw: `created_at desc, id desc`,
             cte: [{
                 name: `PostClicks`,
