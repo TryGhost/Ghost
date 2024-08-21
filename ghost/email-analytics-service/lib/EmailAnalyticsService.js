@@ -347,6 +347,10 @@ module.exports = class EmailAnalyticsService {
             await this.queries.setJobTimestamp(fetchData.jobName, 'completed', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
+        } else {
+            logging.info('[EmailAnalytics] No new events found');
+            // set job status to finished
+            await this.queries.setJobStatus(fetchData.jobName, 'completed');
         }
 
         fetchData.running = false;
@@ -371,7 +375,7 @@ module.exports = class EmailAnalyticsService {
 
             // Save last event timestamp
             if (!fetchData.lastEventTimestamp || (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)) {
-                fetchData.lastEventTimestamp = event.timestamp;
+                fetchData.lastEventTimestamp = event.timestamp; // don't need to keep db in sync; it'll fall back to last completed timestamp anyways
             }
 
             result.merge(batchResult);

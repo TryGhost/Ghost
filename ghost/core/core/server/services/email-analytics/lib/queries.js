@@ -76,10 +76,11 @@ module.exports = {
      * @param {Date} date - The timestamp of the last seen event.
      * @returns {Promise<void>}
      * @description
-     * Updates the `finished_at` column of the specified job in the `jobs` table with the provided timestamp.
+     * Updates the `finished_at` or `started_at` column of the specified job in the `jobs` table with the provided timestamp.
      * This is used to keep track of the last time the job was run to avoid expensive queries following reboot.
      */
     async setJobTimestamp(jobName, field, date) {
+        // Convert string dates to Date objects for SQLite compatibility
         try {
             debug(`Setting ${field} timestamp for job ${jobName} to ${date}`);
             const updateField = field === 'completed' ? 'finished_at' : 'started_at';
@@ -96,6 +97,40 @@ module.exports = {
             }
         } catch (err) {
             debug(`Error setting ${field} timestamp for job ${jobName}: ${err.message}`);
+        }
+    },
+
+    /**
+     * Sets the status of the specified email analytics job.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
+     * @param {'started'|'finished'|'failed'} status - The new status of the job.
+     * @returns {Promise<void>}
+     * @description
+     * Updates the `status` column of the specified job in the `jobs` table with the provided status.
+     * This is used to keep track of the current state of the job.
+     */
+    async setJobStatus(jobName, status) {
+        debug(`Setting status for job ${jobName} to ${status}`);
+        try {
+            const result = await db.knex('jobs')
+                .update({
+                    status: status,
+                    updated_at: new Date()
+                })
+                .where('name', jobName);
+
+            if (result === 0) {
+                await db.knex('jobs').insert({
+                    id: new ObjectID().toHexString(),
+                    name: jobName,
+                    status: status,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+            }
+        } catch (err) {
+            debug(`Error setting status for job ${jobName}: ${err.message}`);
+            throw err;
         }
     },
 
