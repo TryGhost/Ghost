@@ -44,6 +44,45 @@
         <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
         <div class="modal-body">
+            {{#if this.post.isSent}}
+                It
+            {{else}}
+                {{if this.post.emailOnly "Your email" "Your post"}}
+            {{/if}}
+            {{if this.post.isScheduled "will be" "was"}}
+            {{#if this.post.emailOnly}}
+                sent to
+            {{else if this.post.willEmail}}
+                published on your site, and sent to
+            {{else}}
+                published on your site
+            {{/if}}
+
+             {{#if (or this.post.hasEmail this.post.willEmail)}}
+                {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                    <strong class="nowrap">
+                        {{if (eq @recipientType "all") "all"}}
+
+                        {{format-number countFetcher.count}}
+
+                        {{!-- @recipientType = free/paid/all/specific --}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>
+
+                    of <strong>{{this.post.newsletter.name}}</strong>
+                {{/let}}
+            {{/if}}
+
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                on
+                {{moment-format publishedAt "D MMM YYYY"}}
+                at
+                {{moment-format publishedAt "HH:mm"}}.
+            {{/let}}
+        {{/if}}
+
             <h2>{{this.post.title}}</h2>
             {{#if this.post.excerpt}}
                 <p>{{this.post.excerpt}}</p>
