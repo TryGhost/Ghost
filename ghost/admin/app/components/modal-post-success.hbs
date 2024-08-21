@@ -27,10 +27,9 @@
     </header>
 
     {{#if (and this.post.isPublished (not this.post.emailOnly))}}
-        
     {{else}}
+    <div class="modal-body email">
         {{#if this.post.isSent}}
-        <div class="modal-body">
             It
         {{else}}
             {{if this.post.emailOnly "Your email" "Your post"}}

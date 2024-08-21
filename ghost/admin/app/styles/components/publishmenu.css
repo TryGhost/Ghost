@@ -948,12 +948,15 @@
 }
 
 .modal-post-success .modal-body p.post-excerpt {
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
 }
 
-.modal-post-success .modal-body .email {
-    margin: 0;
+.modal-post-success .email {
     font-size: 1.6rem;
+    padding: 0;
 }
 
 .modal-post-success .modal-body .gh-post-details {
