@@ -529,22 +529,24 @@ module.exports = class EventRepository {
      */
     async getAggregatedClickEvents(options = {}, filter) {
         const knex = db.knex;
-        let postId;
+        let postId = '';
 
-        if (filter.$and) {
+        if (filter && filter.$and) {
             // Case when there is an $and condition
             postId = filter.$and.find(condition => condition['data.post_id'])?.['data.post_id'];
         } else {
             // Case when there's no $and condition, directly look for data.post_id
-            postId = filter['data.post_id'];
+            postId = filter ? filter['data.post_id'] : '';
         }
         console.log("options.filter : " + options.filter);
         options.filter = removeTypeFilter(options.filter);
         console.log("options.filter 1 : " + options.filter);
         options.filter = removePostFilter(options.filter);
         console.log("options.filter 2 : " + options.filter);
+        console.log("postId : " + postId);
 
-        const postClicksQuery = knex.raw(`SELECT
+
+        let postClicksQuery = postId && postId !== '' ? knex.raw(`SELECT
                     mce.id,
                     mce.member_id,
                     mce.redirect_id,
@@ -555,7 +557,17 @@ module.exports = class EventRepository {
                     redirects r ON mce.redirect_id = r.id
                 WHERE
                     r.post_id = ?
-        `, [`${postId}`]);
+        `, [`${postId}`])
+        : knex.raw(`SELECT
+                    mce.id,
+                    mce.member_id,
+                    mce.redirect_id,
+                    mce.created_at
+                FROM
+                    members_click_events mce
+                INNER JOIN
+                    redirects r ON mce.redirect_id = r.id
+        `);
 
         const firstClicksQuery = knex.raw(`
             SELECT
