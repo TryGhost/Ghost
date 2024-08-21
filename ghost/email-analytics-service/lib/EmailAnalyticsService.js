@@ -82,7 +82,6 @@ module.exports = class EmailAnalyticsService {
         this.providers = providers;
     }
 
-
     getStatus() {
         return {
             latest: this.#fetchLatestNonOpenedData,
