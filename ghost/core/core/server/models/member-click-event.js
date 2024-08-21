@@ -20,6 +20,10 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
         {
             key: 'data.created_at',
             replacement: 'created_at'
+        },
+        {
+            key: 'data.member_id',
+            replacement: 'member_id'
         }];
 
         return expansions;

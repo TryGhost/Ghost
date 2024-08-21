@@ -17,28 +17,41 @@ function replaceCustomFilterTransformer(filter) {
 }
 
 function removeTypeFilter(filterString) {
-    // Regular expression to match '+type:[...]'
-    const typeFilterRegex = /\+type:\[[^\]]+\]/;
+    let modifiedFilter = filterString;
+    
+    // Regular expression to match 'type:[...]' or '+type:[...]'
+    const typeFilterRegex = /(?:\+)?type:\[[^\]]+\]/;
 
-    // Replace the matched '+type:[...]' with an empty string
-    let modifiedFilter = filterString.replace(typeFilterRegex, '');
+    // Regular expression to match 'type:-[...]' or '+type:-[...]'
+    const typeFilterRegex2 = /(?:\+)?type:-\[[^\]]+\]/;
+
+    // Replace the matched 'type:[...]' and 'type:-[...]' with an empty string
+    modifiedFilter = modifiedFilter.replace(typeFilterRegex, '');
+    modifiedFilter = modifiedFilter.replace(typeFilterRegex2, '');
 
     return modifiedFilter;
 }
 
 function removePostFilter(filterString) {
-    // Regular expression to match '+type:[...]'
-    const typeFilterRegex = /\+data.post_id:\s*'[^']+'/;
+    let modifiedFilter = filterString;
+    
+    // Regular expression to match '+data.post_id:[...]' or 'data.post_id:[...]'
+    const postFilterRegex1 = /\+data.post_id:\s*'[^']+'/;
+    const postFilterRegex2 = /data.post_id:\s*'[^']+'/;
 
-    // Replace the matched '+type:[...]' with an empty string
-    let modifiedFilter = filterString.replace(typeFilterRegex, '');
+    // Replace the matched post filters with an empty string
+    modifiedFilter = modifiedFilter.replace(postFilterRegex1, '');
+    modifiedFilter = modifiedFilter.replace(postFilterRegex2, '');
 
-    const typeFilterRegex2 = /data.post_id:\s*'[^']+'/;
+    // Remove any leading commas left after the replacement
+    modifiedFilter = modifiedFilter.replace(/,\s*/, '');
 
-    // Replace the matched '+type:[...]' with an empty string
-    modifiedFilter = filterString.replace(typeFilterRegex2, '');
+    // Remove leading '+' if the string starts with it
+    if (modifiedFilter.startsWith('+')) {
+        modifiedFilter = modifiedFilter.slice(1);
+    }
 
-    return modifiedFilter;
+    return modifiedFilter.trim();
 }
 
 module.exports = class EventRepository {
@@ -568,6 +581,7 @@ module.exports = class EventRepository {
             //filter: '',
             filterRelations: false,
             useBasicCount: true,
+            useCTE: true,
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
