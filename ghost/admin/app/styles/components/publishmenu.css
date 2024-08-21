@@ -989,6 +989,16 @@
     border-radius: 0 0 8px 8px;
 }
 
+.modal-post-success .modal-footer-email {
+    background: var(--white);
+    margin-top: 36px;
+    gap: 16px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    text-align: right;
+}
+
 .modal-post-success .modal-footer .gh-btn {
     display: flex;
     justify-content: center;
@@ -996,6 +1006,11 @@
     min-width: 64px;
     height: 40px;
     border-radius: 4px;
+}
+
+.modal-post-success .modal-footer .copy-preview-link {
+    background: var(--white);
+    border: 1px solid var(--lightgrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:not(:first-child) {

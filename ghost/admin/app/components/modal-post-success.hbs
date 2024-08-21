@@ -67,6 +67,19 @@
             {{moment-format publishedAt "HH:mm"}}.
         {{/let}}
     </div>
+
+    {{#if this.post.emailOnly}}
+        <footer class="modal-footer-email">
+            <button
+                class="gh-btn gh-btn-primary dismiss"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Close</span>
+            </button>
+        </footer>
+    {{/if}}
     {{/if}}
 
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
