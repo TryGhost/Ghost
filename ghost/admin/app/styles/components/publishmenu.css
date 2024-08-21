@@ -893,6 +893,7 @@
 .modal-post-success .gh-post-card {
     border-radius: var(--radius);
     border: 1px solid var(--lightgrey-l1);
+    box-sizing: border-box;
     margin: 36px 0 0 0;
 }
 
@@ -940,6 +941,18 @@
     padding: 24px;
 }
 
+.modal-post-success .modal-body .gh-post-details {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+}
+
+.modal-post-success .modal-body .gh-post-details .gh-post-bookmark-site-name {
+    font-weight: 600;
+}
+
 .modal-post-success .modal-body .gh-post-bookmark-site-icon {
     width: 32px;
     height: 32px;
@@ -950,10 +963,10 @@
 }
 
 .modal-post-success .modal-footer {
+    background: var(--whitegrey);
+    margin-top: 0;
     gap: 16px;
     padding: 16px 24px;
-    margin-top: var(--padding);
-    background: var(--lightgrey-l1);
     border-top: 1px solid var(--lightgrey-l1);
     border-radius: 0 0 var(--radius) var(--radius);
 }
@@ -986,6 +999,12 @@
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
     width: 56px;
+    background: var(--white);
+    border: 1px solid var(--lightgrey-l1);
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin):hover {
+    background: var(--whitegrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
