@@ -1,7 +1,6 @@
 import AddIcon from '../../assets/icons/kg-add.svg?react';
 import BoldIcon from '../../assets/icons/kg-bold.svg?react';
 import EditIcon from '../../assets/icons/kg-edit.svg?react';
-import EyeClosedIcon from '../../assets/icons/kg-eye-closed.svg?react';
 import EyeIcon from '../../assets/icons/kg-eye.svg?react';
 import HeadingThreeIcon from '../../assets/icons/kg-heading-3.svg?react';
 import HeadingTwoIcon from '../../assets/icons/kg-heading-2.svg?react';
@@ -36,7 +35,6 @@ export const TOOLBAR_ICONS = {
     edit: EditIcon,
     wand: WandIcon,
     visibility: EyeIcon,
-    visibilityActive: EyeClosedIcon,
     snippet: SnippetIcon,
     remove: TrashIcon
 };

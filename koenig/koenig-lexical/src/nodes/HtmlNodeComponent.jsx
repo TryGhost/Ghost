@@ -110,7 +110,7 @@ export function HtmlNodeComponent({nodeKey, html, visibility}) {
                         isContentVisibilityEnabled &&
                         <>
                             <ToolbarMenuItem
-                                icon={isContentVisibilityActive ? 'visibilityActive' : 'visibility'}
+                                icon="visibility"
                                 isActive={isContentVisibilityActive}
                                 label="Visibility"
                                 onClick={handleVisibilityToggle}
