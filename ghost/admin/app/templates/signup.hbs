@@ -7,7 +7,7 @@
                 <h1>Create your account.</h1>
             </header>
 
-            <form id="signup" class="gh-signup" novalidate="novalidate" {{on "submit" this.submit}}>
+            <form id="signup" method="post" action="javascript:void(0)" class="gh-signup" novalidate="novalidate" {{on "submit" this.submit}}>
                 <GhFormGroup @errors={{this.signupDetails.errors}} @hasValidated={{this.signupDetails.hasValidated}} @property="name">
                     <label for="name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
