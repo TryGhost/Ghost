@@ -899,7 +899,7 @@
     border-radius: 8px;
     border: 1px solid var(--lightgrey-l1);
     box-sizing: border-box;
-    margin: 36px 0 0 0;
+    margin: 24px 0 0 0;
 }
 
 .modal-post-success .modal-image {
