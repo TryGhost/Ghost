@@ -8,6 +8,13 @@ export default class SelectionList {
 
     enabled = true;
 
+    /**
+     * The infinity model containing the list of posts.
+     * @type {Object}
+     * @property {InfinityModel} scheduledInfinityModel - The infinity model for scheduled posts.
+     * @property {InfinityModel} draftInfinityModel - The infinity model for draft posts.
+     * @property {InfinityModel} publishedAndSentInfinityModel - The infinity model for published and sent posts.
+     */
     infinityModel;
 
     #frozen = false;
@@ -199,50 +206,41 @@ export default class SelectionList {
         }
         this.lastShiftSelectionGroup = new Set();
 
-        // todo
         let running = false;
-
+        const modelOrder = ['scheduledInfinityModel', 'draftInfinityModel', 'publishedAndSentInfinityModel'];
         const models = this.infinityModel;
-        for (const key in models) {
-            for (const item of this.models[key].content) {
-                // Exlusing the last selected item
+
+        const newSelectedIds = new Set(this.selectedIds);
+
+        for (const modelKey of modelOrder) {
+            const model = models[modelKey];
+            if (!model?.content || model.content.length === 0) {
+                continue;
+            }
+
+            for (const item of model.content) {
                 if (item.id === this.lastSelectedId || item.id === id) {
                     if (!running) {
                         running = true;
-
-                        // Skip last selected on its own
                         if (item.id === this.lastSelectedId) {
                             continue;
                         }
                     } else {
-                        // Still include id
-                        if (item.id === id) {
-                            this.lastShiftSelectionGroup.add(item.id);
-
-                            if (this.inverted) {
-                                this.selectedIds.delete(item.id);
-                            } else {
-                                this.selectedIds.add(item.id);
-                            }
-                        }
-                        break;
+                        this.lastShiftSelectionGroup.add(item.id);
+                        this.inverted ? newSelectedIds.delete(item.id) : newSelectedIds.add(item.id);
+                        return;
                     }
                 }
 
                 if (running) {
                     this.lastShiftSelectionGroup.add(item.id);
-                    if (this.inverted) {
-                        this.selectedIds.delete(item.id);
-                    } else {
-                        this.selectedIds.add(item.id);
-                    }
+                    this.inverted ? newSelectedIds.delete(item.id) : newSelectedIds.add(item.id);
                 }
             }
         }
 
-        // Force update
-        // eslint-disable-next-line no-self-assign
-        this.selectedIds = this.selectedIds;
+        // Update selectedIds with the new Set
+        this.selectedIds = newSelectedIds;
     }
 
     selectAll() {
