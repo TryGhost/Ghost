@@ -422,17 +422,17 @@ describe('RouterController', function () {
             it('Sends emails when honeypot is not filled', async function () {
                 const controller = createRouterController();
 
-                req.body.honeypot = 'filled!';
-
                 await controller.sendMagicLink(req, res).should.be.fulfilled();
-                sendEmailWithMagicLinkStub.notCalled.should.be.true();
+                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
             });
 
             it('Does not send emails when honeypot is filled', async function () {
                 const controller = createRouterController();
 
+                req.body.honeypot = 'filled!';
+
                 await controller.sendMagicLink(req, res).should.be.fulfilled();
-                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
+                sendEmailWithMagicLinkStub.notCalled.should.be.true();
             });
         });
     });
