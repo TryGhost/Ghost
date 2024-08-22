@@ -106,6 +106,7 @@
     "Sign out": "Clàraich a-mach",
     "Sign up": "Clàraich",
     "Signup error: Invalid link": "Mearachd: Ceangal mì-dhligheach",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Duilich, cha do dh’obraich sin.",
     "Spam complaints": "Gearanan spama",
     "Start {{amount}}-day free trial": "Cleachd tionndadh triail fad {{amount}}l",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Dèanta! Chaidh am post-d agad ùrachadh.",
     "Successfully unsubscribed": "Chan eil thu a’ fo-sgrìobhadh tuilleadh.",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Tapadh leat airson fo-sgrìobhadh. Tha grunn làraich eil gu h-ìosal a dh’fhaodadh a bhith còrdadh riut.",
+    "Thank you!": "",
     "Thanks for the feedback!": "Mòran taing airson leigeil fios.",
     "That didn't go to plan": "Cha deach sin mar bu chòir",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "’S e {{memberEmaill}} am post-d a th’ againn dhut - faodaidh tu a cheartachadh anns na <button>roghainnean</button> agad.",
     "There was a problem submitting your feedback. Please try again a little later.": "Chaidh rudeigin ceàrr. Feuch a-rithist an ceann greis",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Feumar cuireadh airson an làrach-lìn seo, leig fios dhan rianaire ma tha thu ag iarraidh cothrom-inntrigidh.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Dèan briog air a’ cheangal dearbhaidh a chaidh a chur dhan phost-d agad gus crìoch a chur an an clàradh agad. Thoir sùil air a’ phasgan spama mura faigh thu taobh a-staigh 3 mionaidean e.",
     "Try free for {{amount}} days, then {{originalPrice}}.": "An-asgaidh airson {{amount}}l, agus {{originalPrice}} an dèidh sin ",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Tig nad bhall phaighte gus cothrom fhaighinn air na cuairt-litrichean gu lèir.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Bheir na beachdan agad buaidh air na foillseachaidhean ri teachd.",
     "Your subscription will expire on {{expiryDate}}": "Falbhaidh an ùine air am fo-sgrìobhadh agad: {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Ath-nuadhaichidh am fo-sgrìobhadh agad: {{expiryDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Tòisichidh am fo-sgrìobhadh agad: {{expiryDate}}"
+    "Your subscription will start on {{subscriptionStart}}": "Tòisichidh am fo-sgrìobhadh agad: {{expiryDate}}",
+    "Your support means a lot.": ""
 }

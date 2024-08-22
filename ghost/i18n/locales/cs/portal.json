@@ -106,6 +106,7 @@
     "Sign out": "Odhlásit se",
     "Sign up": "Registrovat se",
     "Signup error: Invalid link": "",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "",
     "Spam complaints": "",
     "Start {{amount}}-day free trial": "Začít {{amount}}denní zkušební verzi zdarma",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "",
     "Successfully unsubscribed": "Úspěšné odhlášení",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "Děkujeme za zpětnou vazbu!",
     "That didn't go to plan": "Něco se nepovedlo",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
     "There was a problem submitting your feedback. Please try again a little later.": "",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Tento web je pouze pro pozvané, kontaktujte provozovatele pro přístup.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Pro dokončení registrace klikněte na potvrzovací odkaz ve vaší e-mailové schránce. Pokud nepřijde do 3 minut, zkontrolujte prosím složku nevyžádaných zpráv (spam)!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Vaše připomínky pomáhají spoluvytvářet obsah webu.",
     "Your subscription will expire on {{expiryDate}}": "",
     "Your subscription will renew on {{renewalDate}}": "",
-    "Your subscription will start on {{subscriptionStart}}": ""
+    "Your subscription will start on {{subscriptionStart}}": "",
+    "Your support means a lot.": ""
 }

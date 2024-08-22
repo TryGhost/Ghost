@@ -106,6 +106,7 @@
     "Sign out": "ログアウト",
     "Sign up": "新規登録",
     "Signup error: Invalid link": "エラー： 無効なリンク",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "申し訳ありませんが、うまくいきませんでした。",
     "Spam complaints": "スパムに関する苦情",
     "Start {{amount}}-day free trial": "{{amount}}日間の無料トライアルを開始する",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "成功しました！メールアドレスが更新されました。",
     "Successfully unsubscribed": "正常に購読解除されました",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "購読ありがとうございます。お楽しみになる前に、以下のサイトもおすすめです。",
+    "Thank you!": "",
     "Thanks for the feedback!": "フィードバックありがとうございます！",
     "That didn't go to plan": "計画通りにいきませんでした",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "メールアドレスは{{memberEmail}}です。もし正しくない場合は、<button>アカウント設定</button>で更新することができます。",
     "There was a problem submitting your feedback. Please try again a little later.": "フィードバックの送信中に問題が発生しました。しばらくしてからもう一度お試しください。",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "このサイトは招待制です。アクセスするにはオーナーに連絡してください。",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "新規登録を完了するには、受信トレイの確認リンクをクリックしてください。3分経っても届かない場合は、スパムフォルダを確認してください。",
     "Try free for {{amount}} days, then {{originalPrice}}.": "{{amount}}日間無料でお試しください、その後は{{originalPrice}}です。",
     "Unlock access to all newsletters by becoming a paid subscriber.": "有料の購読者になることで、すべてのニュースレターへのアクセスが可能になります。",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "あなたの感想を今後の内容の参考にさせていただきます。",
     "Your subscription will expire on {{expiryDate}}": "あなたの購読は{{expiryDate}}に期限切れになります。",
     "Your subscription will renew on {{renewalDate}}": "あなたの購読は{{renewalDate}}に更新されます。",
-    "Your subscription will start on {{subscriptionStart}}": "あなたの購読は{{subscriptionStart}}に開始されます。"
+    "Your subscription will start on {{subscriptionStart}}": "あなたの購読は{{subscriptionStart}}に開始されます。",
+    "Your support means a lot.": ""
 }
