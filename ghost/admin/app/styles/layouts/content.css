@@ -725,7 +725,7 @@
 
 .gh-canvas-title.gh-post-title {
     max-width: 880px;
-    padding: 20px 0 12px;
+    padding: 20px 0 0 0;
     font-size: 3.2rem;
     line-height: 1.2em;
     overflow: inherit;
