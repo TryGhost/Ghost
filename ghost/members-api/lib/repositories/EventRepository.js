@@ -17,6 +17,10 @@ function replaceCustomFilterTransformer(filter) {
 }
 
 function removeTypeFilter(filterString) {
+    if(!filterString) {
+        return;
+    }
+    console.log('Removing type filter: ' + filterString);
     let modifiedFilter = filterString;
     
     // Regular expression to match 'type:[...]' or '+type:[...]'
@@ -37,6 +41,9 @@ function removeTypeFilter(filterString) {
 }
 
 function removePostFilter(filterString) {
+    if(!filterString) {
+        return;
+    }
     let modifiedFilter = filterString;
     
     // Regular expression to match '+data.post_id:[...]' or 'data.post_id:[...]'
