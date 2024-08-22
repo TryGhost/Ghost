@@ -106,6 +106,7 @@
     "Sign out": "Atsijungti",
     "Sign up": "Registruotis",
     "Signup error: Invalid link": "Registracijos klaida: negaliojanti nuoroda",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Atsiprašome, nepavyko.",
     "Spam complaints": "Skundai dėl šlamšto",
     "Start {{amount}}-day free trial": "Pradėti {{amount}}-dienų nemokamą bandomąją versiją",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Pavyko! Jūsų el. pašto adresas atnaujintas.",
     "Successfully unsubscribed": "Prenumerata sėkmingai atšaukta",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Ačiū, kad užsiprenumeravote. Prieš pradėdami skaityti, peržvelkite ir keletą kitų svetainių, kurios jums gali patikti.",
+    "Thank you!": "",
     "Thanks for the feedback!": "Ačiū už atsiliepimą!",
     "That didn't go to plan": "Kažkas nepavyko",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Nustatytas El. pašto adresas yra {{memberEmail}} – jei jis neteisingas, galite jį atnaujinti <button>paskyros nustatymuose</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "Pateikiant atsiliepimą iškilo problema. Bandykite dar kartą vėliau.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Ši svetainė pasiekiama tik su pakvietimu, susisiekite su savininku dėl prieigos. ",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Jei norite užbaigti registraciją, gautame el. laiške spustelėkite patvirtinimo nuorodą. Jei laiško negaunate per 3 minutes, patikrinkite šlamšto (spam) aplanką!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Išbandykite {{amount}} d. nemokamai, vėliau {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Gaukite prieigą prie visų naujienlaiškių įsigiję mokamą prenumeratą.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Jūsų indėlis padeda kurti tai, kas yra viešinama.",
     "Your subscription will expire on {{expiryDate}}": "Jūsų prenumerata baigsis {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Jūsų prenumerata atsinaujins {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Jūsų prenumerata prasidės {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Jūsų prenumerata prasidės {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

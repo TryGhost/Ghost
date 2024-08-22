@@ -106,6 +106,7 @@
     "Sign out": "Keluar",
     "Sign up": "Daftar",
     "Signup error: Invalid link": "Kesalahan pendaftaran: Tautan tidak valid",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Maaf, itu tidak berhasil.",
     "Spam complaints": "Keluhan spam",
     "Start {{amount}}-day free trial": "Mulai percobaan gratis selama {{amount}} hari",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Berhasil! Email Anda telah diperbarui.",
     "Successfully unsubscribed": "Berhasil berhenti berlangganan",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Terima kasih telah berlangganan. Sebelum Anda mulai membaca, berikut adalah beberapa situs lain yang mungkin akan Anda nikmati.",
+    "Thank you!": "",
     "Thanks for the feedback!": "Terima kasih atas masukannya!",
     "That didn't go to plan": "Itu tidak berjalan sesuai rencana",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Alamat email Anda yang kami miliki adalah {{memberEmail}} — jika itu tidak benar, Anda dapat memperbarui di <button>area pengaturan akun</button> Anda.",
     "There was a problem submitting your feedback. Please try again a little later.": "Terjadi masalah saat mengirimkan masukan Anda. Coba lagi nanti.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Situs ini hanya untuk yang diundang, hubungi pemiliknya untuk mendapatkan akses.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Untuk menyelesaikan pendaftaran, klik tautan konfirmasi di kotak masuk Anda. Jika tidak diterima dalam waktu 3 menit, pastikan untuk memeriksa folder spam Anda!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Coba gratis selama {{amount}} hari, kemudian {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Buka akses ke semua buletin dengan menjadi pelanggan berbayar.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Masukan Anda membantu membentuk apa yang dipublikasikan.",
     "Your subscription will expire on {{expiryDate}}": "Langganan Anda akan berakhir pada {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Langganan Anda akan diperpanjang pada {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Langganan Anda akan dimulai pada {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Langganan Anda akan dimulai pada {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

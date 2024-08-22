@@ -106,6 +106,7 @@
     "Sign out": "Log ud",
     "Sign up": "Bliv medlem",
     "Signup error: Invalid link": "Tilmeldingsfejl: Ugyldigt link",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Beklager, det virkede ikke.",
     "Spam complaints": "Spam klager",
     "Start {{amount}}-day free trial": "Start {{amount}}-dages gratis prøveperiode",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Sådan! Din e-mail er opdateret.",
     "Successfully unsubscribed": "Du er nu afmeldt",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Tak for din tilmelding. Før du begynder at læse, er her et par andre sider du måske vil synes om.",
+    "Thank you!": "",
     "Thanks for the feedback!": "Tak for din feedback!",
     "That didn't go to plan": "Det gik ikke helt efter planen",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Den e-mailadresse, vi har på dig, er {{memberEmail}} – hvis det ikke er korrekt, kan du opdatere den i dit <button>kontoindstillingsområde</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "Der opstod et problem med at sende din feedback. Prøv venligst igen lidt senere.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Denne sider kræver at du skal være inviteret. Kontakt ejeres for at få adgang.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "For at gennemføre oprettelsen af din konto, skal du klikke på bekræftelseslinket i din e-mail indbakke. Hvis det ikke kommer indenfor 3 minutter, så tjek venligst din spam mappe!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Prøv gratis i {{amount}} dage, derefter {{original Price}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Lås op for adgang til alle nyhedsbreve ved at blive en betalingsabonnent.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Dit input hjælper med at forme det der bliver publiceret.",
     "Your subscription will expire on {{expiryDate}}": "Dit abonnement udløber {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Dit abonnement fornyes {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Dit abonnement starter {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Dit abonnement starter {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

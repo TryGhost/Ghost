@@ -1,12 +1,14 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useContext} from 'react';
 import SupportError from './SupportError';
 import LoadingPage from './LoadingPage';
 import setupGhostApi from '../../utils/api';
+import AppContext from '../../AppContext';
 
 const SupportPage = () => {
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [disabledFeatureError, setDisabledFeatureError] = useState(null);
+    const {t} = useContext(AppContext);
 
     useEffect(() => {
         async function checkoutDonation() {
@@ -24,9 +26,9 @@ const SupportPage = () => {
                 }
             } catch (err) {
                 if (err.type && err.type === 'DisabledFeatureError') {
-                    setDisabledFeatureError('This site is not accepting payments at the moment.');
+                    setDisabledFeatureError(t('This site is not accepting payments at the moment.'));
                 } else {
-                    setError('Something went wrong, please try again later.');
+                    setError(t('Something went wrong, please try again later.'));
                 }
 
                 setLoading(false);

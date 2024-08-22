@@ -106,6 +106,7 @@
     "Sign out": "Útskráning",
     "Sign up": "Nýskráning",
     "Signup error: Invalid link": "Villa við nýskráningu: Ógildur hlekkur",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Þetta virkaði því miður ekki.",
     "Spam complaints": "Kvartanir um ruslpóst",
     "Start {{amount}}-day free trial": "Hefja {{amount}}-daga prufutímabil",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Þetta heppnaðist! Breyting á netfangi hefur tekið gildi.",
     "Successfully unsubscribed": "Uppsögn heppnaðist",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "Takk fyrir endurgjöfina!",
     "That didn't go to plan": "Þetta fór ekki samkvæmt áætlun",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Netfangið sem þú ert skráður fyrir er {{memberEmail}} — ef það er rangt geturðu breytt því í <button>aðgangsstillingum</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "Villa kom upp við sendingu athugasemdar. Vinsamlegast reynið aftur örlítið síðar.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Aðgangur krefst boðsmiða, hafið samband við eiganda síðunnar til að fá aðgang.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Til að ljúka nýskráningu skaltu smella á staðfestingarhlekkinn sem var sendur á netfangið þitt. Ef hann er ekki kominn innan 3 mínútna skaltu athuga spam-möppuna.",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Prófaðu í {{amount}} daga án endurgjalds og síðan fyrir {{originalPrice}}",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Fáðu aðgang að öllum fréttabréfum með því að gerast áskrifandi.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "",
     "Your subscription will expire on {{expiryDate}}": "Áskrift þinni lýkur {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Áskrift þín verður endurnýjuð {{expiryDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Áskrift þín hefst {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Áskrift þín hefst {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

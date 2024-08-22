@@ -106,6 +106,7 @@
     "Sign out": "Sair",
     "Sign up": "Registar",
     "Signup error: Invalid link": "Erro de inscrição: ligação inválida",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Desculpe, isso não funcionou.",
     "Spam complaints": "Reclamações de spam",
     "Start {{amount}}-day free trial": "Iniciar teste grátis de {{amount}} dias",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Sucesso! Seu email foi atualizado.",
     "Successfully unsubscribed": "Subscrição cancelada com sucesso",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "Obrigado pela avaliação!",
     "That didn't go to plan": "Algo não correu como planeado",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "O endereço de email que temos para você é {{memberEmail}} — se isso não estiver correto, você pode atualizá-lo na sua <button>área de configurações da conta</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "Houve um problema ao enviar sua avaliação. Tente novamente mais tarde.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "O acesso a este site é feito apenas por convite. Contate o proprietário para obter acesso.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Para completar o registo, clique no link de confirmação enviado para sua caixa de entrada. Se não o receberes detro de 3 minutos, verifica a pasta de spam!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Experimente grátis por {{amount}} dias, depois {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Desbloqueie o acesso a todas as newsletters se tornando um assinante pago.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "O teu feedback ajuda a decidir o conteúdo que será publicado no futuro.",
     "Your subscription will expire on {{expiryDate}}": "Sua assinatura expirará em {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Sua assinatura será renovada em {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Sua assinatura começará em {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Sua assinatura começará em {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

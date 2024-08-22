@@ -106,6 +106,7 @@
     "Sign out": "Deconectare",
     "Sign up": "Înregistrare",
     "Signup error: Invalid link": "Eroare la înregistrare: Link invalid",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Ne pare rău, nu a funcționat.",
     "Spam complaints": "Reclamații spam",
     "Start {{amount}}-day free trial": "Începe perioada gratuită de {{amount}} zile",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Succes! Emailul tău a fost actualizat.",
     "Successfully unsubscribed": "Dezabonare realizată cu succes",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Îți mulțumim pentru abonare. Înainte să începi să citești, iată câteva alte site-uri care s-ar putea să-ți placă.",
+    "Thank you!": "",
     "Thanks for the feedback!": "Mulțumim pentru feedback!",
     "That didn't go to plan": "Asta nu a mers conform planului",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Adresa de email pe care o avem pentru tine este {{memberEmail}} — dacă nu este corectă, o poți actualiza în <button>zona de setări a contului</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "A fost o problemă cu trimiterea feedback-ului tău. Te rog încearcă din nou puțin mai târziu.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Acest site este disponibil doar pe bază de invitație, contactează proprietarul pentru acces.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Pentru a finaliza înregistrarea, apasă pe link-ul de confirmare din inbox-ul tău. Dacă nu ajunge în 3 minute, verifică folderul de spam!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Încearcă gratuit pentru {{amount}} zile, apoi {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Deblochează accesul la toate buletinele informative devenind un abonat plătit.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Contribuția ta ajută la conturarea a ceea ce se publică.",
     "Your subscription will expire on {{expiryDate}}": "Abonamentul tău va expira pe {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Abonamentul tău se va reînnoi pe {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Abonamentul tău va începe pe {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Abonamentul tău va începe pe {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }
