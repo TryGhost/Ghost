@@ -8,7 +8,7 @@
                     {{#if this.showPostCount}}
                         Boom! It's out there.
                     {{else}}
-                        Your post is out there.
+                        Your post is published.
                     {{/if}}
                 </span>
                 <span>
@@ -18,7 +18,7 @@
                         {{#if this.showPostCount}}
                             That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
                         {{else}}
-                            Share it with the world!
+                            Spread the word!
                         {{/if}}
                     {{/if}}
                 </span>
@@ -151,6 +151,15 @@
                         @idleIcon="link"
                         @successText="Preview link copied"
                         @class="gh-btn gh-btn-icon copy-preview-link" />
+
+                    <button
+                        class="gh-btn gh-btn-primary dismiss"
+                        type="button"
+                        {{on "click" @close}}
+                        {{on "mousedown" (optional this.noop)}}
+                    >
+                        <span>Close</span>
+                    </button>
 
                     {{else}}
                     <button

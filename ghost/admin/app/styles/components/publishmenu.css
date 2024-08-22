@@ -1042,7 +1042,7 @@
     border: 1px solid var(--lightgrey-l1);
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin):hover {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
     background: var(--whitegrey-l1);
 }
 
