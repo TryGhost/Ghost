@@ -500,7 +500,9 @@ module.exports = class EventRepository {
             // Case when there's no $and condition, directly look for data.post_id
             postId = filter ? filter['data.post_id'] : '';
         }
-        const [typeFilter, otherFilter] = this.getNQLSubset(options.filter); //Remove type filter as we don't need it in the query
+
+        //Remove type filter as we don't need it in the query 
+        const [typeFilter, otherFilter] = this.getNQLSubset(options.filter); // eslint-disable-line
 
         filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
 
