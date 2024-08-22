@@ -537,8 +537,8 @@ module.exports = class EventRepository {
         options.filter = removeTypeFilter(options.filter);
 
         const filterssss = this.removePostIdFilter(filter);
-        //console.log("postIDfilter: " + JSON.stringify(postIDfilter));
-        console.log("filterssss: ");
+        ////console.log("postIDfilter: " + JSON.stringify(postIDfilter));
+        //console.log("filterssss: ");
 
         if (filter && filter.$and) {
             // Case when there is an $and condition
@@ -547,13 +547,12 @@ module.exports = class EventRepository {
             // Case when there's no $and condition, directly look for data.post_id
             postId = filter ? filter['data.post_id'] : '';
         }
-        console.log("options.filter : " + options.filter);
+        //console.log("options.filter : " + options.filter);
         options.filter = removeTypeFilter(options.filter);
-        console.log("options.filter 1 : " + options.filter);
+        //console.log("options.filter 1 : " + options.filter);
         options.filter = removePostFilter(options.filter);
-        console.log("options.filter 2 : " + options.filter);
-        console.log("postId : " + postId);
-
+        //console.log("options.filter 2 : " + options.filter);
+        //console.log("postId : " + postId);
 
         let postClicksQuery = postId && postId !== '' ? knex.raw(`SELECT
                     mce.id,
@@ -567,16 +566,16 @@ module.exports = class EventRepository {
                 WHERE
                     r.post_id = ?
         `, [`${postId}`])
-        : knex.raw(`SELECT
-                    mce.id,
-                    mce.member_id,
-                    mce.redirect_id,
-                    mce.created_at
-                FROM
-                    members_click_events mce
-                INNER JOIN
-                    redirects r ON mce.redirect_id = r.id
-        `);
+            : knex.raw(`SELECT
+                        mce.id,
+                        mce.member_id,
+                        mce.redirect_id,
+                        mce.created_at
+                    FROM
+                        members_click_events mce
+                    INNER JOIN
+                        redirects r ON mce.redirect_id = r.id
+            `);
 
         const firstClicksQuery = knex.raw(`
             SELECT
@@ -977,7 +976,7 @@ module.exports = class EventRepository {
         // }
     
         try {
-            return rejectStatements(filter, (key) => key === 'data.post_id');
+            return rejectStatements(filter, key => key === 'data.post_id');
         } catch (e) {
             throw new errors.IncorrectUsageError({
                 message: e.message
@@ -985,7 +984,6 @@ module.exports = class EventRepository {
         }
     }
     
-
     async getMRR() {
         const results = await this._MemberPaidSubscriptionEvent.findAll({
             aggregateMRRDeltas: true

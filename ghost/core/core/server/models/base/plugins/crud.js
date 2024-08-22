@@ -79,7 +79,6 @@ module.exports = function (Bookshelf) {
          * @param {Object} unfilteredOptions
          */
         findPage: async function findPage(unfilteredOptions) {
-            
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             if (unfilteredOptions.useCTE) {
                 options.useCTE = unfilteredOptions.useCTE;
