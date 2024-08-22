@@ -23567,6 +23567,102 @@ Object {
 }
 `;
 
+exports[`Activity Feed API Returns aggregated_click events in activity feed 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns aggregated_click events in activity feed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2443",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Activity Feed API Returns aggregated_click events in activity feed with post_id filter 1: [body] 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "data": Any<Object>,
+      "type": "aggregated_click_event",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 10,
+      "next": null,
+      "page": null,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Activity Feed API Returns aggregated_click events in activity feed with post_id filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Activity Feed API Returns click events in activity feed 1: [body] 1`] = `
 Object {
   "events": Array [
