@@ -99,11 +99,7 @@ export default class PublishFlowOptions extends Component {
                     this.router.transitionTo('posts', {queryParams: {type: 'scheduled'}});
                 } else {
                     localStorage.setItem('ghost-last-published-post', this.args.publishOptions.post.id);
-                    if (this.args.publishOptions.post.isEmail) {
-                        this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
-                    } else {
-                        this.router.transitionTo('posts', {queryParams: {type: 'published'}});
-                    }
+                    this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
                 }
             }
         } catch (e) {
