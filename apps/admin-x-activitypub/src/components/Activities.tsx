@@ -9,7 +9,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     // const fakeAuthor =
     return (
         <>
-            <MainNavigation />
+            <MainNavigation title='Activities' />
             <div className='z-0 flex w-full flex-col items-center'>
                 <div className='mt-8 flex w-full max-w-[560px] flex-col'>
                     <ActivityItem>

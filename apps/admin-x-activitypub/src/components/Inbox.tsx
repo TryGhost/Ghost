@@ -6,7 +6,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Activity} from './activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Select, SelectOption, Tooltip} from '@tryghost/admin-x-design-system';
+import {Button, Heading} from '@tryghost/admin-x-design-system';
 import {useBrowseInboxForUser} from '../MainContent';
 
 interface InboxProps {}
@@ -33,44 +33,14 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         });
     };
 
-    const selectOptions: SelectOption[] = [
-        {value: 'option-1', label: 'Home'},
-        {value: 'option-2', label: 'Posts'},
-        {value: 'option-3', label: 'Notes'},
-        {value: 'option-4', label: 'Media'}
-    ];
-
-    const defaultValue: SelectOption = {
-        value: 'option-1', label: 'Home'
-    };
-
-    const controlClasses = {
-        control: '!bg-transparent !hidden mr-2 !pl-0 text-xl font-bold',
-        menu: '!min-w-[120px]'
+    const handleLayoutChange = (newLayout: string) => {
+        setLayout(newLayout);
     };
 
     return (
         <>
-            <MainNavigation />
-            <div className='mx-auto mt-4 flex w-full max-w-[640px] items-center justify-between border-b border-grey-200 pb-4'>
-                <div>
-                    <Select controlClasses={controlClasses} defaultValue={defaultValue} options={selectOptions} unstyled onSelect={() => {}} />
-                    <h2 className='text-xl font-bold'>Home</h2>
-                </div>
-                <div className=''>
-                    <Tooltip content="Inbox">
-                        <Button className='!px-2' icon='listview' iconColorClass={layout === 'inbox' ? 'text-black' : 'text-grey-400'} size='sm' onClick={() => {
-                            setLayout('inbox');
-                        }} />
-                    </Tooltip>
-                    <Tooltip content="Feed">
-                        <Button className='!px-2' icon='cardview' iconColorClass={layout === 'feed' ? 'text-black' : 'text-grey-400'} size='sm' onClick={() => {
-                            setLayout('feed');
-                        }} />
-                    </Tooltip>
-                </div>
-            </div>
-            <div className='z-0 flex w-full flex-col'>
+            <MainNavigation page='home' title="Home" onLayoutChange={handleLayoutChange} />
+            <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full'>
                     {inboxTabActivities.length > 0 ? (
                         <ul className='mx-auto flex max-w-[640px] flex-col'>

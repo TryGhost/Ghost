@@ -87,7 +87,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation />
+            <MainNavigation title='Profile' />
             <div className='z-0 flex w-full flex-col items-center'>
                 <div className='mx-auto mt-8 w-full max-w-[560px]' id='ap-sidebar'>
                     <div className='h-[200px] w-full rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
