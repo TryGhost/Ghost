@@ -169,19 +169,26 @@ const createIntegrityToken = async function createIntegrityToken(req, res) {
 };
 
 const verifyIntegrityToken = async function verifyIntegrityToken(req, res, next) {
+    const shouldThrowForInvalidToken = config.get('verifyRequestIntegrity');
     try {
         const token = req.body.integrityToken;
         if (!token) {
             logging.warn('Request with missing integrity token.');
-            // In future this will throw an error
-            return next();
+            if (shouldThrowForInvalidToken) {
+                throw new errors.BadRequestError();
+            } else {
+                return next();
+            }
         }
         if (membersService.requestIntegrityTokenProvider.validate(token)) {
             return next();
         } else {
             logging.warn('Request with invalid integrity token.');
-            // In future this will throw an error
-            return next();
+            if (shouldThrowForInvalidToken) {
+                throw new errors.BadRequestError();
+            } else {
+                return next();
+            }
         }
     } catch (err) {
         next(err);
