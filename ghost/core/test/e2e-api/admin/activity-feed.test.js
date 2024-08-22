@@ -319,6 +319,48 @@ describe('Activity Feed API', function () {
             });
     });
 
+    it('Returns aggregated_click events in activity feed', async function () {
+        // Check activity feed
+        await agent
+            .get(`/members/events?filter=type:aggregated_click_event`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-version': anyContentVersion
+            })
+            .matchBodySnapshot({
+                events: new Array(8).fill({
+                    type: 'aggregated_click_event',
+                    data: anyObject
+                })
+            })
+            .expect(({body}) => {
+                assert(body.events.find(e => e.type === 'aggregated_click_event'), 'Expected a aggregated_click event');
+                assert(!body.events.find(e => e.type !== 'aggregated_click_event'), 'Expected only aggregated_click events');
+            });
+    });
+
+    it('Returns aggregated_click events in activity feed with post_id filter', async function () {
+        const postId = fixtureManager.get('posts', 0).id;
+        await agent
+            .get(`/members/events?filter=type:aggregated_click_event${encodeURIComponent(`+data.post_id:'${postId}'`)}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-version': anyContentVersion
+            })
+            .matchBodySnapshot({
+                events: new Array(1).fill({
+                    type: 'aggregated_click_event',
+                    data: anyObject
+                })
+            })
+            .expect(({body}) => {
+                assert(body.events.find(e => e.type === 'aggregated_click_event'), 'Expected a aggregated_click event');
+                assert(!body.events.find(e => e.type !== 'aggregated_click_event'), 'Expected only aggregated_click events');
+            });
+    });
+
     it('Returns signup events in activity feed', async function () {
         // Check activity feed
         await agent
