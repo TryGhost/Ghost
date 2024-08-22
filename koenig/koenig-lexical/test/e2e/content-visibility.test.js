@@ -66,7 +66,7 @@ test.describe('Content Visibility', async () => {
             await expect(card.locator('[aria-label="Visibility"]')).toHaveAttribute('data-kg-active', 'true');
         });
 
-        test('visibility settings - defaults to show on email and web and all subscribers', async function () {
+        test('visibility settings - defaults to show on email and web and all members', async function () {
             const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
@@ -94,7 +94,7 @@ test.describe('Content Visibility', async () => {
             await expect(card.getByTestId('visibility-message')).toContainText('Only shown on web');
         });
 
-        test('can toggle visibility settings - show on email and web and all subscribers', async function () {
+        test('can toggle visibility settings - show on email and web and all members', async function () {
             const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
@@ -102,7 +102,7 @@ test.describe('Content Visibility', async () => {
             await expect(card.getByTestId('visibility-message')).not.toBeVisible();
         });
 
-        test('can toggle visibility settings segments - free subscribers', async function () {
+        test('can toggle visibility settings segments - free members', async function () {
             const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
@@ -111,10 +111,10 @@ test.describe('Content Visibility', async () => {
 
             await card.locator('[data-test-value="status:free"]').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web, and to free subscribers only in email');
+            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web, and to free members only in email');
         });
 
-        test('can toggle visibility settings segments - paid subscribers', async function () {
+        test('can toggle visibility settings segments - paid members', async function () {
             const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
@@ -122,10 +122,10 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-dropdown-segment').click();
             await card.locator('[data-test-value="status:-free"]').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web, and to paid subscribers only in email');
+            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web, and to paid members only in email');
         });
 
-        test('can toggle visibility settings segments - all subscribers', async function () {
+        test('can toggle visibility settings segments - all members', async function () {
             const card = await insertHtmlCard();
 
             await card.locator('[aria-label="Visibility"]').click();
@@ -144,10 +144,10 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-show-on-web-Toggle').click();
             await card.getByTestId('visibility-show-on-email-Toggle').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Hidden from both email and web');
+            await expect(card.getByTestId('visibility-message')).toContainText('Hidden from both web and email');
         });
 
-        test('can toggle visibility - subscriber settings hidden when stripe is not enabled', async function () {
+        test('can toggle visibility - member settings hidden when stripe is not enabled', async function () {
             await initialize({page, uri: '/#/?content=false&labs=contentVisibility&stripe=false'});
             const card = await insertHtmlCard();
 

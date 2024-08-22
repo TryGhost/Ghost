@@ -58,9 +58,9 @@ describe('useVisibilityToggle', () => {
         expect(result.current[5]).toBe(node.visibility.showOnWeb); // webVisibility
 
         expect(result.current[6]).toEqual([
-            {label: 'All subscribers', name: ''},
-            {label: 'Free subscribers', name: 'status:free'},
-            {label: 'Paid subscribers', name: 'status:-free'}
+            {label: 'All members', name: ''},
+            {label: 'Free members', name: 'status:free'},
+            {label: 'Paid members', name: 'status:-free'}
         ]); // dropdownOptions
 
         expect(result.current[7]).toBe(''); // message
@@ -105,7 +105,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[3]).toBe('status:free'); // segment
         expect(node.visibility.segment).toBe('status:free');
-        expect(result.current[7]).toBe('Shown on web, and to free subscribers only in email'); // message
+        expect(result.current[7]).toBe('Shown on web, and to free members only in email'); // message
     });
 
     it('should update the message correctly when both toggles are off', () => {
@@ -120,7 +120,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[4]).toBe(false); // emailVisibility
         expect(result.current[5]).toBe(false); // webVisibility
-        expect(result.current[7]).toBe('Hidden from both email and web'); // message
+        expect(result.current[7]).toBe('Hidden from both web and email'); // message
     });
 
     it('does not return dropdownOptions if stripe is not enabled', () => {

@@ -6,13 +6,13 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const dropdownOptions = () => {
         if (isStripeEnabled) {
             return [{
-                label: 'All subscribers',
+                label: 'All members',
                 name: ''
             }, {
-                label: 'Free subscribers',
+                label: 'Free members',
                 name: 'status:free'
             }, {
-                label: 'Paid subscribers',
+                label: 'Paid members',
                 name: 'status:-free'
             }];
         }
@@ -38,13 +38,13 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
         let segmentLabel = '';
 
         if (segment === 'status:free') {
-            segmentLabel = 'free subscribers';
+            segmentLabel = 'free members';
         } else if (segment === 'status:-free') {
-            segmentLabel = 'paid subscribers';
+            segmentLabel = 'paid members';
         }
 
         if (!showOnWeb && !showOnEmail) {
-            message = 'Hidden from both email and web';
+            message = 'Hidden from both web and email';
         } else if (showOnWeb && !showOnEmail) {
             message = 'Only shown on web';
         } else if (showOnWeb && showOnEmail && segmentLabel) {
