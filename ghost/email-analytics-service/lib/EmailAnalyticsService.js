@@ -32,12 +32,17 @@ module.exports = class EmailAnalyticsService {
     /**
      * @type {FetchData}
      */
-    #fetchLatestData = null;
+    #fetchLatestNonOpenedData = null;
 
     /**
      * @type {FetchData}
      */
     #fetchMissingData = null;
+
+    /**
+     * @type {FetchData}
+     */
+    #fetchLatestOpenedData = null;
 
     /**
      * @type {FetchDataScheduled}
@@ -58,38 +63,64 @@ module.exports = class EmailAnalyticsService {
 
     getStatus() {
         return {
-            latest: this.#fetchLatestData,
+            latest: this.#fetchLatestNonOpenedData,
             missing: this.#fetchMissingData,
-            scheduled: this.#fetchScheduledData
+            scheduled: this.#fetchScheduledData,
+            latestOpened: this.#fetchLatestOpenedData
         };
     }
 
     /**
      * Returns the timestamp of the last event we processed. Defaults to now minus 30 minutes if we have no data yet.
      */
-    async getLastEventTimestamp() {
-        return this.#fetchLatestData?.lastEventTimestamp ?? (await this.queries.getLastSeenEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
+    async getLastNonOpenedEventTimestamp() {
+        return this.#fetchLatestNonOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(['delivered','failed'])) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
     }
 
-    async fetchLatest({maxEvents = Infinity} = {}) {
+    async getLastOpenedEventTimestamp() {
+        return this.#fetchLatestOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(['opened'])) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
+    }
+
+    async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        const begin = await this.getLastEventTimestamp();
-        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // ALways stop at x minutes ago to give Mailgun a bit more time to stabilize storage
+        const begin = await this.getLastOpenedEventTimestamp();
+        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
         if (end <= begin) {
             // Skip for now
-            logging.info('[EmailAnalytics] Skipping fetchLatest because end (' + end + ') is before begin (' + begin + ')');
+            logging.info('[EmailAnalytics] Skipping fetchLatestOpenedEvents because end (' + end + ') is before begin (' + begin + ')');
             return 0;
         }
 
         // Create the fetch data object if it doesn't exist yet
-        if (!this.#fetchLatestData) {
-            this.#fetchLatestData = {
+        if (!this.#fetchLatestOpenedData) {
+            this.#fetchLatestOpenedData = {
                 running: false
             };
         }
 
-        return await this.#fetchEvents(this.#fetchLatestData, {begin, end, maxEvents});
+        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+    }
+
+    async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
+        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
+        const begin = await this.getLastNonOpenedEventTimestamp();
+        const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
+
+        if (end <= begin) {
+            // Skip for now
+            logging.info('[EmailAnalytics] Skipping fetchLatestNonOpenedEvents because end (' + end + ') is before begin (' + begin + ')');
+            return 0;
+        }
+
+        // Create the fetch data object if it doesn't exist yet
+        if (!this.#fetchLatestNonOpenedData) {
+            this.#fetchLatestNonOpenedData = {
+                running: false
+            };
+        }
+
+        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
     }
 
     /**
@@ -101,11 +132,11 @@ module.exports = class EmailAnalyticsService {
         // We start where we left of, or 1,5h ago after a server restart
         const begin = this.#fetchMissingData?.lastEventTimestamp ?? this.#fetchMissingData?.lastBegin ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 3);
 
-        // Always stop at the time the fetchLatest started fetching on, or maximum 30 minutes ago
+        // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
         const end = new Date(
             Math.min(
                 Date.now() - TRUST_THRESHOLD_MS,
-                this.#fetchLatestData?.lastBegin?.getTime()
+                this.#fetchLatestNonOpenedData?.lastBegin?.getTime()
             )
         );
 
@@ -200,8 +231,9 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.begin
      * @param {Date} options.end
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {String[]} [options.eventTypes] Only fetch these events, ['delivered', 'opened', 'failed', 'unsubscribed', 'complained']
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity}) {
+    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         logging.info('[EmailAnalytics] Fetching from ' + begin.toISOString() + ' until ' + end.toISOString() + ' (maxEvents: ' + maxEvents + ')');
 
@@ -246,7 +278,7 @@ module.exports = class EmailAnalyticsService {
 
         try {
             for (const provider of this.providers) {
-                await provider.fetchLatest(processBatch, {begin, end, maxEvents});
+                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
             }
 
             logging.info('[EmailAnalytics] Fetching finished');

@@ -105,17 +105,17 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-publish-flow="confirm"]'), 'confirm step').to.exist;
 
         expect(find('[data-test-text="confirm-details"]'), 'confirmation text')
-            .to.have.rendered.text('Your post will be published on your site.');
+            .to.have.rendered.trimmed.text('Your post will be published on your site.');
 
         expect(find('[data-test-button="confirm-publish"]'), 'publish button text')
-            .to.have.rendered.text('Publish post, right now');
+            .to.have.rendered.trimmed.text('Publish post, right now');
 
         await click('[data-test-button="confirm-publish"]');
 
         expect(post.status, 'post status after publish').to.equal('published');
 
         expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.text('Boom. It’s out there. That’s 1 post published, keep going!');
+        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom. It’s out there. That’s 1 post published, keep going!');
         expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
 
         // "revert to draft" only shown for scheduled posts
@@ -133,7 +133,7 @@ describe('Acceptance: Publish flow', function () {
         await click('[data-test-button="update-flow"]');
 
         expect(find('[data-test-modal="update-flow"]'), 'update flow modal').to.exist;
-        expect(find('[data-test-update-flow-title]')).to.have.rendered.text('This post has been published');
+        expect(find('[data-test-update-flow-title]')).to.have.rendered.trimmed.text('This post has been published');
         expect(find('[data-test-update-flow-confirmation]')).to.contain.rendered.text('Your post was published on your site');
         const savedPublishAt = moment(post.publishedAt).utc();
         expect(find('[data-test-update-flow-confirmation]')).to.contain.rendered.text(`on ${savedPublishAt.format('D MMM YYYY')} at ${savedPublishAt.format('HH:mm')}`);
@@ -257,7 +257,7 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-text="confirm-details"]')).to.contain.rendered
                 .text('will be published on your site, and delivered to all 7 subscribers.');
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
             await click('[data-test-button="confirm-publish"]');
@@ -313,7 +313,7 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-text="confirm-details"]')).to.contain.rendered
                 .text('will be published on your site, and delivered to all 1 subscriber of Second newsletter.');
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
             await click('[data-test-button="confirm-publish"]');
@@ -328,7 +328,7 @@ describe('Acceptance: Publish flow', function () {
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Right now');
 
             const siteTz = this.server.db.settings.findBy({key: 'timezone'}).value;
@@ -356,16 +356,16 @@ describe('Acceptance: Publish flow', function () {
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]')).to.have.value(newDate.format('HH:mm'));
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered.trimmed
                 .text('In 4 days');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`On ${newDate.format('D MMM YYYY')} at ${newDate.format('HH:mm')} your post will be published on your site, and delivered to all 7 subscribers.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Publish & send, on ${newDate.format('MMMM Do')}`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -385,16 +385,16 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
             await click('[data-test-publish-type="send"]');
 
-            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Email');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`Your post will be delivered to all 7 subscribers, and will not be published on your site.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Send email, right now`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -411,7 +411,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
             await click('[data-test-publish-type="send"]');
 
-            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Email');
 
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
@@ -425,16 +425,16 @@ describe('Acceptance: Publish flow', function () {
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]')).to.have.value(newDate.format('HH:mm'));
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered.trimmed
                 .text('In 4 days');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`On ${newDate.format('D MMM YYYY')} at ${newDate.format('HH:mm')} your post will be delivered to all 7 subscribers, and will not be published on your site.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Send email, on ${newDate.format('MMMM Do')}`);
 
             await click('[data-test-button="confirm-publish"]');

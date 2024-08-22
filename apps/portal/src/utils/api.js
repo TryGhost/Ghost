@@ -134,10 +134,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     };
 
     api.feedback = {
-        async add({uuid, postId, score}) {
+        async add({uuid, key, postId, score}) {
             let url = endpointFor({type: 'members', resource: 'feedback'});
-            url = url + `?uuid=${uuid}`;
-
+            if (uuid && key) { // only necessary if not logged in, and both are required if so
+                url = url + `?uuid=${uuid}&key=${key}`;
+            }
             const body = {
                 feedback: [
                     {
@@ -303,9 +304,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async newsletters({uuid}) {
+        async newsletters({uuid, key}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
-            url = url + `?uuid=${uuid}`;
+            url = url + `?uuid=${uuid}&key=${key}`;
             return makeRequest({
                 url,
                 credentials: 'same-origin'
@@ -317,9 +318,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateNewsletters({uuid, newsletters, enableCommentNotifications}) {
+        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
-            url = url + `?uuid=${uuid}`;
+            url = url + `?uuid=${uuid}&key=${key}`;
             const body = {
                 newsletters
             };

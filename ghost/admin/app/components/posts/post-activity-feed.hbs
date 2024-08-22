@@ -11,35 +11,7 @@
             </div>
         {{/if}}
 
-        {{#if (and (not eventsFetcher.data) (not eventsFetcher.isLoading))}}
-            <div class="gh-dashboard-list-body">
-                <div class="gh-post-activity-feed-empty">
-                    <div class="attribution-list-empty">
-                        {{#if (eq this.eventType "sent")}}
-                            {{svg-jar "empty-sent"}}
-                            <h4>No members have received your email yet</h4>
-                            <p>Once someone receives your email, you'll be able to see the member activity here.</p>
-                        {{else if (eq this.eventType "opened")}}
-                            {{svg-jar "empty-opened"}}
-                            <h4>No members have opened your newsletter</h4>
-                            <p>Once someone opens, you'll see them listed here.</p>
-                        {{else if (eq this.eventType "clicked")}}
-                            {{svg-jar "empty-clicked"}}
-                            <h4>No links have been clicked in your newsletter</h4>
-                            <p>Once a member clicks a link, you'll see them listed here.</p>
-                        {{else if (eq this.eventType "feedback")}}
-                            {{svg-jar "empty-feedback"}}
-                            <h4>No members have given feedback yet</h4>
-                            <p>When someone does, you'll see their response here.</p>
-                        {{else if (eq this.eventType "conversion")}}
-                            {{svg-jar "empty-conversion"}}
-                            <h4>No members have signed up on this post</h4>
-                            <p>When someone new signs up, you'll see them here.</p>
-                        {{/if}}
-                    </div>
-                </div>
-            </div>
-        {{else}}
+        {{#if eventsFetcher.data}}
             <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
@@ -134,6 +106,34 @@
             {{#if (eq @eventType 'feedback')}}
                 <Posts::FeedbackEventsChart @data={{@data}} />
             {{/if}}
+        {{else}}
+            <div class="gh-dashboard-list-body">
+                <div class="gh-post-activity-feed-empty">
+                    <div class="attribution-list-empty">
+                        {{#if (eq this.eventType "sent")}}
+                            {{svg-jar "empty-sent"}}
+                            <h4>No members have received your email yet</h4>
+                            <p>Once someone receives your email, you'll be able to see the member activity here.</p>
+                        {{else if (eq this.eventType "opened")}}
+                            {{svg-jar "empty-opened"}}
+                            <h4>No members have opened your newsletter</h4>
+                            <p>Once someone opens, you'll see them listed here.</p>
+                        {{else if (eq this.eventType "clicked")}}
+                            {{svg-jar "empty-clicked"}}
+                            <h4>No links have been clicked in your newsletter</h4>
+                            <p>Once a member clicks a link, you'll see them listed here.</p>
+                        {{else if (eq this.eventType "feedback")}}
+                            {{svg-jar "empty-feedback"}}
+                            <h4>No members have given feedback yet</h4>
+                            <p>When someone does, you'll see their response here.</p>
+                        {{else if (eq this.eventType "conversion")}}
+                            {{svg-jar "empty-conversion"}}
+                            <h4>No members have signed up on this post</h4>
+                            <p>When someone new signs up, you'll see them here.</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
         {{/if}}
     {{/let}}
 </div>

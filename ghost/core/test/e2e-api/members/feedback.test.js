@@ -3,9 +3,13 @@ const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = requ
 const {anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const crypto = require('crypto');
+
+const membersValidationKeyMock = 'abc123dontstealme';
 
 describe('Members Feedback', function () {
-    let membersAgent, membersAgent2, memberUuid;
+    let membersAgent, membersAgent2, memberUuid, memberHmac;
     let clock;
 
     before(async function () {
@@ -14,9 +18,11 @@ describe('Members Feedback', function () {
 
         await fixtureManager.init('posts', 'members');
         memberUuid = fixtureManager.get('members', 0).uuid;
+        memberHmac = crypto.createHmac('sha256', membersValidationKeyMock).update(memberUuid).digest('hex');
     });
 
     beforeEach(function () {
+        sinon.stub(settingsHelpers, 'getMembersValidationKey').returns(membersValidationKeyMock);
         mockManager.mockMail();
     });
 
@@ -55,21 +61,45 @@ describe('Members Feedback', function () {
                     ]
                 });
         });
-    });
 
-    describe('Validation', function () {
-        const postId = fixtureManager.get('posts', 0).id;
+        it('Allows authentication via uuid (+ key)', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
 
-        it('Throws for invalid score', async function () {
+            await membersAgent
+                .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
+                .body({
+                    feedback: [{
+                        score: 1,
+                        post_id: postId
+                    }]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    location: anyLocationFor('feedback')
+                })
+                .matchBodySnapshot({
+                    feedback: [
+                        {
+                            id: anyObjectId,
+                            memberId: anyObjectId,
+                            postId: anyObjectId
+                        }
+                    ]
+                });
+        });
+
+        it('Throws for missing key', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
             await membersAgent
                 .post(`/api/feedback/?uuid=${memberUuid}`)
                 .body({
                     feedback: [{
-                        score: 2,
+                        score: 1,
                         post_id: postId
                     }]
                 })
-                .expectStatus(422)
+                .expectStatus(401)
                 .matchBodySnapshot({
                     errors: [
                         {
@@ -79,16 +109,17 @@ describe('Members Feedback', function () {
                 });
         });
 
-        it('Throws for invalid score type', async function () {
+        it('Thorws for invalid key', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
             await membersAgent
-                .post(`/api/feedback/?uuid=${memberUuid}`)
+                .post(`/api/feedback/?uuid=${memberUuid}&key=1234`)
                 .body({
                     feedback: [{
-                        score: 'text',
+                        score: 1,
                         post_id: postId
                     }]
                 })
-                .expectStatus(422)
+                .expectStatus(401)
                 .matchBodySnapshot({
                     errors: [
                         {
@@ -99,6 +130,7 @@ describe('Members Feedback', function () {
         });
 
         it('Throws for invalid uuid', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
             await membersAgent
                 .post(`/api/feedback/?uuid=1234`)
                 .body({
@@ -118,6 +150,7 @@ describe('Members Feedback', function () {
         });
 
         it('Throws for nonexisting uuid', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
             const uuid = '00000000-0000-0000-0000-000000000000';
             await membersAgent
                 .post(`/api/feedback/?uuid=${uuid}`)
@@ -136,10 +169,52 @@ describe('Members Feedback', function () {
                     ]
                 });
         });
+    });
+
+    describe('Validation', function () {
+        const postId = fixtureManager.get('posts', 0).id;
+
+        it('Throws for invalid score', async function () {
+            await membersAgent
+                .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
+                .body({
+                    feedback: [{
+                        score: 2,
+                        post_id: postId
+                    }]
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                });
+        });
+
+        it('Throws for invalid score type', async function () {
+            await membersAgent
+                .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
+                .body({
+                    feedback: [{
+                        score: 'text',
+                        post_id: postId
+                    }]
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                });
+        });
 
         it('Throws for nonexisting post', async function () {
             await membersAgent
-                .post(`/api/feedback/?uuid=${memberUuid}`)
+                .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
                 .body({
                     feedback: [{
                         score: 1,
@@ -161,7 +236,7 @@ describe('Members Feedback', function () {
         const postId = fixtureManager.get('posts', 0).id;
 
         await membersAgent
-            .post(`/api/feedback/?uuid=${memberUuid}`)
+            .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
             .body({
                 feedback: [{
                     score: 1,
@@ -189,7 +264,7 @@ describe('Members Feedback', function () {
         const postId = fixtureManager.get('posts', 1).id;
 
         const {body} = await membersAgent
-            .post(`/api/feedback/?uuid=${memberUuid}`)
+            .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
             .body({
                 feedback: [{
                     score: 0,
@@ -220,7 +295,7 @@ describe('Members Feedback', function () {
         clock.tick(10 * 60 * 1000);
 
         const {body: body2} = await membersAgent
-            .post(`/api/feedback/?uuid=${memberUuid}`)
+            .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
             .body({
                 feedback: [{
                     score: 1,
@@ -252,7 +327,7 @@ describe('Members Feedback', function () {
 
         // Do the same change again, and the model shouldn't change
         const {body: body3} = await membersAgent
-            .post(`/api/feedback/?uuid=${memberUuid}`)
+            .post(`/api/feedback/?uuid=${memberUuid}&key=${memberHmac}`)
             .body({
                 feedback: [{
                     score: 1,

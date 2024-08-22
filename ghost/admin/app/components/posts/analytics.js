@@ -367,7 +367,7 @@ export default class Analytics extends Component {
 
     @task
     *fetchPostTask() {
-        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, limit: 1});
+        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'count.clicks,count.conversions,count.paid_conversions,count.positive_feedback,count.negative_feedback', limit: 1});
         this.post = result.toArray()[0];
 
         if (this.post.email) {
@@ -376,6 +376,8 @@ export default class Analytics extends Component {
                 type: 'success'
             });
         }
+
+        return true;
     }
 
     get showLinks() {

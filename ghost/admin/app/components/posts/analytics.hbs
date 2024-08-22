@@ -37,12 +37,15 @@
                 {{#if (feature "publishFlowEndScreen")}}
                     <div style="display: flex; gap: 8px;">
                         {{#if (feature "postAnalyticsRefresh")}}
-                            <button type="button" class="gh-post-list-cta edit" {{on "click" this.fetchPostTask.perform}}>
-                                {{svg-jar "reload" title="Refresh post analytics"}}<span>Refresh</span>
-                            </button>
+                            <GhTaskButton
+                                @buttonText="Refresh"
+                                @task={{this.fetchPostTask}}
+                                @showIcon={{true}}
+                                @successText="Refreshed"
+                                @class="gh-btn gh-btn-icon refresh" />
                         {{/if}}
                         {{#unless this.post.emailOnly}}
-                            <button type="button" class="gh-post-list-cta edit share" {{on "click" this.togglePublishFlowModal}}>
+                            <button type="button" class="gh-post-list-cta share" {{on "click" this.togglePublishFlowModal}}>
                                 {{svg-jar "share" title="Share post"}}<span>Share</span>
                             </button>
                         {{/unless}}
@@ -50,7 +53,7 @@
                         <span class="dropdown">
                             <GhDropdownButton
                                 @dropdownName="analytics-actions-menu"
-                                @classNames="gh-post-list-cta edit gh-btn-icon icon-only gh-btn-action-icon"
+                                @classNames="gh-post-list-cta gh-btn-icon icon-only gh-btn-action-icon"
                                 @title="Analytics Actions"
                                 data-test-button="analytics-actions"
                             >
