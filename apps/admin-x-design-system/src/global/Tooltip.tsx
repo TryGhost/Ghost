@@ -18,7 +18,7 @@ const Tooltip: React.FC<TooltipProps> = ({content, size = 'sm', children, contai
     );
 
     tooltipClassName = clsx(
-        'select-none rounded-sm bg-black px-2 py-0.5 leading-normal text-white will-change-[transform,opacity]',
+        'z-[9999] select-none rounded-sm bg-black px-2 py-0.5 leading-normal text-white will-change-[transform,opacity]',
         size === 'sm' && 'text-xs',
         size === 'md' && 'text-sm'
     );
