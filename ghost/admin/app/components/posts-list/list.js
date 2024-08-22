@@ -9,6 +9,7 @@ export default class PostsList extends Component {
     @service feature;
 
     latestScheduledPost = null;
+    latestPublishedPost = null;
 
     constructor() {
         super(...arguments);
@@ -25,6 +26,14 @@ export default class PostsList extends Component {
             });
             localStorage.removeItem('ghost-last-scheduled-post');
         }
+
+        if (localStorage.getItem('ghost-last-published-post')) {
+            await this.getlatestPublishedPost.perform();
+            this.modals.open(PostSuccessModal, {
+                post: this.latestPublishedPost
+            });
+            localStorage.removeItem('ghost-last-published-post');
+        }
     }
 
     get list() {
@@ -35,5 +44,11 @@ export default class PostsList extends Component {
     *getLatestScheduledPost() {
         const result = yield this.store.query('post', {filter: `id:${localStorage.getItem('ghost-last-scheduled-post')}`, limit: 1});
         this.latestScheduledPost = result.toArray()[0];
+    }
+
+    @task
+    *getlatestPublishedPost() {
+        const result = yield this.store.query('post', {filter: `id:${localStorage.getItem('ghost-last-published-post')}`, limit: 1});
+        this.latestPublishedPost = result.toArray()[0];
     }
 }
