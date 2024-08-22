@@ -16,8 +16,13 @@ function replaceCustomFilterTransformer(filter) {
     };
 }
 
+/**
+ * @param {object} deps
+ * @param {import('knex').Knex} deps.knex
+ **/
 module.exports = class EventRepository {
     constructor({
+        knex,
         DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
@@ -51,6 +56,7 @@ module.exports = class EventRepository {
         this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
         this._memberAttributionService = memberAttributionService;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
+        this.knex = knex;
     }
 
     async getEventTimeline(options = {}) {
@@ -490,7 +496,7 @@ module.exports = class EventRepository {
      * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
      */
     async getAggregatedClickEvents(options = {}, filter) {
-        const knex = db.knex;
+        const knex = this.knex;
         let postId = '';
 
         if (filter && filter.$and) {
