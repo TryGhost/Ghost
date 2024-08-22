@@ -605,7 +605,6 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: ['member'],
-            //filter: '',
             filterRelations: false,
             filter: 'custom:true',
             useBasicCount: true,
