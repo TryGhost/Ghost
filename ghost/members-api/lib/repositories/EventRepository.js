@@ -619,7 +619,7 @@ module.exports = class EventRepository {
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
-            whereRaw: `rn = 1 order by created_at desc, id desc`,
+            whereRaw: `rn = 1 ORDER BY created_at DESC, id DESC`,
             //orderRaw: `created_at desc, id desc`,
             cte: [{
                 name: `PostClicks`,
