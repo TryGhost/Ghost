@@ -541,11 +541,6 @@ module.exports = class EventRepository {
     async getAggregatedClickEvents(options = {}, filter) {
         const knex = db.knex;
         let postId = '';
-        options.filter = removeTypeFilter(options.filter);
-
-        const filterssss = this.removePostIdFilter(filter);
-        ////console.log("postIDfilter: " + JSON.stringify(postIDfilter));
-        //console.log("filterssss: ");
 
         if (filter && filter.$and) {
             // Case when there is an $and condition
@@ -554,12 +549,9 @@ module.exports = class EventRepository {
             // Case when there's no $and condition, directly look for data.post_id
             postId = filter ? filter['data.post_id'] : '';
         }
-        //console.log("options.filter : " + options.filter);
-        options.filter = removeTypeFilter(options.filter);
-        //console.log("options.filter 1 : " + options.filter);
-        options.filter = removePostFilter(options.filter);
-        //console.log("options.filter 2 : " + options.filter);
-        //console.log("postId : " + postId);
+        const [typeFilter, otherFilter] = this.getNQLSubset(options.filter); //Remove type filter as we don't need it in the query
+
+        filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
 
         let postClicksQuery = postId && postId !== '' ? knex.raw(`SELECT
                     mce.id,
@@ -610,7 +602,7 @@ module.exports = class EventRepository {
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
-                replaceCustomFilterTransformer(filterssss),
+                replaceCustomFilterTransformer(filter),
 
                 // Map the used keys in that filter
                 ...mapKeys({
@@ -625,7 +617,6 @@ module.exports = class EventRepository {
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
             whereRaw: `rn = 1 ORDER BY created_at DESC, id DESC`,
-            //orderRaw: `created_at desc, id desc`,
             cte: [{
                 name: `PostClicks`,
                 query: postClicksQuery
@@ -972,14 +963,6 @@ module.exports = class EventRepository {
         if (!filter) {
             return filter;
         }
-        // let parsed;
-        // try {
-        //     //parsed = nql(filter).parse();
-        // } catch (e) {
-        //     throw new errors.BadRequestError({
-        //         message: e.message
-        //     });
-        // }
     
         try {
             return rejectStatements(filter, key => key === 'data.post_id');
