@@ -106,6 +106,7 @@
     "Sign out": "로그아웃",
     "Sign up": "가입",
     "Signup error: Invalid link": "가입 오류: 잘못된 링크",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "죄송해요. 작동하지 않았어요.",
     "Spam complaints": "스팸 신고",
     "Start {{amount}}-day free trial": "{{amount}}일 동안의 무료 체험 시작",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "성공! 이메일이 업데이트되었어요.",
     "Successfully unsubscribed": "구독이 성공적으로 취소되었어요",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "의견을 보내주셔서 감사해요!",
     "That didn't go to plan": "계획대로 진행되지 않았어요",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "회원님의 이메일 주소는 {{memberEmail}}이에요. 이 주소가 맞지 않다면 <button>계정 설정 영역</button>에서 업데이트할 수 있어요.",
     "There was a problem submitting your feedback. Please try again a little later.": "의견을 제출하는 중에 문제가 발생했어요. 잠시 후 다시 시도해 주세요.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "위 사이트는 초대된 사용자만 사용이 가능해요. 접근을 위해서는 관리자에게 연락해 주세요.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "가입을 완료하려면 이메일의 확인 링크를 클릭해 주세요. 3분 이내에 도착하지 않으면 스팸 폴더를 확인해 주세요!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "{{amount}}일 동안 무료로 사용한 후 {{originalPrice}}로 결제해 주세요.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "유료 구독자가 되어 모든 뉴스레터에 접근해 주세요.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "회원님의 의견은 게시물을 제작하는 것에 큰 도움이 돼요.",
     "Your subscription will expire on {{expiryDate}}": "회원님의 구독은 {{expiryDate}}에 만료돼요",
     "Your subscription will renew on {{renewalDate}}": "회원님의 구독은 {{renewalDate}}에 갱신돼요",
-    "Your subscription will start on {{subscriptionStart}}": "회원님의 구독은 {{subscriptionStart}}에 시작돼요"
+    "Your subscription will start on {{subscriptionStart}}": "회원님의 구독은 {{subscriptionStart}}에 시작돼요",
+    "Your support means a lot.": ""
 }
