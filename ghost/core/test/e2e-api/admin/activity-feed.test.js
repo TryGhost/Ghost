@@ -330,7 +330,7 @@ describe('Activity Feed API', function () {
             })
             .matchBodySnapshot({
                 events: new Array(8).fill({
-                    type: "aggregated_click_event",
+                    type: 'aggregated_click_event',
                     data: anyObject
                 })
             })
@@ -351,7 +351,7 @@ describe('Activity Feed API', function () {
             })
             .matchBodySnapshot({
                 events: new Array(1).fill({
-                    type: "aggregated_click_event",
+                    type: 'aggregated_click_event',
                     data: anyObject
                 })
             })
