@@ -19,10 +19,10 @@ export const TipsAndDonationsSuccessStyle = `
 `;
 
 const SupportSuccess = () => {
-    const {onAction, brandColor} = useContext(AppContext);
-    const successTitle = 'Thank you!';
-    const successDescription = 'Your support means a lot.';
-    const buttonLabel = 'Close';
+    const {onAction, brandColor, t} = useContext(AppContext);
+    const successTitle = t('Thank you!');
+    const successDescription = t('Your support means a lot.');
+    const buttonLabel = t('Close');
 
     return (
         <div className='gh-portal-content gh-portal-tips-and-donations'>

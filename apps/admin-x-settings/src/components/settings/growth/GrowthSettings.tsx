@@ -25,7 +25,7 @@ const GrowthSettings: React.FC = () => {
             <Recommendations keywords={searchKeywords.recommendations} />
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
             {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
-            {hasTipsAndDonations && <TipsAndDonations keywords={searchKeywords.tips} />}
+            {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );
 };

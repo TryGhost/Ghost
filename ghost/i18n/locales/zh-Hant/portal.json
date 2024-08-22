@@ -106,6 +106,7 @@
     "Sign out": "登出",
     "Sign up": "註冊",
     "Signup error: Invalid link": "註冊錯誤：連結無效",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "抱歉，該操作無法完成。",
     "Spam complaints": "垃圾郵件",
     "Start {{amount}}-day free trial": "開始 {{amount}} 天免費試用",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "成功了！您的 email 已更新。",
     "Successfully unsubscribed": "成功取消訂閱",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "感謝您的訂閱，以下是一些你可能也會有興趣的網站。",
+    "Thank you!": "",
     "Thanks for the feedback!": "感謝您的意見！",
     "That didn't go to plan": "發生錯誤",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "就我們所知，您的 email 地址是 {{memberEmail}}。如果有誤，您可以在<button>帳號設定區塊</button>進行更新。",
     "There was a problem submitting your feedback. Please try again a little later.": "提交您的意見時遇到問題。請稍後再試。",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "此網站僅限受邀請者觀看，請聯繫網站擁有者取得存取權限。",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "要完成註冊，請點擊您收件匣中的確認連結。如果在 3 分鐘內沒有收到，請檢查您的垃圾郵件。",
     "Try free for {{amount}} days, then {{originalPrice}}.": "免費試用 {{amount}} 天，然後以 {{originalPrice}} 開始訂閱。",
     "Unlock access to all newsletters by becoming a paid subscriber.": "成為付費會員以解鎖所有電子報內容。",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "您的建議有助於改善我們的內容。",
     "Your subscription will expire on {{expiryDate}}": "您的訂閱將於 {{expiryDate}} 到期",
     "Your subscription will renew on {{renewalDate}}": "您的訂閱將於 {{renewalDate}} 自動續訂",
-    "Your subscription will start on {{subscriptionStart}}": "您的訂閱將於 {{subscriptionStart}} 開始"
+    "Your subscription will start on {{subscriptionStart}}": "您的訂閱將於 {{subscriptionStart}} 開始",
+    "Your support means a lot.": ""
 }

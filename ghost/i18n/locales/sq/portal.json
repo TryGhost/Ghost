@@ -106,6 +106,7 @@
     "Sign out": "Dil",
     "Sign up": "Rregjistrohu",
     "Signup error: Invalid link": "Gabim ne rregjistrim: Link i pavlefshem",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Na vjen keq, kjo nuk funksionoi.",
     "Spam complaints": "Ankesat për mesazhe të padëshiruara",
     "Start {{amount}}-day free trial": "",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Sukses! Emaili yt eshte rifreskuar",
     "Successfully unsubscribed": "Çabonuar me sukses",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "Faleminderit per komentin!",
     "That didn't go to plan": "Kjo nuk shkoi sipas planit",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
     "There was a problem submitting your feedback. Please try again a little later.": "Pati një problem me dërgimin e komenteve tuaja. Ju lutemi provoni sërish pak më vonë.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Kjo faqe eshte vetem me ftesa, kontaktoni zoteruesin per akses.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Për të përfunduar regjistrimin, klikoni lidhjen e konfirmimit në kutinë tuaj hyrëse. Nëse nuk arrin brenda 3 minutash, kontrolloni dosjen tuaj të postës elektronike!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Provo falas per {{amount}} dite, pastaj {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Zhbllokoni aksesin per te gjitha buletinet duke u bere nje abonues me pagese.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Të dhënat tuaja ndihmojnë në formimin e asaj që publikohet.",
     "Your subscription will expire on {{expiryDate}}": "Abonimi juaj do te skadoje ne {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Abonimi juaj to te rinovohet ne {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Abonimi juaj do te filloje ne {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Abonimi juaj do te filloje ne {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }
