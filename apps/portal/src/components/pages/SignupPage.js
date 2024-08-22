@@ -397,7 +397,7 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, errors} = this.state;
+            const {name, email, plan, honeypot, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
@@ -410,7 +410,7 @@ class SignupPage extends React.Component {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, plan});
+                    onAction('signup', {name, email, honeypot, plan});
                 }
             }
         });
@@ -484,6 +484,18 @@ class SignupPage extends React.Component {
                 required: true,
                 tabindex: 2,
                 errorMessage: errors.email || ''
+            },
+            {
+                type: 'text',
+                value: state.honeypot,
+                placeholder: '+1 (123) 456-7890',
+                // Doesn't need translation, hidden field
+                label: 'Phone number',
+                name: 'phonenumber',
+                required: false,
+                tabindex: -1,
+                autocomplete: 'off',
+                hidden: true
             }
         ];
 

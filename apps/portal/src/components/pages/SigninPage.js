@@ -34,11 +34,11 @@ export default class SigninPage extends React.Component {
                 errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, async () => {
-            const {email, errors} = this.state;
+            const {email, honeypot, errors} = this.state;
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email, redirect});
+                this.context.onAction('signin', {email, honeypot, redirect});
             }
         });
     }
@@ -71,6 +71,18 @@ export default class SigninPage extends React.Component {
                 required: true,
                 errorMessage: errors.email || '',
                 autoFocus: true
+            },
+            {
+                type: 'text',
+                value: state.honeypot,
+                placeholder: '+1 (123) 456-7890',
+                // Doesn't need translation, hidden field
+                label: 'Phone number',
+                name: 'phonenumber',
+                required: false,
+                tabindex: -1,
+                autocomplete: 'off',
+                hidden: true
             }
         ];
         return fields;
