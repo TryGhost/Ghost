@@ -226,7 +226,8 @@ export default class SelectionList {
                     } else {
                         this.lastShiftSelectionGroup.add(item.id);
                         this.inverted ? this.selectedIds.delete(item.id) : this.selectedIds.add(item.id);
-                        return;
+                        running = false;
+                        break;
                     }
                 }
 
