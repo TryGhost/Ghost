@@ -1491,6 +1491,10 @@
     margin-right: 0;
 }
 
+.gh-post-analytics-header .share svg {
+    margin-top: -2px;
+}
+
 .gh-post-list-cta.is-hovered {
     border-color: var(--whitegrey-d2);
 }
