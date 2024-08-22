@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const mingo = require('mingo');
-const db = require('../../../core/core/server/data/db');
 const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys, rejectStatements} = require('@tryghost/mongo-utils');
 
 /**
@@ -16,13 +15,8 @@ function replaceCustomFilterTransformer(filter) {
     };
 }
 
-/**
- * @param {object} deps
- * @param {import('knex').Knex} deps.knex
- **/
 module.exports = class EventRepository {
     constructor({
-        knex,
         DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
@@ -56,7 +50,6 @@ module.exports = class EventRepository {
         this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
         this._memberAttributionService = memberAttributionService;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
-        this.knex = knex;
     }
 
     async getEventTimeline(options = {}) {
@@ -496,7 +489,6 @@ module.exports = class EventRepository {
      * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
      */
     async getAggregatedClickEvents(options = {}, filter) {
-        const knex = this.knex;
         let postId = '';
 
         if (filter && filter.$and) {
@@ -512,7 +504,7 @@ module.exports = class EventRepository {
 
         filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
 
-        let postClicksQuery = postId && postId !== '' ? knex.raw(`SELECT
+        let postClicksQuery = postId && postId !== '' ? `SELECT
                     mce.id,
                     mce.member_id,
                     mce.redirect_id,
@@ -522,9 +514,9 @@ module.exports = class EventRepository {
                 INNER JOIN
                     redirects r ON mce.redirect_id = r.id
                 WHERE
-                    r.post_id = ?
-        `, [`${postId}`])
-            : knex.raw(`SELECT
+                    r.post_id = '${postId}'
+        `
+            : `SELECT
                         mce.id,
                         mce.member_id,
                         mce.redirect_id,
@@ -533,9 +525,9 @@ module.exports = class EventRepository {
                         members_click_events mce
                     INNER JOIN
                         redirects r ON mce.redirect_id = r.id
-            `);
+            `;
 
-        const firstClicksQuery = knex.raw(`
+        const firstClicksQuery = `
             SELECT
                 id,
                 member_id,
@@ -544,7 +536,7 @@ module.exports = class EventRepository {
                 ROW_NUMBER() OVER (PARTITION BY member_id ORDER BY created_at, id) AS rn
             FROM
                 PostClicks
-        `);
+        `;
 
         const mainQuery = `SELECT COUNT(DISTINCT redirect_id)
                     FROM PostClicks AS inner_mce

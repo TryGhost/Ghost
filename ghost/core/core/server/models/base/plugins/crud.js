@@ -2,6 +2,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 const tpl = require('@tryghost/tpl');
+const db = require('../../../data/db');
 
 const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
@@ -79,6 +80,7 @@ module.exports = function (Bookshelf) {
          * @param {Object} unfilteredOptions
          */
         findPage: async function findPage(unfilteredOptions) {
+            const knex = db.knex;
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             const itemCollection = this.getFilteredCollection(options);
             const requestedColumns = options.columns;
@@ -123,7 +125,7 @@ module.exports = function (Bookshelf) {
             if (Array.isArray(options.cte)) {
                 options.cte.forEach((cte) => {
                     itemCollection.query((qb) => {
-                        qb.with(cte.name, cte.query);
+                        qb.with(cte.name, knex.raw(cte.query));
                     });
                 });
             }
