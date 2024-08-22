@@ -16,10 +16,22 @@ describe('EmailAnalyticsService', function () {
             const service = new EmailAnalyticsService({});
             const result = service.getStatus();
             result.should.deepEqual({
-                latest: null,
-                missing: null,
-                scheduled: null,
-                latestOpened: null
+                latest: {
+                    jobName: 'email-analytics-latest-others',
+                    running: false
+                },
+                latestOpened: {
+                    jobName: 'email-analytics-latest-opened',
+                    running: false
+                },
+                missing: {
+                    jobName: 'email-analytics-missing',
+                    running: false
+                },
+                scheduled: {
+                    jobName: 'email-analytics-scheduled',
+                    running: false
+                }
             });
         });
     });
@@ -84,7 +96,9 @@ describe('EmailAnalyticsService', function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
                     queries: {
-                        getLastEventTimestamp: sinon.stub().resolves()
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
                     },
                     providers: [{
                         fetchLatest: fetchLatestSpy
@@ -94,13 +108,32 @@ describe('EmailAnalyticsService', function () {
                 fetchLatestSpy.calledOnce.should.be.true();
                 fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
             });
+
+            it('quits if the end is before the begin', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });
+                await service.fetchLatestOpenedEvents();
+                fetchLatestSpy.calledOnce.should.be.false();
+            });
         });
+
         describe('fetchLatestNonOpenedEvents', function () {
             it('fetches only non-opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
                     queries: {
-                        getLastEventTimestamp: sinon.stub().resolves()
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
                     },
                     providers: [{
                         fetchLatest: fetchLatestSpy
@@ -110,293 +143,545 @@ describe('EmailAnalyticsService', function () {
                 fetchLatestSpy.calledOnce.should.be.true();
                 fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
             });
+
+            it('quits if the end is before the begin', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });
+                await service.fetchLatestNonOpenedEvents();
+                fetchLatestSpy.calledOnce.should.be.false();
+            });
+        });
+        describe('fetchScheduled', function () {
+            let service;
+            let processEventBatchStub;
+            let aggregateStatsStub;
+
+            beforeEach(function () {
+                service = new EmailAnalyticsService({
+                    queries: {
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: (fn) => {
+                            const events = [1,2,3,4,5,6,7,8,9,10];
+                            fn(events);
+                        }
+                    }]
+                });
+                processEventBatchStub = sinon.stub(service, 'processEventBatch').resolves();
+                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves();
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('returns 0 when nothing is scheduled', async function () {
+                const result = await service.fetchScheduled();
+                result.should.equal(0);
+                processEventBatchStub.called.should.be.false();
+                aggregateStatsStub.called.should.be.false();
+            });
+
+            it('returns 0 when fetch is canceled', async function () {
+                service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                service.cancelScheduled();
+                const result = await service.fetchScheduled();
+                result.should.equal(0);
+                processEventBatchStub.called.should.be.false();
+                aggregateStatsStub.called.should.be.false();
+            });
+
+            it('fetches events with correct parameters', async function () {
+                service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+
+                const result = await service.fetchScheduled({maxEvents: 100});
+
+                result.should.equal(10);
+                aggregateStatsStub.calledOnce.should.be.true();
+                processEventBatchStub.calledOnce.should.be.true();
+            });
+
+            it('bails when end date is before begin date', async function () {
+                service.schedule({
+                    begin: new Date(2023, 0, 2),
+                    end: new Date(2023, 0, 1)
+                });
+                const result = await service.fetchScheduled({maxEvents: 100});
+                result.should.equal(0);
+            });
+
+            it('resets fetchScheduledData when no events are fetched', async function () {
+                service = new EmailAnalyticsService({
+                    queries: {
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: (fn) => {
+                            fn([]);
+                        }
+                    }]
+                });
+
+                service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                const result = await service.fetchScheduled({maxEvents: 100});
+                result.should.equal(0); 
+            });
+        });
+        
+        describe('fetchMissing', function () {
+            it('fetches missing events', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });                
+                await service.fetchMissing();
+                fetchLatestSpy.calledOnce.should.be.true();
+            });
         });
     });
 
     describe('processEventBatch', function () {
-        let eventProcessor;
-        beforeEach(function () {
-            eventProcessor = {};
-            eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
-                return {
-                    emailId,
-                    emailRecipientId: emailId,
-                    memberId: 1
-                };
+        describe('with functional processor', function () {
+            let eventProcessor;
+            beforeEach(function () {
+                eventProcessor = {};
+                eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
+                    return {
+                        emailId,
+                        emailRecipientId: emailId,
+                        memberId: 1
+                    };
+                });
+                eventProcessor.handleOpened = sinon.stub().callsFake(({emailId}) => {
+                    return {
+                        emailId,
+                        emailRecipientId: emailId,
+                        memberId: 1
+                    };
+                });
+                eventProcessor.handlePermanentFailed = sinon.stub().callsFake(({emailId}) => {
+                    return {
+                        emailId,
+                        emailRecipientId: emailId,
+                        memberId: 1
+                    };
+                });
+                eventProcessor.handleTemporaryFailed = sinon.stub().callsFake(({emailId}) => {
+                    return {
+                        emailId,
+                        emailRecipientId: emailId,
+                        memberId: 1
+                    };
+                });
+                eventProcessor.handleUnsubscribed = sinon.stub().callsFake(({emailId}) => {
+                    return {
+                        emailId,
+                        emailRecipientId: emailId,
+                        memberId: 1
+                    };
+                });
+                eventProcessor.handleComplained = sinon.stub().callsFake(({emailId}) => {
+                    return {
+                        emailId,
+                        emailRecipientId: emailId,
+                        memberId: 1
+                    };
+                });
             });
-            eventProcessor.handleOpened = sinon.stub().callsFake(({emailId}) => {
-                return {
-                    emailId,
-                    emailRecipientId: emailId,
-                    memberId: 1
-                };
+            
+            it('uses passed-in event processor', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+                await service.processEventBatch([{
+                    type: 'delivered',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }, {
+                    type: 'delivered',
+                    emailId: 2,
+                    timestamp: new Date(2)
+                }, {
+                    type: 'opened',
+                    emailId: 1,
+                    timestamp: new Date(3)
+                }], result, fetchData);
+
+                eventProcessor.handleDelivered.callCount.should.eql(2);
+                eventProcessor.handleOpened.callCount.should.eql(1);
+
+                result.should.deepEqual(new EventProcessingResult({
+                    delivered: 2,
+                    opened: 1,
+                    unprocessable: 0,
+                    emailIds: [1, 2],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(3)
+                });
             });
-            eventProcessor.handlePermanentFailed = sinon.stub().callsFake(({emailId}) => {
-                return {
-                    emailId,
-                    emailRecipientId: emailId,
-                    memberId: 1
-                };
+
+            it('handles opened', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'opened',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handleOpened.calledOnce.should.be.true();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    delivered: 0,
+                    opened: 1,
+                    unprocessable: 0,
+                    emailIds: [1],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
             });
-            eventProcessor.handleTemporaryFailed = sinon.stub().callsFake(({emailId}) => {
-                return {
-                    emailId,
-                    emailRecipientId: emailId,
-                    memberId: 1
-                };
+
+            it('handles delivered', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'delivered',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handleDelivered.calledOnce.should.be.true();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    delivered: 1,
+                    opened: 0,
+                    unprocessable: 0,
+                    emailIds: [1],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
             });
-            eventProcessor.handleUnsubscribed = sinon.stub().callsFake(({emailId}) => {
-                return {
-                    emailId,
-                    emailRecipientId: emailId,
-                    memberId: 1
-                };
+
+            it('handles failed (permanent)', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'failed',
+                    severity: 'permanent',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handlePermanentFailed.calledOnce.should.be.true();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    permanentFailed: 1,
+                    emailIds: [1],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
             });
-            eventProcessor.handleComplained = sinon.stub().callsFake(({emailId}) => {
-                return {
-                    emailId,
-                    emailRecipientId: emailId,
-                    memberId: 1
-                };
+
+            it('handles failed (temporary)', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'failed',
+                    severity: 'temporary',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handleTemporaryFailed.calledOnce.should.be.true();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    temporaryFailed: 1,
+                    emailIds: [1],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
+            });
+
+            it('handles unsubscribed', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'unsubscribed',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handleUnsubscribed.calledOnce.should.be.true();
+                eventProcessor.handleDelivered.called.should.be.false();
+                eventProcessor.handleOpened.called.should.be.false();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    unsubscribed: 1,
+                    emailIds: [1],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
+            });
+
+            it('handles complained', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'complained',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handleComplained.calledOnce.should.be.true();
+                eventProcessor.handleDelivered.called.should.be.false();
+                eventProcessor.handleOpened.called.should.be.false();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    complained: 1,
+                    emailIds: [1],
+                    memberIds: [1]
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
+            });
+
+            it(`doens't handle other event types`, async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
+
+                const result = new EventProcessingResult();
+                const fetchData = {};
+
+                await service.processEventBatch([{
+                    type: 'notstandard',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
+
+                eventProcessor.handleDelivered.called.should.be.false();
+                eventProcessor.handleOpened.called.should.be.false();
+
+                result.should.deepEqual(new EventProcessingResult({
+                    unhandled: 1
+                }));
+
+                fetchData.should.deepEqual({
+                    lastEventTimestamp: new Date(1)
+                });
             });
         });
-        
-        it('uses passed-in event processor', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
+
+        describe('with null processor results', function () {
+            let eventProcessor;
+            beforeEach(function () {
+                eventProcessor = {};
+                eventProcessor.handleDelivered = sinon.stub().returns(null);
+                eventProcessor.handleOpened = sinon.stub().returns(null);
+                eventProcessor.handlePermanentFailed = sinon.stub().returns(null);
+                eventProcessor.handleTemporaryFailed = sinon.stub().returns(null);
+                eventProcessor.handleUnsubscribed = sinon.stub().returns(null);
+                eventProcessor.handleComplained = sinon.stub().returns(null);
             });
 
-            const result = new EventProcessingResult();
-            const fetchData = {};
-            await service.processEventBatch([{
-                type: 'delivered',
-                emailId: 1,
-                timestamp: new Date(1)
-            }, {
-                type: 'delivered',
-                emailId: 2,
-                timestamp: new Date(2)
-            }, {
-                type: 'opened',
-                emailId: 1,
-                timestamp: new Date(3)
-            }], result, fetchData);
+            it('delivered returns unprocessable', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
 
-            eventProcessor.handleDelivered.callCount.should.eql(2);
-            eventProcessor.handleOpened.callCount.should.eql(1);
+                const result = new EventProcessingResult();
+                const fetchData = {};
 
-            result.should.deepEqual(new EventProcessingResult({
-                delivered: 2,
-                opened: 1,
-                unprocessable: 0,
-                emailIds: [1, 2],
-                memberIds: [1]
-            }));
+                await service.processEventBatch([{
+                    type: 'delivered',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
 
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(3)
-            });
-        });
-
-        it('handles opened', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
+                result.should.deepEqual(new EventProcessingResult({
+                    unprocessable: 1
+                }));
             });
 
-            const result = new EventProcessingResult();
-            const fetchData = {};
+            it('opened returns unprocessable', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
 
-            await service.processEventBatch([{
-                type: 'opened',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
+                const result = new EventProcessingResult();
+                const fetchData = {};
 
-            eventProcessor.handleOpened.calledOnce.should.be.true();
+                await service.processEventBatch([{
+                    type: 'opened',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
 
-            result.should.deepEqual(new EventProcessingResult({
-                delivered: 0,
-                opened: 1,
-                unprocessable: 0,
-                emailIds: [1],
-                memberIds: [1]
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
-            });
-        });
-
-        it('handles delivered', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
+                result.should.deepEqual(new EventProcessingResult({
+                    unprocessable: 1
+                }));
             });
 
-            const result = new EventProcessingResult();
-            const fetchData = {};
+            it('failed (permanent) returns unprocessable', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
 
-            await service.processEventBatch([{
-                type: 'delivered',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
+                const result = new EventProcessingResult();
+                const fetchData = {};
 
-            eventProcessor.handleDelivered.calledOnce.should.be.true();
+                await service.processEventBatch([{
+                    type: 'failed',
+                    emailId: 1,
+                    timestamp: new Date(1),
+                    severity: 'permanent'
+                }], result, fetchData);
 
-            result.should.deepEqual(new EventProcessingResult({
-                delivered: 1,
-                opened: 0,
-                unprocessable: 0,
-                emailIds: [1],
-                memberIds: [1]
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
-            });
-        });
-
-        it('handles failed (permanent)', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
+                result.should.deepEqual(new EventProcessingResult({
+                    unprocessable: 1
+                }));
             });
 
-            const result = new EventProcessingResult();
-            const fetchData = {};
+            it('failed (temporary) returns unprocessable', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
 
-            await service.processEventBatch([{
-                type: 'failed',
-                severity: 'permanent',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
+                const result = new EventProcessingResult();
+                const fetchData = {};
 
-            eventProcessor.handlePermanentFailed.calledOnce.should.be.true();
+                await service.processEventBatch([{
+                    type: 'failed',
+                    emailId: 1,
+                    timestamp: new Date(1),
+                    severity: 'temporary'
+                }], result, fetchData);
 
-            result.should.deepEqual(new EventProcessingResult({
-                permanentFailed: 1,
-                emailIds: [1],
-                memberIds: [1]
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
-            });
-        });
-
-        it('handles failed (temporary)', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
+                result.should.deepEqual(new EventProcessingResult({
+                    unprocessable: 1
+                }));
             });
 
-            const result = new EventProcessingResult();
-            const fetchData = {};
+            it('unsubscribed returns unprocessable', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
 
-            await service.processEventBatch([{
-                type: 'failed',
-                severity: 'temporary',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
+                const result = new EventProcessingResult();
+                const fetchData = {};
 
-            eventProcessor.handleTemporaryFailed.calledOnce.should.be.true();
+                await service.processEventBatch([{
+                    type: 'unsubscribed',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
 
-            result.should.deepEqual(new EventProcessingResult({
-                temporaryFailed: 1,
-                emailIds: [1],
-                memberIds: [1]
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
-            });
-        });
-
-        it('handles unsubscribed', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
+                result.should.deepEqual(new EventProcessingResult({
+                    unprocessable: 1
+                }));
             });
 
-            const result = new EventProcessingResult();
-            const fetchData = {};
+            it('complained returns unprocessable', async function () {
+                const service = new EmailAnalyticsService({
+                    eventProcessor
+                });
 
-            await service.processEventBatch([{
-                type: 'unsubscribed',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
+                const result = new EventProcessingResult();
+                const fetchData = {};
 
-            eventProcessor.handleUnsubscribed.calledOnce.should.be.true();
-            eventProcessor.handleDelivered.called.should.be.false();
-            eventProcessor.handleOpened.called.should.be.false();
+                await service.processEventBatch([{
+                    type: 'complained',
+                    emailId: 1,
+                    timestamp: new Date(1)
+                }], result, fetchData);
 
-            result.should.deepEqual(new EventProcessingResult({
-                unsubscribed: 1,
-                emailIds: [1],
-                memberIds: [1]
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
-            });
-        });
-
-        it('handles complained', async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
-            });
-
-            const result = new EventProcessingResult();
-            const fetchData = {};
-
-            await service.processEventBatch([{
-                type: 'complained',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
-
-            eventProcessor.handleComplained.calledOnce.should.be.true();
-            eventProcessor.handleDelivered.called.should.be.false();
-            eventProcessor.handleOpened.called.should.be.false();
-
-            result.should.deepEqual(new EventProcessingResult({
-                complained: 1,
-                emailIds: [1],
-                memberIds: [1]
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
-            });
-        });
-
-        it(`doens't handle other event types`, async function () {
-            const service = new EmailAnalyticsService({
-                eventProcessor
-            });
-
-            const result = new EventProcessingResult();
-            const fetchData = {};
-
-            await service.processEventBatch([{
-                type: 'notstandard',
-                emailId: 1,
-                timestamp: new Date(1)
-            }], result, fetchData);
-
-            eventProcessor.handleDelivered.called.should.be.false();
-            eventProcessor.handleOpened.called.should.be.false();
-
-            result.should.deepEqual(new EventProcessingResult({
-                unhandled: 1
-            }));
-
-            fetchData.should.deepEqual({
-                lastEventTimestamp: new Date(1)
+                result.should.deepEqual(new EventProcessingResult({
+                    unprocessable: 1
+                }));
             });
         });
     });
-    
+
     describe('processEvent', function () {
     });
 
