@@ -1,8 +1,13 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:email-analytics');
 const db = require('../../../data/db');
+const logging = require('@tryghost/logging');
+const {default: ObjectID} = require('bson-objectid');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
+
+/** @typedef {'email-analytics-latest-opened'|'email-analytics-latest-others'|'email-analytics-missing'|'email-analytics-scheduled'} EmailAnalyticsJobName */
+/** @typedef {'delivered'|'opened'|'failed'} EmailAnalyticsEvent */
 
 module.exports = {
     async shouldFetchStats() {
@@ -13,36 +18,122 @@ module.exports = {
 
     /**
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
-     * @param {string[]} events - The email analytics events to consider (default: ['delivered', 'opened', 'failed']).
+     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
+     * @param {EmailAnalyticsEvent[]} [events=['delivered', 'opened', 'failed']] - The email analytics events to consider.
      * @returns {Promise<Date|null>} The timestamp of the last seen event, or null if no events are found.
      */
-    async getLastEventTimestamp(events = ['delivered', 'opened', 'failed']) {
+    async getLastEventTimestamp(jobName, events = ['delivered', 'opened', 'failed']) {
         const startDate = new Date();
+        
+        let maxOpenedAt;
+        let maxDeliveredAt;
+        let maxFailedAt;
 
-        // separate queries is much faster than using max/greatest (with coalesce to handle nulls) across columns
-        let maxOpenedAt = events.includes('opened') ? (await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first()).maxOpenedAt : null;
-        let maxDeliveredAt = events.includes('delivered') ? (await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first()).maxDeliveredAt : null;
-        let maxFailedAt = events.includes('failed') ? (await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first()).maxFailedAt : null;
+        const jobData = await db.knex('jobs').select('finished_at', 'started_at').where('name', jobName).first();
 
-        if (maxOpenedAt && !(maxOpenedAt instanceof Date)) {
-            // SQLite returns a string instead of a Date
-            maxOpenedAt = new Date(maxOpenedAt);
+        if (jobData) {
+            debug(`Using job data for ${jobName}`);
+            const lastJobTimestamp = jobData.finished_at || jobData.started_at;
+            maxOpenedAt = events.includes('opened') ? lastJobTimestamp : null;
+            maxDeliveredAt = events.includes('delivered') ? lastJobTimestamp : null;
+            maxFailedAt = events.includes('failed') ? lastJobTimestamp : null;
+        } else {
+            debug(`Job data not found for ${jobName}, using email_recipients data`);
+            logging.info(`Job data not found for ${jobName}, using email_recipients data`);
+            if (events.includes('opened')) {
+                maxOpenedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first()).maxOpenedAt;
+            }
+            if (events.includes('delivered')) {
+                maxDeliveredAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first()).maxDeliveredAt;
+            }
+            if (events.includes('failed')) {
+                maxFailedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first()).maxFailedAt;
+            }
+
+            // Insert a new job row if it doesn't exist
+            await db.knex('jobs').insert({
+                id: new ObjectID().toHexString(),
+                name: jobName,
+                started_at: new Date(),
+                created_at: new Date(),
+                status: 'started'
+            }).onConflict('name').ignore();
         }
 
-        if (maxDeliveredAt && !(maxDeliveredAt instanceof Date)) {
-            // SQLite returns a string instead of a Date
-            maxDeliveredAt = new Date(maxDeliveredAt);
-        }
-
-        if (maxFailedAt && !(maxFailedAt instanceof Date)) {
-            // SQLite returns a string instead of a Date
-            maxFailedAt = new Date(maxFailedAt);
-        }
+        // Convert string dates to Date objects for SQLite compatibility
+        [maxOpenedAt, maxDeliveredAt, maxFailedAt] = [maxOpenedAt, maxDeliveredAt, maxFailedAt].map(date => (
+            date && !(date instanceof Date) ? new Date(date) : date
+        ));
 
         const lastSeenEventTimestamp = _.max([maxOpenedAt, maxDeliveredAt, maxFailedAt]);
         debug(`getLastSeenEventTimestamp: finished in ${Date.now() - startDate}ms`);
 
         return lastSeenEventTimestamp;
+    },
+
+    /**
+     * Sets the timestamp of the last seen event for the specified email analytics events.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
+     * @param {'completed'|'started'} field - The field to update.
+     * @param {Date} date - The timestamp of the last seen event.
+     * @returns {Promise<void>}
+     * @description
+     * Updates the `finished_at` or `started_at` column of the specified job in the `jobs` table with the provided timestamp.
+     * This is used to keep track of the last time the job was run to avoid expensive queries following reboot.
+     */
+    async setJobTimestamp(jobName, field, date) {
+        // Convert string dates to Date objects for SQLite compatibility
+        try {
+            debug(`Setting ${field} timestamp for job ${jobName} to ${date}`);
+            const updateField = field === 'completed' ? 'finished_at' : 'started_at';
+            const status = field === 'completed' ? 'finished' : 'started';
+            const result = await db.knex('jobs').update({[updateField]: date, updated_at: new Date(), status: status}).where('name', jobName);
+            if (result === 0) {
+                await db.knex('jobs').insert({
+                    id: new ObjectID().toHexString(),
+                    name: jobName,
+                    [updateField]: date,
+                    updated_at: date,
+                    status: status
+                });
+            }
+        } catch (err) {
+            debug(`Error setting ${field} timestamp for job ${jobName}: ${err.message}`);
+        }
+    },
+
+    /**
+     * Sets the status of the specified email analytics job.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
+     * @param {'started'|'finished'|'failed'} status - The new status of the job.
+     * @returns {Promise<void>}
+     * @description
+     * Updates the `status` column of the specified job in the `jobs` table with the provided status.
+     * This is used to keep track of the current state of the job.
+     */
+    async setJobStatus(jobName, status) {
+        debug(`Setting status for job ${jobName} to ${status}`);
+        try {
+            const result = await db.knex('jobs')
+                .update({
+                    status: status,
+                    updated_at: new Date()
+                })
+                .where('name', jobName);
+
+            if (result === 0) {
+                await db.knex('jobs').insert({
+                    id: new ObjectID().toHexString(),
+                    name: jobName,
+                    status: status,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+            }
+        } catch (err) {
+            debug(`Error setting status for job ${jobName}: ${err.message}`);
+            throw err;
+        }
     },
 
     async aggregateEmailStats(emailId) {
