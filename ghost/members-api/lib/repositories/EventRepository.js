@@ -29,7 +29,11 @@ function removeTypeFilter(filterString) {
     modifiedFilter = modifiedFilter.replace(typeFilterRegex, '');
     modifiedFilter = modifiedFilter.replace(typeFilterRegex2, '');
 
-    return modifiedFilter;
+    if (modifiedFilter.startsWith('+')) {
+        modifiedFilter = modifiedFilter.slice(1);
+    }
+
+    return modifiedFilter.trim();
 }
 
 function removePostFilter(filterString) {
