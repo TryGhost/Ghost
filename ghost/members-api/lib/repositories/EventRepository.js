@@ -16,55 +16,6 @@ function replaceCustomFilterTransformer(filter) {
     };
 }
 
-function removeTypeFilter(filterString) {
-    if (!filterString) {
-        return;
-    }
-    //console.log('Removing type filter: ' + filterString);
-    let modifiedFilter = filterString;
-    
-    // Regular expression to match 'type:[...]' or '+type:[...]'
-    const typeFilterRegex = /(?:\+)?type:\[[^\]]+\]/;
-
-    // Regular expression to match 'type:-[...]' or '+type:-[...]'
-    const typeFilterRegex2 = /(?:\+)?type:-\[[^\]]+\]/;
-
-    // Replace the matched 'type:[...]' and 'type:-[...]' with an empty string
-    modifiedFilter = modifiedFilter.replace(typeFilterRegex, '');
-    modifiedFilter = modifiedFilter.replace(typeFilterRegex2, '');
-
-    if (modifiedFilter.startsWith('+')) {
-        modifiedFilter = modifiedFilter.slice(1);
-    }
-
-    return modifiedFilter.trim();
-}
-
-function removePostFilter(filterString) {
-    if (!filterString) {
-        return;
-    }
-    let modifiedFilter = filterString;
-    
-    // Regular expression to match '+data.post_id:[...]' or 'data.post_id:[...]'
-    const postFilterRegex1 = /\+data.post_id:\s*'[^']+'/;
-    const postFilterRegex2 = /data.post_id:\s*'[^']+'/;
-
-    // Replace the matched post filters with an empty string
-    modifiedFilter = modifiedFilter.replace(postFilterRegex1, '');
-    modifiedFilter = modifiedFilter.replace(postFilterRegex2, '');
-
-    // Remove any leading commas left after the replacement
-    modifiedFilter = modifiedFilter.replace(/,\s*/, '');
-
-    // Remove leading '+' if the string starts with it
-    if (modifiedFilter.startsWith('+')) {
-        modifiedFilter = modifiedFilter.slice(1);
-    }
-
-    return modifiedFilter.trim();
-}
-
 module.exports = class EventRepository {
     constructor({
         DonationPaymentEvent,
@@ -972,7 +923,7 @@ module.exports = class EventRepository {
             });
         }
     }
-    
+
     async getMRR() {
         const results = await this._MemberPaidSubscriptionEvent.findAll({
             aggregateMRRDeltas: true
