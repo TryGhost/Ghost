@@ -27,10 +27,10 @@ export function getAvailableEventTypes(settings, feature, hiddenEvents = []) {
     return extended.filter(t => !hiddenEvents.includes(t.event));
 }
 
-export function toggleEventType(eventType, eventTypes, feature) {
+export function toggleEventType(eventType, eventTypes) {
     const excludedEvents = new Set(eventTypes.filter(type => !type.isSelected).map(type => type.event));
 
-    if (feature.tipsAndDonations && eventType === 'payment_event') {
+    if (eventType === 'payment_event') {
         if (excludedEvents.has('payment_event')) {
             excludedEvents.delete('payment_event');
             excludedEvents.delete('donation_event');

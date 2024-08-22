@@ -21,18 +21,24 @@ describe('Unit | Utility | event-type-utils', function () {
         expect(eventTypes).to.deep.include({event: 'click_event', icon: 'filter-dropdown-clicked-in-email', name: 'Clicked link in email', group: 'others'});
     });
 
-    it('should toggle both payment_event and donation_event when tipsAndDonations is enabled', function () {
+    it('should toggle both payment_event and donation_event when toggling payment_event', function () {
         const eventTypes = [
-            {event: 'payment_event', isSelected: true},
-            {event: 'donation_event', isSelected: true}
+            {event: 'payment_event', isSelected: true}
         ];
-        const feature = {
-            tipsAndDonations: true
-        };
 
-        const newExcludedEvents = toggleEventType('payment_event', eventTypes, feature);
+        const newExcludedEvents = toggleEventType('payment_event', eventTypes);
 
         expect(newExcludedEvents).to.equal('payment_event,donation_event');
+    });
+
+    it('should toggle both payment_event and donation_event off when toggling payment_event off', function () {
+        const eventTypes = [
+            {event: 'payment_event', isSelected: false}
+        ];
+
+        const newExcludedEvents = toggleEventType('payment_event', eventTypes);
+
+        expect(newExcludedEvents).to.equal('');
     });
 
     it('should return correct divider need based on event groups', function () {
@@ -58,19 +64,5 @@ describe('Unit | Utility | event-type-utils', function () {
         const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
 
         expect(eventTypes).to.deep.equal(ALL_EVENT_TYPES);
-    });
-
-    it('should toggle only the selected event when tipsAndDonations is disabled', function () {
-        const eventTypes = [
-            {event: 'payment_event', isSelected: true},
-            {event: 'donation_event', isSelected: true}
-        ];
-        const feature = {
-            tipsAndDonations: false
-        };
-
-        const newExcludedEvents = toggleEventType('payment_event', eventTypes, feature);
-
-        expect(newExcludedEvents).to.equal('payment_event');
     });
 });

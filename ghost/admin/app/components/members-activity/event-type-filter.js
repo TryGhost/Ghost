@@ -20,14 +20,13 @@ export default class MembersActivityEventTypeFilter extends Component {
             icon: type.icon,
             name: type.name,
             divider: needDivider(type, availableEventTypes[i - 1]),
-            isSelected: !excludedEvents.includes(type.event),
-            isHidden: type.hidden
+            isSelected: !excludedEvents.includes(type.event)
         }));
     }
 
     @action
     toggleEventType(eventType) {
-        const newExcludedEvents = toggleEventType(eventType, this.eventTypes, this.feature);
+        const newExcludedEvents = toggleEventType(eventType, this.eventTypes);
         this.args.onChange(newExcludedEvents || null);
     }
 }
