@@ -35,7 +35,7 @@ const getFreeTier = async function getFreeTier() {
  * @param {import('express').Request} req - The member object
  * @param {import('express').Response} res - The express response object to set the cookies on
  * @param {Object} freeTier - The free tier object
- * @returns 
+ * @returns
  */
 const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
     if (!member) {
@@ -154,6 +154,37 @@ const getIdentityToken = async function getIdentityToken(req, res) {
     } catch (err) {
         res.writeHead(204);
         res.end();
+    }
+};
+
+const createIntegrityToken = async function createIntegrityToken(req, res) {
+    try {
+        const token = membersService.requestIntegrityTokenProvider.create();
+        res.writeHead(200);
+        res.end(token);
+    } catch (err) {
+        res.writeHead(204);
+        res.end();
+    }
+};
+
+const verifyIntegrityToken = async function verifyIntegrityToken(req, res, next) {
+    try {
+        const token = req.query.requestIntegrityToken;
+        if (!token) {
+            logging.warn('Request with missing integrity token.');
+            // In future this will throw an error
+            return next();
+        }
+        if (membersService.requestIntegrityTokenProvider.validate(token)) {
+            return next();
+        } else {
+            logging.warn('Request with invalid integrity token.');
+            // In future this will throw an error
+            return next();
+        }
+    } catch (err) {
+        next(err);
     }
 };
 
@@ -397,5 +428,7 @@ module.exports = {
     updateMemberNewsletters,
     deleteSession,
     accessInfoSession,
-    deleteSuppression
+    deleteSuppression,
+    createIntegrityToken,
+    verifyIntegrityToken
 };

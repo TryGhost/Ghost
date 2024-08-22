@@ -70,10 +70,13 @@ module.exports = function setupMembersApp() {
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
 
+    membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
+
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post(
         '/api/send-magic-link',
         bodyParser.json(),
+        middleware.verifyIntegrityToken,
         // Prevent brute forcing email addresses (user enumeration)
         shared.middleware.brute.membersAuthEnumeration,
         // Prevent brute forcing passwords for the same email address
