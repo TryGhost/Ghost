@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:email-analytics');
 const db = require('../../../data/db');
+const logging = require('@tryghost/logging');
 const {default: ObjectID} = require('bson-objectid');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
@@ -38,6 +39,7 @@ module.exports = {
             maxFailedAt = events.includes('failed') ? lastJobTimestamp : null;
         } else {
             debug(`Job data not found for ${jobName}, using email_recipients data`);
+            logging.info(`Job data not found for ${jobName}, using email_recipients data`);
             if (events.includes('opened')) {
                 maxOpenedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first()).maxOpenedAt;
             }
