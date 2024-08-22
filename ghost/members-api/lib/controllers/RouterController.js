@@ -493,6 +493,8 @@ module.exports = class RouterController {
         }
 
         if (honeypot) {
+            logging.warn('Honeypot field filled, this is likely a bot');
+
             // Honeypot field is filled, this is a bot.
             // Pretend that the email was sent successfully.
             res.writeHead(201);
