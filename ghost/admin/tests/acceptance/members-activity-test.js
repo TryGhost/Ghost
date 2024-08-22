@@ -1,4 +1,4 @@
-import moment from 'moment-timezone';
+// import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {currentURL} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
