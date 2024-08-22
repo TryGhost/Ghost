@@ -158,7 +158,7 @@ module.exports = class EmailAnalyticsService {
         const end = new Date(
             Math.min(
                 Date.now() - TRUST_THRESHOLD_MS,
-                this.#fetchLatestNonOpenedData?.lastBegin?.getTime()
+                this.#fetchLatestNonOpenedData?.lastBegin?.getTime() || Date.now() // Fallback to now if the previous job didn't run, for whatever reason, prevents catastrophic error
             )
         );
 
@@ -223,15 +223,12 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<number>} The number of events fetched.
      */
     async fetchScheduled({maxEvents = Infinity} = {}) {
-        console.log(this.#fetchScheduledData);
         if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
             // Nothing scheduled
-            console.log('[EmailAnalytics] Nothing scheduled');
             return 0;
         }
 
         if (this.#fetchScheduledData.canceled) {
-            console.log('[EmailAnalytics] FetchScheduled canceled');
             // Skip for now
             this.#fetchScheduledData = null;
             return 0;

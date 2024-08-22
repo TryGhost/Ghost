@@ -108,7 +108,24 @@ describe('EmailAnalyticsService', function () {
                 fetchLatestSpy.calledOnce.should.be.true();
                 fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
             });
+
+            it('quits if the end is before the begin', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });
+                await service.fetchLatestOpenedEvents();
+                fetchLatestSpy.calledOnce.should.be.false();
+            });
         });
+
         describe('fetchLatestNonOpenedEvents', function () {
             it('fetches only non-opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
@@ -125,6 +142,22 @@ describe('EmailAnalyticsService', function () {
                 await service.fetchLatestNonOpenedEvents();
                 fetchLatestSpy.calledOnce.should.be.true();
                 fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
+            });
+
+            it('quits if the end is before the begin', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });
+                await service.fetchLatestNonOpenedEvents();
+                fetchLatestSpy.calledOnce.should.be.false();
             });
         });
         describe('fetchScheduled', function () {
@@ -215,7 +248,23 @@ describe('EmailAnalyticsService', function () {
                 result.should.equal(0); 
             });
         });
-        // TODO: fetchMissing
+        
+        describe('fetchMissing', function () {
+            it('fetches missing events', async function () {
+                const fetchLatestSpy = sinon.spy();
+                const service = new EmailAnalyticsService({
+                    queries: {
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: fetchLatestSpy
+                    }]
+                });                
+                await service.fetchMissing();
+                fetchLatestSpy.calledOnce.should.be.true();
+            });
+        });
     });
 
     describe('processEventBatch', function () {
