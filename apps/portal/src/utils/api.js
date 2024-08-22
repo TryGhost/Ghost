@@ -244,7 +244,21 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, customUrlHistory, autoRedirect = true}) {
+        async getIntegrityToken() {
+            const url = endpointFor({type: 'members', resource: 'integrity-token'});
+            const res = await makeRequest({
+                url,
+                method: 'GET'
+            });
+
+            if (res.ok) {
+                return res.text();
+            } else {
+                throw new Error('Failed to start a members session');
+            }
+        },
+
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -255,6 +269,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 labels,
                 requestSrc: 'portal',
                 redirect,
+                integrityToken,
                 autoRedirect
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
