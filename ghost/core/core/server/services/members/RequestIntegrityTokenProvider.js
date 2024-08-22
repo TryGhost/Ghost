@@ -7,7 +7,7 @@ class RequestIntegrityTokenProvider {
     /**
      * @param {object} options
      * @param {string} options.themeSecret
-     * @param {number} options.tokenDuration
+     * @param {number} options.tokenDuration - in milliseconds
      */
     constructor(options) {
         this.#themeSecret = options.themeSecret;
@@ -37,12 +37,12 @@ class RequestIntegrityTokenProvider {
             return false;
         }
 
-        const nonce = parts[0];
-        const timestamp = parseInt(parts[1], 10);
+        const timestamp = parseInt(parts[0], 10);
+        const nonce = parts[1];
         const hmacDigest = parts[2];
 
         const hmac = crypto.createHmac('sha256', this.#themeSecret);
-        hmac.update(`${nonce}:${timestamp.toString()}`);
+        hmac.update(`${timestamp.toString()}:${nonce}`);
         const expectedHmac = hmac.digest('hex');
 
         if (expectedHmac !== hmacDigest) {
