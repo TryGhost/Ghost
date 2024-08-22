@@ -996,6 +996,7 @@
     border-radius: 0 0 8px 8px;
 }
 
+
 .modal-post-success .modal-footer-email {
     background: var(--white);
     margin-top: 36px;
@@ -1006,13 +1007,20 @@
     text-align: right;
 }
 
-.modal-post-success .modal-footer .gh-btn {
+.modal-post-success .modal-footer .share-buttons {
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
+    gap: 16px;
+}
+
+.modal-post-success .modal-footer .gh-btn {
     min-width: 64px;
     height: 40px;
     border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-post-success .modal-footer .copy-preview-link {
@@ -1027,6 +1035,8 @@
 .modal-post-success .modal-footer .gh-btn span {
     padding-inline: 18px;
     font-size: 1.4rem;
+    height: 100%;
+    align-content: center;
 }
 
 .modal-post-success .modal-footer .gh-btn-primary {
@@ -1063,4 +1073,20 @@
 .modal-post-success .close {
     top: 24px;
     right: 24px;
+}
+
+@media (max-width: 500px) {
+    .modal-post-success .modal-header h1 {
+        font-size: 2.4rem;
+    }
+    
+    .modal-post-success .modal-footer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-post-success .modal-footer .copy-link, 
+    .modal-post-success .modal-footer .copy-preview-link {
+        width: 100%!important;
+    }
 }
