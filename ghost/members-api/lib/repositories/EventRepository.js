@@ -530,6 +530,11 @@ module.exports = class EventRepository {
     async getAggregatedClickEvents(options = {}, filter) {
         const knex = db.knex;
         let postId = '';
+        options.filter = removeTypeFilter(options.filter);
+
+        const [postIDfilter, filterssss] = this.removePostIdFilter(options.filter);
+        console.log("postIDfilter" + JSON.stringify(postIDfilter));
+        console.log("filterssss" + JSON.stringify(filterssss));
 
         if (filter && filter.$and) {
             // Case when there is an $and condition
@@ -592,13 +597,25 @@ module.exports = class EventRepository {
             withRelated: ['member'],
             //filter: '',
             filterRelations: false,
+            filter: 'custom:true',
             useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filterssss),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'created_at',
+                    'data.member_id': 'member_id',
+                    'data.post_id': 'post_id'
+                })
+            ),
             useCTE: true,
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
             selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
-            whereRaw: `rn = 1`,
+            whereRaw: `rn = 1 order by created_at desc, id desc`,
             //orderRaw: `created_at desc, id desc`,
             cte: [{
                 name: `PostClicks`,
@@ -941,6 +958,29 @@ module.exports = class EventRepository {
             });
         }
     }
+
+    removePostIdFilter(filter) {
+        if (!filter) {
+            return [undefined, undefined];
+        }
+        let parsed;
+        try {
+            parsed = nql(filter).parse();
+        } catch (e) {
+            throw new errors.BadRequestError({
+                message: e.message
+            });
+        }
+    
+        try {
+            return splitFilter(parsed, ['data.post_id']);
+        } catch (e) {
+            throw new errors.IncorrectUsageError({
+                message: e.message
+            });
+        }
+    }
+    
 
     async getMRR() {
         const results = await this._MemberPaidSubscriptionEvent.findAll({

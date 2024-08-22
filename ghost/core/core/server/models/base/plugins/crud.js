@@ -84,6 +84,9 @@ module.exports = function (Bookshelf) {
             if (unfilteredOptions.useCTE) {
                 options.useCTE = unfilteredOptions.useCTE;
             }
+            if (unfilteredOptions.filterRelations === false) {
+                options.filterRelations = unfilteredOptions.filterRelations;
+            }
             const itemCollection = this.getFilteredCollection(options);
             const requestedColumns = options.columns;
             // make sure we include plaintext and custom_excerpt if excerpt is requested
