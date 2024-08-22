@@ -62,9 +62,9 @@
 
         {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
             on
-            {{moment-format publishedAt "D MMM YYYY"}}
+            <strong>{{moment-format publishedAt "D MMM YYYY"}}</strong>
             at
-            {{moment-format publishedAt "HH:mm"}}.
+            <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
         {{/let}}
     </div>
 
