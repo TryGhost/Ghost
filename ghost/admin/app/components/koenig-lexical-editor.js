@@ -248,7 +248,7 @@ export default class KoenigLexicalEditor extends Component {
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
-    @task({restartable: true})
+    @task({restartable: false})
     *fetchOffersTask() {
         if (this.offers) {
             return this.offers;
@@ -257,7 +257,7 @@ export default class KoenigLexicalEditor extends Component {
         return this.offers;
     }
 
-    @task({restartable: true})
+    @task({restartable: false})
     *fetchLabelsTask() {
         if (this.labels) {
             return this.labels;
