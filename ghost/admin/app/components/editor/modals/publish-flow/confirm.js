@@ -96,10 +96,14 @@ export default class PublishFlowOptions extends Component {
             if (this.feature.publishFlowEndScreen) {
                 if (this.args.publishOptions.isScheduled) {
                     localStorage.setItem('ghost-last-scheduled-post', this.args.publishOptions.post.id);
-                    this.router.transitionTo('posts', {queryParams: {type: 'scheduled'}});
+                    this.router.transitionTo('posts');
                 } else {
                     localStorage.setItem('ghost-last-published-post', this.args.publishOptions.post.id);
-                    this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
+                    if (this.args.publishOptions.post.emailOnly) {
+                        this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
+                    } else {
+                        this.router.transitionTo('posts');
+                    }
                 }
             }
         } catch (e) {
