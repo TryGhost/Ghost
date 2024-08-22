@@ -1481,6 +1481,11 @@
     transition: all .1s linear;
 }
 
+.gh-post-list-cta:hover {
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
 .gh-list-data .gh-post-list-cta {
     justify-content: center;
     width: 56px;
