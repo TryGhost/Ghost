@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const mingo = require('mingo');
 const db = require('../../../core/core/server/data/db');
-const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys} = require('@tryghost/mongo-utils');
+const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys, rejectStatements} = require('@tryghost/mongo-utils');
 
 /**
  * This mongo transformer ignores the provided filter option and replaces the filter with a custom filter that was provided to the transformer. Allowing us to set a mongo filter instead of a string based NQL filter.
@@ -536,9 +536,9 @@ module.exports = class EventRepository {
         let postId = '';
         options.filter = removeTypeFilter(options.filter);
 
-        const [postIDfilter, filterssss] = this.removePostIdFilter(options.filter);
-        console.log("postIDfilter" + JSON.stringify(postIDfilter));
-        console.log("filterssss" + JSON.stringify(filterssss));
+        const filterssss = this.removePostIdFilter(filter);
+        //console.log("postIDfilter: " + JSON.stringify(postIDfilter));
+        console.log("filterssss: ");
 
         if (filter && filter.$and) {
             // Case when there is an $and condition
@@ -965,19 +965,19 @@ module.exports = class EventRepository {
 
     removePostIdFilter(filter) {
         if (!filter) {
-            return [undefined, undefined];
+            return filter;
         }
-        let parsed;
-        try {
-            parsed = nql(filter).parse();
-        } catch (e) {
-            throw new errors.BadRequestError({
-                message: e.message
-            });
-        }
+        // let parsed;
+        // try {
+        //     //parsed = nql(filter).parse();
+        // } catch (e) {
+        //     throw new errors.BadRequestError({
+        //         message: e.message
+        //     });
+        // }
     
         try {
-            return splitFilter(parsed, ['data.post_id']);
+            return rejectStatements(filter, (key) => key === 'data.post_id');
         } catch (e) {
             throw new errors.IncorrectUsageError({
                 message: e.message
