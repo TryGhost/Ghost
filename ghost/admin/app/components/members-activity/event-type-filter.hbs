@@ -1,5 +1,5 @@
 <GhBasicDropdown @verticalPosition="below" as |dd|>
-    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon">
+    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon" data-test-id="filter-events-button">
         <span class={{if @excludedEvents "gh-btn-label-green"}}>
             {{svg-jar "filter"}}
             Filter events
@@ -13,7 +13,7 @@
                 {{#if type.divider}}
                     <li class="gh-member-activity-actions-menu-divider"></li>
                 {{/if}}
-                <li class="ember-power-select-option mb0 gh-member-activity-actions-menu-item">
+                <li  class="ember-power-select-option mb0 gh-member-activity-actions-menu-item">
                     <label for="type-{{idx}}">
                         {{svg-jar type.icon class="gh-member-activity-actions-menu-icon"}}
                         <span>{{type.name}}</span>
@@ -21,6 +21,7 @@
                     <div class="for-switch x-small">
                         <label class="switch" for="type-{{idx}}">
                             <input
+                                data-test-id="event-type-filter-checkbox-{{type.event}}"
                                 type="checkbox"
                                 checked={{type.isSelected}}
                                 id="type-{{idx}}"
