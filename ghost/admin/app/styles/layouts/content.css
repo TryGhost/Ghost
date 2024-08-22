@@ -725,7 +725,7 @@
 
 .gh-canvas-title.gh-post-title {
     max-width: 880px;
-    padding: 20px 0 12px;
+    padding: 20px 0 0 0;
     font-size: 3.2rem;
     line-height: 1.2em;
     overflow: inherit;
@@ -1481,6 +1481,11 @@
     transition: all .1s linear;
 }
 
+.gh-post-list-cta:hover {
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
 .gh-list-data .gh-post-list-cta {
     justify-content: center;
     width: 56px;
@@ -1489,6 +1494,10 @@
 .gh-post-analytics-header .gh-post-list-cta.edit {
     margin-top: -14px;
     margin-right: 0;
+}
+
+.gh-post-analytics-header .share svg {
+    margin-top: -2px;
 }
 
 .gh-post-list-cta.is-hovered {

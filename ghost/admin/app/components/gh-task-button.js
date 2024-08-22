@@ -33,6 +33,7 @@ const GhTaskButton = Component.extend({
     defaultClick: false,
     buttonText: 'Save',
     idleClass: '',
+    idleIcon: '',
     runningClass: '',
     showIcon: true,
     showSuccess: true, // set to false if you want the spinner to show until a transition occurs

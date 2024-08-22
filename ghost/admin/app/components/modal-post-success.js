@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
+import {authorNames} from '../helpers/author-names';
 import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -36,6 +37,10 @@ export default class PostSuccessModal extends Component {
 
     get encodedTitleAndUrl() {
         return encodeURIComponent(`${this.post.title} ${this.post.url}`);
+    }
+
+    get authorNames() {
+        return authorNames([this.post.authors]);
     }
 
     @task
