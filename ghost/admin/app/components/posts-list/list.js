@@ -2,11 +2,14 @@ import Component from '@glimmer/component';
 import PostSuccessModal from '../modal-post-success';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 export default class PostsList extends Component {
     @service store;
     @service modals;
     @service feature;
+
+    @tracked postCount = 0;
 
     latestScheduledPost = null;
     latestPublishedPost = null;
@@ -29,8 +32,11 @@ export default class PostsList extends Component {
 
         if (localStorage.getItem('ghost-last-published-post')) {
             await this.getlatestPublishedPost.perform();
+            await this.getPostCount.perform();
             this.modals.open(PostSuccessModal, {
-                post: this.latestPublishedPost
+                post: this.latestPublishedPost,
+                postCount: this.postCount,
+                showPostCount: true
             });
             localStorage.removeItem('ghost-last-published-post');
         }
@@ -50,5 +56,11 @@ export default class PostsList extends Component {
     *getlatestPublishedPost() {
         const result = yield this.store.query('post', {filter: `id:${localStorage.getItem('ghost-last-published-post')}`, limit: 1});
         this.latestPublishedPost = result.toArray()[0];
+    }
+
+    @task
+    *getPostCount() {
+        const result = yield this.store.query('post', {filter: 'status:published', limit: 1, page: 1});
+        this.postCount = result.meta.pagination.total;
     }
 }
