@@ -106,6 +106,7 @@
     "Sign out": "Finalitza la sessió",
     "Sign up": "Registrar-se",
     "Signup error: Invalid link": "Error de registre: Enllaç no vàlid",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Em sap greu, pero no ha funcionat.",
     "Spam complaints": "Queixes de correu brossa",
     "Start {{amount}}-day free trial": "Comença el període de proves de {{amount}} dies",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Amb èxit! El teu correu electrònic està actualitzat.",
     "Successfully unsubscribed": "T'has donat de baixa correctament",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Gràcies per subscriure't. Abans de començar a llegir, a continuació es mostren alguns altres llocs que us poden agradar.",
+    "Thank you!": "",
     "Thanks for the feedback!": "Gràcies pels teus comentaris!",
     "That didn't go to plan": "Això no ha anat com estava previst",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "'adreça electrònica que tenim per a vostè és {{memberEmail}}; si no és correcta, podeu actualitzar-la a l'<button>àrea de configuració del vostre compte</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "Hi ha hagut un problema en enviar els vostres comentaris. Torneu-ho a provar una mica més tard.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Aquest llog és només per invitació, contacta amb el propietari per obtenir accés.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Per completar el registre, fes clic sobre l'enllaç de confirmació al teu correu electrònic. Si no t'arria en 3 minuts, revisa la teva carpeta de correu brossa!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Prova gratis durant {{amount}} dies i després {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Desbloqueja l'accés a tots els butlletins de notícies fent-te un subscriptor de pagament.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "La teva opinió ajuda a definir el que es publica.",
     "Your subscription will expire on {{expiryDate}}": "La vostra subscripció caducarà el {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "La vostra subscripció es renovarà el {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "La vostra subscripció començarà el {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "La vostra subscripció començarà el {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

@@ -106,6 +106,7 @@
     "Sign out": "Изход",
     "Sign up": "Регистриране",
     "Signup error: Invalid link": "Грешка при влизане: Невалиден линк",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "Жалко, така не става.",
     "Spam complaints": "Оплаквания от спам",
     "Start {{amount}}-day free trial": "Започване на {{amount}}-дневен безплатен достъп.",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "Чудесно! Вашият имейл е актуализиран.",
     "Successfully unsubscribed": "Успешно разабониране",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "Благодарим за изпратеният отзив!",
     "That didn't go to plan": "Нещо се обърка и не се случи както трябваше",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Имейлът, който имаме за вас, е {{memberEmail}} - ако не е верен, можете да го актуализирате в областта за <button>настройки на профила си</button>.",
     "There was a problem submitting your feedback. Please try again a little later.": "Имаше проблем при изпращането на обратната връзка. Моля, опитайте отново малко по-късно.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Сайтът е само с покани. Свържете се със собственика за да получите достъп.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "За да приключите регистрацията, последвайте препратката в съобщението, изпратено Ви по имейл. Ако не пристигне до 3 минути, проверете дали не е категоризирано като нежелано писмо.",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Тествайте безплатно за {{amount}} дни, след това {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Отключете достъпа до всички бюлетини, като станете платен абонат.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Вашият принос помага да се оформи това, което се публикува.",
     "Your subscription will expire on {{expiryDate}}": "Абонаментът ви ще изтече на {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Абонаментът ви ще се поднови на {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Абонаментът ви ще започне на {{subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Абонаментът ви ще започне на {{subscriptionStart}}",
+    "Your support means a lot.": ""
 }

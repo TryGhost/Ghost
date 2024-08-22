@@ -106,6 +106,7 @@
     "Sign out": "Sign out වෙන්න",
     "Sign up": "ලියාපදිංචි වෙන්න",
     "Signup error: Invalid link": "Signup වීම අසාර්ථකයි: වැරදි link එකකි",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "සමාවෙන්න, නමුත් එය සාර්ථක වූයේ නැත.",
     "Spam complaints": "Spam සඳහා වන පැමිණිලි",
     "Start {{amount}}-day free trial": "{{amount}}-day free trial එක ආරම්භකරන්න",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "සාර්ථකයි! ඔබගේ email ලිපිනය update කරන ලදී.",
     "Successfully unsubscribed": "සාර්ථකව unsubscribed කර ඇත",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "subscribe කිරී\u200bම ගැන ඔබට ස්තුතියි. ඔබ කියවීම ආරම්භ කිරීමට පෙර, ඔබට රසවිඳිය හැකි තවත් වෙබ් අඩවි කිහිපයක් පහත දැක්වේ.",
+    "Thank you!": "",
     "Thanks for the feedback!": "ප්\u200dරතිචාරය සඳහා ස්තූතියි!",
     "That didn't go to plan": "එය සැලැස්මට අනුකූලව සිදු වුණේ නෑ",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "ඔබගේ email ලිපිනය ලෙස අප සතුව තිබෙන්නේ {{memberEmail}} යන email ලිපිනයයි - මෙය වැරදියි නම්, ඔබගේ <button>account settings area එක</button> හරහා update කළ හැක.",
     "There was a problem submitting your feedback. Please try again a little later.": "ඔබගේ feedback එක යොමු කිරීමේදී ගැටළුවක් ඇති විය. තව ටික වේලාවකින් නැවත උත්සාහ කරන්න.",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "මෙම වෙබ් අඩවිය ආරාධිතයන් සඳහා පමණි, ප්\u200dරවේශ වීම සඳහා හිමිකරු අමතන්න.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Signup වීම සම්පූර්ණ කිරීම සඳහා, ඔබ\u200dගේ inbox එකට ලැබුණු email එකෙහි ඇති confirmation link එක click කරන්න. එය මිනිත්තු 3ක් ඇතුලත නොපැමිණියේ නම්, spam folder එක පරීක්ෂා කරන්න!",
     "Try free for {{amount}} days, then {{originalPrice}}.": "දින {{amount}}ක් නොමිලයේ භාවිතා කරන්න, ඉන් පසුව {{originalPrice}}ක් පමණි.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Paid subscriber කෙනෙකු වීම හරහා සියළුම newsletters වලට access ලබාගන්න.",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "ඔබගේ අදහස් ඉදිරියේදී සිදු කරන පළකිරීම් වැඩිදියුණු කිරීමට උදව් කරනු ඇත.",
     "Your subscription will expire on {{expiryDate}}": "ඔබගේ subscription එක {{expiryDate}} වැනි දින කල් ඉකුත් වනු ඇත",
     "Your subscription will renew on {{renewalDate}}": "ඔබගේ subscription එක {{expiryDate}} වැනි දින renew වනු ඇත",
-    "Your subscription will start on {{subscriptionStart}}": "ඔබගේ subscription එක {{expiryDate}} වැනි දින ආරම්භ වනු ඇත"
+    "Your subscription will start on {{subscriptionStart}}": "ඔබගේ subscription එක {{expiryDate}} වැනි දින ආරම්භ වනු ඇත",
+    "Your support means a lot.": ""
 }

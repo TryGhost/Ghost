@@ -106,6 +106,7 @@
     "Sign out": "Uitloggen",
     "Sign up": "Registreren",
     "Signup error: Invalid link": "",
+    "Something went wrong, please try again later.": "",
     "Sorry, that didn’t work.": "",
     "Spam complaints": "",
     "Start {{amount}}-day free trial": "Start gratis je {{amount}}-daagse proefperiode",
@@ -120,11 +121,14 @@
     "Success! Your email is updated.": "",
     "Successfully unsubscribed": "Succesvol uitgeschreven",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
+    "Thank you!": "",
     "Thanks for the feedback!": "Bedankt voor je feedback!",
     "That didn't go to plan": "Er ging iets mis",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
     "There was a problem submitting your feedback. Please try again a little later.": "",
+    "There was an error processing your payment. Please try again.": "",
     "This site is invite-only, contact the owner for access.": "Deze site is alleen toegankelijk op uitnodiging, neem contact op met de eigenaar.",
+    "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Klik op de bevestigingslink in de e-mail om je registratie af te ronden. Check ook je spamfolder als hij niet binnen de 3 minuten aankomt.",
     "Try free for {{amount}} days, then {{originalPrice}}.": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
@@ -155,5 +159,6 @@
     "Your input helps shape what gets published.": "Jouw mening helpt bepalen wat er gepubliceerd wordt.",
     "Your subscription will expire on {{expiryDate}}": "",
     "Your subscription will renew on {{renewalDate}}": "",
-    "Your subscription will start on {{subscriptionStart}}": ""
+    "Your subscription will start on {{subscriptionStart}}": "",
+    "Your support means a lot.": ""
 }
