@@ -10,7 +10,7 @@ async function initOpenTelemetry({config}) {
         }
         const perf = require('perf_hooks').performance;
         perf.mark('opentelemetry:init:start');
-        logging.info('Initializing OpenTelemetry');
+        logging.debug('Initializing OpenTelemetry');
     
         // Lazyloaded to avoid boot time overhead when not enabled
         const {NodeSDK} = require('@opentelemetry/sdk-node');
@@ -33,7 +33,7 @@ async function initOpenTelemetry({config}) {
         });
         sdk.start();
         perf.mark('opentelemetry:init:finished');
-        logging.info('OpenTelemetry initialized in', Math.round(perf.measure('opentelemetry:init:duration', 'opentelemetry:init:start', 'opentelemetry:init:finished').duration), 'ms');
+        logging.debug('OpenTelemetry initialized in', Math.round(perf.measure('opentelemetry:init:duration', 'opentelemetry:init:start', 'opentelemetry:init:finished').duration), 'ms');
         return true;
     } catch (error) {
         logging.error('Error initializing OpenTelemetry', error);
