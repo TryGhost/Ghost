@@ -1,5 +1,5 @@
 const logging = require('@tryghost/logging');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
@@ -10,7 +10,7 @@ module.exports = createTransactionalMigration(
 
         // eslint-disable-next-line no-restricted-syntax
         for (const newsletter of newslettersWithoutUUID) {
-            await knex('newsletters').update('uuid', uuid.v4()).where('id', newsletter.id);
+            await knex('newsletters').update('uuid', crypto.randomUUID()).where('id', newsletter.id);
         }
     },
     async function down() {
