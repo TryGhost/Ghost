@@ -110,7 +110,7 @@ export default class PublishFlowOptions extends Component {
                         type: this.args.publishOptions.post.displayName
                     }));
                     if (this.args.publishOptions.post.displayName !== 'page') {
-                        if (this.args.publishOptions.post.emailOnly) {
+                        if (this.args.publishOptions.post.hasEmail) {
                             this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
                         } else {
                             this.router.transitionTo('posts');
