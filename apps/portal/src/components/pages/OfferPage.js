@@ -282,12 +282,15 @@ export default class OfferPage extends React.Component {
             };
         }, () => {
             const {onAction} = this.context;
-            const {name, email, errors} = this.state;
+            const {name, email, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 const signupData = {
-                    name, email, plan: price?.id,
-                    offerId: offer?.id
+                    name,
+                    email,
+                    plan: price?.id,
+                    offerId: offer?.id,
+                    phonenumber
                 };
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
