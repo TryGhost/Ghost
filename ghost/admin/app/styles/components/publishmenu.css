@@ -955,11 +955,6 @@
     margin: 0 0 16px 0;
 }
 
-.modal-post-success .email {
-    font-size: 1.6rem;
-    padding: 0;
-}
-
 .modal-post-success .modal-body .gh-post-details {
     display: flex;
     align-items: center;
@@ -995,7 +990,8 @@
     margin-top: 0;
     gap: 16px;
     padding: 16px 24px;
-    border-top: 1px solid var(--lightgrey-l1);
+    border: 1px solid var(--lightgrey-l1);
+    border-width: 0 1px 1px 1px;
     border-radius: 0 0 8px 8px;
 }
 
@@ -1106,4 +1102,58 @@
     .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
         width: auto;
     }
+}
+
+/* Email-specific
+/* ---------------------------------------------------------- */
+.modal-post-success .email {
+    font-size: 1.6rem;
+    padding: 0;
+}
+
+.modal-post-success .email-preview {
+    padding: 24px 24px 0 24px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--lightgrey-l1);
+    margin-top: 24px;
+}
+
+.modal-post-success .email-preview-header {
+    border-bottom: 1px solid var(--lightgrey-l1);
+    padding-bottom: 24px;
+}
+
+.modal-post-success .email-preview-header p {
+    display: block;
+    margin: 0;
+}
+
+.modal-post-success .email-preview-header p span {
+    color: var(--midgrey-l2);
+}
+
+.modal-post-success .email-preview-body {
+    padding: 24px 0;
+    text-align: center;
+}
+
+.modal-post-success .email-preview-body h3 {
+    font-size: 2.0rem;
+}
+
+.modal-post-success .email-preview-body p {
+    font-size: 1.6rem;
+    color: var(--midgrey-l1);
+}
+
+.modal-post-success .email-preview-body img {
+    width: 40px;
+    height: 40px;
+}
+
+.modal-post-success .email-preview-body span.email-preview-site-title {
+    display: block;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    font-weight: 600;
 }

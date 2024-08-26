@@ -74,10 +74,24 @@
             at
             <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
         {{/let}}
-    </div>
 
-    {{#if this.post.emailOnly}}
-        <footer class="modal-footer-email">
+        <div class="email-preview">
+            <div class="email-preview-header">
+                <p><strong>From:</strong> <span>{{post-author-names this.post}} ({{get-setting "supportEmail"}})</span></p>
+                <p><strong>Reply-to:</strong> <span>{{get-setting "supportEmail"}}</span></p>
+            </div>
+
+            <div class="email-preview-body">
+                {{#if (get-setting "icon")}}
+                    <img src={{get-setting "icon"}} alt="{{this.site.title}}" />
+                {{/if}}
+                <span class="email-preview-site-title">{{get-setting "title"}}</span>
+                <h3>{{this.post.title}}</h3>
+                <p>By {{post-author-names this.post}} • {{moment-format this.post.publishedAtUTC "D MMM YYYY"}}</p>
+            </div>
+        </div>
+
+        <footer class="modal-footer">
             <button
                 class="gh-btn gh-btn-primary dismiss"
                 type="button"
@@ -87,7 +101,20 @@
                 <span>Close</span>
             </button>
         </footer>
-    {{/if}}
+    </div>
+
+    {{!-- {{#if this.post.emailOnly}}
+        <footer class="modal-footer">
+            <button
+                class="gh-btn gh-btn-primary dismiss"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Close</span>
+            </button>
+        </footer>
+    {{/if}} --}}
     {{/if}}
 
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
