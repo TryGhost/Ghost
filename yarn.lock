@@ -7562,7 +7562,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.27.tgz#b0f7e4b15eb9923094cf4f37084f8ada932c0883"
   integrity sha512-0blN+k/NA6c/gZtihx4iyZi1yyPG40GxdYILjtp/8XwGZarmgTTiZGz3HVOVir4+TfL/Z1O5xPsBxO9+KeiH+g==
 
-"@tryghost/debug@0.1.32", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.32":
+"@tryghost/debug@0.1.32":
   version "0.1.32"
   resolved "https://registry.npmjs.org/@tryghost/debug/-/debug-0.1.32.tgz#a6c1321132708c2e86bd8c47bf28292180fee722"
   integrity sha512-oU4hy27I3WDA5Zty74QQ+Ki842Ib0aWdXKwfK01YwQ/gqr127mtNOBimkRg39mY27hO4PvE/zvRhtlJ05Jk2cQ==
@@ -7570,7 +7570,7 @@
     "@tryghost/root-utils" "^0.3.30"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.33":
+"@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.32", "@tryghost/debug@^0.1.33":
   version "0.1.33"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.33.tgz#d824ab20d2dffc6ee6c4ec090a79f3804b8acb79"
   integrity sha512-aYmfmrXDI974G8ahyT4bPHMthpqiEDXgTXGJ685ZKNB5S2ak/6R0pvhOA6c/QhHihocJG40K2ylzlPqcQq/oWg==
@@ -7866,14 +7866,6 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mongo-knex@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.9.0.tgz#34463ceaa23b8e5e4c7ff859d9d5cc8f300ceade"
-  integrity sha512-1dksBf+nVyfVRssFC3/Tn1KqMhKfLhsjCnxnLv8vW5ZxSw39U6Kyp97u4BWithx31M/g3Q8nfCVg8hIgYVyt7w==
-  dependencies:
-    debug "^4.3.3"
-    lodash "^4.17.21"
-
 "@tryghost/mongo-knex@^0.9.1":
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.9.1.tgz#b429952cc01d7ffa2489b37db4008f8a323e40d5"
@@ -7908,22 +7900,12 @@
   dependencies:
     date-fns "^2.28.0"
 
-"@tryghost/nql@0.12.4", "@tryghost/nql@^0.12.4":
+"@tryghost/nql@0.12.4", "@tryghost/nql@^0.12.0", "@tryghost/nql@^0.12.4":
   version "0.12.4"
   resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.4.tgz#ae482a78faa5cdd23da0d440b8248b2c942cfc6c"
   integrity sha512-t1qTtFwFETjNe2CEZneLWzfDeLO3eQQMhYtyC/LvanOtpr/dn5gn5HCBCQ/MYi+nLwXeYlUMy7Lcjj1V3ToN5Q==
   dependencies:
     "@tryghost/mongo-knex" "^0.9.1"
-    "@tryghost/mongo-utils" "^0.6.2"
-    "@tryghost/nql-lang" "^0.6.1"
-    mingo "^2.2.2"
-
-"@tryghost/nql@^0.12.0":
-  version "0.12.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.3.tgz#260f0aed0c3bee85b046fcd8ee24dd567b5ed451"
-  integrity sha512-bG0U+RMLixLTFkLM4DaL9uDhPCoTlxyMzZOIibZnBHmxi1lMM5cgUEGV38IwD92laIfS2t5BvAONKGhsGoVVVg==
-  dependencies:
-    "@tryghost/mongo-knex" "^0.9.0"
     "@tryghost/mongo-utils" "^0.6.2"
     "@tryghost/nql-lang" "^0.6.1"
     mingo "^2.2.2"
@@ -7967,7 +7949,7 @@
     got "13.0.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.30", "@tryghost/root-utils@^0.3.24", "@tryghost/root-utils@^0.3.30":
+"@tryghost/root-utils@0.3.30":
   version "0.3.30"
   resolved "https://registry.npmjs.org/@tryghost/root-utils/-/root-utils-0.3.30.tgz#766818cd4394b683338f4d9fccc52c435f77b0b5"
   integrity sha512-Pg9d0Igl3OGGKZ5RrCe6Wq8qAW9ABIjbn31WKlsO6OLLwRlH2ruNZXU8GBjNL3qrPEZwyI2FyNNDjSR+5gKXag==
@@ -7975,7 +7957,7 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.31":
+"@tryghost/root-utils@^0.3.24", "@tryghost/root-utils@^0.3.30", "@tryghost/root-utils@^0.3.31":
   version "0.3.31"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.31.tgz#68d17b6813970b9c1b32e4fb5b142fea29dfe6cd"
   integrity sha512-6TKu40lh7Gyxwm3jE3nrfT7mZyUb9rN6q8IgeXqhndRV4CSBZLlVgbTgHpdrWo3mSVuMPU+kzoYyMT6yDWrB/A==
@@ -8008,14 +7990,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.3.tgz#dad18d1c119ebf705b9720417684efe00081f149"
   integrity sha512-YrPm2m51/Ddqp+/9CclSv+tKqHkbv7iUu3BgiHJofGhs6ek0QQSpahgiBmJmi/o3R6V6DFbG7LT5qVEtkvMzKg==
 
-"@tryghost/tpl@0.1.32", "@tryghost/tpl@^0.1.32":
+"@tryghost/tpl@0.1.32":
   version "0.1.32"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.32.tgz#be0ef05abf8f959f459ab9a8fc5e39efaea542a7"
   integrity sha512-OvUMLn5NoAYXqqwh4i9FInkCdJiVPGgCeaq4kdiZWT5ApP4NMOd84GFO8uitLsYtrLsHZ01UFuzZJt6rpKtjmw==
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.33":
+"@tryghost/tpl@^0.1.32", "@tryghost/tpl@^0.1.33":
   version "0.1.33"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.33.tgz#2512900ffe4635eafea0f41fe3ba2dd6b501b651"
   integrity sha512-wkwLw0SvX3Ex+yQP/wl7w4m1PYOddP/jLEcW5xGUEGaYSuPgpHrHPmu9lvxWmK++q/SPiVHqVSV97FFaIb2oNQ==
@@ -21169,10 +21151,10 @@ jscodeshift@^0.15.1:
     temp "^0.8.4"
     write-file-atomic "^2.3.0"
 
-jsdom@24.1.1, jsdom@^24.0.0, jsdom@^24.1.0, jsdom@~24.1.0:
-  version "24.1.1"
-  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-24.1.1.tgz#f41df8f4f3b2fbfa7e1bdc5df62c9804fd14a9d0"
-  integrity sha512-5O1wWV99Jhq4DV7rCLIoZ/UIhyQeDR7wHVyZAHAshbrvZsLs+Xzz7gtwnlJTJDjleiTKh54F4dXrX70vJQTyJQ==
+jsdom@24.1.3, jsdom@^24.0.0, jsdom@^24.1.0, jsdom@~24.1.0:
+  version "24.1.3"
+  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-24.1.3.tgz#88e4a07cb9dd21067514a619e9f17b090a394a9f"
+  integrity sha512-MyL55p3Ut3cXbeBEG7Hcv0mVM8pp8PBNWxRqchZnSfAiES1v1mRnMeFfaHWIPULpwsYfvO+ZmMZz5tGCnjzDUQ==
   dependencies:
     cssstyle "^4.0.1"
     data-urls "^5.0.0"
