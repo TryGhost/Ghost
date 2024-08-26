@@ -4165,7 +4165,7 @@
     "@opentelemetry/sdk-trace-base" "1.25.1"
     "@opentelemetry/semantic-conventions" "1.25.1"
 
-"@opentelemetry/instrumentation-runtime-node@^0.6.0":
+"@opentelemetry/instrumentation-runtime-node@0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-runtime-node/-/instrumentation-runtime-node-0.6.0.tgz#6d547f42222c54987411404cae06912a08d94575"
   integrity sha512-sbDGvUFL3pGwiaSazQ9v259uVHu3WtApMeo8vMMEKHb+z1IVN6/prJffCBs4OA+4skmhf3iFTV531mVwtwWbTA==
