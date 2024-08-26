@@ -12,14 +12,18 @@
                     {{/if}}
                 </span>
                 <span>
-                    {{#if this.post.emailOnly}}
-                        Your email has been sent.
-                    {{else}}
-                        {{#if this.showPostCount}}
-                            That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
+                    {{#if this.post.isPost}}
+                        {{#if this.post.emailOnly}}
+                            Your email has been sent.
                         {{else}}
-                            Spread the word!
+                            {{#if this.showPostCount}}
+                                That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
+                            {{else}}
+                                Spread the word!
+                            {{/if}}
                         {{/if}}
+                    {{else}}
+                        Your page is published.
                     {{/if}}
                 </span>
             {{/if}}
@@ -32,7 +36,11 @@
         {{#if this.post.isSent}}
             It
         {{else}}
-            {{if this.post.emailOnly "Your email" "Your post"}}
+            {{#if this.post.emailOnly}}
+                Your email
+            {{else}}
+                Your {{this.post.displayName}}
+            {{/if}}
         {{/if}}
         {{if this.post.isScheduled "will be" "was"}}
         {{#if this.post.emailOnly}}
@@ -105,7 +113,7 @@
             {{#if this.post.excerpt}}
                 <p class="post-excerpt">{{this.post.excerpt}}</p>
             {{/if}}
-            
+
             <div class="gh-post-details">
              {{#if (get-setting "icon")}}
                 <div class="gh-post-bookmark-site-icon">
@@ -116,7 +124,7 @@
             {{#if (get-setting "title")}}
                 <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
             {{/if}}
-                <div class="gh-post-bookmark-authors">{{this.authorNames}}</div>
+                <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
             </div>
         </div>
 
@@ -141,7 +149,7 @@
                     @idleIcon="link"
                     @buttonText="Copy link"
                     @title="Copy link"
-                    @task={{this.handleCopyLink}}                
+                    @task={{this.handleCopyLink}}
                     @successText="Link copied"
                     @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
             {{else}}
@@ -173,7 +181,7 @@
                         <span>Close</span>
                     </button>
                 {{/if}}
-                
+
             {{/if}}
         </footer>
     </div>

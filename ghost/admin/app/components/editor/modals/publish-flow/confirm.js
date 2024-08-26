@@ -95,14 +95,28 @@ export default class PublishFlowOptions extends Component {
             yield this.args.saveTask.perform();
             if (this.feature.publishFlowEndScreen) {
                 if (this.args.publishOptions.isScheduled) {
-                    localStorage.setItem('ghost-last-scheduled-post', this.args.publishOptions.post.id);
-                    this.router.transitionTo('posts');
-                } else {
-                    localStorage.setItem('ghost-last-published-post', this.args.publishOptions.post.id);
-                    if (this.args.publishOptions.post.emailOnly) {
-                        this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
-                    } else {
+                    localStorage.setItem('ghost-last-scheduled-post', JSON.stringify({
+                        id: this.args.publishOptions.post.id,
+                        type: this.args.publishOptions.post.displayName
+                    }));
+                    if (this.args.publishOptions.post.displayName !== 'page') {
                         this.router.transitionTo('posts');
+                    } else {
+                        this.router.transitionTo('pages');
+                    }
+                } else {
+                    localStorage.setItem('ghost-last-published-post', JSON.stringify({
+                        id: this.args.publishOptions.post.id,
+                        type: this.args.publishOptions.post.displayName
+                    }));
+                    if (this.args.publishOptions.post.displayName !== 'page') {
+                        if (this.args.publishOptions.post.hasEmail) {
+                            this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
+                        } else {
+                            this.router.transitionTo('posts');
+                        }
+                    } else {
+                        this.router.transitionTo('pages');
                     }
                 }
             }

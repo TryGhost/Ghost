@@ -950,9 +950,9 @@
 .modal-post-success .modal-body p.post-excerpt {
     -webkit-line-clamp: 2;
     display: -webkit-box;
-    -webkit-box-orient: vertical;  
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0 0 16px 0; 
+    margin: 0 0 16px 0;
 }
 
 .modal-post-success .email {
@@ -977,10 +977,13 @@
     white-space: nowrap;
 }
 
+.modal-post-success .modal-body .gh-post-bookmark-authors::before {
+    margin-left: 4px;
+}
+
 .modal-post-success .modal-body .gh-post-bookmark-site-icon {
     width: 24px;
     height: 24px;
-    
 }
 
 .modal-post-success .modal-body strong.nowrap {
@@ -1008,8 +1011,8 @@
 }
 
 .modal-post-success .modal-footer .share-buttons {
-    display: flex;
-    justify-content: space-evenly;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     align-items: center;
     gap: 16px;
 }
@@ -1079,14 +1082,28 @@
     .modal-post-success .modal-header h1 {
         font-size: 2.4rem;
     }
-    
+
     .modal-post-success .modal-footer {
         display: flex;
         flex-direction: column;
     }
 
-    .modal-post-success .modal-footer .copy-link, 
+    .modal-post-success .modal-footer .share-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-post-success .modal-footer .copy-link,
     .modal-post-success .modal-footer .copy-preview-link {
         width: 100%!important;
+    }
+}
+
+@media (max-width: 600px) {
+    .modal-post-success .modal-footer:has(.share-buttons) {
+        flex-direction: column;
+    }
+
+    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+        width: auto;
     }
 }
