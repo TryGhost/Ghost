@@ -258,7 +258,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, customUrlHistory, autoRedirect = true}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -270,6 +270,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 requestSrc: 'portal',
                 redirect,
                 integrityToken,
+                honeypot: phonenumber, // we don't actually use a phone #, this is from a hidden field to prevent bot activity
                 autoRedirect
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
