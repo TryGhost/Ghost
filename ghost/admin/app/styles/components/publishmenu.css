@@ -977,6 +977,10 @@
     white-space: nowrap;
 }
 
+.modal-post-success .modal-body .gh-post-bookmark-authors::before {
+    margin-left: 4px;
+}
+
 .modal-post-success .modal-body .gh-post-bookmark-site-icon {
     width: 24px;
     height: 24px;
