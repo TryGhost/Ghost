@@ -115,7 +115,7 @@ const TextField: React.FC<TextFieldProps> = ({
                 {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
             </div>
         </FormPrimitive.Field>
-    )
+    );
 
     hintClassName = clsx(
         'order-3',
