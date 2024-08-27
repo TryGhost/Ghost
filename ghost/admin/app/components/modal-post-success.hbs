@@ -5,22 +5,16 @@
                 <span>All set!</span>
             {{else}}
                 <span>
-                    {{#if this.showPostCount}}
-                        Boom! It's out there.
-                    {{else}}
-                        Your post is published.
-                    {{/if}}
+                    {{if this.showPostCount "Boom! It's out there." "Your post is published."}}
                 </span>
                 <span>
                     {{#if this.post.isPost}}
                         {{#if this.post.emailOnly}}
                             Your email has been sent.
+                        {{else if this.showPostCount}}
+                            That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
                         {{else}}
-                            {{#if this.showPostCount}}
-                                That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
-                            {{else}}
-                                Spread the word!
-                            {{/if}}
+                            Spread the word!
                         {{/if}}
                     {{else}}
                         Your page is published.
