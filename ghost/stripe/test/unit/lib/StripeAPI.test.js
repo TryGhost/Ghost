@@ -561,6 +561,19 @@ describe('StripeAPI', function () {
                     optional: true
                 });
             });
+
+            it('does not have more than 3 custom fields (stripe limitation)', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                should.ok(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
+            });
         });
     });
 });
