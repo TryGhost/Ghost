@@ -20,9 +20,9 @@ module.exports = {
         const startDate = new Date();
 
         // separate queries is much faster than using max/greatest (with coalesce to handle nulls) across columns
-        let maxOpenedAt = events.includes('opened') ? (await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first()).maxOpenedAt : null;
-        let maxDeliveredAt = events.includes('delivered') ? (await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first()).maxDeliveredAt : null;
-        let maxFailedAt = events.includes('failed') ? (await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first()).maxFailedAt : null;
+        let maxOpenedAt = events.includes('opened') ? await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first().maxOpenedAt : null;
+        let maxDeliveredAt = events.includes('delivered') ? await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first().maxDeliveredAt : null;
+        let maxFailedAt = events.includes('failed') ? await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first().maxFailedAt : null;
 
         if (maxOpenedAt && !(maxOpenedAt instanceof Date)) {
             // SQLite returns a string instead of a Date
