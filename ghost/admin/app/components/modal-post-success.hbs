@@ -24,54 +24,55 @@
         </h1>
     </header>
 
-    {{#if (and this.post.isPublished (not this.post.emailOnly))}}
-    {{else}}
-    <div class="modal-body email">
-        {{#if this.post.isSent}}
-            It
-        {{else}}
-            {{#if this.post.emailOnly}}
+    {{#unless (and this.post.isPublished (not this.post.emailOnly))}}
+        <div class="modal-body email">
+            {{#if this.post.isSent}}
+                It
+            {{else if this.post.emailOnly}}
                 Your email
             {{else}}
                 Your {{this.post.displayName}}
             {{/if}}
-        {{/if}}
-        {{if this.post.isScheduled "will be" "was"}}
-        {{#if this.post.emailOnly}}
-            sent to
-        {{else if this.post.willEmail}}
-            published on your site, and sent to
-        {{else}}
-            published on your site
-        {{/if}}
+            {{if this.post.isScheduled "will be" "was"}}
+            {{if this.post.emailOnly "sent to" (if this.post.willEmail "published on your site, and sent to" "published on your site")}}
 
-        {{#if (or this.post.hasEmail this.post.willEmail)}}
-            {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
-                <strong class="nowrap">
-                    {{if (eq @recipientType "all") "all"}}
+            {{#if (or this.post.hasEmail this.post.willEmail)}}
+                {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                    <strong class="nowrap">
+                        {{if (eq @recipientType "all") "all"}}
+                        {{format-number countFetcher.count}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>
+                    of <strong>{{this.post.newsletter.name}}</strong>
+                {{/let}}
+            {{/if}}
 
-                    {{format-number countFetcher.count}}
-
-                    {{!-- @recipientType = free/paid/all/specific --}}
-                    {{if (not-eq @recipientType "all") @recipientType}}
-
-                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
-                </strong>
-
-                of <strong>{{this.post.newsletter.name}}</strong>
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                on
+                <strong>{{moment-format publishedAt "D MMM YYYY"}}</strong>
+                at
+                <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
             {{/let}}
-        {{/if}}
-
-        {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
-            on
-            <strong>{{moment-format publishedAt "D MMM YYYY"}}</strong>
-            at
-            <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
-        {{/let}}
-    </div>
+        </div>
+    {{/unless}}
 
     {{#if this.post.emailOnly}}
-        <div class="gh-post-card">
+            <div class="gh-post-card">
+                {{#if this.post.featureImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{else if this.post.twitterImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{else if this.post.ogImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{/if}}
+            
             <div class="modal-body">
                 <h2>{{this.post.title}}</h2>
                 {{#if this.post.excerpt}}
