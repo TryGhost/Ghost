@@ -127,8 +127,9 @@
                 <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
             </div>
         </div>
+    </div>
 
-        <footer class="modal-footer">
+    <footer class="modal-footer">
             {{#if (and this.post.isPublished (not this.post.emailOnly))}}
             <div class="share-buttons">
                 <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
@@ -184,6 +185,5 @@
 
             {{/if}}
         </footer>
-    </div>
     {{/unless}}
 </div>
