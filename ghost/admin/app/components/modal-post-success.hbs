@@ -138,7 +138,7 @@
     </div>
 
     <footer class="modal-footer">
-            {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+        {{#if (and this.post.isPublished (not this.post.emailOnly))}}
             <div class="share-buttons">
                 <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                     <span>{{svg-jar "social-x"}}</span>
@@ -161,23 +161,27 @@
                     @task={{this.handleCopyLink}}
                     @successText="Link copied"
                     @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
-            {{else if (and this.post.isScheduled (not this.post.emailOnly))}}
-                <GhTaskButton
-                    @buttonText="Copy preview link"
-                    @task={{this.handleCopyPreviewLink}}
-                    @showIcon={{true}}
-                    @idleIcon="link"
-                    @successText="Preview link copied"
-                    @class="gh-btn gh-btn-icon copy-preview-link" />
+        {{else}}
+            {{#if (or this.post.isScheduled this.post.emailOnly)}}
+                {{#if this.post.isScheduled}}
+                    <GhTaskButton
+                        @buttonText="Copy preview link"
+                        @task={{this.handleCopyPreviewLink}}
+                        @showIcon={{true}}
+                        @idleIcon="link"
+                        @successText="Preview link copied"
+                        @class="gh-btn gh-btn-icon copy-preview-link" />
+                {{/if}}
+                <button
+                    class="gh-btn gh-btn-primary dismiss"
+                    type="button"
+                    {{on "click" @close}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    <span>Close</span>
+                </button>
             {{/if}}
-            <button
-                class="gh-btn gh-btn-primary dismiss"
-                type="button"
-                {{on "click" @close}}
-                {{on "mousedown" (optional this.noop)}}
-            >
-                <span>Close</span>
-            </button>
-        </footer>
+        {{/if}}
+    </footer>
     {{/unless}}
 </div>
