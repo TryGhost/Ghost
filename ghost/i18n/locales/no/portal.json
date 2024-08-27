@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Suksess, din epost er oppdatert",
     "Successfully unsubscribed": "Avmelding vellykket",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Takk for tilbakemeldingen!",
     "That didn't go to plan": "Det gikk ikke som planlagt",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Denne siten er kun fo inviterte. Kontakt eieren for invitasjon.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "For å fullføre registreringen, klikk på bekreftelseslenken i innboksen din. Hvis den ikke kommer innen 3 minutter, må du sjekke søppelposten din!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Få tilgang til alle nyhetsbrevene ved å oppgradere ditt abonnement.",
     "Unsubscribe from all emails": "Meld deg av mottak av all epost",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Din tilbakemelding bidrar til å forme hva som blir publisert.",
     "Your subscription will expire on {{expiryDate}}": "Ditt abonnement vil avsluttes den {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Ditt abonnemnet vil fornyes den {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Ditt abonnement vil begynne den {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Ditt abonnement vil begynne den {{subscriptionStart}}"
 }

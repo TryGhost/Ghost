@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Xong! Đã cập nhật email của bạn.",
     "Successfully unsubscribed": "Đã hủy theo dõi thành công",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Cám ơn phản hồi của bạn!",
     "That didn't go to plan": "Không thực hiện được",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Địa chỉ email của bạn là {{memberEmail}} — nếu sai, bạn có thể đổi trong <button>cài đặt tài khoản</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Trang web này chỉ dành cho những người được mời, hãy liên hệ với chủ sở hữu để cấp quyền truy cập.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Để hoàn tất đăng ký, nhấn vào liên kết xác nhận trong hộp thư đến của bạn. Sau 3 phút mà không thấy, hãy kiểm tra hộp thư spam của bạn!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Đọc thử {{amount}} ngày, phí sau đọc thử là {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Trở thành thành viên trả phí để mở khóa truy cập toàn bộ bản tin.",
     "Unsubscribe from all emails": "Hủy theo dõi tất cả email",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Thông tin của bạn giúp định hình nội dung được xuất bản.",
     "Your subscription will expire on {{expiryDate}}": "Gói của bạn sẽ hết hạn vào {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Gói của bạn sẽ tự động gia hạn vào {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Gói của bạn bắt đầu có hiệu lực vào {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Gói của bạn bắt đầu có hiệu lực vào {{subscriptionStart}}"
 }

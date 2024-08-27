@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "",
     "Successfully unsubscribed": "Захиалгыг амжилттай цуцаллаа",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Саналаа илгээсэнд баярлалаа!",
     "That didn't go to plan": "",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Энэхүү сайт руу зөвхөн урилгаар нэвтрэх боломжтой тул та админд нь хандана уу.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Тан руу илгээсэн баталгаажуулах холбоос дээр дарж бүртгэлээ дуусгана уу. Хэрвээ 3 минутын дотор ирэхгүй бол спамаа шалгана уу!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Бүх имэйлийг зогсоох",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Таны санал дараа дараагийн нийтлэлийг илүү чанартай болгоход туслана",
     "Your subscription will expire on {{expiryDate}}": "",
     "Your subscription will renew on {{renewalDate}}": "",
-    "Your subscription will start on {{subscriptionStart}}": "",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": ""
 }
