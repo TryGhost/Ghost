@@ -508,8 +508,7 @@ describe('StripeAPI', function () {
 
             it('passes metadata correctly', async function () {
                 const metadata = {
-                    key1: 'value1',
-                    key2: 'value2'
+                    ghost_donation: true
                 };
 
                 await api.createDonationCheckoutSession({

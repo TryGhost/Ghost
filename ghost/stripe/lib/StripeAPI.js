@@ -523,6 +523,14 @@ module.exports = class StripeAPI {
         /**
          * @type {Stripe.Checkout.SessionCreateParams}
          */
+
+        // TODO - add it higher up the stack to the metadata object.
+        // add ghost_donation key to metadata object
+        metadata = {
+            ghost_donation: true,
+            ...metadata
+        };
+
         const stripeSessionOptions = {
             mode: 'payment',
             success_url: successUrl || this._config.checkoutSessionSuccessUrl,

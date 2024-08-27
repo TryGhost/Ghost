@@ -15,6 +15,7 @@ module.exports = class WebhookController {
      * @param {any} deps.staffServiceEmails
      * @param {any} deps.sendSignupEmail
      */
+
     constructor(deps) {
         this.deps = deps;
         this.webhookManager = deps.webhookManager;
@@ -27,6 +28,8 @@ module.exports = class WebhookController {
             'invoice.payment_succeeded': this.invoiceEvent,
             'checkout.session.completed': this.checkoutSessionEvent
         };
+
+        this.custom_message;
     }
 
     async handle(req, res) {
@@ -125,6 +128,8 @@ module.exports = class WebhookController {
                     memberId: member?.id ?? null,
                     amount,
                     currency: invoice.currency,
+                    donationMessage: this.custom_message ?? null,
+                    // donationMessage: invoice.donation_message ?? null,
 
                     // Attribution data
                     attributionId: invoice.metadata.attribution_id ?? null,
@@ -182,6 +187,10 @@ module.exports = class WebhookController {
      * @private
      */
     async checkoutSessionEvent(session) {
+        if (session.mode === 'payment' && session.metadata?.ghost_donation) {
+            const donationField = session.custom_fields?.find(obj => obj?.key === 'donation_message');
+            this.custom_message = donationField?.text?.value ?? '';
+        }
         if (session.mode === 'setup') {
             const setupIntent = await this.api.getSetupIntent(session.setup_intent);
             const member = await this.deps.memberRepository.get({
