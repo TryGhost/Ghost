@@ -57,22 +57,11 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch latest opened events started');
+    async fetchLatest({maxEvents} = {maxEvents: Infinity}) {
+        logging.info('[EmailAnalytics] Fetch latest started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchLatestOpenedEvents({maxEvents});
-        const fetchEndDate = new Date();
-
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest opens)`);
-        return totalEvents;
-    }
-
-    async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch latest non-opened events started');
-
-        const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchLatestNonOpenedEvents({maxEvents});
+        const totalEvents = await this.service.fetchLatest({maxEvents});
         const fetchEndDate = new Date();
 
         logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest)`);
@@ -80,7 +69,7 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch missing events started');
+        logging.info('[EmailAnalytics] Fetch missing started');
 
         const fetchStartDate = new Date();
         const totalEvents = await this.service.fetchMissing({maxEvents});
@@ -94,7 +83,7 @@ class EmailAnalyticsServiceWrapper {
         if (maxEvents < 300) {
             return 0;
         }
-        logging.info('[EmailAnalytics] Fetch scheduled events started');
+        logging.info('[EmailAnalytics] Fetch scheduled started');
 
         const fetchStartDate = new Date();
         const totalEvents = await this.service.fetchScheduled({maxEvents});
@@ -111,31 +100,13 @@ class EmailAnalyticsServiceWrapper {
         }
         this.fetching = true;
 
-        // NOTE: Data shows we can process ~7500 events per minute on Pro; this can vary locally
         try {
-            // Prioritize opens since they are the most important (only data directly displayed to users)
-            await this.fetchLatestOpenedEvents({maxEvents: Infinity});
-
-            // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
-            //  we want to make sure we don't spend too much time collecting delivery data.
-            const c1 = await this.fetchLatestNonOpenedEvents({maxEvents: 20000});
-            if (c1 > 15000) { 
-                this.fetching = false;
-                logging.info('[EmailAnalytics] Restarting fetch due to high event count');
-                this.startFetch();
-                return;
-            }
-            const c2 = await this.fetchMissing({maxEvents: 20000});
-            if ((c1 + c2) > 15000) {
-                this.fetching = false;
-                logging.info('[EmailAnalytics] Restarting fetch due to high event count');
-                this.startFetch();
-                return;
-            }
+            const c1 = await this.fetchLatest({maxEvents: Infinity});
+            const c2 = await this.fetchMissing({maxEvents: Infinity});
 
             // Only fetch scheduled if we didn't fetch a lot of normal events
             await this.fetchScheduled({maxEvents: 20000 - c1 - c2});
-            
+
             this.fetching = false;
         } catch (e) {
             logging.error(e, 'Error while fetching email analytics');
