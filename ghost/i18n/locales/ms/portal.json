@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Berjaya! E-mel anda dikemas kini.",
     "Successfully unsubscribed": "Pemberhentian langganan berjaya",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Terima kasih atas maklum balas!",
     "That didn't go to plan": "Itu tidak berjalan sesuai dengan rancangan",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Alamat e-mel yang kami miliki untuk anda adalah {{memberEmail}} — jika itu tidak betul, anda boleh mengemas kini di <button>ruang tetapan akaun</button> anda.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Laman web ini hanya untuk jemputan, hubungi pemilik untuk akses.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Untuk melengkapkan pendaftaran, klik pautan pengesahan di peti masuk anda. Jika ia tidak tiba dalam masa 3 minit, semak folder spam anda!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Cuba secara percuma selama {{amount}} hari, kemudian {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Buka akses ke semua newsletter dengan menjadi pelanggan berbayar.",
     "Unsubscribe from all emails": "Berhenti langganan dari semua e-mel",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Input anda membantu membentuk apa yang diterbitkan.",
     "Your subscription will expire on {{expiryDate}}": "Langganan anda akan tamat tempoh pada {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Langganan anda akan diperbaharui pada {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Langganan anda akan bermula pada {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Langganan anda akan bermula pada {{subscriptionStart}}"
 }

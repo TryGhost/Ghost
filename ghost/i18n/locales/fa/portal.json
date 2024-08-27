@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "انجام شد! ایمیل شما به روز شد.",
     "Successfully unsubscribed": "لغو اشتراک با موفقیت انجام شد",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "با سپاس از اشتراک شما. پیش از این که شروع به خواندن کنید چند وب\u200cسایت دیگر که ممکن است آن\u200cها را بپسندید در زیر برای شما قرار گرفته\u200cاند.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "با سپاس از بازخورد شما!",
     "That didn't go to plan": "کار به درستی پیش نرفت",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "آدرس ایمیلی که ما از شما داریم {{memberEmail}} است - اگر که این آدرس درست نیست می\u200cتوانید در <button>قسمت تنظیمات حساب کاربری</button> آن را به\u200cروز کنید.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "دسترسی به این وب\u200cسایت نیازمند دعوت\u200cنامه است، با مالک آن برای دریافت دسترسی تماس بگیرید.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "برای تکمیل ثبت نام، برروی پیوند تأیید در صندوق ورودی ایمیل خود کلیک کنید. در صورتی که به دست شما نرسید، پوشه اسپم خود را برررسی کنید!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "برای {{amount}} روز به صورت رایگان امتحان کنید، سپس با قیمت {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "با دریافت اشتراک پولی به شما دسترسی به تمامی خبرنامه\u200cها داده می\u200cشود.",
     "Unsubscribe from all emails": "لغو اشتراک دریافت تمامی ایمیل\u200cها",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "تلاش شما به آنچه که منتشر می\u200cشود، شکل می\u200cدهد.",
     "Your subscription will expire on {{expiryDate}}": "اشتراک شما در تاریخ {{expiryDate}} منقضی می\u200cشود",
     "Your subscription will renew on {{renewalDate}}": "اشتراک شما در تاریخ {{renewalDate}} تمدید می\u200cشود",
-    "Your subscription will start on {{subscriptionStart}}": "اشتراک شما از تاریخ {{subscriptionStart}} شروع می\u200cشود",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "اشتراک شما از تاریخ {{subscriptionStart}} شروع می\u200cشود"
 }

@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Det gick bra! Din e-postadress är uppdaterad.",
     "Successfully unsubscribed": "Prenumerationen avslutades framgångsrikt",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Tack för att du prenumererar. Innan du börjar läsa finns några andra webbplatser nedan som du kanske skulle uppskatta.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Tack för din feedback!",
     "That didn't go to plan": "Det där fungerade inte som tänkt",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "E-postadressen vi har för dig är {{memberEmail}} — om det inte stämmer kan du uppdatera den i <button>kontoinställningar</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Den här sidan är endast för inbjudna, kontakta ägaren för åtkomst.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "För att slutföra registreringen, klicka på bekräftelselänken i din inkorg. Om den inte kommer fram inom 3 minuter, kolla din skräppostmapp!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Prova gratis i {{amount}} dagar, sen betalar du {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Få tillgång till alla nyhetsbrev genom att bli betalande prenumerant",
     "Unsubscribe from all emails": "Avregistrera från alla e-postutskick",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Din åsikt hjälper till att forma vad som publiceras.",
     "Your subscription will expire on {{expiryDate}}": "Din prenumeration avslutas {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Din prenumeration förnyas {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Din prenumeration startar {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Din prenumeration startar {{subscriptionStart}}"
 }

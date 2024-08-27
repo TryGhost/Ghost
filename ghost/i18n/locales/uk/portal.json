@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "",
     "Successfully unsubscribed": "Підписку успішно скасовано",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Дякуємо за відгук!",
     "That didn't go to plan": "Щось пішло не так",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Цей сайт доступний тільки за запрошенням, звернись до власника сайта для доступу.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Щоб завершити реєстрацію, натисни посилання в своїй електронній пошті для підтвердження. Якщо електронний лист не прийде протягом 3 хвилин, перевір папку спам!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "",
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Відписатись від усіх листів",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Твій відгук допоможе вирішити що публікувати далі.",
     "Your subscription will expire on {{expiryDate}}": "",
     "Your subscription will renew on {{renewalDate}}": "",
-    "Your subscription will start on {{subscriptionStart}}": "",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": ""
 }

@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "成功了！您的 email 已更新。",
     "Successfully unsubscribed": "成功取消訂閱",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "感謝您的訂閱，以下是一些你可能也會有興趣的網站。",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "感謝您的意見！",
     "That didn't go to plan": "發生錯誤",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "就我們所知，您的 email 地址是 {{memberEmail}}。如果有誤，您可以在<button>帳號設定區塊</button>進行更新。",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "此網站僅限受邀請者觀看，請聯繫網站擁有者取得存取權限。",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "要完成註冊，請點擊您收件匣中的確認連結。如果在 3 分鐘內沒有收到，請檢查您的垃圾郵件。",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "免費試用 {{amount}} 天，然後以 {{originalPrice}} 開始訂閱。",
     "Unlock access to all newsletters by becoming a paid subscriber.": "成為付費會員以解鎖所有電子報內容。",
     "Unsubscribe from all emails": "取消所有電子報訂閱",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "您的建議有助於改善我們的內容。",
     "Your subscription will expire on {{expiryDate}}": "您的訂閱將於 {{expiryDate}} 到期",
     "Your subscription will renew on {{renewalDate}}": "您的訂閱將於 {{renewalDate}} 自動續訂",
-    "Your subscription will start on {{subscriptionStart}}": "您的訂閱將於 {{subscriptionStart}} 開始",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "您的訂閱將於 {{subscriptionStart}} 開始"
 }

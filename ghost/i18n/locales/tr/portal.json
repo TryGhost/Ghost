@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Başarılı! E-postanız güncellendi.",
     "Successfully unsubscribed": "Abonelikten başarıyla çıkıldı",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Abone olduğunuz için teşekkür ederiz. Okumaya başlamadan önce, aşağıda keyif alabileceğiniz birkaç başka site bulunmaktadır.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Geri bildirim için teşekkürler!",
     "That didn't go to plan": "Bir şeyler ters gitti",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Sizin için kayıtlı olan e-posta adresi {{memberEmail}} — eğer bu doğru değilse, bunu <button>hesap ayarları bölümünde</button> güncelleyebilirsiniz.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Bu site sadece davetiyesi olanlar içindir, erişim için site sahibiyle iletişime geç.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Kaydınızı tamamlamak için gelen kutunuzdaki onay bağlantısına tıklayın. Eğer 3 dakika içinde gelmezse, spam klasörünüzü kontrol edin!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "{{amount}} gün ücretsiz deneyin, ardından {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Tüm bültenlere erişimi açmak için ücretli bir abone olun.",
     "Unsubscribe from all emails": "Tüm e-postaların aboneliğinden çık",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Yorumun yayımlanan içeriklerin şekillenmesine yardımcı olur.",
     "Your subscription will expire on {{expiryDate}}": "Aboneliğiniz {{expiryDate}} tarihinde sona erecek",
     "Your subscription will renew on {{renewalDate}}": "Aboneliğiniz {{renewalDate}} tarihinde yenilenecek",
-    "Your subscription will start on {{subscriptionStart}}": "Aboneliğiniz {{subscriptionStart}} tarihinde başlayacak",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Aboneliğiniz {{subscriptionStart}} tarihinde başlayacak"
 }

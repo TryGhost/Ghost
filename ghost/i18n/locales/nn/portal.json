@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Vellykka! E-posten din er oppdatert.",
     "Successfully unsubscribed": "Vellykka kansellering.",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Takk for tilbakemeldingen!",
     "That didn't go to plan": "Det gjekk ikkje etter planen",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "E-postadressa me har på deg er {{memberEmail}} – viss det ikkje er riktig, kan du oppdatera i <button>brukarinnstillingane</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Denne sida er kun for inviterte, ta kontakt med eigaren for tilgang.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Klikk på bekreftelseslenka i innboksen din for å fullføra registreringa. Sjekk spam-mappa di om lenka ikkje har kome innan 3 minutt.",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Prøv gratis i {{amount}} dagar, deretter {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Få tilgang til alle nyheitsbreva med å bli ein betalande abonnent.",
     "Unsubscribe from all emails": "Slutt å motta e-postar",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Dine tilbakemeldinger hjelper oss å forma tilbodet vårt.",
     "Your subscription will expire on {{expiryDate}}": "Ditt abonnement går ut den {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Ditt abonnement vil fornyast den {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Ditt abonnement vil byrja den {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Ditt abonnement vil byrja den {{subscriptionStart}}"
 }

@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Uspjeh! Vaša Email adresa je promijenjena.",
     "Successfully unsubscribed": "Odjava uspješna",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Hvala na registraciji. Prije nego počneš čitati, u nastavku su slične stranice koje bi tebi mogle biti interesantne.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Hvala na povratnim informacijama!",
     "That didn't go to plan": "To nije pošlo prema planu",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Email adresa koju smo spasili za tebe je {{memberEmail}} — ako to nije tačno, možeš je promijeniti u <button>postavkama računa</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Ova je stranica samo na poziv, kontaktiraj vlasnika za pristup.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Za nastavak procesa registracije, klikni na potvrdni link u svom inboxu. Ako ne stigne u roku od 3 minute, provjeri spam folder!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Isprobaj besplatno {{amount}} dana, a zatim plati {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Otključaj pristup svim newsletterima tako što ćete postati plaćeni član.",
     "Unsubscribe from all emails": "Odjava sa svih Email poruka",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Tvoj feedback pomaže pri odabiru tema koje se objavljuju.",
     "Your subscription will expire on {{expiryDate}}": "Tvoja pretplata istieče {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Tvoja pretplata će se obnoviti {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Tvoja pretplata će započeti {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Tvoja pretplata će započeti {{subscriptionStart}}"
 }
