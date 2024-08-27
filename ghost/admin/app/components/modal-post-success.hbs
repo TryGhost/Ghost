@@ -77,7 +77,28 @@
     </div>
 
     {{#if this.post.emailOnly}}
-        <footer class="modal-footer-email">
+        <div class="gh-post-card">
+            <div class="modal-body">
+                <h2>{{this.post.title}}</h2>
+                {{#if this.post.excerpt}}
+                    <p class="post-excerpt">{{this.post.excerpt}}</p>
+                {{/if}}
+
+                <div class="gh-post-details">
+                {{#if (get-setting "icon")}}
+                    <div class="gh-post-bookmark-site-icon">
+                        <img src={{get-setting "icon"}} alt="" role="presentation" />
+                    </div>
+                {{/if}}
+
+                {{#if (get-setting "title")}}
+                    <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
+                {{/if}}
+                    <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
+                </div>
+            </div>
+        </div>
+        <footer class="modal-footer">
             <button
                 class="gh-btn gh-btn-primary dismiss"
                 type="button"
