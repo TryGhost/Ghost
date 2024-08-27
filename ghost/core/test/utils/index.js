@@ -79,12 +79,6 @@ const createPost = function createPost(options) {
     return models.Post.add(post, context.internal);
 };
 
-const createTag = function createTag(options) {
-    const tag = DataGenerator.forKnex.createTag(options.tag);
-
-    return models.Tag.add(tag, context.internal);
-};
-
 const createEmail = function createEmail(options) {
     const email = DataGenerator.forKnex.createEmail(options.email);
     return models.Email.add(email, context.internal);
@@ -109,7 +103,6 @@ module.exports = {
     setup: setup,
     createUser: createUser,
     createPost: createPost,
-    createTag: createTag,
     createEmailedPost,
 
     /**
