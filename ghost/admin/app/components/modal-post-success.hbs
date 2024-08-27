@@ -24,7 +24,7 @@
         </h1>
     </header>
 
-    {{#unless (and this.post.isPublished (not this.post.emailOnly))}}
+    {{#if (not (and this.post.isPublished (not this.post.emailOnly)))}}
         <div class="modal-body email">
             {{#if this.post.isSent}}
                 It
@@ -55,7 +55,7 @@
                 <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
             {{/let}}
         </div>
-    {{/unless}}
+    {{/if}}
 
     {{#if this.post.emailOnly}}
         <div class="gh-post-card">
