@@ -155,28 +155,5 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 tags: 'bulk-email AND custom-tag'
             }, batchHandler, {maxEvents: undefined});
         });
-
-        it('uses provided events when supplied', async function () {
-            const configStub = sinon.stub(config, 'get');
-            configStub.withArgs('bulkEmail').returns({
-                mailgun: {
-                    apiKey: 'apiKey',
-                    domain: 'domain.com',
-                    baseUrl: 'https://api.mailgun.net/v3'
-                }
-            });
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-
-            const batchHandler = sinon.spy();
-            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
-
-            await mailgunProvider.fetchLatest(batchHandler, {events: ['delivered'], begin: LATEST_TIMESTAMP});
-
-            sinon.assert.calledWithExactly(mailgunFetchEventsStub, {
-                ...MAILGUN_OPTIONS,
-                event: 'delivered',
-                tags: 'bulk-email'
-            }, batchHandler, {maxEvents: undefined});
-        });
     });
 });

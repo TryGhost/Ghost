@@ -1,6 +1,6 @@
 const MailgunClient = require('@tryghost/mailgun-client');
 
-const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
+const EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
 const DEFAULT_TAGS = ['bulk-email'];
 
@@ -26,12 +26,11 @@ class EmailAnalyticsProviderMailgun {
      * @param {Number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      * @param {Date} [options.begin]
      * @param {Date} [options.end]
-     * @param {String[]} [options.events]
      */
     fetchLatest(batchHandler, options) {
         const mailgunOptions = {
             limit: PAGE_LIMIT,
-            event: options?.events ? options.events.join(' OR ') : DEFAULT_EVENT_FILTER,
+            event: EVENT_FILTER,
             tags: this.tags.join(' AND '),
             begin: options.begin ? options.begin.getTime() / 1000 : undefined,
             end: options.end ? options.end.getTime() / 1000 : undefined,
