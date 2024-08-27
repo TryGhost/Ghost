@@ -107,13 +107,13 @@ const TextField: React.FC<TextFieldProps> = ({
 
     field = (
         <FormPrimitive.Field name={id} asChild>
-            <FormPrimitive.Control asChild>
-                <div className={fieldContainerClasses}>
+            <div className={fieldContainerClasses}>
+                <FormPrimitive.Control asChild>
                     {inputField}
-                    {!unstyled && !clearBg && <div className={bgClasses ? bgClasses : ''}></div>}
-                    {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
-                </div>
-            </FormPrimitive.Control>
+                </FormPrimitive.Control>
+                {!unstyled && !clearBg && <div className={bgClasses ? bgClasses : ''}></div>}
+                {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
+            </div>
         </FormPrimitive.Field>
     );
 
