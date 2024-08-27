@@ -99,7 +99,7 @@ module.exports = class EmailAnalyticsService {
             };
         }
 
-        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, events: ['opened']});
     }
 
     async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
@@ -120,7 +120,7 @@ module.exports = class EmailAnalyticsService {
             };
         }
 
-        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
+        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, events: ['delivered', 'failed', 'unsubscribed', 'complained']});
     }
 
     /**
