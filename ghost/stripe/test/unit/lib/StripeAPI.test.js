@@ -413,5 +413,117 @@ describe('StripeAPI', function () {
                 should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
             });
         });
+
+        describe('createDonationCheckoutSession', function () {
+            beforeEach(function () {
+                mockStripe = {
+                    checkout: {
+                        sessions: {
+                            create: sinon.stub().resolves()
+                        }
+                    }
+                };
+                sinon.stub(mockLabs, 'isSet');
+                const mockStripeConstructor = sinon.stub().returns(mockStripe);
+                StripeAPI.__set__('Stripe', mockStripeConstructor);
+                api.configure({
+                    checkoutSessionSuccessUrl: '/success',
+                    checkoutSessionCancelUrl: '/cancel',
+                    checkoutSetupSessionSuccessUrl: '/setup-success',
+                    checkoutSetupSessionCancelUrl: '/setup-cancel',
+                    secretKey: ''
+                });
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('createDonationCheckoutSession sends success_url and cancel_url', async function () {
+                await api.createDonationCheckoutSession('priceId', {});
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.success_url);
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
+            });
+
+            it('createDonationCheckoutSession does not send currency if additionalPaymentMethods flag is off', async function () {
+                mockLabs.isSet.withArgs('additionalPaymentMethods').returns(false);
+                await api.createDonationCheckoutSession('priceId', {currency: 'usd'});
+
+                should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);
+            });
+
+            it('passes customer ID when a valid customer object is provided', async function () {
+                const mockCustomer = {
+                    id: mockCustomerId,
+                    email: mockCustomerEmail,
+                    name: mockCustomerName
+                };
+
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: mockCustomer
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
+                should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, mockCustomerId);
+            });
+
+            it('passes customer_email when no customer object is provided', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customerEmail: mockCustomerEmail
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+                should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email, mockCustomerEmail);
+            });
+
+            it('uses only customer when both customer and customerEmail are provided', async function () {
+                const mockCustomer = {
+                    id: mockCustomerId,
+                    email: mockCustomerEmail,
+                    name: mockCustomerName
+                };
+
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: mockCustomer,
+                    customerEmail: 'another_email@example.com'
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
+                should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, mockCustomerId);
+                should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_email);
+            });
+
+            it('passes metadata correctly', async function () {
+                const metadata = {
+                    key1: 'value1',
+                    key2: 'value2'
+                };
+
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata,
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
+                should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
+            });
+        });
     });
 });
