@@ -58,18 +58,10 @@
     {{/unless}}
 
     {{#if this.post.emailOnly}}
-            <div class="gh-post-card">
-                {{#if this.post.featureImage}}
+        <div class="gh-post-card">
+            {{#if (or this.post.featureImage this.post.twitterImage this.post.ogImage)}}
                 <figure class="modal-image">
-                    <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
-                </figure>
-            {{else if this.post.twitterImage}}
-                <figure class="modal-image">
-                    <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
-                </figure>
-            {{else if this.post.ogImage}}
-                <figure class="modal-image">
-                    <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
+                    <img src="{{or this.post.featureImage this.post.twitterImage this.post.ogImage}}" alt="{{this.post.title}}">
                 </figure>
             {{/if}}
             
@@ -169,37 +161,23 @@
                     @task={{this.handleCopyLink}}
                     @successText="Link copied"
                     @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
-            {{else}}
-                {{#if (and this.post.isScheduled (not this.post.emailOnly))}}
-                    <GhTaskButton
-                        @buttonText="Copy preview link"
-                        @task={{this.handleCopyPreviewLink}}
-                        @showIcon={{true}}
-                        @idleIcon="link"
-                        @successText="Preview link copied"
-                        @class="gh-btn gh-btn-icon copy-preview-link" />
-
-                    <button
-                        class="gh-btn gh-btn-primary dismiss"
-                        type="button"
-                        {{on "click" @close}}
-                        {{on "mousedown" (optional this.noop)}}
-                    >
-                        <span>Close</span>
-                    </button>
-
-                    {{else}}
-                    <button
-                        class="gh-btn gh-btn-primary dismiss"
-                        type="button"
-                        {{on "click" @close}}
-                        {{on "mousedown" (optional this.noop)}}
-                    >
-                        <span>Close</span>
-                    </button>
-                {{/if}}
-
+            {{else if (and this.post.isScheduled (not this.post.emailOnly))}}
+                <GhTaskButton
+                    @buttonText="Copy preview link"
+                    @task={{this.handleCopyPreviewLink}}
+                    @showIcon={{true}}
+                    @idleIcon="link"
+                    @successText="Preview link copied"
+                    @class="gh-btn gh-btn-icon copy-preview-link" />
             {{/if}}
+            <button
+                class="gh-btn gh-btn-primary dismiss"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Close</span>
+            </button>
         </footer>
     {{/unless}}
 </div>
