@@ -524,6 +524,43 @@ describe('StripeAPI', function () {
                 should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
                 should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
             });
+
+            it('passes custom fields correctly', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields);
+                const customFields = mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields;
+                should.equal(customFields.length, 1);
+            });
+
+            it('has correct data for custom field message', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                const customFields = mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields;
+                should.deepEqual(customFields[0], {
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                });
+            });
         });
     });
 });

@@ -547,7 +547,18 @@ module.exports = class StripeAPI {
             line_items: [{
                 price: priceId,
                 quantity: 1
-            }]
+            }],
+            custom_fields: [
+                {
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                }
+            ]
         };
 
         if (customer && this._config.enableAutomaticTax) {
