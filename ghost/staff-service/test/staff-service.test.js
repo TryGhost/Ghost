@@ -1001,7 +1001,7 @@ describe('StaffService', function () {
                 mailStub.calledOnce.should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('One-time payment received: €15.00 from Ronald'))
+                    sinon.match.has('text', sinon.match('No message provided'))
                 ).should.be.true();
             });
         });

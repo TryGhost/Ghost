@@ -5,7 +5,7 @@ Cha-ching!
 
 You received a one-time payment from of ${data.donation.amount} from "${data.donation.name}".
 
-Message: ${data.donation.donationMessage}
+Message: ${data.donation.donationMessage ? data.donation.donationMessage : 'No message provided'}
 
 ---
 
