@@ -18,6 +18,7 @@ test.describe('Portal', () => {
             await sharedPage.pause();
             // Check success modal
             await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            expect(sharedPage.url()).toMatch(/[^\/]\/#\/portal\/support\/success/); // Ensure correct URL and no double-slash
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you for your support')).toBeVisible();
             // Modal has working subscribe action
