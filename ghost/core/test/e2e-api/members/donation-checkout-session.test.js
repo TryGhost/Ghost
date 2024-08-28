@@ -78,7 +78,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                     custom_fields: [{
                         key: 'donation_message',
                         text: {
-                            value: 'Thank you for your support!'
+                            value: 'You are the best! Have a lovely day!'
                         }
                     }]
                 }
@@ -176,7 +176,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                     custom_fields: [{
                         key: 'donation_message',
                         text: {
-                            value: 'Thank you for your support!'
+                            value: 'You are the best! Have a lovely day!'
                         }
                     }]
                 }
@@ -198,6 +198,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('email'), email);
         assert.equal(lastDonation.get('name'), 'Member Test');
         assert.equal(lastDonation.get('member_id'), member.id);
+        assert.equal(lastDonation.get('donation_message'), 'You are the best! Have a lovely day!');
 
         // Check referrer
         assert.equal(lastDonation.get('referrer_url'), 'example.com');
