@@ -15,7 +15,6 @@ module.exports = class WebhookController {
      * @param {any} deps.staffServiceEmails
      * @param {any} deps.sendSignupEmail
      */
-
     constructor(deps) {
         this.deps = deps;
         this.webhookManager = deps.webhookManager;
@@ -28,8 +27,6 @@ module.exports = class WebhookController {
             'invoice.payment_succeeded': this.invoiceEvent,
             'checkout.session.completed': this.checkoutSessionEvent
         };
-
-        this.custom_message;
     }
 
     async handle(req, res) {
@@ -114,37 +111,8 @@ module.exports = class WebhookController {
     async invoiceEvent(invoice) {
         if (!invoice.subscription) {
             // Check if this is a one time payment, related to a donation
-            if (invoice.metadata.ghost_donation && invoice.paid) {
-                // Track a one time payment event
-                const amount = invoice.amount_paid;
-
-                const member = invoice.customer ? (await this.deps.memberRepository.get({
-                    customer_id: invoice.customer
-                })) : null;
-
-                const data = DonationPaymentEvent.create({
-                    name: member?.get('name') ?? invoice.customer_name,
-                    email: member?.get('email') ?? invoice.customer_email,
-                    memberId: member?.id ?? null,
-                    amount,
-                    currency: invoice.currency,
-                    donationMessage: this.custom_message ?? null,
-                    // donationMessage: invoice.donation_message ?? null,
-
-                    // Attribution data
-                    attributionId: invoice.metadata.attribution_id ?? null,
-                    attributionUrl: invoice.metadata.attribution_url ?? null,
-                    attributionType: invoice.metadata.attribution_type ?? null,
-                    referrerSource: invoice.metadata.referrer_source ?? null,
-                    referrerMedium: invoice.metadata.referrer_medium ?? null,
-                    referrerUrl: invoice.metadata.referrer_url ?? null
-                });
-
-                await this.deps.donationRepository.save(data);
-                await this.deps.staffServiceEmails.notifyDonationReceived({
-                    donationPaymentEvent: data
-                });
-            }
+            // this is being handled in checkoutSessionEvent because we need to handle the custom donation message
+            // which is not available in the invoice object
             return;
         }
         const subscription = await this.api.getSubscription(invoice.subscription, {
@@ -189,7 +157,45 @@ module.exports = class WebhookController {
     async checkoutSessionEvent(session) {
         if (session.mode === 'payment' && session.metadata?.ghost_donation) {
             const donationField = session.custom_fields?.find(obj => obj?.key === 'donation_message');
-            this.custom_message = donationField?.text?.value ?? '';
+            // const customMessage = donationField?.text?.value ?? '';
+
+            // custom message should be null if it's empty
+
+            const customMessage = donationField?.text?.value ? donationField.text.value : null;
+
+            const amount = session.amount_total;
+            const currency = session.currency;
+            const member = session.customer ? (await this.deps.memberRepository.get({
+                customer_id: session.customer
+            })) : null;
+
+            const data = DonationPaymentEvent.create({
+                name: member?.get('name') ?? session.customer_details.name,
+                email: member?.get('email') ?? session.customer_details.email,
+                memberId: member?.id ?? null,
+                amount,
+                currency,
+                donationMessage: customMessage,
+                attributionId: session.metadata.attribution_id ?? null,
+                attributionUrl: session.metadata.attribution_url ?? null,
+                attributionType: session.metadata.attribution_type ?? null,
+                referrerSource: session.metadata.referrer_source ?? null,
+                referrerMedium: session.metadata.referrer_medium ?? null,
+                referrerUrl: session.metadata.referrer_url ?? null
+            });
+
+            await this.deps.donationRepository.save(data);
+            await this.deps.staffServiceEmails.notifyDonationReceived({
+                donationPaymentEvent: data
+            });
+
+            if (session.mode === 'setup') {
+                // Existing setup mode logic here...
+            }
+
+            if (session.mode === 'subscription') {
+                // Existing subscription mode logic here...
+            }
         }
         if (session.mode === 'setup') {
             const setupIntent = await this.api.getSetupIntent(session.setup_intent);
