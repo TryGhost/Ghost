@@ -37,6 +37,7 @@
                 {{#if (feature "publishFlowEndScreen")}}
                     <div style="display: flex; gap: 8px;">
                         {{#if (feature "postAnalyticsRefresh")}}
+                            {{#if (or this.post.emailOnly this.post.hasBeenEmailed)}}
                             <GhTaskButton
                                 @buttonText="Refresh"
                                 @task={{this.fetchPostTask}}
@@ -45,6 +46,7 @@
                                 @successText="Refreshed"
                                 @class="gh-btn gh-btn-icon refresh"
                                 @successClass="gh-btn gh-btn-icon refresh" />
+                            {{/if}}
                         {{/if}}
                         {{#unless this.post.emailOnly}}
                             <button type="button" class="gh-post-list-cta share" {{on "click" this.togglePublishFlowModal}}>
