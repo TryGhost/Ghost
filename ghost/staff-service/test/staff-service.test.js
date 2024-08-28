@@ -985,6 +985,52 @@ describe('StaffService', function () {
                 ).should.be.true();
             });
 
+            it('does not contain donation message in HTML if not provided', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: null // No donation message provided
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                mailStub.calledOnce.should.be.true();
+
+                // Check that the specific HTML block for the donation message is NOT present
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match(function (html) {
+                        // Ensure that the block with `{{donation.donationMessage}}` does not exist in the rendered HTML
+                        return !html.includes('“') && !html.includes('”');
+                    }))
+                ).should.be.true();
+            });
+
+            // Not really a relevant test, but it's here to show that the donation message is wrapped in quotation marks
+            // and that the above test is actually working, since only the donation message is wrapped in quotation marks
+            it('The donation message is wrapped in quotation marks', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: 'Thank you for the great newsletter!'
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match(function (html) {
+                        return html.includes('“') && html.includes('”');
+                    }))
+                ).should.be.true();
+            });
+
             it('send donation email without message', async function () {
                 const donationPaymentEvent = {
                     amount: 1500,
