@@ -28,6 +28,7 @@ import * as atLink from './nodes/at-link/index.js';
 import * as zwnj from './nodes/zwnj/ZWNJNode.js';
 
 import linebreakSerializers from './serializers/linebreak';
+import paragraphSerializers from './serializers/paragraph';
 
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
@@ -61,13 +62,15 @@ export * from './nodes/at-link/index.js';
 export * from './nodes/zwnj/ZWNJNode';
 
 export const serializers = {
-    linebreak: linebreakSerializers
+    linebreak: linebreakSerializers,
+    paragraph: paragraphSerializers
 };
 
 export const DEFAULT_CONFIG = {
     html: {
         import: {
-            ...serializers.linebreak.import
+            ...serializers.linebreak.import,
+            ...serializers.paragraph.import
         }
     }
 };

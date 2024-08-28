@@ -246,29 +246,26 @@ describe('HTMLtoLexical: Google Docs', function () {
 
     it('removes extra empty paragraphs', function () {
         const input = html`
-            <b style="font-weight:normal;" id="docs-internal-guid-53c161b0-7fff-55f3-a893-721115583111">
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;">
-                    <span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Start of the article. Here is the 1st paragraph, followed by two line breaks then a paragraph.</span>
-                </p>
+            <meta charset='utf-8'>
+            <meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-3430d4a2-7fff-f2cd-a74a-2f333b387ed3">
+                <p dir="ltr" style="line-height:1.656;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Start of the article. Here is the 1st paragraph, followed by two line breaks then a paragraph.</span></p>
                 <br />
                 <br />
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 2nd paragraph, followed by a linebreak then a heading.</span></p>
+                <p dir="ltr" style="line-height:1.656;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 2nd paragraph, followed by a line break then a heading.</span></p>
                 <br />
-                <h1 dir="ltr" style="line-height:1.38;margin-top:20pt;margin-bottom:6pt;"><span style="font-size:20pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Heading 1</span></h1>
+                <h1 dir="ltr" style="line-height:1.656;margin-top:20pt;margin-bottom:6pt;"><span style="font-size:20pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Heading 1</span></h1>
                 <br />
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 3rd paragraph, followed by a linebreak and a list.</span></p>
+                <p dir="ltr" style="line-height:1.656;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 3rd paragraph, with a line break before and a line break after, followed by a list.</span></p>
                 <br />
                 <ul style="margin-top:0;margin-bottom:0;padding-inline-start:48px;">
                     <li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;" aria-level="1"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;" role="presentation"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">List item 1</span></p></li>
                     <li dir="ltr" style="list-style-type:disc;font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;" aria-level="1"><p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;" role="presentation"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">List item 2</span></p></li>
                 </ul>
                 <br />
-                <br />
-                <br />
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 4th paragraph, with 3 line breaks before but 0 linebreaks after.</span></p>
-                <p dir="ltr" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 5th paragraph. End of the article.</span></p>
+                <p dir="ltr" style="line-height:1.656;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 4th paragraph, with a line break before and a divider after.</span></p>
+                <p dir="ltr" style="line-height:1.656;margin-top:0pt;margin-bottom:0pt;"><hr /></p>
+                <p dir="ltr" style="line-height:1.656;margin-top:0pt;margin-bottom:0pt;"><span style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">Here is the 5th paragraph. End of the article.</span></p><br />
             </b>
-            <br class="Apple-interchange-newline">
         `;
 
         const lexical = converter.htmlToLexical(input, editorConfig);
@@ -301,7 +298,7 @@ describe('HTMLtoLexical: Google Docs', function () {
                                 format: 0,
                                 mode: 'normal',
                                 style: '',
-                                text: 'Here is the 2nd paragraph, followed by a linebreak then a heading.',
+                                text: 'Here is the 2nd paragraph, followed by a line break then a heading.',
                                 type: 'extended-text',
                                 version: 1
                             }
@@ -338,7 +335,7 @@ describe('HTMLtoLexical: Google Docs', function () {
                                 format: 0,
                                 mode: 'normal',
                                 style: '',
-                                text: 'Here is the 3rd paragraph, followed by a linebreak and a list.',
+                                text: 'Here is the 3rd paragraph, with a line break before and a line break after, followed by a list.',
                                 type: 'extended-text',
                                 version: 1
                             }
@@ -408,7 +405,7 @@ describe('HTMLtoLexical: Google Docs', function () {
                                 format: 0,
                                 mode: 'normal',
                                 style: '',
-                                text: 'Here is the 4th paragraph, with 3 line breaks before but 0 linebreaks after.',
+                                text: 'Here is the 4th paragraph, with a line break before and a divider after.',
                                 type: 'extended-text',
                                 version: 1
                             }
@@ -417,6 +414,10 @@ describe('HTMLtoLexical: Google Docs', function () {
                         format: '',
                         indent: 0,
                         type: 'paragraph',
+                        version: 1
+                    },
+                    {
+                        type: 'horizontalrule',
                         version: 1
                     },
                     {

@@ -377,18 +377,18 @@ test.describe('Paste behaviour', async () => {
             await assertHTML(page, html`
                 <p dir="ltr">
                 <span data-lexical-text="true">
-                    Start of the article. Here is the 1st paragraph, followed by a line break then a paragraph.
+                    Start of the article. Here is the 1st paragraph, followed by two line breaks then a paragraph.
                 </span>
                 </p>
                 <p dir="ltr">
                 <span data-lexical-text="true">
-                    Here is the 2nd paragraph, followed by a linebreak then a heading.
+                    Here is the 2nd paragraph, followed by a line break then a heading.
                 </span>
                 </p>
                 <h1 dir="ltr"><span data-lexical-text="true">Heading 1</span></h1>
                 <p dir="ltr">
                 <span data-lexical-text="true">
-                    Here is the 3rd paragraph, followed by a linebreak and a list.
+                    Here is the 3rd paragraph, with a line break before and a line break after, followed by a list.
                 </span>
                 </p>
                 <ul>
@@ -407,9 +407,17 @@ test.describe('Paste behaviour', async () => {
                 </ul>
                 <p dir="ltr">
                 <span data-lexical-text="true">
-                    Here is the 4th paragraph, NOT followed by linebreaks.
+                    Here is the 4th paragraph, with a line break before and a divider after.
                 </span>
                 </p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div
+                        data-kg-card-editing="false"
+                        data-kg-card-selected="false"
+                        data-kg-card="horizontalrule">
+                        <hr />
+                    </div>
+                </div>
                 <p dir="ltr">
                 <span data-lexical-text="true">
                     Here is the 5th paragraph. End of the article.
