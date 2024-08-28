@@ -41,7 +41,7 @@ export default class AccountProfilePage extends React.Component {
         e.preventDefault();
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
+                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
             };
         }, () => {
             const {email, name, errors} = this.state;
@@ -141,7 +141,7 @@ export default class AccountProfilePage extends React.Component {
             {
                 type: 'text',
                 value: state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 required: true,
@@ -150,7 +150,7 @@ export default class AccountProfilePage extends React.Component {
             {
                 type: 'email',
                 value: state.email,
-                placeholder: 'jamie@example.com',
+                placeholder: t('jamie@example.com'),
                 label: t('Email'),
                 name: 'email',
                 required: true,

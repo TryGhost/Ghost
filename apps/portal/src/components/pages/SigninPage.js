@@ -31,7 +31,7 @@ export default class SigninPage extends React.Component {
         e.preventDefault();
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
+                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
             };
         }, async () => {
             const {email, phonenumber, errors} = this.state;
