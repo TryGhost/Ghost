@@ -30,6 +30,7 @@ const FrameStyles = `
     text-align: center;
     color: var(--grey0);
     line-height: 1.1em;
+    text-wrap: pretty;
 }
 
 .gh-portal-text-disabled {
@@ -40,6 +41,7 @@ const FrameStyles = `
 
 .gh-portal-text-center {
     text-align: center;
+    text-wrap: pretty;
 }
 
 .gh-portal-input-label {
