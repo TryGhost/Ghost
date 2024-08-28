@@ -23,10 +23,5 @@ module.exports = function getConfigProperties() {
         signupForm: config.get('signupForm')
     };
 
-    const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';
-    if (billingUrl) {
-        configProperties.billingUrl = billingUrl;
-    }
-
     return configProperties;
 };
