@@ -11,25 +11,37 @@ describe('Config API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init();
-        await agent.loginAsOwner();
+        await fixtureManager.init('users');
     });
 
-    it('Can retrieve config and all expected properties', async function () {
-        await agent
-            .get('/config/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                config: {
-                    database: stringMatching(/sqlite3|mysql|mysql2/),
-                    environment: stringMatching(/^testing/),
-                    version: stringMatching(/\d+\.\d+\.\d+/)
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
-                etag: anyEtag
-            });
+    describe('As Unauthorized User', function () {
+        it('Cannot fetch the config endpoint', async function () {
+            await agent.get('/config/')
+                .expectStatus(403);
+        });
+    });
+
+    describe('As Owner', function () {
+        before(async function () {
+            await agent.loginAsOwner();
+        });
+
+        it('Can retrieve config and all expected properties', async function () {
+            await agent
+                .get('/config/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    config: {
+                        database: stringMatching(/sqlite3|mysql|mysql2/),
+                        environment: stringMatching(/^testing/),
+                        version: stringMatching(/\d+\.\d+\.\d+/)
+                    }
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
+                    etag: anyEtag
+                });
+        });
     });
 });

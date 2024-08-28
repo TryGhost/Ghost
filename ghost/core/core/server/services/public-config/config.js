@@ -23,5 +23,10 @@ module.exports = function getConfigProperties() {
         signupForm: config.get('signupForm')
     };
 
+    // WIP tinybird stats feature - it's entirely config driven instead of using an alpha flag for now
+    if (config.get('tinybird') && config.get('tinybird:stats')) {
+        configProperties.stats = config.get('tinybird:stats');
+    }
+
     return configProperties;
 };
