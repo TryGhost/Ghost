@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Super! Váš e-mail bol zmenený.",
     "Successfully unsubscribed": "Úspešne odhlásený z odberu",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Ďakujeme za spätnú väzbu!",
     "That didn't go to plan": "Niečo sa nepodarilo",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Táto stránka je iba pre pozvaných úžívateľov, kontaktujte vlastníka stránky.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Vyskúšajte zadarmo na {{amount}} dní, potom {{originalPrice}}",
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Odhlásený z odberu všetkých email-ov",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Vaše pripomienky pomáhajú spoluvytvárať obsah webu.",
     "Your subscription will expire on {{expiryDate}}": "Váše predplatné expiruje {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Váše predplatné bude obnovené {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Váše predplatné začína {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Váše predplatné začína {{subscriptionStart}}"
 }

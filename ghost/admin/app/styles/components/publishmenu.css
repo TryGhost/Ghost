@@ -939,7 +939,7 @@
     line-height: 1.4;
     letter-spacing: -0.01em;
     text-wrap: pretty;
-    padding: 16px 24px;
+    padding: 16px 24px 16px 24px;
 }
 
 .modal-post-success .modal-body p {
@@ -991,12 +991,9 @@
 }
 
 .modal-post-success .modal-footer {
-    background: var(--whitegrey-l2);
-    margin-top: 0;
+    margin-top: 16px;
     gap: 16px;
-    padding: 16px 24px;
-    border-top: 1px solid var(--lightgrey-l1);
-    border-radius: 0 0 8px 8px;
+    padding: 0;
 }
 
 
@@ -1052,12 +1049,12 @@
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
     width: 56px;
-    background: var(--white);
     border: 1px solid var(--lightgrey-l1);
+    background: var(--white);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
-    background: var(--whitegrey-l1);
+    background: var(--lightgrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {

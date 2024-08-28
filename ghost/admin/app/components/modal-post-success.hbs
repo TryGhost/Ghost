@@ -5,22 +5,16 @@
                 <span>All set!</span>
             {{else}}
                 <span>
-                    {{#if this.showPostCount}}
-                        Boom! It's out there.
-                    {{else}}
-                        Your post is published.
-                    {{/if}}
+                    {{if this.showPostCount "Boom! It's out there." "Your post is published."}}
                 </span>
                 <span>
                     {{#if this.post.isPost}}
                         {{#if this.post.emailOnly}}
                             Your email has been sent.
+                        {{else if this.showPostCount}}
+                            That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
                         {{else}}
-                            {{#if this.showPostCount}}
-                                That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
-                            {{else}}
-                                Spread the word!
-                            {{/if}}
+                            Spread the word!
                         {{/if}}
                     {{else}}
                         Your page is published.
@@ -30,54 +24,68 @@
         </h1>
     </header>
 
-    {{#if (and this.post.isPublished (not this.post.emailOnly))}}
-    {{else}}
-    <div class="modal-body email">
-        {{#if this.post.isSent}}
-            It
-        {{else}}
-            {{#if this.post.emailOnly}}
+    {{#if (not (and this.post.isPublished (not this.post.emailOnly)))}}
+        <div class="modal-body email">
+            {{#if this.post.isSent}}
+                It
+            {{else if this.post.emailOnly}}
                 Your email
             {{else}}
                 Your {{this.post.displayName}}
             {{/if}}
-        {{/if}}
-        {{if this.post.isScheduled "will be" "was"}}
-        {{#if this.post.emailOnly}}
-            sent to
-        {{else if this.post.willEmail}}
-            published on your site, and sent to
-        {{else}}
-            published on your site
-        {{/if}}
+            {{if this.post.isScheduled "will be" "was"}}
+            {{if this.post.emailOnly "sent to" (if this.post.willEmail "published on your site, and sent to" "published on your site")}}
 
-        {{#if (or this.post.hasEmail this.post.willEmail)}}
-            {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
-                <strong class="nowrap">
-                    {{if (eq @recipientType "all") "all"}}
+            {{#if (or this.post.hasEmail this.post.willEmail)}}
+                {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                    <strong class="nowrap">
+                        {{if (eq @recipientType "all") "all"}}
+                        {{format-number countFetcher.count}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>
+                    of <strong>{{this.post.newsletter.name}}</strong>
+                {{/let}}
+            {{/if}}
 
-                    {{format-number countFetcher.count}}
-
-                    {{!-- @recipientType = free/paid/all/specific --}}
-                    {{if (not-eq @recipientType "all") @recipientType}}
-
-                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
-                </strong>
-
-                of <strong>{{this.post.newsletter.name}}</strong>
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                on
+                <strong>{{moment-format publishedAt "D MMM YYYY"}}</strong>
+                at
+                <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
             {{/let}}
-        {{/if}}
-
-        {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
-            on
-            <strong>{{moment-format publishedAt "D MMM YYYY"}}</strong>
-            at
-            <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
-        {{/let}}
-    </div>
+        </div>
+    {{/if}}
 
     {{#if this.post.emailOnly}}
-        <footer class="modal-footer-email">
+        <div class="gh-post-card">
+            {{#if (or this.post.featureImage this.post.twitterImage this.post.ogImage)}}
+                <figure class="modal-image">
+                    <img src="{{or this.post.featureImage this.post.twitterImage this.post.ogImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{/if}}
+            
+            <div class="modal-body">
+                <h2>{{this.post.title}}</h2>
+                {{#if this.post.excerpt}}
+                    <p class="post-excerpt">{{this.post.excerpt}}</p>
+                {{/if}}
+
+                <div class="gh-post-details">
+                {{#if (get-setting "icon")}}
+                    <div class="gh-post-bookmark-site-icon">
+                        <img src={{get-setting "icon"}} alt="" role="presentation" />
+                    </div>
+                {{/if}}
+
+                {{#if (get-setting "title")}}
+                    <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
+                {{/if}}
+                    <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
+                </div>
+            </div>
+        </div>
+        <footer class="modal-footer">
             <button
                 class="gh-btn gh-btn-primary dismiss"
                 type="button"
@@ -87,7 +95,6 @@
                 <span>Close</span>
             </button>
         </footer>
-    {{/if}}
     {{/if}}
 
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
@@ -127,9 +134,10 @@
                 <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
             </div>
         </div>
+    </div>
 
-        <footer class="modal-footer">
-            {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+    <footer class="modal-footer">
+        {{#if (and this.post.isPublished (not this.post.emailOnly))}}
             <div class="share-buttons">
                 <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                     <span>{{svg-jar "social-x"}}</span>
@@ -152,8 +160,9 @@
                     @task={{this.handleCopyLink}}
                     @successText="Link copied"
                     @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
-            {{else}}
-                {{#if (and this.post.isScheduled (not this.post.emailOnly))}}
+        {{else}}
+            {{#if (or this.post.isScheduled this.post.emailOnly)}}
+                {{#if this.post.isScheduled}}
                     <GhTaskButton
                         @buttonText="Copy preview link"
                         @task={{this.handleCopyPreviewLink}}
@@ -161,29 +170,18 @@
                         @idleIcon="link"
                         @successText="Preview link copied"
                         @class="gh-btn gh-btn-icon copy-preview-link" />
-
-                    <button
-                        class="gh-btn gh-btn-primary dismiss"
-                        type="button"
-                        {{on "click" @close}}
-                        {{on "mousedown" (optional this.noop)}}
-                    >
-                        <span>Close</span>
-                    </button>
-
-                    {{else}}
-                    <button
-                        class="gh-btn gh-btn-primary dismiss"
-                        type="button"
-                        {{on "click" @close}}
-                        {{on "mousedown" (optional this.noop)}}
-                    >
-                        <span>Close</span>
-                    </button>
                 {{/if}}
-
+                <button
+                    class="gh-btn gh-btn-primary dismiss"
+                    type="button"
+                    {{on "click" @close}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    <span>Close</span>
+                </button>
             {{/if}}
-        </footer>
-    </div>
+        {{/if}}
+    </footer>
     {{/unless}}
 </div>
+

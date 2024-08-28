@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Sukses! U e-pos is opgedateer.",
     "Successfully unsubscribed": "Suksesvol afgemeld",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Dankie dat jy ingeteken het. Voordat jy begin lees, hieronder is 'n paar ander webwerwe wat jy dalk sal geniet.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Dankie vir die terugvoering!",
     "That didn't go to plan": "Dit het nie volgens plan verloop nie",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Die epos addres wat ons vir u het is {{memberEmail}} — as dit nie korrek is nie, kan u dit opdateer in u <button>rekeninginstellings area</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Hierdie webwerf is slegs op uitnodiging, kontak die eienaar vir toegang.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Om die registrasie te voltooi, kliek op die bevestigingskakel in jou inboks. As dit nie binne 3 minute aankom nie, kontroleer asseblief jou spam-vouer!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Probeer gratis vir {{amount}} dae, dan {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Ontsluit toegang tot alle nuusbriewe deur 'n betaalde intekenaar te word.",
     "Unsubscribe from all emails": "Meld af van alle e-posse",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "U insette help om te bepaal wat gepubliseer word.",
     "Your subscription will expire on {{expiryDate}}": "U intekening sal verval op {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "U intekening sal hernu op {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "U intekening sal begin op {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "U intekening sal begin op {{subscriptionStart}}"
 }

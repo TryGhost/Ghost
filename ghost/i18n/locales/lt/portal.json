@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Pavyko! Jūsų el. pašto adresas atnaujintas.",
     "Successfully unsubscribed": "Prenumerata sėkmingai atšaukta",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Ačiū, kad užsiprenumeravote. Prieš pradėdami skaityti, peržvelkite ir keletą kitų svetainių, kurios jums gali patikti.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Ačiū už atsiliepimą!",
     "That didn't go to plan": "Kažkas nepavyko",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "Nustatytas El. pašto adresas yra {{memberEmail}} – jei jis neteisingas, galite jį atnaujinti <button>paskyros nustatymuose</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Ši svetainė pasiekiama tik su pakvietimu, susisiekite su savininku dėl prieigos. ",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Jei norite užbaigti registraciją, gautame el. laiške spustelėkite patvirtinimo nuorodą. Jei laiško negaunate per 3 minutes, patikrinkite šlamšto (spam) aplanką!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Išbandykite {{amount}} d. nemokamai, vėliau {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Gaukite prieigą prie visų naujienlaiškių įsigiję mokamą prenumeratą.",
     "Unsubscribe from all emails": "Atšaukti visas laiškų prenumeratas.",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Jūsų indėlis padeda kurti tai, kas yra viešinama.",
     "Your subscription will expire on {{expiryDate}}": "Jūsų prenumerata baigsis {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Jūsų prenumerata atsinaujins {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Jūsų prenumerata prasidės {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Jūsų prenumerata prasidės {{subscriptionStart}}"
 }

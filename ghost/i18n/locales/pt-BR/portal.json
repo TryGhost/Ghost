@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Sucesso! Seu e-mail foi atualizado.",
     "Successfully unsubscribed": "Inscrição cancelada com sucesso",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Obrigado por se inscrever. Antes de começar a ler, abaixo estão alguns outros sites que você pode gostar.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Obrigado pela avaliação!",
     "That didn't go to plan": "Algo não saiu como planejado",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "O endereço de e-mail que temos para você é {{memberEmail}} — se isso não estiver correto, você pode atualizá-lo na sua <button>área de configurações da conta</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Este site é apenas para convidados. Contate o proprietário para obter acesso.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Para completar o cadastro, clique no link de confirmação enviado para sua caixa de entrada. Se o link não chegar dentro de 3 minutos, confira a pasta de spam!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Experimente grátis por {{amount}} dias, depois {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Desbloqueie o acesso a todas as newsletters se tornando um assinante pago.",
     "Unsubscribe from all emails": "Cancelar inscrição em todos os e-mails",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "Sua resposta ajuda a moldar o que será publicado.",
     "Your subscription will expire on {{expiryDate}}": "Sua assinatura expirará em {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Sua assinatura será renovada em {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Sua assinatura começará em {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "Sua assinatura começará em {{subscriptionStart}}"
 }
