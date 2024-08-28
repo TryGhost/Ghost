@@ -75,18 +75,18 @@
                         />
 
                         <div class="gh-post-activity-feed-pagination">
-                            {{#if (compute (fn this.isPaginationNotNeeded savedEventsFetcher))}}
-                                Showing {{savedEventsFetcher.totalEvents}} in total
+                            {{#if (compute (fn this.isPaginationNotNeeded this.savedEventsFetcher))}}
+                                Showing {{this.savedEventsFetcher.totalEvents}} in total
                             {{else}}
-                                Showing {{savedEventsFetcher.previousEvents}}-{{savedEventsFetcher.shownEvents}} of {{savedEventsFetcher.totalEvents}}
+                                Showing {{this.savedEventsFetcher.previousEvents}}-{{this.savedEventsFetcher.shownEvents}} of {{this.savedEventsFetcher.totalEvents}}
 
                                 <div class="gh-post-activity-feed-pagination-group">
                                     <button
                                         class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
                                         type="button"
                                         title="Previous page"
-                                        disabled={{compute (fn this.isPreviousButtonDisabled savedEventsFetcher)}}
-                                        {{on "click" savedEventsFetcher.loadPreviousPage}}
+                                        disabled={{compute (fn this.isPreviousButtonDisabled this.savedEventsFetcher)}}
+                                        {{on "click" this.savedEventsFetcher.loadPreviousPage}}
                                     >
                                         {{svg-jar "arrow-left-pagination"}}
                                     </button>
@@ -95,8 +95,8 @@
                                         class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
                                         type="button"
                                         title="Next page"
-                                        disabled={{compute (fn this.isNextButtonDisabled savedEventsFetcher)}}
-                                        {{on "click" savedEventsFetcher.loadNextPage}}
+                                        disabled={{compute (fn this.isNextButtonDisabled this.savedEventsFetcher)}}
+                                        {{on "click" this.savedEventsFetcher.loadNextPage}}
                                     >
                                         {{svg-jar "arrow-right-pagination"}}
                                     </button>
