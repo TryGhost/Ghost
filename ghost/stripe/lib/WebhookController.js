@@ -161,7 +161,7 @@ module.exports = class WebhookController {
 
             // custom message should be null if it's empty
 
-            const customMessage = donationField?.text?.value ? donationField.text.value : null;
+            const donationMessage = donationField?.text?.value ? donationField.text.value : null;
 
             const amount = session.amount_total;
             const currency = session.currency;
@@ -175,7 +175,7 @@ module.exports = class WebhookController {
                 memberId: member?.id ?? null,
                 amount,
                 currency,
-                donationMessage: customMessage,
+                donationMessage,
                 attributionId: session.metadata.attribution_id ?? null,
                 attributionUrl: session.metadata.attribution_url ?? null,
                 attributionType: session.metadata.attribution_type ?? null,
@@ -188,14 +188,6 @@ module.exports = class WebhookController {
             await this.deps.staffServiceEmails.notifyDonationReceived({
                 donationPaymentEvent: data
             });
-
-            if (session.mode === 'setup') {
-                // Existing setup mode logic here...
-            }
-
-            if (session.mode === 'subscription') {
-                // Existing subscription mode logic here...
-            }
         }
         if (session.mode === 'setup') {
             const setupIntent = await this.api.getSetupIntent(session.setup_intent);
