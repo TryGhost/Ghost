@@ -895,6 +895,15 @@
     border-radius: var(--radius);
 }
 
+.modal-post-success a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.modal-post-success a:hover .gh-post-card {
+    background: var(--whitegrey-l2);
+}
+
 .modal-post-success .gh-post-card {
     border-radius: 8px;
     border: 1px solid var(--lightgrey-l1);
@@ -1054,7 +1063,7 @@
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
-    background: var(--whitegrey-l1);
+    background: var(--whitegrey-l2);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {

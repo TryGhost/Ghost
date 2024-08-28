@@ -100,41 +100,43 @@
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     {{#unless this.post.emailOnly}}
-    <div class="gh-post-card">
-        {{#if this.post.featureImage}}
-            <figure class="modal-image">
-                <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
-            </figure>
-        {{else if this.post.twitterImage}}
-            <figure class="modal-image">
-                <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
-            </figure>
-        {{else if this.post.ogImage}}
-            <figure class="modal-image">
-                <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
-            </figure>
-        {{/if}}
-
-        <div class="modal-body">
-            <h2>{{this.post.title}}</h2>
-            {{#if this.post.excerpt}}
-                <p class="post-excerpt">{{this.post.excerpt}}</p>
+    <a href="{{this.post.url}}" target="_blank" rel="noopener noreferrer" title="View post: {{this.post.title}}">
+        <div class="gh-post-card">
+            {{#if this.post.featureImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{else if this.post.twitterImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{else if this.post.ogImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
+                </figure>
             {{/if}}
 
-            <div class="gh-post-details">
-             {{#if (get-setting "icon")}}
-                <div class="gh-post-bookmark-site-icon">
-                    <img src={{get-setting "icon"}} alt="" role="presentation" />
+            <div class="modal-body">
+                <h2>{{this.post.title}}</h2>
+                {{#if this.post.excerpt}}
+                    <p class="post-excerpt">{{this.post.excerpt}}</p>
+                {{/if}}
+
+                <div class="gh-post-details">
+                {{#if (get-setting "icon")}}
+                    <div class="gh-post-bookmark-site-icon">
+                        <img src={{get-setting "icon"}} alt="" role="presentation" />
+                    </div>
+                {{/if}}
+
+                {{#if (get-setting "title")}}
+                    <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
+                {{/if}}
+                    <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
                 </div>
-            {{/if}}
-
-            {{#if (get-setting "title")}}
-                <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
-            {{/if}}
-                <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
             </div>
         </div>
-    </div>
+    </a>
 
     <footer class="modal-footer">
         {{#if (and this.post.isPublished (not this.post.emailOnly))}}
