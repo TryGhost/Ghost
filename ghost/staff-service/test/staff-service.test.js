@@ -965,25 +965,25 @@ describe('StaffService', function () {
                 ).should.be.true();
             });
 
-            // it('has donation message in html', async function () {
-            //     const donationPaymentEvent = {
-            //         amount: 1500,
-            //         currency: 'eur',
-            //         name: 'Jamie',
-            //         email: 'jamie@example.com',
-            //         donationMessage: 'Thank you for the awesome newsletter!'
-            //     };
+            it('has donation message in html', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: 'Thank you for the awesome newsletter!'
+                };
 
-            //     await service.emails.notifyDonationReceived({donationPaymentEvent});
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-            //     getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
 
-            //     mailStub.calledOnce.should.be.true();
+                mailStub.calledOnce.should.be.true();
 
-            //     mailStub.calledWith(
-            //         sinon.match.has('html', sinon.match('Thank you for the awesome newsletter!'))
-            //     ).should.be.true();
-            // });
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Thank you for the awesome newsletter!'))
+                ).should.be.true();
+            });
 
             it('send donation email without message', async function () {
                 const donationPaymentEvent = {
