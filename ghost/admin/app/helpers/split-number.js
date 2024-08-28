@@ -3,6 +3,10 @@ import {helper} from '@ember/component/helper';
 import {htmlSafe} from '@ember/template';
 
 export function splitNumber([number, previousNumber]) {
+    if (number === undefined || previousNumber === undefined) {
+        return 0;
+    }
+
     let formattedNewNumber = formatNumber(number);
     let formattedOldNumber = formatNumber(previousNumber);
 
