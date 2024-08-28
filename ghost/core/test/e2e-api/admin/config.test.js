@@ -1,69 +1,35 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
-const localUtils = require('./utils');
-const config = require('../../../core/shared/config');
-const configUtils = require('../../utils/configUtils');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyContentVersion, anyEtag, anyContentLength, stringMatching} = matchers;
 
+/**
+ * This is a snapshot test for the happy path of the config API
+ * It does not test the full range of possible config values
+ * as that should be tested in the unit tests for the public-config service
+ */
 describe('Config API', function () {
-    let request;
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request);
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init();
+        await agent.loginAsOwner();
     });
 
-    afterEach(function () {
-        configUtils.set('tenor:googleApiKey', undefined);
-    });
-
-    it('can retrieve config and all expected properties', async function () {
-        // set any non-default keys so we can be sure they're exposed
-        configUtils.set('tenor:googleApiKey', 'TENOR_KEY');
-
-        const res = await request
-            .get(localUtils.API.getApiQuery('config/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        localUtils.API.checkResponse(res.body.config, 'config');
-
-        // full version
-        res.body.config.version.should.match(/\d+\.\d+\.\d+/);
-    });
-
-    describe('mailgunIsConfigured', function () {
-        it('is a boolean when it is configured', async function () {
-            // set any non-default keys so we can be sure they're exposed
-            configUtils.set('bulkEmail', {
-                mailgun: 'exists'
+    it('Can retrieve config and all expected properties', async function () {
+        await agent
+            .get('/config/')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                config: {
+                    database: stringMatching(/sqlite3|mysql|mysql2/),
+                    environment: stringMatching(/^testing/),
+                    version: stringMatching(/\d+\.\d+\.\d+/)
+                }
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
+                etag: anyEtag
             });
-
-            const res = await request
-                .get(localUtils.API.getApiQuery('config/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            should.equal(typeof res.body.config.mailgunIsConfigured, 'boolean');
-        });
-
-        it('is a boolean when it is not configured', async function () {
-            // set any non-default keys so we can be sure they're exposed
-            configUtils.set('bulkEmail', {});
-
-            const res = await request
-                .get(localUtils.API.getApiQuery('config/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            should.equal(typeof res.body.config.mailgunIsConfigured, 'boolean');
-        });
     });
 });
