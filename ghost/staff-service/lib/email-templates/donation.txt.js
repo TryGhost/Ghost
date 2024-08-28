@@ -1,5 +1,4 @@
 module.exports = function (data) {
-    console.log(data);
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `
 Cha-ching!
