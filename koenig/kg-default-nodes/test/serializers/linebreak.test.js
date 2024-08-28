@@ -209,102 +209,127 @@ describe('Serializers: linebreak', function () {
                 should.equal(nodes[1].getType(), 'extended-heading');
                 should.equal(nodes[2].getType(), 'paragraph');
             }));
+
+            it('(non GDoc) default conversion for a linebreak between a H3 and paragraph', editorTest(function () {
+                const htmlString = '<p>Paragraph></p><br><h3>Heading</h3><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 5);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'linebreak');
+                should.equal(nodes[2].getType(), 'extended-heading');
+                should.equal(nodes[3].getType(), 'linebreak');
+                should.equal(nodes[4].getType(), 'paragraph');
+            }));
+
+            it('(GDoc) skips linebreaks between H3 and paragraph', editorTest(function () {
+                const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h3>Heading</h3><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 3);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'extended-heading');
+                should.equal(nodes[2].getType(), 'paragraph');
+            }));
+
+            it('(non GDoc) default conversion for a linebreak between a H4 and paragraph', editorTest(function () {
+                const htmlString = '<p>Paragraph></p><br><h4>Heading</h4><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 5);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'linebreak');
+                should.equal(nodes[2].getType(), 'extended-heading');
+                should.equal(nodes[3].getType(), 'linebreak');
+                should.equal(nodes[4].getType(), 'paragraph');
+            }));
+
+            it('(GDoc) skips linebreaks between H4 and paragraph', editorTest(function () {
+                const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h4>Heading</h4><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 3);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'extended-heading');
+                should.equal(nodes[2].getType(), 'paragraph');
+            }));
+
+            it('(non GDoc) default conversion for a linebreak between a H5 and paragraph', editorTest(function () {
+                const htmlString = '<p>Paragraph></p><br><h5>Heading</h5><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 5);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'linebreak');
+                should.equal(nodes[2].getType(), 'extended-heading');
+                should.equal(nodes[3].getType(), 'linebreak');
+                should.equal(nodes[4].getType(), 'paragraph');
+            }));
+
+            it('(GDoc) skips linebreaks between H5 and paragraph', editorTest(function () {
+                const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h5>Heading</h5><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 3);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'extended-heading');
+                should.equal(nodes[2].getType(), 'paragraph');
+            }));
+
+            it('(non GDoc) default conversion for a linebreak between a H6 and paragraph', editorTest(function () {
+                const htmlString = '<p>Paragraph></p><br><h6>Heading</h6><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 5);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'linebreak');
+                should.equal(nodes[2].getType(), 'extended-heading');
+                should.equal(nodes[3].getType(), 'linebreak');
+                should.equal(nodes[4].getType(), 'paragraph');
+            }));
+
+            it('(GDoc) skips linebreaks between H6 and paragraph', editorTest(function () {
+                const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h6>Heading</h6><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
+
+                should.equal(nodes.length, 3);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'extended-heading');
+                should.equal(nodes[2].getType(), 'paragraph');
+            }));
         });
 
-        it('(non GDoc) default conversion for a linebreak between a H3 and paragraph', editorTest(function () {
-            const htmlString = '<p>Paragraph></p><br><h3>Heading</h3><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
+        describe('Multiple linebreaks', function () {
+            it('(non GDoc) default conversion for multiple linebreaks between paragraphs', editorTest(function () {
+                const htmlString = '<p>Paragraph></p><br><br><br><p>Paragraph></p>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
 
-            should.equal(nodes.length, 5);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'linebreak');
-            should.equal(nodes[2].getType(), 'extended-heading');
-            should.equal(nodes[3].getType(), 'linebreak');
-            should.equal(nodes[4].getType(), 'paragraph');
-        }));
+                should.equal(nodes.length, 5);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'linebreak');
+                should.equal(nodes[2].getType(), 'linebreak');
+                should.equal(nodes[3].getType(), 'linebreak');
+                should.equal(nodes[4].getType(), 'paragraph');
+            }));
 
-        it('(GDoc) skips linebreaks between H3 and paragraph', editorTest(function () {
-            const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h3>Heading</h3><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
+            it('(GDoc) skips empty paragraphs if there are multiple linebreaks', editorTest(function () {
+                const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><br><br><p>Paragraph></p></div>';
+                const document = createDocument(htmlString);
+                const nodes = $generateNodesFromDOM(editor, document);
 
-            should.equal(nodes.length, 3);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'extended-heading');
-            should.equal(nodes[2].getType(), 'paragraph');
-        }));
-
-        it('(non GDoc) default conversion for a linebreak between a H4 and paragraph', editorTest(function () {
-            const htmlString = '<p>Paragraph></p><br><h4>Heading</h4><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
-
-            should.equal(nodes.length, 5);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'linebreak');
-            should.equal(nodes[2].getType(), 'extended-heading');
-            should.equal(nodes[3].getType(), 'linebreak');
-            should.equal(nodes[4].getType(), 'paragraph');
-        }));
-
-        it('(GDoc) skips linebreaks between H4 and paragraph', editorTest(function () {
-            const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h4>Heading</h4><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
-
-            should.equal(nodes.length, 3);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'extended-heading');
-            should.equal(nodes[2].getType(), 'paragraph');
-        }));
-
-        it('(non GDoc) default conversion for a linebreak between a H5 and paragraph', editorTest(function () {
-            const htmlString = '<p>Paragraph></p><br><h5>Heading</h5><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
-
-            should.equal(nodes.length, 5);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'linebreak');
-            should.equal(nodes[2].getType(), 'extended-heading');
-            should.equal(nodes[3].getType(), 'linebreak');
-            should.equal(nodes[4].getType(), 'paragraph');
-        }));
-
-        it('(GDoc) skips linebreaks between H5 and paragraph', editorTest(function () {
-            const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h5>Heading</h5><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
-
-            should.equal(nodes.length, 3);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'extended-heading');
-            should.equal(nodes[2].getType(), 'paragraph');
-        }));
-
-        it('(non GDoc) default conversion for a linebreak between a H6 and paragraph', editorTest(function () {
-            const htmlString = '<p>Paragraph></p><br><h6>Heading</h6><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
-
-            should.equal(nodes.length, 5);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'linebreak');
-            should.equal(nodes[2].getType(), 'extended-heading');
-            should.equal(nodes[3].getType(), 'linebreak');
-            should.equal(nodes[4].getType(), 'paragraph');
-        }));
-
-        it('(GDoc) skips linebreaks between H6 and paragraph', editorTest(function () {
-            const htmlString = '<div id="docs-internal-guid-1234"><p>Paragraph></p><br><h6>Heading</h6><br><p>Paragraph></p>';
-            const document = createDocument(htmlString);
-            const nodes = $generateNodesFromDOM(editor, document);
-
-            should.equal(nodes.length, 3);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'extended-heading');
-            should.equal(nodes[2].getType(), 'paragraph');
-        }));
+                should.equal(nodes.length, 2);
+                should.equal(nodes[0].getType(), 'paragraph');
+                should.equal(nodes[1].getType(), 'paragraph');
+            }));
+        });
     });
 });
