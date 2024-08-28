@@ -8,13 +8,13 @@ const SupportPage = () => {
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [disabledFeatureError, setDisabledFeatureError] = useState(null);
-    const {t} = useContext(AppContext);
+    const {member, t} = useContext(AppContext);
 
     useEffect(() => {
         async function checkoutDonation() {
             const siteUrl = window.location.origin;
             const currentUrl = siteUrl + window.location.pathname;
-            const successUrl = `${currentUrl}#/portal/support/success`;
+            const successUrl = member ? `${currentUrl}?action=support&success=true` : `${currentUrl}/#/portal/support/success`;
             const cancelUrl = currentUrl;
             const api = setupGhostApi({siteUrl});
 

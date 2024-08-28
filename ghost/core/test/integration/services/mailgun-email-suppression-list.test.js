@@ -44,7 +44,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -72,7 +72,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -100,7 +100,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -128,7 +128,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -163,7 +163,7 @@ describe('MailgunEmailSuppressionList', function () {
             timestamp: Math.round(timestamp.getTime() / 1000)
         }];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);

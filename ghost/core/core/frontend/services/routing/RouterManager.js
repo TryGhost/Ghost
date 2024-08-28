@@ -126,13 +126,6 @@ class RouterManager {
             this.registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
         });
 
-        _.each(routerSettings.taxonomies, (value, key) => {
-            const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG, this.routerCreated.bind(this));
-            this.siteRouter.mountRouter(taxonomyRouter.router());
-
-            this.registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
-        });
-
         _.each(routerSettings.collections, (value, key) => {
             const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(collectionRouter.router());
@@ -143,6 +136,13 @@ class RouterManager {
         this.siteRouter.mountRouter(staticPagesRouter.router());
 
         this.registry.setRouter('staticPagesRouter', staticPagesRouter);
+
+        _.each(routerSettings.taxonomies, (value, key) => {
+            const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG, this.routerCreated.bind(this));
+            this.siteRouter.mountRouter(taxonomyRouter.router());
+
+            this.registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
+        });
 
         const appRouter = new ParentRouter('AppsRouter');
         this.siteRouter.mountRouter(appRouter.router());

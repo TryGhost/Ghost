@@ -334,7 +334,7 @@ const fillInputIfExists = async (page, selector, value) => {
     }
 };
 
-const completeStripeSubscription = async (page) => {
+const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) => {
     await page.locator('#cardNumber').fill('4242 4242 4242 4242');
     await page.locator('#cardExpiry').fill('04 / 26');
     await page.locator('#cardCvc').fill('424');
@@ -359,7 +359,9 @@ const completeStripeSubscription = async (page) => {
 
     await page.getByTestId('hosted-payment-submit-button').click();
 
-    await page.waitForLoadState('networkidle');
+    if (awaitNetworkIdle) {
+        await page.waitForLoadState('networkidle');
+    }
 };
 
 /**

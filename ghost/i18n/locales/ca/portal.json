@@ -121,7 +121,8 @@
     "Success! Your email is updated.": "Amb èxit! El teu correu electrònic està actualitzat.",
     "Successfully unsubscribed": "T'has donat de baixa correctament",
     "Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.": "Gràcies per subscriure't. Abans de començar a llegir, a continuació es mostren alguns altres llocs que us poden agradar.",
-    "Thank you!": "",
+    "Thank you for your support": "",
+    "Thank you for your support!": "",
     "Thanks for the feedback!": "Gràcies pels teus comentaris!",
     "That didn't go to plan": "Això no ha anat com estava previst",
     "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "'adreça electrònica que tenim per a vostè és {{memberEmail}}; si no és correcta, podeu actualitzar-la a l'<button>àrea de configuració del vostre compte</button>.",
@@ -130,6 +131,7 @@
     "This site is invite-only, contact the owner for access.": "Aquest llog és només per invitació, contacta amb el propietari per obtenir accés.",
     "This site is not accepting payments at the moment.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Per completar el registre, fes clic sobre l'enllaç de confirmació al teu correu electrònic. Si no t'arria en 3 minuts, revisa la teva carpeta de correu brossa!",
+    "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Try free for {{amount}} days, then {{originalPrice}}.": "Prova gratis durant {{amount}} dies i després {{originalPrice}}.",
     "Unlock access to all newsletters by becoming a paid subscriber.": "Desbloqueja l'accés a tots els butlletins de notícies fent-te un subscriptor de pagament.",
     "Unsubscribe from all emails": "Cancel·la les subscripcions a tots els correus electrònics",
@@ -159,6 +161,5 @@
     "Your input helps shape what gets published.": "La teva opinió ajuda a definir el que es publica.",
     "Your subscription will expire on {{expiryDate}}": "La vostra subscripció caducarà el {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "La vostra subscripció es renovarà el {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "La vostra subscripció començarà el {{subscriptionStart}}",
-    "Your support means a lot.": ""
+    "Your subscription will start on {{subscriptionStart}}": "La vostra subscripció començarà el {{subscriptionStart}}"
 }
