@@ -50,7 +50,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                             time: Date.now(),
                             referrerMedium: null,
                             referrerSource: 'ghost-explore',
-                            referrerUrl: 'https://example.com/blog/'
+                            referrerUrl: 'https://example.com/blog'
                         }
                     ]
                 }
@@ -58,21 +58,29 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .expectStatus(200)
             .matchBodySnapshot();
 
-        // Send a webhook of a paid invoice for this session
+        // Send a webhook of a completed checkout session for this donation
         await stripeMocker.sendWebhook({
-            type: 'invoice.payment_succeeded',
+            type: 'checkout.session.completed',
             data: {
                 object: {
-                    type: 'invoice',
-                    paid: true,
-                    amount_paid: 1200,
+                    mode: 'payment',
+                    amount_total: 1200,
                     currency: 'usd',
                     customer: (stripeMocker.checkoutSessions[0].customer),
-                    customer_name: 'Paid Test',
-                    customer_email: 'exampledonation@example.com',
+                    customer_details: {
+                        name: 'Paid Test',
+                        email: 'exampledonation@example.com'
+                    },
                     metadata: {
-                        ...(stripeMocker.checkoutSessions[0].invoice_creation?.invoice_data?.metadata ?? {})
-                    }
+                        ...(stripeMocker.checkoutSessions[0].metadata ?? {}),
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'Thank you for your support!'
+                        }
+                    }]
                 }
             }
         });
@@ -87,6 +95,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         const lastDonation = await models.DonationPaymentEvent.findOne({
             email: 'exampledonation@example.com'
         }, {require: true});
+
         assert.equal(lastDonation.get('amount'), 1200);
         assert.equal(lastDonation.get('currency'), 'usd');
         assert.equal(lastDonation.get('email'), 'exampledonation@example.com');
@@ -125,6 +134,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
+                mode: 'payment',
                 customerEmail: email,
                 identity: token,
                 type: 'donation',
@@ -138,7 +148,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                             time: Date.now(),
                             referrerMedium: null,
                             referrerSource: 'ghost-explore',
-                            referrerUrl: 'https://example.com/blog/'
+                            referrerUrl: 'https://example.com/blog'
                         }
                     ]
                 }
@@ -146,21 +156,29 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .expectStatus(200)
             .matchBodySnapshot();
 
-        // Send a webhook of a paid invoice for this session
+        // Send a webhook of a completed checkout session for this donation
         await stripeMocker.sendWebhook({
-            type: 'invoice.payment_succeeded',
+            type: 'checkout.session.completed',
             data: {
                 object: {
-                    type: 'invoice',
-                    paid: true,
-                    amount_paid: 1220,
+                    mode: 'payment',
+                    amount_total: 1220,
                     currency: 'eur',
                     customer: (stripeMocker.checkoutSessions[0].customer),
-                    customer_name: 'Member Test',
-                    customer_email: email,
+                    customer_details: {
+                        name: 'Member Test',
+                        email: email
+                    },
                     metadata: {
-                        ...(stripeMocker.checkoutSessions[0].invoice_creation?.invoice_data?.metadata ?? {})
-                    }
+                        ...(stripeMocker.checkoutSessions[0].metadata ?? {}),
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'Thank you for your support!'
+                        }
+                    }]
                 }
             }
         });
@@ -190,5 +208,75 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('attribution_id'), post.id);
         assert.equal(lastDonation.get('attribution_type'), 'post');
         assert.equal(lastDonation.get('attribution_url'), url);
+    });
+    it('check if donation message is in email', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                mode: 'payment',
+                type: 'donation',
+                customerEmail: 'paid@test.com',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog'
+                        }
+                    ],
+                    ghost_donation: true
+                },
+                custom_fields: [{
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                }]
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+
+        // Send a webhook of a completed checkout session for this donation
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    mode: 'payment',
+                    amount_total: 1200,
+                    currency: 'usd',
+                    customer: (stripeMocker.checkoutSessions[0].customer),
+                    customer_details: {
+                        name: 'Paid Test',
+                        email: 'exampledonation@example.com'
+                    },
+                    metadata: {
+                        ...(stripeMocker.checkoutSessions[0].metadata ?? {}),
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'You are the best! Have a lovely day!'
+                        }
+                    }]
+                }
+            }
+        });
+
+        // check if donation message is in email
+        mockManager.assert.sentEmail({
+            subject: '💰 One-time payment received: $12.00 from Paid Test',
+            to: 'jbloggs@example.com',
+            text: /You are the best! Have a lovely day!/
+        });
     });
 });
