@@ -101,6 +101,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('email'), 'exampledonation@example.com');
         assert.equal(lastDonation.get('name'), 'Paid Test');
         assert.equal(lastDonation.get('member_id'), null);
+        assert.equal(lastDonation.get('donation_message'), 'You are the best! Have a lovely day!');
 
         // Check referrer
         assert.equal(lastDonation.get('referrer_url'), 'example.com');
