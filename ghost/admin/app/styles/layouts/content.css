@@ -1500,6 +1500,21 @@
     margin-top: -2px;
 }
 
+.gh-post-analytics-header .gh-btn.refresh {
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
+    color: var(--darkgrey);
+}
+
+.gh-post-analytics-header .gh-btn.refresh:hover {
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.gh-post-analytics-header .gh-btn.refresh svg path {
+    stroke-width: 2.25;
+}
+
 .gh-post-list-cta.is-hovered {
     border-color: var(--whitegrey-d2);
 }
@@ -1532,7 +1547,7 @@
 }
 
 .gh-post-list-cta > svg path {
-    stroke-width: 2;
+    stroke-width: 1.75;
 }
 
 .gh-post-list-cta > span {
@@ -1725,6 +1740,26 @@ span.dropdown .gh-post-list-cta > span {
 .gh-tabs-analytics .tab-list p svg {
     width: 16px;
     height: 16px;
+}
+
+.gh-tabs-analytics .animated-number {
+    position: relative;
+}
+
+.gh-tabs-analytics .animated-number .new-number {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.gh-tabs-analytics .animated-number .new-char,
+.gh-tabs-analytics .animated-number .old-char {
+    display: inline-block;
+}
+
+.gh-tabs-analytics .animated-number .new-char {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 .gh-tabs-analytics .gh-dashboard-list-item {

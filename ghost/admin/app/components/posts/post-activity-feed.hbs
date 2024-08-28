@@ -1,5 +1,7 @@
 <div class="gh-post-activity-feed">
     {{#let (activity-feed-fetcher filter=(members-event-filter post=@post.id includeEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+        {{compute (fn this.saveEvents eventsFetcher)}}
+
         {{#if eventsFetcher.isError}}
             <div class="gh-dashboard-list-body">
                 <div class="gh-dashboard-list-error">
@@ -11,129 +13,232 @@
             </div>
         {{/if}}
 
-        {{#if eventsFetcher.data}}
-            <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
-                {{#each eventsFetcher.data as |event|}}
-                    {{#let (parse-member-event event) as |parsedEvent|}}
-                        <div class="gh-dashboard-list-item">
-                            <div class="gh-dashboard-list-item-sub">
-                                {{#if parsedEvent.member}}
-                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                    <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
-                                {{else}}
-                                    {{#if parsedEvent.email}}
-                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                        <a class="gh-dashboard-list-text" href="mailto:{{parsedEvent.email}}" target="_blank" rel="noopener noreferrer" title="{{parsedEvent.email}}">{{parsedEvent.subject}}</a>
-                                    {{else}}
-                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                        <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
-                                    {{/if}}
-                                {{/if}}
-                            </div>
-                            <div class="gh-dashboard-list-item-sub">
-                                {{svg-jar parsedEvent.icon }}
-                                <span class="gh-dashboard-list-subtext">
-                                    <span class="gh-members-activity-description">
-                                        <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
-                                        {{#if parsedEvent.info}}
-                                            <span class="highlight">&nbsp;({{parsedEvent.info}})</span>
-                                        {{/if}}
-                                    </span>
-                                </span>
-                            </div>
-                            {{#if (eq this.eventType "conversion")}}
+        {{#if eventsFetcher.isLoading}}
+            {{#if this.savedEventsFetcher.data}}
+                <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
+                    {{#each this.savedEventsFetcher.data as |event|}}
+                        {{#let (parse-member-event event) as |parsedEvent|}}
+                            <div class="gh-dashboard-list-item">
                                 <div class="gh-dashboard-list-item-sub">
-                                    {{#if parsedEvent.source}}
-                                        <span title="Source" class="gh-members-activity-description">{{svg-jar "event-extras-source"}}<span class="gh-members-activity-event-text">{{parsedEvent.source.name}}</span></span>
+                                    {{#if parsedEvent.member}}
+                                        <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
                                     {{else}}
-                                        <span class="midlightgrey">&mdash;</span>
+                                        {{#if parsedEvent.email}}
+                                            <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                            <a class="gh-dashboard-list-text" href="mailto:{{parsedEvent.email}}" target="_blank" rel="noopener noreferrer" title="{{parsedEvent.email}}">{{parsedEvent.subject}}</a>
+                                        {{else}}
+                                            <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                            <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                        {{/if}}
                                     {{/if}}
                                 </div>
+                                <div class="gh-dashboard-list-item-sub">
+                                    {{svg-jar parsedEvent.icon }}
+                                    <span class="gh-dashboard-list-subtext">
+                                        <span class="gh-members-activity-description">
+                                            <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
+                                            {{#if parsedEvent.info}}
+                                                <span class="highlight">&nbsp;({{parsedEvent.info}})</span>
+                                            {{/if}}
+                                        </span>
+                                    </span>
+                                </div>
+                                {{#if (eq this.eventType "conversion")}}
+                                    <div class="gh-dashboard-list-item-sub">
+                                        {{#if parsedEvent.source}}
+                                            <span title="Source" class="gh-members-activity-description">{{svg-jar "event-extras-source"}}<span class="gh-members-activity-event-text">{{parsedEvent.source.name}}</span></span>
+                                        {{else}}
+                                            <span class="midlightgrey">&mdash;</span>
+                                        {{/if}}
+                                    </div>
+                                {{/if}}
+                                <div class="gh-dashboard-list-item-sub">
+                                    <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
+                                </div>
+                            </div>
+                        {{/let}}
+                    {{/each}}
+
+                    {{#if (compute (fn this.areStubsNeeded eventsFetcher))}}
+                        {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
+                            {{#each stubs}}
+                                <div class="gh-dashboard-list-item gh-dashboard-list-item-stub"></div>
+                            {{/each}}
+                        {{/let}}
+                    {{/if}}
+
+                    <div class="gh-post-activity-feed-footer">
+                        <Posts::PostActivityFeed::FooterLinks
+                            @eventType={{this.eventType}}
+                            @post={{@post}}
+                        />
+
+                        <div class="gh-post-activity-feed-pagination">
+                            {{#if (compute (fn this.isPaginationNotNeeded this.savedEventsFetcher))}}
+                                Showing {{this.savedEventsFetcher.totalEvents}} in total
+                            {{else}}
+                                Showing {{this.savedEventsFetcher.previousEvents}}-{{this.savedEventsFetcher.shownEvents}} of {{this.savedEventsFetcher.totalEvents}}
+
+                                <div class="gh-post-activity-feed-pagination-group">
+                                    <button
+                                        class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                                        type="button"
+                                        title="Previous page"
+                                        disabled={{compute (fn this.isPreviousButtonDisabled this.savedEventsFetcher)}}
+                                        {{on "click" this.savedEventsFetcher.loadPreviousPage}}
+                                    >
+                                        {{svg-jar "arrow-left-pagination"}}
+                                    </button>
+
+                                    <button
+                                        class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                                        type="button"
+                                        title="Next page"
+                                        disabled={{compute (fn this.isNextButtonDisabled this.savedEventsFetcher)}}
+                                        {{on "click" this.savedEventsFetcher.loadNextPage}}
+                                    >
+                                        {{svg-jar "arrow-right-pagination"}}
+                                    </button>
+                                </div>
                             {{/if}}
-                            <div class="gh-dashboard-list-item-sub">
-                                <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
-                            </div>
                         </div>
-                    {{/let}}
-                {{/each}}
-
-                {{#if (compute (fn this.areStubsNeeded eventsFetcher))}}
-                    {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
-                        {{#each stubs}}
-                            <div class="gh-dashboard-list-item gh-dashboard-list-item-stub"></div>
-                        {{/each}}
-                    {{/let}}
-                {{/if}}
-
-                <div class="gh-post-activity-feed-footer">
-                    <Posts::PostActivityFeed::FooterLinks
-                        @eventType={{this.eventType}}
-                        @post={{@post}}
-                    />
-
-                    <div class="gh-post-activity-feed-pagination">
-                        {{#if (compute (fn this.isPaginationNotNeeded eventsFetcher))}}
-                            Showing {{eventsFetcher.totalEvents}} in total
-                        {{else}}
-                            Showing {{eventsFetcher.previousEvents}}-{{eventsFetcher.shownEvents}} of {{eventsFetcher.totalEvents}}
-
-                            <div class="gh-post-activity-feed-pagination-group">
-                                <button
-                                    class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
-                                    type="button"
-                                    title="Previous page"
-                                    disabled={{compute (fn this.isPreviousButtonDisabled eventsFetcher)}}
-                                    {{on "click" eventsFetcher.loadPreviousPage}}
-                                >
-                                    {{svg-jar "arrow-left-pagination"}}
-                                </button>
-
-                                <button
-                                    class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
-                                    type="button"
-                                    title="Next page"
-                                    disabled={{compute (fn this.isNextButtonDisabled eventsFetcher)}}
-                                    {{on "click" eventsFetcher.loadNextPage}}
-                                >
-                                    {{svg-jar "arrow-right-pagination"}}
-                                </button>
-                            </div>
-                        {{/if}}
                     </div>
                 </div>
-            </div>
-
-            {{#if (eq @eventType 'feedback')}}
-                <Posts::FeedbackEventsChart @data={{@data}} />
+            {{else}}
+                <div class="gh-post-activity-feed-empty">
+                    <div class="gh-post-analytics-loading">
+                        <div class="gh-loading-spinner-outer">
+                            <div class="gh-loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
             {{/if}}
         {{else}}
-            <div class="gh-dashboard-list-body">
-                <div class="gh-post-activity-feed-empty">
-                    <div class="attribution-list-empty">
-                        {{#if (eq this.eventType "sent")}}
-                            {{svg-jar "empty-sent"}}
-                            <h4>No members have received your email yet</h4>
-                            <p>Once someone receives your email, you'll be able to see the member activity here.</p>
-                        {{else if (eq this.eventType "opened")}}
-                            {{svg-jar "empty-opened"}}
-                            <h4>No members have opened your newsletter</h4>
-                            <p>Once someone opens, you'll see them listed here.</p>
-                        {{else if (eq this.eventType "clicked")}}
-                            {{svg-jar "empty-clicked"}}
-                            <h4>No links have been clicked in your newsletter</h4>
-                            <p>Once a member clicks a link, you'll see them listed here.</p>
-                        {{else if (eq this.eventType "feedback")}}
-                            {{svg-jar "empty-feedback"}}
-                            <h4>No members have given feedback yet</h4>
-                            <p>When someone does, you'll see their response here.</p>
-                        {{else if (eq this.eventType "conversion")}}
-                            {{svg-jar "empty-conversion"}}
-                            <h4>No members have signed up on this post</h4>
-                            <p>When someone new signs up, you'll see them here.</p>
-                        {{/if}}
+            {{#if eventsFetcher.data}}
+                <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
+                    {{#each eventsFetcher.data as |event|}}
+                        {{#let (parse-member-event event) as |parsedEvent|}}
+                            <div class="gh-dashboard-list-item">
+                                <div class="gh-dashboard-list-item-sub">
+                                    {{#if parsedEvent.member}}
+                                        <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
+                                    {{else}}
+                                        {{#if parsedEvent.email}}
+                                            <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                            <a class="gh-dashboard-list-text" href="mailto:{{parsedEvent.email}}" target="_blank" rel="noopener noreferrer" title="{{parsedEvent.email}}">{{parsedEvent.subject}}</a>
+                                        {{else}}
+                                            <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                            <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                        {{/if}}
+                                    {{/if}}
+                                </div>
+                                <div class="gh-dashboard-list-item-sub">
+                                    {{svg-jar parsedEvent.icon }}
+                                    <span class="gh-dashboard-list-subtext">
+                                        <span class="gh-members-activity-description">
+                                            <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
+                                            {{#if parsedEvent.info}}
+                                                <span class="highlight">&nbsp;({{parsedEvent.info}})</span>
+                                            {{/if}}
+                                        </span>
+                                    </span>
+                                </div>
+                                {{#if (eq this.eventType "conversion")}}
+                                    <div class="gh-dashboard-list-item-sub">
+                                        {{#if parsedEvent.source}}
+                                            <span title="Source" class="gh-members-activity-description">{{svg-jar "event-extras-source"}}<span class="gh-members-activity-event-text">{{parsedEvent.source.name}}</span></span>
+                                        {{else}}
+                                            <span class="midlightgrey">&mdash;</span>
+                                        {{/if}}
+                                    </div>
+                                {{/if}}
+                                <div class="gh-dashboard-list-item-sub">
+                                    <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
+                                </div>
+                            </div>
+                        {{/let}}
+                    {{/each}}
+
+                    {{#if (compute (fn this.areStubsNeeded eventsFetcher))}}
+                        {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
+                            {{#each stubs}}
+                                <div class="gh-dashboard-list-item gh-dashboard-list-item-stub"></div>
+                            {{/each}}
+                        {{/let}}
+                    {{/if}}
+
+                    <div class="gh-post-activity-feed-footer">
+                        <Posts::PostActivityFeed::FooterLinks
+                            @eventType={{this.eventType}}
+                            @post={{@post}}
+                        />
+
+                        <div class="gh-post-activity-feed-pagination">
+                            {{#if (compute (fn this.isPaginationNotNeeded eventsFetcher))}}
+                                Showing {{eventsFetcher.totalEvents}} in total
+                            {{else}}
+                                Showing {{eventsFetcher.previousEvents}}-{{eventsFetcher.shownEvents}} of {{eventsFetcher.totalEvents}}
+
+                                <div class="gh-post-activity-feed-pagination-group">
+                                    <button
+                                        class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                                        type="button"
+                                        title="Previous page"
+                                        disabled={{compute (fn this.isPreviousButtonDisabled eventsFetcher)}}
+                                        {{on "click" eventsFetcher.loadPreviousPage}}
+                                    >
+                                        {{svg-jar "arrow-left-pagination"}}
+                                    </button>
+
+                                    <button
+                                        class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                                        type="button"
+                                        title="Next page"
+                                        disabled={{compute (fn this.isNextButtonDisabled eventsFetcher)}}
+                                        {{on "click" eventsFetcher.loadNextPage}}
+                                    >
+                                        {{svg-jar "arrow-right-pagination"}}
+                                    </button>
+                                </div>
+                            {{/if}}
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                {{#if (eq @eventType 'feedback')}}
+                    <Posts::FeedbackEventsChart @data={{@data}} />
+                {{/if}}
+            {{else}}
+                <div class="gh-dashboard-list-body">
+                    <div class="gh-post-activity-feed-empty">
+                        <div class="attribution-list-empty">
+                            {{#if (eq this.eventType "sent")}}
+                                {{svg-jar "empty-sent"}}
+                                <h4>No members have received your email yet</h4>
+                                <p>Once someone receives your email, you'll be able to see the member activity here.</p>
+                            {{else if (eq this.eventType "opened")}}
+                                {{svg-jar "empty-opened"}}
+                                <h4>No members have opened your newsletter</h4>
+                                <p>Once someone opens, you'll see them listed here.</p>
+                            {{else if (eq this.eventType "clicked")}}
+                                {{svg-jar "empty-clicked"}}
+                                <h4>No links have been clicked in your newsletter</h4>
+                                <p>Once a member clicks a link, you'll see them listed here.</p>
+                            {{else if (eq this.eventType "feedback")}}
+                                {{svg-jar "empty-feedback"}}
+                                <h4>No members have given feedback yet</h4>
+                                <p>When someone does, you'll see their response here.</p>
+                            {{else if (eq this.eventType "conversion")}}
+                                {{svg-jar "empty-conversion"}}
+                                <h4>No members have signed up on this post</h4>
+                                <p>When someone new signs up, you'll see them here.</p>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
         {{/if}}
     {{/let}}
 </div>
