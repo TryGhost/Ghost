@@ -32,7 +32,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@playwright/test": "1.44.0",
+    "@playwright/test": "1.46.1",
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
