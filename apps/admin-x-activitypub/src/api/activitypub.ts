@@ -85,8 +85,8 @@ export class ActivityPubAPI {
         if (json === null) {
             return [];
         }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
+        if ('orderedItems' in json) {
+            return json.orderedItems as Activity[];
         }
         return [];
     }
