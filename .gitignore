@@ -83,6 +83,7 @@ typings/
 *.db
 *.db-journal
 
+/ghost/core/test-results/
 /ghost/core/core/server/data/export/exported*
 /ghost/core/content/tmp/*
 /ghost/core/content/data/*
@@ -133,7 +134,7 @@ Caddyfile
 /apps/comments-ui/umd
 /apps/comments-ui/playwright-report
 /ghost/comments-ui/playwright/.cache/
-/ghost/comments-ui/test-results/
+/apps/comments-ui/test-results/
 
 # Portal
 !/apps/portal/.env
