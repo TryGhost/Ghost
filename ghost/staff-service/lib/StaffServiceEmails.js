@@ -296,7 +296,8 @@ class StaffServiceEmails {
                 donation: {
                     name: donationPaymentEvent.name ?? donationPaymentEvent.email,
                     email: donationPaymentEvent.email,
-                    amount: formattedAmount
+                    amount: formattedAmount,
+                    donationMessage: donationPaymentEvent.donationMessage
                 },
                 memberData,
                 accentColor: this.settingsCache.get('accent_color')

@@ -508,8 +508,7 @@ describe('StripeAPI', function () {
 
             it('passes metadata correctly', async function () {
                 const metadata = {
-                    key1: 'value1',
-                    key2: 'value2'
+                    ghost_donation: true
                 };
 
                 await api.createDonationCheckoutSession({
@@ -523,6 +522,56 @@ describe('StripeAPI', function () {
 
                 should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
                 should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
+            });
+
+            it('passes custom fields correctly', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields);
+                const customFields = mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields;
+                should.equal(customFields.length, 1);
+            });
+
+            it('has correct data for custom field message', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                const customFields = mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields;
+                should.deepEqual(customFields[0], {
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                });
+            });
+
+            it('does not have more than 3 custom fields (stripe limitation)', async function () {
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: null,
+                    customerEmail: mockCustomerEmail
+                });
+
+                should.ok(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
             });
         });
     });
