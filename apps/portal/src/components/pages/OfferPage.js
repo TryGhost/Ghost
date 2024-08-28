@@ -166,7 +166,7 @@ export default class OfferPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -201,7 +201,7 @@ export default class OfferPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: member?.name || state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 disabled: !!member,

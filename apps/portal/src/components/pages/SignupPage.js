@@ -385,7 +385,7 @@ class SignupPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -478,7 +478,7 @@ class SignupPage extends React.Component {
             {
                 type: 'email',
                 value: state.email,
-                placeholder: 'jamie@example.com',
+                placeholder: t('jamie@example.com'),
                 label: t('Email'),
                 name: 'email',
                 required: true,
@@ -488,9 +488,9 @@ class SignupPage extends React.Component {
             {
                 type: 'text',
                 value: state.phonenumber,
-                placeholder: '+1 (123) 456-7890',
+                placeholder: t('+1 (123) 456-7890'),
                 // Doesn't need translation, hidden field
-                label: 'Phone number',
+                label: t('Phone number'),
                 name: 'phonenumber',
                 required: false,
                 tabindex: -1,
@@ -504,7 +504,7 @@ class SignupPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 required: true,
