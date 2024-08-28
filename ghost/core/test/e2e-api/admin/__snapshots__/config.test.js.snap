@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Config API Can retrieve config and all expected properties 1: [body] 1`] = `
+Object {
+  "config": Object {
+    "clientExtensions": Object {},
+    "database": StringMatching /sqlite3\\|mysql\\|mysql2/,
+    "emailAnalytics": true,
+    "enableDeveloperExperiments": false,
+    "environment": StringMatching /\\^testing/,
+    "labs": Object {
+      "ActivityPub": true,
+      "NestPlayground": true,
+      "activitypub": true,
+      "additionalPaymentMethods": true,
+      "adminXDemo": true,
+      "announcementBar": true,
+      "audienceFeedback": true,
+      "collections": true,
+      "collectionsCard": true,
+      "contentVisibility": true,
+      "editorExcerpt": true,
+      "emailCustomization": true,
+      "i18n": true,
+      "importMemberTier": true,
+      "lexicalIndicators": true,
+      "lexicalMultiplayer": true,
+      "mailEvents": true,
+      "members": true,
+      "newEmailAddresses": true,
+      "outboundLinkTagging": true,
+      "postAnalyticsRefresh": true,
+      "publishFlowEndScreen": true,
+      "stripeAutomaticTax": true,
+      "themeErrorsNotification": true,
+      "tipsAndDonations": true,
+      "urlCache": true,
+      "webmentions": true,
+    },
+    "mail": "",
+    "mailgunIsConfigured": false,
+    "signupForm": Object {
+      "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
+      "version": "0.1",
+    },
+    "stripeDirect": false,
+    "tenor": Object {
+      "contentFilter": "off",
+      "googleApiKey": null,
+    },
+    "useGravatar": false,
+    "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
+  },
+}
+`;
+
+exports[`Config API Can retrieve config and all expected properties 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
