@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import DeletePostModal from '../modals/delete-post';
 import PostSuccessModal from '../modal-post-success';
+import anime from 'animejs/lib/anime.es.js';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
@@ -39,6 +40,12 @@ export default class Analytics extends Component {
     @tracked _post = null;
     @tracked postCount = null;
     @tracked showPostCount = false;
+    @tracked shouldAnimate = false;
+    @tracked previousSentCount = this.post.email.emailCount;
+    @tracked previousOpenedCount = this.post.email.openedCount;
+    @tracked previousClickedCount = this.post.count.clicks;
+    @tracked previousFeedbackCount = this.totalFeedback;
+    @tracked previousConversionsCount = this.post.count.conversions;
     displayOptions = DISPLAY_OPTIONS;
 
     constructor() {
@@ -367,17 +374,59 @@ export default class Analytics extends Component {
 
     @task
     *fetchPostTask() {
-        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'count.clicks,count.conversions,count.paid_conversions,count.positive_feedback,count.negative_feedback', limit: 1});
+        const currentSentCount = this.post.email.emailCount;
+        const currentOpenedCount = this.post.email.openedCount;
+        const currentClickedCount = this.post.count.clicks;
+        const currentFeedbackCount = this.totalFeedback;
+        const currentConversionsCount = this.post.count.conversions;
+
+        this.shouldAnimate = true;
+
+        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'email,count.clicks,count.conversions,count.positive_feedback,count.negative_feedback', limit: 1});
         this.post = result.toArray()[0];
 
-        if (this.post.email) {
-            this.notifications.showNotification('Post analytics refreshing', {
-                description: 'It can take up to five minutes for all data to show.',
-                type: 'success'
-            });
-        }
+        this.previousSentCount = currentSentCount;
+        this.previousOpenedCount = currentOpenedCount;
+        this.previousClickedCount = currentClickedCount;
+        this.previousFeedbackCount = currentFeedbackCount;
+        this.previousConversionsCount = currentConversionsCount;
+
+        yield this.fetchLinks();
 
         return true;
+    }
+
+    @action
+    applyClasses(element) {
+        if (!this.shouldAnimate ||
+            (element.classList.contains('sent') && this.post.email.emailCount === this.previousSentCount) ||
+            (element.classList.contains('opened') && this.post.email.openedCount === this.previousOpenedCount) ||
+            (element.classList.contains('clicked') && this.post.count.clicks === this.previousClickedCount) ||
+            (element.classList.contains('feedback') && this.totalFeedback === this.previousFeedbackCount) ||
+            (element.classList.contains('conversions') && this.post.count.conversions === this.previousConversionsCount)
+        ) {
+            return;
+        }
+
+        anime({
+            targets: `${Array.from(element.classList).map(className => `.${className}`).join('')} .new-number span`,
+            translateY: [10,0],
+            // translateZ: 0,
+            opacity: [0,1],
+            easing: 'easeOutElastic',
+            elasticity: 650,
+            duration: 1000,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        anime({
+            targets: `${Array.from(element.classList).map(className => `.${className}`).join('')} .old-number span`,
+            translateY: [0,-10],
+            opacity: [1,0],
+            easing: 'easeOutExpo',
+            duration: 400,
+            delay: (el, i) => 100 + 10 * i
+        });
     }
 
     get showLinks() {
