@@ -14,7 +14,7 @@ const SupportPage = () => {
         async function checkoutDonation() {
             const siteUrl = window.location.origin;
             const currentUrl = siteUrl + window.location.pathname;
-            const successUrl = member ? `${currentUrl}?action=support&success=true` : `${currentUrl}/#/portal/support/success`;
+            const successUrl = member ? `${currentUrl}?action=support&success=true` : `${currentUrl}#/portal/support/success`;
             const cancelUrl = currentUrl;
             const api = setupGhostApi({siteUrl});
 
