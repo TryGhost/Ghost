@@ -56,6 +56,39 @@
                 {{on "paste" this.cleanPastedTitle}}
                 data-test-editor-title-input={{true}}
             />
+
+            {{#if (feature 'editorExcerpt')}}
+                <div class="relative">
+                    <GhTextarea
+                        @class={{concat "gh-editor-excerpt " (if @excerptErrorMessage "red")}}
+                        @placeholder="Add an excerpt"
+                        @shouldFocus={{false}}
+                        @tabindex="1"
+                        @autoExpand=".gh-koenig-editor"
+                        @value={{readonly this.excerpt}}
+                        @input={{this.onExcerptInput}}
+                        @keyDown={{this.onExcerptKeydown}}
+                        @didCreateTextarea={{this.registerExcerptElement}}
+                        {{on "blur" @onExcerptBlur}}
+                        data-test-textarea="excerpt"
+                    />
+                    {{#if @excerptHasTk}}
+                        <div
+                            class="tk-indicator tk-indicator-excerpt"
+                            data-testid="tk-indicator-excerpt"
+                            {{on "click" this.focusExcerpt}}
+                        >
+                            TK
+                        </div>
+                    {{/if}}
+                    <hr class="gh-editor-title-divider {{if @excerptErrorMessage "gh-editor-title-divider-error" ""}}">
+                    {{#if @excerptErrorMessage}}
+                        <div class="gh-editor-excerpt-error" data-test-error="excerpt">
+                            {{@excerptErrorMessage}}
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
         </div>
 
         <KoenigLexicalEditor
@@ -63,8 +96,10 @@
             @placeholder={{@bodyPlaceholder}}
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
+            @updateSecondaryInstanceModel={{@updateSecondaryInstanceModel}}
             @registerAPI={{this.registerEditorAPI}}
-            @cursorDidExitAtTop={{this.focusTitle}}
+            @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
+            @cursorDidExitAtTop={{if this.feature.editorExcerpt this.focusExcerpt this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
             @updatePostTkCount={{@updatePostTkCount}}
         />

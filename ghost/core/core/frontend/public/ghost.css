@@ -656,6 +656,10 @@ h2 {
     background: linear-gradient(315deg,#efefef,#fff);
 }
 
+.gh-flow:has(.gh-flow-content.private) {
+    background: #fff;
+}
+
 .gh-flow-content-wrap {
     display: flex;
     flex-direction: column;
@@ -686,7 +690,7 @@ h2 {
     line-height: 1.5em;
     font-weight: 300;
     border-radius: 3px;
-    box-shadow: 
+    box-shadow:
         0 2.8px 2.2px rgba(0,0,0,.02),
         0 6.7px 5.3px rgba(0,0,0,.02),
         0 12.5px 10px rgba(0,0,0,.02),
@@ -702,6 +706,10 @@ h2 {
         min-height: 200px;
         margin: 4rem 0;
         text-align: center;
+}
+
+.gh-flow-content.private {
+    box-shadow: none;
 }
 
 @media (max-width: 500px) {
@@ -820,6 +828,9 @@ h2 {
     padding: 12px 16px;
     font-size: 1.8rem;
     border-radius: 8px;
+    border: 1px solid #f3f6f7;
+    background: #f3f6f7;
+    color: var(--black);
 }
 
 .gh-signin .gh-input::placeholder {
@@ -846,7 +857,7 @@ h2 {
 
 .gh-signin .gh-input:focus {
     border-color: #30cf43;
-    box-shadow: 0 0 0 3px rgba(26,170,96,.15);
+    box-shadow: 0 0 0 3px rgba(48,207,67,.25);
 }
 
 .gh-signin .gh-btn {

@@ -1,10 +1,10 @@
 /* Flow
 /* ---------------------------------------------------------- */
-.gh-flow:has(form.gh-signin) {
+.gh-flow:has(form:is(.gh-signin, .gh-signup)) {
     background: #fff;
 }
 
-.gh-flow:has(form.gh-signin) .gh-flow-content {
+.gh-flow:has(form:is(.gh-signin, .gh-signup)) .gh-flow-content {
     max-width: 500px;
 }
 
@@ -73,6 +73,7 @@
 .gh-signup .gh-btn-signup span {
     font-size: 1.8rem;
     color: #fff;
+    letter-spacing: -0.01em;
 }
 
 .gh-signin .gh-btn-reset {
@@ -134,11 +135,11 @@
     text-decoration: underline;
 }
 
-.gh-signin .form-group label {
+:is(.gh-signin, .gh-signup) .form-group label {
     font-size: 1.5rem;
 }
 
-.gh-signin .gh-input {
+:is(.gh-signin, .gh-signup) .gh-input {
     height: auto;
     padding: 1.4rem 1.6rem;
     border: 1px solid #f3f6f7;

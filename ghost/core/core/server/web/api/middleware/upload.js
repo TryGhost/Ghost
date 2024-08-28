@@ -6,6 +6,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const {JSDOM} = require('jsdom');
 
 const messages = {
     db: {
@@ -144,12 +145,35 @@ const checkFileExists = (fileData) => {
 
 const checkFileIsValid = (fileData, types, extensions) => {
     const type = fileData.mimetype;
-
     if (types.includes(type) && extensions.includes(fileData.ext)) {
         return true;
     }
-
     return false;
+};
+
+/**
+ *
+ * @param {String} filepath
+ * @returns {Boolean}
+ *
+ * Checks for the presence of <script> tags or 'on' attributes in an SVG file
+ *
+ */
+const isSvgSafe = (filepath) => {
+    const fileContent = fs.readFileSync(filepath, 'utf8');
+    const document = new JSDOM(fileContent).window.document;
+    document.body.innerHTML = fileContent;
+    const svgEl = document.body.firstElementChild;
+
+    if (!svgEl) {
+        return false;
+    }
+
+    const attributes = Array.from(svgEl.attributes).map(({name}) => name);
+    const hasScriptAttr = !!attributes.find(attr => attr.startsWith('on'));
+    const scripts = svgEl.getElementsByTagName('script');
+
+    return scripts.length === 0 && !hasScriptAttr ? true : false;
 };
 
 /**
@@ -188,6 +212,14 @@ const validation = function ({type}) {
             return next(new errors.UnsupportedMediaTypeError({
                 message: tpl(messages[type].invalidFile, {extensions: extensions})
             }));
+        }
+
+        if (req.file.ext === '.svg') {
+            if (!isSvgSafe(req.file.path)) {
+                return next(new errors.UnsupportedMediaTypeError({
+                    message: 'SVG files cannot contain <script> tags or "on" attributes.'
+                }));
+            }
         }
 
         next();
@@ -261,5 +293,6 @@ module.exports = {
 // Exports for testing only
 module.exports._test = {
     checkFileExists,
-    checkFileIsValid
+    checkFileIsValid,
+    isSvgSafe
 };

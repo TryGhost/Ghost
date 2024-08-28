@@ -109,5 +109,32 @@ describe('ProductsImporter', function () {
             importer.beforeImport();
             assert(importer.dataToImport.length === 1);
         });
+
+        it('Does not import a free product that has pricing', function () {
+            const invalidFreeProduct = {
+                id: 'free123',
+                name: 'Free 123',
+                slug: 'free-123',
+                active: 1,
+                welcome_page_url: null,
+                visibility: 'public',
+                trial_days: 0,
+                description: null,
+                type: 'free',
+                currency: 'usd',
+                monthly_price: 100,
+                yearly_price: 1000,
+                created_at: '2024-07-10T00:00:00.000Z',
+                updated_at: '2024-07-10T00:00:00.000Z',
+                monthly_price_id: 'price_1',
+                yearly_price_id: 'price_2'
+            };
+
+            const importer = new ProductsImporter({products: [invalidFreeProduct], stripe_prices: fakePrices});
+
+            importer.beforeImport();
+
+            assert(importer.dataToImport.length === 0);
+        });
     });
 });

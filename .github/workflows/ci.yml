@@ -402,7 +402,7 @@ jobs:
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
       - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.1
+        uses: benchmark-action/github-action-benchmark@v1.20.3
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: ghost/core/boot-perf-formatted.json
@@ -842,6 +842,13 @@ jobs:
       - name: Update from v4
         run: |
           ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
+
+      - name: Save Ghost CLI Debug Logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ghost-cli-debug-logs
+          path: /home/runner/.ghost/logs/
 
       - name: Clean Install
         run: |

@@ -7,6 +7,7 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
 const sentry = require('../../../../../../shared/sentry');
@@ -16,11 +17,48 @@ const messages = {
     failedHtmlToLexical: 'Failed to convert HTML to Lexical'
 };
 
+/**
+ * Selects all allowed columns for the given frame.
+ * 
+ * NOTE: This doesn't stop them from being FETCHED, just returned in the response. This causes
+ *   the output serializer to remove them from the data object before returning.
+ * 
+ * NOTE: This is only intended for the Content API. We need these fields within Admin API responses.
+ *
+ * @param {Object} frame - The frame object.
+ */
 function removeSourceFormats(frame) {
     if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
         frame.options.formats = frame.options.formats.filter((format) => {
             return !['mobiledoc', 'lexical'].includes(format);
         });
+    }
+}
+
+/**
+ * Selects all allowed columns for the given frame.
+ * 
+ * This removes the lexical and mobiledoc columns from the query. This is a performance improvement as we never intend
+ *  to expose those columns in the content API and they are very large datasets to be passing around and de/serializing.
+ * 
+ * NOTE: This is only intended for the Content API. We need these fields within Admin API responses.
+ *
+ * @param {Object} frame - The frame object.
+ */
+function selectAllAllowedColumns(frame) {
+    if (!frame.options.columns && !frame.options.selectRaw) {
+        // Because we're returning columns directly from the schema we need to remove info columns like @@UNIQUE_CONSTRAINTS@@ and @@INDEXES@@
+        frame.options.selectRaw = _.keys(_.omit(postsSchema, ['lexical','mobiledoc','@@INDEXES@@','@@UNIQUE_CONSTRAINTS@@'])).join(',');
+    } else if (frame.options.columns) {
+        frame.options.columns = frame.options.columns.filter((column) => {
+            return !['mobiledoc', 'lexical'].includes(column);
+        });
+    } else if (frame.options.selectRaw) {
+        frame.options.selectRaw = frame.options.selectRaw.split(',').map((column) => {
+            return column.trim();
+        }).filter((column) => {
+            return !['mobiledoc', 'lexical'].includes(column);
+        }).join(',');
     }
 }
 
@@ -54,18 +92,11 @@ function defaultRelations(frame) {
 }
 
 function setDefaultOrder(frame) {
-    let includesOrderedRelations = false;
-
-    if (frame.options.withRelated) {
-        const orderedRelations = ['author', 'authors', 'tag', 'tags'];
-        includesOrderedRelations = _.intersection(orderedRelations, frame.options.withRelated).length > 0;
-    }
-
-    if (!frame.options.order && !includesOrderedRelations && frame.options.filter) {
+    if (!frame.options.order && frame.options.filter) {
         frame.options.autoOrder = slugFilterOrder('posts', frame.options.filter);
     }
 
-    if (!frame.options.order && !frame.options.autoOrder && !includesOrderedRelations) {
+    if (!frame.options.order && !frame.options.autoOrder) {
         frame.options.order = 'published_at desc';
     }
 }
@@ -128,7 +159,8 @@ module.exports = {
          */
         if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc or lexical
-            removeSourceFormats(frame);
+            removeSourceFormats(frame); // remove from the format field
+            selectAllAllowedColumns(frame); // remove from any specified column or selectRaw options
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);

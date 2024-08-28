@@ -77,7 +77,7 @@ const HistoryFilter: React.FC<{
 
     return (
         <div className='flex items-center gap-4'>
-            <Popover position='right' trigger={<Button color='outline' label='Filter' size='sm' />}>
+            <Popover position='end' trigger={<Button color='outline' label='Filter' size='sm' />}>
                 <div className='flex w-[220px] flex-col gap-8 p-5'>
                     <ToggleGroup>
                         <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />

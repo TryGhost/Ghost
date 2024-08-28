@@ -24,10 +24,10 @@ export const TipsAndDonationsErrorStyle = `
 `;
 
 const SupportError = ({error}) => {
-    const {onAction} = useContext(AppContext);
-    const errorTitle = 'Sorry, that didn’t work.';
-    const errorMessage = error || 'There was an error processing your payment. Please try again.';
-    const buttonLabel = 'Close';
+    const {onAction, t} = useContext(AppContext);
+    const errorTitle = t('Sorry, that didn’t work.');
+    const errorMessage = error || t('There was an error processing your payment. Please try again.');
+    const buttonLabel = t('Close');
 
     return (
         <div className='gh-portal-content gh-portal-tips-and-donations'>

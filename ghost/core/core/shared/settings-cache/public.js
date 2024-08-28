@@ -45,5 +45,6 @@ module.exports = {
     recommendations_enabled: 'recommendations_enabled',
     outbound_link_tagging: 'outbound_link_tagging',
     default_email_address: 'default_email_address',
-    support_email_address: 'support_email_address'
+    support_email_address: 'support_email_address',
+    editor_default_email_recipients: 'editor_default_email_recipients'
 };

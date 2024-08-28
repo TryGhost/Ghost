@@ -1,5 +1,6 @@
+import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentURL} from '@ember/test-helpers';
+import {click, currentURL, findAll} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -38,6 +39,63 @@ describe('Acceptance: Members activity', function () {
         it('renders', async function () {
             await visit('/members-activity');
             expect(currentURL()).to.equal('/members-activity');
+        });
+    });
+
+    describe('as owner', function () {
+        beforeEach(async function () {
+            const role = this.server.create('role', {name: 'Owner'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+        });
+
+        it('renders', async function () {
+            await visit('/members-activity');
+            expect(currentURL()).to.equal('/members-activity');
+        });
+    });
+
+    describe('members activity filter', function () {
+        beforeEach(async function () {
+            const role = this.server.create('role', {name: 'Administrator'});
+            await this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+
+            // this.server.createList('member', 3, {status: 'free'});
+            // this.server.createList('member', 4, {status: 'paid'});
+            // this.server.createList('member-activity-event', 10, {createdAt: moment('2024-08-18 08:18:08').format('YYYY-MM-DD HH:mm:ss')});
+
+            // create 1 member with id 1
+            this.server.create('member', {id: 1, name: 'Member 1', email: '', status: 'free'});
+
+            // create an event for member 1
+            this.server.create('member-activity-event', {memberId: 1, createdAt: moment('2024-08-18 08:18:08').format('YYYY-MM-DD HH:mm:ss'), type: 'payment_event'});
+            this.server.create('member-activity-event', {memberId: 1, createdAt: moment('2024-08-18 08:18:08').format('YYYY-MM-DD HH:mm:ss'), type: 'subscription_event'});
+            this.server.create('member-activity-event', {memberId: 1, createdAt: moment('2024-08-18 08:18:08').format('YYYY-MM-DD HH:mm:ss'), type: 'donation_event'});
+        });
+
+        it('renders', async function () {
+            await visit('/members-activity');
+            expect(currentURL()).to.equal('/members-activity');
+        });
+
+        it('lists all events', async function () {
+            await visit('/members-activity');
+            expect(findAll('.gh-members-activity-event').length).to.equal(3);
+        });
+
+        it('filters events payment and donation events', async function () {
+            await visit('/members-activity?excludedEvents=payment_event%2Cdonation_event');
+            expect(findAll('.gh-members-activity-event').length).to.equal(1);
+        });
+
+        it('includes one time (donation) payments under payments filtering', async function () {
+            await visit('/members-activity');
+            await click('[data-test-id="filter-events-button"]');
+            await click('[data-test-id="event-type-filter-checkbox-payment_event"]');
+            expect(findAll('.gh-members-activity-event').length).to.equal(1);
         });
     });
 });

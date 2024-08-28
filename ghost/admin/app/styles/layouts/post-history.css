@@ -199,3 +199,7 @@
 .gh-post-history-hidden-lexical {
     display: none;
 }
+
+.gh-post-history .gh-editor-feature-image p {
+    margin: 0 0 1.2rem;
+}

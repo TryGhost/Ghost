@@ -32,7 +32,7 @@ describe('RSS: Renderer', function () {
             rssCacheStub.firstCall.args.should.eql(['/rss/', {}]);
 
             res.set.calledOnce.should.be.true();
-            res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true();
+            res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8').should.be.true();
 
             res.send.calledOnce.should.be.true();
             res.send.calledWith('dummyxml').should.be.true();
@@ -51,7 +51,7 @@ describe('RSS: Renderer', function () {
             rssCacheStub.firstCall.args.should.eql(['/rss/', {foo: 'bar'}]);
 
             res.set.calledOnce.should.be.true();
-            res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true();
+            res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8').should.be.true();
 
             res.send.calledOnce.should.be.true();
             res.send.calledWith('dummyxml').should.be.true();
@@ -71,7 +71,7 @@ describe('RSS: Renderer', function () {
             rssCacheStub.firstCall.args.should.eql(['/rss/', {foo: 'baz', fizz: 'buzz'}]);
 
             res.set.calledOnce.should.be.true();
-            res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true();
+            res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8').should.be.true();
 
             res.send.calledOnce.should.be.true();
             res.send.calledWith('dummyxml').should.be.true();

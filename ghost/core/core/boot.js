@@ -388,8 +388,6 @@ async function initNestDependencies() {
     debug('Begin: initNestDependencies');
     const GhostNestApp = require('@tryghost/ghost');
     const providers = [];
-    const urlUtils = require('./shared/url-utils');
-    const activityPubBaseUrl = new URL('activitypub', urlUtils.urlFor('home', true));
     providers.push({
         provide: 'logger',
         useValue: require('@tryghost/logging')
@@ -402,9 +400,6 @@ async function initNestDependencies() {
     }, {
         provide: 'DomainEvents',
         useValue: require('@tryghost/domain-events')
-    }, {
-        provide: 'ActivityPubBaseURL',
-        useValue: activityPubBaseUrl
     }, {
         provide: 'SettingsCache',
         useValue: require('./shared/settings-cache')
@@ -452,6 +447,14 @@ async function initBackgroundServices({config}) {
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
+
+    // Ideally OpenTelemetry should be configured as early as possible
+    // However, it can take a long time to initialize, so we load it here
+    // This prevents open telemetry from impacting boot time at the cost of not being able to trace the boot process
+    debug('Begin: Load OpenTelemetry');
+    const opentelemetryInstrumentation = require('./shared/instrumentation');
+    opentelemetryInstrumentation.initOpenTelemetry({config});
+    debug('End: Load OpenTelemetry');
 
     debug('End: initBackgroundServices');
 }
@@ -536,8 +539,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
+        const connection = require('./server/data/db/connection');
         sentry.initQueryTracing(
-            require('./server/data/db/connection')
+            connection
         );
         debug('End: Get DB ready');
 
@@ -558,10 +562,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // TODO: move this to the correct place once we figure out where that is
         if (ghostServer) {
-            //  NOTE: changes in this labs setting requires server reboot since we don't re-init services after changes a labs flag
-            const websockets = require('./server/services/websockets');
-            await websockets.init(ghostServer);
-
             const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
             await lexicalMultiplayer.init(ghostServer);
             await lexicalMultiplayer.enable();

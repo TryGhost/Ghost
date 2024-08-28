@@ -4,12 +4,11 @@ import React, {useEffect, useState} from 'react';
 import WebhooksTable from './WebhooksTable';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
-import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, ImageUpload, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {toast} from 'react-hot-toast';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
@@ -29,7 +28,6 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             await editIntegration(formState);
         },
         onSavedStateReset: () => {
-            modal.remove();
             updateRoute('integrations');
         },
         onSaveError: handleError,
@@ -37,7 +35,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required.';
+                newErrors.name = 'Enter integration title';
             }
 
             return newErrors;
@@ -83,21 +81,16 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             updateRoute('integrations');
         }}
         buttonsDisabled={okProps.disabled}
+        cancelLabel='Close'
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='md'
         testId='custom-integration-modal'
-        title={formState.name}
+        title={formState.name || 'Custom integration'}
         stickyFooter
         onOk={async () => {
-            toast.remove();
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     >
         <div className='mt-7 flex w-full flex-col gap-7 md:flex-row'>
