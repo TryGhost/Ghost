@@ -50,7 +50,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                             time: Date.now(),
                             referrerMedium: null,
                             referrerSource: 'ghost-explore',
-                            referrerUrl: 'https://example.com/blog'
+                            referrerUrl: 'https://example.com/blog/'
                         }
                     ]
                 }
@@ -149,7 +149,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                             time: Date.now(),
                             referrerMedium: null,
                             referrerSource: 'ghost-explore',
-                            referrerUrl: 'https://example.com/blog'
+                            referrerUrl: 'https://example.com/blog/'
                         }
                     ]
                 }
@@ -229,7 +229,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                             time: Date.now(),
                             referrerMedium: null,
                             referrerSource: 'ghost-explore',
-                            referrerUrl: 'https://example.com/blog'
+                            referrerUrl: 'https://example.com/blog/'
                         }
                     ],
                     ghost_donation: true
