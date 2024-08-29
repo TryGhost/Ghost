@@ -680,7 +680,7 @@ describe('HTMLtoLexical', function () {
                         </div>
                     </div>
                     <div class="kg-bookmark-thumbnail">
-                        <img src="https://ghost.org/images/meta/ghost.png" alt="" />
+                        <img src="https://ghost.org/images/meta/ghost.png" alt="" onerror="this.style.display = 'none'"/>
                     </div>
                 </a>
                 <figcaption>

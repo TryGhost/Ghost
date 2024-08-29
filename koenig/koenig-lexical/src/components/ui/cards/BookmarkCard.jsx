@@ -26,6 +26,13 @@ export function BookmarkCard({
     urlError,
     searchLinks
 }) {
+    // State to manage thumbnail visibility
+    const [thumbnailVisible, setThumbnailVisible] = React.useState(true);
+
+    const handleThumbnailError = () => {
+        setThumbnailVisible(false);
+    };
+
     if (url && !urlError && title) {
         return (
             <div>
@@ -39,9 +46,9 @@ export function BookmarkCard({
                             {author && <span className="font-normal text-grey-800 before:mx-1.5 before:text-grey-900 before:content-['•'] dark:text-grey-600 dark:before:text-grey-100" data-testid="bookmark-author">{author}</span>}
                         </div>
                     </div>
-                    {thumbnail &&
+                    {thumbnail && thumbnailVisible &&
                         (<div className={'grow-1 relative m-0 min-w-[33%]'} data-testid="bookmark-thumbnail-container">
-                            <img alt="" className="absolute inset-0 size-full rounded-r-[.5rem] object-cover" data-testid="bookmark-thumbnail" src={thumbnail}/>
+                            <img alt="" className="absolute inset-0 size-full rounded-r-[.5rem] object-cover" data-testid="bookmark-thumbnail" src={thumbnail} onError={handleThumbnailError}/>
                         </div>)
                     }
                     <div className="absolute inset-0 z-50 mt-0"></div>

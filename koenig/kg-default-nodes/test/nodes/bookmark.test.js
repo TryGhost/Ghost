@@ -175,7 +175,7 @@ describe('BookmarkNode', function () {
                             </div>
                         </div>
                         <div class="kg-bookmark-thumbnail">
-                            <img src="${dataset.metadata.thumbnail}" alt="">
+                            <img src="${dataset.metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
                         </div>
                     </a>
                     <figcaption>${dataset.caption}</figcaption>
@@ -299,7 +299,7 @@ describe('BookmarkNode', function () {
                             </div>
                         </div>
                         <div class="kg-bookmark-thumbnail">
-                            <img src="${dataset.metadata.thumbnail}" alt="">
+                            <img src="${dataset.metadata.thumbnail}" alt="" onerror="this.style.display = 'none'">
                         </div>
                     </a>
                     <figcaption>${dataset.caption}</figcaption>

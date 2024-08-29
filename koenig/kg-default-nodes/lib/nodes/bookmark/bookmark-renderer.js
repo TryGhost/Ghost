@@ -44,7 +44,7 @@ function emailTemplate(node, document) {
                         </div>
                     </div>
                     ${thumbnail ? `<div class="kg-bookmark-thumbnail" style="background-image: url('${thumbnail}')">
-                        <img src="${thumbnail}" alt=""></div>` : ''}
+                        <img src="${thumbnail}" alt="" onerror="this.style.display='none'"></div>` : ''}
                 </a>
                 ${caption ? `<figcaption>${caption}</figcaption>` : ''}
             </figure>
@@ -169,6 +169,7 @@ function frontendTemplate(node, document) {
         const thumbnail = document.createElement('img');
         thumbnail.src = metadata.thumbnail;
         thumbnail.alt = '';
+        thumbnail.setAttribute('onerror',`this.style.display = 'none'`); // Hide thumbnail div if image fails to load
         thumbnailDiv.appendChild(thumbnail);
     }
 
