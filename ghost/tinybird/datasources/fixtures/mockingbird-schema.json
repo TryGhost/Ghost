@@ -1,0 +1,72 @@
+{
+    "timestamp": {
+      "type": "mockingbird.datetimeBetween",
+      "params": [
+          {
+              "start": "2024-07-01T00:00:00.000Z",
+              "end": "2024-08-20T12:00:00.000Z"
+          }
+      ]
+    },
+    "session_id": {
+      "type": "string.uuid"
+    },
+    "action": {
+      "type": "mockingbird.pick",
+      "params": [
+        {
+          "values": [
+            "page_hit"
+          ]
+        }
+      ]
+    },
+    "version": {
+      "type": "mockingbird.pick",
+      "params": [
+        {
+          "values": [
+            "1"
+          ]
+        }
+      ]
+    },
+    "payload": {
+      "type": "mockingbird.pickWeighted",
+      "params": [
+        {
+          "values": [
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\", \"locale\":\"en-US\", \"referrer\":\"https://www.kike.io\", \"pathname\":\"/coming-soon/\", \"href\":\"https://web-analytics.ghost.is/coming-soon/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/104.0.5112.79 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"IT\", \"referrer\":\"https://www.hn.com\", \"pathname\":\"/about/\", \"href\":\"https://web-analytics.ghost.is/about/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0\", \"locale\":\"en-GB\", \"location\":\"ES\", \"referrer\":\"\", \"pathname\":\"/\", \"href\":\"https://web-analytics.ghost.is\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://www.google.com\", \"pathname\":\"/\", \"href\":\"https://web-analytics.ghost.is\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://web-analytics.ghost.is/\", \"pathname\":\"/coming-soon/\", \"href\":\"https://web-analytics.ghost.is/coming-soon/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://www.google.com\", \"pathname\":\"/hello-world/\", \"href\":\"https://web-analytics.ghost.is/hello-world/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"IL\", \"referrer\":\"https://www.google.com\", \"pathname\":\"/hello-world/\", \"href\":\"https://web-analytics.ghost.is/hello-world/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1\", \"locale\":\"es-ES\", \"location\":\"ES\", \"referrer\":\"https://www.twitter.com\", \"pathname\":\"/\", \"href\":\"https://web-analytics.ghost.is/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"GB\", \"referrer\":\"https://www.facebook.com\", \"pathname\":\"/\", \"href\":\"https://web-analytics.ghost.is/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"CH\", \"referrer\":\"https://www.qq.ch\", \"pathname\":\"/coming-soon/\", \"href\":\"https://web-analytics.ghost.is/coming-soon/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.118 Mobile Safari/537.36\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://www.yandex.com\", \"pathname\":\"/about/\", \"href\":\"https://web-analytics.ghost.is/about/\"}",
+            "{\"site_uuid\":\"mock_site_uuid\", \"user-agent\":\"Mozilla/5.0 (Linux; Android 13; SM-A102U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.118 Mobile Safari/537.36\", \"locale\":\"en-US\", \"location\":\"FR\", \"referrer\":\"https://www.github.com\", \"pathname\":\"/coming-soon/\", \"href\":\"https://web-analytics.ghost.is/coming-soon/\"}",
+
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\", \"locale\":\"en-US\", \"referrer\":\"https://www.kike.io\", \"pathname\":\"/products/\", \"href\":\"https://fake-site.ghost.is/products/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/104.0.5112.79 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"IT\", \"referrer\":\"https://www.hn.com\", \"pathname\":\"/blog/\", \"href\":\"https://fake-site.ghost.is/blog/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0\", \"locale\":\"en-GB\", \"location\":\"ES\", \"referrer\":\"\", \"pathname\":\"/contact/\", \"href\":\"https://fake-site.ghost.is/contact/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://www.google.com\", \"pathname\":\"/faq/\", \"href\":\"https://fake-site.ghost.is/faq/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://fake-site.ghost.is/\", \"pathname\":\"/services/\", \"href\":\"https://fake-site.ghost.is/services/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://www.google.com\", \"pathname\":\"/team/\", \"href\":\"https://fake-site.ghost.is/team/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"IL\", \"referrer\":\"https://www.google.com\", \"pathname\":\"/pricing/\", \"href\":\"https://fake-site.ghost.is/pricing/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1\", \"locale\":\"es-ES\", \"location\":\"ES\", \"referrer\":\"https://www.twitter.com\", \"pathname\":\"/resources/\", \"href\":\"https://fake-site.ghost.is/resources/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"GB\", \"referrer\":\"https://www.facebook.com\", \"pathname\":\"/careers/\", \"href\":\"https://fake-site.ghost.is/careers/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\", \"locale\":\"en-US\", \"location\":\"CH\", \"referrer\":\"https://www.qq.ch\", \"pathname\":\"/support/\", \"href\":\"https://fake-site.ghost.is/support/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.118 Mobile Safari/537.36\", \"locale\":\"en-US\", \"location\":\"US\", \"referrer\":\"https://www.yandex.com\", \"pathname\":\"/partners/\", \"href\":\"https://fake-site.ghost.is/partners/\"}",
+            "{\"site_uuid\":\"fake_site_id\", \"user-agent\":\"Mozilla/5.0 (Linux; Android 13; SM-A102U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.118 Mobile Safari/537.36\", \"locale\":\"en-US\", \"location\":\"FR\", \"referrer\":\"https://www.github.com\", \"pathname\":\"/events/\", \"href\":\"https://fake-site.ghost.is/events/\"}"
+          ],
+          "weights": [
+            200, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 400,
+            100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+          ]
+        }
+      ]
+    }
+  }

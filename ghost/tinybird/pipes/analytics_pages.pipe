@@ -1,0 +1,24 @@
+NODE analytics_pages_1
+DESCRIPTION >
+    Aggregate by pathname and calculate session and hits
+
+SQL >
+    SELECT
+        site_uuid,
+        member_uuid,
+        member_status,
+        post_uuid,
+        toDate(timestamp) AS date,
+        device,
+        browser,
+        location,
+        pathname,
+        uniqState(session_id) AS visits,
+        countState() AS hits,
+        countStateIf(logged_in = true) AS logged_in_hits,
+        countStateIf(logged_in = false) AS logged_out_hits
+    FROM analytics_hits
+    GROUP BY date, device, browser, location, pathname, member_uuid, member_status, post_uuid, site_uuid
+
+TYPE MATERIALIZED
+DATASOURCE analytics_pages_mv

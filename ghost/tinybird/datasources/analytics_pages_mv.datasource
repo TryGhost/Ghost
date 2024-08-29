@@ -1,0 +1,18 @@
+SCHEMA >
+    `site_uuid` String,
+    `member_uuid` String,
+    `member_status` String,
+    `post_uuid` String,
+    `date` Date,
+    `device` String,
+    `browser` String,
+    `location` String,
+    `pathname` String,
+    `visits` AggregateFunction(uniq, String),
+    `hits` AggregateFunction(count),
+    `logged_in_hits` AggregateFunction(count),
+    `logged_out_hits` AggregateFunction(count)
+
+ENGINE AggregatingMergeTree
+ENGINE_PARTITION_KEY toYYYYMM(date)
+ENGINE_SORTING_KEY date, device, browser, location, pathname, member_uuid, member_status, post_uuid, site_uuid
