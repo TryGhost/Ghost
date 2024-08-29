@@ -1033,8 +1033,7 @@
 }
 
 .modal-post-success .modal-footer .copy-preview-link {
-    background: var(--white);
-    border: 1px solid var(--lightgrey-l1);
+    background: var(--whitegrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:not(:first-child) {
@@ -1058,12 +1057,11 @@
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
     width: 56px;
-    border: 1px solid var(--lightgrey-l1);
-    background: var(--white);
+    background: var(--whitegrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
-    background: var(--whitegrey-l2);
+    background: var(--whitegrey);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
