@@ -67,5 +67,33 @@ describe('Public-config Service', function () {
 
             assert.equal(configProperties.mailgunIsConfigured, false);
         });
+
+        it('should NOT return stats by default', function () {
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.stats, undefined);
+        });
+
+        it('should return stats when tinybird config is set with the stats key', function () {
+            configUtils.set('tinybird', {
+                stats: {
+                    endpoint: 'xxx'
+                }
+            });
+
+            let configProperties = getConfigProperties();
+
+            assert.deepEqual(configProperties.stats, {endpoint: 'xxx'});
+        });
+
+        it('should NOT return stats when tinybird config is set without the stats key', function () {
+            configUtils.set('tinybird', {
+                url: 'xxx'
+            });
+
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.stats, undefined);
+        });
     });
 });
