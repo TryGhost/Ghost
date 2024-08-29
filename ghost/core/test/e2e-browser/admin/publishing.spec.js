@@ -11,11 +11,11 @@ const {createTier, createMember, createPostDraft, impersonateMember} = require('
  * @param {string} [hoverStatus] Optional different status when you hover the status
  */
 const checkPostStatus = async (page, status, hoverStatus) => {
-    await expect(page.locator('[data-test-editor-post-status]')).toContainText(status, {timeout: 5000});
+    await expect(page.locator('[data-test-editor-post-status]').first()).toContainText(status, {timeout: 5000});
 
     if (hoverStatus) {
-        await page.locator('[data-test-editor-post-status]').hover();
-        await expect(page.locator('[data-test-editor-post-status]')).toContainText(hoverStatus, {timeout: 5000});
+        await page.locator('[data-test-editor-post-status]').first().hover();
+        await expect(page.locator('[data-test-editor-post-status]').first()).toContainText(hoverStatus, {timeout: 5000});
     }
 };
 
@@ -198,8 +198,6 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
             await closePublishFlow(sharedPage);
-
-            await checkPostStatus(sharedPage, 'Published');
             await checkPostPublished(sharedPage, postData);
         });
 
@@ -232,8 +230,6 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'send'});
             await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Sent to '); // can't test for 1 member for now, because depends on test ordering :( (sometimes 2 members are created)
-
             await checkPostNotPublished(sharedPage, postData);
         });
     });
@@ -327,8 +323,9 @@ test.describe('Publishing', () => {
             await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
+            await adminPage.locator('li[data-test-post-id]').first().click();
             await adminPage.locator('[data-kg="editor"]').first().click();
-            await adminPage.waitForTimeout(200); //
+            await adminPage.waitForTimeout(500);
             await adminPage.keyboard.type(' This is some updated text.');
 
             // change some post settings
@@ -431,7 +428,7 @@ test.describe('Publishing', () => {
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {type: 'send', time: '00:00'});
             await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent to');
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
             const editorUrl = await sharedPage.url();
 
             // Check not published yet
@@ -472,6 +469,7 @@ test.describe('Publishing', () => {
             await checkPostNotPublished(testsharedPage, postData);
 
             // Now unschedule this post
+            await sharedPage.locator('li[data-test-post-id]').first().click();
             await sharedPage.locator('[data-test-button="update-flow"]').first().click();
             await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
 
@@ -566,6 +564,7 @@ test.describe('Updating post access', () => {
 
         // publish
         await publishPost(sharedPage);
+        await closePublishFlow(sharedPage);
         const frontendPage = await openPublishedPostBookmark(sharedPage);
 
         // non-member doesn't have access
@@ -607,7 +606,6 @@ test.describe('Updating post access', () => {
         await closePublishFlow(page);
 
         // go to settings and change the timezone
-        await page.locator('[data-test-link="posts"]').click();
         await page.locator('[data-test-nav="settings"]').click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 

@@ -16,9 +16,7 @@ export default class PostsList extends Component {
 
     constructor() {
         super(...arguments);
-        if (this.feature.publishFlowEndScreen) {
-            this.checkPublishFlowModal();
-        }
+        this.checkPublishFlowModal();
     }
 
     async checkPublishFlowModal() {

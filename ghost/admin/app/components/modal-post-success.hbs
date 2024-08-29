@@ -70,7 +70,7 @@
                     <img src="{{or this.post.featureImage this.post.twitterImage this.post.ogImage}}" alt="{{this.post.title}}">
                 </figure>
             {{/if}}
-            
+
             <div class="modal-body">
                 <h2>{{this.post.title}}</h2>
                 {{#if this.post.excerpt}}
@@ -103,10 +103,10 @@
         </footer>
     {{/if}}
 
-    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+    <button type="button" class="close" title="Close" {{on "click" @close}} data-test-button="close-publish-flow">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     {{#unless this.post.emailOnly}}
-    <a href="{{this.post.url}}" target="_blank" rel="noopener noreferrer" title="View post: {{this.post.title}}">
+    <a href="{{this.post.url}}" target="_blank" rel="noopener noreferrer" title="View post: {{this.post.title}}" data-test-complete-bookmark>
         <div class="gh-post-card">
             {{#if this.post.featureImage}}
                 <figure class="modal-image">
