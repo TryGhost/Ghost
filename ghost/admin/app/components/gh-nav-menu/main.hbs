@@ -32,6 +32,11 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
+                    {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
+                    <li class="relative">
+                        <LinkTo @route="stats">{{svg-jar "stats"}}Stats</LinkTo>
+                    </li>
+                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
                         <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
