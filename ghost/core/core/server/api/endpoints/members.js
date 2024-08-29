@@ -2,6 +2,7 @@
 // as it is a getter and may change during runtime.
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const models = require('../../models');
 const membersService = require('../../services/members');
 
@@ -11,6 +12,7 @@ const _ = require('lodash');
 
 const messages = {
     memberNotFound: 'Member not found.',
+    notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
     memberAlreadyExists: {
         message: 'Member already exists',
         context: 'Attempting to {action} member with existing email address.'
@@ -115,6 +117,10 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
+            if (await membersService.verificationTrigger.checkVerificationRequired()) {
+                logging.warn(tpl(messages.notSendingWelcomeEmail));
+                frame.options.send_email = false;
+            }
             const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
 
             return member;

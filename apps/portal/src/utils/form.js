@@ -1,30 +1,36 @@
 import * as Validator from './validator';
 
-export const FormInputError = ({field}) => {
+export const FormInputError = ({field, t}) => {
     if (field.required && !field.value) {
         switch (field.name) {
         case 'name':
-            return `Enter your name`;
-        
+            return t(`Enter your name`);
+
         case 'email':
-            return `Enter your email address`;
+            return t(`Enter your email address`);
 
         default:
-            return `Please enter ${field.name}`;
+            return t(`Please enter {{fieldName}}`, {fieldName: field.name});
         }
     }
 
     if (field.type === 'email' && !Validator.isValidEmail(field.value)) {
-        return `Invalid email address`;
+        return t(`Invalid email address`);
     }
     return null;
 };
 
-export const ValidateInputForm = ({fields}) => {
+/**
+ * Validate input fields
+ * @param {Array} fields
+ * @param {Function} t
+ * @returns {Object} errors
+ */
+export const ValidateInputForm = ({fields, t}) => {
     const errors = {};
     fields.forEach((field) => {
         const name = field.name;
-        const fieldError = FormInputError({field});
+        const fieldError = FormInputError({field, t});
         errors[name] = fieldError;
     });
     return errors;

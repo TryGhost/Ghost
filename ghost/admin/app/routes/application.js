@@ -186,7 +186,7 @@ export default Route.extend(ShortcutsRoute, {
                 beforeSend,
                 ignoreErrors: [
                     // Browser autoplay policies (this regex covers a few)
-                    /^The play\(\) request was interrupted.*/,
+                    /The play\(\) request was interrupted.*/,
                     /The request is not allowed by the user agent or the platform in the current context/,
 
                     // Network errors that we don't control

@@ -16,6 +16,10 @@ const offerSetup = async ({site, member = null, offer}) => {
         return Promise.resolve('success');
     });
 
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
+    });
+
     ghostApi.site.offer = jest.fn(() => {
         return Promise.resolve({
             offers: [offer]
@@ -80,6 +84,10 @@ const setup = async ({site, member = null}) => {
         return Promise.resolve('success');
     });
 
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
+    });
+
     ghostApi.member.checkoutPlan = jest.fn(() => {
         return Promise.resolve();
     });
@@ -131,6 +139,10 @@ const multiTierSetup = async ({site, member = null}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
     });
 
     ghostApi.member.checkoutPlan = jest.fn(() => {
@@ -205,14 +217,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(chooseBtns[0]);
+
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('without name field', async () => {
@@ -240,16 +255,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(chooseBtns[0]);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: '',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('with only free plan', async () => {
@@ -288,16 +304,17 @@ describe('Signup', () => {
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
     });
 
@@ -570,14 +587,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(chooseBtns[0]);
+
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('without name field', async () => {
@@ -601,16 +621,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(chooseBtns[0]);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: '',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('with only free plan available', async () => {
@@ -646,16 +667,17 @@ describe('Signup', () => {
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('should not show free plan if it is hidden', async () => {
@@ -799,4 +821,3 @@ describe('Signup', () => {
         });
     });
 });
-

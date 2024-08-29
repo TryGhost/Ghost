@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
-import getUsername from '../utils/get-username';
-import {ActivityPubAPI} from '../api/activitypub';
+import getUsername from '../../utils/get-username';
+import {ActivityPubAPI} from '../../api/activitypub';
 import {Avatar, Button, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -51,7 +51,7 @@ const ViewFollowersModal: React.FC<RoutingModalProps> = ({}) => {
         <Modal
             afterClose={() => {
                 mutation.reset();
-                updateRoute('');
+                updateRoute('profile');
             }}
             cancelLabel=''
             footer={false}

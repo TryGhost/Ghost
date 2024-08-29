@@ -211,7 +211,7 @@ export default class App extends React.Component {
     async fetchData() {
         const {site: apiSiteData, member} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
-        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData);
+        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
@@ -420,18 +420,32 @@ export default class App extends React.Component {
     }
 
     /** Fetch state from Portal Links */
-    fetchLinkData(site) {
+    fetchLinkData(site, member) {
         const qParams = new URLSearchParams(window.location.search);
-        if (qParams.get('uuid') && qParams.get('action') === 'unsubscribe') {
-            return {
-                showPopup: true,
-                page: 'unsubscribe',
-                pageData: {
-                    uuid: qParams.get('uuid'),
-                    newsletterUuid: qParams.get('newsletter'),
-                    comments: qParams.get('comments')
-                }
-            };
+        if (qParams.get('action') === 'unsubscribe') {
+            // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
+            if (qParams.get('key') && qParams.get('uuid')) {
+                return {
+                    showPopup: true,
+                    page: 'unsubscribe',
+                    pageData: {
+                        uuid: qParams.get('uuid'),
+                        key: qParams.get('key'),
+                        newsletterUuid: qParams.get('newsletter'),
+                        comments: qParams.get('comments')
+                    }
+                };
+            } else { // any malformed unsubscribe links should simply go to email prefs
+                return {
+                    showPopup: true,
+                    page: 'accountEmail',
+                    pageData: {
+                        newsletterUuid: qParams.get('newsletter'),
+                        action: 'unsubscribe',
+                        redirect: site.url + '#/portal/account/newsletters'
+                    }
+                };
+            }
         }
 
         if (hasRecommendations({site}) && qParams.get('action') === 'signup' && qParams.get('success') === 'true') {
@@ -453,19 +467,31 @@ export default class App extends React.Component {
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
-        if (path && feedbackRegex.test(path) && hashQuery.get('uuid')) {
+        if (path && feedbackRegex.test(path)) {
             const [, postId, scoreString] = path.match(feedbackRegex);
             const score = parseInt(scoreString);
             if (score === 1 || score === 0) {
-                return {
-                    showPopup: true,
-                    page: 'feedback',
-                    pageData: {
-                        uuid: hashQuery.get('uuid'),
-                        postId,
-                        score
-                    }
-                };
+                // if logged in, submit feedback
+                if (member || (hashQuery.get('uuid') && hashQuery.get('key'))) {
+                    return {
+                        showPopup: true,
+                        page: 'feedback',
+                        pageData: {
+                            uuid: member ? null : hashQuery.get('uuid'),
+                            key: member ? null : hashQuery.get('key'),
+                            postId,
+                            score
+                        }
+                    };
+                } else {
+                    return {
+                        showPopup: true,
+                        page: 'signin',
+                        pageData: {
+                            redirect: site.url + `#/feedback/${postId}/${score}/`
+                        }
+                    };
+                }
             }
         }
         if (path && linkRegex.test(path)) {

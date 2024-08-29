@@ -1,18 +1,31 @@
+import {authenticateSession} from 'ember-simple-auth/test-support';
 import {describe, it} from 'mocha';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {setupTest} from 'ember-mocha';
 
+// we have two search providers
+// - "flex" which uses the flexsearch engine but is limited to english only
+// - "basic" which uses exact string matches in a less performant way but is language agnostic
 const suites = [{
-    name: 'Integration: Service: Search',
+    name: 'Integration: Service: Search (flex)',
     beforeEach() {
-        // noop
+        // noop - default locale is 'en'
+    },
+    confirmProvider() {
+        const searchService = this.owner.lookup('service:search');
+        expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderFlexService');
     }
 }, {
-    name: 'Integration: Service: Search (beta)',
+    name: 'Integration: Service: Search (basic)',
     beforeEach() {
-        enableLabsFlag(this.server, 'internalLinking');
+        this.server.db.settings.update({key: 'locale'}, {value: 'de'});
+    },
+    confirmProvider() {
+        const settingsService = this.owner.lookup('service:settings');
+        expect(settingsService.locale, 'settings.locale').to.equal('de');
+        const searchService = this.owner.lookup('service:search');
+        expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderBasicService');
     }
 }];
 
@@ -25,8 +38,14 @@ suites.forEach((suite) => {
         // eslint-disable-next-line no-unused-vars
         let firstUser, firstPost, secondPost, firstPage, firstTag;
 
-        beforeEach(function () {
+        beforeEach(async function () {
+            this.server.loadFixtures();
+            await authenticateSession();
+
             suite.beforeEach.bind(this)();
+
+            const settings = this.owner.lookup('service:settings');
+            await settings.fetch();
 
             search = this.owner.lookup('service:search');
 
@@ -35,6 +54,10 @@ suites.forEach((suite) => {
             secondPost = this.server.create('post', {title: 'Second post', slug: 'second-post'});
             firstPage = this.server.create('page', {title: 'First page', slug: 'first-page'});
             firstTag = this.server.create('tag', {name: 'First tag', slug: 'first-tag'});
+        });
+
+        it('is using correct provider', async function () {
+            suite.confirmProvider.bind(this)();
         });
 
         it('returns urls for search results', async function () {

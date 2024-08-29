@@ -69,6 +69,7 @@
                         @input={{this.onExcerptInput}}
                         @keyDown={{this.onExcerptKeydown}}
                         @didCreateTextarea={{this.registerExcerptElement}}
+                        {{on "blur" @onExcerptBlur}}
                         data-test-textarea="excerpt"
                     />
                     {{#if @excerptHasTk}}
@@ -95,7 +96,9 @@
             @placeholder={{@bodyPlaceholder}}
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
+            @updateSecondaryInstanceModel={{@updateSecondaryInstanceModel}}
             @registerAPI={{this.registerEditorAPI}}
+            @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
             @cursorDidExitAtTop={{if this.feature.editorExcerpt this.focusExcerpt this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
             @updatePostTkCount={{@updatePostTkCount}}

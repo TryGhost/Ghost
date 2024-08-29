@@ -49,7 +49,7 @@ const features = [{
     flag: 'adminXDemo'
 },{
     title: 'NestJS Playground',
-    description: 'Wires up the Ghost NestJS App to the Admin API',
+    description: 'Wires up the Ghost NestJS App to the Admin API (also needs GHOST_ENABLE_NEST_FRAMEWORK=1 env var)',
     flag: 'NestPlayground'
 },{
     title: 'ActivityPub',
@@ -59,6 +59,14 @@ const features = [{
     title: 'Content Visibility',
     description: 'Enables content visibility in Emails',
     flag: 'contentVisibility'
+},{
+    title: 'Publish Flow — End Screen',
+    description: 'Enables improved publish flow',
+    flag: 'publishFlowEndScreen'
+},{
+    title: 'Post Analytics — Refresh',
+    description: 'Adds a refresh button to the post analytics screen',
+    flag: 'postAnalyticsRefresh'
 }];
 
 const AlphaFeatures: React.FC = () => {
