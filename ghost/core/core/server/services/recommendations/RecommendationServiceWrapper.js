@@ -39,11 +39,16 @@ class RecommendationServiceWrapper {
     incomingRecommendationService;
 
     init() {
+        const config = require('../../../shared/config');
+        if (config.get('services:recommendations:enabled') === false) {
+            logging.info('[Recommendations] Service is disabled via config');
+            return;
+        }
+
         if (this.repository) {
             return;
         }
 
-        const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
         const models = require('../../models');
         const sentry = require('../../../shared/sentry');
