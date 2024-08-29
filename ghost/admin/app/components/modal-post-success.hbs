@@ -24,7 +24,7 @@
         </h1>
     </header>
 
-    {{#if (not (and this.post.isPublished (not this.post.emailOnly)))}}
+    {{#if (or (not this.post.isPublished) this.post.emailOnly (or this.post.hasEmail this.post.willEmail))}}
         <div class="modal-body email">
             {{#if this.post.isSent}}
                 It
@@ -34,7 +34,13 @@
                 Your {{this.post.displayName}}
             {{/if}}
             {{if this.post.isScheduled "will be" "was"}}
-            {{if this.post.emailOnly "sent to" (if this.post.willEmail "published on your site, and sent to" "published on your site")}}
+            {{#if this.post.emailOnly}}
+                sent to
+            {{else if (or this.post.hasEmail this.post.willEmail)}}
+                published on your site and sent to
+            {{else}}
+                published on your site
+            {{/if}}
 
             {{#if (or this.post.hasEmail this.post.willEmail)}}
                 {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
