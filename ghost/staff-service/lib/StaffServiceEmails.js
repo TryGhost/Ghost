@@ -495,10 +495,14 @@ class StaffServiceEmails {
             sharedData = await this.getSharedData(data.recipient);
         }
 
-        return htmlTemplate({
+        const html = htmlTemplate({
             ...data,
             ...sharedData
         });
+
+        const juice = require('juice');
+
+        return juice(html, {inlinePseudoElements: true, removeStyleTags: true});
     }
 
     async renderText(templateName, data) {
