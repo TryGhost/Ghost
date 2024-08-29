@@ -45,9 +45,7 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'contentVisibility',
-    'publishFlowEndScreen',
-    'postAnalyticsRefresh'
+    'contentVisibility'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
