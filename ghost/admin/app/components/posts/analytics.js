@@ -385,9 +385,6 @@ export default class Analytics extends Component {
         const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'email,count.clicks,count.conversions,count.positive_feedback,count.negative_feedback,sentiment', limit: 1});
         this.post = result.toArray()[0];
 
-        this.post.email.emailCount += 182;
-        this.post.email.openedCount += 84;
-
         this.previousSentCount = currentSentCount;
         this.previousOpenedCount = currentOpenedCount;
         this.previousClickedCount = currentClickedCount;
