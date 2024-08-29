@@ -141,6 +141,21 @@ function getWebmentionDiscoveryLink() {
     }
 }
 
+function getTinybirdTrackerScript(dataRoot) {
+    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
+    const endpoint = config.get('tinybird:tracker:endpoint');
+    const token = config.get('tinybird:tracker:token');
+
+    const tbParams = _.map({
+        site_uuid: config.get('tinybird:tracker:id'),
+        post_uuid: dataRoot.post?.uuid,
+        member_uuid: dataRoot.member?.uuid,
+        member_status: dataRoot.member?.status
+    }, (value, key) => `tb_${key}="${value}"`).join(' ');
+
+    return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+}
+
 /**
  * **NOTE**
  * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
@@ -318,6 +333,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
+            }
+
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+                head.push(getTinybirdTrackerScript(dataRoot));
             }
         }
 
