@@ -40,7 +40,8 @@
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
-    "prepare": "husky install .github/hooks"
+    "prepare": "husky install .github/hooks",
+    "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/tinybird -it tinybirdco/tinybird-cli-docker"
   },
   "resolutions": {
     "@tryghost/errors": "1.3.5",
