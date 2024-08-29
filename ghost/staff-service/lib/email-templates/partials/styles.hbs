@@ -3,48 +3,46 @@
       RESPONSIVE AND MOBILE FRIENDLY STYLES
   ------------------------------------- */
   @media only screen and (max-width: 620px) {
-    table[class=body] h1 {
-      font-size: 28px !important;
-      margin-bottom: 10px !important;
+    table.body h1 {
+      font-size: 22px !important;
+      padding-bottom: 16px !important;
     }
-    table[class=body] p,
-    table[class=body] ul,
-    table[class=body] ol,
-    table[class=body] td,
-    table[class=body] span,
-    table[class=body] a {
+    table.body p,
+    table.body ul,
+    table.body ol,
+    table.body td,
+    table.body span,
+    table.body a {
       font-size: 16px !important;
     }
-    table[class=body] .wrapper,
-    table[class=body] .article {
+    table.body .wrapper,
+    table.body .article {
       padding: 10px !important;
     }
-    table[class=body] .content {
+    table.body .content {
       padding: 0 !important;
     }
-    table[class=body] .container {
+    table.body .container {
       padding: 0 !important;
       width: 100% !important;
     }
-    table[class=body] .main {
+    table.body .main {
       border-left-width: 0 !important;
       border-radius: 0 !important;
       border-right-width: 0 !important;
     }
-    table[class=body] .btn table {
-      width: 100% !important;
-    }
-    table[class=body] .btn a {
-      width: 100% !important;
-    }
-    table[class=body] .img-responsive {
+    table.body .img-responsive {
       height: auto !important;
       max-width: 100% !important;
       width: auto !important;
     }
-    table[class=body] p[class=small],
-    table[class=body] a[class=small] {
-      font-size: 11px !important;
+    table.body p.large,
+    table.body p.large a {
+      font-size: 18px !important;
+    }
+    table.body p.small,
+    table.body a.small {
+      font-size: 12px !important;
     }
     .new-mention-thumbnail {
       display: none !important;
@@ -68,6 +66,13 @@
     /* Reset styles for Gmail (it wraps email address in link with custom styles) */
     .text-link a {
       color: inherit !important;
+      font-family: inherit !important;
+      font-size: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+      text-decoration: none !important;
+    }
+    .text-link-accent a {
       font-family: inherit !important;
       font-size: inherit !important;
       font-weight: inherit !important;
