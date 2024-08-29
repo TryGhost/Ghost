@@ -23,6 +23,7 @@ Router.map(function () {
     this.route('site');
     this.route('dashboard');
     this.route('launch');
+    this.route('stats');
 
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
