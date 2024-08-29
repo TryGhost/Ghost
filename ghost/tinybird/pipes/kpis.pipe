@@ -1,0 +1,130 @@
+DESCRIPTION >
+    Summary with general KPIs per date, including visits, page views, bounce rate and average session duration.
+    Accepts `date_from` and `date_to` date filter, all historical data if not passed.
+    Daily granularity, except when filtering one single day (hourly)
+
+TOKEN "dashboard" READ
+
+NODE timeseries
+DESCRIPTION >
+    Generate a timeseries for the specified time range, so we call fill empty data points.
+    Filters "future" data points.
+
+SQL >
+    %
+    {% set _single_day = defined(date_from) and day_diff(date_from, date_to) == 0 %}
+    with
+        {% if defined(date_from) %}
+            toStartOfDay(
+                toDate(
+                    {{
+                        Date(
+                            date_from,
+                            description="Starting day for filtering a date range",
+                            required=False,
+                        )
+                    }}
+                )
+            ) as start,
+        {% else %} toStartOfDay(timestampAdd(today(), interval -7 day)) as start,
+        {% end %}
+        {% if defined(date_to) %}
+            toStartOfDay(
+                toDate(
+                    {{
+                        Date(
+                            date_to,
+                            description="Finishing day for filtering a date range",
+                            required=False,
+                        )
+                    }}
+                )
+            ) as end
+        {% else %} toStartOfDay(today()) as end
+        {% end %}
+    {% if _single_day %}
+        select
+            arrayJoin(
+                arrayMap(
+                    x -> toDateTime(x),
+                    range(
+                        toUInt32(toDateTime(start)), toUInt32(timestampAdd(end, interval 1 day)), 3600
+                    )
+                )
+            ) as date
+    {% else %}
+        select
+            arrayJoin(
+                arrayMap(
+                    x -> toDate(x),
+                    range(toUInt32(start), toUInt32(timestampAdd(end, interval 1 day)), 24 * 3600)
+                )
+            ) as date
+    {% end %}
+    where date <= now()
+
+NODE hits
+DESCRIPTION >
+    Group by sessions and calculate metrics at that level
+
+SQL >
+    %
+    {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+        select
+            site_uuid,
+            toStartOfHour(timestamp) as date,
+            session_id,
+            uniq(session_id) as visits,
+            count() as pageviews,
+            case when min(timestamp) = max(timestamp) then 1 else 0 end as is_bounce,
+            max(timestamp) as latest_hit_aux,
+            min(timestamp) as first_hit_aux
+        from analytics_hits
+        where toDate(timestamp) = {{ Date(date_from) }}
+        group by toStartOfHour(timestamp), session_id, site_uuid
+    {% else %}
+        select
+            site_uuid,
+            date,
+            session_id,
+            uniq(session_id) as visits,
+            countMerge(hits) as pageviews,
+            case when min(first_hit) = max(latest_hit) then 1 else 0 end as is_bounce,
+            max(latest_hit) as latest_hit_aux,
+            min(first_hit) as first_hit_aux
+        from analytics_sessions_mv
+        where
+            {% if defined(date_from) %} date >= {{ Date(date_from) }}
+            {% else %} date >= timestampAdd(today(), interval -7 day)
+            {% end %}
+            {% if defined(date_to) %} and date <= {{ Date(date_to) }}
+            {% else %} and date <= today()
+            {% end %}
+        group by date, session_id, site_uuid
+    {% end %}
+
+NODE data
+DESCRIPTION >
+    General KPIs per date, works for both summary metrics and trends charts.
+
+SQL >
+    select
+        site_uuid,
+        date,
+        uniq(session_id) as visits,
+        sum(pageviews) as pageviews,
+        sum(case when latest_hit_aux = first_hit_aux then 1 end) / visits as bounce_rate,
+        avg(latest_hit_aux - first_hit_aux) as avg_session_sec
+    from hits
+    group by date, site_uuid
+
+NODE endpoint
+DESCRIPTION >
+    Join and generate timeseries with metrics
+
+SQL >
+%
+    select a.date, b.visits, b.pageviews, b.bounce_rate, b.avg_session_sec
+    from timeseries a
+    left join data b using date
+    where site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
