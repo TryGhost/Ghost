@@ -1,0 +1,13 @@
+SCHEMA >
+    `site_uuid` String,
+    `date` Date,
+    `device` String,
+    `browser` String,
+    `location` String,
+    `referrer` String,
+    `visits` AggregateFunction(uniq, String),
+    `hits` AggregateFunction(count)
+
+ENGINE AggregatingMergeTree
+ENGINE_PARTITION_KEY toYYYYMM(date)
+ENGINE_SORTING_KEY date, device, browser, location, referrer, site_uuid
