@@ -15,14 +15,14 @@ export default class TopPages extends Component {
 
         /**
          * @typedef {Object} Params
-         * @property {string} cid
+         * @property {string} site_uuid
          * @property {string} [date_from]
          * @property {string} [date_to]
          * @property {number} [limit]
          * @property {number} [skip]
          */
         const params = {
-            cid: this.config.stats.id,
+            site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD')
         };
