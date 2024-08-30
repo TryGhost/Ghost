@@ -188,8 +188,10 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
 
         let requestBody = null;
         try {
+            // Try to parse the post data as JSON
             requestBody = JSON.parse(route.request().postData() || 'null');
         } catch {
+            // Post data isn't JSON (e.g. file upload) — use the raw post data
             requestBody = route.request().postData();
         }
 
