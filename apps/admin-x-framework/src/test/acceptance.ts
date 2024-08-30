@@ -186,7 +186,12 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
             });
         }
 
-        const requestBody = JSON.parse(route.request().postData() || 'null');
+        let requestBody = null;
+        try {
+            requestBody = JSON.parse(route.request().postData() || 'null');
+        } catch {
+            requestBody = route.request().postData();
+        }
 
         lastApiRequests[matchingMock.name] = {
             body: requestBody,
