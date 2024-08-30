@@ -1,0 +1,32 @@
+DESCRIPTION >
+    Top Browsers ordered by most visits.
+    Accepts `date_from` and `date_to` date filter. Defaults to last 7 days.
+    Also `skip` and `limit` parameters for pagination.
+
+TOKEN "dashboard" READ
+
+NODE endpoint
+DESCRIPTION >
+    Group by browser and calculate hits and visits
+
+SQL >
+    %
+    select browser, uniqMerge(visits) as visits, countMerge(hits) as hits
+    from analytics_sources_mv
+    where
+        site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}} and
+        {% if defined(date_from) %}
+            date
+            >=
+            {{ Date(date_from, description="Starting day for filtering a date range", required=False) }}
+        {% else %} date >= timestampAdd(today(), interval -7 day)
+        {% end %}
+        {% if defined(date_to) %}
+            and date
+            <=
+            {{ Date(date_to, description="Finishing day for filtering a date range", required=False) }}
+        {% else %} and date <= today()
+        {% end %}
+    group by browser
+    order by visits desc
+    limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}

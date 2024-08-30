@@ -34,66 +34,58 @@
                         {{moment-format publishedAt "HH:mm"}}
                     {{/let}}
                 </div>
-                {{#if (feature "publishFlowEndScreen")}}
-                    <div style="display: flex; gap: 8px;">
-                        {{#if (feature "postAnalyticsRefresh")}}
-                            <GhTaskButton
-                                @buttonText="Refresh"
-                                @task={{this.fetchPostTask}}
-                                @showIcon={{true}}
-                                @idleIcon="reload"
-                                @successText="Refreshed"
-                                @class="gh-btn gh-btn-icon refresh"
-                                @successClass="gh-btn gh-btn-icon refresh" />
-                        {{/if}}
-                        {{#unless this.post.emailOnly}}
-                            <button type="button" class="gh-post-list-cta share" {{on "click" this.togglePublishFlowModal}}>
-                                {{svg-jar "share" title="Share post"}}<span>Share</span>
-                            </button>
-                        {{/unless}}
+                <div style="display: flex; gap: 8px;">
+                    <GhTaskButton
+                        @buttonText="Refresh"
+                        @task={{this.fetchPostTask}}
+                        @showIcon={{true}}
+                        @idleIcon="reload"
+                        @successText="Refreshed"
+                        @class="gh-btn gh-btn-icon refresh"
+                        @successClass="gh-btn gh-btn-icon refresh" />
+                    {{#unless this.post.emailOnly}}
+                        <button type="button" class="gh-post-list-cta share" {{on "click" this.togglePublishFlowModal}}>
+                            {{svg-jar "share" title="Share post"}}<span>Share</span>
+                        </button>
+                    {{/unless}}
 
-                        <span class="dropdown">
-                            <GhDropdownButton
-                                @dropdownName="analytics-actions-menu"
-                                @classNames="gh-post-list-cta gh-btn-icon icon-only gh-btn-action-icon"
-                                @title="Analytics Actions"
-                                data-test-button="analytics-actions"
-                            >
-                                <span>
-                                    {{svg-jar "dotdotdot"}}
-                                    <span class="hidden">Actions</span>
-                                </span>
-                            </GhDropdownButton>
-                            <GhDropdown
-                                @name="analytics-actions-menu"
-                                @tagName="ul"
-                                @classNames="gh-analytics-actions-menu dropdown-menu dropdown-triangle-top-right"
-                                @closeOnClick={{true}}
-                            >
-                                <li>
-                                    <LinkTo class="edit-post" @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
-                                </li>
-                                <li>
-                                    <a class="view-browser" href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
-                                </li>
-                                <li>
-                                    <button
-                                        type="button"
-                                        class="delete-post mr2"
-                                        {{on "click" this.confirmDeleteMember}}
-                                        data-test-button="delete-post"
-                                    >
-                                        <span class="red">Delete post</span>
-                                    </button>
-                                </li>
-                            </GhDropdown>
-                        </span>
-                    </div>
-                {{else}}
-                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                        {{svg-jar "pen" title=""}}<span>Edit post</span>
-                    </LinkTo>
-                {{/if}}
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="analytics-actions-menu"
+                            @classNames="gh-post-list-cta gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Analytics Actions"
+                            data-test-button="analytics-actions"
+                        >
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="analytics-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-analytics-actions-menu dropdown-menu dropdown-triangle-top-right"
+                            @closeOnClick={{true}}
+                        >
+                            <li>
+                                <LinkTo class="edit-post" @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
+                            </li>
+                            <li>
+                                <a class="view-browser" href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="delete-post mr2"
+                                    {{on "click" this.confirmDeleteMember}}
+                                    data-test-button="delete-post"
+                                >
+                                    <span class="red">Delete post</span>
+                                </button>
+                            </li>
+                        </GhDropdown>
+                    </span>
+                </div>
             </div>
         </div>
     </GhCanvasHeader>

@@ -340,6 +340,19 @@ describe('{{ghost_head}} helper', function () {
             published_at: new Date(0),
             updated_at: new Date(0)
         }));
+
+        posts.push(createPost({ // Post 10
+            title: 'Testing stats',
+            uuid: 'post_uuid',
+            excerpt: 'Creating stats for the site',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Creating stats for the site'),
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
     };
 
     before(function () {
@@ -1180,6 +1193,82 @@ describe('{{ghost_head}} helper', function () {
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+    });
+
+    describe('includes tinybird tracker script when config is set', function () {
+        beforeEach(function () {
+            configUtils.set({
+                tinybird: {
+                    tracker: {
+                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
+                        endpoint: 'https://api.tinybird.co',
+                        token: 'tinybird_token',
+                        id: 'tb_test_site_uuid'
+                    }
+                }
+            });
+        });
+        it('with all tb_variables set to undefined on logged out home page', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('Sets tb_post_uuid on post page', async function () {
+            const renderObject = {
+                post: posts[10]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('sets tb_member_x variables on logged in home page', async function () {
+            const renderObject = {
+                member: {
+                    uuid: 'member_uuid',
+                    status: 'paid'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('sets both tb_member_x variables and tb_post_uuid on logged in post page', async function () {
+            const renderObject = {
+                member: {
+                    uuid: 'member_uuid',
+                    status: 'free'
+                },
+                post: posts[10]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
                     safeVersion: '4.3'
                 }
             }));
