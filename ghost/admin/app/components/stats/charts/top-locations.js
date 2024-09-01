@@ -4,7 +4,7 @@ import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {inject} from 'ghost-admin/decorators/inject';
 
-export default class TopPages extends Component {
+export default class TopLocations extends Component {
     @inject config;
 
     ReactComponent = (props) => {
