@@ -7,6 +7,11 @@ SQL >
         site_uuid,
         toDate(timestamp) AS date,
         session_id,
+        maxIf(
+            member_status,
+            member_status IN ('paid', 'free', 'undefined')
+        ) AS member_status,
+        anySimpleState(post_uuid) AS post_uuid,
         anySimpleState(device) AS device,
         anySimpleState(browser) AS browser,
         anySimpleState(location) AS location,
