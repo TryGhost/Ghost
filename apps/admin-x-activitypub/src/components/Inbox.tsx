@@ -44,7 +44,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                 <div className='w-full'>
                     {inboxTabActivities.length > 0 ? (
                         <ul className='mx-auto flex max-w-[640px] flex-col'>
-                            {inboxTabActivities.reverse().map(activity => (
+                            {inboxTabActivities.reverse().map((activity, index) => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
@@ -56,6 +56,9 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         object={activity.object}
                                         type={activity.type}
                                     />
+                                    {index < inboxTabActivities.length - 1 && (
+                                        <div className="my-4 h-px w-full bg-grey-200"></div>
+                                    )}
                                 </li>
                             ))}
                         </ul>
