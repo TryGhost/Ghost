@@ -3,6 +3,7 @@ import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-outline.svg';
+import * as Sentry from '@sentry/react';
 
 export const TipsAndDonationsErrorStyle = `
     .gh-portal-tips-and-donations .gh-tips-and-donations-icon-error {
@@ -28,6 +29,10 @@ const SupportError = ({error}) => {
     const errorTitle = t('Sorry, that didn’t work.');
     const errorMessage = error || t('There was an error processing your payment. Please try again.');
     const buttonLabel = t('Close');
+
+    if (error) { // Log error to Sentry
+        Sentry.captureException(error);
+    }
 
     return (
         <div className='gh-portal-content gh-portal-tips-and-donations'>
