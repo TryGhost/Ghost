@@ -1,11 +1,12 @@
 import Component from '@glimmer/component';
-import config from 'ghost-admin/config/environment';
 import fetch from 'fetch';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
+    @inject config;
     @tracked selected = 'visits';
     @tracked totals = null;
 
@@ -25,11 +26,11 @@ export default class KpisOverview extends Component {
     @task
     *fetchData() {
         try {
-            const response = yield fetch('https://api.tinybird.co/v0/pipes/kpis.json', {
+            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${config.tinybirdToken}`
+                    Authorization: `Bearer ${this.config.stats.token}`
                 }
             });
 
