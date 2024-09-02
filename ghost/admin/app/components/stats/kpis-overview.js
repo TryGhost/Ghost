@@ -26,7 +26,7 @@ export default class KpisOverview extends Component {
     @task
     *fetchData() {
         try {
-            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json`, {
+            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?site_uuid=${this.config.stats.id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -39,6 +39,7 @@ export default class KpisOverview extends Component {
             }
 
             const rawData = yield response.json();
+
             this.totals = this.processData(rawData.data);
         } catch (error) {
             // console.error('Error fetching KPI data:', error);
