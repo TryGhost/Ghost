@@ -148,7 +148,7 @@ export default class KpisComponent extends Component {
                             symbol: 'circle',
                             symbolSize: 10,
                             z: 8,
-                            smooth: true,
+                            smooth: false,
                             name: props.selected,
                             data: (data ?? []).map(row => [
                                 String(row[INDEX]),
