@@ -54,5 +54,41 @@ describe.only('Acceptance: Stats', function () {
             expect(currentURL()).to.equal('/stats');
             expect(find('[data-test-screen-title]')).to.have.rendered.trimmed.text('Stats');
         });
+
+        // Tests to be written
+        it('can filter by audience type', async function () {});
+        it('can filter by date range', async function () {});
+        it('can filter by number of days', async function () {});
+
+        it('shows sum of unique visitors', async function () {});
+        it('shows sum of visits', async function () {});
+        it('shows sum of pageviews', async function () {});
+        it('shows average bounce rate', async function () {});
+        it('shows average visit duration', async function () {});
+
+        it('can switch between kpi tabs', async function () {});
+
+        it('shows unique visitors chart', async function () {});
+        it('shows visits chart', async function () {});
+        it('shows pageviews chart', async function () {});
+        it('shows bounce rate chart', async function () {});
+        it('shows visit duration chart', async function () {});
+
+        it('shows "content" bar list chart', async function () {});
+        it('can filter for posts', async function () {});
+        it('can filter for pages', async function () {});
+        it('can view all "content" stat', async function () {});
+
+        it('shows "sources" bar list chart', async function () {});
+        it('can filter for campaigns', async function () {});
+        it('can view all "sources" stat', async function () {});
+
+        it('shows "countries" bar list chart', async function () {});
+        it('can view all "countries" stat', async function () {});
+
+        it('can switch between technical tabs', async function () {});
+        it('shows "devices" chart', async function () {});
+        it('shows "browsers" chart', async function () {});
+        it('shows "OS" chart', async function () {});
     });
 });

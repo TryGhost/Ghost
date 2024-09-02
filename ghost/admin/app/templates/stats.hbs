@@ -19,6 +19,34 @@
             </div>
     </GhCanvasHeader>
 
-    <Stats::Charts::TopLocations @chartDays={{this.chartDays}} />
+    {{!-- <Stats::Charts::TopLocations @chartDays={{this.chartDays}} /> --}}
+
+    <section class="view-container gh-stats">
+        <section class="gh-stats-container">
+            <Stats::KpisOverview @chartDays={{this.days}} />
+        </section>
+
+        <section class="gh-stats-grid cols-2">
+            <div class="gh-stats-container">
+                <h5 class="gh-stats-metric-label">Top posts & pages</h5>
+                <Stats::Charts::TopPages @chartDays={{this.days}} />
+            </div>
+            <div class="gh-stats-container">
+                <h5 class="gh-stats-metric-label">Sources</h5>
+                <Stats::Charts::TopSources @chartDays={{this.days}} />
+            </div>
+        </section>
+
+        <section class="gh-stats-grid cols-2">
+            <div class="gh-stats-container">
+                <h5 class="gh-stats-metric-label">Top locations</h5>
+                <Stats::Charts::TopLocations @chartDays={{this.days}} />
+            </div>
+            <div class="gh-stats-container">
+                <Stats::TechnicalOverview @chartDays={{this.days}} />
+            </div>
+        </section>
+
+    </section>
 
 </section>
