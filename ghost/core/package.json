@@ -22,7 +22,7 @@
   "scripts": {
     "archive": "npm pack",
     "dev": "node --watch index.js",
-    "build": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build:assets": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:base": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
     "test:single": "yarn test:base --timeout=60000",
@@ -272,7 +272,7 @@
     "targets": {
       "archive": {
         "dependsOn": [
-          "build",
+          "build:assets",
           "^build:ts",
           {
             "projects": [
