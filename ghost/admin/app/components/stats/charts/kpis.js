@@ -60,16 +60,17 @@ export default class KpisComponent extends Component {
                 params={params}
                 options={{
                     grid: {
-                        left: 0,
-                        right: 0,
-                        top: 10,
+                        left: '0%',
+                        right: '0%',
+                        top: '10%',
                         bottom: 0,
                         containLabel: true
                     },
                     xAxis: {
                         type: 'time',
-                        min: startDate.toISOString(),
-                        max: endDate.toISOString(),
+                        // min: startDate.toISOString(),
+                        // max: endDate.toISOString(),
+                        boundaryGap: ['0%', '0.5%'],
                         axisLabel: {
                             formatter: chartDays <= 7 ? '{ee}' : '{dd} {MMM}'
                         },
@@ -87,8 +88,7 @@ export default class KpisComponent extends Component {
                             lineStyle: {
                                 color: '#DDE1E5'
                             }
-                        },
-                        boundaryGap: false
+                        }
                     },
                     yAxis: {
                         splitLine: {
@@ -109,7 +109,10 @@ export default class KpisComponent extends Component {
                             type: 'line',
                             z: 1
                         },
-                        extraCssText: 'box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);'
+                        extraCssText: 'box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);',
+                        formatter: function (fparams) {
+                            return `<div><div>${moment(fparams[0].value[0]).format('DD MMM, YYYY')}</div><div><span style="display: inline-block; margin-right: 16px; font-weight: 600;">Pageviews</span> ${fparams[0].value[1]}</div></div>`;
+                        }
                     },
                     series: [
                         {
