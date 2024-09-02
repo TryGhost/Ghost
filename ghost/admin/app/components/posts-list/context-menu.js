@@ -3,6 +3,7 @@ import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
+import UnschedulePostsModal from './modals/unschedule-posts';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
@@ -50,6 +51,10 @@ const messages = {
     },
     copiedPreviewUrl: {
         single: 'Preview link copied'
+    },
+    unscheduled: {
+        single: '{Type} unscheduled',
+        multiple: '{count} {type}s unscheduled'
     }
 };
 
@@ -140,6 +145,15 @@ export default class PostsContextMenu extends Component {
     @action
     async copyPosts() {
         this.menu.performTask(this.copyPostsTask);
+    }
+
+    @action
+    async unschedulePosts() {
+        await this.menu.openModal(UnschedulePostsModal, {
+            type: this.type,
+            selectionList: this.selectionList,
+            confirm: this.unschedulePostsTask
+        });
     }
 
     @task
@@ -491,5 +505,40 @@ export default class PostsContextMenu extends Component {
 
     get canCopySelection() {
         return this.selectionList.availableModels.length === 1;
+    }
+
+    get canUnscheduleSelection() {
+        for (const m of this.selectionList.availableModels) {
+            if (m.status === 'scheduled') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @task
+    *unschedulePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unschedule');
+        this.notifications.showNotification(this.#getToastMessage('unscheduled'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            if (post.status === 'scheduled') {
+                // We need to do it this way to prevent marking the model as dirty
+                this.store.push({
+                    data: {
+                        id: post.id,
+                        type: this.type,
+                        attributes: {
+                            status: 'draft'
+                        }
+                    }
+                });
+            }
+        }
+
+        this.updateFilteredPosts();
+        return true;
     }
 }
