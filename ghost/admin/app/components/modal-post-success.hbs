@@ -50,15 +50,17 @@
                         {{if (not-eq @recipientType "all") @recipientType}}
                         {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
                     </strong>
-                    of <strong>{{this.post.newsletter.name}}</strong>
+                    of <strong>{{this.post.newsletter.name}}</strong>,
                 {{/let}}
             {{/if}}
 
-            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
-                on
-                <strong>{{moment-format publishedAt "D MMM YYYY"}}</strong>
-                at
-                <strong>{{moment-format publishedAt "HH:mm"}}</strong>.
+            {{#let (moment-site-tz @post.publishedAtUTC) as |scheduledAt|}}
+                {{#if (is-moment-today scheduledAt)}}
+                    <strong class="nowrap">today</strong>
+                {{else}}
+                    on <strong class="nowrap">{{moment-format scheduledAt "MMMM Do"}}</strong>
+                {{/if}}
+                at <strong class="nowrap">{{moment-format scheduledAt "HH:mm"}}.</strong>
             {{/let}}
         </div>
     {{/if}}
