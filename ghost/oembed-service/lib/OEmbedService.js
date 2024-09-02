@@ -52,6 +52,11 @@ const findUrlWithProvider = (url) => {
  */
 
 /**
+ * @typedef {Object} IStorage
+ * @prop {(feature: string) => Object} getStorage
+ */
+
+/**
  * @typedef {(url: string, config: Object) => Promise} IExternalRequest
  */
 
@@ -66,10 +71,12 @@ class OEmbedService {
      *
      * @param {Object} dependencies
      * @param {IConfig} dependencies.config
+     * @param {IStorage} dependencies.storage
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest}) {
+    constructor({config, externalRequest, storage}) {
         this.config = config;
+        this.storage = storage;
 
         /** @type {IExternalRequest} */
         this.externalRequest = externalRequest;
@@ -135,6 +142,15 @@ class OEmbedService {
                 followRedirect: true,
                 ...options
             });
+    }
+
+    /**
+     * @param {string} url
+     *
+     * @returns {Object}
+     */
+    fetchAndStoreImage(url) {
+        return null;
     }
 
     /**
