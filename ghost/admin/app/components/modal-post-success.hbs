@@ -147,7 +147,7 @@
     <footer class="modal-footer">
         {{#if (and this.post.isPublished (not this.post.emailOnly))}}
             <div class="share-buttons">
-                <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
+                <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}%0A{{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                     <span>{{svg-jar "social-x"}}</span>
                 </a>
                 <a href="https://threads.net/intent/post?text={{this.encodedTitleAndUrl}}" class="gh-btn threads" target="_blank" rel="noopener noreferrer" title="Share on Threads">
