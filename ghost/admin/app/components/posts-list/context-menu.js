@@ -285,6 +285,38 @@ export default class PostsContextMenu extends Component {
         return true;
     }
 
+    @task
+    *unschedulePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        try {
+            // Perform the bulk edit action to unschedule the posts
+            yield this.performBulkEdit('unschedule');
+            this.notifications.showNotification(this.#getToastMessage('unscheduled'), {type: 'success'});
+
+            // Update the models on the client side
+            for (const post of updatedModels) {
+                if (post.status === 'scheduled') {
+                    // We need to do it this way to prevent marking the model as dirty
+                    this.store.push({
+                        data: {
+                            id: post.id,
+                            type: this.type,
+                            attributes: {
+                                status: 'draft'
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Remove posts that no longer match the filter
+            this.updateFilteredPosts();
+        } catch (error) {
+            this.notifications.showAPIError(error, {key: `${this.type}.unschedule.failed`});
+        }
+        return true;
+    }
+
     updateFilteredPosts() {
         const updatedModels = this.selectionList.availableModels;
         const filter = this.selectionList.allFilter;
@@ -514,31 +546,5 @@ export default class PostsContextMenu extends Component {
             }
         }
         return false;
-    }
-
-    @task
-    *unschedulePostsTask() {
-        const updatedModels = this.selectionList.availableModels;
-        yield this.performBulkEdit('unschedule');
-        this.notifications.showNotification(this.#getToastMessage('unscheduled'), {type: 'success'});
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            if (post.status === 'scheduled') {
-                // We need to do it this way to prevent marking the model as dirty
-                this.store.push({
-                    data: {
-                        id: post.id,
-                        type: this.type,
-                        attributes: {
-                            status: 'draft'
-                        }
-                    }
-                });
-            }
-        }
-
-        this.updateFilteredPosts();
-        return true;
     }
 }
