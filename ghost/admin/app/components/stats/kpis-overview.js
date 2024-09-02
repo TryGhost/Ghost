@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
 import fetch from 'fetch';
 import {action} from '@ember/object';
-import {task, timeout} from 'ember-concurrency';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
@@ -40,7 +40,7 @@ export default class KpisOverview extends Component {
             const rawData = yield response.json();
             this.totals = this.processData(rawData.data);
         } catch (error) {
-            console.error('Error fetching KPI data:', error);
+            // console.error('Error fetching KPI data:', error);
             // Handle error (e.g., set an error state, show a notification)
         }
     }
