@@ -11,6 +11,10 @@ SQL >
         browser,
         location,
         referrer,
+        maxIf(
+            member_status,
+            member_status IN ('paid', 'free', 'undefined')
+        ) AS member_status,
         uniqState(session_id) AS visits,
         countState() AS hits
     FROM analytics_hits

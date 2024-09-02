@@ -2,6 +2,8 @@ SCHEMA >
     `site_uuid` String,
     `date` Date,
     `session_id` String,
+    `member_status` SimpleAggregateFunction(any, String),
+    `post_uuid` SimpleAggregateFunction(any, String),
     `device` SimpleAggregateFunction(any, String),
     `browser` SimpleAggregateFunction(any, String),
     `location` SimpleAggregateFunction(any, String),

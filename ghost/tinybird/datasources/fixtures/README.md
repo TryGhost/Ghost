@@ -5,7 +5,7 @@ The file mockingbird-schema.json is a schema for generating fake data using the 
 The CLI is installed via npm:
 
 ```
-npm install -g @tinybirdco/mockingbird
+npm install -g @tinybirdco/mockingbird-cli
 ```
 
 The command I'm currently using to generate the data is:

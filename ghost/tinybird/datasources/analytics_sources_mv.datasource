@@ -5,6 +5,7 @@ SCHEMA >
     `browser` String,
     `location` String,
     `referrer` String,
+    `member_status` SimpleAggregateFunction(any, String),
     `visits` AggregateFunction(uniq, String),
     `hits` AggregateFunction(count)
 

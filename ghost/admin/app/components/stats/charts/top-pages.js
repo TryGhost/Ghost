@@ -11,6 +11,7 @@ export default class TopPages extends Component {
 
     ReactComponent = (props) => {
         let chartDays = props.chartDays;
+        let audience = props.audience;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
@@ -20,13 +21,15 @@ export default class TopPages extends Component {
          * @property {string} cid
          * @property {string} [date_from]
          * @property {string} [date_to]
+         * @property {string} [member_status]
          * @property {number} [limit]
          * @property {number} [skip]
          */
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD')
+            date_to: endDate.format('YYYY-MM-DD'),
+            member_status: audience.length === 0 ? null : audience.join(',')
         };
 
         const {data, meta, error, loading} = useQuery({
