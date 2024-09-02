@@ -43,7 +43,7 @@ describe('Acceptance: Tags', function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('lists public and internal tags separately', async function () {

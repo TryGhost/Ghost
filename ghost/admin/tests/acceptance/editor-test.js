@@ -118,7 +118,7 @@ describe('Acceptance: Editor', function () {
             author = this.server.create('user', {roles: [role]});
             this.server.loadFixtures('settings');
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         describe('post settings menu', function () {

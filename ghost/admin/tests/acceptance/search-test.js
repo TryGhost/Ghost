@@ -57,7 +57,7 @@ suites.forEach((suite) => {
 
             suite.beforeEach.bind(this)();
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('is using correct provider', async function () {

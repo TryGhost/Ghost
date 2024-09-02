@@ -19,7 +19,7 @@ describe('Acceptance: Custom Post Templates', function () {
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
 
-        return await authenticateSession();
+        await authenticateSession();
     });
 
     describe('with custom templates', function () {
