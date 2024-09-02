@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",
-    "build": "concurrently \"tsc\" \"vite build\"",
+    "build": "tsc && vite build",
     "lint": "yarn run lint:code && yarn run lint:test",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
