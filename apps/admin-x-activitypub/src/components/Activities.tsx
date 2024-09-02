@@ -1,4 +1,4 @@
-import APAvatar from './global/APAvatar';
+import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem from './activities/ActivityItem';
 import MainNavigation from './navigation/MainNavigation';
 import React from 'react';
@@ -60,6 +60,25 @@ const getActivityUrl = (activity: Activity): string | null => {
     return null;
 };
 
+const getActorUrl = (activity: Activity): string | null => {
+    if (activity.actor) {
+        return activity.actor.url;
+    }
+
+    return null;
+};
+
+const getActivityBadge = (activity: Activity): AvatarBadge => {
+    switch (activity.type) {
+    case ACTVITY_TYPE.FOLLOW:
+        return 'user-fill';
+    case ACTVITY_TYPE.LIKE:
+        if (activity.object) {
+            return 'heart-fill';
+        }
+    }    
+};
+
 const isFollower = (id: string, followerIds: string[]): boolean => {
     return followerIds.includes(id);
 };
@@ -85,8 +104,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 {activities.length > 0 && (
                     <div className='mt-8 flex w-full max-w-[560px] flex-col'>
                         {activities?.map(activity => (
-                            <ActivityItem key={activity.id} url={getActivityUrl(activity)}>
-                                <APAvatar author={activity.actor} />
+                            <ActivityItem key={activity.id} url={getActivityUrl(activity) || getActorUrl(activity)}>
+                                <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
                                 <div>
                                     <div className='text-grey-600'>
                                         <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
