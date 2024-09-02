@@ -45,7 +45,6 @@ export default class TopLocations extends Component {
                 index="location"
                 categories={['hits']}
                 colorPalette={['#E8D9FF']}
-                height="300px"
             />
         );
     };

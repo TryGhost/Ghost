@@ -150,10 +150,7 @@ export default class KpisComponent extends Component {
                             z: 8,
                             smooth: true,
                             name: props.selected,
-                            data: (data ?? []).map(row => [
-                                String(row[INDEX]),
-                                row[props.selected]
-                            ])
+                            data: data?.map(row => row.hits).reverse() || []
                         }
                     ]
                 }}
