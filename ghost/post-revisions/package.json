@@ -7,8 +7,8 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "build:ts": "yarn build",
+    "build": "yarn build:ts",
+    "build:ts": "tsc",
     "test:types": "tsc --noEmit",
     "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:unit && yarn test:types",
