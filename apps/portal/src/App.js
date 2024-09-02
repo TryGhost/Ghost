@@ -5,12 +5,13 @@ import Notification from './components/Notification';
 import PopupModal from './components/PopupModal';
 import setupGhostApi from './utils/api';
 import AppContext from './AppContext';
-import {hasMode} from './utils/check-mode';
+import NotificationParser from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
+import {hasMode} from './utils/check-mode';
+import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
-import NotificationParser from './utils/notifications';
 import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
@@ -184,10 +185,9 @@ export default class App extends React.Component {
             };
             window.addEventListener('hashchange', this.hashHandler, false);
 
-            // spike ship - to test if we can show / hide signup forms inside post / page
+            // the signup card will ship hidden by default,
+            // so we need to show it if the member is not logged in
             if (!member) {
-                // the signup card will ship hidden by default, so we need to show it if the user is not logged in
-                // not sure why a user would have more than one form on a post, but just in case we'll find them all
                 const formElements = document.querySelectorAll('[data-lexical-signup-form]');
                 if (formElements.length > 0){
                     formElements.forEach((element) => {
@@ -195,7 +195,11 @@ export default class App extends React.Component {
                     });
                 }
             }
+
             this.setupRecommendationButtons();
+
+            // avoid portal links switching to homepage (e.g. from absolute link copy/pasted from Admin)
+            this.transformPortalLinksToRelative();
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
@@ -954,6 +958,16 @@ export default class App extends React.Component {
         for (const element of elements) {
             element.addEventListener('click', clickHandler, {passive: true});
         }
+    }
+
+    /**
+     * Transform any portal links to use relative paths
+     *
+     * Prevents unwanted/unnecessary switches to the home page when opening the
+     * portal. Especially useful for copy/pasted links from Admin screens.
+     */
+    transformPortalLinksToRelative() {
+        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {
