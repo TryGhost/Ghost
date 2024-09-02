@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, mockManager, dbUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
 const mentionsService = require('../../../core/server/services/mentions');
 const recommendationsService = require('../../../core/server/services/recommendations');
@@ -66,10 +66,6 @@ describe('Incoming Recommendation Emails', function () {
     });
 
     it('Sends a different email if we receive a recommendation back', async function () {
-        if (dbUtils.isSQLite()) {
-            this.skip();
-        }
-
         // Create a recommendation to otherghostsite.com
         const recommendation = Recommendation.create({
             title: `Recommendation`,
