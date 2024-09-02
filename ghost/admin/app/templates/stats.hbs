@@ -37,27 +37,27 @@
 
     <section class="view-container gh-stats">
         <section class="gh-stats-container">
-            <Stats::KpisOverview @chartDays={{this.days}} @audience={{this.audience}} />
+            <Stats::KpisOverview @chartDays={{this.chartDays}} @audience={{this.audience}} />
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
                 <h5 class="gh-stats-metric-label">Top posts & pages</h5>
-                <Stats::Charts::TopPages @chartDays={{this.days}} @audience={{this.audience}} />
+                <Stats::Charts::TopPages @chartDays={{this.chartDays}} @audience={{this.audience}} />
             </div>
             <div class="gh-stats-container">
                 <h5 class="gh-stats-metric-label">Sources</h5>
-                <Stats::Charts::TopSources @chartDays={{this.days}} @audience={{this.audience}} />
+                <Stats::Charts::TopSources @chartDays={{this.chartDays}} @audience={{this.audience}} />
             </div>
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
                 <h5 class="gh-stats-metric-label">Top locations</h5>
-                <Stats::Charts::TopLocations @chartDays={{this.days}} @audience={{this.audience}} />
+                <Stats::Charts::TopLocations @chartDays={{this.chartDays}} @audience={{this.audience}} />
             </div>
             <div class="gh-stats-container">
-                <Stats::TechnicalOverview @chartDays={{this.days}} @audience={{this.audience}} />
+                <Stats::TechnicalOverview @chartDays={{this.chartDays}} @audience={{this.audience}} />
             </div>
         </section>
 

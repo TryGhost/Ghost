@@ -73,7 +73,7 @@
     content: "";
     position: absolute;
     width: 100%;
-    height: 1px;
+    height: 2px;
     bottom: -1px;
     left: 0;
     right: 0;
@@ -107,4 +107,31 @@
     letter-spacing: -0.05em;
     font-weight: 600;
     line-height: 1;
+}
+
+.gh-stats-piechart-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.gh-stats-piechart-container table {
+    margin-top: 5px;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.gh-stats-piechart-container .table td,
+.gh-stats-piechart-container.table th,
+.gh-stats-piechart-container table td,
+.gh-stats-piechart-container table th {
+    padding: 6px 6px 6px 0px;
+}
+
+.gh-stats-piechart {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    margin-right: -20px;
 }

@@ -35,7 +35,8 @@ export default class TopPages extends Component {
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
             token: this.config.stats.token,
-            params
+            params,
+            limit: 6
         });
 
         return (

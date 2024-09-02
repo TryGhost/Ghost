@@ -27,7 +27,8 @@ export default class TopLocations extends Component {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
+            member_status: audience.length === 0 ? null : audience.join(','),
+            limit: 6
         };
 
         const {data, meta, error, loading} = useQuery({
@@ -45,7 +46,6 @@ export default class TopLocations extends Component {
                 index="location"
                 categories={['hits']}
                 colorPalette={['#E8D9FF']}
-                height="300px"
             />
         );
     };
