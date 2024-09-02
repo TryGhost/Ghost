@@ -54,7 +54,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
+    "build": "tsc -p tsconfig.declaration.json && vite build",
     "prepare": "yarn build",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",

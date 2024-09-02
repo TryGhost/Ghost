@@ -9,7 +9,7 @@
   "types": "types/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
+    "build": "tsc -p tsconfig.declaration.json && vite build",
     "prepare": "yarn build",
     "test": "yarn test:unit && yarn test:types",
     "test:unit": "yarn nx build && vitest run",
