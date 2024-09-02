@@ -29,29 +29,57 @@ export default class KpisComponent extends Component {
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 6
+            limit: 5
         };
 
+        let endpoint;
+
+        switch (props.selected) {
+        case 'browsers':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`;
+            break;
+        default:
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices.json`;
+        }
+
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`,
+            endpoint: endpoint,
             token: this.config.stats.token,
             params
         });
 
         const colorPalette = ['#B78AFB', '#7FDE8A', '#FBCE75', '#F97DB7', '#6ED0FB'];
 
-        const transformedData = (data ?? []).map((item, index) => ({
-            name: item.browser.charAt(0).toUpperCase() + item.browser.slice(1),
-            value: item.hits,
-            color: colorPalette[index % colorPalette.length] // Assign a color from the palette
-        }));
+        let transformedData;
+        let indexBy;
+        let tableHead;
+
+        switch (props.selected) {
+        case 'browsers':
+            transformedData = (data ?? []).map((item, index) => ({
+                name: item.browser.charAt(0).toUpperCase() + item.browser.slice(1),
+                value: item.hits,
+                color: colorPalette[index % colorPalette.length]
+            }));
+            indexBy = 'browser';
+            tableHead = 'Browser';
+            break;
+        default:
+            transformedData = (data ?? []).map((item, index) => ({
+                name: item.device.charAt(0).toUpperCase() + item.device.slice(1),
+                value: item.hits,
+                color: colorPalette[index % colorPalette.length]
+            }));
+            indexBy = 'device';
+            tableHead = 'Device';
+        }
 
         return (
             <div className="gh-stats-piechart-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Browser</th>
+                            <th>{tableHead}</th>
                             <th>Hits</th>
                         </tr>
                     </thead>
@@ -73,7 +101,7 @@ export default class KpisComponent extends Component {
                         meta={meta}
                         loading={loading}
                         error={error}
-                        index="browser"
+                        index={indexBy}
                         categories={['hits']}
                         colorPalette={colorPalette}
                         backgroundColor="transparent"
