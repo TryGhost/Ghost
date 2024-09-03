@@ -147,16 +147,17 @@ class OEmbedService {
     /**
      * Process and store image from a URL
      * @param {String} imageUrl - URL of the image to process
+     * @param {String} imageType - What is the image used for. Example - icon, thumbnail
      * @returns {Promise<String>} - URL where the image is stored
      */
-    async processImageFromUrl(imageUrl) {
+    async processImageFromUrl(imageUrl, imageType) {
         // Fetch image buffer from the URL
         const imageBuffer = await this.fetchImageBuffer(imageUrl);
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
 
-        const targetPath = `${fileName}`;
+        const targetPath = path.join(imageType, fileName);
 
         const imageStoredUrl = await this.storage.getStorage('images').saveRaw(imageBuffer, targetPath);
 
@@ -316,7 +317,7 @@ class OEmbedService {
             });
         }
 
-        await this.processImageFromUrl(metadata.icon)
+        await this.processImageFromUrl(metadata.icon, 'icon')
             .then((processedImageUrl) => {
                 metadata.icon = processedImageUrl;
             }).catch((err) => {
@@ -324,7 +325,7 @@ class OEmbedService {
                 logging.error(err);
             });
 
-        await this.processImageFromUrl(metadata.thumbnail)
+        await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
             .then((processedImageUrl) => {
                 metadata.thumbnail = processedImageUrl;
             }).catch((err) => {
