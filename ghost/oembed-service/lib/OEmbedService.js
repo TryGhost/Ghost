@@ -132,22 +132,16 @@ class OEmbedService {
      * @returns {Promise<Buffer>} - Promise resolving to the image buffer
      */
     async fetchImageBuffer(imageUrl) {
-        try {
-            const response = await fetch(imageUrl);
+        const response = await fetch(imageUrl);
         
         if (!response.ok) {
-            throw new Error(`Failed to fetch image: ${response.statusText}`);
+            Error(`Failed to fetch image: ${response.statusText}`);
         }
 
         const arrayBuffer = await response.arrayBuffer();
         
-        // Convert the ArrayBuffer to a Buffer
         const buffer = Buffer.from(arrayBuffer);
         return buffer;
-        } catch (err) {
-            console.error(`Error fetching image: ${err.message}`);
-            throw err; // Re-throw the error for further handling
-        }
     }
 
     /**
@@ -156,25 +150,17 @@ class OEmbedService {
      * @returns {Promise<String>} - URL where the image is stored
      */
     async processImageFromUrl(imageUrl) {
-        try {
-            // Fetch image buffer from the URL
-            const imageBuffer = await this.fetchImageBuffer(imageUrl);
+        // Fetch image buffer from the URL
+        const imageBuffer = await this.fetchImageBuffer(imageUrl);
 
-            // Extract file name from URL
-            const fileName = path.basename(new URL(imageUrl).pathname);
+        // Extract file name from URL
+        const fileName = path.basename(new URL(imageUrl).pathname);
 
-            // Define target path relative to the storage path
-            const targetPath = `${fileName}`;
+        const targetPath = `${fileName}`;
 
-            // Save the buffer and return the URL
-            const imageStoredUrl = await this.storage.getStorage('images').saveRaw(imageBuffer, targetPath);
+        const imageStoredUrl = await this.storage.getStorage('images').saveRaw(imageBuffer, targetPath);
 
-
-            return imageStoredUrl;
-        } catch (err) {
-            console.error(`Error processing image from URL: ${err.message}`);
-            throw new Error('Image processing failed. Please check the URL and try again.');
-        }
+        return imageStoredUrl;
     }
 
     /**
@@ -194,15 +180,6 @@ class OEmbedService {
                 followRedirect: true,
                 ...options
             });
-    }
-
-    /**
-     * @param {string} url
-     *
-     * @returns {Object}
-     */
-    fetchAndStoreImage(url) {
-        return null;
     }
 
     /**
@@ -349,23 +326,19 @@ class OEmbedService {
         // }
 
         await this.processImageFromUrl(metadata.icon)
-        .then((url) => {
-            console.log('Icon Image stored at:', url)
-            metadata.icon = url;
-        })
-        .catch((err) => {
-            metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-            logging.error(err);
-        });
+            .then((processedImageUrl) => {
+                metadata.icon = processedImageUrl;
+            }).catch((err) => {
+                metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+                logging.error(err);
+            });
 
         await this.processImageFromUrl(metadata.thumbnail)
-        .then((url) => {
-            console.log('Thumbnail Image stored at:', url)
-            metadata.thumbnail = url;
-        })
-        .catch((err) => {
-            logging.error(err);
-        });
+            .then((processedImageUrl) => {
+                metadata.thumbnail = processedImageUrl;
+            }).catch((err) => {
+                logging.error(err);
+            });
 
         return {
             version: '1.0',
