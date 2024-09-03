@@ -234,7 +234,7 @@ describe('Oembed API', function () {
 
             // Mock the icon URL to return 404
             nock('http://example.com/')
-                .head('/icon.svg')
+                .get('/icon.svg')
                 .reply(404);
 
             const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
