@@ -7722,10 +7722,10 @@
     lodash "^4.17.21"
     luxon "^3.5.0"
 
-"@tryghost/kg-default-nodes@1.1.16":
-  version "1.1.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-1.1.16.tgz#03ec2f4fd26b91e9fb699b39056ff2e15d2bc32b"
-  integrity sha512-2xjW4ace0K5pHUFImIuHWGQJ0a8Kb3NBCoJ0w3lwighDweMqutn4yXUPXJ2sJAEpAvY2wAEi/2GpuDlrdRTK0Q==
+"@tryghost/kg-default-nodes@1.1.17":
+  version "1.1.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-1.1.17.tgz#f093217d1ba7af40bc6b05dd4b5a8400ab6c87ed"
+  integrity sha512-8asqWT11ULuuTjG9jrdwHqqFyKM80w3YEULO4OSdtNBtu8PbFmN0KdJ9Yo7w9YdpOMqfu/YTzyRJm1+XbRU55Q==
   dependencies:
     "@lexical/clipboard" "0.13.1"
     "@lexical/rich-text" "0.13.1"
@@ -7739,21 +7739,21 @@
     lodash "^4.17.21"
     luxon "^3.5.0"
 
-"@tryghost/kg-default-transforms@1.1.17":
-  version "1.1.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-1.1.17.tgz#fbb98f8eb267c82249ae4c58ba3101ecc43f4a1e"
-  integrity sha512-PNjPOv9lr7tjx3qzixFVRVvDh6WoziR4BLhM1rFjELZx7iqCaSSU5bBmOthHpEKpmB067a+NCdMF28aZOwlsJw==
+"@tryghost/kg-default-transforms@1.1.18":
+  version "1.1.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-1.1.18.tgz#07b60f821abe5598ddda9da0da8a5157f0bc1ab7"
+  integrity sha512-oempHDuJPFu8TpOGRmxIJpiVEEO2a68vUMGF5EtMfDTP0wOV0rpX4I1DKfuU/M38UKjVkJ1D9VYwuEPkYsQEqQ==
   dependencies:
     "@lexical/list" "0.13.1"
     "@lexical/rich-text" "0.13.1"
     "@lexical/utils" "0.13.1"
-    "@tryghost/kg-default-nodes" "1.1.16"
+    "@tryghost/kg-default-nodes" "1.1.17"
     lexical "0.13.1"
 
-"@tryghost/kg-html-to-lexical@1.1.17":
-  version "1.1.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-1.1.17.tgz#de7ea5f4a8d926d98a6f5a935761fe65913ba785"
-  integrity sha512-l0sMo3Ei6RG7mTwdJ/Ye3jU7TsFZKdCis+RNrpEAUTUaUpCSZTMgE5rd9kRuD4wdWBazlSGHFZLv3Pn7IyCwIA==
+"@tryghost/kg-html-to-lexical@1.1.18":
+  version "1.1.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-1.1.18.tgz#c18fa31cf9d9d766715bbba81b14733d926384de"
+  integrity sha512-ERwQGNBnWCwWdbCQRZGFFvqCQ5VlQWCaEnbfMCvPiAzGy7FTHX1XMntUeDQFytB4WJLJpRbrKncwfQH3wL5xQA==
   dependencies:
     "@lexical/clipboard" "0.13.1"
     "@lexical/headless" "0.13.1"
@@ -7761,15 +7761,15 @@
     "@lexical/link" "0.13.1"
     "@lexical/list" "0.13.1"
     "@lexical/rich-text" "0.13.1"
-    "@tryghost/kg-default-nodes" "1.1.16"
-    "@tryghost/kg-default-transforms" "1.1.17"
+    "@tryghost/kg-default-nodes" "1.1.17"
+    "@tryghost/kg-default-transforms" "1.1.18"
     jsdom "^24.1.0"
     lexical "0.13.1"
 
-"@tryghost/kg-lexical-html-renderer@1.1.19":
-  version "1.1.19"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-1.1.19.tgz#ad78c1be494213a45e8936e2e0dd89ed404e4889"
-  integrity sha512-kC7BMK9FVLWtCGEyL9N8RYZGqt5y1rUkBS05tWQ7sAGyp/N/Y7Q7wUuyPTkZwj/mjH/zGGSaHIDRPsVyDsyP/w==
+"@tryghost/kg-lexical-html-renderer@1.1.20":
+  version "1.1.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-1.1.20.tgz#d53a58acde2ee39370058937c8decd4966d6ed13"
+  integrity sha512-XgxB318IJq+rhMLL4zV+2Tqy/MReHT3hSMqa4OkEJNmtVGUSUNs1Jxe6zJdqWn1h+5P3wZ+7oEco3V+MyboZpw==
   dependencies:
     "@lexical/clipboard" "0.13.1"
     "@lexical/code" "0.13.1"
@@ -7777,8 +7777,8 @@
     "@lexical/link" "0.13.1"
     "@lexical/list" "0.13.1"
     "@lexical/rich-text" "0.13.1"
-    "@tryghost/kg-default-nodes" "1.1.16"
-    "@tryghost/kg-default-transforms" "1.1.17"
+    "@tryghost/kg-default-nodes" "1.1.17"
+    "@tryghost/kg-default-transforms" "1.1.18"
     jsdom "^24.1.0"
     lexical "0.13.1"
 
@@ -7813,10 +7813,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "4.1.1"
 
-"@tryghost/kg-unsplash-selector@0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.2.3.tgz#3b969e62e8410eb0fade25ee2f4944d4935e125b"
-  integrity sha512-FS4SWZ9hbPA+DvaIbXjLC/EPBqcrdZLWbj9kB96izNYaqyE3awyQNCDmBPcaOnnfqZ8BjVUlxQspxk8vLRH14A==
+"@tryghost/kg-unsplash-selector@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.2.4.tgz#2a54f5a4ec67dee2bae1c69b22084c6b0e8e6148"
+  integrity sha512-SFD0RduFkvr8K2S5YuHNnlueOx37PnNm6f18umGol+8cw/QohqScCFSfi6ISHbjj4js4qic5Cwaki4C/N88Fhw==
 
 "@tryghost/kg-utils@1.0.28":
   version "1.0.28"
@@ -7825,10 +7825,10 @@
   dependencies:
     semver "^7.6.2"
 
-"@tryghost/koenig-lexical@1.3.22":
-  version "1.3.22"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.22.tgz#95089fd549495ef012c1911eebe99e4dcca80a8e"
-  integrity sha512-pzbrzzqASwRnMsDLaGvIpvX0edU5LhGal4dOrs4ZZUBMq9OaiOQmBd057eJ2ceXGRWG5dDuQzQfGCjI83toC7Q==
+"@tryghost/koenig-lexical@1.3.23":
+  version "1.3.23"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.23.tgz#924545b3abfe721d40236ce26f6f01b439f494ef"
+  integrity sha512-84xN39lce6kx8cgXcWUKz9kmuPYFsZ4t0m0nXGk7azDDAArFurp1QgH9CAuOiEuZqD8eluLe7OsyPj+shmJbXw==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
@@ -8423,15 +8423,10 @@
   dependencies:
     "@types/lodash" "*"
 
-"@types/lodash@*":
+"@types/lodash@*", "@types/lodash@^4.14.165", "@types/lodash@^4.14.167":
   version "4.17.7"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.7.tgz#2f776bcb53adc9e13b2c0dfd493dfcbd7de43612"
   integrity sha512-8wTvZawATi/lsmNu10/j2hk1KEP0IvjubqPE3cu1Xz7xfXXt5oCq3SNUz4fMIP4XGF9Ky+Ue2tBA3hcS7LSBlA==
-
-"@types/lodash@^4.14.165", "@types/lodash@^4.14.167":
-  version "4.14.194"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.194.tgz#b71eb6f7a0ff11bff59fc987134a093029258a76"
-  integrity sha512-r22s9tAS7imvBt2lyHC9B8AGwWnXaYb1tY09oyLkXDs4vArpYJzw09nj8MLx5VfciBPGIb+ZwG0ssYnEPJxn/g==
 
 "@types/luxon@3.4.2":
   version "3.4.2"
@@ -30982,7 +30977,7 @@ validate-peer-dependencies@^1.1.0:
     resolve-package-path "^3.1.0"
     semver "^7.3.2"
 
-validator@13.12.0:
+validator@13.12.0, validator@^13.0.0:
   version "13.12.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-13.12.0.tgz#7d78e76ba85504da3fee4fd1922b385914d4b35f"
   integrity sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==
@@ -30996,11 +30991,6 @@ validator@^12.0.0:
   version "12.2.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-12.2.0.tgz#660d47e96267033fd070096c3b1a6f2db4380a0a"
   integrity sha512-jJfE/DW6tIK1Ek8nCfNFqt8Wb3nzMoAbocBF6/Icgg1ZFSBpObdnwVY2jQj6qUqzhx5jc71fpvBWyLGO7Xl+nQ==
-
-validator@^13.0.0:
-  version "13.11.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-13.11.0.tgz#23ab3fd59290c61248364eabf4067f04955fbb1b"
-  integrity sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==
 
 value-or-function@^4.0.0:
   version "4.0.0"

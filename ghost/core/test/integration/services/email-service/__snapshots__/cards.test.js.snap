@@ -1850,7 +1850,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                         </div>
                     </div>
                     <div class=\\"kg-bookmark-thumbnail\\" style=\\"min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 2px 2px 0; background-image: url(&#39;https://ghost.org/images/meta/ghost.png&#39;);\\">
-                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
+                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt onerror=\\"this.style.display=&#39;none&#39;\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
                 </a>
                 <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">My favorite website.</span></p></div>
             </div>
@@ -3042,7 +3042,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                         </div>
                     </div>
                     <div class=\\"kg-bookmark-thumbnail\\" style=\\"min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 2px 2px 0; background-image: url(&#39;https://ghost.org/images/meta/ghost.png&#39;);\\">
-                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
+                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt onerror=\\"this.style.display=&#39;none&#39;\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
                 </a>
                 <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">My favorite website.</span></p></div>
             </div>
@@ -4234,7 +4234,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                         </div>
                     </div>
                     <div class=\\"kg-bookmark-thumbnail\\" style=\\"min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 2px 2px 0; background-image: url(&#39;https://ghost.org/images/meta/ghost.png&#39;);\\">
-                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
+                        <img src=\\"https://ghost.org/images/meta/ghost.png\\" alt onerror=\\"this.style.display=&#39;none&#39;\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;\\"></div>
                 </a>
                 <div class=\\"kg-card-figcaption\\" style=\\"text-align: center; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; padding-top: 10px; padding-bottom: 10px; line-height: 1.5em; color: #738a94; font-size: 13px;\\"><p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\"><span style=\\"white-space: pre-wrap;\\">My favorite website.</span></p></div>
             </div>
