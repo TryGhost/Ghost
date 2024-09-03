@@ -4,7 +4,6 @@ const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
-const axios = require('axios');
 const path = require('path');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
@@ -134,11 +133,17 @@ class OEmbedService {
      */
     async fetchImageBuffer(imageUrl) {
         try {
-            const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-            
-            // Convert the ArrayBuffer to a Buffer
-            const buffer = Buffer.from(response.data);
-            return buffer;
+            const response = await fetch(imageUrl);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        
+        // Convert the ArrayBuffer to a Buffer
+        const buffer = Buffer.from(arrayBuffer);
+        return buffer;
         } catch (err) {
             console.error(`Error fetching image: ${err.message}`);
             throw err; // Re-throw the error for further handling

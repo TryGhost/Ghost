@@ -31,7 +31,6 @@
     "iconv-lite": "0.6.3",
     "lodash": "4.17.21",
     "metascraper": "5.45.15",
-    "axios": "1.7.2",
     "metascraper-author": "5.45.10",
     "metascraper-description": "5.45.10",
     "metascraper-image": "5.45.10",
