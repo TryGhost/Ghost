@@ -1,6 +1,6 @@
 import {arrayMove} from '@dnd-kit/sortable';
 import {useEffect, useState} from 'react';
-import _ from 'lodash';
+import * as _ from 'lodash-es';
 
 export type SortableIndexedList<Item> = {
     items: Array<{ item: Item; id: string }>;
