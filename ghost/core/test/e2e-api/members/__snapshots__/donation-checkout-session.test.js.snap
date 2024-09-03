@@ -12,6 +12,12 @@ Object {
 }
 `;
 
+exports[`Create Stripe Checkout Session for Donations can create a checkout session for a site with a long title 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
 exports[`Create Stripe Checkout Session for Donations check if donation message is in email 1: [body] 1`] = `
 Object {
   "url": "https://checkout.stripe.com/c/pay/fake-data",
