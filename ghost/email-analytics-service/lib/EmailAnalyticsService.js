@@ -345,15 +345,16 @@ module.exports = class EmailAnalyticsService {
             }
         }
 
-        // Aggregate
-        try {
-            await this.aggregateStats(processingResult);
-        } catch (err) {
-            logging.error('[EmailAnalytics] Error while aggregating stats');
-            logging.error(err);
+        if (eventCount > 0) {
+            try {
+                await this.aggregateStats(processingResult);
+            } catch (err) {
+                logging.error('[EmailAnalytics] Error while aggregating stats');
+                logging.error(err);
 
-            if (!error) {
-                error = err;
+                if (!error) {
+                    error = err;
+                }
             }
         }
 
@@ -389,7 +390,11 @@ module.exports = class EmailAnalyticsService {
      */
     async processEventBatch(events, result, fetchData) {
         const processStart = Date.now();
+        let totalBatchTime = 0;
+        let batchCount = 0;
+
         for (const event of events) {
+            const batchStartTime = Date.now();
             const batchResult = await this.processEvent(event);
 
             // Save last event timestamp
@@ -398,13 +403,17 @@ module.exports = class EmailAnalyticsService {
             }
 
             result.merge(batchResult);
+
+            const batchEndTime = Date.now();
+            totalBatchTime += (batchEndTime - batchStartTime);
+            batchCount += 1;
         }
+
         const processEnd = Date.now();
-        const time = processEnd - processStart;
-        if (time > 1000) {
-            // This is a means to show in the logs that the analytics job is still alive.
-            logging.warn(`[EmailAnalytics] Processing event batch took ${(time / 1000).toFixed(1)}s`);
-        }
+        const totalTime = processEnd - processStart;
+        const avgBatchTime = totalBatchTime / batchCount;
+
+        logging.info(`[EmailAnalytics] Processed ${batchCount} batches in ${(totalTime / 1000).toFixed(1)}s. Average batch time: ${(avgBatchTime / 1000).toFixed(3)}s`);
     }
 
     /**
@@ -504,14 +513,22 @@ module.exports = class EmailAnalyticsService {
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
      */
     async aggregateStats({emailIds = [], memberIds = []}) {
+        let startTime = Date.now();
+        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId);
         }
+        let endTime = Date.now() - startTime;
+        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails took ${endTime}ms`);
 
+        startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
         for (const memberId of memberIds) {
             await this.aggregateMemberStats(memberId);
         }
+        endTime = Date.now() - startTime;
+
+        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
     }
 
     /**
