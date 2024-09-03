@@ -255,7 +255,8 @@ describe('EmailAnalyticsService', function () {
                 const service = new EmailAnalyticsService({
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
-                        setJobStatus: sinon.stub().resolves()
+                        setJobStatus: sinon.stub().resolves(),
+                        getLastJobRunTimestamp: sinon.stub().resolves(new Date(Date.now() - 2.5 * 60 * 60 * 1000))
                     },
                     providers: [{
                         fetchLatest: fetchLatestSpy
