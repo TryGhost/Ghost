@@ -46,7 +46,7 @@ function finaliseStructuredData(meta) {
 
 function getMembersHelper(data, frontendKey) {
     // Do not load Portal if both Memberships and Tips & Donations are disabled
-    if (!settingsCache.get('members_enabled') && !(settingsCache.get('donations_enabled') && labs.isSet('tipsAndDonations'))) {
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
 

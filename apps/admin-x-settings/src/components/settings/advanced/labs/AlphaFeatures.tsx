@@ -40,10 +40,6 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 },{
-    title: 'Tips & donations',
-    description: 'Enables publishers to collect one-time payments',
-    flag: 'tipsAndDonations'
-},{
     title: 'AdminX Demo',
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'

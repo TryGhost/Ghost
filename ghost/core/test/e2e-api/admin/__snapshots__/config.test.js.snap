@@ -31,7 +31,6 @@ Object {
       "outboundLinkTagging": true,
       "stripeAutomaticTax": true,
       "themeErrorsNotification": true,
-      "tipsAndDonations": true,
       "urlCache": true,
       "webmentions": true,
     },

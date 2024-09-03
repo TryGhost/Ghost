@@ -8,7 +8,6 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {config, settings} = useGlobalData();
     const hasWebmentions = useFeatureFlag('webmentions');
-    const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     return (
@@ -77,7 +76,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                         setUserData?.({...user, milestone_notifications: e.target.checked});
                     }}
                 />
-                {hasTipsAndDonations && hasStripeEnabled && <Toggle
+                {hasStripeEnabled && <Toggle
                     checked={user.donation_notifications}
                     direction='rtl'
                     hint='Every time you receive a one-time payment'

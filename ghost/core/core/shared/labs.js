@@ -41,7 +41,6 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
