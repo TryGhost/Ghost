@@ -4,6 +4,8 @@ const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
+const axios = require('axios');
+const path = require('path');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
@@ -122,6 +124,51 @@ class OEmbedService {
                 message: tpl(messages.unableToFetchOembed),
                 context: err.message
             });
+        }
+    }
+
+    /**
+     * Fetches the image buffer from a URL using fetch
+     * @param {String} imageUrl - URL of the image to fetch
+     * @returns {Promise<Buffer>} - Promise resolving to the image buffer
+     */
+    async fetchImageBuffer(imageUrl) {
+        try {
+            const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+            
+            // Convert the ArrayBuffer to a Buffer
+            const buffer = Buffer.from(response.data);
+            return buffer;
+        } catch (err) {
+            console.error(`Error fetching image: ${err.message}`);
+            throw err; // Re-throw the error for further handling
+        }
+    }
+
+    /**
+     * Process and store image from a URL
+     * @param {String} imageUrl - URL of the image to process
+     * @returns {Promise<String>} - URL where the image is stored
+     */
+    async processImageFromUrl(imageUrl) {
+        try {
+            // Fetch image buffer from the URL
+            const imageBuffer = await this.fetchImageBuffer(imageUrl);
+
+            // Extract file name from URL
+            const fileName = path.basename(new URL(imageUrl).pathname);
+
+            // Define target path relative to the storage path
+            const targetPath = `${fileName}`;
+
+            // Save the buffer and return the URL
+            const imageStoredUrl = await this.storage.getStorage('images').saveRaw(imageBuffer, targetPath);
+
+
+            return imageStoredUrl;
+        } catch (err) {
+            console.error(`Error processing image from URL: ${err.message}`);
+            throw new Error('Image processing failed. Please check the URL and try again.');
         }
     }
 
@@ -287,14 +334,33 @@ class OEmbedService {
             });
         }
 
-        if (metadata.icon) {
-            try {
-                await this.externalRequest.head(metadata.icon);
-            } catch (err) {
-                metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-                logging.error(err);
-            }
-        }
+        // if (metadata.icon) {
+        //     try {
+        //         await this.externalRequest.head(metadata.icon);
+        //     } catch (err) {
+        //         metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+        //         logging.error(err);
+        //     }
+        // }
+
+        await this.processImageFromUrl(metadata.icon)
+        .then((url) => {
+            console.log('Icon Image stored at:', url)
+            metadata.icon = url;
+        })
+        .catch((err) => {
+            metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+            logging.error(err);
+        });
+
+        await this.processImageFromUrl(metadata.thumbnail)
+        .then((url) => {
+            console.log('Thumbnail Image stored at:', url)
+            metadata.thumbnail = url;
+        })
+        .catch((err) => {
+            logging.error(err);
+        });
 
         return {
             version: '1.0',
