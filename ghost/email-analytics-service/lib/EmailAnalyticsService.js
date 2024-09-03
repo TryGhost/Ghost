@@ -106,13 +106,19 @@ module.exports = class EmailAnalyticsService {
     }
 
     /**
+     * Returns the timestamp of the last missing event we processed. Defaults to now minus 2h if we have no data yet.
+     */
+    async getLastMissingEventTimestamp() {
+        return this.#fetchMissingData?.lastEventTimestamp ?? (await this.queries.getLastJobRunTimestamp(this.#fetchMissingData.jobName)) ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 4);
+    }
+
+    /**
      * Fetches the latest opened events.
      * @param {Object} options - The options for fetching events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
      * @returns {Promise<number>} The total number of events fetched.
      */
     async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         const begin = await this.getLastOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -132,7 +138,6 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<number>} The total number of events fetched.
      */
     async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         const begin = await this.getLastNonOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -151,8 +156,7 @@ module.exports = class EmailAnalyticsService {
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      */
     async fetchMissing({maxEvents = Infinity} = {}) {
-        // We start where we left of, or 1,5h ago after a server restart
-        const begin = this.#fetchMissingData?.lastEventTimestamp ?? this.#fetchMissingData?.lastBegin ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 3);
+        const begin = await this.getLastMissingEventTimestamp();
 
         // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
         const end = new Date(

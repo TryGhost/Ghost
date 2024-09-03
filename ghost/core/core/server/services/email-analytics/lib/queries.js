@@ -9,6 +9,21 @@ const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
 /** @typedef {'email-analytics-latest-opened'|'email-analytics-latest-others'|'email-analytics-missing'|'email-analytics-scheduled'} EmailAnalyticsJobName */
 /** @typedef {'delivered'|'opened'|'failed'} EmailAnalyticsEvent */
 
+/**
+ * Creates a job in the jobs table if it does not already exist.
+ * @param {EmailAnalyticsJobName} jobName - The name of the job to create.
+ * @returns {Promise<void>}
+ */
+async function createJobIfNotExists(jobName) {
+    await db.knex('jobs').insert({
+        id: new ObjectID().toHexString(),
+        name: jobName,
+        started_at: new Date(),
+        created_at: new Date(),
+        status: 'started'
+    }).onConflict('name').ignore();
+}
+
 module.exports = {
     async shouldFetchStats() {
         // don't fetch stats from Mailgun if we haven't sent any emails
@@ -28,15 +43,13 @@ module.exports = {
         let maxOpenedAt;
         let maxDeliveredAt;
         let maxFailedAt;
+        const lastJobRunTimestamp = await this.getLastJobRunTimestamp(jobName);
 
-        const jobData = await db.knex('jobs').select('finished_at', 'started_at').where('name', jobName).first();
-
-        if (jobData) {
+        if (lastJobRunTimestamp) {
             debug(`Using job data for ${jobName}`);
-            const lastJobTimestamp = jobData.finished_at || jobData.started_at;
-            maxOpenedAt = events.includes('opened') ? lastJobTimestamp : null;
-            maxDeliveredAt = events.includes('delivered') ? lastJobTimestamp : null;
-            maxFailedAt = events.includes('failed') ? lastJobTimestamp : null;
+            maxOpenedAt = events.includes('opened') ? lastJobRunTimestamp : null;
+            maxDeliveredAt = events.includes('delivered') ? lastJobRunTimestamp : null;
+            maxFailedAt = events.includes('failed') ? lastJobRunTimestamp : null;
         } else {
             debug(`Job data not found for ${jobName}, using email_recipients data`);
             logging.info(`Job data not found for ${jobName}, using email_recipients data`);
@@ -50,14 +63,7 @@ module.exports = {
                 maxFailedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first()).maxFailedAt;
             }
 
-            // Insert a new job row if it doesn't exist
-            await db.knex('jobs').insert({
-                id: new ObjectID().toHexString(),
-                name: jobName,
-                started_at: new Date(),
-                created_at: new Date(),
-                status: 'started'
-            }).onConflict('name').ignore();
+            await createJobIfNotExists(jobName);
         }
 
         // Convert string dates to Date objects for SQLite compatibility
@@ -66,9 +72,28 @@ module.exports = {
         ));
 
         const lastSeenEventTimestamp = _.max([maxOpenedAt, maxDeliveredAt, maxFailedAt]);
-        debug(`getLastSeenEventTimestamp: finished in ${Date.now() - startDate}ms`);
+        debug(`getLastEventTimestamp: finished in ${Date.now() - startDate}ms`);
 
         return lastSeenEventTimestamp;
+    },
+
+    /**
+     * Retrieves the job data for the specified job name.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job to retrieve data for.
+     * @returns {Promise<Object|null>} The job data, or null if no job data is found.
+     */
+    async getJobData(jobName) {
+        return await db.knex('jobs').select('finished_at', 'started_at').where('name', jobName).first();
+    },
+
+    /**
+     * Retrieves the timestamp of the last job run for the specified job name.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job to retrieve the last run timestamp for.
+     * @returns {Promise<Date|null>} The timestamp of the last job run, or null if no job data is found.
+     */
+    async getLastJobRunTimestamp(jobName) {
+        const jobData = await this.getJobData(jobName);
+        return jobData ? jobData.finished_at || jobData.started_at : null;
     },
 
     /**
