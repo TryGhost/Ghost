@@ -111,30 +111,33 @@ class EmailAnalyticsServiceWrapper {
         }
         this.fetching = true;
 
-        // NOTE: Data shows we can process ~7500 events per minute on Pro; this can vary locally
+        // NOTE: Data shows we can process ~2500 events per minute on Pro for a large-ish db (150k members).
+        //       This can vary locally, but we should be conservative with the number of events we fetch.
         try {
             // Prioritize opens since they are the most important (only data directly displayed to users)
-            await this.fetchLatestOpenedEvents({maxEvents: Infinity});
+            const c1 = await this.fetchLatestOpenedEvents({maxEvents: 10000});
+            if (c1 >= 10000) {
+                this._restartFetch('high opened event count');
+                return;
+            }
 
             // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
             //  we want to make sure we don't spend too much time collecting delivery data.
-            const c1 = await this.fetchLatestNonOpenedEvents({maxEvents: 20000});
-            if (c1 > 15000) { 
-                this.fetching = false;
-                logging.info('[EmailAnalytics] Restarting fetch due to high event count');
-                this.startFetch();
-                return;
-            }
-            const c2 = await this.fetchMissing({maxEvents: 20000});
-            if ((c1 + c2) > 15000) {
-                this.fetching = false;
-                logging.info('[EmailAnalytics] Restarting fetch due to high event count');
-                this.startFetch();
+            const c2 = await this.fetchLatestNonOpenedEvents({maxEvents: 10000 - c1});
+            const c3 = await this.fetchMissing({maxEvents: 10000 - c1 - c2});
+
+            // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
+            if ((c1 + c2 + c3) > 10000) {
+                this._restartFetch('high event count');
                 return;
             }
 
-            // Only fetch scheduled if we didn't fetch a lot of normal events
-            await this.fetchScheduled({maxEvents: 20000 - c1 - c2});
+            // Only backfill if we're not currently fetching a lot of events
+            const c4 = await this.fetchScheduled({maxEvents: 10000});
+            if (c4 > 0) {
+                this._restartFetch('scheduled backfill');
+                return;
+            }
             
             this.fetching = false;
         } catch (e) {
@@ -144,6 +147,12 @@ class EmailAnalyticsServiceWrapper {
             logging.error(e);
         }
         this.fetching = false;
+    }
+
+    _restartFetch(reason) {
+        this.fetching = false;
+        logging.info(`[EmailAnalytics] Restarting fetch due to ${reason}`);
+        this.startFetch();
     }
 }
 
