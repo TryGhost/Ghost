@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
@@ -292,8 +292,6 @@ test.describe('User profile', async () => {
     });
 
     test('Shows donation notification option when Stripe enabled', async ({page}) => {
-        toggleLabsFlag('tipsAndDonations', true);
-
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
 
         const {lastApiRequests} = await mockApi({page, requests: {
@@ -337,8 +335,6 @@ test.describe('User profile', async () => {
     });
 
     test('Hides donation notification option when Stripe disabled', async ({page}) => {
-        toggleLabsFlag('tipsAndDonations', true);
-
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}

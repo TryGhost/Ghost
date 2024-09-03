@@ -4,7 +4,6 @@ import React from 'react';
 import Recommendations from './Recommendations';
 import SearchableSection from '../../SearchableSection';
 import TipsAndDonations from './TipsAndDonations';
-import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -16,7 +15,6 @@ export const searchKeywords = {
 };
 
 const GrowthSettings: React.FC = () => {
-    const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
     const {config, settings} = useGlobalData();
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
@@ -25,7 +23,7 @@ const GrowthSettings: React.FC = () => {
             <Recommendations keywords={searchKeywords.recommendations} />
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
             {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
-            {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
+            {hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );
 };
