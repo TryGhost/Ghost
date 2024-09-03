@@ -115,8 +115,10 @@ describe('Acceptance: Publish flow', function () {
         expect(post.status, 'post status after publish').to.equal('published');
 
         expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom. It’s out there. That’s 1 post published, keep going!');
+        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
         expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+
+        await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
@@ -264,7 +266,7 @@ describe('Acceptance: Publish flow', function () {
 
             // complete text has right count
             expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('That’s 1 post published');
+                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
         });
 
         it('can publish+send with multiple newsletters', async function () {
