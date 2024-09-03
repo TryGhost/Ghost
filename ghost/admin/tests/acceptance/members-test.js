@@ -37,7 +37,7 @@ describe('Acceptance: Members', function () {
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('it renders, can be navigated, can edit member', async function () {

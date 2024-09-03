@@ -67,6 +67,10 @@ export default function mockPosts(server) {
             attrs.slug = dasherize(attrs.title);
         }
 
+        if (attrs.title) {
+            attrs.title = attrs.title.trim();
+        }
+
         return posts.create(attrs);
     });
 
@@ -90,6 +94,10 @@ export default function mockPosts(server) {
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
+
+        if (attrs.title) {
+            attrs.title = attrs.title.trim();
+        }
 
         attrs.updatedAt = moment.utc().toDate();
 
@@ -125,7 +133,7 @@ export default function mockPosts(server) {
         if (action === 'addTag') {
             // create tag so we have an id from the server
             const newTags = bulk.meta.tags;
-            
+
             // check applied tags to see if any new ones should be created
             newTags.forEach((tag) => {
                 if (!tag.id) {
