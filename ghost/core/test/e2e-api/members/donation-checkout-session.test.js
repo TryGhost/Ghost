@@ -211,6 +211,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('attribution_type'), 'post');
         assert.equal(lastDonation.get('attribution_url'), url);
     });
+
     it('check if donation message is in email', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
         const url = urlService.getUrlByResourceId(post.id, {absolute: false});
@@ -280,5 +281,52 @@ describe('Create Stripe Checkout Session for Donations', function () {
             to: 'jbloggs@example.com',
             text: /You are the best! Have a lovely day!/
         });
+    });
+
+    // We had a bug where the stripe_prices.nickname column was too short for the site title
+    // Stripe is also limited to 250 chars so we need to truncate the nickname
+    it('can create a checkout session for a site with a long title', async function () {
+        // Ensure site title is longer than 250 characters
+        mockManager.mockSetting('title', 'a'.repeat(251));
+
+        // clear out existing prices to guarantee we're creating a new one
+        await models.StripePrice.where('type', 'donation').destroy().catch((e) => {
+            if (e.message !== 'No Rows Deleted') {
+                throw e;
+            }
+        });
+
+        // Fake a visit to a post
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'paid@test.com',
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    test: 'hello',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+
+        const latestStripePrice = await models.StripePrice
+            .where('type', 'donation')
+            .orderBy('created_at', 'DESC')
+            .fetch({require: true});
+
+        latestStripePrice.get('nickname').should.have.length(250);
     });
 });
