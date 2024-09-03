@@ -71,7 +71,8 @@ module.exports = function MembersAPI({
     newslettersService,
     memberAttributionService,
     emailSuppressionList,
-    settingsCache
+    settingsCache,
+    sentry
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -122,7 +123,8 @@ module.exports = function MembersAPI({
         EmailSpamComplaintEvent,
         Comment,
         labsService,
-        memberAttributionService
+        memberAttributionService,
+        MemberEmailChangeEvent
     });
 
     const memberBREADService = new MemberBREADService({
@@ -153,7 +155,8 @@ module.exports = function MembersAPI({
         getSigninURL,
         getText,
         getHTML,
-        getSubject
+        getSubject,
+        sentry
     });
 
     const paymentsService = new PaymentsService({

@@ -7,7 +7,7 @@ const escapeNqlString = (value: string) => {
 };
 
 const useFilterableApi = <
-    Data extends {id: string} & {[Key in FilterKey]: string},
+    Data extends {id: string} & {[k in FilterKey]: string} & {[k: string]: unknown},
     ResponseKey extends string = string,
     FilterKey extends string = string
 >({path, filterKey, responseKey, limit = 20}: {
@@ -41,26 +41,27 @@ const useFilterableApi = <
         return response[responseKey];
     };
 
+    const loadInitialValues = async (values: string[], key: string) => {
+        await loadData('');
+
+        const data = [...(result.current.data || [])];
+        const missingValues = values.filter(value => !result.current.data?.find(item => item[key] === value));
+
+        if (missingValues.length) {
+            const additionalData = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
+                filter: `${key}:[${missingValues.join(',')}]`,
+                limit: 'all'
+            }));
+
+            data.push(...additionalData[responseKey]);
+        }
+
+        return values.map(value => data.find(item => item[key] === value)!);
+    };
+
     return {
         loadData,
-
-        loadInitialValues: async (ids: string[]) => {
-            await loadData('');
-
-            const data = [...(result.current.data || [])];
-            const missingIds = ids.filter(id => !result.current.data?.find(({id: dataId}) => dataId === id));
-
-            if (missingIds.length) {
-                const additionalData = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
-                    filter: `id:[${missingIds.join(',')}]`,
-                    limit: 'all'
-                }));
-
-                data.push(...additionalData[responseKey]);
-            }
-
-            return ids.map(id => data.find(({id: dataId}) => dataId === id)!);
-        }
+        loadInitialValues
     };
 };
 

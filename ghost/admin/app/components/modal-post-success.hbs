@@ -1,0 +1,197 @@
+<div class="modal-content">
+    <header class="modal-header">
+        <h1>
+            {{#if this.post.isScheduled}}
+                <span>All set!</span>
+            {{else}}
+                <span>
+                    {{if this.showPostCount "Boom! It's out there." "Your post is published."}}
+                </span>
+                <span>
+                    {{#if this.post.isPost}}
+                        {{#if this.post.emailOnly}}
+                            Your email has been sent.
+                        {{else if this.showPostCount}}
+                            That's {{format-number this.postCount}} {{gh-pluralize this.postCount "post" without-count=true}} published.
+                        {{else}}
+                            Spread the word!
+                        {{/if}}
+                    {{else}}
+                        Your page is published.
+                    {{/if}}
+                </span>
+            {{/if}}
+        </h1>
+    </header>
+
+    {{#if (or (not this.post.isPublished) this.post.emailOnly (or this.post.hasEmail this.post.willEmail))}}
+        <div class="modal-body email">
+            {{#if this.post.isSent}}
+                It
+            {{else if this.post.emailOnly}}
+                Your email
+            {{else}}
+                Your {{this.post.displayName}}
+            {{/if}}
+            {{if this.post.isScheduled "will be" "was"}}
+            {{#if this.post.emailOnly}}
+                sent to
+            {{else if (or this.post.hasEmail this.post.willEmail)}}
+                published on your site and sent to
+            {{else}}
+                published on your site
+            {{/if}}
+
+            {{#if (or this.post.hasEmail this.post.willEmail)}}
+                {{#let (members-count-fetcher query=(hash filter=this.post.fullRecipientFilter)) as |countFetcher|}}
+                    <strong class="nowrap">
+                        {{if (eq @recipientType "all") "all"}}
+                        {{format-number countFetcher.count}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>
+                    of <strong>{{this.post.newsletter.name}}</strong>,
+                {{/let}}
+            {{/if}}
+
+            {{#let (moment-site-tz @post.publishedAtUTC) as |scheduledAt|}}
+                {{#if (is-moment-today scheduledAt)}}
+                    <strong class="nowrap">today</strong>
+                {{else}}
+                    on <strong class="nowrap">{{moment-format scheduledAt "MMMM Do"}}</strong>
+                {{/if}}
+                at <strong class="nowrap">{{moment-format scheduledAt "HH:mm"}}.</strong>
+            {{/let}}
+        </div>
+    {{/if}}
+
+    {{#if this.post.emailOnly}}
+        <div class="gh-post-card">
+            {{#if (or this.post.featureImage this.post.twitterImage this.post.ogImage)}}
+                <figure class="modal-image">
+                    <img src="{{or this.post.featureImage this.post.twitterImage this.post.ogImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{/if}}
+
+            <div class="modal-body">
+                <h2>{{this.post.title}}</h2>
+                {{#if this.post.excerpt}}
+                    <p class="post-excerpt">{{this.post.excerpt}}</p>
+                {{/if}}
+
+                <div class="gh-post-details">
+                {{#if (get-setting "icon")}}
+                    <div class="gh-post-bookmark-site-icon">
+                        <img src={{get-setting "icon"}} alt="" role="presentation" />
+                    </div>
+                {{/if}}
+
+                {{#if (get-setting "title")}}
+                    <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
+                {{/if}}
+                    <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
+                </div>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <button
+                class="gh-btn gh-btn-primary dismiss"
+                type="button"
+                {{on "click" @close}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Close</span>
+            </button>
+        </footer>
+    {{/if}}
+
+    <button type="button" class="close" title="Close" {{on "click" @close}} data-test-button="close-publish-flow">{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    {{#unless this.post.emailOnly}}
+    <a href="{{this.post.url}}" target="_blank" rel="noopener noreferrer" title="View post: {{this.post.title}}" data-test-complete-bookmark>
+        <div class="gh-post-card">
+            {{#if this.post.featureImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.featureImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{else if this.post.twitterImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.twitterImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{else if this.post.ogImage}}
+                <figure class="modal-image">
+                    <img src="{{this.post.ogImage}}" alt="{{this.post.title}}">
+                </figure>
+            {{/if}}
+
+            <div class="modal-body">
+                <h2>{{this.post.title}}</h2>
+                {{#if this.post.excerpt}}
+                    <p class="post-excerpt">{{this.post.excerpt}}</p>
+                {{/if}}
+
+                <div class="gh-post-details">
+                {{#if (get-setting "icon")}}
+                    <div class="gh-post-bookmark-site-icon">
+                        <img src={{get-setting "icon"}} alt="" role="presentation" />
+                    </div>
+                {{/if}}
+
+                {{#if (get-setting "title")}}
+                    <div class="gh-post-bookmark-site-name">{{get-setting "title"}}</div>
+                {{/if}}
+                    <div class="gh-post-bookmark-authors">{{post-author-names this.post}}</div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <footer class="modal-footer">
+        {{#if (and this.post.isPublished (not this.post.emailOnly))}}
+            <div class="share-buttons">
+                <a href="https://twitter.com/intent/tweet?text={{this.encodedTitle}}%0A{{this.encodedUrl}}" class="gh-btn twitter" target="_blank" rel="noopener noreferrer" title="Share on Twitter">
+                    <span>{{svg-jar "social-x"}}</span>
+                </a>
+                <a href="https://threads.net/intent/post?text={{this.encodedTitleAndUrl}}" class="gh-btn threads" target="_blank" rel="noopener noreferrer" title="Share on Threads">
+                    <span>{{svg-jar "social-threads"}}</span>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{this.encodedUrl}}" class="gh-btn facebook" target="_blank" rel="noopener noreferrer" title="Share on Facebook">
+                    <span>{{svg-jar "social-facebook"}}</span>
+                </a>
+                <a href="http://www.linkedin.com/shareArticle?mini=true&title={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn linkedin" target="_blank" rel="noopener noreferrer" title="Share on LinkedIn">
+                    <span>{{svg-jar "social-linkedin"}}</span>
+                </a>
+            </div>
+                <GhTaskButton
+                    @showIcon={{true}}
+                    @idleIcon="link"
+                    @buttonText="Copy link"
+                    @title="Copy link"
+                    @task={{this.handleCopyLink}}
+                    @successText="Link copied"
+                    @class="gh-btn gh-btn-primary gh-btn-icon copy-link" />
+        {{else}}
+            {{#if (or this.post.isScheduled this.post.emailOnly)}}
+                {{#if this.post.isScheduled}}
+                    <GhTaskButton
+                        @buttonText="Copy preview link"
+                        @task={{this.handleCopyPreviewLink}}
+                        @showIcon={{true}}
+                        @idleIcon="link"
+                        @successText="Preview link copied"
+                        @class="gh-btn gh-btn-icon copy-preview-link" />
+                {{/if}}
+                <button
+                    class="gh-btn gh-btn-primary dismiss"
+                    type="button"
+                    {{on "click" @close}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    <span>Close</span>
+                </button>
+            {{/if}}
+        {{/if}}
+    </footer>
+    {{/unless}}
+</div>
+

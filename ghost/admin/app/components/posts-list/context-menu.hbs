@@ -1,11 +1,26 @@
 <ul class="gh-posts-context-menu dropdown-menu dropdown-triangle-top-left">
 
     {{#if this.canUnpublishSelection}}
+        {{#if this.canCopySelection}}
+            <li>
+                <button class="mr2" type="button" {{on "click" this.copyPostLink}}>
+                    <span>{{svg-jar "link"}}Copy link to post</span>
+                </button>
+            </li>
+        {{/if}}
         <li>
             <button class="mr2" type="button" {{on "click" this.unpublishPosts}}>
                 <span>{{svg-jar "undo"}}Unpublish</span>
             </button>
         </li>
+    {{else}}
+        {{#if this.canCopySelection}}
+            <li>
+                <button class="mr2" type="button" {{on "click" this.copyPreviewLink}}>
+                    <span>{{svg-jar "link"}}Copy preview link</span>
+                </button>
+            </li>
+        {{/if}}
     {{/if}}
     {{#if this.canFeatureSelection}}
         {{#if this.shouldFeatureSelection }}

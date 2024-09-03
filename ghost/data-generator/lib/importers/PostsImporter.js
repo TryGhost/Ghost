@@ -55,32 +55,44 @@ class PostsImporter extends TableImporter {
             created_at: dateToDatabaseString(timestamp),
             created_by: '1',
             updated_at: dateToDatabaseString(timestamp),
-            published_at: status === 'published' || status === 'scheduled' ? dateToDatabaseString(faker.date.soon(5, timestamp)) : null,
+            published_at: status === 'published' ? dateToDatabaseString(timestamp) : status === 'scheduled' ? dateToDatabaseString(faker.date.soon(5, timestamp)) : null,
             uuid: faker.datatype.uuid(),
             title: title,
             type: this.type,
             slug: `${slugify(title)}-${faker.random.numeric(3)}`,
             status,
             visibility,
-            mobiledoc: JSON.stringify({
-                version: '0.3.1',
-                atoms: [],
-                cards: [],
-                markups: [['em']],
-                sections: content.map(paragraph => [
-                    1,
-                    'p',
-                    [
-                        [
-                            0,
-                            [],
-                            0,
-                            paragraph
-                        ]
-                    ]
-                ])
+            lexical: JSON.stringify({
+                root: {
+                    children: content.map(paragraph => (
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: paragraph,
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    )),
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
+            plaintext: content.join('\n\n'),
             email_recipient_filter: 'all',
             newsletter_id: this.type === 'post' && status === 'published' && luck(90) ? (visibility === 'paid' ? this.newsletters[0].id : this.newsletters[1].id) : null
         };

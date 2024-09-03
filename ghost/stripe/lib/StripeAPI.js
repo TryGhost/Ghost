@@ -475,7 +475,6 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
-            customer_update: this._config.enableAutomaticTax ? {address: 'auto'} : {},
             metadata,
             discounts,
             /*
@@ -496,6 +495,10 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer = customerId;
         } else {
             stripeSessionOptions.customer_email = customerEmail;
+        }
+
+        if (customerId && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
         }
 
         // @ts-ignore
@@ -520,6 +523,14 @@ module.exports = class StripeAPI {
         /**
          * @type {Stripe.Checkout.SessionCreateParams}
          */
+
+        // TODO - add it higher up the stack to the metadata object.
+        // add ghost_donation key to metadata object
+        metadata = {
+            ghost_donation: true,
+            ...metadata
+        };
+
         const stripeSessionOptions = {
             mode: 'payment',
             success_url: successUrl || this._config.checkoutSessionSuccessUrl,
@@ -527,7 +538,6 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
-            customer_update: this._config.enableAutomaticTax ? {address: 'auto'} : {},
             metadata,
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
@@ -545,8 +555,23 @@ module.exports = class StripeAPI {
             line_items: [{
                 price: priceId,
                 quantity: 1
-            }]
+            }],
+            custom_fields: [
+                {
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                }
+            ]
         };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
@@ -692,20 +717,23 @@ module.exports = class StripeAPI {
      * @param {string} subscriptionId - The ID of the Subscription to modify
      * @param {string} id - The ID of the SubscriptionItem
      * @param {string} price - The ID of the new Price
+     * @param {object} [options={}] - Additional data to set on the subscription object
+     * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='always_invoice'] - The proration behavior to use. See [Stripe docs](https://docs.stripe.com/api/subscriptions/update#update_subscription-proration_behavior) for more info
+     * @param {string} [options.cancellationReason=null] - The user defined cancellation reason
      *
      * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
-    async updateSubscriptionItemPrice(subscriptionId, id, price) {
+    async updateSubscriptionItemPrice(subscriptionId, id, price, options = {}) {
         await this._rateLimitBucket.throttle();
         const subscription = await this._stripe.subscriptions.update(subscriptionId, {
-            proration_behavior: 'always_invoice',
+            proration_behavior: options.prorationBehavior || 'always_invoice',
             items: [{
                 id,
                 price
             }],
             cancel_at_period_end: false,
             metadata: {
-                cancellation_reason: null
+                cancellation_reason: options.cancellationReason ?? null
             }
         });
         return subscription;

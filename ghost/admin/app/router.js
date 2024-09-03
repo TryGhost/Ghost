@@ -23,6 +23,7 @@ Router.map(function () {
     this.route('site');
     this.route('dashboard');
     this.route('launch');
+    this.route('stats');
 
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
@@ -59,9 +60,6 @@ Router.map(function () {
     this.route('activitypub-x',{path: '/activitypub'}, function () {
         this.route('activitypub-x', {path: '/*sub'});
     });
-
-    // testing websockets
-    this.route('websockets');
 
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe

@@ -189,3 +189,8 @@ add|ember-template-lint|require-iframe-title|27|20|27|20|94e58d11848d5613900c218
 add|ember-template-lint|require-iframe-title|42|16|42|16|a3292b469dc37f2f4791e7f224b0b65c8ecf5d18|1712707200000|1723075200000|1728259200000|app/components/modals/email-preview.hbs
 add|ember-template-lint|no-autofocus-attribute|21|20|21|20|942419d05c04ded6716f09faecd6b1ab55418121|1712707200000|1723075200000|1728259200000|app/components/modals/new-custom-integration.hbs
 add|ember-template-lint|no-invalid-interactive|2|37|2|37|e21ba31f54b631a428c28a1c9f88d0dc66f2f5fc|1712707200000|1723075200000|1728259200000|app/components/modals/search.hbs
+remove|ember-template-lint|no-unknown-arguments-for-builtin-components|93|93|93|93|156670ca427c49c51f0a94f862b286ccc9466d92|1712707200000|1723075200000|1728259200000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-action|20|125|20|125|ba0f8b6ba2697f1b071200d1a3dae9c34fcb2882|1712707200000|1723075200000|1728259200000|app/components/modal-post-history.hbs
+remove|ember-template-lint|no-action|31|34|31|34|141d456b03124abca146e58e4ae15825fdd040bb|1712707200000|1723075200000|1728259200000|app/components/modal-post-history.hbs
+remove|ember-template-lint|no-action|43|46|43|46|2f3118270fbb1ff6e5da6b0d482ccd21e69df3b5|1712707200000|1723075200000|1728259200000|app/components/modal-post-history.hbs
+remove|ember-template-lint|require-valid-alt-text|12|28|12|28|bc0bb4f51567cea7289bfcb30d02932f0f57d0d9|1712707200000|1723075200000|1728259200000|app/components/modal-post-history.hbs

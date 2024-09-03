@@ -79,7 +79,8 @@ async function signout({api, state}) {
 
 async function signin({data, api, state}) {
     try {
-        await api.member.sendMagicLink({...data, emailType: 'signin'});
+        const integrityToken = await api.member.getIntegrityToken();
+        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken});
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -100,7 +101,8 @@ async function signup({data, state, api}) {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
 
         if (plan.toLowerCase() === 'free') {
-            await api.member.sendMagicLink({emailType: 'signup', ...data});
+            const integrityToken = await api.member.getIntegrityToken();
+            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -482,11 +484,13 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
     const referrerUrl = window.location.href;
     const referrerSource = getRefDomain();
 
+    const integrityToken = await externalSiteApi.member.getIntegrityToken();
     await externalSiteApi.member.sendMagicLink({
         emailType: 'signup',
         name: member.name,
         email: member.email,
         autoRedirect: false,
+        integrityToken,
         customUrlHistory: state.site.outbound_link_tagging ? [
             {
                 time: Date.now(),

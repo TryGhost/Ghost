@@ -62,7 +62,10 @@ export default class ResetController extends Controller.extend(ValidationEngine)
                         password_reset: [{newPassword, ne2Password, token}]
                     }
                 });
-                this.notifications.showAlert(resp.password_reset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
+                this.notifications.showNotification(
+                    resp.password_reset[0].message,
+                    {type: 'info', delayed: true, key: 'password.reset'}
+                );
                 this.session.authenticate('authenticator:cookie', email, newPassword);
                 return true;
             } catch (error) {

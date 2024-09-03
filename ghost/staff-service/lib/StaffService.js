@@ -4,7 +4,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
-    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, DomainEvents, labs, memberAttributionService}) {
+    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, blogIcon, DomainEvents, labs, memberAttributionService}) {
         this.logging = logging;
         this.labs = labs;
         /** @private */
@@ -22,6 +22,7 @@ class StaffService {
             settingsHelpers,
             settingsCache,
             urlUtils,
+            blogIcon,
             labs
         });
     }
@@ -119,11 +120,11 @@ class StaffService {
                 attribution
             });
         } else if (type === SubscriptionCancelledEvent) {
-            subscription.canceledAt = event.timestamp;
             await this.emails.notifyPaidSubscriptionCanceled({
                 member,
                 tier,
-                subscription
+                subscription,
+                ...event.data
             });
         }
     }

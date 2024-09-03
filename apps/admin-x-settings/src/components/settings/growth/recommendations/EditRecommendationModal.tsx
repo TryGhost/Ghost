@@ -27,21 +27,9 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         onSave: async (state) => {
             await editRecommendation(state);
         },
-        onSavedStateReset: () => {
-            modal.remove();
-            updateRoute('recommendations');
-        },
         onSaveError: handleError,
         onValidate: (state) => {
             const newErrors = validateDescriptionForm(state);
-
-            if (Object.keys(newErrors).length !== 0) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t edit recommendation, please double check that you\'ve filled all mandatory fields correctly.'
-                });
-            }
-
             return newErrors;
         }
     });
@@ -63,13 +51,10 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                     try {
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
-                        showToast({
-                            message: 'Successfully deleted the recommendation',
-                            type: 'success'
-                        });
                     } catch (e) {
                         showToast({
-                            message: 'Failed to delete the recommendation. Please try again later.',
+                            title: 'Failed to delete the recommendation',
+                            message: 'Please try again later.',
                             type: 'error'
                         });
                         handleError(e, {withToast: false});
@@ -87,10 +72,10 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         animate={animate ?? true}
         backDropClick={false}
         buttonsDisabled={okProps.disabled}
-        cancelLabel={'Cancel'}
+        cancelLabel={'Close'}
         leftButtonProps={leftButtonProps}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}
@@ -101,8 +86,9 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                 await handleSave({force: true});
             } catch (e) {
                 showToast({
-                    type: 'pageError',
-                    message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
+                    title: 'Something went wrong',
+                    type: 'error',
+                    message: 'Please try again later.'
                 });
             }
         }}

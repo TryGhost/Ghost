@@ -1,0 +1,26 @@
+<div class="gh-stats-tabs">
+    <button type="button" class="gh-stats-tab min-width {{if this.visitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToVisits}}>
+        <Stats::Parts::Metric
+            @label="Unique visitors"
+            @value={{this.totals.visits}} />
+    </button>
+
+    <button type="button" class="gh-stats-tab min-width {{if this.pageviewsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPageviews}}>
+        <Stats::Parts::Metric
+            @label="Site Pageviews"
+            @value={{this.totals.pageviews}} />
+    </button>
+
+    <button type="button" class="gh-stats-tab min-width {{if this.avgVisitTimeTabSelected 'is-selected'}}" {{on "click" this.changeTabToAvgVisitTime}}>
+        <Stats::Parts::Metric
+            @label="Avg Visit Time"
+            @value="{{this.totals.avg_session_sec}}m" />
+    </button>
+
+    <button type="button" class="gh-stats-tab min-width {{if this.bounceRateTabSelected 'is-selected'}}" {{on "click" this.changeTabToBounceRate}}>
+        <Stats::Parts::Metric
+            @label="Bounce Rate"
+            @value="{{this.totals.bounce_rate}}%" />
+    </button>
+</div>
+<Stats::Charts::Kpis @chartDays={{@chartDays}} @audience={{@audience}} @selected={{this.selected}} />

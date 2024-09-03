@@ -1,0 +1,66 @@
+<section class="gh-canvas gh-canvas-sticky">
+    <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
+        <GhCustomViewTitle @title="Stats" />
+            <div class="gh-dashboard-select">
+                <PowerSelectMultiple
+                    @placeholder="Select audience"
+                    @selected={{this.selectedAudienceOptions}}
+                    @options={{this.audienceOptions}}
+                    @searchEnabled={{true}}
+                    @onChange={{this.onAudienceChange}}
+                    @triggerComponent={{component "gh-power-select/trigger"}}
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                    @matchTriggerWidth={{false}}
+                    @horizontalPosition="right"
+                    as |option|
+                >
+                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                </PowerSelectMultiple>
+
+                <PowerSelect
+                    @selected={{this.selectedDaysOption}}
+                    @options={{this.daysOptions}}
+                    @searchEnabled={{false}}
+                    @onChange={{this.onDaysChange}}
+                    @triggerComponent={{component "gh-power-select/trigger"}}
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                    @matchTriggerWidth={{false}}
+                    @horizontalPosition="right"
+                    as |option|
+                >
+                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                </PowerSelect>
+            </div>
+    </GhCanvasHeader>
+
+    <section class="view-container gh-stats">
+        <section class="gh-stats-container">
+            <Stats::KpisOverview @chartDays={{this.chartDays}} @audience={{this.audience}} />
+        </section>
+
+        <section class="gh-stats-grid cols-2">
+            <div class="gh-stats-container">
+                <h5 class="gh-stats-metric-label">Top posts & pages</h5>
+                <Stats::Charts::TopPages @chartDays={{this.chartDays}} @audience={{this.audience}} />
+            </div>
+            <div class="gh-stats-container">
+                <h5 class="gh-stats-metric-label">Sources</h5>
+                <Stats::Charts::TopSources @chartDays={{this.chartDays}} @audience={{this.audience}} />
+            </div>
+        </section>
+
+        <section class="gh-stats-grid cols-2">
+            <div class="gh-stats-container">
+                <h5 class="gh-stats-metric-label">Top locations</h5>
+                <Stats::Charts::TopLocations @chartDays={{this.chartDays}} @audience={{this.audience}} />
+            </div>
+            <div class="gh-stats-container">
+                <Stats::TechnicalOverview @chartDays={{this.chartDays}} @audience={{this.audience}} />
+            </div>
+        </section>
+
+    </section>
+
+</section>

@@ -51,7 +51,7 @@ describe('lib/image: blog icon', function () {
                         }
                     }
                 }});
-                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/content/images/2017/04/my-icon.ico'}, true]);
+                blogIcon.getIconUrl({absolute: true}).should.deepEqual([{relativeUrl: '/content/images/2017/04/my-icon.ico'}, true]);
             });
 
             it('custom uploaded png blog icon', function () {
@@ -64,7 +64,7 @@ describe('lib/image: blog icon', function () {
                         }
                     }
                 }});
-                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, true]);
+                blogIcon.getIconUrl({absolute: true}).should.deepEqual([{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, true]);
             });
 
             it('default ico blog icon', function () {
@@ -73,7 +73,17 @@ describe('lib/image: blog icon', function () {
                 }, settingsCache: {
                     get: () => {}
                 }});
-                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/favicon.ico'}, true]);
+                blogIcon.getIconUrl({absolute: true}).should.deepEqual([{relativeUrl: '/favicon.ico'}, true]);
+            });
+
+            it('returns null if no fallback is requested', function () {
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
+                    urlFor: (key, boolean) => [key, boolean]
+                }, settingsCache: {
+                    get: () => {}
+                }});
+
+                should.equal(blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}), null);
             });
         });
     });
