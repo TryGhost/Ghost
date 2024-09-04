@@ -497,8 +497,9 @@ module.exports = class EmailAnalyticsService {
 
     /**
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
+     * @param {boolean} includeOpenedEvents
      */
-    async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents) {
+    async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
         let startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
         for (const emailId of emailIds) {
