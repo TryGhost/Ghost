@@ -27,11 +27,29 @@ const maintenanceMiddleware = function maintenanceMiddleware(req, res, next) {
     fs.createReadStream(path.resolve(__dirname, './server/views/maintenance.html')).pipe(res);
 };
 
+// Used by Ghost (Pro) to ensure that requests cannot be served by the wrong site
+const siteIdMiddleware = function siteIdMiddleware(req, res, next) {
+    const siteId = config.get('hostSettings:siteId');
+
+    if (req.headers['x-site-id'] === siteId) {
+        return next();
+    }
+
+    res.set({
+        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+    });
+    res.writeHead(500);
+    res.end();
+};
+
 const rootApp = () => {
     const app = express('root');
     app.use(sentry.requestHandler);
     if (config.get('sentry')?.tracing?.enabled === true) {
         app.use(sentry.tracingHandler);
+    }
+    if (config.get('hostSettings:validateSiteId')) {
+        app.use(siteIdMiddleware);
     }
     app.enable('maintenance');
     app.use(maintenanceMiddleware);
