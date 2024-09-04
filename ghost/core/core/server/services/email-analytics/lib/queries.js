@@ -161,18 +161,21 @@ module.exports = {
         }
     },
 
-    async aggregateEmailStats(emailId) {
-        const {totalCount} = await db.knex('emails').select(db.knex.raw('email_count as totalCount')).where('id', emailId).first() || {totalCount: 0};
-        // use IS NULL here because that will typically match far fewer rows than IS NOT NULL making the query faster
-        const [undeliveredCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND delivered_at IS NULL', [emailId]);
-        const [openedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND opened_at IS NOT NULL', [emailId]);
+    async aggregateEmailStats(emailId, updateOpenedCount) {
+        const [deliveredCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND delivered_at IS NOT NULL', [emailId]);
         const [failedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND failed_at IS NOT NULL', [emailId]);
 
-        await db.knex('emails').update({
-            delivered_count: totalCount - undeliveredCount.count,
-            opened_count: openedCount.count,
+        const updateData = {
+            delivered_count: deliveredCount.count,
             failed_count: failedCount.count
-        }).where('id', emailId);
+        };
+
+        if (updateOpenedCount) {
+            const [openedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND opened_at IS NOT NULL', [emailId]);
+            updateData.opened_count = openedCount.count;
+        }
+
+        await db.knex('emails').update(updateData).where('id', emailId);
     },
 
     async aggregateMemberStats(memberId) {

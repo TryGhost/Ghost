@@ -290,6 +290,7 @@ module.exports = class EmailAnalyticsService {
 
         let lastAggregation = Date.now();
         let eventCount = 0;
+        const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
 
         // We keep the processing result here, so we also have a result in case of failures
         let processingResult = new EventProcessingResult();
@@ -309,11 +310,11 @@ module.exports = class EmailAnalyticsService {
 
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
             // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
-            if (Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) {
+            if ((Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) && eventCount > 0) {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
-                    await this.aggregateStats(processingResult);
+                    await this.aggregateStats(processingResult, includeOpenedEvents);
                     lastAggregation = Date.now();
                     processingResult = new EventProcessingResult();
                 } catch (err) {
@@ -345,9 +346,9 @@ module.exports = class EmailAnalyticsService {
             }
         }
 
-        if (eventCount > 0) {
+        if (processingResult.memberIds.length > 0 || processingResult.emailIds.length > 0) {
             try {
-                await this.aggregateStats(processingResult);
+                await this.aggregateStats(processingResult, includeOpenedEvents);
             } catch (err) {
                 logging.error('[EmailAnalytics] Error while aggregating stats');
                 logging.error(err);
@@ -389,12 +390,7 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
-        const processStart = Date.now();
-        let totalBatchTime = 0;
-        let batchCount = 0;
-
         for (const event of events) {
-            const batchStartTime = Date.now();
             const batchResult = await this.processEvent(event);
 
             // Save last event timestamp
@@ -403,17 +399,7 @@ module.exports = class EmailAnalyticsService {
             }
 
             result.merge(batchResult);
-
-            const batchEndTime = Date.now();
-            totalBatchTime += (batchEndTime - batchStartTime);
-            batchCount += 1;
         }
-
-        const processEnd = Date.now();
-        const totalTime = processEnd - processStart;
-        const avgBatchTime = totalBatchTime / batchCount;
-
-        logging.info(`[EmailAnalytics] Processed ${batchCount} batches in ${(totalTime / 1000).toFixed(1)}s. Average batch time: ${(avgBatchTime / 1000).toFixed(3)}s`);
     }
 
     /**
@@ -512,11 +498,11 @@ module.exports = class EmailAnalyticsService {
     /**
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
      */
-    async aggregateStats({emailIds = [], memberIds = []}) {
+    async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents) {
         let startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
         for (const emailId of emailIds) {
-            await this.aggregateEmailStats(emailId);
+            await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
         let endTime = Date.now() - startTime;
         logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails took ${endTime}ms`);
@@ -527,17 +513,17 @@ module.exports = class EmailAnalyticsService {
             await this.aggregateMemberStats(memberId);
         }
         endTime = Date.now() - startTime;
-
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
     }
 
     /**
      * Aggregate email stats for a given email ID.
      * @param {string} emailId - The ID of the email to aggregate stats for.
+     * @param {boolean} includeOpenedEvents - Whether to include opened events in the stats.
      * @returns {Promise<void>}
      */
-    async aggregateEmailStats(emailId) {
-        return this.queries.aggregateEmailStats(emailId);
+    async aggregateEmailStats(emailId, includeOpenedEvents) {
+        return this.queries.aggregateEmailStats(emailId, includeOpenedEvents);
     }
 
     /**
