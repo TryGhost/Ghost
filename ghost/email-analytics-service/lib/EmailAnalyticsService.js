@@ -288,7 +288,6 @@ module.exports = class EmailAnalyticsService {
         fetchData.lastBegin = begin;
         this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
 
-        console.log('fetchData', fetchData);
         let lastAggregation = Date.now();
         let eventCount = 0;
         const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
@@ -305,7 +304,6 @@ module.exports = class EmailAnalyticsService {
          * @returns {Promise<void>}
          */
         const processBatch = async (events) => {
-            console.log('processBatch', events);
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
             await this.processEventBatch(events, processingResult, fetchData);
             eventCount += events.length;
@@ -373,7 +371,6 @@ module.exports = class EmailAnalyticsService {
         } else {
             logging.info('[EmailAnalytics] No new events found');
             // set job status to finished
-            console.log('setting job status to completed');
             await this.queries.setJobStatus(fetchData.jobName, 'completed');
         }
 
