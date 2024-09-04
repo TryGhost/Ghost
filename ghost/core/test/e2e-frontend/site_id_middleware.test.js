@@ -8,7 +8,6 @@ describe('Site id middleware execution', function () {
 
     before(async function () {
         configUtils.set('hostSettings:siteId', '123123');
-        configUtils.set('hostSettings:validateSiteId', true);
 
         // Ensure we do a forced start so that spy is in place when the server starts
         await testUtils.startGhost({forceStart: true});

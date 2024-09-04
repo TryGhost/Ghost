@@ -1,6 +1,7 @@
 const sentry = require('./shared/sentry');
 const express = require('./shared/express');
 const config = require('./shared/config');
+const logging = require('@tryghost/logging');
 const urlService = require('./server/services/url');
 
 const fs = require('fs');
@@ -29,11 +30,14 @@ const maintenanceMiddleware = function maintenanceMiddleware(req, res, next) {
 
 // Used by Ghost (Pro) to ensure that requests cannot be served by the wrong site
 const siteIdMiddleware = function siteIdMiddleware(req, res, next) {
-    const siteId = config.get('hostSettings:siteId');
+    const configSiteId = config.get('hostSettings:siteId');
+    const headerSiteId = req.headers['x-site-id'];
 
-    if (req.headers['x-site-id'] === siteId) {
+    if (`${configSiteId}` === `${headerSiteId}`) {
         return next();
     }
+
+    logging.info(`Mismatched site id (expected ${configSiteId}, got ${headerSiteId})`);
 
     res.set({
         'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
@@ -48,7 +52,7 @@ const rootApp = () => {
     if (config.get('sentry')?.tracing?.enabled === true) {
         app.use(sentry.tracingHandler);
     }
-    if (config.get('hostSettings:validateSiteId')) {
+    if (config.get('hostSettings:siteId')) {
         app.use(siteIdMiddleware);
     }
     app.enable('maintenance');
