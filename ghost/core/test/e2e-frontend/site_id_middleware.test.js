@@ -3,27 +3,27 @@ const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 
-describe('Site id middleware execution', function () {
+describe.only('Site id middleware execution', function () {
     let request;
 
-    before(async function () {
-        configUtils.set('hostSettings:siteId', '123123');
-
-        // Ensure we do a forced start so that spy is in place when the server starts
-        await testUtils.startGhost({forceStart: true});
-
-        request = supertest.agent(configUtils.config.get('url'));
-    });
-
-    after(async function () {
-        sinon.restore();
-
-        configUtils.restore();
-
-        await testUtils.stopGhost();
-    });
-
     describe('Using site-id middleware', function () {
+        before(async function () {
+            configUtils.set('hostSettings:siteId', '123123');
+
+            // Ensure we do a forced start so that spy is in place when the server starts
+            await testUtils.startGhost({forceStart: true});
+
+            request = supertest.agent(configUtils.config.get('url'));
+        });
+
+        after(async function () {
+            sinon.restore();
+
+            configUtils.restore();
+
+            await testUtils.stopGhost();
+        });
+
         it('should allow requests with the correct site id header', function () {
             return request.get('/')
                 .set('x-site-id', '123123')
@@ -43,14 +43,14 @@ describe('Site id middleware execution', function () {
         });
 
         it('should allow API requests with the correct site id header', function () {
-            return request.get('/ghost/api/v4/content/posts/')
+            return request.get('/ghost/api/content/posts/')
                 .set('x-site-id', '123123')
                 // NOTE: This is a 403 because we aren't supplying an API key
                 .expect(403);
         });
 
         it('should reject API requests without a site id header', function () {
-            return request.get('/ghost/api/v4/content/posts/')
+            return request.get('/ghost/api/content/posts/')
                 .expect(500);
         });
 
@@ -97,6 +97,36 @@ describe('Site id middleware execution', function () {
             return request.get('/')
                 .set('x-ghost-site-id', 'not-a-valid-id')
                 .expect(500);
+        });
+    });
+
+    describe('Not using site-id middleware', function () {
+        before(async function () {
+            configUtils.set('hostSettings:siteId', undefined);
+
+            // Ensure we do a forced start so that spy is in place when the server starts
+            await testUtils.startGhost({forceStart: true});
+
+            request = supertest.agent(configUtils.config.get('url'));
+        });
+
+        after(async function () {
+            sinon.restore();
+
+            configUtils.restore();
+
+            await testUtils.stopGhost();
+        });
+
+        it('should allow requests without a site id header', function () {
+            return request.get('/')
+                .expect(200);
+        });
+
+        it('should allow requests with a site id header', function () {
+            return request.get('/')
+                .set('x-site-id', '123123')
+                .expect(200);
         });
     });
 });
