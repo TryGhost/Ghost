@@ -1,12 +1,7 @@
 import Controller from '@ember/controller';
+import {AUDIENCE_TYPES} from 'ghost-admin/components/stats/parts/audience-filter';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
-
-const AUDIENCE_OPTIONS = [
-    {name: 'Logged out visitors', value: 'undefined'},
-    {name: 'Free members', value: 'free'},
-    {name: 'Paid members', value: 'paid'}
-];
 
 // Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
 const DAYS_OPTIONS = [{
@@ -22,7 +17,7 @@ const DAYS_OPTIONS = [{
 
 export default class StatsController extends Controller {
     daysOptions = DAYS_OPTIONS;
-    audienceOptions = AUDIENCE_OPTIONS;
+    audienceOptions = AUDIENCE_TYPES;
 
     /**
      * @type {number|'all'}
@@ -34,6 +29,7 @@ export default class StatsController extends Controller {
      * Filter by audience
      */
     @tracked audience = [];
+    @tracked excludedAudiences = '';
 
     @action
     onDaysChange(selected) {
@@ -41,15 +37,20 @@ export default class StatsController extends Controller {
     }
 
     @action
-    onAudienceChange(selected) {
-        this.audience = selected.map(s => s.value);
+    onAudienceChange(newExcludedAudiences) {
+        if (newExcludedAudiences !== null) {
+            this.excludedAudiences = newExcludedAudiences;
+            this.audience = this.audienceOptions
+                .filter(a => !this.excludedAudiences.includes(a.value))
+                .map(a => a.value);
+            // this.audience = this.audienceOptions.filter(a => !this.excludedAudiences.includes(a.value));
+        } else {
+            this.excludedAudiences = '';
+            this.audience = this.audienceOptions.map(a => a.value);
+        }
     }
 
     get selectedDaysOption() {
         return this.daysOptions.find(d => d.value === this.chartDays);
-    }
-
-    get selectedAudienceOptions() {
-        return this.audienceOptions.filter(a => this.audience.includes(a.value));
     }
 }

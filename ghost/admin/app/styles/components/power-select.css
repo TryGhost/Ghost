@@ -5,6 +5,17 @@
     background: transparent;
 }
 
+.ember-power-select-trigger.gh-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 12px;
+}
+
+.ember-power-select-trigger.gh-btn span {
+    padding: 0 6px 0 8px;
+}
+
 .ember-power-select-trigger:focus, .ember-power-select-trigger--active {
     border: var(--input-border);
 }
