@@ -126,6 +126,48 @@ function renderInboxAttachment(object: ObjectProperties) {
     }
 }
 
+const FeedItemStats: React.FC<{
+    isLiked: boolean;
+    isClicked: boolean;
+    likeCount: number;
+    commentCount: number;
+    onLikeClick: () => void;
+    onCommentClick: () => void;
+}> = ({isLiked, isClicked, likeCount, commentCount, onLikeClick, onCommentClick}) => (
+    <div className='flex gap-5'>
+        <div className='mt-3 flex gap-1'>
+            <Button 
+                className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} 
+                hideLabel={true} 
+                icon='heart' 
+                id='like' 
+                size='md' 
+                unstyled={true} 
+                onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                    e?.stopPropagation();
+                    onLikeClick();
+                }}
+            />
+            {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
+        </div>
+        <div className='mt-3 flex gap-1'>
+            <Button 
+                className={`self-start text-grey-900`} 
+                hideLabel={true} 
+                icon='comment' 
+                id='comment' 
+                size='md' 
+                unstyled={true} 
+                onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                    e?.stopPropagation();
+                    onCommentClick();
+                }}
+            />
+            <span className={`text-grey-900`}>{commentCount}</span>
+        </div>
+    </div>
+);
+
 interface FeedItemProps {
     actor: ActorProperties;
     object: ObjectProperties;
@@ -143,11 +185,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
 
-    const handleLikeClick = (event: React.MouseEvent<HTMLElement> | undefined) => {
-        event?.stopPropagation();
+    const handleLikeClick = () => {
         setIsClicked(true);
         setIsLiked(!isLiked);
-        setTimeout(() => setIsClicked(false), 300); // Reset the animation class after 300ms
+        setTimeout(() => setIsClicked(false), 300);
     };
 
     let author = actor;
@@ -159,15 +200,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-5`}>
+                    <div className={`group/article relative cursor-pointer pt-6`}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-4`} data-test-activity>
-                            <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={author}/>
-                            </div>
+                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-6`} data-test-activity>
+                            <APAvatar author={author}/>
                             {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
                             <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex'>
@@ -183,10 +222,14 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
-                                    <div className='mt-3 flex gap-2'>
-                                        <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
-                                        <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
-                                    </div>
+                                    <FeedItemStats
+                                        commentCount={2}
+                                        isClicked={isClicked}
+                                        isLiked={isLiked}
+                                        likeCount={1}
+                                        onCommentClick={handleLikeClick}
+                                        onLikeClick={handleLikeClick}
+                                    />
                                 </div>
                             </div>
                             {/* </div> */}
@@ -224,15 +267,16 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.6rem] text-grey-900'></div>
-                                        {renderFeedAttachment(object, layout)}
-                                        {/* <div className='mt-3 flex gap-2'>
-                                        <Button className={`self-start text-grey-500 transition-all hover:text-grey-800 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} hideLabel={true} icon='heart' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
-                                        <span className={`text-grey-800 ${isLiked ? 'opacity-100' : 'opacity-0'}`}>1</span>
-                                    </div> */}
-                                        <div className='mt-3 flex gap-1'>
-                                            <Button className={`self-start text-grey-900`} hideLabel={true} icon='comment' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
-                                            <span className={`text-grey-900`}>2</span>
-                                        </div>
+                                        {renderFeedAttachment(object, layout)} 
+
+                                        <FeedItemStats
+                                            commentCount={2}
+                                            isClicked={isClicked}
+                                            isLiked={isLiked}
+                                            likeCount={1}
+                                            onCommentClick={handleLikeClick}
+                                            onLikeClick={handleLikeClick}
+                                        />
                                     </div>
                                 </div>
                                 {/* </div> */}
@@ -273,10 +317,14 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
-                                    <div className='mt-3 flex gap-1'>
-                                        <Button className={`self-start text-grey-900`} hideLabel={true} icon='comment' id='like' size='md' unstyled={true} onClick={handleLikeClick}/>
-                                        <span className={`text-grey-900`}>1</span>
-                                    </div>
+                                    <FeedItemStats
+                                        commentCount={2}
+                                        isClicked={isClicked}
+                                        isLiked={isLiked}
+                                        likeCount={1}
+                                        onCommentClick={handleLikeClick}
+                                        onLikeClick={handleLikeClick}
+                                    />
                                 </div>
                             </div>
                             {/* </div> */}
@@ -307,6 +355,14 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     </div>
                                     {renderInboxAttachment(object)}
                                 </div>
+                                <FeedItemStats
+                                    commentCount={2}
+                                    isClicked={isClicked}
+                                    isLiked={isLiked}
+                                    likeCount={1}
+                                    onCommentClick={handleLikeClick}
+                                    onLikeClick={handleLikeClick}
+                                />
                             </div>
                         </div>
                     </div>
