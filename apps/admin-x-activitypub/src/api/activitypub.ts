@@ -44,6 +44,9 @@ export class ActivityPubAPI {
         if (json === null) {
             return [];
         }
+        if ('orderedItems' in json) {
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+        }
         if ('items' in json) {
             return Array.isArray(json.items) ? json.items : [json.items];
         }
@@ -59,9 +62,11 @@ export class ActivityPubAPI {
         if (json === null) {
             return [];
         }
-        // Change this part
         if ('orderedItems' in json) {
             return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+        }
+        if ('items' in json) {
+            return Array.isArray(json.items) ? json.items : [json.items];
         }
         return [];
     }
