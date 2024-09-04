@@ -103,14 +103,14 @@
     "targets": {
       "dev": {
         "dependsOn": [
-          "^build",
-          "@tryghost/admin-x-design-system:build"
+          "^build"
         ]
       },
       "test:unit": {
         "dependsOn": [
           "test:unit",
-          "^build"
+          "^build",
+          "@tryghost/admin-x-design-system:test:unit"
         ]
       }
     }
