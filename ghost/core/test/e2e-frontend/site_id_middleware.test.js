@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 
-describe.only('Site id middleware execution', function () {
+describe('Site id middleware execution', function () {
     let request;
 
     describe('Using site-id middleware', function () {
