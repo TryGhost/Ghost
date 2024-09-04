@@ -6,14 +6,12 @@ const SubscriptionEventService = require('../../../../lib/services/SubscriptionE
 
 describe('SubscriptionEventService', function () {
     let service;
-    let deps;
+    let memberRepository;
 
     beforeEach(function () {
-        deps = {
-            memberRepository: {get: sinon.stub(), linkSubscription: sinon.stub()}
-        };
+        memberRepository = {get: sinon.stub(), linkSubscription: sinon.stub()};
 
-        service = new SubscriptionEventService(deps);
+        service = new SubscriptionEventService({memberRepository});
     });
 
     it('should throw BadRequestError if subscription has no price item', async function () {
@@ -39,8 +37,8 @@ describe('SubscriptionEventService', function () {
             customer: 'cust_123'
         };
 
-        deps.memberRepository.get.resolves({id: 'member_123'});
-        deps.memberRepository.linkSubscription.rejects({code: 'ER_DUP_ENTRY'});
+        memberRepository.get.resolves({id: 'member_123'});
+        memberRepository.linkSubscription.rejects({code: 'ER_DUP_ENTRY'});
 
         try {
             await service.handleSubscriptionEvent(subscription);
@@ -58,8 +56,8 @@ describe('SubscriptionEventService', function () {
             customer: 'cust_123'
         };
 
-        deps.memberRepository.get.resolves({id: 'member_123'});
-        deps.memberRepository.linkSubscription.rejects({code: 'SQLITE_CONSTRAINT'});
+        memberRepository.get.resolves({id: 'member_123'});
+        memberRepository.linkSubscription.rejects({code: 'SQLITE_CONSTRAINT'});
 
         try {
             await service.handleSubscriptionEvent(subscription);
@@ -77,8 +75,8 @@ describe('SubscriptionEventService', function () {
             customer: 'cust_123'
         };
 
-        deps.memberRepository.get.resolves({id: 'member_123'});
-        deps.memberRepository.linkSubscription.rejects(new Error('Unexpected error'));
+        memberRepository.get.resolves({id: 'member_123'});
+        memberRepository.linkSubscription.rejects(new Error('Unexpected error'));
 
         try {
             await service.handleSubscriptionEvent(subscription);
@@ -89,7 +87,7 @@ describe('SubscriptionEventService', function () {
     });
 
     it('should catch and rethrow unexpected errors from member repository', async function () {
-        deps.memberRepository.get.rejects(new Error('Unexpected error'));
+        memberRepository.get.rejects(new Error('Unexpected error'));
 
         try {
             await service.handleSubscriptionEvent({items: {data: [{price: {id: 'price_123'}}]}});
@@ -107,10 +105,10 @@ describe('SubscriptionEventService', function () {
             customer: 'cust_123'
         };
 
-        deps.memberRepository.get.resolves({id: 'member_123'});
+        memberRepository.get.resolves({id: 'member_123'});
 
         await service.handleSubscriptionEvent(subscription);
 
-        expect(deps.memberRepository.linkSubscription.calledWith({id: 'member_123', subscription})).to.be.true;
+        expect(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription})).to.be.true;
     });
 });

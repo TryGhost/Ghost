@@ -4,44 +4,34 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
 module.exports = class CheckoutSessionEventService {
-    /**
-     * 
-     * * @param {import('./StripeAPI')} deps.api
-     * @param {import('@tryghost/members-api').MemberRepository} deps.memberRepository
-     * @param {import('@tryghost/donations').DonationRepository} deps.donationRepository
-     * @param {import('@tryghost/staff-service').StaffServiceEmails} deps.staffServiceEmails
-     */
-    constructor({api, memberRepository, donationRepository, staffServiceEmails}) {
-        this.api = api;
-        this.memberRepository = memberRepository;
-        this.donationRepository = donationRepository;
-        this.staffServiceEmails = staffServiceEmails;
+    constructor(deps) {
+        this.api = deps.api;
+        this.deps = deps; // Store the deps object to access repositories dynamically later
     }
 
     async handleEvent(session) {
         if (session.mode === 'setup') {
-            return this.handleSetupEvent(session);
+            await this.handleSetupEvent(session);
         }
 
         if (session.mode === 'subscription') {
-            return this.handleSubscriptionEvent(session);
+            await this.handleSubscriptionEvent(session);
         }
 
         if (session.mode === 'payment' && session.metadata?.ghost_donation) {
-            return this.handleDonationEvent(session);
+            await this.handleDonationEvent(session);
         }
     }
 
     async handleDonationEvent(session) {
         const donationField = session.custom_fields?.find(obj => obj?.key === 'donation_message');
-
         const donationMessage = donationField?.text?.value ? donationField.text.value : null;
-
         const amount = session.amount_total;
         const currency = session.currency;
-        const member = session.customer ? (await this.memberRepository.get({
-            customer_id: session.customer
-        })) : null;
+
+        // Access the memberRepository dynamically when needed
+        const memberRepository = this.deps.memberRepository;
+        const member = session.customer ? (await memberRepository.get({customer_id: session.customer})) : null;
 
         const data = DonationPaymentEvent.create({
             name: member?.get('name') ?? session.customer_details.name,
@@ -58,15 +48,21 @@ module.exports = class CheckoutSessionEventService {
             referrerUrl: session.metadata.referrer_url ?? null
         });
 
-        await this.donationRepository.save(data);
-        await this.staffServiceEmails.notifyDonationReceived({
-            donationPaymentEvent: data
-        });
+        // Access the donationRepository dynamically when needed
+        const donationRepository = this.deps.donationRepository;
+        await donationRepository.save(data);
+
+        // Access the staffServiceEmails dynamically when needed
+        const staffServiceEmails = this.deps.staffServiceEmails;
+        await staffServiceEmails.notifyDonationReceived({donationPaymentEvent: data});
     }
 
     async handleSetupEvent(session) {
         const setupIntent = await this.api.getSetupIntent(session.setup_intent);
-        const member = await this.memberRepository.get({
+
+        // Access the memberRepository dynamically when needed
+        const memberRepository = this.deps.memberRepository;
+        const member = await memberRepository.get({
             customer_id: setupIntent.metadata.customer_id
         });
 
@@ -85,7 +81,7 @@ module.exports = class CheckoutSessionEventService {
                 setupIntent.payment_method
             );
             try {
-                await this.memberRepository.linkSubscription({
+                await memberRepository.linkSubscription({
                     id: member.id,
                     subscription: updatedSubscription
                 });
@@ -101,10 +97,8 @@ module.exports = class CheckoutSessionEventService {
         }
 
         const subscriptions = await member.related('stripeSubscriptions').fetch();
-
-        const activeSubscriptions = subscriptions.models.filter((subscription) => {
-            return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status'));
-        });
+        const activeSubscriptions = subscriptions.models.filter(subscription => ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status'))
+        );
 
         for (const subscription of activeSubscriptions) {
             if (subscription.get('customer_id') === setupIntent.metadata.customer_id) {
@@ -113,7 +107,7 @@ module.exports = class CheckoutSessionEventService {
                     setupIntent.payment_method
                 );
                 try {
-                    await this.memberRepository.linkSubscription({
+                    await memberRepository.linkSubscription({
                         id: member.id,
                         subscription: updatedSubscription
                     });
@@ -134,7 +128,10 @@ module.exports = class CheckoutSessionEventService {
             expand: ['subscriptions.data.default_payment_method']
         });
 
-        let member = await this.memberRepository.get({
+        // Access the memberRepository dynamically when needed
+        const memberRepository = this.deps.memberRepository;
+
+        let member = await memberRepository.get({
             email: customer.email
         });
 
@@ -165,13 +162,12 @@ module.exports = class CheckoutSessionEventService {
             }
 
             const offerId = session.metadata?.offer;
-
             const memberDataWithStripeCustomer = {
                 ...memberData,
                 stripeCustomer: customer,
                 offerId
             };
-            member = await this.memberRepository.create(memberDataWithStripeCustomer);
+            member = await memberRepository.create(memberDataWithStripeCustomer);
         } else {
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
             const attribution = {
@@ -184,10 +180,10 @@ module.exports = class CheckoutSessionEventService {
             };
 
             if (payerName && !member.get('name')) {
-                await this.memberRepository.update({name: payerName}, {id: member.get('id')});
+                await memberRepository.update({name: payerName}, {id: member.get('id')});
             }
 
-            await this.memberRepository.upsertCustomer({
+            await memberRepository.upsertCustomer({
                 customer_id: customer.id,
                 member_id: member.id,
                 name: customer.name,
@@ -198,7 +194,7 @@ module.exports = class CheckoutSessionEventService {
                 try {
                     const offerId = session.metadata?.offer;
 
-                    await this.memberRepository.linkSubscription({
+                    await memberRepository.linkSubscription({
                         id: member.id,
                         subscription,
                         offerId,
@@ -216,7 +212,7 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (checkoutType !== 'upgrade') {
-            this.sendSignupEmail(customer.email);
+            this.deps.sendSignupEmail(customer.email);
         }
     }
 };

@@ -31,23 +31,17 @@ module.exports = class WebhookController {
             'checkout.session.completed': this.checkoutSessionEvent
         };
 
-        this.subscriptionEventService = new SubscriptionEventService({
-            memberRepository: this.deps.memberRepository
-        });
+        this.initializeServices(deps);
+    }
 
-        this.invoiceEventService = new InvoiceEventService({
-            memberRepository: this.deps.memberRepository,
-            eventRepository: this.deps.eventRepository,
-            productRepository: this.deps.productRepository,
-            api: this.api
-        });
-
-        this.checkoutSessionEventService = new CheckoutSessionEventService({
-            api: this.api,
-            memberRepository: this.deps.memberRepository,
-            donationRepository: this.deps.donationRepository,
-            staffServiceEmails: this.deps.staffServiceEmails
-        });
+    /**
+     * Initializes event services
+     * @param {object} deps 
+     */
+    initializeServices(deps) {
+        this.subscriptionEventService = new SubscriptionEventService(deps);
+        this.invoiceEventService = new InvoiceEventService(deps);
+        this.checkoutSessionEventService = new CheckoutSessionEventService(deps);
     }
 
     async handle(req, res) {

@@ -2,7 +2,6 @@ const chai = require('chai');
 const sinon = require('sinon');
 const {expect} = chai;
 const WebhookController = require('../../../lib/WebhookController');
-// const {DonationPaymentEvent} = require('@tryghost/donations');
 
 describe('WebhookController', function () {
     let controller;
@@ -15,7 +14,7 @@ describe('WebhookController', function () {
             api: {getSubscription: sinon.stub(), getCustomer: sinon.stub(), getSetupIntent: sinon.stub(), attachPaymentMethodToCustomer: sinon.stub(), updateSubscriptionDefaultPaymentMethod: sinon.stub()},
             webhookManager: {parseWebhook: sinon.stub()},
             eventRepository: {registerPayment: sinon.stub()},
-            memberRepository: {get: sinon.stub(), create: sinon.stub(), update: sinon.stub(), linkSubscription: sinon.stub(), upsertCustomer: sinon.stub()},
+            memberRepository: {get: sinon.stub(), create: sinon.stub(), update: sinon.stub(), linkSubscription: sinon.stub(), upsertCustomer: sinon.stub(), members: sinon.stub()},
             donationRepository: {save: sinon.stub()},
             productRepository: {get: sinon.stub()},
             staffServiceEmails: {notifyDonationReceived: sinon.stub()},

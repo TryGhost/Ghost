@@ -1,10 +1,10 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-
 module.exports = class SubscriptionEventService {
-    constructor({memberRepository}) {
-        this.memberRepository = memberRepository;
+    constructor(deps) {
+        this.deps = deps;
     }
+
     async handleSubscriptionEvent(subscription) {
         const subscriptionPriceData = _.get(subscription, 'items.data');
         if (!subscriptionPriceData || subscriptionPriceData.length !== 1) {
@@ -13,13 +13,15 @@ module.exports = class SubscriptionEventService {
             });
         }
 
-        const member = await this.memberRepository.get({
+        // Accessing the member repository dynamically from deps
+        const memberRepository = this.deps.memberRepository;
+        const member = await memberRepository.get({
             customer_id: subscription.customer
         });
 
         if (member) {
             try {
-                await this.memberRepository.linkSubscription({
+                await memberRepository.linkSubscription({
                     id: member.id,
                     subscription
                 });
