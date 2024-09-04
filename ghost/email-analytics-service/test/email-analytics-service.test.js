@@ -209,7 +209,7 @@ describe('EmailAnalyticsService', function () {
                 aggregateStatsStub.called.should.be.false();
             });
 
-            it.only('fetches events with correct parameters', async function () {
+            it('fetches events with correct parameters', async function () {
                 service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
