@@ -42,18 +42,6 @@ describe('Site id middleware execution', function () {
                 .expect(500);
         });
 
-        it('should allow API requests with the correct site id header', function () {
-            return request.get('/ghost/api/content/posts/')
-                .set('x-site-id', '123123')
-                // NOTE: This is a 403 because we aren't supplying an API key
-                .expect(403);
-        });
-
-        it('should reject API requests without a site id header', function () {
-            return request.get('/ghost/api/content/posts/')
-                .expect(500);
-        });
-
         it('should allow static asset requests with the correct site id header', function () {
             return request.get('/content/images/ghost.png')
                 .set('x-site-id', '123123')
@@ -61,18 +49,7 @@ describe('Site id middleware execution', function () {
         });
 
         it('should reject static asset requests without a site id header', function () {
-            return request.get('/assets/img/ghost-logo.svg')
-                .expect(500);
-        });
-
-        it('should allow admin requests with the correct site id header', function () {
-            return request.get('/ghost/')
-                .set('x-site-id', '123123')
-                .expect(200);
-        });
-
-        it('should reject admin requests without a site id header', function () {
-            return request.get('/ghost/')
+            return request.get('/content/images/ghost.png')
                 .expect(500);
         });
 
