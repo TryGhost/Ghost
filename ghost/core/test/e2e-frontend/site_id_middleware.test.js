@@ -30,6 +30,18 @@ describe('Site id middleware execution', function () {
                 .expect(200);
         });
 
+        it('should allow requests with numeric site id header', function () {
+            return request.get('/')
+                .set('x-site-id', 123123)
+                .expect(200);
+        });
+
+        it('should prevent requests with incorrect numeric site id header', function () {
+            return request.get('/')
+                .set('x-site-id', 1231230)
+                .expect(500);
+        });
+
         it('should allow API requests with the correct site id header', function () {
             return request.get('/ghost/api/v4/content/posts/')
                 .set('x-site-id', '123123')
