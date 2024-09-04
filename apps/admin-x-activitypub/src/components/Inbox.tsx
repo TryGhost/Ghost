@@ -57,7 +57,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         type={activity.type}
                                     />
                                     {index < inboxTabActivities.length - 1 && (
-                                        <div className="my-4 h-px w-full bg-grey-200"></div>
+                                        <div className="h-px w-full bg-grey-200"></div>
                                     )}
                                 </li>
                             ))}
