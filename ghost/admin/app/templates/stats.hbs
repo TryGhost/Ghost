@@ -1,22 +1,11 @@
 <section class="gh-canvas gh-canvas-sticky">
     <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
-            <div class="gh-dashboard-select">
-                <PowerSelectMultiple
-                    @placeholder="Select audience"
-                    @selected={{this.selectedAudienceOptions}}
-                    @options={{this.audienceOptions}}
-                    @searchEnabled={{true}}
+            <div class="view-actions">
+                <Stats::Parts::AudienceFilter
+                    @excludedAudiences={{this.excludedAudiences}}
                     @onChange={{this.onAudienceChange}}
-                    @triggerComponent={{component "gh-power-select/trigger"}}
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-                    @matchTriggerWidth={{false}}
-                    @horizontalPosition="right"
-                    as |option|
-                >
-                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                </PowerSelectMultiple>
+                />
 
                 <PowerSelect
                     @selected={{this.selectedDaysOption}}
@@ -24,7 +13,7 @@
                     @searchEnabled={{false}}
                     @onChange={{this.onDaysChange}}
                     @triggerComponent={{component "gh-power-select/trigger"}}
-                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @triggerClass="gh-btn"
                     @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                     @matchTriggerWidth={{false}}
                     @horizontalPosition="right"
