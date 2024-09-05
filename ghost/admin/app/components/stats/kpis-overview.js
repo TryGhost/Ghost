@@ -9,11 +9,29 @@ export default class KpisOverview extends Component {
     @inject config;
     @tracked selected = 'unique_visitors';
     @tracked totals = null;
+    @tracked showGranularity = true;
 
-    @tracked granularityOptions = [
-        {name: 'Days', value: 'days'},
-        {name: 'Weeks', value: 'weeks'}
-    ];
+    get granularityOptions() {
+        const chartRange = this.args.chartRange;
+        if (chartRange >= 8 && chartRange <= 30) {
+            return [
+                {name: 'Days', value: 'days'},
+                {name: 'Weeks', value: 'weeks'}
+            ];
+        } else if (chartRange > 30 && chartRange <= 365) {
+            return [
+                {name: 'Days', value: 'days'},
+                {name: 'Weeks', value: 'weeks'},
+                {name: 'Months', value: 'months'}
+            ];
+        } else {
+            return [
+                {name: 'Weeks', value: 'weeks'},
+                {name: 'Months', value: 'months'}
+            ];
+        }
+    }
+
     @tracked granularity = this.granularityOptions[0];
 
     @action

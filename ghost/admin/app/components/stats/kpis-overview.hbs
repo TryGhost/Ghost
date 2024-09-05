@@ -31,20 +31,22 @@
         </button>
     </div>
     <div class="gh-stats-kpi-granularity">
-        <PowerSelect
-            @selected={{this.granularity}}
-            @options={{this.granularityOptions}}
-            @searchEnabled={{false}}
-            @onChange={{this.onGranularityChange}}
-            @triggerComponent={{component "gh-power-select/trigger"}}
-            @triggerClass="gh-btn gh-stats-section-dropdown"
-            @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-            @matchTriggerWidth={{false}}
-            @horizontalPosition="right"
-            as |option|
-        >
+        {{#if this.showGranularity}}
+            <PowerSelect
+                @selected={{this.granularity}}
+                @options={{this.granularityOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onGranularityChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn gh-stats-section-dropdown"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
             {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-        </PowerSelect>
+            </PowerSelect>
+        {{/if}}
     </div>
 </div>
 <Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />

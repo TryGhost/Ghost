@@ -161,6 +161,7 @@
     height: 28px;
     border: none !important;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .gh-stats-section-dropdown.ember-power-select-trigger.gh-btn span {
@@ -173,4 +174,14 @@
 
 .gh-stats-kpi-granularity {
     padding: 12px 20px;
+}
+
+@media (max-width: 1440px) {
+    .gh-stats-tab.min-width .gh-stats-metric {
+        min-width: 150px;
+    }
+
+    .gh-stats-metric-label {
+        font-size: 14px;
+    }
 }
