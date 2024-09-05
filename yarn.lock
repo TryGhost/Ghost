@@ -7457,14 +7457,14 @@
     "@tryghost/debug" "^0.1.33"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.5.19":
-  version "0.5.19"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.5.19.tgz#bc43e7823462762b8599a7ac09e82cc281d36301"
-  integrity sha512-q8hF2+Rt35D0v+VIWPqkQlLAPsF5R5R4Mq2q1GhQ+n+OcYerlX7vFR9FKlGfrVeBg9HsLUBTNlZacm407HaLHA==
+"@tryghost/bookshelf-filter@^0.5.20":
+  version "0.5.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.5.20.tgz#e1c7a99314305178488dd8024b1b66c4a492caae"
+  integrity sha512-gPdss759jRIzI+o8U3wPCAL0qBB0DmLlsT8TPicF33kN4d/MSx5ab4bUtKqH/5AaYaSBQvPhZEEv5SZUI3Ztpw==
   dependencies:
     "@tryghost/debug" "^0.1.33"
     "@tryghost/errors" "^1.3.6"
-    "@tryghost/nql" "^0.12.4"
+    "@tryghost/nql" "0.12.5"
     "@tryghost/tpl" "^0.1.33"
 
 "@tryghost/bookshelf-has-posts@^0.1.33":
@@ -7499,15 +7499,15 @@
     "@tryghost/tpl" "^0.1.33"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.6.23":
-  version "0.6.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.23.tgz#3b17f49d397a618911065593c8aa044881491853"
-  integrity sha512-Muuk8J9t3Dv630FpT1cqhan6J6GGIXUjZ7r25IcymQPideUbAvZXt0jEXWN7jpB1pq3+MdbRJSOmw+KrVlWbtg==
+"@tryghost/bookshelf-plugins@0.6.24":
+  version "0.6.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.24.tgz#f44c783e11da55fab95d8a5064a96ae58360aede"
+  integrity sha512-tX35hQDTR7dXyY2Nd8t88hscVhRTe27okwxvIM9sR+QzJQ6yu7RUhQCqpdlRPtfzMwbF3vRxxaEAAaqsLZ4b6Q==
   dependencies:
     "@tryghost/bookshelf-collision" "^0.1.46"
     "@tryghost/bookshelf-custom-query" "^0.1.28"
     "@tryghost/bookshelf-eager-load" "^0.1.32"
-    "@tryghost/bookshelf-filter" "^0.5.19"
+    "@tryghost/bookshelf-filter" "^0.5.20"
     "@tryghost/bookshelf-has-posts" "^0.1.33"
     "@tryghost/bookshelf-include-count" "^0.3.16"
     "@tryghost/bookshelf-order" "^0.1.28"
@@ -7908,7 +7908,17 @@
   dependencies:
     date-fns "^2.28.0"
 
-"@tryghost/nql@0.12.4", "@tryghost/nql@^0.12.0", "@tryghost/nql@^0.12.4":
+"@tryghost/nql@0.12.5":
+  version "0.12.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.5.tgz#dc4531e26af06fd40c3b182295a480923cc44591"
+  integrity sha512-vc7IBsmYLb7zszLTFxGcDobkUKQ3cBKTEq3P71OGt7ranVI3KD1Du5Pq90eowQflT61DTy5eU7U9mltXOGvEkw==
+  dependencies:
+    "@tryghost/mongo-knex" "^0.9.1"
+    "@tryghost/mongo-utils" "^0.6.2"
+    "@tryghost/nql-lang" "^0.6.1"
+    mingo "^2.2.2"
+
+"@tryghost/nql@^0.12.0":
   version "0.12.4"
   resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.4.tgz#ae482a78faa5cdd23da0d440b8248b2c942cfc6c"
   integrity sha512-t1qTtFwFETjNe2CEZneLWzfDeLO3eQQMhYtyC/LvanOtpr/dn5gn5HCBCQ/MYi+nLwXeYlUMy7Lcjj1V3ToN5Q==
