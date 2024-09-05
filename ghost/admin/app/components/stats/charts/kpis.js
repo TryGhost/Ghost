@@ -45,6 +45,43 @@ export default class KpisComponent extends Component {
             params
         });
 
+        // Create an array with every second date value
+        const dateLabels = [];
+        let currentDate = startDate.clone();
+        let skipDays;
+        switch (chartRange) {
+        case 1:
+            skipDays = 0; // Show all hours for 1 day
+            break;
+        case 7:
+            skipDays = 0; // Skip every other day for 7 days
+            break;
+        case (30 + 1):
+            skipDays = 2; // Skip every 3rd day for 30 and 90 days
+            break;
+        case (90 + 1):
+            skipDays = 5; // Skip every 3rd day for 30 and 90 days
+            break;
+        case (365 + 1):
+        case (12 * (30 + 1)):
+            skipDays = 30; // Skip every 7th day for 1 year
+            break;
+        case 1000:
+            skipDays = 29; // Skip every 30th day for all time
+            break;
+        default:
+            skipDays = 1; // Default to skipping every other day
+        }
+
+        let dayCounter = 0;
+        while (currentDate.isSameOrBefore(endDate)) {
+            if (dayCounter % (skipDays + 1) === 0) {
+                dateLabels.push(currentDate.format('YYYY-MM-DD'));
+            }
+            currentDate.add(1, 'days');
+            dayCounter = dayCounter + 1;
+        }
+
         return (
             <AreaChart
                 data={data}
@@ -61,27 +98,30 @@ export default class KpisComponent extends Component {
                 params={params}
                 options={{
                     grid: {
-                        left: '0%',
-                        right: '0%',
+                        left: '10px',
+                        right: '10px',
                         top: '10%',
                         bottom: 0,
                         containLabel: true
                     },
                     xAxis: {
                         type: 'time',
-                        // min: startDate.toISOString(),
-                        // max: endDate.toISOString(),
-                        boundaryGap: ['0%', '0.5%'],
+                        min: startDate.toISOString(),
+                        max: endDate.toISOString(),
+                        boundaryGap: ['0%', '0%'],
                         axisLabel: {
-                            formatter: chartRange <= 7 ? '{ee}' : '{dd} {MMM}'
+                            formatter: chartRange <= 7 ? '{ee}' : '{d} {MMM}',
+                            customValues: dateLabels
                         },
                         axisTick: {
-                            alignWithLabel: true
+                            show: false,
+                            alignWithLabel: true,
+                            interval: 0
                         },
                         axisPointer: {
                             snap: true
                         },
-                        splitNumber: chartRange <= 7 ? 7 : 5,
+                        splitNumber: dateLabels.length,
                         splitLine: {
                             show: false
                         },
