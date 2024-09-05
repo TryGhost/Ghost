@@ -4,26 +4,46 @@ import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 // Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
-const DAYS_OPTIONS = [{
-    name: '7 Days',
-    value: 7
-}, {
-    name: '30 Days',
-    value: 30 + 1
-}, {
-    name: '90 Days',
-    value: 90 + 1
-}];
+const RANGE_OPTIONS = [
+    {
+        name: 'Last 24 hours',
+        value: 1
+    },
+    {
+        name: 'Last 7 days',
+        value: 7
+    },
+    {
+        name: 'Last 30 days',
+        value: 30 + 1
+    },
+    {
+        name: 'Last 3 months',
+        value: 90 + 1
+    },
+    {
+        name: 'Year to date',
+        value: 365 + 1
+    },
+    {
+        name: 'Last 12 months',
+        value: 12 * (30 + 1)
+    },
+    {
+        name: 'All time',
+        value: 1000
+    }
+];
 
 export default class StatsController extends Controller {
-    daysOptions = DAYS_OPTIONS;
+    rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
 
     /**
      * @type {number|'all'}
-     * Amount of days to load for member count and MRR related charts
+     * Date range to load for member count and MRR related charts
      */
-    @tracked chartDays = 30 + 1;
+    @tracked chartRange = 30 + 1;
     /**
      * @type {array}
      * Filter by audience
@@ -32,8 +52,8 @@ export default class StatsController extends Controller {
     @tracked excludedAudiences = '';
 
     @action
-    onDaysChange(selected) {
-        this.chartDays = selected.value;
+    onRangeChange(selected) {
+        this.chartRange = selected.value;
     }
 
     @action
@@ -50,7 +70,7 @@ export default class StatsController extends Controller {
         }
     }
 
-    get selectedDaysOption() {
-        return this.daysOptions.find(d => d.value === this.chartDays);
+    get selectedRangeOption() {
+        return this.rangeOptions.find(d => d.value === this.chartRange);
     }
 }

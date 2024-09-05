@@ -10,13 +10,13 @@ export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartDays = props.chartDays;
+        let chartRange = props.chartRange;
         let audience = props.audience;
 
         // @TODO: ATM there's a two day worth gap (padding) on the right side
         // of the chart. endDate needs to be adjusted to get rid of it
         const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
+        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
         /**
          * @typedef {Object} Params
@@ -73,7 +73,7 @@ export default class KpisComponent extends Component {
                         // max: endDate.toISOString(),
                         boundaryGap: ['0%', '0.5%'],
                         axisLabel: {
-                            formatter: chartDays <= 7 ? '{ee}' : '{dd} {MMM}'
+                            formatter: chartRange <= 7 ? '{ee}' : '{dd} {MMM}'
                         },
                         axisTick: {
                             alignWithLabel: true
@@ -81,7 +81,7 @@ export default class KpisComponent extends Component {
                         axisPointer: {
                             snap: true
                         },
-                        splitNumber: chartDays <= 7 ? 7 : 5,
+                        splitNumber: chartRange <= 7 ? 7 : 5,
                         splitLine: {
                             show: false
                         },

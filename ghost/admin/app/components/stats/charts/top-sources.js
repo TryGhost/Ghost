@@ -10,11 +10,11 @@ export default class TopPages extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartDays = props.chartDays;
+        let chartRange = props.chartRange;
         let audience = props.audience;
 
         const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
+        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
         /**
          * @typedef {Object} Params
