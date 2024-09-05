@@ -681,7 +681,7 @@ test.describe('Deleting a post', () => {
         await page.locator('[data-test-button="delete-post"]').click();
 
         await page.locator('[data-test-button="delete-post-confirm"]').click();
-        
+
         await expect(
             page.locator('[data-test-screen-title]')
         ).toContainText('Posts');
@@ -697,7 +697,7 @@ test.describe('Deleting a post', () => {
         await page.locator('[data-test-button="delete-post"]').click();
 
         await page.locator('[data-test-button="delete-post-confirm"]').click();
-        
+
         await expect(
             page.locator('[data-test-screen-title]')
         ).toContainText('Posts');
