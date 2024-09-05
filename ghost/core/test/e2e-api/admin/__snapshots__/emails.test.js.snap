@@ -491,7 +491,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "delivered_count": 1,
-      "email_count": 6,
+      "email_count": 0,
       "error": null,
       "error_data": null,
       "failed_count": 1,
@@ -517,7 +517,7 @@ Object {
     },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "delivered_count": 3,
+      "delivered_count": 0,
       "email_count": 3,
       "error": "Everything went south",
       "error_data": null,
@@ -690,7 +690,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "delivered_count": 1,
-      "email_count": 6,
+      "email_count": 0,
       "error": null,
       "error_data": null,
       "failed_count": 1,
@@ -736,7 +736,7 @@ Object {
   "emails": Array [
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "delivered_count": 3,
+      "delivered_count": 0,
       "email_count": 3,
       "error": "Everything went south",
       "error_data": null,

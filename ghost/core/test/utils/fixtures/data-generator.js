@@ -732,7 +732,7 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
             status: 'submitted',
-            email_count: 6, // match the number of email_recipients relations below
+            email_count: 0, // match the number of email_recipients relations below
             recipient_filter: 'all',
             subject: 'You got mailed!',
             html: '<p>Look! I\'m an email</p>',

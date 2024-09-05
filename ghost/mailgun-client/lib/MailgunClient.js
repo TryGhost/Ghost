@@ -156,9 +156,13 @@ module.exports = class MailgunClient {
             return;
         }
 
-        debug(`fetchEvents: starting fetching first events page`);
+        debug(`[MailgunClient fetchEvents]: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
         const startDate = new Date();
+        const overallStartTime = Date.now();
+
+        let batchCount = 0;
+        let totalBatchTime = 0;
 
         try {
             let page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions);
@@ -166,13 +170,20 @@ module.exports = class MailgunClient {
             // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
             // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
             let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-            debug(`fetchEvents: finished fetching first page with ${events.length} events`);
+            debug(`[MailgunClient fetchEvents]: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
             const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
 
             while (events.length !== 0) {
+                const batchStartTime = Date.now();
                 await batchHandler(events);
+                const batchEndTime = Date.now();
+                const batchDuration = batchEndTime - batchStartTime;
+
+                batchCount += 1;
+                totalBatchTime += batchDuration;
+
                 eventCount += events.length;
 
                 if (eventCount >= maxEvents && (!beginTimestamp || !events[events.length - 1].timestamp || (events[events.length - 1].timestamp.getTime() > beginTimestamp))) {
@@ -180,7 +191,7 @@ module.exports = class MailgunClient {
                 }
 
                 const nextPageId = page.pages.next.page;
-                debug(`fetchEvents: starting fetching next page ${nextPageId}`);
+                debug(`[MailgunClient fetchEvents]: starting fetching next page ${nextPageId}`);
                 page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, {
                     page: nextPageId,
                     ...mailgunOptions
@@ -188,8 +199,14 @@ module.exports = class MailgunClient {
 
                 // We need to cap events at the time we started fetching them (see comment above)
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-                debug(`fetchEvents: finished fetching next page with ${events.length} events`);
+                debug(`[MailgunClient fetchEvents]: finished fetching next page with ${events.length} events`);
             }
+
+            const overallEndTime = Date.now();
+            const totalDuration = overallEndTime - overallStartTime;
+            const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
+
+            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
         } catch (error) {
             logging.error(error);
             throw error;
