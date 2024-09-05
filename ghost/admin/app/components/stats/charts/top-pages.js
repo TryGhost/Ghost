@@ -58,7 +58,16 @@ export default class TopPages extends Component {
                 error={error}
                 loading={loading}
                 index="pathname"
+                indexConfig={{
+                    label: <span style={{fontSize: '12px', fontWeight: 'bold'}}>URL</span>
+                }}
                 categories={['hits']}
+                categoryConfig={{
+                    hits: {
+                        label: <span>Visits</span>
+                        // renderValue: ({ value }) => <span>{formatNumber(value)}</span>
+                    }
+                }}
                 colorPalette={[statsStaticColors[4]]}
                 height="300px"
             />
