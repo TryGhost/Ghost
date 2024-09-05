@@ -99,7 +99,9 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
         uploadInitialFile(initialFile);
 
-        // If we're given a URL instead of a file, populate the image dimensions
+        // Populate missing image dimensions, occurs when images are
+        // pasted/dragged/inserted as external or when loaded from serialized
+        // state that has missing images
         const populateImageDimensions = async () => {
             if (src && !initialFile && !triggerFileDialog) {
                 const {width, height} = await getImageDimensions(src);
@@ -111,7 +113,17 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
             }
         };
 
-        populateImageDimensions();
+        const hasMissingDimensions = editor.getEditorState().read(() => {
+            const node = $getNodeByKey(nodeKey);
+            if (!node.width || !node.height) {
+                return true;
+            }
+            return false;
+        });
+
+        if (hasMissingDimensions) {
+            populateImageDimensions();
+        }
 
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -252,12 +252,19 @@ export async function assertPosition(page, selector, expectedBox, {threshold = 0
     });
 }
 
-export async function assertRootChildren(page, expectedState) {
-    let actualState = await page.evaluate(() => {
+export async function getEditorStateJSON(page) {
+    const json = await page.evaluate(() => {
         const rootElement = document.querySelector('div[contenteditable="true"]');
         const editor = rootElement.__lexicalEditor;
-        return JSON.stringify(editor.getEditorState().toJSON().root.children);
+        return JSON.stringify(editor.getEditorState().toJSON());
     });
+
+    return json;
+}
+
+export async function assertRootChildren(page, expectedState) {
+    const state = await getEditorStateJSON(page);
+    const actualState = JSON.stringify(JSON.parse(state).root.children);
 
     const actual = prettifyJSON(actualState);
     const expected = prettifyJSON(expectedState);

@@ -10,6 +10,7 @@ import {
     enterUntilScrolled,
     expectUnchangedScrollPosition,
     focusEditor,
+    getEditorStateJSON,
     html,
     initialize,
     insertCard,
@@ -158,7 +159,7 @@ test.describe('Image card', async () => {
         await expect(await page.getByTestId('image-card-populated')).toBeVisible();
     });
 
-    test('can get image height and width from external URL', async function () {
+    test('can get image dimensions from external URL', async function () {
         await page.route('https://example.com/large-image.png', route => route.fulfill({
             status: 200,
             contentType: 'image/png',
@@ -191,7 +192,79 @@ test.describe('Image card', async () => {
         }]));
     });
 
-    // test.fixme('can get image width and height');
+    test('can get image dimensions when rendering serialized node with missing data', async function () {
+        await page.route('https://example.com/large-image.png', route => route.fulfill({
+            status: 200,
+            contentType: 'image/png',
+            body: fs.readFileSync(__dirname + '/../fixtures/large-image.png')
+        }));
+
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'image',
+                    src: 'https://example.com/large-image.png',
+                    title: 'This is a title',
+                    alt: 'This is some alt text',
+                    caption: 'This is a <b>caption</b>',
+                    cardWidth: 'wide'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+
+        expect(editorState.root.children[0].type).toEqual('image');
+        // missing width & height are extracted from the image
+        expect(editorState.root.children[0].width, 'width').toEqual(248);
+        expect(editorState.root.children[0].height, 'height').toEqual(248);
+    });
+
+    test('does not change existing image dimensions when rendering serialized node', async function () {
+        await page.route('https://example.com/large-image.png', route => route.fulfill({
+            status: 200,
+            contentType: 'image/png',
+            body: fs.readFileSync(__dirname + '/../fixtures/large-image.png')
+        }));
+
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'image',
+                    src: 'https://example.com/large-image.png',
+                    title: 'This is a title',
+                    alt: 'This is some alt text',
+                    caption: 'This is a <b>caption</b>',
+                    cardWidth: 'wide',
+                    width: 1000,
+                    height: 1000
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+
+        expect(editorState.root.children[0].type).toEqual('image');
+        // existing width & height are kept from the serialized state
+        expect(editorState.root.children[0].width, 'width').toEqual(1000);
+        expect(editorState.root.children[0].height, 'height').toEqual(1000);
+    });
 
     test('can toggle to alt text', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
