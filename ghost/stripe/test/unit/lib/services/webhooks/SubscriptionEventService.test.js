@@ -2,7 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const {expect} = chai;
 
-const SubscriptionEventService = require('../../../../lib/services/SubscriptionEventService');
+const SubscriptionEventService = require('../../../../../lib/services/webhook/SubscriptionEventService');
 
 describe('SubscriptionEventService', function () {
     let service;

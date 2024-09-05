@@ -2,8 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const {expect} = chai;
 const errors = require('@tryghost/errors');
-
-const CheckoutSessionEventService = require('../../../../lib/services/CheckoutSessionEventService');
+const CheckoutSessionEventService = require('../../../../../lib/services/webhook/CheckoutSessionEventService');
 
 describe('CheckoutSessionEventService', function () {
     let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail;
@@ -494,6 +493,46 @@ describe('CheckoutSessionEventService', function () {
                 expect(err).to.be.instanceOf(errors.ConflictError);
                 // Check the error message
                 expect(err.message).to.equal('The server has encountered an conflict.');
+            }
+        });
+
+        it('should throw ConflictError if linkSubscription fails with ER_DUP_ENTRY', async function () {
+            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const session = {setup_intent: 'si_123'};
+            const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
+            const member = {id: 'member_123'};
+            const updatedSubscription = {id: 'sub_123'};
+    
+            api.getSetupIntent.resolves(setupIntent);
+            memberRepository.get.resolves(member);
+            api.updateSubscriptionDefaultPaymentMethod.resolves(updatedSubscription);
+            memberRepository.linkSubscription.rejects({code: 'ER_DUP_ENTRY'});
+    
+            try {
+                await service.handleSetupEvent(session);
+                expect.fail('Expected ConflictError');
+            } catch (err) {
+                expect(err).to.be.instanceOf(errors.ConflictError);
+            }
+        });
+
+        it('should throw ConflictError if linkSubscription fails with SQLITE_CONSTRAINT', async function () {
+            const service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails});
+            const session = {setup_intent: 'si_123'};
+            const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
+            const member = {id: 'member_123'};
+            const updatedSubscription = {id: 'sub_123'};
+
+            api.getSetupIntent.resolves(setupIntent);
+            memberRepository.get.resolves(member);
+            api.updateSubscriptionDefaultPaymentMethod.resolves(updatedSubscription);
+            memberRepository.linkSubscription.rejects({code: 'SQLITE_CONSTRAINT'});
+
+            try {
+                await service.handleSetupEvent(session);
+                expect.fail('Expected ConflictError');
+            } catch (err) {
+                expect(err).to.be.instanceOf(errors.ConflictError);
             }
         });
     });

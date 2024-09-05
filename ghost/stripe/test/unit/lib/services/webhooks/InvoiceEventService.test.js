@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const {expect} = chai;
 const errors = require('@tryghost/errors');
 
-const InvoiceEventService = require('../../../../lib/services/InvoiceEventService');
+const InvoiceEventService = require('../../../../../lib/services/webhook/InvoiceEventService');
 
 describe('InvoiceEventService', function () {
     let memberRepositoryStub, eventRepositoryStub, productRepositoryStub, apiStub, service;

@@ -1,10 +1,7 @@
-// const _ = require('lodash');
 const logging = require('@tryghost/logging');
-// const errors = require('@tryghost/errors');
-// const {DonationPaymentEvent} = require('@tryghost/donations');
-const SubscriptionEventService = require('./services/SubscriptionEventService');
-const InvoiceEventService = require('./services/InvoiceEventService');
-const CheckoutSessionEventService = require('./services/CheckoutSessionEventService');
+const SubscriptionEventService = require('./services/webhook/SubscriptionEventService');
+const InvoiceEventService = require('./services/webhook/InvoiceEventService');
+const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
 module.exports = class WebhookController {
     /**
