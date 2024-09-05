@@ -143,7 +143,6 @@ describe('Acceptance: Members', function () {
                 .to.equal('example@domain.com');
         });
 
-
         /*
          * Due to a limitation with NQL, member bulk deletion is not permitted if any of the following Stripe subscription filters is used:
          *     - Billing period
