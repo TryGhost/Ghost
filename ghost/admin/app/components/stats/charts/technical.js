@@ -16,7 +16,7 @@ export default class KpisComponent extends Component {
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
-        const colorPalette = statsStaticColors;
+        const colorPalette = statsStaticColors.slice(1, 5);
 
         /**
          * @typedef {Object} Params

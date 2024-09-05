@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {statsStaticColors} from '../../../utils/stats';
 
 export default class KpisComponent extends Component {
     @inject config;
@@ -34,7 +35,7 @@ export default class KpisComponent extends Component {
             member_status: audience.length === 0 ? null : audience.join(',')
         };
 
-        const LINE_COLOR = this.config.accent_color;
+        const LINE_COLOR = statsStaticColors[0];
         const INDEX = 'date';
         const CATEGORY = props.selected === 'unique_visitors' ? 'visits' : props.selected;
 
@@ -106,7 +107,7 @@ export default class KpisComponent extends Component {
                     xAxis: {
                         type: 'time',
                         min: startDate.toISOString(),
-                        max: endDate.toISOString(),
+                        max: endDate.subtract(1, 'day').toISOString(),
                         boundaryGap: ['0%', '0%'],
                         axisLabel: {
                             formatter: chartRange <= 7 ? '{ee}' : '{d} {MMM}',
