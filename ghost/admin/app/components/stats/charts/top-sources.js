@@ -47,7 +47,7 @@ export default class TopPages extends Component {
                 loading={loading}
                 index="referrer"
                 categories={['hits']}
-                colorPalette={['#E8D9FF']}
+                colorPalette={['#D0F1FF']}
                 height="300px"
             />
         );

@@ -48,7 +48,7 @@ export default class KpisComponent extends Component {
             params
         });
 
-        const colorPalette = ['#B78AFB', '#7FDE8A', '#FBCE75', '#F97DB7', '#6ED0FB'];
+        const colorPalette = ['#C7A0FF', '#89DBFF', '#FD96C6', '#FFD98F', '#97E7A1'];
 
         let transformedData;
         let indexBy;
