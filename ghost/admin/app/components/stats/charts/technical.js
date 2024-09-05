@@ -4,6 +4,7 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
+import {generateMonochromePalette} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 
 export default class KpisComponent extends Component {
@@ -14,6 +15,8 @@ export default class KpisComponent extends Component {
         let audience = props.audience;
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+
+        const palette = generateMonochromePalette(this.config.accent_color);
 
         /**
          * @typedef {Object} Params
@@ -48,7 +51,7 @@ export default class KpisComponent extends Component {
             params
         });
 
-        const colorPalette = ['#C7A0FF', '#89DBFF', '#FD96C6', '#FFD98F', '#97E7A1'];
+        const colorPalette = [palette[2], palette[4], palette[6], palette[8], palette[9]];
 
         let transformedData;
         let indexBy;

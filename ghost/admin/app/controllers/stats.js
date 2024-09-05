@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import {AUDIENCE_TYPES} from 'ghost-admin/components/stats/parts/audience-filter';
+import {AUDIENCE_TYPES} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 

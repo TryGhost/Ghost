@@ -4,6 +4,7 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
+import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 
 export default class KpisComponent extends Component {
@@ -13,8 +14,6 @@ export default class KpisComponent extends Component {
         let chartRange = props.chartRange;
         let audience = props.audience;
 
-        // @TODO: ATM there's a two day worth gap (padding) on the right side
-        // of the chart. endDate needs to be adjusted to get rid of it
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
@@ -35,7 +34,7 @@ export default class KpisComponent extends Component {
             member_status: audience.length === 0 ? null : audience.join(',')
         };
 
-        const LINE_COLOR = '#8E42FF';
+        const LINE_COLOR = this.config.accent_color;
         const INDEX = 'date';
         const CATEGORY = props.selected === 'unique_visitors' ? 'visits' : props.selected;
 
@@ -90,7 +89,7 @@ export default class KpisComponent extends Component {
                 error={error}
                 index={INDEX}
                 categories={[CATEGORY]}
-                colorPalette={[LINE_COLOR, '#008060', '#0EB1B9', '#9263AF', '#5A6FC0']}
+                colorPalette={[LINE_COLOR]}
                 backgroundColor="transparent"
                 fontSize="13px"
                 textColor="#AEB7C1"
@@ -171,9 +170,9 @@ export default class KpisComponent extends Component {
                                     x2: 0,
                                     y2: 1,
                                     colorStops: [{
-                                        offset: 0, color: 'rgba(142, 66, 255, 0.3)' // color at 0%
+                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.3) // color at 0%
                                     }, {
-                                        offset: 1, color: 'rgba(142, 66, 255, 0.0)' // color at 100%
+                                        offset: 1, color: hexToRgba(LINE_COLOR, 0.0) // color at 100%
                                     }],
                                     global: false // default is false
                                 }
