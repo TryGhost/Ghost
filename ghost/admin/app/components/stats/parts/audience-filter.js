@@ -1,12 +1,7 @@
 import Component from '@glimmer/component';
+import {AUDIENCE_TYPES} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-
-export const AUDIENCE_TYPES = [
-    {name: 'Logged out visitors', value: 'undefined'},
-    {name: 'Free members', value: 'free'},
-    {name: 'Paid members', value: 'paid'}
-];
 
 function toggleAudienceType(audicenceType, audicenceTypes) {
     const excludedAudiences = new Set(audicenceTypes.filter(type => !type.isSelected).map(type => type.value));
