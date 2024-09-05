@@ -170,7 +170,6 @@ describe('Batch sending tests', function () {
     });
 
     it('Protects the email job from being run multiple times at the same time', async function () {
-        this.retries(1);
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
@@ -679,7 +678,6 @@ describe('Batch sending tests', function () {
         });
 
         it('Does replace with and without fallback in both plaintext and html for member with name', async function () {
-            this.retries(1);
             // Create a new member without a first_name
             await models.Member.add({
                 name: 'Simon Tester',
@@ -855,7 +853,6 @@ describe('Batch sending tests', function () {
         });
 
         it('Shows subscription details box for free members', async function () {
-            this.retries(1);
             // Create a new member without a first_name
             await models.Member.add({
                 email: 'subscription-box-1@example.com',
