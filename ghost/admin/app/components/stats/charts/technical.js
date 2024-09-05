@@ -4,8 +4,8 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
-import {generateMonochromePalette} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {statsStaticColors} from 'ghost-admin/utils/stats';
 
 export default class KpisComponent extends Component {
     @inject config;
@@ -16,7 +16,7 @@ export default class KpisComponent extends Component {
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
-        const palette = generateMonochromePalette(this.config.accent_color);
+        const colorPalette = statsStaticColors;
 
         /**
          * @typedef {Object} Params
@@ -51,8 +51,6 @@ export default class KpisComponent extends Component {
             params
         });
 
-        const colorPalette = [palette[2], palette[4], palette[6], palette[8], palette[9]];
-
         let transformedData;
         let indexBy;
         let tableHead;
@@ -62,7 +60,7 @@ export default class KpisComponent extends Component {
             transformedData = (data ?? []).map((item, index) => ({
                 name: item.browser.charAt(0).toUpperCase() + item.browser.slice(1),
                 value: item.hits,
-                color: colorPalette[index % colorPalette.length]
+                color: colorPalette[index]
             }));
             indexBy = 'browser';
             tableHead = 'Browser';
@@ -71,7 +69,7 @@ export default class KpisComponent extends Component {
             transformedData = (data ?? []).map((item, index) => ({
                 name: item.device.charAt(0).toUpperCase() + item.device.slice(1),
                 value: item.hits,
-                color: colorPalette[index % colorPalette.length]
+                color: colorPalette[index]
             }));
             indexBy = 'device';
             tableHead = 'Device';

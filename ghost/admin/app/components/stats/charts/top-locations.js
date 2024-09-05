@@ -2,16 +2,14 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {generateMonochromePalette} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {statsStaticColors} from 'ghost-admin/utils/stats';
 export default class TopLocations extends Component {
     @inject config;
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;
         let audience = props.audience;
-
-        const palette = generateMonochromePalette(this.config.accent_color);
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -47,7 +45,7 @@ export default class TopLocations extends Component {
                 loading={loading}
                 index="location"
                 categories={['hits']}
-                colorPalette={[palette[9]]}
+                colorPalette={[statsStaticColors[4]]}
             />
         );
     };

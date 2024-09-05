@@ -162,7 +162,6 @@ export default class KpisComponent extends Component {
                             type: 'line',
                             areaStyle: {
                                 opacity: 0.6,
-                                // color: 'rgba(198, 220, 255, 1)'
                                 color: {
                                     type: 'linear',
                                     x: 0,
@@ -170,11 +169,11 @@ export default class KpisComponent extends Component {
                                     x2: 0,
                                     y2: 1,
                                     colorStops: [{
-                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.3) // color at 0%
+                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.3)
                                     }, {
-                                        offset: 1, color: hexToRgba(LINE_COLOR, 0.0) // color at 100%
+                                        offset: 1, color: hexToRgba(LINE_COLOR, 0.0)
                                     }],
-                                    global: false // default is false
+                                    global: false
                                 }
                             },
                             lineStyle: {
@@ -191,7 +190,8 @@ export default class KpisComponent extends Component {
                             symbol: 'circle',
                             symbolSize: 10,
                             z: 8,
-                            smooth: false,
+                            smooth: true,
+                            smoothMonotone: 'x',
                             name: CATEGORY,
                             data: (data ?? []).map(row => [
                                 String(row[INDEX]),

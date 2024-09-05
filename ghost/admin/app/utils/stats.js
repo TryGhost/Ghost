@@ -80,3 +80,7 @@ export function generateMonochromePalette(baseColor, count = 10) {
 
     return palette;
 }
+
+export const statsStaticColors = [
+    '#8E42FF', '#B07BFF', '#C7A0FF', '#DDC6FF', '#EBDDFF', '#F7EDFF'
+];
