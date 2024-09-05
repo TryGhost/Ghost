@@ -9,8 +9,8 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         try {
             await knex('jobs')
-            	.whereIn('name', ['email-analytics-latest-opened', 'email-analytics-latest-others', 'email-analytics-missing'])
-            	.del();
+                .whereIn('name', ['email-analytics-latest-opened', 'email-analytics-latest-others', 'email-analytics-missing'])
+                .del();
         } catch (error) {
             logging.info(`Failed to delete email analytics jobs: ${error.message}`);
         }
