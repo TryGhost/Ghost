@@ -54,7 +54,7 @@
                 {{/let}}
             {{/if}}
 
-            {{#let (moment-site-tz @post.publishedAtUTC) as |scheduledAt|}}
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |scheduledAt|}}
                 {{#if (is-moment-today scheduledAt)}}
                     <strong class="nowrap">today</strong>
                 {{else}}
