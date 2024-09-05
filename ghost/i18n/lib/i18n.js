@@ -4,6 +4,7 @@ const SUPPORTED_LOCALES = [
     'af', // Afrikaans
     'bn', // Bengali
     'bg', // Bulgarian
+    'bs', // Bosnian
     'ca', // Catalan
     'cs', // Czech
     'da', // Danish

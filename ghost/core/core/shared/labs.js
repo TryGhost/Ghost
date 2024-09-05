@@ -19,11 +19,7 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm',
-    'recommendations',
-    'listUnsubscribeHeader',
-    'newEmailAddresses',
-    'internalLinking'
+    'newEmailAddresses'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -45,7 +41,6 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',

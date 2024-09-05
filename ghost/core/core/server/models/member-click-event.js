@@ -21,7 +21,10 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
         return expansions;
     },
 
-    filterRelations() {
+    filterRelations(options) {
+        if (options && options.filterRelations === false) {
+            return {};
+        }
         return {
             link: {
                 // Mongo-knex doesn't support belongsTo relations
@@ -47,7 +50,7 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
     permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
         const validOptions = {
-            findPage: ['selectRaw', 'whereRaw']
+            findPage: ['selectRaw', 'whereRaw', 'cte', 'from', 'useCTE', 'filterRelations']
         };
 
         if (validOptions[methodName]) {

@@ -32,14 +32,18 @@ test.describe('History', async () => {
 
         await historyModal.getByRole('button', {name: 'Filter'}).click();
 
-        await page.getByTestId('popover-content').getByLabel('Posts').uncheck();
+        const popoverContent = historyModal.getByTestId('popover-content');
+
+        await popoverContent.getByLabel('Posts').click();
+        await expect(popoverContent.getByLabel('Posts')).toHaveAttribute('data-state', 'unchecked');
 
         await expect(historyModal).not.toHaveText(/Page edited/);
         await expect(historyModal).toHaveText(/Settings edited/);
 
         expect(lastApiRequests.browseActionsFiltered?.url).toEqual('http://localhost:5173/ghost/api/admin/actions/?include=actor%2Cresource&limit=200&filter=resource_type%3A-%5Blabel%2Cpost%5D');
 
-        await page.getByTestId('popover-content').getByLabel('Deleted').uncheck();
+        await popoverContent.getByLabel('Deleted').click();
+        await expect(popoverContent.getByLabel('Deleted')).toHaveAttribute('data-state', 'unchecked');
 
         expect(lastApiRequests.browseActionsFiltered?.url).toEqual('http://localhost:5173/ghost/api/admin/actions/?include=actor%2Cresource&limit=200&filter=event%3A-%5Bdeleted%5D%2Bresource_type%3A-%5Blabel%2Cpost%5D');
     });

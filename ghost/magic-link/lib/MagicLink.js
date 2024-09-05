@@ -33,6 +33,7 @@ class MagicLink {
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
+     * @param {object} [options.sentry]
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
@@ -44,6 +45,7 @@ class MagicLink {
         this.getText = options.getText || defaultGetText;
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
+        this.sentry = options.sentry || undefined;
     }
 
     /**
@@ -57,6 +59,8 @@ class MagicLink {
      * @returns {Promise<{token: Token, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
+        this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
+        
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)

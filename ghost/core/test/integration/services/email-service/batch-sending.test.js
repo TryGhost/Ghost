@@ -240,6 +240,9 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel2.get('email_count'), 5);
         const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel2.id}'`});
         assert.equal(emailRecipients2.models.length, emailRecipients.models.length + 1);
+
+        // Clean up laterMember
+        await models.Member.destroy({id: laterMember.id});
     });
 
     it('Splits recipients in free and paid batch', async function () {
@@ -249,7 +252,7 @@ describe('Batch sending tests', function () {
             // Required to trigger the paywall
             visibility: 'paid'
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -258,7 +261,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithFreeMemberOnly // = different content for paid and free members (extra content for free in this case)
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -267,7 +270,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidMemberOnly // = different content for paid and free members (extra content for paid in this case)
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -276,7 +279,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidAndFreeMemberOnly // = different content for paid and free members
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -287,7 +290,7 @@ describe('Batch sending tests', function () {
             // Required to trigger the paywall
             visibility: 'paid'
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -296,7 +299,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocExample // = same content for free and paid, no need to split batches
         }, null, [
-            {segment: null, recipients: 5}
+            {segment: null, recipients: 4}
         ]);
     });
 
@@ -368,7 +371,6 @@ describe('Batch sending tests', function () {
             {segment: null, recipients: 1},
             {segment: null, recipients: 1},
             {segment: null, recipients: 1},
-            {segment: null, recipients: 1},
             {segment: null, recipients: 1}
         ]);
     });
@@ -383,7 +385,6 @@ describe('Batch sending tests', function () {
             {segment: 'status:-free', recipients: 1},
 
             // 3 free
-            {segment: 'status:free', recipients: 1},
             {segment: 'status:free', recipients: 1},
             {segment: 'status:free', recipients: 1}
         ]);
@@ -408,11 +409,11 @@ describe('Batch sending tests', function () {
 
         // Prepare a post and email model
         const {emailModel} = await sendFailedEmail(agent);
-        assert.equal(emailModel.get('email_count'), 5);
+        assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
         let batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
-        assert.equal(batches.models.length, 5);
+        assert.equal(batches.models.length, 4);
 
         // sort batches by id because findAll doesn't have order option
         batches.models.sort(sortBatches);
@@ -424,7 +425,7 @@ describe('Batch sending tests', function () {
         for (const batch of batches.models) {
             count += 1;
 
-            if (count === 5) {
+            if (count === 4) {
                 assert.equal(batch.get('provider_id'), null);
                 assert.equal(batch.get('status'), 'failed');
                 assert.equal(batch.get('error_status_code'), 500);
@@ -433,13 +434,7 @@ describe('Batch sending tests', function () {
                 assert.equal(errorData.error.status, 500);
                 assert.deepEqual(errorData.messageData.to.length, 1);
             } else {
-                if (count === 4) {
-                    // We sorted on provider_id so the count is slightly off
-                    assert.equal(batch.get('provider_id'), 'stubbed-email-id-5');
-                } else {
-                    assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
-                }
-
+                assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
                 assert.equal(batch.get('status'), 'submitted');
                 assert.equal(batch.get('error_status_code'), null);
                 assert.equal(batch.get('error_message'), null);
@@ -469,14 +464,14 @@ describe('Batch sending tests', function () {
         batches.models.sort(sortBatches);
 
         assert.equal(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 5);
+        assert.equal(emailModel.get('email_count'), 4);
 
         // Did we keep the batches?
         batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
 
         // sort batches by provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
-        assert.equal(batches.models.length, 5);
+        assert.equal(batches.models.length, 4);
 
         emailRecipients = [];
 
@@ -673,12 +668,12 @@ describe('Batch sending tests', function () {
             assert.match(html, /Hey there, Hey ,/);
 
             // The unsubscribe link is replaced
-            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
 
             // Same for plaintext:
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey there, Hey ,/);
-            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
             await matchEmailSnapshot();
         });
@@ -707,12 +702,12 @@ describe('Batch sending tests', function () {
             assert.match(html, /Hey Simon, Hey Simon,/);
 
             // The unsubscribe link is replaced
-            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
 
             // Same for plaintext:
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey Simon, Hey Simon,/);
-            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
             await matchEmailSnapshot();
         });

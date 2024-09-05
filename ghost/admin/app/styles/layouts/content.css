@@ -725,7 +725,7 @@
 
 .gh-canvas-title.gh-post-title {
     max-width: 880px;
-    padding: 20px 0 12px;
+    padding: 20px 0 0 0;
     font-size: 3.2rem;
     line-height: 1.2em;
     overflow: inherit;
@@ -774,6 +774,17 @@
     padding: 2.8rem 2.4rem;
     background: var(--main-color-content-greybg);
     border-radius: var(--border-radius);
+}
+
+.gh-analytics-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 0;
+}
+
+.gh-analytics-actions-menu.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
 }
 
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
@@ -842,13 +853,12 @@
     background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,.1);
-}
-
-.gh-post-analytics-resource {
     flex: 1;
+    align-items: flex-start;
     display: grid;
     grid-template-columns: 2fr 3fr;
     grid-gap: 24px;
+    min-width: 0;
 }
 
 .gh-post-analytics-resource .thumbnail {
@@ -866,6 +876,7 @@
 .gh-post-analytics-resource h3 {
     font-size: 1.8rem;
     font-weight: 700;
+    text-wrap: pretty;
 }
 
 .gh-post-analytics-box h4.gh-main-section-header.small {
@@ -1470,14 +1481,38 @@
     transition: all .1s linear;
 }
 
+.gh-post-list-cta:hover {
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
 .gh-list-data .gh-post-list-cta {
     justify-content: center;
     width: 56px;
 }
 
-.gh-post-analytics-header .gh-post-list-cta {
+.gh-post-analytics-header .gh-post-list-cta.edit {
     margin-top: -14px;
     margin-right: 0;
+}
+
+.gh-post-analytics-header .share svg {
+    margin-top: -2px;
+}
+
+.gh-post-analytics-header .gh-btn.refresh {
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
+    color: var(--darkgrey);
+}
+
+.gh-post-analytics-header .gh-btn.refresh:hover {
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.gh-post-analytics-header .gh-btn.refresh svg path {
+    stroke-width: 2.25;
 }
 
 .gh-post-list-cta.is-hovered {
@@ -1512,7 +1547,7 @@
 }
 
 .gh-post-list-cta > svg path {
-    stroke-width: 2;
+    stroke-width: 1.75;
 }
 
 .gh-post-list-cta > span {
@@ -1521,6 +1556,10 @@
     padding: 0 0 0 0.75rem;
     color: var(--darkgrey-l1);
     transition: all .1s linear;
+}
+
+span.dropdown .gh-post-list-cta > span {
+    padding: 0;
 }
 
 .gh-post-list-cta.edit.is-hovered > *,
@@ -1534,7 +1573,7 @@
     color: var(--green-d1);
 }
 
-@media screen and (max-width: 1080px) {
+@media screen and (max-width: 1200px) {
     .gh-post-analytics-box.resources {
         flex-direction: column;
     }
@@ -1701,6 +1740,26 @@
 .gh-tabs-analytics .tab-list p svg {
     width: 16px;
     height: 16px;
+}
+
+.gh-tabs-analytics .animated-number {
+    position: relative;
+}
+
+.gh-tabs-analytics .animated-number .new-number {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.gh-tabs-analytics .animated-number .new-char,
+.gh-tabs-analytics .animated-number .old-char {
+    display: inline-block;
+}
+
+.gh-tabs-analytics .animated-number .new-char {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 .gh-tabs-analytics .gh-dashboard-list-item {

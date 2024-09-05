@@ -27,7 +27,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",
-    "build": "concurrently \"tsc\" \"vite build\"",
+    "build": "tsc && vite build",
     "lint": "yarn run lint:js",
     "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
     "test:unit": "yarn nx build && vitest run",
@@ -39,9 +39,9 @@
   "dependencies": {
     "@codemirror/lang-html": "6.4.9",
     "@tryghost/color-utils": "0.2.2",
-    "@tryghost/kg-unsplash-selector": "0.2.1",
+    "@tryghost/kg-unsplash-selector": "0.2.4",
     "@tryghost/limit-service": "1.2.14",
-    "@tryghost/nql": "0.12.3",
+    "@tryghost/nql": "0.12.4",
     "@tryghost/timezone-data": "0.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.38.1",
-    "@testing-library/react": "14.1.0",
+    "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.3.3",

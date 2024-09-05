@@ -166,7 +166,7 @@ export default class OfferPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -201,7 +201,7 @@ export default class OfferPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: member?.name || state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 disabled: !!member,
@@ -282,12 +282,15 @@ export default class OfferPage extends React.Component {
             };
         }, () => {
             const {onAction} = this.context;
-            const {name, email, errors} = this.state;
+            const {name, email, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 const signupData = {
-                    name, email, plan: price?.id,
-                    offerId: offer?.id
+                    name,
+                    email,
+                    plan: price?.id,
+                    offerId: offer?.id,
+                    phonenumber
                 };
                 if (hasMultipleNewsletters({site})) {
                     this.setState({

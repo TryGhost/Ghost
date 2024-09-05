@@ -110,7 +110,7 @@ function ping(post) {
                 // if it is a post or a test message to check webhook working.
                 text: `Notification from *${blogTitle}* :ghost:`,
                 unfurl_links: true,
-                icon_url: blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl({absolute: true}),
                 username: slackSettings.username,
                 // We don't want to send attachment if it is a test notification.
                 attachments: [
@@ -141,7 +141,7 @@ function ping(post) {
                             }
                         ],
                         footer: blogTitle,
-                        footer_icon: blogIcon.getIconUrl(true),
+                        footer_icon: blogIcon.getIconUrl({absolute: true}),
                         ts: moment().unix()
                     }
                 ]
@@ -150,7 +150,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl({absolute: true}),
                 username: slackSettings.username
             };
         }

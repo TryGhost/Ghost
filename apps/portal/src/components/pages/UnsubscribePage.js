@@ -32,9 +32,9 @@ function AccountHeader() {
     );
 }
 
-async function updateMemberNewsletters({api, memberUuid, newsletters, enableCommentNotifications}) {
+async function updateMemberNewsletters({api, memberUuid, key, newsletters, enableCommentNotifications}) {
     try {
-        return await api.member.updateNewsletters({uuid: memberUuid, newsletters, enableCommentNotifications});
+        return await api.member.updateNewsletters({uuid: memberUuid, key, newsletters, enableCommentNotifications});
     } catch (e) {
         // ignore auto unsubscribe error
     }
@@ -62,7 +62,7 @@ export default function UnsubscribePage() {
             // when we have a member logged in, we need to update the newsletters in the context
             onAction('updateNewsletterPreference', {newsletters});
         } else {
-            await updateMemberNewsletters({api, memberUuid: pageData.uuid, newsletters});
+            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
         }
         setSubscribedNewsletters(newsletters);
     };
@@ -74,7 +74,7 @@ export default function UnsubscribePage() {
             await onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
             updatedData = {...loggedInMember, enable_comment_notifications: enabled};
         } else {
-            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, enableCommentNotifications: enabled});
+            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
         }
         setMember(updatedData);
     };
@@ -102,7 +102,7 @@ export default function UnsubscribePage() {
         (async () => {
             let memberData;
             try {
-                memberData = await api.member.newsletters({uuid: pageData.uuid});
+                memberData = await api.member.newsletters({uuid: pageData.uuid, key: pageData.key});
                 setMember(memberData ?? null);
                 setLoading(false);
             } catch (e) {

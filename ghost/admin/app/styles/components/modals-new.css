@@ -1,17 +1,17 @@
 :root {
     /* The named -duration and -delay variables will be lowered to near zero when using the setupPromiseModals test helper  */
-    --epm-animation-backdrop-in-duration: 0.15s;
-    --epm-animation-backdrop-out-duration: 0.15s;
+    --epm-animation-backdrop-in-duration: 0.2s;
+    --epm-animation-backdrop-out-duration: 0.2s;
     --epm-animation-modal-in-duration: 0.15s;
     --epm-animation-modal-out-duration: 0.15s;
     --epm-animation-backdrop-in-delay: 0s;
     --epm-animation-backdrop-out-delay: 0s;
     --epm-animation-modal-in-delay: 0s;
     --epm-animation-modal-out-delay: 0s;
-    --epm-animation-backdrop-in: var(--epm-animation-backdrop-in-duration) ease
+    --epm-animation-backdrop-in: var(--epm-animation-backdrop-in-duration) ease-in-out
         var(--epm-animation-backdrop-in-delay) forwards epm-backdrop-in;
     --epm-animation-backdrop-out: var(--epm-animation-backdrop-out-duration)
-        ease var(--epm-animation-backdrop-out-delay) forwards epm-backdrop-out;
+        ease-in-out var(--epm-animation-backdrop-out-delay) forwards epm-backdrop-out;
     --epm-animation-modal-in: var(--epm-animation-modal-in-duration) ease-out
         var(--epm-animation-modal-in-delay) forwards epm-modal-in;
     --epm-animation-modal-out: var(--epm-animation-modal-out-duration) ease-out
@@ -133,9 +133,11 @@
 
 @keyframes epm-modal-in {
     0% {
+        transform: translateY(-16px);
         opacity: 0;
     }
     100% {
+        transform: translateY(0);
         opacity: 1;
     }
 }
