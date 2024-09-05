@@ -1,44 +1,11 @@
 import Controller from '@ember/controller';
-import {AUDIENCE_TYPES} from 'ghost-admin/utils/stats';
+import {AUDIENCE_TYPES, RANGE_OPTIONS} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
-
-// Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
-const RANGE_OPTIONS = [
-    {
-        name: 'Last 24 hours',
-        value: 1
-    },
-    {
-        name: 'Last 7 days',
-        value: 7
-    },
-    {
-        name: 'Last 30 days',
-        value: 30 + 1
-    },
-    {
-        name: 'Last 3 months',
-        value: 90 + 1
-    },
-    {
-        name: 'Year to date',
-        value: 365 + 1
-    },
-    {
-        name: 'Last 12 months',
-        value: 12 * (30 + 1)
-    },
-    {
-        name: 'All time',
-        value: 1000
-    }
-];
 
 export default class StatsController extends Controller {
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
-
     /**
      * @type {number|'all'}
      * Date range to load for member count and MRR related charts

@@ -10,6 +10,17 @@ export default class KpisOverview extends Component {
     @tracked selected = 'unique_visitors';
     @tracked totals = null;
 
+    @tracked granularityOptions = [
+        {name: 'Days', value: 'days'},
+        {name: 'Weeks', value: 'weeks'}
+    ];
+    @tracked granularity = this.granularityOptions[0];
+
+    @action
+    onGranularityChange(selected) {
+        this.granularity = selected;
+    }
+
     constructor() {
         super(...arguments);
         this.fetchData.perform();

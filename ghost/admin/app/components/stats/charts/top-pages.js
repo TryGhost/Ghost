@@ -4,11 +4,22 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {CONTENT_OPTIONS} from 'ghost-admin/utils/stats';
+import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
+import {tracked} from '@glimmer/tracking';
 
 export default class TopPages extends Component {
     @inject config;
+
+    @tracked contentOption = CONTENT_OPTIONS[0];
+    @tracked contentOptions = CONTENT_OPTIONS;
+
+    @action
+    onContentOptionChange(selected) {
+        this.contentOption = selected;
+    }
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;

@@ -1,3 +1,28 @@
+export const RANGE_OPTIONS = [
+    {name: 'Last 24 hours', value: 1},
+    {name: 'Last 7 days', value: 7},
+    {name: 'Last 30 days', value: 30 + 1},
+    {name: 'Last 3 months', value: 90 + 1},
+    {name: 'Year to date', value: 365 + 1},
+    {name: 'Last 12 months', value: 12 * (30 + 1)},
+    {name: 'All time', value: 1000}
+];
+
+export const CONTENT_OPTIONS = [
+    {name: 'Posts & pages', value: 'all'},
+    {name: 'Posts', value: 'posts'},
+    {name: 'Pages', value: 'pages'}
+];
+
+export const CAMPAIGN_OPTIONS = [
+    {name: 'All campaigns', value: 'all'},
+    {name: 'UTM Medium', value: 'utm-medium'},
+    {name: 'UTM Source', value: 'utm-source'},
+    {name: 'UTM Campaign', value: 'utm-campaign'},
+    {name: 'UTM Content', value: 'utm-content'},
+    {name: 'UTM Term', value: 'utm-term'}
+];
+
 export const AUDIENCE_TYPES = [
     {name: 'Logged out visitors', value: 'undefined'},
     {name: 'Free members', value: 'free'},
