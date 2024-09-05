@@ -133,9 +133,9 @@ describe('BookmarkNode', function () {
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
             BookmarkNode.urlTransformMap.should.deepEqual({
-                url: 'url',
-                icon: 'url',
-                thumbnail: 'url'
+                'url': 'url',
+                'metadata.icon': 'url',
+                'metadata.thumbnail': 'url'
             });
         }));
     });
@@ -277,9 +277,9 @@ describe('BookmarkNode', function () {
 
         it('urlTransformMap', editorTest(function () {
             BookmarkNode.urlTransformMap.should.deepEqual({
-                url: 'url',
-                icon: 'url',
-                thumbnail: 'url'
+                'url': 'url',
+                'metadata.icon': 'url',
+                'metadata.thumbnail': 'url'
             });
         }));
     });

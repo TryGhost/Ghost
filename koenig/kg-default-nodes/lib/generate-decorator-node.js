@@ -98,7 +98,11 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
 
             properties.forEach((prop) => {
                 if (prop.urlType) {
-                    map[prop.name] = prop.urlType;
+                    if (prop.urlPath) {
+                        map[prop.urlPath] = prop.urlType;
+                    } else {
+                        map[prop.name] = prop.urlType;
+                    }
                 }
             });
 

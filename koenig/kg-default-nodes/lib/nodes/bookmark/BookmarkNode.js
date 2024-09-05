@@ -11,8 +11,8 @@ export class BookmarkNode extends generateDecoratorNode({nodeType: 'bookmark',
         {name: 'caption', default: '', wordCount: true},
         {name: 'author', default: ''},
         {name: 'publisher', default: ''},
-        {name: 'icon', default: '', urlType: 'url'},
-        {name: 'thumbnail', default: '', urlType: 'url'}
+        {name: 'icon', urlPath: 'metadata.icon', default: '', urlType: 'url'},
+        {name: 'thumbnail', urlPath: 'metadata.thumbnail', default: '', urlType: 'url'}
     ]}
 ) {
     static importDOM() {
