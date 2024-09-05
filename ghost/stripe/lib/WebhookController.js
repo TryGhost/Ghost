@@ -28,6 +28,12 @@ module.exports = class WebhookController {
             'checkout.session.completed': this.checkoutSessionEvent
         };
 
+        // We pass the entire `deps` object to ensure all dependencies are available
+        // for services that may require dynamic access to multiple dependencies.
+        // This is particularly important in E2E tests where real services
+        // interact with a full set of dependencies (e.g., various repositories, services).
+        // Limiting injected dependencies may cause failures when certain dependencies
+        // are not explicitly passed but are expected by the services at runtime.
         this.initializeServices(deps);
     }
 
@@ -36,6 +42,7 @@ module.exports = class WebhookController {
      * @param {object} deps 
      */
     initializeServices(deps) {
+        // Initialize event services with all dependencies, as per the above explanation.
         this.subscriptionEventService = new SubscriptionEventService(deps);
         this.invoiceEventService = new InvoiceEventService(deps);
         this.checkoutSessionEventService = new CheckoutSessionEventService(deps);
