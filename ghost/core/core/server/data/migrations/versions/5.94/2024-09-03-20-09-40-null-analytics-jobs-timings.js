@@ -8,10 +8,9 @@ const {createTransactionalMigration} = require('../../utils');
 module.exports = createTransactionalMigration(
     async function up(knex) {
         try {
-            await knex.raw(`
-                DELETE FROM jobs
-                WHERE name = 'email-analytics-latest-opened' OR name = 'email-analytics-latest-others' OR name = 'email-analytics-missing';
-            `);
+            await knex('jobs')
+            	.whereIn('name', ['email-analytics-latest-opened', 'email-analytics-latest-others', 'email-analytics-missing'])
+            	.del();
         } catch (error) {
             logging.info(`Failed to delete email analytics jobs: ${error.message}`);
         }
