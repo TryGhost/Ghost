@@ -3,84 +3,10 @@ import ActivityItem from './activities/ActivityItem';
 import MainNavigation from './navigation/MainNavigation';
 import React, {useState} from 'react';
 import getUsername from '../utils/get-username';
-import {ActivityPubAPI} from '../api/activitypub';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useQuery} from '@tanstack/react-query';
+import {useFollowersCountForUser, useFollowersForUser, useFollowingCountForUser, useFollowingForUser} from '../hooks/useActivityPubQueries';
 
 interface ProfileProps {}
-
-function useFollowersCountForUser(handle: string) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useQuery({
-        queryKey: [`followersCount:${handle}`],
-        async queryFn() {
-            return api.getFollowersCount();
-        }
-    });
-}
-
-function useFollowingCountForUser(handle: string) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useQuery({
-        queryKey: [`followingCount:${handle}`],
-        async queryFn() {
-            return api.getFollowingCount();
-        }
-    });
-}
-
-function useFollowingForUser(handle: string) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useQuery({
-        queryKey: [`following:${handle}`],
-        async queryFn() {
-            const followingData = await api.getFollowing();
-            // The data is already in the correct format, no need for additional processing
-            return followingData;
-        }
-    });
-}
-
-function useFollowersForUser(handle: string) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useQuery({
-        queryKey: [`followers:${handle}`],
-        async queryFn() {
-            const followerUrls = await api.getFollowers();
-            const followerActors = await Promise.all(followerUrls.map(url => api.getActor(url)));
-            return followerActors;
-        }
-    });
-}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
     const {data: followersCount = 0} = useFollowersCountForUser('index');

@@ -128,13 +128,25 @@ function renderInboxAttachment(object: ObjectProperties) {
 
 const FeedItemStats: React.FC<{
     isLiked: boolean;
-    isClicked: boolean;
     likeCount: number;
     commentCount: number;
     onLikeClick: () => void;
     onCommentClick: () => void;
-}> = ({isLiked, isClicked, likeCount, commentCount, onLikeClick, onCommentClick}) => (
-    <div className='flex gap-5'>
+}> = ({isLiked: initialLikedState, likeCount, commentCount, onLikeClick, onCommentClick}) => {
+    const [isClicked, setIsClicked] = useState(false);
+    const [isLiked, setIsLiked] = useState(initialLikedState);
+
+    const handleLikeClick = () => {
+        setIsClicked(true);
+        setIsLiked(!isLiked);
+         
+        // Call the requested `onLikeClick`
+        onLikeClick();
+
+        setTimeout(() => setIsClicked(false), 300);
+    };
+
+    return (<div className='flex gap-5'>
         <div className='mt-3 flex gap-1'>
             <Button 
                 className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} 
@@ -145,7 +157,7 @@ const FeedItemStats: React.FC<{
                 unstyled={true} 
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
-                    onLikeClick();
+                    handleLikeClick();
                 }}
             />
             {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
@@ -165,8 +177,8 @@ const FeedItemStats: React.FC<{
             />
             <span className={`text-grey-900`}>{commentCount}</span>
         </div>
-    </div>
-);
+    </div>);
+};
 
 interface FeedItemProps {
     actor: ActorProperties;
@@ -182,13 +194,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
 
     const date = new Date(object?.published ?? new Date());
 
-    const [isClicked, setIsClicked] = useState(false);
-    const [isLiked, setIsLiked] = useState(false);
-
-    const handleLikeClick = () => {
-        setIsClicked(true);
-        setIsLiked(!isLiked);
-        setTimeout(() => setIsClicked(false), 300);
+    const isLiked = false;
+    const onLikeClick = () => {
+        // Do API req or smth
+        // Don't need to know about setting timeouts or anything like that
     };
 
     let author = actor;
@@ -224,11 +233,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
                                         commentCount={2}
-                                        isClicked={isClicked}
                                         isLiked={isLiked}
                                         likeCount={1}
-                                        onCommentClick={handleLikeClick}
-                                        onLikeClick={handleLikeClick}
+                                        onCommentClick={onLikeClick}
+                                        onLikeClick={onLikeClick}
                                     />
                                 </div>
                             </div>
@@ -267,15 +275,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.6rem] text-grey-900'></div>
-                                        {renderFeedAttachment(object, layout)} 
-
+                                        {renderFeedAttachment(object, layout)}
                                         <FeedItemStats
                                             commentCount={2}
-                                            isClicked={isClicked}
                                             isLiked={isLiked}
                                             likeCount={1}
-                                            onCommentClick={handleLikeClick}
-                                            onLikeClick={handleLikeClick}
+                                            onCommentClick={onLikeClick}
+                                            onLikeClick={onLikeClick}
                                         />
                                     </div>
                                 </div>
@@ -319,11 +325,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
                                         commentCount={2}
-                                        isClicked={isClicked}
                                         isLiked={isLiked}
                                         likeCount={1}
-                                        onCommentClick={handleLikeClick}
-                                        onLikeClick={handleLikeClick}
+                                        onCommentClick={onLikeClick}
+                                        onLikeClick={onLikeClick}
                                     />
                                 </div>
                             </div>
@@ -357,11 +362,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                 </div>
                                 <FeedItemStats
                                     commentCount={2}
-                                    isClicked={isClicked}
                                     isLiked={isLiked}
                                     likeCount={1}
-                                    onCommentClick={handleLikeClick}
-                                    onLikeClick={handleLikeClick}
+                                    onCommentClick={onLikeClick}
+                                    onLikeClick={onLikeClick}
                                 />
                             </div>
                         </div>
