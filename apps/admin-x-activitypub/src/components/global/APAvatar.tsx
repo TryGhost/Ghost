@@ -47,7 +47,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     return (
         <>
             {author && author.icon?.url ? (
-                <div className='relative'>
+                <a className='relative z-10 pt-[3px] transition-opacity hover:opacity-80' href={author.url} rel='noopener noreferrer' target='_blank'>
                     <img 
                         className={imageClass} 
                         src={author.icon.url}
@@ -61,7 +61,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
                             />
                         </div>
                     )}
-                </div>
+                </a>
             ) : (
                 <div className={containerClass}>
                     <Icon 
