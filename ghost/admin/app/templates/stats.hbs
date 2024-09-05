@@ -1,4 +1,4 @@
-<section class="gh-canvas gh-canvas-sticky">
+<section class="gh-stats gh-canvas gh-canvas-sticky">
     <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
             <div class="view-actions">
@@ -8,10 +8,10 @@
                 />
 
                 <PowerSelect
-                    @selected={{this.selectedDaysOption}}
-                    @options={{this.daysOptions}}
+                    @selected={{this.selectedRangeOption}}
+                    @options={{this.rangeOptions}}
                     @searchEnabled={{false}}
-                    @onChange={{this.onDaysChange}}
+                    @onChange={{this.onRangeChange}}
                     @triggerComponent={{component "gh-power-select/trigger"}}
                     @triggerClass="gh-btn"
                     @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
@@ -24,29 +24,26 @@
             </div>
     </GhCanvasHeader>
 
-    <section class="view-container gh-stats">
+    <section class="view-container">
         <section class="gh-stats-container">
-            <Stats::KpisOverview @chartDays={{this.chartDays}} @audience={{this.audience}} />
+            <Stats::KpisOverview @chartRange={{this.chartRange}} @audience={{this.audience}} />
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
-                <h5 class="gh-stats-metric-label">Top posts & pages</h5>
-                <Stats::Charts::TopPages @chartDays={{this.chartDays}} @audience={{this.audience}} />
+                <Stats::Charts::TopPages @chartRange={{this.chartRange}} @audience={{this.audience}} />
             </div>
             <div class="gh-stats-container">
-                <h5 class="gh-stats-metric-label">Sources</h5>
-                <Stats::Charts::TopSources @chartDays={{this.chartDays}} @audience={{this.audience}} />
+                <Stats::Charts::TopSources @chartRange={{this.chartRange}} @audience={{this.audience}} />
             </div>
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
-                <h5 class="gh-stats-metric-label">Top locations</h5>
-                <Stats::Charts::TopLocations @chartDays={{this.chartDays}} @audience={{this.audience}} />
+                <Stats::Charts::TopLocations @chartRange={{this.chartRange}} @audience={{this.audience}} />
             </div>
             <div class="gh-stats-container">
-                <Stats::TechnicalOverview @chartDays={{this.chartDays}} @audience={{this.audience}} />
+                <Stats::TechnicalOverview @chartRange={{this.chartRange}} @audience={{this.audience}} />
             </div>
         </section>
 

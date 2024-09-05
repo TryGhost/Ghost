@@ -3,16 +3,16 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {inject} from 'ghost-admin/decorators/inject';
-
+import {statsStaticColors} from 'ghost-admin/utils/stats';
 export default class TopLocations extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartDays = props.chartDays;
+        let chartRange = props.chartRange;
         let audience = props.audience;
 
         const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
+        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
         /**
          * @typedef {Object} Params
@@ -45,7 +45,7 @@ export default class TopLocations extends Component {
                 loading={loading}
                 index="location"
                 categories={['hits']}
-                colorPalette={['#E8D9FF']}
+                colorPalette={[statsStaticColors[4]]}
             />
         );
     };

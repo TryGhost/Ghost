@@ -1,8 +1,16 @@
-.gh-stats {
+.gh-stats .view-container {
     display: flex;
     flex-direction: column;
     gap: 32px;
     padding-bottom: 32px !important;
+}
+
+.gh-stats .view-actions {
+    flex-direction: row !important;
+}
+
+.gh-stats .gh-canvas-header-content {
+    min-height: unset !important;
 }
 
 .gh-stats-grid {
@@ -22,7 +30,8 @@
     transition: all ease-in-out 0.3s;
 }
 
-.gh-stats-container > .gh-stats-metric-label {
+.gh-stats-container > .gh-stats-metric-label,
+.gh-stats-metric-header {
     margin-bottom: 20px;
 }
 
@@ -30,15 +39,16 @@
     box-shadow: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,.03), 0 8px 10px -8px rgba(0,0,0,.1);
 }
 
-.gh-stats-tabs {
+.gh-stats-tabs-header {
     position: relative;
     display: flex;
     margin: -20px -20px 20px;
     padding: 0;
     overflow: hidden;
+    justify-content: space-between;
 }
 
-.gh-stats-tabs:before {
+.gh-stats-tabs-header:before {
     display: block;
     content: "";
     position: absolute;
@@ -48,6 +58,10 @@
     left: 0;
     right: 0;
     background: var(--whitegrey);
+}
+
+.gh-stats-tabs {
+    display: flex;
 }
 
 .gh-stats-tab {
@@ -89,6 +103,12 @@
     min-width: 180px;
 }
 
+.gh-stats-metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .gh-stats-metric-data {
     display: flex;
     flex-direction: column;
@@ -103,7 +123,7 @@
 }
 
 .gh-stats-metric-value {
-    font-size: 28px;
+    font-size: 26px;
     letter-spacing: -0.05em;
     font-weight: 600;
     line-height: 1;
@@ -134,4 +154,34 @@
     height: 100%;
     flex-grow: 1;
     margin-right: -20px;
+}
+
+.gh-stats-section-dropdown {
+    padding: 0 8px 0 0 !important;
+    height: 28px;
+    border: none !important;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.gh-stats-section-dropdown.ember-power-select-trigger.gh-btn span {
+    padding-right: 4px;
+}
+
+.gh-stats-section-dropdown.ember-power-select-trigger:not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
+    margin-top: 0;
+}
+
+.gh-stats-kpi-granularity {
+    padding: 12px 20px;
+}
+
+@media (max-width: 1440px) {
+    .gh-stats-tab.min-width .gh-stats-metric {
+        min-width: 150px;
+    }
+
+    .gh-stats-metric-label {
+        font-size: 14px;
+    }
 }
