@@ -106,13 +106,19 @@ module.exports = class EmailAnalyticsService {
     }
 
     /**
+     * Returns the timestamp of the last missing event we processed. Defaults to now minus 2h if we have no data yet.
+     */
+    async getLastMissingEventTimestamp() {
+        return this.#fetchMissingData?.lastEventTimestamp ?? (await this.queries.getLastJobRunTimestamp(this.#fetchMissingData.jobName)) ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 4);
+    }
+
+    /**
      * Fetches the latest opened events.
      * @param {Object} options - The options for fetching events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
      * @returns {Promise<number>} The total number of events fetched.
      */
     async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         const begin = await this.getLastOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -132,7 +138,6 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<number>} The total number of events fetched.
      */
     async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         const begin = await this.getLastNonOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -151,8 +156,7 @@ module.exports = class EmailAnalyticsService {
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      */
     async fetchMissing({maxEvents = Infinity} = {}) {
-        // We start where we left of, or 1,5h ago after a server restart
-        const begin = this.#fetchMissingData?.lastEventTimestamp ?? this.#fetchMissingData?.lastBegin ?? new Date(Date.now() - TRUST_THRESHOLD_MS * 3);
+        const begin = await this.getLastMissingEventTimestamp();
 
         // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
         const end = new Date(
@@ -286,6 +290,7 @@ module.exports = class EmailAnalyticsService {
 
         let lastAggregation = Date.now();
         let eventCount = 0;
+        const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
 
         // We keep the processing result here, so we also have a result in case of failures
         let processingResult = new EventProcessingResult();
@@ -305,11 +310,11 @@ module.exports = class EmailAnalyticsService {
 
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
             // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
-            if (Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) {
+            if ((Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) && eventCount > 0) {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
-                    await this.aggregateStats(processingResult);
+                    await this.aggregateStats(processingResult, includeOpenedEvents);
                     lastAggregation = Date.now();
                     processingResult = new EventProcessingResult();
                 } catch (err) {
@@ -341,15 +346,16 @@ module.exports = class EmailAnalyticsService {
             }
         }
 
-        // Aggregate
-        try {
-            await this.aggregateStats(processingResult);
-        } catch (err) {
-            logging.error('[EmailAnalytics] Error while aggregating stats');
-            logging.error(err);
+        if (processingResult.memberIds.length > 0 || processingResult.emailIds.length > 0) {
+            try {
+                await this.aggregateStats(processingResult, includeOpenedEvents);
+            } catch (err) {
+                logging.error('[EmailAnalytics] Error while aggregating stats');
+                logging.error(err);
 
-            if (!error) {
-                error = err;
+                if (!error) {
+                    error = err;
+                }
             }
         }
 
@@ -384,7 +390,6 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
-        const processStart = Date.now();
         for (const event of events) {
             const batchResult = await this.processEvent(event);
 
@@ -394,12 +399,6 @@ module.exports = class EmailAnalyticsService {
             }
 
             result.merge(batchResult);
-        }
-        const processEnd = Date.now();
-        const time = processEnd - processStart;
-        if (time > 1000) {
-            // This is a means to show in the logs that the analytics job is still alive.
-            logging.warn(`[EmailAnalytics] Processing event batch took ${(time / 1000).toFixed(1)}s`);
         }
     }
 
@@ -498,25 +497,34 @@ module.exports = class EmailAnalyticsService {
 
     /**
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
+     * @param {boolean} includeOpenedEvents
      */
-    async aggregateStats({emailIds = [], memberIds = []}) {
+    async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
+        let startTime = Date.now();
+        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
         for (const emailId of emailIds) {
-            await this.aggregateEmailStats(emailId);
+            await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
+        let endTime = Date.now() - startTime;
+        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails took ${endTime}ms`);
 
+        startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
         for (const memberId of memberIds) {
             await this.aggregateMemberStats(memberId);
         }
+        endTime = Date.now() - startTime;
+        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
     }
 
     /**
      * Aggregate email stats for a given email ID.
      * @param {string} emailId - The ID of the email to aggregate stats for.
+     * @param {boolean} includeOpenedEvents - Whether to include opened events in the stats.
      * @returns {Promise<void>}
      */
-    async aggregateEmailStats(emailId) {
-        return this.queries.aggregateEmailStats(emailId);
+    async aggregateEmailStats(emailId, includeOpenedEvents) {
+        return this.queries.aggregateEmailStats(emailId, includeOpenedEvents);
     }
 
     /**

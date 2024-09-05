@@ -15,6 +15,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const {data: activities = []} = useBrowseInboxForUser('index');
     const [, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
+    const [layout, setLayout] = useState('inbox');
 
     const inboxTabActivities = activities.filter((activity: Activity) => {
         const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
@@ -27,18 +28,23 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         setArticleContent(object);
         setArticleActor(actor);
         NiceModal.show(ArticleModal, {
-            object: object
+            object: object,
+            actor: actor
         });
+    };
+
+    const handleLayoutChange = (newLayout: string) => {
+        setLayout(newLayout);
     };
 
     return (
         <>
-            <MainNavigation />
-            <div className='z-0 flex w-full flex-col'>
+            <MainNavigation page='home' title="Home" onLayoutChange={handleLayoutChange} />
+            <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full'>
                     {inboxTabActivities.length > 0 ? (
-                        <ul className='mx-auto flex max-w-[560px] flex-col py-8'>
-                            {inboxTabActivities.reverse().map(activity => (
+                        <ul className='mx-auto flex max-w-[640px] flex-col'>
+                            {inboxTabActivities.reverse().map((activity, index) => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
@@ -46,10 +52,13 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                 >
                                     <FeedItem
                                         actor={activity.actor}
-                                        layout='feed'
+                                        layout={layout}
                                         object={activity.object}
                                         type={activity.type}
                                     />
+                                    {index < inboxTabActivities.length - 1 && (
+                                        <div className="h-px w-full bg-grey-200"></div>
+                                    )}
                                 </li>
                             ))}
                         </ul>

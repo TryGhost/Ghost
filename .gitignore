@@ -83,6 +83,7 @@ typings/
 *.db
 *.db-journal
 
+/ghost/core/test-results/
 /ghost/core/core/server/data/export/exported*
 /ghost/core/content/tmp/*
 /ghost/core/content/data/*
@@ -133,7 +134,7 @@ Caddyfile
 /apps/comments-ui/umd
 /apps/comments-ui/playwright-report
 /ghost/comments-ui/playwright/.cache/
-/ghost/comments-ui/test-results/
+/apps/comments-ui/test-results/
 
 # Portal
 !/apps/portal/.env
@@ -166,3 +167,8 @@ tsconfig.tsbuildinfo
 /apps/admin-x-settings/test-results/
 /apps/admin-x-settings/playwright-report/
 /apps/admin-x-settings/playwright/.cache/
+
+# Tinybird
+.tinyb
+.venv
+.diff_tmp

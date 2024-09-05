@@ -1,14 +1,15 @@
+import FeedItem from './FeedItem';
 import MainHeader from '../navigation/MainHeader';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Modal} from '@tryghost/admin-x-design-system';
-import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {renderAttachment} from './FeedItem';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 interface ArticleModalProps {
     object: ObjectProperties;
+    actor: ActorProperties;
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
@@ -62,7 +63,7 @@ ${image &&
     );
 };
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor}) => {
     const modal = useModal();
     return (
         <Modal
@@ -75,6 +76,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object}) => {
             width={640}
         >
             <MainHeader>
+                <div className='col-[1/2] flex items-center justify-between px-8'>
+                    <Button icon='chevron-left' size='sm' unstyled onClick={() => modal.remove()}/>
+                </div>
+                <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
+                    <span className='text-lg font-semibold text-grey-900'>{object.type}</span>
+                </div>
                 <div className='col-[3/4] flex items-center justify-end px-8'>
                     <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                 </div>
@@ -82,8 +89,15 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object}) => {
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
                     <div className='mx-auto max-w-[580px]'>
-                        {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
-                        {renderAttachment(object)}
+                        <FeedItem actor={actor} layout='modal' object={object} type='Note'/>
+                        {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
+                        {/* {renderAttachment(object)} */}
+                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
+                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
+                        <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
+                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
+                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
+                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
                     </div>)}
                 {object.type === 'Article' && <ArticleBody heading={object.name} html={object.content} image={object?.image}/>}
             </div>

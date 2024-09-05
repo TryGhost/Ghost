@@ -904,6 +904,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         await configUtils.restore();
+        settingsCache.set('email_verification_required', false);
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -1015,6 +1016,85 @@ describe('Members API', function () {
                 ]
             })
             .expectStatus(200);
+    });
+
+    it('Does not send a signup email when email verification is required', async function () {
+        mockManager.mockSetting('email_verification_required', true);
+
+        const member = {
+            name: 'Do not Send Me Confirmation',
+            email: 'member_not_getting_confirmation@test.com',
+            newsletters: [
+                newsletters[0],
+                newsletters[1]
+            ]
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        emailMockReceiver
+            .assertSentEmailCount(0);
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                },
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id
+                }
+            ]
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {

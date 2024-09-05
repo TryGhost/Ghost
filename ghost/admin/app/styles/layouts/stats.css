@@ -1,0 +1,137 @@
+.gh-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-bottom: 32px !important;
+}
+
+.gh-stats-grid {
+    display: grid;
+    gap: 32px;
+}
+
+.gh-stats-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.gh-stats-container {
+    padding: 20px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-stats-container > .gh-stats-metric-label {
+    margin-bottom: 20px;
+}
+
+.gh-stats-container:hover {
+    box-shadow: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,.03), 0 8px 10px -8px rgba(0,0,0,.1);
+}
+
+.gh-stats-tabs {
+    position: relative;
+    display: flex;
+    margin: -20px -20px 20px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.gh-stats-tabs:before {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--whitegrey);
+}
+
+.gh-stats-tab {
+    position: relative;
+    margin: 0 0 1px 0;
+    color: var(--midlightgrey);
+}
+
+.gh-stats-tab:not(.is-selected) .gh-stats-metric-label {
+    color: var(--midlightgrey);
+}
+
+.gh-stats-tab:hover {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-stats-tab.is-selected {
+    color: var(--black);
+}
+
+.gh-stats-tab.is-selected:before {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    background: var(--black);
+}
+
+.gh-stats-metric {
+    width: 100%;
+    padding: 16px 20px;
+}
+
+.gh-stats-tab.min-width .gh-stats-metric {
+    min-width: 180px;
+}
+
+.gh-stats-metric-data {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+
+.gh-stats-metric-label {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+.gh-stats-metric-value {
+    font-size: 28px;
+    letter-spacing: -0.05em;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.gh-stats-piechart-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.gh-stats-piechart-container table {
+    margin-top: 5px;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.gh-stats-piechart-container .table td,
+.gh-stats-piechart-container.table th,
+.gh-stats-piechart-container table td,
+.gh-stats-piechart-container table th {
+    padding: 6px 6px 6px 0px;
+}
+
+.gh-stats-piechart {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    margin-right: -20px;
+}

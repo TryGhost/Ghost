@@ -9,8 +9,7 @@ describe('Unit | Utility | event-type-utils', function () {
             emailTrackClicks: true
         };
         const feature = {
-            audienceFeedback: true,
-            tipsAndDonations: true
+            audienceFeedback: true
         };
         const hiddenEvents = [];
 
@@ -56,8 +55,7 @@ describe('Unit | Utility | event-type-utils', function () {
             emailTrackClicks: false
         };
         const feature = {
-            audienceFeedback: false,
-            tipsAndDonations: false
+            audienceFeedback: false
         };
         const hiddenEvents = [];
 

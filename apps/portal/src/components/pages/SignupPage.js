@@ -385,7 +385,7 @@ class SignupPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -397,20 +397,20 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, honeypot, errors} = this.state;
+            const {name, email, plan, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan},
+                        pageData: {name, email, plan, phonenumber},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, honeypot, plan});
+                    onAction('signup', {name, email, phonenumber, plan});
                 }
             }
         });
@@ -478,7 +478,7 @@ class SignupPage extends React.Component {
             {
                 type: 'email',
                 value: state.email,
-                placeholder: 'jamie@example.com',
+                placeholder: t('jamie@example.com'),
                 label: t('Email'),
                 name: 'email',
                 required: true,
@@ -487,10 +487,10 @@ class SignupPage extends React.Component {
             },
             {
                 type: 'text',
-                value: state.honeypot,
-                placeholder: '+1 (123) 456-7890',
+                value: state.phonenumber,
+                placeholder: t('+1 (123) 456-7890'),
                 // Doesn't need translation, hidden field
-                label: 'Phone number',
+                label: t('Phone number'),
                 name: 'phonenumber',
                 required: false,
                 tabindex: -1,
@@ -504,7 +504,7 @@ class SignupPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 required: true,

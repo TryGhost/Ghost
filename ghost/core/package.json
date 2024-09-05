@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.89.6",
+  "version": "5.93.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -22,7 +22,7 @@
   "scripts": {
     "archive": "npm pack",
     "dev": "node --watch index.js",
-    "build": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build:assets": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:base": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
     "test:single": "yarn test:base --timeout=60000",
@@ -60,7 +60,7 @@
     "@extractus/oembed-extractor": "3.2.1",
     "@opentelemetry/api": "1.9.0",
     "@opentelemetry/exporter-prometheus": "0.52.1",
-    "@opentelemetry/instrumentation-runtime-node": "^0.6.0",
+    "@opentelemetry/instrumentation-runtime-node": "0.6.0",
     "@opentelemetry/sdk-metrics": "1.25.1",
     "@opentelemetry/sdk-node": "0.52.1",
     "@opentelemetry/sdk-trace-node": "1.25.1",
@@ -105,12 +105,12 @@
     "@tryghost/importer-revue": "0.0.0",
     "@tryghost/job-manager": "0.0.0",
     "@tryghost/kg-card-factory": "5.0.5",
-    "@tryghost/kg-converters": "1.0.6",
+    "@tryghost/kg-converters": "1.0.7",
     "@tryghost/kg-default-atoms": "5.0.3",
     "@tryghost/kg-default-cards": "10.0.9",
-    "@tryghost/kg-default-nodes": "1.1.15",
-    "@tryghost/kg-html-to-lexical": "1.1.16",
-    "@tryghost/kg-lexical-html-renderer": "1.1.18",
+    "@tryghost/kg-default-nodes": "1.1.18",
+    "@tryghost/kg-html-to-lexical": "1.1.19",
+    "@tryghost/kg-lexical-html-renderer": "1.1.21",
     "@tryghost/kg-mobiledoc-html-renderer": "7.0.6",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/link-redirects": "0.0.0",
@@ -193,7 +193,7 @@
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
-    "gscan": "4.43.2",
+    "gscan": "4.43.3",
     "human-number": "2.0.4",
     "image-size": "1.1.1",
     "intl": "1.2.5",
@@ -271,7 +271,7 @@
     "targets": {
       "archive": {
         "dependsOn": [
-          "build",
+          "build:assets",
           "^build:ts",
           {
             "projects": [

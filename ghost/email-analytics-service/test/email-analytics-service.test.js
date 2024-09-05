@@ -164,12 +164,16 @@ describe('EmailAnalyticsService', function () {
             let service;
             let processEventBatchStub;
             let aggregateStatsStub;
-
+            let setJobTimestampStub;
+            let setJobStatusStub;
+            
             beforeEach(function () {
+                setJobTimestampStub = sinon.stub().resolves();
+                setJobStatusStub = sinon.stub().resolves();
                 service = new EmailAnalyticsService({
                     queries: {
-                        setJobTimestamp: sinon.stub().resolves(),
-                        setJobStatus: sinon.stub().resolves()
+                        setJobTimestamp: setJobTimestampStub,
+                        setJobStatus: setJobStatusStub
                     },
                     providers: [{
                         fetchLatest: (fn) => {
@@ -214,7 +218,7 @@ describe('EmailAnalyticsService', function () {
                 const result = await service.fetchScheduled({maxEvents: 100});
 
                 result.should.equal(10);
-                aggregateStatsStub.calledOnce.should.be.true();
+                setJobStatusStub.calledOnce.should.be.true();
                 processEventBatchStub.calledOnce.should.be.true();
             });
 
@@ -255,7 +259,8 @@ describe('EmailAnalyticsService', function () {
                 const service = new EmailAnalyticsService({
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
-                        setJobStatus: sinon.stub().resolves()
+                        setJobStatus: sinon.stub().resolves(),
+                        getLastJobRunTimestamp: sinon.stub().resolves(new Date(Date.now() - 2.5 * 60 * 60 * 1000))
                     },
                     providers: [{
                         fetchLatest: fetchLatestSpy

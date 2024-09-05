@@ -895,6 +895,15 @@
     border-radius: var(--radius);
 }
 
+.modal-post-success a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.modal-post-success a:hover .gh-post-card {
+    background: var(--whitegrey-l2);
+}
+
 .modal-post-success .gh-post-card {
     border-radius: 8px;
     border: 1px solid var(--lightgrey-l1);
@@ -939,7 +948,7 @@
     line-height: 1.4;
     letter-spacing: -0.01em;
     text-wrap: pretty;
-    padding: 16px 24px;
+    padding: 16px 24px 16px 24px;
 }
 
 .modal-post-success .modal-body p {
@@ -950,9 +959,9 @@
 .modal-post-success .modal-body p.post-excerpt {
     -webkit-line-clamp: 2;
     display: -webkit-box;
-    -webkit-box-orient: vertical;  
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0 0 16px 0; 
+    margin: 0 0 16px 0;
 }
 
 .modal-post-success .email {
@@ -977,10 +986,13 @@
     white-space: nowrap;
 }
 
+.modal-post-success .modal-body .gh-post-bookmark-authors::before {
+    margin-left: 4px;
+}
+
 .modal-post-success .modal-body .gh-post-bookmark-site-icon {
     width: 24px;
     height: 24px;
-    
 }
 
 .modal-post-success .modal-body strong.nowrap {
@@ -988,12 +1000,9 @@
 }
 
 .modal-post-success .modal-footer {
-    background: var(--whitegrey-l2);
-    margin-top: 0;
+    margin-top: 16px;
     gap: 16px;
-    padding: 16px 24px;
-    border-top: 1px solid var(--lightgrey-l1);
-    border-radius: 0 0 8px 8px;
+    padding: 0;
 }
 
 
@@ -1008,8 +1017,8 @@
 }
 
 .modal-post-success .modal-footer .share-buttons {
-    display: flex;
-    justify-content: space-evenly;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     align-items: center;
     gap: 16px;
 }
@@ -1024,8 +1033,7 @@
 }
 
 .modal-post-success .modal-footer .copy-preview-link {
-    background: var(--white);
-    border: 1px solid var(--lightgrey-l1);
+    background: var(--whitegrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:not(:first-child) {
@@ -1049,12 +1057,11 @@
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
     width: 56px;
-    background: var(--white);
-    border: 1px solid var(--lightgrey-l1);
+    background: var(--whitegrey-l1);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
-    background: var(--whitegrey-l1);
+    background: var(--whitegrey);
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
@@ -1079,14 +1086,28 @@
     .modal-post-success .modal-header h1 {
         font-size: 2.4rem;
     }
-    
+
     .modal-post-success .modal-footer {
         display: flex;
         flex-direction: column;
     }
 
-    .modal-post-success .modal-footer .copy-link, 
+    .modal-post-success .modal-footer .share-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-post-success .modal-footer .copy-link,
     .modal-post-success .modal-footer .copy-preview-link {
         width: 100%!important;
+    }
+}
+
+@media (max-width: 600px) {
+    .modal-post-success .modal-footer:has(.share-buttons) {
+        flex-direction: column;
+    }
+
+    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+        width: auto;
     }
 }

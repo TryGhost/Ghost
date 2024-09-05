@@ -46,7 +46,7 @@ function finaliseStructuredData(meta) {
 
 function getMembersHelper(data, frontendKey) {
     // Do not load Portal if both Memberships and Tips & Donations are disabled
-    if (!settingsCache.get('members_enabled') && !(settingsCache.get('donations_enabled') && labs.isSet('tipsAndDonations'))) {
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
 
@@ -139,6 +139,21 @@ function getWebmentionDiscoveryLink() {
         logging.warn(err);
         return '';
     }
+}
+
+function getTinybirdTrackerScript(dataRoot) {
+    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
+    const endpoint = config.get('tinybird:tracker:endpoint');
+    const token = config.get('tinybird:tracker:token');
+
+    const tbParams = _.map({
+        site_uuid: config.get('tinybird:tracker:id'),
+        post_uuid: dataRoot.post?.uuid,
+        member_uuid: dataRoot.member?.uuid,
+        member_status: dataRoot.member?.status
+    }, (value, key) => `tb_${key}="${value}"`).join(' ');
+
+    return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 /**
@@ -318,6 +333,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
+            }
+
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+                head.push(getTinybirdTrackerScript(dataRoot));
             }
         }
 

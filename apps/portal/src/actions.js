@@ -484,11 +484,13 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
     const referrerUrl = window.location.href;
     const referrerSource = getRefDomain();
 
+    const integrityToken = await externalSiteApi.member.getIntegrityToken();
     await externalSiteApi.member.sendMagicLink({
         emailType: 'signup',
         name: member.name,
         email: member.email,
         autoRedirect: false,
+        integrityToken,
         customUrlHistory: state.site.outbound_link_tagging ? [
             {
                 time: Date.now(),
