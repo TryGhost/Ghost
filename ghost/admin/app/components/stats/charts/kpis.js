@@ -37,7 +37,7 @@ export default class KpisComponent extends Component {
 
         const LINE_COLOR = '#8E42FF';
         const INDEX = 'date';
-        const CATEGORY = props.selected;
+        const CATEGORY = props.selected === 'unique_visitors' ? 'visits' : props.selected;
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
@@ -153,10 +153,10 @@ export default class KpisComponent extends Component {
                             symbolSize: 10,
                             z: 8,
                             smooth: false,
-                            name: props.selected,
+                            name: CATEGORY,
                             data: (data ?? []).map(row => [
                                 String(row[INDEX]),
-                                row[props.selected]
+                                row[CATEGORY]
                             ])
                         }
                     ]

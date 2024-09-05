@@ -7,7 +7,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
-    @tracked selected = 'visits';
+    @tracked selected = 'unique_visitors';
     @tracked totals = null;
 
     constructor() {
@@ -74,6 +74,11 @@ export default class KpisOverview extends Component {
     }
 
     @action
+    changeTabToUniqueVisitors() {
+        this.selected = 'unique_visitors';
+    }
+
+    @action
     changeTabToVisits() {
         this.selected = 'visits';
     }
@@ -91,6 +96,10 @@ export default class KpisOverview extends Component {
     @action
     changeTabToBounceRate() {
         this.selected = 'bounce_rate';
+    }
+
+    get uniqueVisitorsTabSelected() {
+        return (this.selected === 'unique_visitors');
     }
 
     get visitsTabSelected() {

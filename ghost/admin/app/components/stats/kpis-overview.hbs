@@ -1,7 +1,13 @@
 <div class="gh-stats-tabs">
-    <button type="button" class="gh-stats-tab min-width {{if this.visitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToVisits}}>
+    <button type="button" class="gh-stats-tab min-width {{if this.uniqueVisitorsTabSelected 'is-selected'}}" {{on "click" this.changeTabToUniqueVisitors}}>
         <Stats::Parts::Metric
             @label="Unique visitors"
+            @value={{this.totals.visits}} />
+    </button>
+
+    <button type="button" class="gh-stats-tab min-width {{if this.visitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToVisits}}>
+        <Stats::Parts::Metric
+            @label="Visits"
             @value={{this.totals.visits}} />
     </button>
 
