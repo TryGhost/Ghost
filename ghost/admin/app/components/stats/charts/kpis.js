@@ -27,6 +27,7 @@ export default class KpisComponent extends Component {
          * @property {number} [limit]
          * @property {number} [skip]
          */
+
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
