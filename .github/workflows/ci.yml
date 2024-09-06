@@ -350,10 +350,11 @@ jobs:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
         STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
-    - name: Run CTRF annotations
-      working-directory: ghost/core
-      run: npx github-actions-ctrf ./ctrf/ctrf-report.json
+    - name: Publish flaky test results
+      run: npx github-actions-ctrf flaky ghost/core/ctrf/ctrf-report.json --pr-comment
       if: always()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: tryghost/actions/actions/slack-build@main
       if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
