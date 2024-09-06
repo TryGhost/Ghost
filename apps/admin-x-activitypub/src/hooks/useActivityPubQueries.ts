@@ -1,6 +1,6 @@
 import {ActivityPubAPI} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery} from '@tanstack/react-query';
 
 const useSiteUrl = () => {
     const site = useBrowseSite();
@@ -13,6 +13,26 @@ function createActivityPubAPI(handle: string, siteUrl: string) {
         new URL('/ghost/api/admin/identities/', window.location.origin),
         handle
     );
+}
+
+export function useLikeMutationForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useMutation({
+        mutationFn(id: string) {
+            return api.like(id);
+        }
+    });
+}
+
+export function useUnlikeMutationForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useMutation({
+        mutationFn(id: string) {
+            return api.unlike(id);
+        }
+    });
 }
 
 export function useFollowersCountForUser(handle: string) {
