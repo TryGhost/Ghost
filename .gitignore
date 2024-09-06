@@ -126,6 +126,8 @@ Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
+# Playwright ctrf report files
+/ghost/core/ctrf
 
 # Admin
 /ghost/admin/dist

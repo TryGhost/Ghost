@@ -8,7 +8,7 @@ const config = {
     // save trace on fail
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
-    reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
+    reporter: process.env.CI ? [['list', {printSteps: true}], ['html'], ['playwright-ctrf-json-reporter', {}]] : [['list', {printSteps: true}], ['playwright-ctrf-json-reporter', {}]],
     use: {
         trace: 'retain-on-failure',
         // Use a single browser since we can't simultaneously test multiple browsers
