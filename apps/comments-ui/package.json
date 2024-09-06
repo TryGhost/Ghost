@@ -59,7 +59,7 @@
     "react-string-replace": "1.1.1"
   },
   "devDependencies": {
-    "@playwright/test": "1.38.1",
+    "@playwright/test": "1.46.1",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.5.2",
