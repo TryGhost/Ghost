@@ -552,6 +552,63 @@ describe('Batch sending tests', function () {
         await configUtils.restore();
     });
 
+    describe('Target Delivery Window', function () {
+        it('can send an email with a target delivery window set', async function () {
+            const t0 = new Date();
+            const targetDeliveryWindow = 240000; // 4 minutes
+            configUtils.set('bulkEmail:batchSize', 1);
+            configUtils.set('bulkEmail:targetDeliveryWindow', targetDeliveryWindow);
+            const {emailModel} = await sendEmail(agent);
+
+            assert.equal(emailModel.get('source_type'), 'lexical');
+            assert(emailModel.get('subject'));
+            assert(emailModel.get('from'));
+            assert.equal(emailModel.get('email_count'), 4);
+
+            // Did we create batches?
+            const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
+            assert.equal(batches.models.length, 4);
+
+            // Check all batches are in send state
+            for (const batch of batches.models) {
+                assert.equal(batch.get('provider_id'), 'stubbed-email-id');
+                assert.equal(batch.get('status'), 'submitted');
+                assert.equal(batch.get('member_segment'), null);
+
+                assert.equal(batch.get('error_status_code'), null);
+                assert.equal(batch.get('error_message'), null);
+                assert.equal(batch.get('error_data'), null);
+            }
+
+            // Did we create recipients?
+            const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'`});
+            assert.equal(emailRecipients.models.length, 4);
+
+            for (const recipient of emailRecipients.models) {
+                const batchId = recipient.get('batch_id');
+                assert.ok(batches.models.find(b => b.id === batchId));
+            }
+
+            // Check members are unique
+            const memberIds = emailRecipients.models.map(recipient => recipient.get('member_id'));
+            assert.equal(memberIds.length, _.uniq(memberIds).length);
+
+            assert.equal(stubbedSend.callCount, 4);
+            const calls = stubbedSend.getCalls();
+            const deadline = new Date(t0.getTime() + targetDeliveryWindow);
+
+            // Check that the emails were sent with the deliverytime
+            for (const call of calls) {
+                const options = call.args[1];
+                const deliveryTimeString = options['o:deliverytime'];
+                const deliveryTimeDate = new Date(Date.parse(deliveryTimeString));
+                assert.equal(typeof deliveryTimeString, 'string');
+                assert.ok(deliveryTimeDate.getTime() <= deadline.getTime());
+            }
+            configUtils.restore();
+        });
+    });
+
     describe('Analytics', function () {
         it('Adds link tracking to all links in a post', async function () {
             const {emailModel, html, plaintext, recipientData} = await sendEmail(agent);
