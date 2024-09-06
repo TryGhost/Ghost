@@ -4,6 +4,7 @@ import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
+import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     let attachment;
@@ -135,20 +136,16 @@ const FeedItemStats: React.FC<{
 }> = ({object, likeCount, commentCount, onLikeClick, onCommentClick}) => {
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(object.liked);
+    const likeMutation = useLikeMutationForUser('index');
+    const unlikeMutation = useUnlikeMutationForUser('index');
 
     const handleLikeClick = async () => {
         setIsClicked(true);
-        let req;
         if (!isLiked) {
-            req = fetch(`/.ghost/activitypub/actions/like/${encodeURIComponent(object.id)}`, {
-                method: 'POST'
-            });
+            likeMutation.mutate(object.id);
         } else {
-            req = fetch(`/.ghost/activitypub/actions/unlike/${encodeURIComponent(object.id)}`, {
-                method: 'POST'
-            });
+            unlikeMutation.mutate(object.id);
         }
-        await req;
         setIsLiked(!isLiked);
 
         setIsClicked(false); // Reset the animation class after request completed
