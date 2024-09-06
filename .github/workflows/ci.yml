@@ -350,7 +350,13 @@ jobs:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
         STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
-    - name: Publish flaky test results
+    - name: Publish browser test summary
+      run: npx github-actions-ctrf ghost/core/ctrf/ctrf-report.json
+      if: always()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish historical browser test results
       run: npx github-actions-ctrf historical ghost/core/ctrf/ctrf-report.json
       if: always()
       env:
