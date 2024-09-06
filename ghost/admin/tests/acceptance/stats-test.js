@@ -6,7 +6,7 @@ import {invalidateSession} from 'ember-simple-auth/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
-describe.only('Acceptance: Stats', function () {
+describe('Acceptance: Stats', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 

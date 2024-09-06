@@ -29,7 +29,7 @@ describe('Acceptance: Members filtering', function () {
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
 
-        return await authenticateSession();
+        await authenticateSession();
     });
 
     afterEach(function () {

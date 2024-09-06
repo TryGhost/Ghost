@@ -1,55 +1,43 @@
 import Controller from '@ember/controller';
+import {AUDIENCE_TYPES, RANGE_OPTIONS} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
-const AUDIENCE_OPTIONS = [
-    {name: 'Logged out visitors', value: 'undefined'},
-    {name: 'Free members', value: 'free'},
-    {name: 'Paid members', value: 'paid'}
-];
-
-// Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
-const DAYS_OPTIONS = [{
-    name: '7 Days',
-    value: 7
-}, {
-    name: '30 Days',
-    value: 30 + 1
-}, {
-    name: '90 Days',
-    value: 90 + 1
-}];
-
 export default class StatsController extends Controller {
-    daysOptions = DAYS_OPTIONS;
-    audienceOptions = AUDIENCE_OPTIONS;
-
+    rangeOptions = RANGE_OPTIONS;
+    audienceOptions = AUDIENCE_TYPES;
     /**
      * @type {number|'all'}
-     * Amount of days to load for member count and MRR related charts
+     * Date range to load for member count and MRR related charts
      */
-    @tracked chartDays = 30 + 1;
+    @tracked chartRange = 30 + 1;
     /**
      * @type {array}
      * Filter by audience
      */
     @tracked audience = [];
+    @tracked excludedAudiences = '';
 
     @action
-    onDaysChange(selected) {
-        this.chartDays = selected.value;
+    onRangeChange(selected) {
+        this.chartRange = selected.value;
     }
 
     @action
-    onAudienceChange(selected) {
-        this.audience = selected.map(s => s.value);
+    onAudienceChange(newExcludedAudiences) {
+        if (newExcludedAudiences !== null) {
+            this.excludedAudiences = newExcludedAudiences;
+            this.audience = this.audienceOptions
+                .filter(a => !this.excludedAudiences.includes(a.value))
+                .map(a => a.value);
+            // this.audience = this.audienceOptions.filter(a => !this.excludedAudiences.includes(a.value));
+        } else {
+            this.excludedAudiences = '';
+            this.audience = this.audienceOptions.map(a => a.value);
+        }
     }
 
-    get selectedDaysOption() {
-        return this.daysOptions.find(d => d.value === this.chartDays);
-    }
-
-    get selectedAudienceOptions() {
-        return this.audienceOptions.filter(a => this.audience.includes(a.value));
+    get selectedRangeOption() {
+        return this.rangeOptions.find(d => d.value === this.chartRange);
     }
 }

@@ -4,17 +4,29 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {CAMPAIGN_OPTIONS} from 'ghost-admin/utils/stats';
+import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
+import {statsStaticColors} from 'ghost-admin/utils/stats';
+import {tracked} from '@glimmer/tracking';
 
 export default class TopPages extends Component {
     @inject config;
 
+    @tracked campaignOption = CAMPAIGN_OPTIONS[0];
+    @tracked campaignOptions = CAMPAIGN_OPTIONS;
+
+    @action
+    onCampaignOptionChange(selected) {
+        this.campaignOption = selected;
+    }
+
     ReactComponent = (props) => {
-        let chartDays = props.chartDays;
+        let chartRange = props.chartRange;
         let audience = props.audience;
 
         const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
+        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
         /**
          * @typedef {Object} Params
@@ -47,7 +59,7 @@ export default class TopPages extends Component {
                 loading={loading}
                 index="referrer"
                 categories={['hits']}
-                colorPalette={['#E8D9FF']}
+                colorPalette={[statsStaticColors[4]]}
                 height="300px"
             />
         );

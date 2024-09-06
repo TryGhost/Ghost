@@ -125,7 +125,6 @@ const enableLabs = async (page) => {
 
     await section.getByRole('tab', {name: 'Alpha features'}).click();
     await section.getByLabel('Webmentions').click();
-    await section.getByLabel('Tips & donations').click();
 
     await page.getByTestId('exit-settings').click();
 };

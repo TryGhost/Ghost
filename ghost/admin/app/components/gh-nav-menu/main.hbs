@@ -34,7 +34,7 @@
                     </li>
                     {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
                     <li class="relative">
-                        <LinkTo @route="stats">{{svg-jar "stats"}}Stats</LinkTo>
+                        <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
                     </li>
                     {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}

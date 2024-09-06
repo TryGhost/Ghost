@@ -7,8 +7,37 @@ import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
-    @tracked selected = 'visits';
+    @tracked selected = 'unique_visitors';
     @tracked totals = null;
+    @tracked showGranularity = true;
+
+    get granularityOptions() {
+        const chartRange = this.args.chartRange;
+        if (chartRange >= 8 && chartRange <= 30) {
+            return [
+                {name: 'Days', value: 'days'},
+                {name: 'Weeks', value: 'weeks'}
+            ];
+        } else if (chartRange > 30 && chartRange <= 365) {
+            return [
+                {name: 'Days', value: 'days'},
+                {name: 'Weeks', value: 'weeks'},
+                {name: 'Months', value: 'months'}
+            ];
+        } else {
+            return [
+                {name: 'Weeks', value: 'weeks'},
+                {name: 'Months', value: 'months'}
+            ];
+        }
+    }
+
+    @tracked granularity = this.granularityOptions[0];
+
+    @action
+    onGranularityChange(selected) {
+        this.granularity = selected;
+    }
 
     constructor() {
         super(...arguments);
@@ -74,6 +103,11 @@ export default class KpisOverview extends Component {
     }
 
     @action
+    changeTabToUniqueVisitors() {
+        this.selected = 'unique_visitors';
+    }
+
+    @action
     changeTabToVisits() {
         this.selected = 'visits';
     }
@@ -91,6 +125,10 @@ export default class KpisOverview extends Component {
     @action
     changeTabToBounceRate() {
         this.selected = 'bounce_rate';
+    }
+
+    get uniqueVisitorsTabSelected() {
+        return (this.selected === 'unique_visitors');
     }
 
     get visitsTabSelected() {
