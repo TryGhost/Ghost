@@ -117,4 +117,14 @@ export class ActivityPubAPI {
         const json = await this.fetchJSON(new URL(url));
         return json as Actor;
     }
+
+    async like(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/like/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async unlike(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/unlike/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
 }
