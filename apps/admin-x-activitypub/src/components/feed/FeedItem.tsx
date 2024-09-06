@@ -149,9 +149,6 @@ const FeedItemStats: React.FC<{
 
         setIsLiked(!isLiked);
 
-        setIsClicked(false); // Reset the animation class after request completed
-
-        // Call the requested `onLikeClick`
         onLikeClick();
         setTimeout(() => setIsClicked(false), 300);
     };
