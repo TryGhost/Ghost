@@ -1,10 +1,11 @@
 import APAvatar from './global/APAvatar';
 import ActivityItem from './activities/ActivityItem';
+import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import React, {useState} from 'react';
 import getUsername from '../utils/get-username';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {useFollowersCountForUser, useFollowersForUser, useFollowingCountForUser, useFollowingForUser} from '../hooks/useActivityPubQueries';
+import {useFollowersCountForUser, useFollowersForUser, useFollowingCountForUser, useFollowingForUser, useLikedForUser} from '../hooks/useActivityPubQueries';
 
 interface ProfileProps {}
 
@@ -13,10 +14,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     const {data: followingCount = 0} = useFollowingCountForUser('index');
     const {data: following = []} = useFollowingForUser('index');
     const {data: followers = []} = useFollowersForUser('index');
+    const {data: liked = []} = useLikedForUser('index');
 
     type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+
+    const layout = 'feed';
 
     const tabs = [
         {
@@ -30,10 +34,35 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         {
             id: 'likes',
             title: 'Likes',
-            contents: (<div><NoValueLabel icon='heart'>
-                You haven&apos;t liked anything yet.
-            </NoValueLabel></div>),
-            counter: 27
+            contents: (
+                <div>
+                    {liked.length === 0 ? (
+                        <NoValueLabel icon='heart'>
+                            You haven&apos;t liked anything yet.
+                        </NoValueLabel>
+                    ) : (
+                        <ul className='mx-auto flex max-w-[640px] flex-col'>
+                            {liked.map((activity, index) => (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.actor}
+                                        layout={layout}
+                                        object={Object.assign({}, activity.object, {liked: true})}
+                                        type={activity.type}
+                                    />
+                                    {index < liked.length - 1 && (
+                                        <div className="h-px w-full bg-grey-200"></div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            ),
+            counter: liked.length
         },
         {
             id: 'following',

@@ -15,6 +15,17 @@ function createActivityPubAPI(handle: string, siteUrl: string) {
     );
 }
 
+export function useLikedForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useQuery({
+        queryKey: [`liked:${handle}`],
+        async queryFn() {
+            return api.getLiked();
+        }
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
