@@ -15,12 +15,16 @@ SQL >
     select domainWithoutWWW(referrer) as referrer, uniqMerge(visits) as visits, countMerge(hits) as hits
     from analytics_sources_mv
     where
-        site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}} and
+        site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
+        {% if defined(member_status) %}
+            and member_status IN {{ Array(member_status,'String') }}
+        {% end %}
         {% if defined(date_from) %}
-            date
+            and date
             >=
             {{ Date(date_from, description="Starting day for filtering a date range", required=False) }}
-        {% else %} date >= timestampAdd(today(), interval -7 day)
+        {% else %}
+            and date >= timestampAdd(today(), interval -7 day)
         {% end %}
         {% if defined(date_to) %}
             and date

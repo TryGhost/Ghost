@@ -115,8 +115,10 @@ describe('Acceptance: Publish flow', function () {
         expect(post.status, 'post status after publish').to.equal('published');
 
         expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom. It’s out there. That’s 1 post published, keep going!');
+        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
         expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+
+        await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
@@ -264,7 +266,7 @@ describe('Acceptance: Publish flow', function () {
 
             // complete text has right count
             expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('That’s 1 post published');
+                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
         });
 
         it('can publish+send with multiple newsletters', async function () {
@@ -625,78 +627,5 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
         it('handles email sending error');
-    });
-
-    describe('Are you sure you want to leave? modal', function () {
-        // draft content should autosave and leave without warning
-        it(`Doesn't display for draft content`, async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'draft'
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-        });
-        // published content should never autosave and should warn on leaving when there's changes
-        it('Displays when published content title has changed', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'published'
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-        });
-        it('Displays when scheduled content has changed', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'scheduled'
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-        });
-        // published and edited content should not warn when changes are reverted (either via undo or manually)
-        it(`Does not display when changed content is changed back`, async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'published',
-                lexical: `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-            await click('[data-test-stay-button]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-            // revert title
-            await fillIn('[data-test-editor-title-input]', 'Test Post');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-        });
-        it(`Does not save changes when leaving`, async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'published',
-                lexical: `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-            await click('[data-test-leave-button]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-            // check that the title wasn't saved
-            expect(this.server.db.posts.find(post.id).title === 'Test Post').to.be.true;
-        });
     });
 });

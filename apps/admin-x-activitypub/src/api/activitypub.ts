@@ -44,6 +44,9 @@ export class ActivityPubAPI {
         if (json === null) {
             return [];
         }
+        if ('orderedItems' in json) {
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+        }
         if ('items' in json) {
             return Array.isArray(json.items) ? json.items : [json.items];
         }
@@ -58,6 +61,9 @@ export class ActivityPubAPI {
         const json = await this.fetchJSON(this.followingApiUrl);
         if (json === null) {
             return [];
+        }
+        if ('orderedItems' in json) {
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
         }
         if ('items' in json) {
             return Array.isArray(json.items) ? json.items : [json.items];
@@ -86,7 +92,7 @@ export class ActivityPubAPI {
             return [];
         }
         if ('orderedItems' in json) {
-            return json.orderedItems as Activity[];
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
         }
         return [];
     }
@@ -104,6 +110,36 @@ export class ActivityPubAPI {
 
     async follow(username: string): Promise<void> {
         const url = new URL(`.ghost/activitypub/actions/follow/${username}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async getActor(url: string): Promise<Actor> {
+        const json = await this.fetchJSON(new URL(url));
+        return json as Actor;
+    }
+
+    get likedApiUrl() {
+        return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
+    }
+
+    async getLiked() {
+        const json = await this.fetchJSON(this.likedApiUrl);
+        if (json === null) {
+            return [];
+        }
+        if ('orderedItems' in json) {
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+        }
+        return [];
+    }
+
+    async like(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/like/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async unlike(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/unlike/${encodeURIComponent(id)}`, this.apiUrl);
         await this.fetchJSON(url, 'POST');
     }
 }

@@ -1,7 +1,6 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
-import useFeatureFlag from '../hooks/useFeatureFlag';
 import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -35,7 +34,6 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
-    // const hasOffersLabs = useFeatureFlag('adminXOffers');
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -109,8 +107,6 @@ const Sidebar: React.FC = () => {
             updateRoute(e.currentTarget.id);
         }
     };
-
-    const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
 
     const updateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter(e.target.value);
@@ -186,7 +182,7 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                    {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
+                    {hasStripeEnabled && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
