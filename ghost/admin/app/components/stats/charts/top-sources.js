@@ -1,5 +1,6 @@
 'use client';
 
+import AllStatsModal from '../../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
@@ -8,11 +9,13 @@ import {CAMPAIGN_OPTIONS} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from '../../../helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
 import {tracked} from '@glimmer/tracking';
 
 export default class TopPages extends Component {
     @inject config;
+    @service modals;
 
     @tracked campaignOption = CAMPAIGN_OPTIONS[0];
     @tracked campaignOptions = CAMPAIGN_OPTIONS;
@@ -20,6 +23,11 @@ export default class TopPages extends Component {
     @action
     onCampaignOptionChange(selected) {
         this.campaignOption = selected;
+    }
+
+    @action
+    openSeeAll() {
+        this.modals.open(AllStatsModal, {type: 'top-sources'});
     }
 
     ReactComponent = (props) => {
@@ -62,14 +70,14 @@ export default class TopPages extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Source</span>,
                     renderBarContent: ({label}) => (
-                        <span>{label ? label : 'Direct'}</span>
+                        <span className="gh-stats-detail-label">{label || 'Direct'}</span>
                     )
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
                         label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span>{formatNumber(value)}</span>
+                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[statsStaticColors[4]]}

@@ -1,13 +1,24 @@
+'use client';
+
+import AllStatsModal from '../../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {action} from '@ember/object';
 import {formatNumber} from '../../../helpers/format-number';
+import {getCountryFlag, statsStaticColors} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from 'ghost-admin/utils/stats';
+import {inject as service} from '@ember/service';
 
 export default class TopLocations extends Component {
     @inject config;
+    @service modals;
+
+    @action
+    openSeeAll() {
+        this.modals.open(AllStatsModal, {type: 'top-locations'});
+    }
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;
@@ -15,14 +26,6 @@ export default class TopLocations extends Component {
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-
-        const getCountryFlag = (countryCode) => {
-            if (!countryCode) {
-                return '🏳️';
-            }
-            return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
-            );
-        };
 
         /**
          * @typedef {Object} Params
@@ -57,14 +60,14 @@ export default class TopLocations extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Country</span>,
                     renderBarContent: ({label}) => (
-                        <span>{getCountryFlag(label)} {label || 'Unknown'}</span>
+                        <span className="gh-stats-detail-label">{getCountryFlag(label)} {label || 'Unknown'}</span>
                     )
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
                         label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span>{formatNumber(value)}</span>
+                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[statsStaticColors[4]]}

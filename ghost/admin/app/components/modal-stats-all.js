@@ -1,39 +1,36 @@
 'use client';
 
-import AllStatsModal from '../../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {CONTENT_OPTIONS} from 'ghost-admin/utils/stats';
-import {action} from '@ember/object';
-import {formatNumber} from '../../../helpers/format-number';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {getCountryFlag} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {inject as service} from '@ember/service';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
-import {tracked} from '@glimmer/tracking';
 
-export default class TopPages extends Component {
+export default class AllStatsModal extends Component {
     @inject config;
 
-    @tracked contentOption = CONTENT_OPTIONS[0];
-    @tracked contentOptions = CONTENT_OPTIONS;
-
-    @service modals;
-
-    @action
-    openSeeAll() {
-        this.modals.open(AllStatsModal, {type: 'top-pages'});
+    get type() {
+        return this.args.data.type;
     }
 
-    @action
-    onContentOptionChange(selected) {
-        this.contentOption = selected;
+    get modalTitle() {
+        switch (this.type) {
+        case 'top-sources':
+            return 'Sources';
+        case 'top-locations':
+            return 'Locations';
+        default:
+            return 'Content';
+        }
     }
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;
-        let audience = props.audience;
+        // let audience = props.audience;
+        let type = props.type;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -50,13 +47,36 @@ export default class TopPages extends Component {
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 6
+            date_to: endDate.format('YYYY-MM-DD')
+            // member_status: audience.length === 0 ? null : audience.join(',')
         };
 
+        let endpoint;
+        let labelText;
+        let indexBy;
+        let unknownOption = 'Unknown';
+        switch (type) {
+        case 'top-sources':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_sources.json`;
+            labelText = 'Source';
+            indexBy = 'referrer';
+            unknownOption = 'Direct';
+            break;
+        case 'top-locations':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_locations.json`;
+            labelText = 'Country';
+            indexBy = 'location';
+            unknownOption = 'Unknown';
+            break;
+        default:
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_pages.json`;
+            labelText = 'Post or page';
+            indexBy = 'pathname';
+            break;
+        }
+
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_pages.json`,
+            endpoint: endpoint,
             token: this.config.stats.token,
             params
         });
@@ -67,11 +87,11 @@ export default class TopPages extends Component {
                 meta={meta}
                 error={error}
                 loading={loading}
-                index="pathname"
+                index={indexBy}
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Post or page</span>,
+                    label: <span className="gh-stats-detail-header">{labelText}</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{label}</span>
+                        <span className="gh-stats-detail-label">{(type === 'top-locations') && getCountryFlag(label)} {label || unknownOption}</span>
                     )
                 }}
                 categories={['hits']}
