@@ -1,11 +1,28 @@
+'use client';
+
+import AllStatsModal from '../../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {action} from '@ember/object';
+import {formatNumber} from '../../../helpers/format-number';
+import {getCountryFlag, statsStaticColors} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from 'ghost-admin/utils/stats';
+import {inject as service} from '@ember/service';
+
 export default class TopLocations extends Component {
     @inject config;
+    @service modals;
+
+    @action
+    openSeeAll() {
+        this.modals.open(AllStatsModal, {
+            type: 'top-locations',
+            chartRange: this.args.chartRange,
+            audience: this.args.audience
+        });
+    }
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;
@@ -28,7 +45,7 @@ export default class TopLocations extends Component {
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 6
+            limit: 8
         };
 
         const {data, meta, error, loading} = useQuery({
@@ -44,7 +61,19 @@ export default class TopLocations extends Component {
                 error={error}
                 loading={loading}
                 index="location"
+                indexConfig={{
+                    label: <span className="gh-stats-detail-header">Country</span>,
+                    renderBarContent: ({label}) => (
+                        <span className="gh-stats-detail-label">{getCountryFlag(label)} {label || 'Unknown'}</span>
+                    )
+                }}
                 categories={['hits']}
+                categoryConfig={{
+                    hits: {
+                        label: <span className="gh-stats-detail-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                    }
+                }}
                 colorPalette={[statsStaticColors[4]]}
             />
         );

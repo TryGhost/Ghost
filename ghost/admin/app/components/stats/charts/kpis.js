@@ -4,6 +4,7 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
+import {formatNumber} from '../../../helpers/format-number';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {statsStaticColors} from '../../../utils/stats';
@@ -165,7 +166,7 @@ export default class KpisComponent extends Component {
                                 break;
                             default:
                                 tooltipTitle = 'Unique visitors';
-                                displayValue = fparams[0].value[1] !== null && fparams[0].value[1];
+                                displayValue = fparams[0].value[1] !== null && formatNumber(fparams[0].value[1]);
                                 break;
                             }
                             if (!displayValue) {

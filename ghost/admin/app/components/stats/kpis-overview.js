@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
 import {action} from '@ember/object';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -83,7 +84,7 @@ export default class KpisOverview extends Component {
         const _KPITotal = kpi => queryData.reduce((prev, curr) => (curr[kpi] ?? 0) + prev, 0);
 
         // Get total number of sessions
-        const totalVisits = _KPITotal('visits');
+        const totalVisits = formatNumber(_KPITotal('visits'));
 
         // Sum total KPI value from the trend, ponderating using sessions
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);

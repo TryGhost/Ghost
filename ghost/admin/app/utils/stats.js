@@ -109,3 +109,11 @@ export function generateMonochromePalette(baseColor, count = 10) {
 export const statsStaticColors = [
     '#8E42FF', '#B07BFF', '#C7A0FF', '#DDC6FF', '#EBDDFF', '#F7EDFF'
 ];
+
+export const getCountryFlag = (countryCode) => {
+    if (!countryCode) {
+        return '🏳️';
+    }
+    return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
+    );
+};
