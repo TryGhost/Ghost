@@ -1,6 +1,5 @@
-const chai = require('chai');
 const sinon = require('sinon');
-const {expect} = chai;
+const assert = require('assert/strict');
 
 const SubscriptionEventService = require('../../../../../lib/services/webhook/SubscriptionEventService');
 
@@ -23,9 +22,9 @@ describe('SubscriptionEventService', function () {
 
         try {
             await service.handleSubscriptionEvent(subscription);
-            expect.fail('Expected BadRequestError');
+            assert.fail('Expected BadRequestError');
         } catch (err) {
-            expect(err.message).to.equal('Subscription should have exactly 1 price item');
+            assert.equal(err.message, 'Subscription should have exactly 1 price item');
         }
     });
 
@@ -42,9 +41,9 @@ describe('SubscriptionEventService', function () {
 
         try {
             await service.handleSubscriptionEvent(subscription);
-            expect.fail('Expected ConflictError');
+            assert.fail('Expected ConflictError');
         } catch (err) {
-            expect(err.name).to.equal('ConflictError');
+            assert(err.name, 'ConflictError');
         }
     });
 
@@ -61,9 +60,9 @@ describe('SubscriptionEventService', function () {
 
         try {
             await service.handleSubscriptionEvent(subscription);
-            expect.fail('Expected ConflictError');
+            assert.fail('Expected ConflictError');
         } catch (err) {
-            expect(err.name).to.equal('ConflictError');
+            assert(err.name, 'ConflictError');
         }
     });
 
@@ -80,9 +79,9 @@ describe('SubscriptionEventService', function () {
 
         try {
             await service.handleSubscriptionEvent(subscription);
-            expect.fail('Expected error');
+            assert.fail('Expected error');
         } catch (err) {
-            expect(err.message).to.equal('Unexpected error');
+            assert.equal(err.message, 'Unexpected error');
         }
     });
 
@@ -91,9 +90,9 @@ describe('SubscriptionEventService', function () {
 
         try {
             await service.handleSubscriptionEvent({items: {data: [{price: {id: 'price_123'}}]}});
-            expect.fail('Expected error');
+            assert.fail('Expected error');
         } catch (err) {
-            expect(err.message).to.equal('Unexpected error');
+            assert.equal(err.message, 'Unexpected error');
         }
     });
 
@@ -109,6 +108,6 @@ describe('SubscriptionEventService', function () {
 
         await service.handleSubscriptionEvent(subscription);
 
-        expect(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription})).to.be.true;
+        assert(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription}));
     });
 });

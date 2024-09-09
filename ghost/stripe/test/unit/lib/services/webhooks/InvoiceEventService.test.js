@@ -1,6 +1,7 @@
-const chai = require('chai');
+// const chai = require('chai');
 const sinon = require('sinon');
-const {expect} = chai;
+// const {expect} = chai;
+const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
 
 const InvoiceEventService = require('../../../../../lib/services/webhook/InvoiceEventService');
@@ -38,7 +39,8 @@ describe('InvoiceEventService', function () {
         sinon.assert.notCalled(memberRepositoryStub.get);
         sinon.assert.notCalled(eventRepositoryStub.registerPayment);
 
-        expect(apiStub.getSubscription.called).to.be.false;
+        // expect(apiStub.getSubscription.called).to.be.false;
+        assert(apiStub.getSubscription.called === false);
     });
 
     it('should return early if invoice is a one-time payment', async function () {
@@ -50,7 +52,8 @@ describe('InvoiceEventService', function () {
         sinon.assert.notCalled(memberRepositoryStub.get);
         sinon.assert.notCalled(eventRepositoryStub.registerPayment);
 
-        expect(apiStub.getSubscription.called).to.be.false;
+        // expect(apiStub.getSubscription.called).to.be.false;
+        assert(apiStub.getSubscription.called === false);
     });
 
     it('should throw NotFoundError if no member is found for subscription customer', async function () {
@@ -75,8 +78,10 @@ describe('InvoiceEventService', function () {
         }
     
         // Use Sinon to assert that the error is a NotFoundError with the expected message
-        expect(error).to.be.instanceOf(errors.NotFoundError);
-        expect(error.message).to.equal('No member found for customer cust_123');
+        // expect(error).to.be.instanceOf(errors.NotFoundError);
+        assert(error instanceof errors.NotFoundError);
+        // expect(error.message).to.equal('No member found for customer cust_123');
+        assert(error.message === 'No member found for customer cust_123');
     });
 
     it('should return early if subscription has more than one plan or no plans', async function () {
@@ -90,9 +95,13 @@ describe('InvoiceEventService', function () {
 
         await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.calledOnce(apiStub.getSubscription);
-        sinon.assert.calledOnce(memberRepositoryStub.get);
-        sinon.assert.notCalled(productRepositoryStub.get);
+        // sinon.assert.calledOnce(apiStub.getSubscription);
+        // sinon.assert.calledOnce(memberRepositoryStub.get);
+        // sinon.assert.notCalled(productRepositoryStub.get);
+
+        assert(apiStub.getSubscription.calledOnce);
+        assert(memberRepositoryStub.get.calledOnce);
+        assert(productRepositoryStub.get.notCalled);
     });
 
     it('should return early if product is not found', async function () {
@@ -106,9 +115,9 @@ describe('InvoiceEventService', function () {
 
         await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.calledOnce(apiStub.getSubscription);
-        sinon.assert.calledOnce(memberRepositoryStub.get);
-        sinon.assert.calledOnce(productRepositoryStub.get);
+        assert(apiStub.getSubscription.calledOnce);
+        assert(memberRepositoryStub.get.calledOnce);
+        assert(productRepositoryStub.get.calledOnce);
     });
 
     it('can registerPayment', async function () {
@@ -124,7 +133,8 @@ describe('InvoiceEventService', function () {
 
         await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.calledOnce(eventRepositoryStub.registerPayment);
+        // sinon.assert.calledOnce(eventRepositoryStub.registerPayment);
+        assert(eventRepositoryStub.registerPayment.calledOnce);
     });
 
     it('should not registerPayment if invoice is not paid', async function () {
@@ -140,7 +150,8 @@ describe('InvoiceEventService', function () {
 
         await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+        // sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+        assert(eventRepositoryStub.registerPayment.notCalled);
     });
 
     it('should not registerPayment if invoice amount paid is 0', async function () {
@@ -156,7 +167,8 @@ describe('InvoiceEventService', function () {
 
         await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+        // sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+        assert(eventRepositoryStub.registerPayment.notCalled);
     });
 
     it('should not register payment if amount paid is 0 and invoice is not paid', async function () {
@@ -172,7 +184,7 @@ describe('InvoiceEventService', function () {
 
         await service.handleInvoiceEvent(invoice);
 
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+        assert(eventRepositoryStub.registerPayment.notCalled);
     });
 
     it('should not registerPayment if member is not found', async function () {
@@ -194,8 +206,8 @@ describe('InvoiceEventService', function () {
             error = err;
         }
 
-        expect(error).to.be.instanceOf(errors.NotFoundError);
+        assert(error instanceof errors.NotFoundError);
 
-        sinon.assert.notCalled(eventRepositoryStub.registerPayment);
+        assert(eventRepositoryStub.registerPayment.notCalled);
     });
 });
