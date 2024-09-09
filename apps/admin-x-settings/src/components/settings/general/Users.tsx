@@ -183,7 +183,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
                     <ListItem
                         key={user.id}
                         action={<UserInviteActions invite={user} />}
-                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
+                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={user.email.charAt(0).toUpperCase()} labelColor='white' />)}
                         className='min-h-[64px]'
                         detail={user.role}
                         hideActions={true}
