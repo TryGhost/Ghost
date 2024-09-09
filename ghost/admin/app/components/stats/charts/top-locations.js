@@ -2,8 +2,10 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {formatNumber} from '../../../helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
+
 export default class TopLocations extends Component {
     @inject config;
 
@@ -44,7 +46,19 @@ export default class TopLocations extends Component {
                 error={error}
                 loading={loading}
                 index="location"
+                indexConfig={{
+                    label: <span className="gh-stats-detail-header">Source</span>,
+                    renderBarContent: ({label}) => (
+                        <span>{label ? label : 'Unknown'}</span>
+                    )
+                }}
                 categories={['hits']}
+                categoryConfig={{
+                    hits: {
+                        label: <span className="gh-stats-detail-header">Visits</span>,
+                        renderValue: ({value}) => <span>{formatNumber(value)}</span>
+                    }
+                }}
                 colorPalette={[statsStaticColors[4]]}
             />
         );
