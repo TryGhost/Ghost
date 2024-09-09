@@ -16,6 +16,14 @@ export default class AllStatsModal extends Component {
         return this.args.data.type;
     }
 
+    get chartRange() {
+        return this.args.data.chartRange;
+    }
+
+    get audience() {
+        return this.args.data.audience;
+    }
+
     get modalTitle() {
         switch (this.type) {
         case 'top-sources':
@@ -29,7 +37,7 @@ export default class AllStatsModal extends Component {
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;
-        // let audience = props.audience;
+        let audience = props.audience || [];
         let type = props.type;
 
         const endDate = moment().endOf('day');
@@ -47,8 +55,8 @@ export default class AllStatsModal extends Component {
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD')
-            // member_status: audience.length === 0 ? null : audience.join(',')
+            date_to: endDate.format('YYYY-MM-DD'),
+            member_status: audience.length === 0 ? null : audience.join(',')
         };
 
         let endpoint;

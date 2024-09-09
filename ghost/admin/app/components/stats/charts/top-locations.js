@@ -17,7 +17,11 @@ export default class TopLocations extends Component {
 
     @action
     openSeeAll() {
-        this.modals.open(AllStatsModal, {type: 'top-locations'});
+        this.modals.open(AllStatsModal, {
+            type: 'top-locations',
+            chartRange: this.args.chartRange,
+            audience: this.args.audience
+        });
     }
 
     ReactComponent = (props) => {
@@ -41,7 +45,7 @@ export default class TopLocations extends Component {
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 6
+            limit: 8
         };
 
         const {data, meta, error, loading} = useQuery({

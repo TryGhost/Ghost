@@ -22,8 +22,12 @@ export default class TopPages extends Component {
     @service modals;
 
     @action
-    openSeeAll() {
-        this.modals.open(AllStatsModal, {type: 'top-pages'});
+    openSeeAll(chartRange, audience) {
+        this.modals.open(AllStatsModal, {
+            type: 'top-pages',
+            chartRange,
+            audience
+        });
     }
 
     @action
@@ -52,7 +56,7 @@ export default class TopPages extends Component {
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 6
+            limit: 8
         };
 
         const {data, meta, error, loading} = useQuery({
