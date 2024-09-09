@@ -1,6 +1,4 @@
-const chai = require('chai');
-const sinon = require('sinon');
-const {expect} = chai;
+const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
 const CheckoutSessionEventService = require('../../../../../lib/services/webhook/CheckoutSessionEventService');
 
@@ -43,7 +41,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            expect(handleSetupEventStub.calledWith(session)).to.be.true;
+            assert(handleSetupEventStub.calledWith(session));
         });
 
         it('should call handleSubscriptionEvent if session mode is subscription', async function () {
@@ -53,7 +51,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            expect(handleSubscriptionEventStub.calledWith(session)).to.be.true;
+            assert(handleSubscriptionEventStub.calledWith(session));
         });
 
         it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is present', async function () {
@@ -63,7 +61,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleEvent(session);
 
-            expect(handleDonationEventStub.calledWith(session)).to.be.true;
+            assert(handleDonationEventStub.calledWith(session));
         });
 
         it('should do nothing if session mode is not setup, subscription, or payment', async function () {
@@ -74,10 +72,10 @@ describe('CheckoutSessionEventService', function () {
             const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
         
             await service.handleEvent(session);
-        
-            expect(handleSetupEventStub.called).to.be.false;
-            expect(handleSubscriptionEventStub.called).to.be.false;
-            expect(handleDonationEventStub.called).to.be.false;
+
+            assert(!handleSetupEventStub.called);
+            assert(!handleSubscriptionEventStub.called);
+            assert(!handleDonationEventStub.called);
         });
     });
 
@@ -104,21 +102,21 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            expect(donationRepository.save.calledOnce).to.be.true;
+            assert(donationRepository.save.calledOnce);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
-            expect(savedDonationEvent.amount).to.equal(1000);
-            expect(savedDonationEvent.currency).to.equal('usd');
-            expect(savedDonationEvent.name).to.equal('Test Name');
-            expect(savedDonationEvent.email).to.equal('');
-            expect(savedDonationEvent.donationMessage).to.equal('Test donation message');
-            expect(savedDonationEvent.attributionId).to.equal('attr_123');
-            expect(savedDonationEvent.attributionUrl).to.equal('https://example.com/blog/');
-            expect(savedDonationEvent.attributionType).to.equal('referral');
-            expect(savedDonationEvent.referrerSource).to.equal('google');
-            expect(savedDonationEvent.referrerMedium).to.equal('cpc');
-            expect(savedDonationEvent.referrerUrl).to.equal('https://referrer.com');
+            assert.equal(savedDonationEvent.amount, 1000);
+            assert.equal(savedDonationEvent.currency, 'usd');
+            assert.equal(savedDonationEvent.name, 'Test Name');
+            assert.equal(savedDonationEvent.email, '');
+            assert.equal(savedDonationEvent.donationMessage, 'Test donation message');
+            assert.equal(savedDonationEvent.attributionId, 'attr_123');
+            assert.equal(savedDonationEvent.attributionUrl, 'https://example.com/blog/');
+            assert.equal(savedDonationEvent.attributionType, 'referral');
+            assert.equal(savedDonationEvent.referrerSource, 'google');
+            assert.equal(savedDonationEvent.referrerMedium, 'cpc');
+            assert.equal(savedDonationEvent.referrerUrl, 'https://referrer.com');
         });
 
         it('donation message is null if its empty', async function () {
@@ -144,11 +142,10 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            expect(donationRepository.save.calledOnce).to.be.true;
+            assert(donationRepository.save.calledOnce);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
-
-            expect(savedDonationEvent.donationMessage).to.equal(null);
+            assert.equal(savedDonationEvent.donationMessage, null);
         });
 
         it('can handle donation event with member', async function () {
@@ -182,21 +179,22 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            expect(donationRepository.save.calledOnce).to.be.true;
+            // expect(donationRepository.save.calledOnce).to.be.true;
+            assert(donationRepository.save.calledOnce);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
-            expect(savedDonationEvent.amount).to.equal(1000);
-            expect(savedDonationEvent.currency).to.equal('usd');
-            expect(savedDonationEvent.name).to.equal('Test Name');
-            expect(savedDonationEvent.email).to.equal('member@example.com');
-            expect(savedDonationEvent.donationMessage).to.equal('Test donation message');
-            expect(savedDonationEvent.attributionId).to.equal('attr_123');
-            expect(savedDonationEvent.attributionUrl).to.equal('https://example.com/blog/');
-            expect(savedDonationEvent.attributionType).to.equal('referral');
-            expect(savedDonationEvent.referrerSource).to.equal('google');
-            expect(savedDonationEvent.referrerMedium).to.equal('cpc');
-            expect(savedDonationEvent.referrerUrl).to.equal('https://referrer.com');
+            assert.equal(savedDonationEvent.amount, 1000);
+            assert.equal(savedDonationEvent.currency, 'usd');
+            assert.equal(savedDonationEvent.name, 'Test Name');
+            assert.equal(savedDonationEvent.email, 'member@example.com');
+            assert.equal(savedDonationEvent.donationMessage, 'Test donation message');
+            assert.equal(savedDonationEvent.attributionId, 'attr_123');
+            assert.equal(savedDonationEvent.attributionUrl, 'https://example.com/blog/');
+            assert.equal(savedDonationEvent.attributionType, 'referral');
+            assert.equal(savedDonationEvent.referrerSource, 'google');
+            assert.equal(savedDonationEvent.referrerMedium, 'cpc');
+            assert.equal(savedDonationEvent.referrerUrl, 'https://referrer.com');
         });
 
         it('can handle donation event with empty customer email', async function () {
@@ -221,8 +219,7 @@ describe('CheckoutSessionEventService', function () {
                 get: sinon.stub(),
                 id: 'member_123'
             };
-    
-            // Stub the `get` method on the member object
+
             member.get.withArgs('name').returns('Test Name');
             member.get.withArgs('email').returns('');
 
@@ -230,11 +227,11 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleDonationEvent(session);
 
-            expect(donationRepository.save.calledOnce).to.be.true;
+            assert(donationRepository.save.calledOnce);
 
             const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
-            expect(savedDonationEvent.amount).to.equal(1000);
+            assert.equal(savedDonationEvent.amount, 1000);
         });
     });
 
@@ -245,7 +242,7 @@ describe('CheckoutSessionEventService', function () {
 
             service.handleSetupEvent(session);
 
-            expect(api.getSetupIntent.calledWith('si_123')).to.be.true;
+            assert(api.getSetupIntent.calledWith('si_123'));
         });
 
         it('fires getSetupIntent and memberRepository.get', async function () {
@@ -253,14 +250,12 @@ describe('CheckoutSessionEventService', function () {
             const session = {setup_intent: 'si_123'};
             const setupIntent = {metadata: {customer_id: 'cust_123'}};
 
-            // mock memberRe
-
             api.getSetupIntent.resolves(setupIntent);
 
             await service.handleSetupEvent(session);
 
-            expect(api.getSetupIntent.calledWith('si_123')).to.be.true;
-            expect(memberRepository.get.calledWith({customer_id: 'cust_123'})).to.be.true;
+            assert(api.getSetupIntent.calledWith('si_123'));
+            assert(memberRepository.get.calledWith({customer_id: 'cust_123'}));
         });
 
         it('fires getSetupIntent, memberRepository.get and attachPaymentMethodToCustomer', async function () {
@@ -282,11 +277,9 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            // mock member.related
-
-            expect(api.getSetupIntent.calledWith('si_123')).to.be.true;
-            expect(memberRepository.get.calledWith({customer_id: 'cust_123'})).to.be.true;
-            expect(api.attachPaymentMethodToCustomer.calledWith('cust_123', 'pm_123')).to.be.true;
+            assert(api.getSetupIntent.calledWith('si_123'));
+            assert(memberRepository.get.calledWith({customer_id: 'cust_123'}));
+            assert(api.attachPaymentMethodToCustomer.called);
         });
 
         it('if member is not found, it should return early', async function () {
@@ -299,9 +292,9 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            expect(api.getSetupIntent.calledWith('si_123')).to.be.true;
-            expect(memberRepository.get.calledWith({customer_id: 'cust_123'})).to.be.true;
-            expect(api.attachPaymentMethodToCustomer.called).to.be.false;
+            assert(api.getSetupIntent.calledWith('si_123'));
+            assert(memberRepository.get.calledWith({customer_id: 'cust_123'}));
+            assert(!api.attachPaymentMethodToCustomer.called);
         });
 
         it('if setupIntent has subscription_id, it should update subscription default payment method', async function () {
@@ -317,8 +310,8 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            expect(api.updateSubscriptionDefaultPaymentMethod.calledWith('sub_123', 'pm_123')).to.be.true;
-            expect(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription: updatedSubscription})).to.be.true;
+            assert(api.updateSubscriptionDefaultPaymentMethod.calledWith('sub_123', 'pm_123'));
+            assert(memberRepository.linkSubscription.calledWith({id: 'member_123', subscription: updatedSubscription}));
         });
 
         it('if linkSubscription fails with ER_DUP_ENTRY, it should throw ConflictError', async function () {
@@ -335,9 +328,9 @@ describe('CheckoutSessionEventService', function () {
 
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected ConflictError');
+                assert.fail('Expected ConflictError');
             } catch (err) {
-                expect(err.name).to.equal('ConflictError');
+                assert.equal(err.name, 'ConflictError');
             }
         });
 
@@ -355,9 +348,9 @@ describe('CheckoutSessionEventService', function () {
 
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected ConflictError');
+                assert.fail('Expected ConflictError');
             } catch (err) {
-                expect(err.name).to.equal('ConflictError');
+                assert.equal(err.name, 'ConflictError');
             }
         });
 
@@ -375,9 +368,10 @@ describe('CheckoutSessionEventService', function () {
 
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected error');
+
+                assert.fail('Expected error');
             } catch (err) {
-                expect(err.message).to.equal('Unexpected error');
+                assert.equal(err.message, 'Unexpected error');
             }
         });
 
@@ -433,7 +427,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSetupEvent(session);
 
-            expect(api.updateSubscriptionDefaultPaymentMethod.calledTwice).to.be.true;
+            assert(api.updateSubscriptionDefaultPaymentMethod.calledTwice);
         });
 
         it('throws if updateSubscriptionDefaultPaymentMethod fires but cannot link subscription', async function () {
@@ -467,9 +461,9 @@ describe('CheckoutSessionEventService', function () {
 
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected error');
+                assert.fail('Expected error');
             } catch (err) {
-                expect(err.message).to.equal('Unexpected error');
+                assert.equal(err.message, 'Unexpected error');
             }
         });
 
@@ -487,12 +481,10 @@ describe('CheckoutSessionEventService', function () {
 
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected ConflictError');
+                assert.fail('Expected ConflictError');
             } catch (err) {
-                // Ensure that the error is an instance of ConflictError
-                expect(err).to.be.instanceOf(errors.ConflictError);
-                // Check the error message
-                expect(err.message).to.equal('The server has encountered an conflict.');
+                assert(err instanceof errors.ConflictError);
+                assert.equal(err.message, 'The server has encountered an conflict.');
             }
         });
 
@@ -510,9 +502,9 @@ describe('CheckoutSessionEventService', function () {
     
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected ConflictError');
+                assert.fail('Expected ConflictError');
             } catch (err) {
-                expect(err).to.be.instanceOf(errors.ConflictError);
+                assert(err instanceof errors.ConflictError);
             }
         });
 
@@ -530,9 +522,9 @@ describe('CheckoutSessionEventService', function () {
 
             try {
                 await service.handleSetupEvent(session);
-                expect.fail('Expected ConflictError');
+                assert.fail('Expected ConflictError');
             } catch (err) {
-                expect(err).to.be.instanceOf(errors.ConflictError);
+                assert(err instanceof errors.ConflictError);
             }
         });
     });
@@ -587,8 +579,8 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            expect(api.getCustomer.calledWith('cust_123', {expand: ['subscriptions.data.default_payment_method']})).to.be.true;
-            expect(memberRepository.get.calledWith({email: 'customer@example.com'})).to.be.true;
+            assert(api.getCustomer.calledWith('cust_123', {expand: ['subscriptions.data.default_payment_method']}));
+            assert(memberRepository.get.calledWith({email: 'customer@example.com'}));
         });
 
         it('should create new member if not found', async function () {
@@ -597,12 +589,14 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            expect(memberRepository.create.calledOnce).to.be.true;
+            assert(memberRepository.create.calledOnce);
             const memberData = memberRepository.create.getCall(0).args[0];
-            expect(memberData.email).to.equal('customer@example.com');
-            expect(memberData.name).to.equal('Metadata Name'); // falls back to metadata name if payerName doesn't exist
-            expect(memberData.newsletters).to.deep.equal([{id: 1, name: 'Newsletter'}]);
-            expect(memberData.attribution).to.deep.equal({
+
+            assert.equal(memberData.email, 'customer@example.com');
+
+            assert.equal(memberData.name, 'Metadata Name'); // falls back to metadata name if payerName doesn't exist
+            assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
+            assert.deepEqual(memberData.attribution, {
                 id: 'attr_123',
                 url: 'https://example.com',
                 type: 'referral',
@@ -619,11 +613,14 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            expect(memberRepository.create.calledOnce).to.be.true;
+            assert(memberRepository.create.calledOnce);
             const memberData = memberRepository.create.getCall(0).args[0];
-            expect(memberData.email).to.equal('customer@example.com');
-            expect(memberData.name).to.equal('Session Name');
-            expect(memberData.newsletters).to.deep.equal([{id: 1, name: 'Newsletter'}]);
+
+            assert.equal(memberData.email, 'customer@example.com');
+
+            assert.equal(memberData.name, 'Session Name');
+
+            assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
         });
 
         it('should create new member with newsletters if metadata newsletters is not valid JSON', async function () {
@@ -633,11 +630,10 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleSubscriptionEvent(session);
 
-            expect(memberRepository.create.calledOnce).to.be.true;
             const memberData = memberRepository.create.getCall(0).args[0];
-            expect(memberData.email).to.equal('customer@example.com');
-            expect(memberData.name).to.equal('Metadata Name');
-            expect(memberData.newsletters).to.be.undefined;
+            assert.equal(memberData.email, 'customer@example.com');
+            assert.equal(memberData.name, 'Metadata Name');
+            assert.equal(memberData.newsletters, undefined);
         });
 
         it('should update member if found', async function () {
@@ -647,9 +643,9 @@ describe('CheckoutSessionEventService', function () {
             customer.subscriptions.data[0].default_payment_method.billing_details.name = 'New Customer Name';
             await service.handleSubscriptionEvent(session);
 
-            expect(memberRepository.update.calledOnce).to.be.true;
+            assert(memberRepository.update.calledOnce);
             const memberData = memberRepository.update.getCall(0).args[0];
-            expect(memberData.name).to.equal('New Customer Name');
+            assert.equal(memberData.name, 'New Customer Name');
         });
 
         it('should update member with payerName if it exists', async function () {
@@ -660,9 +656,9 @@ describe('CheckoutSessionEventService', function () {
             customer.subscriptions.data[0].default_payment_method.billing_details.name = 'New Customer Name';
             await service.handleSubscriptionEvent(session);
 
-            expect(memberRepository.update.calledOnce).to.be.true;
+            assert(memberRepository.update.calledOnce);
             const memberData = memberRepository.update.getCall(0).args[0];
-            expect(memberData.name).to.equal('New Customer Name');
+            assert.equal(memberData.name, 'New Customer Name');
         });
 
         it('should update member with newsletters if metadata newsletters is not valid JSON', async function () {
@@ -673,9 +669,9 @@ describe('CheckoutSessionEventService', function () {
             customer.subscriptions.data[0].default_payment_method.billing_details.name = 'New Customer Name';
             await service.handleSubscriptionEvent(session);
 
-            expect(memberRepository.update.calledOnce).to.be.true;
+            assert(memberRepository.update.calledOnce);
             const memberData = memberRepository.update.getCall(0).args[0];
-            expect(memberData.newsletters).to.be.undefined;
+            assert.equal(memberData.newsletters, undefined);
         });
     });
 });
