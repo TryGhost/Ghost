@@ -23,6 +23,10 @@
 }
 
 .gh-stats-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
     padding: 20px;
     border: 1px solid var(--whitegrey);
     border-radius: 8px;
@@ -32,7 +36,7 @@
 
 .gh-stats-container > .gh-stats-metric-label,
 .gh-stats-metric-header {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .gh-stats-container:hover {
@@ -162,6 +166,7 @@
     border: none !important;
     cursor: pointer;
     overflow: hidden;
+    margin-right: -8px;
 }
 
 .gh-stats-section-dropdown.ember-power-select-trigger.gh-btn span {
@@ -184,4 +189,25 @@
     .gh-stats-metric-label {
         font-size: 14px;
     }
+}
+
+.gh-stats-detail-header {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.gh-stats-see-all-btn span {
+    height: unset;
+    padding: 0;
+    line-height: 1;
+    color: var(--black);
+}
+
+.gh-stats-see-all-btn:hover span {
+    color: var(--green);
+}
+
+.gh-stats-detail-label,
+.gh-stats-detail-value {
+    font-size: 13.5px;
 }
