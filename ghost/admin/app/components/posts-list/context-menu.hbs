@@ -21,6 +21,13 @@
                 </button>
             </li>
         {{/if}}
+        {{#if this.canUnscheduleSelection}}
+            <li>
+                <button class="mr2" type="button" {{on "click" this.unschedulePosts}}>
+                    <span>{{svg-jar "undo"}}Unschedule</span>
+                </button>
+            </li>
+        {{/if}}
     {{/if}}
     {{#if this.canFeatureSelection}}
         {{#if this.shouldFeatureSelection }}
