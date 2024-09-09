@@ -108,7 +108,7 @@ describe('ActivityPubAPI', function () {
                     response:
                      JSONResponse({
                          type: 'Collection',
-                         items: [{
+                         orderedItems: [{
                              type: 'Create',
                              object: {
                                  type: 'Note'
@@ -138,7 +138,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Returns an array when the items key is a single object', async function () {
+        test('Returns an array when the orderedItems key is a single object', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -151,7 +151,7 @@ describe('ActivityPubAPI', function () {
                     response:
                      JSONResponse({
                          type: 'Collection',
-                         items: {
+                         orderedItems: {
                              type: 'Create',
                              object: {
                                  type: 'Note'
@@ -255,7 +255,7 @@ describe('ActivityPubAPI', function () {
                     response:
                      JSONResponse({
                          type: 'Collection',
-                         items: [{
+                         orderedItems: [{
                              type: 'Person'
                          }]
                      })

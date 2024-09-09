@@ -1,26 +1,52 @@
-<div class="gh-stats-tabs">
-    <button type="button" class="gh-stats-tab min-width {{if this.visitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToVisits}}>
-        <Stats::Parts::Metric
-            @label="Unique visitors"
-            @value={{this.totals.visits}} />
-    </button>
+<div class="gh-stats-tabs-header">
+    <div class="gh-stats-tabs">
+        <button type="button" class="gh-stats-tab min-width {{if this.uniqueVisitorsTabSelected 'is-selected'}}" {{on "click" this.changeTabToUniqueVisitors}}>
+            <Stats::Parts::Metric
+                @label="Unique visitors"
+                @value={{this.totals.visits}} />
+        </button>
 
-    <button type="button" class="gh-stats-tab min-width {{if this.pageviewsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPageviews}}>
-        <Stats::Parts::Metric
-            @label="Site Pageviews"
-            @value={{this.totals.pageviews}} />
-    </button>
+        <button type="button" class="gh-stats-tab min-width {{if this.visitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToVisits}}>
+            <Stats::Parts::Metric
+                @label="Visits"
+                @value={{this.totals.visits}} />
+        </button>
 
-    <button type="button" class="gh-stats-tab min-width {{if this.avgVisitTimeTabSelected 'is-selected'}}" {{on "click" this.changeTabToAvgVisitTime}}>
-        <Stats::Parts::Metric
-            @label="Avg Visit Time"
-            @value="{{this.totals.avg_session_sec}}m" />
-    </button>
+        <button type="button" class="gh-stats-tab min-width {{if this.pageviewsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPageviews}}>
+            <Stats::Parts::Metric
+                @label="Pageviews"
+                @value={{this.totals.pageviews}} />
+        </button>
 
-    <button type="button" class="gh-stats-tab min-width {{if this.bounceRateTabSelected 'is-selected'}}" {{on "click" this.changeTabToBounceRate}}>
-        <Stats::Parts::Metric
-            @label="Bounce Rate"
-            @value="{{this.totals.bounce_rate}}%" />
-    </button>
+        <button type="button" class="gh-stats-tab min-width {{if this.bounceRateTabSelected 'is-selected'}}" {{on "click" this.changeTabToBounceRate}}>
+            <Stats::Parts::Metric
+                @label="Bounce rate"
+                @value="{{this.totals.bounce_rate}}%" />
+        </button>
+
+        <button type="button" class="gh-stats-tab min-width {{if this.avgVisitTimeTabSelected 'is-selected'}}" {{on "click" this.changeTabToAvgVisitTime}}>
+            <Stats::Parts::Metric
+                @label="Visit duration"
+                @value="{{this.totals.avg_session_sec}}m" />
+        </button>
+    </div>
+    <div class="gh-stats-kpi-granularity">
+        {{#if this.showGranularity}}
+            <PowerSelect
+                @selected={{this.granularity}}
+                @options={{this.granularityOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onGranularityChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn gh-stats-section-dropdown"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
+            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+        {{/if}}
+    </div>
 </div>
-<Stats::Charts::Kpis @chartDays={{@chartDays}} @audience={{@audience}} @selected={{this.selected}} />
+<Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />

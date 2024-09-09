@@ -1,18 +1,20 @@
-<div class="gh-stats-tabs">
-    <button type="button" class="gh-stats-tab {{if this.devicesTabSelected 'is-selected'}}" {{on "click" this.changeTabToDevices}}>
-        <Stats::Parts::Metric
-            @label="Devices" />
-    </button>
+<div class="gh-stats-tabs-header">
+    <div class="gh-stats-tabs">
+        <button type="button" class="gh-stats-tab {{if this.devicesTabSelected 'is-selected'}}" {{on "click" this.changeTabToDevices}}>
+            <Stats::Parts::Metric
+                @label="Devices" />
+        </button>
 
-    <button type="button" class="gh-stats-tab {{if this.browsersTabSelected 'is-selected'}}" {{on "click" this.changeTabToBrowsers}}>
-        <Stats::Parts::Metric
-            @label="Browsers" />
-    </button>
+        <button type="button" class="gh-stats-tab {{if this.browsersTabSelected 'is-selected'}}" {{on "click" this.changeTabToBrowsers}}>
+            <Stats::Parts::Metric
+                @label="Browsers" />
+        </button>
 
-    {{!-- <button type="button" class="gh-stats-tab {{if this.osTabSelected 'is-selected'}}" {{on "click" this.changeTabToOSs}}>
-        <Stats::Parts::Metric
-            @label="Operating systems" />
-    </button> --}}
+        {{!-- <button type="button" class="gh-stats-tab {{if this.osTabSelected 'is-selected'}}" {{on "click" this.changeTabToOSs}}>
+            <Stats::Parts::Metric
+                @label="Operating systems" />
+        </button> --}}
+    </div>
 </div>
 
-<Stats::Charts::Technical @chartDays={{@chartDays}} @audience={{@audience}} @selected={{this.selected}} />
+<Stats::Charts::Technical @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />
