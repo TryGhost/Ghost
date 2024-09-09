@@ -13,7 +13,6 @@ module.exports = class SubscriptionEventService {
             });
         }
 
-        // Accessing the member repository dynamically from deps
         const memberRepository = this.deps.memberRepository;
         const member = await memberRepository.get({
             customer_id: subscription.customer
