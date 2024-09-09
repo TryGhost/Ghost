@@ -6,7 +6,7 @@ const logging = require('@tryghost/logging');
 module.exports = class CheckoutSessionEventService {
     constructor(deps) {
         this.api = deps.api;
-        this.deps = deps; // Store the deps object to access repositories dynamically later
+        this.deps = deps;
     }
 
     async handleEvent(session) {
@@ -29,7 +29,6 @@ module.exports = class CheckoutSessionEventService {
         const amount = session.amount_total;
         const currency = session.currency;
 
-        // Access the memberRepository dynamically when needed
         const memberRepository = this.deps.memberRepository;
         const member = session.customer ? (await memberRepository.get({customer_id: session.customer})) : null;
 
@@ -48,11 +47,9 @@ module.exports = class CheckoutSessionEventService {
             referrerUrl: session.metadata.referrer_url ?? null
         });
 
-        // Access the donationRepository dynamically when needed
         const donationRepository = this.deps.donationRepository;
         await donationRepository.save(data);
 
-        // Access the staffServiceEmails dynamically when needed
         const staffServiceEmails = this.deps.staffServiceEmails;
         await staffServiceEmails.notifyDonationReceived({donationPaymentEvent: data});
     }
@@ -60,7 +57,6 @@ module.exports = class CheckoutSessionEventService {
     async handleSetupEvent(session) {
         const setupIntent = await this.api.getSetupIntent(session.setup_intent);
 
-        // Access the memberRepository dynamically when needed
         const memberRepository = this.deps.memberRepository;
         const member = await memberRepository.get({
             customer_id: setupIntent.metadata.customer_id
@@ -128,7 +124,6 @@ module.exports = class CheckoutSessionEventService {
             expand: ['subscriptions.data.default_payment_method']
         });
 
-        // Access the memberRepository dynamically when needed
         const memberRepository = this.deps.memberRepository;
 
         let member = await memberRepository.get({
