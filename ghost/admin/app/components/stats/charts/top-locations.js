@@ -16,6 +16,14 @@ export default class TopLocations extends Component {
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
+        const getCountryFlag = (countryCode) => {
+            if (!countryCode) {
+                return '🏳️';
+            }
+            return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
+            );
+        };
+
         /**
          * @typedef {Object} Params
          * @property {string} site_uuid
@@ -49,7 +57,7 @@ export default class TopLocations extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Source</span>,
                     renderBarContent: ({label}) => (
-                        <span>{label ? label : 'Unknown'}</span>
+                        <span>{getCountryFlag(label)} {label || 'Unknown'}</span>
                     )
                 }}
                 categories={['hits']}
