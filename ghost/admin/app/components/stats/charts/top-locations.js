@@ -55,7 +55,7 @@ export default class TopLocations extends Component {
                 loading={loading}
                 index="location"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Source</span>,
+                    label: <span className="gh-stats-detail-header">Country</span>,
                     renderBarContent: ({label}) => (
                         <span>{getCountryFlag(label)} {label || 'Unknown'}</span>
                     )

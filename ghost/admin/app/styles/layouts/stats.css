@@ -23,6 +23,10 @@
 }
 
 .gh-stats-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
     padding: 20px;
     border: 1px solid var(--whitegrey);
     border-radius: 8px;

@@ -42,14 +42,14 @@ export default class TopPages extends Component {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
+            member_status: audience.length === 0 ? null : audience.join(','),
+            limit: 6
         };
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
             token: this.config.stats.token,
-            params,
-            limit: 6
+            params
         });
 
         return (
@@ -73,7 +73,7 @@ export default class TopPages extends Component {
                     }
                 }}
                 colorPalette={[statsStaticColors[4]]}
-                height="300px"
+                // height="300px"
             />
         );
     };

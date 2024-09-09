@@ -70,7 +70,7 @@ export default class TopPages extends Component {
                     }
                 }}
                 colorPalette={[statsStaticColors[4]]}
-                height="300px"
+                // height="300px"
             />
         );
     };
