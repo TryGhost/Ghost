@@ -32,7 +32,7 @@
 
 .gh-stats-container > .gh-stats-metric-label,
 .gh-stats-metric-header {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .gh-stats-container:hover {
@@ -162,6 +162,7 @@
     border: none !important;
     cursor: pointer;
     overflow: hidden;
+    margin-right: -8px;
 }
 
 .gh-stats-section-dropdown.ember-power-select-trigger.gh-btn span {
@@ -184,4 +185,9 @@
     .gh-stats-metric-label {
         font-size: 14px;
     }
+}
+
+.gh-stats-detail-header {
+    font-size: 11px;
+    font-weight: 500;
 }

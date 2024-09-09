@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {CONTENT_OPTIONS} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
+import {formatNumber} from '../../../helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
 import {tracked} from '@glimmer/tracking';
@@ -59,13 +60,13 @@ export default class TopPages extends Component {
                 loading={loading}
                 index="pathname"
                 indexConfig={{
-                    label: <span style={{fontSize: '12px', fontWeight: 'bold'}}>URL</span>
+                    label: <span className="gh-stats-detail-header">Post or page</span>
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span>Visits</span>
-                        // renderValue: ({ value }) => <span>{formatNumber(value)}</span>
+                        label: <span className="gh-stats-detail-header">Visits</span>,
+                        renderValue: ({value}) => <span>{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[statsStaticColors[4]]}
