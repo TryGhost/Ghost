@@ -1,42 +1,44 @@
 'use client';
 
-import AllStatsModal from '../../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {CAMPAIGN_OPTIONS} from 'ghost-admin/utils/stats';
-import {action} from '@ember/object';
-import {formatNumber} from '../../../helpers/format-number';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {getCountryFlag} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {inject as service} from '@ember/service';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
-import {tracked} from '@glimmer/tracking';
 
-export default class TopPages extends Component {
+export default class AllStatsModal extends Component {
     @inject config;
-    @service modals;
 
-    @tracked campaignOption = CAMPAIGN_OPTIONS[0];
-    @tracked campaignOptions = CAMPAIGN_OPTIONS;
-
-    @action
-    onCampaignOptionChange(selected) {
-        this.campaignOption = selected;
+    get type() {
+        return this.args.data.type;
     }
 
-    @action
-    openSeeAll() {
-        this.modals.open(AllStatsModal, {
-            type: 'top-sources',
-            chartRange: this.args.chartRange,
-            audience: this.args.audience
-        });
+    get chartRange() {
+        return this.args.data.chartRange;
+    }
+
+    get audience() {
+        return this.args.data.audience;
+    }
+
+    get modalTitle() {
+        switch (this.type) {
+        case 'top-sources':
+            return 'Sources';
+        case 'top-locations':
+            return 'Locations';
+        default:
+            return 'Content';
+        }
     }
 
     ReactComponent = (props) => {
         let chartRange = props.chartRange;
-        let audience = props.audience;
+        let audience = props.audience || [];
+        let type = props.type;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -54,12 +56,35 @@ export default class TopPages extends Component {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 8
+            member_status: audience.length === 0 ? null : audience.join(',')
         };
 
+        let endpoint;
+        let labelText;
+        let indexBy;
+        let unknownOption = 'Unknown';
+        switch (type) {
+        case 'top-sources':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_sources.json`;
+            labelText = 'Source';
+            indexBy = 'referrer';
+            unknownOption = 'Direct';
+            break;
+        case 'top-locations':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_locations.json`;
+            labelText = 'Country';
+            indexBy = 'location';
+            unknownOption = 'Unknown';
+            break;
+        default:
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_pages.json`;
+            labelText = 'Post or page';
+            indexBy = 'pathname';
+            break;
+        }
+
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
+            endpoint: endpoint,
             token: this.config.stats.token,
             params
         });
@@ -70,11 +95,11 @@ export default class TopPages extends Component {
                 meta={meta}
                 error={error}
                 loading={loading}
-                index="referrer"
+                index={indexBy}
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Source</span>,
+                    label: <span className="gh-stats-detail-header">{labelText}</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{label || 'Direct'}</span>
+                        <span className="gh-stats-detail-label">{(type === 'top-locations') && getCountryFlag(label)} {label || unknownOption}</span>
                     )
                 }}
                 categories={['hits']}
@@ -85,7 +110,6 @@ export default class TopPages extends Component {
                     }
                 }}
                 colorPalette={[statsStaticColors[4]]}
-                // height="300px"
             />
         );
     };
