@@ -11,14 +11,10 @@ describe('WebhookController', function () {
 
     beforeEach(function () {
         deps = {
-            api: {getSubscription: sinon.stub(), getCustomer: sinon.stub(), getSetupIntent: sinon.stub(), attachPaymentMethodToCustomer: sinon.stub(), updateSubscriptionDefaultPaymentMethod: sinon.stub()},
-            webhookManager: {parseWebhook: sinon.stub()},
-            eventRepository: {registerPayment: sinon.stub()},
-            memberRepository: {get: sinon.stub(), create: sinon.stub(), update: sinon.stub(), linkSubscription: sinon.stub(), upsertCustomer: sinon.stub(), members: sinon.stub()},
-            donationRepository: {save: sinon.stub()},
-            productRepository: {get: sinon.stub()},
-            staffServiceEmails: {notifyDonationReceived: sinon.stub()},
-            sendSignupEmail: sinon.stub()
+            subscriptionEventService: {handleSubscriptionEvent: sinon.stub()},
+            invoiceEventService: {handleInvoiceEvent: sinon.stub()},
+            checkoutSessionEventService: {handleEvent: sinon.stub(), handleDonationEvent: sinon.stub()},
+            webhookManager: {parseWebhook: sinon.stub()}
         };
 
         controller = new WebhookController(deps);
@@ -54,120 +50,116 @@ describe('WebhookController', function () {
         const event = {
             type: 'customer.subscription.created',
             data: {
-                object: {customer: 'cust_123', items: {data: [{price: {id: 'price_123'}}]}}
+                object: {customer: 'cust_123'}
             }
         };
         deps.webhookManager.parseWebhook.returns(event);
-        deps.memberRepository.get.resolves({id: 'member_123'});
 
         await controller.handle(req, res);
 
-        expect(deps.memberRepository.get.calledWith({customer_id: 'cust_123'})).to.be.true;
-        expect(deps.memberRepository.linkSubscription.calledOnce).to.be.true;
+        expect(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce).to.be.true;
         expect(res.writeHead.calledWith(200)).to.be.true;
         expect(res.end.called).to.be.true;
     });
 
-    it('should handle a donation in checkoutSessionEvent', async function () {
-        const session = {
-            mode: 'payment',
-            metadata: {
-                ghost_donation: true,
-                attribution_id: 'attr_123',
-                attribution_url: 'https://example.com',
-                attribution_type: 'referral',
-                referrer_source: 'google',
-                referrer_medium: 'cpc',
-                referrer_url: 'https://referrer.com'
-            },
-            amount_total: 5000,
-            currency: 'usd',
-            customer: 'cust_123',
-            customer_details: {
-                name: 'John Doe',
-                email: 'john@example.com'
-            },
-            custom_fields: [{
-                key: 'donation_message',
-                text: {
-                    value: 'Thank you for the awesome newsletter!'
-                }
-            }]
+    it('should handle invoice.payment_succeeded event', async function () {
+        const event = {
+            type: 'invoice.payment_succeeded',
+            data: {
+                object: {subscription: 'sub_123'}
+            }
         };
+        deps.webhookManager.parseWebhook.returns(event);
 
-        const member = {
-            id: 'member_123',
-            get: sinon.stub()
-        };
+        await controller.handle(req, res);
 
-        member.get.withArgs('name').returns('John Doe');
-        member.get.withArgs('email').returns('john@example.com');
-
-        deps.memberRepository.get.resolves(member);
-
-        await controller.checkoutSessionEvent(session);
-
-        expect(deps.memberRepository.get.calledWith({customer_id: 'cust_123'})).to.be.true;
-        expect(deps.donationRepository.save.calledOnce).to.be.true;
-        expect(deps.staffServiceEmails.notifyDonationReceived.calledOnce).to.be.true;
-    
-        const savedDonationEvent = deps.donationRepository.save.getCall(0).args[0];
-        expect(savedDonationEvent.amount).to.equal(5000);
-        expect(savedDonationEvent.currency).to.equal('usd');
-        expect(savedDonationEvent.name).to.equal('John Doe');
-        expect(savedDonationEvent.email).to.equal('john@example.com');
-        expect(savedDonationEvent.donationMessage).to.equal('Thank you for the awesome newsletter!');
-        expect(savedDonationEvent.attributionId).to.equal('attr_123');
-        expect(savedDonationEvent.attributionUrl).to.equal('https://example.com');
-        expect(savedDonationEvent.attributionType).to.equal('referral');
-        expect(savedDonationEvent.referrerSource).to.equal('google');
-        expect(savedDonationEvent.referrerMedium).to.equal('cpc');
-        expect(savedDonationEvent.referrerUrl).to.equal('https://referrer.com');
+        expect(deps.invoiceEventService.handleInvoiceEvent.calledOnce).to.be.true;
+        expect(res.writeHead.calledWith(200)).to.be.true;
+        expect(res.end.called).to.be.true;
     });
 
-    it('donation message is null if string is empty', async function () {
-        const session = {
-            mode: 'payment',
-            metadata: {
-                ghost_donation: true,
-                attribution_id: 'attr_123',
-                attribution_url: 'https://example.com',
-                attribution_type: 'referral',
-                referrer_source: 'google',
-                referrer_medium: 'cpc',
-                referrer_url: 'https://referrer.com'
-            },
-            amount_total: 5000,
-            currency: 'usd',
-            customer: 'cust_123',
-            customer_details: {
-                name: 'JW',
-                email: 'jw@ily.co'
-            },
-            custom_fields: [{
-                key: 'donation_message',
-                text: {
-                    value: ''
-                }
-            }]
+    it('should handle checkout.session.completed event', async function () {
+        const event = {
+            type: 'checkout.session.completed',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        expect(deps.checkoutSessionEventService.handleEvent.calledOnce).to.be.true;
+        expect(res.writeHead.calledWith(200)).to.be.true;
+        expect(res.end.called).to.be.true;
+    });
+
+    it('should handle customer subscription updated event', async function () {
+        const event = {
+            type: 'customer.subscription.updated',
+            data: {
+                object: {customer: 'cust_123'}
+            }
         };
 
-        const member = {
-            id: 'member_123',
-            get: sinon.stub()
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        expect(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce).to.be.true;
+
+        expect(res.writeHead.calledWith(200)).to.be.true;
+
+        expect(res.end.called).to.be.true;
+    });
+
+    it('should handle customer.subscription.deleted event', async function () {
+        const event = {
+            type: 'customer.subscription.deleted',
+            data: {
+                object: {customer: 'cust_123'}
+            }
         };
 
-        member.get.withArgs('name').returns('JW');
-        member.get.withArgs('email').returns('jw@ily.co');
+        deps.webhookManager.parseWebhook.returns(event);
 
-        deps.memberRepository.get.resolves(member);
+        await controller.handle(req, res);
 
-        await controller.checkoutSessionEvent(session);
+        expect(deps.subscriptionEventService.handleSubscriptionEvent.calledOnce).to.be.true;
 
-        expect(deps.memberRepository.get.calledWith({customer_id: 'cust_123'})).to.be.true;
+        expect(res.writeHead.calledWith(200)).to.be.true;
 
-        const savedDonationEvent = deps.donationRepository.save.getCall(0).args[0];
+        expect(res.end.called).to.be.true;
+    });
 
-        expect(savedDonationEvent.donationMessage).to.equal(null);
+    it('should return 500 if an error occurs', async function () {
+        const event = {
+            type: 'customer.subscription.created',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+
+        deps.webhookManager.parseWebhook.returns(event);
+        deps.subscriptionEventService.handleSubscriptionEvent.throws(new Error('Unexpected error'));
+
+        await controller.handle(req, res);
+
+        expect(res.writeHead.calledWith(500)).to.be.true;
+    });
+
+    it('should not handle unknown event type', async function () {
+        const event = {
+            type: 'invalid.event',
+            data: {
+                object: {customer: 'cust_123'}
+            }
+        };
+
+        deps.webhookManager.parseWebhook.returns(event);
+
+        await controller.handle(req, res);
+
+        expect(res.writeHead.calledWith(200)).to.be.true;
     });
 });

@@ -1,25 +1,18 @@
 const logging = require('@tryghost/logging');
-const SubscriptionEventService = require('./services/webhook/SubscriptionEventService');
-const InvoiceEventService = require('./services/webhook/InvoiceEventService');
-const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
 module.exports = class WebhookController {
     /**
      * @param {object} deps
-     * @param {import('./StripeAPI')} deps.api
      * @param {import('./WebhookManager')} deps.webhookManager
-     * @param {any} deps.eventRepository
-     * @param {any} deps.memberRepository
-     * @param {any} deps.productRepository
-     * @param {import('@tryghost/donations').DonationRepository} deps.donationRepository
-     * @param {any} deps.staffServiceEmails
-     * @param {any} deps.sendSignupEmail
+     * @param {import('./services/webhook/CheckoutSessionEventService')} deps.checkoutSessionEventService
+     * @param {import('./services/webhook/SubscriptionEventService')} deps.subscriptionEventService
+     * @param {import('./services/webhook/InvoiceEventService')} deps.invoiceEventService
      */
     constructor(deps) {
-        this.deps = deps;
+        this.checkoutSessionEventService = deps.checkoutSessionEventService;
+        this.subscriptionEventService = deps.subscriptionEventService;
+        this.invoiceEventService = deps.invoiceEventService;
         this.webhookManager = deps.webhookManager;
-        this.api = deps.api;
-        this.sendSignupEmail = deps.sendSignupEmail;
         this.handlers = {
             'customer.subscription.deleted': this.subscriptionEvent,
             'customer.subscription.updated': this.subscriptionEvent,
@@ -27,25 +20,6 @@ module.exports = class WebhookController {
             'invoice.payment_succeeded': this.invoiceEvent,
             'checkout.session.completed': this.checkoutSessionEvent
         };
-
-        // We pass the entire `deps` object to ensure all dependencies are available
-        // for services that may require dynamic access to multiple dependencies.
-        // This is particularly important in E2E tests where real services
-        // interact with a full set of dependencies (e.g., various repositories, services).
-        // Limiting injected dependencies may cause failures when certain dependencies
-        // are not explicitly passed but are expected by the services at runtime.
-        this.initializeServices(deps);
-    }
-
-    /**
-     * Initializes event services
-     * @param {object} deps 
-     */
-    initializeServices(deps) {
-        // Initialize event services with all dependencies, as per the above explanation.
-        this.subscriptionEventService = new SubscriptionEventService(deps);
-        this.invoiceEventService = new InvoiceEventService(deps);
-        this.checkoutSessionEventService = new CheckoutSessionEventService(deps);
     }
 
     async handle(req, res) {
