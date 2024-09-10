@@ -28,6 +28,7 @@ type ActivityObject = {
     name: string
     url: string
     inReplyTo: string | null
+    content: string
 }
 
 type Activity = {
@@ -58,6 +59,20 @@ const getActivityDescription = (activity: Activity, activityObjectsMap: Map<stri
     return '';
 };
 
+const getExtendedDescription = (activity: Activity): JSX.Element | null => {
+    // If the activity is a reply
+    if (Boolean(activity.type === ACTVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
+        return (
+            <div
+                dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
+                className='ml-2 mt-2 text-sm text-grey-600'
+            />
+        );
+    }
+
+    return null;
+};
+
 const getActivityUrl = (activity: Activity): string | null => {
     if (activity.object) {
         return activity.object.url;
@@ -85,10 +100,6 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
             return 'heart-fill';
         }
     }
-};
-
-const isFollower = (id: string, followerIds: string[]): boolean => {
-    return followerIds.includes(id);
 };
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
@@ -150,6 +161,10 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     // Retrieve followers for the user
     const {data: followers = []} = useFollowersForUser(user);
 
+    const isFollower = (id: string): boolean => {
+        return followers.includes(id);
+    };
+
     return (
         <>
             <MainNavigation title='Activities' />
@@ -168,8 +183,9 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         {getUsername(activity.actor)}
                                     </div>
                                     <div className='text-sm'>{getActivityDescription(activity, activityObjectsMap)}</div>
+                                    {getExtendedDescription(activity)}
                                 </div>
-                                {isFollower(activity.actor.id, followers) === false && (
+                                {isFollower(activity.actor.id) === false && (
                                     <Button className='ml-auto' label='Follow' link onClick={(e) => {
                                         e?.preventDefault();
 
