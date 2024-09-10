@@ -23,7 +23,7 @@
     "c8": "10.1.2",
     "mocha": "10.7.3",
     "should": "13.2.3",
-    "sinon": "18.0.0"
+    "sinon": "18.0.1"
   },
   "dependencies": {
     "@tryghost/errors": "^1.2.26",
