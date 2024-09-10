@@ -1,21 +1,28 @@
-<div class="gh-stats-metric-header">
-    <h5 class="gh-stats-metric-label">Content</h5>
-    <div>
-        <PowerSelect
-            @selected={{this.contentOption}}
-            @options={{this.contentOptions}}
-            @searchEnabled={{false}}
-            @onChange={{this.onContentOptionChange}}
-            @triggerComponent={{component "gh-power-select/trigger"}}
-            @triggerClass="gh-btn gh-stats-section-dropdown"
-            @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-            @matchTriggerWidth={{false}}
-            @horizontalPosition="right"
-            as |option|
-        >
-            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-        </PowerSelect>
+<div>
+    <div class="gh-stats-metric-header">
+        <h5 class="gh-stats-metric-label">Content</h5>
+        <div>
+            <PowerSelect
+                @selected={{this.contentOption}}
+                @options={{this.contentOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onContentOptionChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn gh-stats-section-dropdown"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+        </div>
     </div>
+    <div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience)}}></div>
 </div>
 
-<div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience)}}></div>
+<div>
+    <button type="button" class="gh-btn gh-btn-link gh-stats-see-all-btn" {{on "click" (fn this.openSeeAll @chartRange @audience)}}>
+        <span>See all &rarr;</span>
+    </button>
+</div>
