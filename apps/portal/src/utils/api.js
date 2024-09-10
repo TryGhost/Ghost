@@ -134,10 +134,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     };
 
     api.feedback = {
-        async add({uuid, postId, score}) {
+        async add({uuid, key, postId, score}) {
             let url = endpointFor({type: 'members', resource: 'feedback'});
-            url = url + `?uuid=${uuid}`;
-
+            if (uuid && key) { // only necessary if not logged in, and both are required if so
+                url = url + `?uuid=${uuid}&key=${key}`;
+            }
             const body = {
                 feedback: [
                     {
@@ -243,7 +244,21 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, customUrlHistory, autoRedirect = true}) {
+        async getIntegrityToken() {
+            const url = endpointFor({type: 'members', resource: 'integrity-token'});
+            const res = await makeRequest({
+                url,
+                method: 'GET'
+            });
+
+            if (res.ok) {
+                return res.text();
+            } else {
+                throw new Error('Failed to start a members session');
+            }
+        },
+
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -254,6 +269,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 labels,
                 requestSrc: 'portal',
                 redirect,
+                integrityToken,
+                honeypot: phonenumber, // we don't actually use a phone #, this is from a hidden field to prevent bot activity
                 autoRedirect
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
@@ -303,9 +320,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async newsletters({uuid}) {
+        async newsletters({uuid, key}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
-            url = url + `?uuid=${uuid}`;
+            url = url + `?uuid=${uuid}&key=${key}`;
             return makeRequest({
                 url,
                 credentials: 'same-origin'
@@ -317,9 +334,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateNewsletters({uuid, newsletters, enableCommentNotifications}) {
+        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
-            url = url + `?uuid=${uuid}`;
+            url = url + `?uuid=${uuid}&key=${key}`;
             const body = {
                 newsletters
             };

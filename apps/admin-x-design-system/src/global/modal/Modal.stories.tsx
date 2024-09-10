@@ -203,6 +203,32 @@ export const CustomButtons: Story = {
     }
 };
 
+export const RightDrawer: Story = {
+    args: {
+        size: 'bleed',
+        align: 'right',
+        animate: false,
+        width: 600,
+        footer: <></>,
+        children: <>
+            <p>This is a drawer style on the right</p>
+        </>
+    }
+};
+
+export const LeftDrawer: Story = {
+    args: {
+        size: 'bleed',
+        align: 'left',
+        animate: false,
+        width: 600,
+        footer: <></>,
+        children: <>
+            <p>This is a drawer style on the right</p>
+        </>
+    }
+};
+
 const longContent = (
     <>
         <p className='mb-6'>Esse ex officia ipsum et magna reprehenderit ullamco dolore cillum cupidatat ullamco culpa. In et irure irure est id cillum officia pariatur et proident. Nulla nulla dolore qui excepteur magna eu adipisicing mollit. Eiusmod eu irure cupidatat consequat consectetur irure.</p>

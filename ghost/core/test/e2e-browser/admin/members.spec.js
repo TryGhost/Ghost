@@ -265,6 +265,7 @@ test.describe('Admin', () => {
             const success = await sharedPage.locator('div[data-test-state="add-complete"] > div > p').innerText();
             expect(success).toEqual('Label added to 3 members successfully');
             labelFilterUrl = await sharedPage.url();
+            await sharedPage.locator('button[data-test-button="close-modal"]').click();
         });
 
         test('A filtered list of members can have a label removed from them', async ({sharedPage}) => {

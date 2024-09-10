@@ -19,8 +19,11 @@
     max-width: 550px;
     padding: 20px;
     width: 100%;
+    background: #fff;
+    color: #222;
     border-radius: 5px;
     box-shadow: inset 0 0 0 1px rgb(124 139 154 / 25%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
 .kg-product-card-image {
@@ -34,7 +37,6 @@
 }
 
 .kg-product-card h4.kg-product-card-title {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     text-decoration: none;
     font-weight: 600;
     font-size: 21px;
@@ -50,7 +52,6 @@
 .kg-product-card .kg-product-card-description p,
 .kg-product-card .kg-product-card-description ol,
 .kg-product-card .kg-product-card-description ul {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 14px;
     line-height: 1.5em;
     opacity: .7;
@@ -115,7 +116,6 @@
     display: flex;
     position: static;
     align-items: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 14px;
     font-weight: 600;
     line-height: 1em;

@@ -225,7 +225,7 @@ select {
 .gh-select.error,
 .error .gh-input-append,
 select.error {
-    border-color: var(--red);
+    border-color: var(--red)!important;
 }
 
 .gh-input:focus,

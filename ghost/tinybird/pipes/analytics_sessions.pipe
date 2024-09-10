@@ -1,0 +1,25 @@
+NODE analytics_sessions_1
+DESCRIPTION >
+    Aggregate by session_id and calculate session metrics
+
+SQL >
+    SELECT
+        site_uuid,
+        toDate(timestamp) AS date,
+        session_id,
+        maxIf(
+            member_status,
+            member_status IN ('paid', 'free', 'undefined')
+        ) AS member_status,
+        anySimpleState(post_uuid) AS post_uuid,
+        anySimpleState(device) AS device,
+        anySimpleState(browser) AS browser,
+        anySimpleState(location) AS location,
+        minSimpleState(timestamp) AS first_hit,
+        maxSimpleState(timestamp) AS latest_hit,
+        countState() AS hits
+    FROM analytics_hits
+    GROUP BY date, session_id, site_uuid
+
+TYPE MATERIALIZED
+DATASOURCE analytics_sessions_mv

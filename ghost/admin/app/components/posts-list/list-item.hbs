@@ -32,7 +32,7 @@
                         </span>
                     {{/if}}
                 </p>
-                <p class="gh-content-entry-status">
+                <p class="gh-content-entry-status" data-test-editor-post-status>
                     <span class="published">
                         Published
                         {{#if @post.hasEmail}}
@@ -87,7 +87,7 @@
                         <span class="gh-content-entry-date">– Lexical</span>
                     {{/if}} --}}
                 </p>
-                <p class="gh-content-entry-status">
+                <p class="gh-content-entry-status" data-test-editor-post-status>
                     {{#if @post.isScheduled}}
                         <span class="scheduled">
                             Scheduled

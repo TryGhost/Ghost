@@ -78,10 +78,6 @@ function testCommonPaidSubMailData({member, mailStub, getEmailAlertUsersStub}) {
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('$50.00/month'))
     ).should.be.true();
-
-    mailStub.calledWith(
-        sinon.match.has('html', sinon.match('Subscription started on 1 Aug 2022'))
-    ).should.be.true();
 }
 
 function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
@@ -149,6 +145,12 @@ describe('StaffService', function () {
             }
         };
 
+        const blogIcon = {
+            getIconUrl: () => {
+                return 'https://ghost.example/siteicon.png';
+            }
+        };
+
         const settingsHelpers = {
             getDefaultEmailDomain: () => {
                 return 'ghost.example';
@@ -184,6 +186,7 @@ describe('StaffService', function () {
                 },
                 settingsCache,
                 urlUtils,
+                blogIcon,
                 settingsHelpers,
                 labs
             });
@@ -220,6 +223,7 @@ describe('StaffService', function () {
                     DomainEvents,
                     settingsCache,
                     urlUtils,
+                    blogIcon,
                     settingsHelpers
                 });
                 service.subscribeEvents();
@@ -339,6 +343,7 @@ describe('StaffService', function () {
                     },
                     settingsCache,
                     urlUtils,
+                    blogIcon,
                     settingsHelpers,
                     labs: {
                         isSet: () => {
@@ -430,9 +435,6 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
                 ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
-                ).should.be.true();
             });
 
             it('sends free member signup alert without member name', async function () {
@@ -455,18 +457,13 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('🥳 Free member signup: member@example.com'))
                 ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
-                ).should.be.true();
             });
 
             it('sends free member signup alert with attribution', async function () {
                 const member = {
                     name: 'Ghost',
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
 
                 const attribution = {
@@ -486,9 +483,6 @@ describe('StaffService', function () {
                 ).should.be.true();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
-                ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -520,9 +514,7 @@ describe('StaffService', function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
                 offer = {
                     name: 'Half price',
@@ -588,9 +580,7 @@ describe('StaffService', function () {
             it('sends paid subscription start alert without member name', async function () {
                 let memberData = {
                     email: 'member@example.com',
-                    id: 'abc',
-                    geolocation: '{"country": "France"}',
-                    created_at: '2022-08-01T07:30:39.882Z'
+                    id: 'abc'
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member: memberData, offer: null, tier, subscription}, options);
 
@@ -742,13 +732,9 @@ describe('StaffService', function () {
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
 
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
-                ).should.be.true();
-
                 // Expiration sentence is in the future tense
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Subscription will expire on'))
+                    sinon.match.has('html', sinon.match('Expires on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -762,24 +748,17 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: Changed my mind!'))
                 ).should.be.true();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Cancellation reason'))
-                ).should.be.true();
             });
 
             it('sends paid subscription cancel alert when sub is canceled without reason', async function () {
-                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, canceledAt, cancelNow}, options);
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, cancelNow}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
 
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
-                ).should.be.true();
-
                 // Expiration sentence is in the future tense
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Subscription will expire on'))
+                    sinon.match.has('html', sinon.match('Expires on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -789,9 +768,6 @@ describe('StaffService', function () {
                 // Cancellation reason block is hidden
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: '))
-                ).should.be.false();
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Cancellation reason'))
                 ).should.be.false();
             });
 
@@ -812,7 +788,7 @@ describe('StaffService', function () {
 
                 // Expiration sentence is in the past tense
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Subscription expired on'))
+                    sinon.match.has('html', sinon.match('Expired on'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -822,10 +798,6 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', 'Offer')
                 ).should.be.false();
-
-                mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Cancellation reason'))
-                ).should.be.true();
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: Payment failed'))
@@ -958,7 +930,8 @@ describe('StaffService', function () {
                     amount: 1500,
                     currency: 'eur',
                     name: 'Simon',
-                    email: 'simon@example.com'
+                    email: 'simon@example.com',
+                    donationMessage: 'Thank you for the awesome newsletter!'
                 };
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
@@ -969,6 +942,112 @@ describe('StaffService', function () {
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('One-time payment received: €15.00 from Simon'))
+                ).should.be.true();
+            });
+
+            it('has donation message in text', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: 'Thank you for the awesome newsletter!'
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('text', sinon.match('Thank you for the awesome newsletter!'))
+                ).should.be.true();
+            });
+
+            it('has donation message in html', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: 'Thank you for the awesome newsletter!'
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Thank you for the awesome newsletter!'))
+                ).should.be.true();
+            });
+
+            it('does not contain donation message in HTML if not provided', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: null // No donation message provided
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                mailStub.calledOnce.should.be.true();
+
+                // Check that the specific HTML block for the donation message is NOT present
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match(function (html) {
+                        // Ensure that the block with `{{donation.donationMessage}}` does not exist in the rendered HTML
+                        return !html.includes('“') && !html.includes('”');
+                    }))
+                ).should.be.true();
+            });
+
+            // Not really a relevant test, but it's here to show that the donation message is wrapped in quotation marks
+            // and that the above test is actually working, since only the donation message is wrapped in quotation marks
+            it('The donation message is wrapped in quotation marks', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Jamie',
+                    email: 'jamie@example.com',
+                    donationMessage: 'Thank you for the great newsletter!'
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match(function (html) {
+                        return html.includes('“') && html.includes('”');
+                    }))
+                ).should.be.true();
+            });
+
+            it('send donation email without message', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Ronald',
+                    email: 'ronald@example.com',
+                    donationMessage: null
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('text', sinon.match('No message provided'))
                 ).should.be.true();
             });
         });

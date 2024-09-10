@@ -277,10 +277,19 @@ class PaymentsService {
     }
 
     /**
+     * Stripe's nickname field is limited to 250 characters
+     * @returns {string}
+     */
+    getDonationPriceNickname() {
+        const nickname = 'Support ' + this.settingsCache.get('title');
+        return nickname.substring(0, 250);
+    }
+
+    /**
      * @returns {Promise<{id: string}>}
      */
     async getPriceForDonations() {
-        const nickname = 'Support ' + this.settingsCache.get('title');
+        const nickname = this.getDonationPriceNickname();
         const currency = this.settingsCache.get('donations_currency');
         const suggestedAmount = this.settingsCache.get('donations_suggested_amount');
 
