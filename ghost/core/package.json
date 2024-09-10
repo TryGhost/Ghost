@@ -224,7 +224,7 @@
     "ws": "8.18.0",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
-    "yjs": "13.6.18"
+    "yjs": "13.6.19"
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "7.119.0",
