@@ -4,6 +4,7 @@ export type Activity = {
     type: string,
     object: {
         type: string
+        inReplyTo: string | null
     }
 }
 

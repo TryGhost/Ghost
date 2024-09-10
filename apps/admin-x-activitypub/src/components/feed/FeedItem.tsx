@@ -155,13 +155,13 @@ const FeedItemStats: React.FC<{
 
     return (<div className='flex gap-5'>
         <div className='mt-3 flex gap-1'>
-            <Button 
-                className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} 
-                hideLabel={true} 
-                icon='heart' 
-                id='like' 
-                size='md' 
-                unstyled={true} 
+            <Button
+                className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
+                hideLabel={true}
+                icon='heart'
+                id='like'
+                size='md'
+                unstyled={true}
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
                     handleLikeClick();
@@ -170,13 +170,13 @@ const FeedItemStats: React.FC<{
             {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
         </div>
         <div className='mt-3 flex gap-1'>
-            <Button 
-                className={`self-start text-grey-900`} 
-                hideLabel={true} 
-                icon='comment' 
-                id='comment' 
-                size='md' 
-                unstyled={true} 
+            <Button
+                className={`self-start text-grey-900`}
+                hideLabel={true}
+                icon='comment'
+                id='comment'
+                size='md'
+                unstyled={true}
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
                     onCommentClick();
@@ -192,10 +192,11 @@ interface FeedItemProps {
     object: ObjectProperties;
     layout: string;
     type: string;
+    comments?: object[];
     last?: boolean;
 }
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -238,7 +239,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
-                                        commentCount={2}
+                                        commentCount={comments.length}
                                         likeCount={1}
                                         object={object}
                                         onCommentClick={onLikeClick}
@@ -283,7 +284,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.6rem] text-grey-900'></div>
                                         {renderFeedAttachment(object, layout)}
                                         <FeedItemStats
-                                            commentCount={2}
+                                            commentCount={comments.length}
                                             likeCount={1}
                                             object={object}
                                             onCommentClick={onLikeClick}
@@ -297,7 +298,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                         </div>
                         <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
                     </div>
-                    
+
                 )}
             </>
         );
@@ -330,7 +331,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
-                                        commentCount={2}
+                                        commentCount={comments.length}
                                         likeCount={1}
                                         object={object}
                                         onCommentClick={onLikeClick}
@@ -367,7 +368,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {renderInboxAttachment(object)}
                                 </div>
                                 <FeedItemStats
-                                    commentCount={2}
+                                    commentCount={comments.length}
                                     likeCount={1}
                                     object={object}
                                     onCommentClick={onLikeClick}
