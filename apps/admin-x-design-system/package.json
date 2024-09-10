@@ -76,7 +76,7 @@
     "@sentry/react": "7.119.0",
     "@tailwindcss/forms": "0.5.7",
     "@tailwindcss/line-clamp": "0.4.4",
-    "@uiw/react-codemirror": "4.23.1",
+    "@uiw/react-codemirror": "4.23.2",
     "autoprefixer": "10.4.19",
     "clsx": "2.1.1",
     "postcss": "8.4.39",
