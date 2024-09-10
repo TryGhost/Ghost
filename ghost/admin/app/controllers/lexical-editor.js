@@ -1262,7 +1262,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         // Title scratch comparison
-        if (post.titleScratch !== post.title) {
+        if (post.titleScratch.trim() !== post.title.trim()) {
             this._leaveModalReason = {reason: 'title is different', context: {current: post.title, scratch: post.titleScratch}};
             return true;
         }

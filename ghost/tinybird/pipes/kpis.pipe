@@ -74,6 +74,7 @@ SQL >
             site_uuid,
             toStartOfHour(timestamp) as date,
             session_id,
+            member_status,
             uniq(session_id) as visits,
             count() as pageviews,
             case when min(timestamp) = max(timestamp) then 1 else 0 end as is_bounce,
@@ -81,11 +82,12 @@ SQL >
             min(timestamp) as first_hit_aux
         from analytics_hits
         where toDate(timestamp) = {{ Date(date_from) }}
-        group by toStartOfHour(timestamp), session_id, site_uuid
+        group by toStartOfHour(timestamp), session_id, site_uuid, member_status
     {% else %}
         select
             site_uuid,
             date,
+            member_status,
             session_id,
             uniq(session_id) as visits,
             countMerge(hits) as pageviews,
@@ -100,7 +102,7 @@ SQL >
             {% if defined(date_to) %} and date <= {{ Date(date_to) }}
             {% else %} and date <= today()
             {% end %}
-        group by date, session_id, site_uuid
+        group by date, session_id, site_uuid, member_status
     {% end %}
 
 NODE data
@@ -111,12 +113,13 @@ SQL >
     select
         site_uuid,
         date,
+        member_status,
         uniq(session_id) as visits,
         sum(pageviews) as pageviews,
         sum(case when latest_hit_aux = first_hit_aux then 1 end) / visits as bounce_rate,
         avg(latest_hit_aux - first_hit_aux) as avg_session_sec
     from hits
-    group by date, site_uuid
+    group by date, site_uuid, member_status
 
 NODE endpoint
 DESCRIPTION >
@@ -124,7 +127,17 @@ DESCRIPTION >
 
 SQL >
 %
-    select a.date, b.visits, b.pageviews, b.bounce_rate, b.avg_session_sec
+    select
+        a.date as date,
+        sum(b.visits) as visits,
+        sum(b.pageviews) as pageviews,
+        sum(b.bounce_rate) as bounce_rate,
+        sum(b.avg_session_sec) as avg_session_sec
     from timeseries a
     left join data b using date
-    where site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
+    where
+        site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
+        {% if defined(member_status) %}
+            and member_status IN {{ Array(member_status) }}
+  {% end %}
+  group by date

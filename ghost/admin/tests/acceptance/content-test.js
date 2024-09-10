@@ -45,7 +45,7 @@ describe('Acceptance: Posts / Pages', function () {
                 let contributorRole = this.server.create('role', {name: 'Contributor'});
                 this.server.create('user', {roles: [contributorRole]});
 
-                return await authenticateSession();
+                await authenticateSession();
             });
 
             // NOTE: This test seems to fail if run AFTER the 'can change access' test in the 'as admin' section; router seems to fail, did not look into it further
@@ -86,7 +86,7 @@ describe('Acceptance: Posts / Pages', function () {
                 authorPost = this.server.create('post', {authors: [author], status: 'published', title: 'Author Post'});
                 this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
 
-                return await authenticateSession();
+                await authenticateSession();
             });
 
             it('only fetches the author\'s posts', async function () {
@@ -121,7 +121,7 @@ describe('Acceptance: Posts / Pages', function () {
                 // pages shouldn't appear in the list
                 this.server.create('page', {authors: [admin], status: 'published', title: 'Published Page'});
 
-                return await authenticateSession();
+                await authenticateSession();
             });
 
             describe('displays and filter posts', function () {
@@ -694,7 +694,7 @@ describe('Acceptance: Posts / Pages', function () {
                 this.server.create('page', {authors: [admin], status: 'draft', title: 'Draft Page'});
                 this.server.create('page', {authors: [admin], status: 'scheduled', title: 'Scheduled Page'});
 
-                return await authenticateSession();
+                await authenticateSession();
             });
 
             it('can view pages', async function () {

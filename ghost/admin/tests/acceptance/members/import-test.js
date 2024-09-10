@@ -17,7 +17,7 @@ describe('Acceptance: Members import', function () {
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
 
-        return await authenticateSession();
+        await authenticateSession();
     });
 
     it('can open and close import modal', async function () {

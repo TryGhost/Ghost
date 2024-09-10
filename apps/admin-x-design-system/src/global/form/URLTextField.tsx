@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import validator from 'validator';
+import isEmail from 'validator/es/lib/isEmail';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 import TextField, {TextFieldProps} from './TextField';
 
@@ -18,7 +18,7 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
     }
 
     // if we have an email address, add the mailto:
-    if (validator.isEmail(url)) {
+    if (isEmail(url)) {
         return {save: `mailto:${url}`, display: `mailto:${url}`};
     }
 

@@ -34,11 +34,6 @@ SQL >
         action,
         version,
         session_id,
-        case
-            when member_uuid REGEXP '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-            then true
-            else false
-        END as logged_in,
         member_uuid,
         member_status,
         post_uuid,
