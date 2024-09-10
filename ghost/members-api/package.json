@@ -40,7 +40,7 @@
     "@tryghost/tpl": "0.1.32",
     "@tryghost/validator": "0.2.14",
     "@types/jsonwebtoken": "9.0.6",
-    "body-parser": "1.20.2",
+    "body-parser": "1.20.3",
     "bson-objectid": "2.0.4",
     "express": "4.19.2",
     "got": "11.8.6",
