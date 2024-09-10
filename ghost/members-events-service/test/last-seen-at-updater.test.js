@@ -88,7 +88,7 @@ describe('LastSeenAtUpdater', function () {
             assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
         });
     
-        it('Calls updateLastSeenAt on EmailOpenedEvents', async function () {
+        it('Calls updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             const settingsCache = sinon.stub().returns('Etc/UTC');
             const db = {
@@ -326,6 +326,113 @@ describe('LastSeenAtUpdater', function () {
                 'member.edited', 
                 sinon.match.any
             ), 'The LastSeenAtUpdater should emit a member.edited event if it updated last_seen_at');
+        });
+    });
+
+    describe('shouldUpdateLastSeenAt', function () {
+        it('returns true when the member has not already been seen today', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc();
+            const previousLastSeen = moment('2022-02-28T00:00:00Z').toISOString();
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {};
+                },
+                events
+            });
+            const result = updater.shouldUpdateLastSeenAt(previousLastSeen, now.toDate());
+            assert.equal(result, true);
+        });
+
+        it('returns false when the member has already been seen today', async function () {
+            const memberId = '1';
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {};
+                },
+                events
+            });
+            updater.updateLastSeenAtCacheForMember(memberId);
+            const result = updater.shouldUpdateLastSeenAt(memberId);
+            assert.equal(result, false);
+        });
+
+        it('returns true if the member was seen yesterday but not yet today', async function () {
+            const clock = sinon.useFakeTimers(new Date('2022-02-28T00:00:00Z'));
+            const memberId = '1';
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {};
+                },
+                events
+            });
+            const clearCacheSpy = sinon.spy(updater, 'clearLastSeenAtCache');
+            updater.updateLastSeenAtCacheForMember(memberId);
+            // Move the clock forward to the next day
+            clock.tick(24 * 60 * 60 * 1000);
+            const result = updater.shouldUpdateLastSeenAt(memberId);
+            assert.equal(result, true, 'shouldUpdateLastSeenAt should return true if the member was last seen yesterday but not yet today.');
+            assert.ok(clearCacheSpy.calledOnce, 'shouldUpdateLastSeenAt should clear the cache if the current day has changed');
+            clock.restore();
+        });
+    });
+
+    describe('getStartOfCurrentDayInSiteTimezone', function () {
+        it('returns the start of the current day in the site timezone', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc();
+            const clock = sinon.useFakeTimers(now.toDate());
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {};
+                },
+                events
+            });
+            const result = updater.getStartOfCurrentDayInSiteTimezone(now.toDate());
+            assert.equal(result, '2022-02-28T00:00:00.000Z');
+            clock.restore();
+        });
+
+        it('works correctly on another timezone', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc(); // 2022-02-28 01:00:00 in Bangkok
+            const clock = sinon.useFakeTimers(now.toDate());
+            const settingsCache = sinon.stub().returns('Asia/Bangkok');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {};
+                },
+                events
+            });
+            const result = updater.getStartOfCurrentDayInSiteTimezone(now.toDate());
+            assert.equal(result, '2022-02-28T17:00:00.000Z'); // 2022-02-28 00:00:00 in Bankok
+            clock.restore();
         });
     });
 
