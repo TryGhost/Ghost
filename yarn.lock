@@ -26611,10 +26611,10 @@ public-encrypt@^4.0.0:
     randombytes "^2.0.1"
     safe-buffer "^5.1.2"
 
-pump@3.0.0, pump@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/pump/-/pump-3.0.0.tgz#b4a2116815bde2f4e1ea602354e8c75565107a64"
-  integrity sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww==
+pump@3.0.1, pump@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/pump/-/pump-3.0.1.tgz#cf711a61348b26a05ad8ce598e50d7e0ea03d398"
+  integrity sha512-2ynnAmUu45oUSq51AQbeugLkMSKaz8FqVpZ6ykTqzOVkzXe8u/ezkGsYrFJqKZx+D9cVxoDrSbR7CeAwxFa5cQ==
   dependencies:
     end-of-stream "^1.1.0"
     once "^1.3.1"
