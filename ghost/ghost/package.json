@@ -38,7 +38,7 @@
     "@nestjs/platform-express": "10.3.10",
     "@tryghost/errors": "1.3.5",
     "bson-objectid": "2.0.4",
-    "express": "4.19.2",
+    "express": "4.20.0",
     "reflect-metadata": "0.1.14",
     "rxjs": "7.8.1"
   }
