@@ -90,7 +90,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments}) =>
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
                     <div className='mx-auto max-w-[580px]'>
-                        <FeedItem actor={actor} layout='modal' object={object} type='Note' />
+                        <FeedItem
+                            actor={actor}
+                            comments={comments}
+                            layout='modal'
+                            object={object}
+                            type='Note'
+                        />
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
                         {/* {renderAttachment(object)} */}
                         {/* <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
