@@ -4,7 +4,7 @@ import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Activity} from './activities/ActivityItem';
+import {type Activity} from './activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
 import {useBrowseInboxForUser} from '../MainContent';
@@ -28,8 +28,8 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         // to show the most recent activities first
         .reverse();
 
-    // Create a map of activity comments, grouping them by the parent activity.
-    // This allows us to quickly look up all comments for a given activity.
+    // Create a map of activity comments, grouping them by the parent activity
+    // This allows us to quickly look up all comments for a given activity
     const commentsMap = new Map<string, Activity[]>();
 
     for (const activity of activities) {
@@ -41,6 +41,10 @@ const Inbox: React.FC<InboxProps> = ({}) => {
             commentsMap.set(activity.object.inReplyTo, comments.reverse());
         }
     }
+
+    const getCommentsForObject = (id: string) => {
+        return commentsMap.get(id) ?? [];
+    };
 
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[]) => {
         setArticleContent(object);
@@ -66,14 +70,14 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     onClick={() => handleViewContent(
                                         activity.object,
                                         activity.actor,
-                                        commentsMap.get(activity.object.id) ?? []
+                                        getCommentsForObject(activity.object.id)
                                     )}
                                 >
                                     <FeedItem
                                         actor={activity.actor}
+                                        comments={getCommentsForObject(activity.object.id)}
                                         layout={layout}
                                         object={activity.object}
-                                        comments={commentsMap.get(activity.object.id)}
                                         type={activity.type}
                                     />
                                     {index < activities.length - 1 && (

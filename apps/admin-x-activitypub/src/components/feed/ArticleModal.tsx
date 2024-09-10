@@ -1,16 +1,20 @@
-import FeedItem from './FeedItem';
-import MainHeader from '../navigation/MainHeader';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import articleBodyStyles from '../articleBodyStyles';
+
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
+import FeedItem from './FeedItem';
+import MainHeader from '../navigation/MainHeader';
+
+import articleBodyStyles from '../articleBodyStyles';
+import {type Activity} from '../activities/ActivityItem';
+
 interface ArticleModalProps {
     object: ObjectProperties;
     actor: ActorProperties;
-    comments: ObjectProperties[];
+    comments: Activity[];
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {

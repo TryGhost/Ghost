@@ -1,9 +1,12 @@
-import APAvatar from '../global/APAvatar';
 import React, {useState} from 'react';
-import getRelativeTimestamp from '../../utils/get-relative-timestamp';
-import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
+
+import APAvatar from '../global/APAvatar';
+
+import getRelativeTimestamp from '../../utils/get-relative-timestamp';
+import getUsername from '../../utils/get-username';
+import {type Activity} from '../activities/ActivityItem';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 export function renderFeedAttachment(object: ObjectProperties, layout: string) {
@@ -192,7 +195,7 @@ interface FeedItemProps {
     object: ObjectProperties;
     layout: string;
     type: string;
-    comments?: object[];
+    comments?: Activity[];
     last?: boolean;
 }
 
