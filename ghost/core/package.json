@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.93.0",
+  "version": "5.94.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -168,7 +168,7 @@
     "@tryghost/webmentions": "0.0.0",
     "@tryghost/zip": "1.1.46",
     "amperize": "0.6.1",
-    "body-parser": "1.20.2",
+    "body-parser": "1.20.3",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.7.0",
     "brute-knex": "4.0.1",
@@ -223,7 +223,7 @@
     "ws": "8.18.0",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
-    "yjs": "13.6.18"
+    "yjs": "13.6.19"
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "7.119.0",
@@ -232,7 +232,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.10.1",
-    "@playwright/test": "1.38.1",
+    "@playwright/test": "1.46.1",
     "@tryghost/express-test": "0.13.15",
     "@tryghost/webhook-mock-receiver": "0.2.14",
     "@types/common-tags": "1.8.4",

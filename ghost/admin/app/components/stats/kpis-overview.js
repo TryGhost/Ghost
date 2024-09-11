@@ -1,14 +1,44 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
 import {action} from '@ember/object';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
-    @tracked selected = 'visits';
+    @tracked selected = 'unique_visitors';
     @tracked totals = null;
+    @tracked showGranularity = true;
+
+    get granularityOptions() {
+        const chartRange = this.args.chartRange;
+        if (chartRange >= 8 && chartRange <= 30) {
+            return [
+                {name: 'Days', value: 'days'},
+                {name: 'Weeks', value: 'weeks'}
+            ];
+        } else if (chartRange > 30 && chartRange <= 365) {
+            return [
+                {name: 'Days', value: 'days'},
+                {name: 'Weeks', value: 'weeks'},
+                {name: 'Months', value: 'months'}
+            ];
+        } else {
+            return [
+                {name: 'Weeks', value: 'weeks'},
+                {name: 'Months', value: 'months'}
+            ];
+        }
+    }
+
+    @tracked granularity = this.granularityOptions[0];
+
+    @action
+    onGranularityChange(selected) {
+        this.granularity = selected;
+    }
 
     constructor() {
         super(...arguments);
@@ -54,7 +84,7 @@ export default class KpisOverview extends Component {
         const _KPITotal = kpi => queryData.reduce((prev, curr) => (curr[kpi] ?? 0) + prev, 0);
 
         // Get total number of sessions
-        const totalVisits = _KPITotal('visits');
+        const totalVisits = formatNumber(_KPITotal('visits'));
 
         // Sum total KPI value from the trend, ponderating using sessions
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);
@@ -71,6 +101,11 @@ export default class KpisOverview extends Component {
         super.willDestroy();
         // Remove the event listener when the component is destroyed
         document.removeEventListener('visibilitychange', this.fetchData.perform);
+    }
+
+    @action
+    changeTabToUniqueVisitors() {
+        this.selected = 'unique_visitors';
     }
 
     @action
@@ -91,6 +126,10 @@ export default class KpisOverview extends Component {
     @action
     changeTabToBounceRate() {
         this.selected = 'bounce_rate';
+    }
+
+    get uniqueVisitorsTabSelected() {
+        return (this.selected === 'unique_visitors');
     }
 
     get visitsTabSelected() {

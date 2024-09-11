@@ -4,6 +4,7 @@ import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
+import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     let attachment;
@@ -127,22 +128,28 @@ function renderInboxAttachment(object: ObjectProperties) {
 }
 
 const FeedItemStats: React.FC<{
-    isLiked: boolean;
+    object: ObjectProperties;
     likeCount: number;
     commentCount: number;
     onLikeClick: () => void;
     onCommentClick: () => void;
-}> = ({isLiked: initialLikedState, likeCount, commentCount, onLikeClick, onCommentClick}) => {
+}> = ({object, likeCount, commentCount, onLikeClick, onCommentClick}) => {
     const [isClicked, setIsClicked] = useState(false);
-    const [isLiked, setIsLiked] = useState(initialLikedState);
+    const [isLiked, setIsLiked] = useState(object.liked);
+    const likeMutation = useLikeMutationForUser('index');
+    const unlikeMutation = useUnlikeMutationForUser('index');
 
-    const handleLikeClick = () => {
+    const handleLikeClick = async () => {
         setIsClicked(true);
-        setIsLiked(!isLiked);
-         
-        // Call the requested `onLikeClick`
-        onLikeClick();
+        if (!isLiked) {
+            likeMutation.mutate(object.id);
+        } else {
+            unlikeMutation.mutate(object.id);
+        }
 
+        setIsLiked(!isLiked);
+
+        onLikeClick();
         setTimeout(() => setIsClicked(false), 300);
     };
 
@@ -194,7 +201,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
 
     const date = new Date(object?.published ?? new Date());
 
-    const isLiked = false;
     const onLikeClick = () => {
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
@@ -233,8 +239,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
                                         commentCount={2}
-                                        isLiked={isLiked}
                                         likeCount={1}
+                                        object={object}
                                         onCommentClick={onLikeClick}
                                         onLikeClick={onLikeClick}
                                     />
@@ -278,8 +284,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                         {renderFeedAttachment(object, layout)}
                                         <FeedItemStats
                                             commentCount={2}
-                                            isLiked={isLiked}
                                             likeCount={1}
+                                            object={object}
                                             onCommentClick={onLikeClick}
                                             onLikeClick={onLikeClick}
                                         />
@@ -325,8 +331,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
                                         commentCount={2}
-                                        isLiked={isLiked}
                                         likeCount={1}
+                                        object={object}
                                         onCommentClick={onLikeClick}
                                         onLikeClick={onLikeClick}
                                     />
@@ -362,8 +368,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                 </div>
                                 <FeedItemStats
                                     commentCount={2}
-                                    isLiked={isLiked}
                                     likeCount={1}
+                                    object={object}
                                     onCommentClick={onLikeClick}
                                     onLikeClick={onLikeClick}
                                 />

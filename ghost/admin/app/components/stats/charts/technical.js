@@ -5,15 +5,18 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
 import {inject} from 'ghost-admin/decorators/inject';
+import {statsStaticColors} from 'ghost-admin/utils/stats';
 
 export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartDays = props.chartDays;
+        let chartRange = props.chartRange;
         let audience = props.audience;
         const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
+        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+
+        const colorPalette = statsStaticColors.slice(1, 5);
 
         /**
          * @typedef {Object} Params
@@ -48,8 +51,6 @@ export default class KpisComponent extends Component {
             params
         });
 
-        const colorPalette = ['#B78AFB', '#7FDE8A', '#FBCE75', '#F97DB7', '#6ED0FB'];
-
         let transformedData;
         let indexBy;
         let tableHead;
@@ -59,7 +60,7 @@ export default class KpisComponent extends Component {
             transformedData = (data ?? []).map((item, index) => ({
                 name: item.browser.charAt(0).toUpperCase() + item.browser.slice(1),
                 value: item.hits,
-                color: colorPalette[index % colorPalette.length]
+                color: colorPalette[index]
             }));
             indexBy = 'browser';
             tableHead = 'Browser';
@@ -68,7 +69,7 @@ export default class KpisComponent extends Component {
             transformedData = (data ?? []).map((item, index) => ({
                 name: item.device.charAt(0).toUpperCase() + item.device.slice(1),
                 value: item.hits,
-                color: colorPalette[index % colorPalette.length]
+                color: colorPalette[index]
             }));
             indexBy = 'device';
             tableHead = 'Device';

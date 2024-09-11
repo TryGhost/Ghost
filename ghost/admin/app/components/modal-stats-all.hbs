@@ -1,0 +1,23 @@
+<div class="modal-content" data-test-publish-flow="complete">
+    <header class="modal-header">
+        <h1>
+            {{this.modalTitle}}
+        </h1>
+    </header>
+
+    <button type="button" class="close" title="Close" {{on "click" @close}} data-test-button="close-publish-flow">{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div {{react-render this.ReactComponent props=(hash chartRange=this.chartRange audience=this.audience type=this.type)}}></div>
+
+    <footer class="modal-footer">
+        <button
+            class="gh-btn gh-btn-primary dismiss"
+            type="button"
+            {{on "click" @close}}
+            {{on "mousedown" (optional this.noop)}}
+        >
+            <span>Close</span>
+        </button>
+    </footer>
+</div>
+
