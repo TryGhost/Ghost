@@ -3,6 +3,7 @@ const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
 const logging = require('@tryghost/logging');
+const LastSeenAtCache = require('./LastSeenAtCache');
 
 /**
  * Listen for `MemberViewEvent` to update the `member.last_seen_at` timestamp
@@ -16,6 +17,7 @@ class LastSeenAtUpdater {
      * @param {() => object} deps.getMembersApi - A function which returns an instance of members-api
      * @param {any} deps.db Database connection
      * @param {any} deps.events The event emitter
+     * @param {any} deps.lastSeenAtCache An instance of the last seen at cache
      */
     constructor({
         services: {
@@ -23,7 +25,8 @@ class LastSeenAtUpdater {
         },
         getMembersApi,
         db,
-        events
+        events,
+        lastSeenAtCache
     }) {
         if (!getMembersApi) {
             throw new IncorrectUsageError({message: 'Missing option getMembersApi'});
@@ -33,11 +36,7 @@ class LastSeenAtUpdater {
         this._settingsCacheService = settingsCache;
         this._db = db;
         this._events = events;
-        // ISO 8601 string of the start of the current day in the site timezone
-        this._startOfCurrentDayInSiteTimezone = this.getStartOfCurrentDayInSiteTimezone();
-        
-        // Set of unique memberIds that have been updated today
-        this._lastSeenAtCache = new Set(); 
+        this._lastSeenAtCache = lastSeenAtCache || new LastSeenAtCache({settingsCache});
     }
     /**
      * Subscribe to events of this domainEvents service
@@ -110,7 +109,7 @@ class LastSeenAtUpdater {
      * Updates the member.last_seen_at field if it wasn't updated in the current day yet (in the publication timezone)
      */
     async cachedUpdateLastSeenAt(memberId, memberLastSeenAt, timestamp) {
-        if (this.shouldUpdateLastSeenAt(memberId)) {
+        if (this._lastSeenAtCache.shouldUpdateMember(memberId)) {
             await this.updateLastSeenAt(memberId, memberLastSeenAt, timestamp);
         }
     }
@@ -172,52 +171,6 @@ class LastSeenAtUpdater {
                 id: memberId
             });
         }
-    }
-
-    /**
-     * Adds the member to the cache, so we don't update the same member again in the same day
-     * @param {string} memberId 
-     */
-    updateLastSeenAtCacheForMember(memberId) {
-        this._lastSeenAtCache.add(memberId);
-    }
-
-    /**
-     * Uses a simple in-memory cache to avoid expensive database queries
-     * If the member was already updated in the current day, it returns false
-     * If the member wasn't updated in the current day, it returns true
-     * @param {string} memberId
-     * @returns Boolean
-     */
-    shouldUpdateLastSeenAt(memberId) {
-        // If we'd ticked over to the next day, clear the cache
-        if (this._startOfCurrentDayInSiteTimezone !== this.getStartOfCurrentDayInSiteTimezone()) {
-            this._startOfCurrentDayInSiteTimezone = this.getStartOfCurrentDayInSiteTimezone();
-            this.clearLastSeenAtCache();
-        }
-
-        if (this._lastSeenAtCache.has(memberId)) {
-            return false;
-        } else {
-            this._lastSeenAtCache.add(memberId);
-            return true;
-        }
-    }
-
-    /**
-     * 
-     */
-    clearLastSeenAtCache() {
-        this._lastSeenAtCache.clear();
-    }
-
-    /**
-     * Returns the start of the current day in the site timezone
-     * @returns {string} The start of the current day in the site timezone, formatted as a ISO 8601 string
-     */
-    getStartOfCurrentDayInSiteTimezone() {
-        const timezone = this._settingsCacheService.get('timezone') || 'Etc/UTC';
-        return moment().tz(timezone).startOf('day').utc().toISOString();
     }
 }
 

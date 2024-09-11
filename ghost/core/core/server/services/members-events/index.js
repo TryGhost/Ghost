@@ -12,7 +12,7 @@ class MembersEventsServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const {EventStorage, LastSeenAtUpdater} = require('@tryghost/members-events-service');
+        const {EventStorage, LastSeenAtUpdater, LastSeenAtCache} = require('@tryghost/members-events-service');
         const models = require('../../models');
 
         // Listen for events and store them in the database
@@ -26,6 +26,10 @@ class MembersEventsServiceWrapper {
 
         const db = require('../../data/db');
 
+        this.lastSeenAtCache = new LastSeenAtCache({
+            settingsCache
+        });
+
         this.lastSeenAtUpdater = new LastSeenAtUpdater({
             services: {
                 settingsCache
@@ -34,11 +38,20 @@ class MembersEventsServiceWrapper {
                 return members.api;
             },
             db,
-            events
+            events,
+            lastSeenAtCache: this.lastSeenAtCache
         });
 
         this.eventStorage.subscribe(DomainEvents);
         this.lastSeenAtUpdater.subscribe(DomainEvents);
+    }
+
+    // Clear the last seen at cache
+    // Utility used for testing purposes
+    clearLastSeenAtCache() {
+        if (this.lastSeenAtCache) {
+            this.lastSeenAtCache.clear();
+        }
     }
 }
 
