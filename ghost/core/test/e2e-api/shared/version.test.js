@@ -9,7 +9,7 @@ const settingsMatcher = {
     }
 };
 
-describe.only('API Versioning', function () {
+describe('API Versioning', function () {
     describe('Admin API', function () {
         let agentAdminAPI;
         let emailMockReceiver;
