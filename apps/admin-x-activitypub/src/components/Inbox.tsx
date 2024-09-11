@@ -18,6 +18,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     // Retrieve activities from the inbox
     const {data: inboxActivities = []} = useBrowseInboxForUser('index');
+
     const activities = inboxActivities.filter((activity: Activity) => {
         const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
         const isAnnounce = activity.type === 'Announce' && activity.object.type === 'Note';
