@@ -190,7 +190,7 @@ export default class KpisComponent extends Component {
                                     x2: 0,
                                     y2: 1,
                                     colorStops: [{
-                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.3)
+                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.15)
                                     }, {
                                         offset: 1, color: hexToRgba(LINE_COLOR, 0.0)
                                     }],
