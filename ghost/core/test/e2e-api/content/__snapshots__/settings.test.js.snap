@@ -16,6 +16,7 @@ Object {
     "facebook": "ghost",
     "firstpromoter_account": null,
     "icon": null,
+    "labs": Any<Object>,
     "lang": "en",
     "locale": "en",
     "logo": null,
