@@ -53,6 +53,24 @@ export class ActivityPubAPI {
         return [];
     }
 
+    get outboxApiUrl() {
+        return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
+    }
+
+    async getOutbox(): Promise<Activity[]> {
+        const json = await this.fetchJSON(this.outboxApiUrl);
+        if (json === null) {
+            return [];
+        }
+        if ('orderedItems' in json) {
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+        }
+        if ('items' in json) {
+            return Array.isArray(json.items) ? json.items : [json.items];
+        }
+        return [];
+    }
+
     get followingApiUrl() {
         return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
     }
