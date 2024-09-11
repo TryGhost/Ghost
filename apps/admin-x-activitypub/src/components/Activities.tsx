@@ -118,6 +118,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     // We could just make a http request to get the object, but this is more
     // efficient seeming though we already have the data in the inbox and outbox
     const activityObjectsMap = new Map<string, ActivityObject>();
+
     outboxActivities.forEach((activity) => {
         if (activity.object) {
             activityObjectsMap.set(activity.object.id, activity.object);
