@@ -1,4 +1,11 @@
 const logging = require('@tryghost/logging');
+const promClient = require('prom-client');
+
+const counter = new promClient.Counter({
+    name: 'ghost_http_requests_total',
+    help: 'Total number of HTTP requests',
+    labelNames: ['method', 'statusCode']
+});
 
 /**
  * @TODO: move this middleware to Framework monorepo?
@@ -19,6 +26,11 @@ module.exports = function logRequest(req, res, next) {
         } else {
             logging.info({req: req, res: res});
         }
+
+        counter.inc({
+            method: req.method,
+            statusCode: res.statusCode
+        });
 
         res.removeListener('finish', logResponse);
         res.removeListener('close', logResponse);

@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const path = require('node:path');
 const expressQueue = require('express-queue');
+const promClient = require('prom-client');
 
 const debug = (message) => {
     logging.debug(`[queue-request] ${message}`);
@@ -25,6 +26,19 @@ module.exports = function queueRequest(
         queuedLimit: -1 // Do not limit the number of queued requests
     });
 
+    const queueGauge = new promClient.Gauge({
+        name: 'ghost_request_queue_depth',
+        help: 'Number of HTTP requests queued',
+        collect() {
+            this.set(queue.queue.getLength());
+        }
+    });
+
+    const activeRequestGauge = new promClient.Gauge({
+        name: 'ghost_request_queue_in_process',
+        help: 'Number of HTTP requests in process'
+    });
+
     /**
      * Available events:
      * - queue - when a request is queued
@@ -40,8 +54,21 @@ module.exports = function queueRequest(
         debug(`Request queued: ${job.data.req.path}`);
     });
 
+    queue.queue.on('process', (job) => {
+        activeRequestGauge.inc();
+    });
+
     queue.queue.on('complete', (job) => {
         debug(`Request completed: ${job.data.req.path}`);
+        activeRequestGauge.dec();
+    });
+
+    queue.queue.on('reject', (job) => {
+        activeRequestGauge.dec();
+    });
+
+    queue.queue.on('cancel', (job) => {
+        activeRequestGauge.dec();
     });
 
     /**

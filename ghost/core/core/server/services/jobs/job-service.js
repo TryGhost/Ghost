@@ -8,6 +8,7 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
+const promClient = require('prom-client');
 
 const errorHandler = (error, workerMeta) => {
     logging.info(`Capturing error for worker during execution of job: ${workerMeta.name}`);
@@ -43,6 +44,18 @@ const initTestMode = () => {
 };
 
 const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents});
+
+const gauge = new promClient.Gauge({
+    name: 'ghost_jobs_manager_active_workers',
+    help: 'Total number of active workers',
+    collect() {
+        if (Object.keys(jobManager.bree.workers).length) {
+            this.set(Object.keys(jobManager.bree.workers).length);
+        } else {
+            this.set(0);
+        }
+    }
+});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;

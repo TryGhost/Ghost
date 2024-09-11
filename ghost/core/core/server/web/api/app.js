@@ -22,6 +22,10 @@ module.exports = function setupApiApp() {
     apiApp.lazyUse('/content/', require('./endpoints/content/app'));
     apiApp.lazyUse('/admin/', require('./endpoints/admin/app'));
 
+    if (config.get('prometheus:enabled')) {
+        apiApp.use('/metrics', require('./middleware/prometheus-metrics'));
+    }
+
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(APIVersionCompatibilityService.errorHandler);
