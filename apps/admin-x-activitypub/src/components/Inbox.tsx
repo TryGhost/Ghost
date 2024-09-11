@@ -4,7 +4,7 @@ import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Activity} from './activities/ActivityItem';
+import {type Activity} from './activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
 import {useBrowseInboxForUser} from '../MainContent';
@@ -12,25 +12,45 @@ import {useBrowseInboxForUser} from '../MainContent';
 interface InboxProps {}
 
 const Inbox: React.FC<InboxProps> = ({}) => {
-    const {data: activities = []} = useBrowseInboxForUser('index');
     const [, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
     const [layout, setLayout] = useState('inbox');
 
-    const inboxTabActivities = activities.filter((activity: Activity) => {
+    // Retrieve activities from the inbox
+    const {data: inboxActivities = []} = useBrowseInboxForUser('index');
+
+    const activities = inboxActivities.filter((activity: Activity) => {
         const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
         const isAnnounce = activity.type === 'Announce' && activity.object.type === 'Note';
 
         return isCreate || isAnnounce;
-    });
+    })
+        // API endpoint currently returns items oldest-newest, so reverse them
+        // to show the most recent activities first
+        .reverse();
 
-    const handleViewContent = (object: ObjectProperties, actor: ActorProperties) => {
+    // Create a map of activity comments, grouping them by the parent activity
+    // This allows us to quickly look up all comments for a given activity
+    const commentsMap = new Map<string, Activity[]>();
+
+    for (const activity of activities) {
+        if (activity.type === 'Create' && activity.object.inReplyTo) {
+            const comments = commentsMap.get(activity.object.inReplyTo) ?? [];
+
+            comments.push(activity);
+
+            commentsMap.set(activity.object.inReplyTo, comments.reverse());
+        }
+    }
+
+    const getCommentsForObject = (id: string) => {
+        return commentsMap.get(id) ?? [];
+    };
+
+    const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[]) => {
         setArticleContent(object);
         setArticleActor(actor);
-        NiceModal.show(ArticleModal, {
-            object: object,
-            actor: actor
-        });
+        NiceModal.show(ArticleModal, {object, actor, comments});
     };
 
     const handleLayoutChange = (newLayout: string) => {
@@ -42,21 +62,26 @@ const Inbox: React.FC<InboxProps> = ({}) => {
             <MainNavigation page='home' title="Home" onLayoutChange={handleLayoutChange} />
             <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full'>
-                    {inboxTabActivities.length > 0 ? (
+                    {activities.length > 0 ? (
                         <ul className='mx-auto flex max-w-[640px] flex-col'>
-                            {inboxTabActivities.reverse().map((activity, index) => (
+                            {activities.map((activity, index) => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity.object, activity.actor)}
+                                    onClick={() => handleViewContent(
+                                        activity.object,
+                                        activity.actor,
+                                        getCommentsForObject(activity.object.id)
+                                    )}
                                 >
                                     <FeedItem
                                         actor={activity.actor}
+                                        comments={getCommentsForObject(activity.object.id)}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
                                     />
-                                    {index < inboxTabActivities.length - 1 && (
+                                    {index < activities.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
                                     )}
                                 </li>
