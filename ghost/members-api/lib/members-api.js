@@ -192,7 +192,8 @@ module.exports = function MembersAPI({
         sendEmailWithMagicLink,
         memberAttributionService,
         labsService,
-        newslettersService
+        newslettersService,
+        sentry
     });
 
     const wellKnownController = new WellKnownController({

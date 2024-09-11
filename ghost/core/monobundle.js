@@ -119,8 +119,6 @@ function getWorkspaces(from) {
             continue;
         }
 
-        console.log(`packaging ${w}`);
-
         workspacePkgInfo.pkg.version = pkgInfo.pkg.version;
         workspacePkgInfo.write();
 
@@ -128,21 +126,21 @@ function getWorkspaces(from) {
         const packedFilename = `file:` + path.join(bundlePath, `${slugifiedName}-${workspacePkgInfo.pkg.version}.tgz`);
 
         if (pkgInfo.pkg.dependencies[workspacePkgInfo.pkg.name]) {
-            console.log(`- dependencies override for ${workspacePkgInfo.pkg.name} to ${packedFilename}`);
+            console.log(`[${workspacePkgInfo.pkg.name}] dependencies override => ${packedFilename}`);
             pkgInfo.pkg.dependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
         if (pkgInfo.pkg.devDependencies[workspacePkgInfo.pkg.name]) {
-            console.log(`- devDependencies override for ${workspacePkgInfo.pkg.name} to ${packedFilename}`);
+            console.log(`[${workspacePkgInfo.pkg.name}] devDependencies override => ${packedFilename}`);
             pkgInfo.pkg.devDependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
         if (pkgInfo.pkg.optionalDependencies[workspacePkgInfo.pkg.name]) {
-            console.log(`- optionalDependencies override for ${workspacePkgInfo.pkg.name} to ${packedFilename}`);
+            console.log(`[${workspacePkgInfo.pkg.name}] optionalDependencies override => ${packedFilename}`);
             pkgInfo.pkg.optionalDependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
-        console.log(`- resolution override for ${workspacePkgInfo.pkg.name} to ${packedFilename}\n`);
+        console.log(`[${workspacePkgInfo.pkg.name}] resolution override => ${packedFilename}\n`);
         pkgInfo.pkg.resolutions[workspacePkgInfo.pkg.name] = packedFilename;
 
         packagesToPack.push(w);

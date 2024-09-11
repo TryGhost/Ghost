@@ -168,7 +168,7 @@
     "@tryghost/webmentions": "0.0.0",
     "@tryghost/zip": "1.1.46",
     "amperize": "0.6.1",
-    "body-parser": "1.20.2",
+    "body-parser": "1.20.3",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.7.0",
     "brute-knex": "4.0.1",
@@ -181,7 +181,7 @@
     "cookie-session": "2.1.0",
     "cors": "2.8.5",
     "downsize": "0.0.8",
-    "express": "4.19.2",
+    "express": "4.20.0",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
     "express-jwt": "8.4.1",
@@ -224,7 +224,7 @@
     "ws": "8.18.0",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
-    "yjs": "13.6.18"
+    "yjs": "13.6.19"
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "7.119.0",
