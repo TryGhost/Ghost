@@ -26,10 +26,14 @@ class MembersEventsServiceWrapper {
 
         const db = require('../../data/db');
 
+        // Create the last seen at cache and inject it into the last seen at updater
         this.lastSeenAtCache = new LastSeenAtCache({
-            settingsCache
+            services: {
+                settingsCache
+            }
         });
 
+        // Create the last seen at updater
         this.lastSeenAtUpdater = new LastSeenAtUpdater({
             services: {
                 settingsCache
@@ -42,6 +46,7 @@ class MembersEventsServiceWrapper {
             lastSeenAtCache: this.lastSeenAtCache
         });
 
+        // Subscribe to domain events
         this.eventStorage.subscribe(DomainEvents);
         this.lastSeenAtUpdater.subscribe(DomainEvents);
     }

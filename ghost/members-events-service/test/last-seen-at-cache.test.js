@@ -19,9 +19,11 @@ describe('LastSeenAtCache', function () {
     describe('constructor', function () {
         it('intitializes an instance of the LastSeenAtCache successfully', function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -36,9 +38,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -50,9 +54,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc(); // 2022-02-28 01:00:00 in Bangkok
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Asia/Bangkok';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Asia/Bangkok';
+                        }
                     }
                 }
             });
@@ -64,9 +70,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return null;
+                services: {
+                    settingsCache: {
+                        get() {
+                            return null;
+                        }
                     }
                 }
             });
@@ -78,9 +86,11 @@ describe('LastSeenAtCache', function () {
     describe('add', function () {
         it('adds a member id to the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -92,9 +102,11 @@ describe('LastSeenAtCache', function () {
     describe('_has', function () {
         it('returns true if the member id is in the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -104,9 +116,11 @@ describe('LastSeenAtCache', function () {
 
         it('returns false if the member id is not in the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -117,9 +131,11 @@ describe('LastSeenAtCache', function () {
     describe('clear', function () {
         it('clears the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -134,9 +150,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -151,9 +169,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc(); // 2022-02-28 01:00:00 in Bangkok
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Asia/Bangkok';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Asia/Bangkok';
+                        }
                     }
                 }
             });
@@ -170,9 +190,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -192,9 +214,11 @@ describe('LastSeenAtCache', function () {
     describe('shouldUpdateMember', function () {
         it('returns true if the member id is not in the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -203,9 +227,11 @@ describe('LastSeenAtCache', function () {
 
         it('returns false if the member id is in the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });
@@ -217,9 +243,11 @@ describe('LastSeenAtCache', function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             clock = sinon.useFakeTimers(now.toDate());
             const lastSeenAtCache = new LastSeenAtCache({
-                settingsCache: {
-                    get() {
-                        return 'Etc/UTC';
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
                     }
                 }
             });

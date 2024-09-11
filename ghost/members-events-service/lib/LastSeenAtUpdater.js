@@ -36,7 +36,7 @@ class LastSeenAtUpdater {
         this._settingsCacheService = settingsCache;
         this._db = db;
         this._events = events;
-        this._lastSeenAtCache = lastSeenAtCache || new LastSeenAtCache({settingsCache});
+        this._lastSeenAtCache = lastSeenAtCache || new LastSeenAtCache({services: {settingsCache}});
     }
     /**
      * Subscribe to events of this domainEvents service
