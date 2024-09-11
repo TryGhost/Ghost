@@ -56,7 +56,7 @@ export default class TopPages extends Component {
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 8
+            limit: 7
         };
 
         const {data, meta, error, loading} = useQuery({
