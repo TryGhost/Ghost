@@ -215,4 +215,40 @@ describe('Portal Data links:', () => {
             expect(accountProfileTitle).toBeInTheDocument();
         });
     });
+
+    describe('#/portal/account/newsletter/help', () => {
+        test('opens portal newsletter receiving help page', async () => {
+            window.location.hash = '#/portal/account/newsletters/help';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.free,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const helpPageTitle = within(popupFrame.contentDocument).queryByText(/help! i'm not receiving emails/i);
+            expect(helpPageTitle).toBeInTheDocument();
+        });
+    });
+
+    describe('#/portal/account/newsletter/disabled', () => {
+        test('opens portal newsletter receiving help page', async () => {
+            window.location.hash = '#/portal/account/newsletters/disabled';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.free,
+                showPopup: false
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const helpPageTitle = within(popupFrame.contentDocument).queryByText(/why has my email been disabled/i);
+            expect(helpPageTitle).toBeInTheDocument();
+        });
+    });
 });

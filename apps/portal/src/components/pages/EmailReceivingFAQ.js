@@ -7,21 +7,25 @@ import Interpolate from '@doist/react-interpolate';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export default function EmailReceivingPage() {
-    const {brandColor, onAction, site, lastPage, member, t} = useContext(AppContext);
+    const {brandColor, onAction, site, lastPage, member, t, pageData} = useContext(AppContext);
 
     const supportAddressEmail = getSupportAddress({site});
     const supportAddress = `mailto:${supportAddressEmail}`;
     const defaultNewsletterSenderEmail = getDefaultNewsletterSender({site});
+    const directAccess = (pageData && pageData.direct) || false;
+
     return (
         <div className="gh-email-receiving-faq">
             <header className='gh-portal-detail-header'>
-                <BackButton brandColor={brandColor} onClick={() => {
-                    if (!lastPage) {
-                        onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
-                    } else {
-                        onAction('switchPage', {page: 'accountHome'});
-                    }
-                }} />
+                {!directAccess &&
+                    <BackButton brandColor={brandColor} onClick={() => {
+                        if (!lastPage) {
+                            onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
+                        } else {
+                            onAction('switchPage', {page: 'accountHome'});
+                        }
+                    }} />
+                }
                 <CloseButton />
             </header>
 
