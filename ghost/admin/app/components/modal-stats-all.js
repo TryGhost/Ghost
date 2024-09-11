@@ -4,10 +4,10 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {barListColor} from '../utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {getCountryFlag} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from 'ghost-admin/utils/stats';
 
 export default class AllStatsModal extends Component {
     @inject config;
@@ -99,7 +99,7 @@ export default class AllStatsModal extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">{labelText}</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{(type === 'top-locations') && getCountryFlag(label)} {label || unknownOption}</span>
+                        <span className={`gh-stats-detail-label ${type === 'top-sources' && 'gh-stats-domain'}`}>{(type === 'top-locations') && getCountryFlag(label)} {type === 'top-sources' && (<img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />)} {label || unknownOption}</span>
                     )
                 }}
                 categories={['hits']}
@@ -109,7 +109,7 @@ export default class AllStatsModal extends Component {
                         renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
                     }
                 }}
-                colorPalette={[statsStaticColors[4]]}
+                colorPalette={[barListColor]}
             />
         );
     };

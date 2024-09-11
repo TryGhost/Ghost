@@ -34,6 +34,10 @@
     transition: all ease-in-out 0.3s;
 }
 
+.gh-stats-container.no-gap {
+    gap: 0;
+}
+
 .gh-stats-container > .gh-stats-metric-label,
 .gh-stats-metric-header {
     margin-bottom: 12px;
@@ -232,4 +236,19 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.0) 0%, #FFF 100%);
     height: 60px;
     z-index: 9999;
+}
+
+.gh-stats-kpis-chart-container {
+    margin-top: -20px;
+}
+
+.gh-stats-domain {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-stats-favicon {
+    width: 16px;
+    height: 16px;
 }

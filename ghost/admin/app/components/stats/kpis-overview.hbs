@@ -1,4 +1,4 @@
-<div class="gh-stats-tabs-header">
+<div class="gh-stats-tabs-header ">
     <div class="gh-stats-tabs">
         <button type="button" class="gh-stats-tab min-width {{if this.uniqueVisitorsTabSelected 'is-selected'}}" {{on "click" this.changeTabToUniqueVisitors}}>
             <Stats::Parts::Metric
@@ -49,4 +49,6 @@
         {{/if}}
     </div>
 </div>
-<Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />
+<div class="gh-stats-kpis-chart-container">
+    <Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />
+</div>

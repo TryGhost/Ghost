@@ -6,8 +6,9 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {action} from '@ember/object';
+import {barListColor} from '../../../utils/stats';
 import {formatNumber} from '../../../helpers/format-number';
-import {getCountryFlag, statsStaticColors} from 'ghost-admin/utils/stats';
+import {getCountryFlag} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -74,7 +75,7 @@ export default class TopLocations extends Component {
                         renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
                     }
                 }}
-                colorPalette={[statsStaticColors[4]]}
+                colorPalette={[barListColor]}
             />
         );
     };
