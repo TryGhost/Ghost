@@ -27,6 +27,7 @@
                 "^build"
             ],
             "inputs": [
+                { "env": "GHOST_CDN_URL" },
                 "default",
                 "^default"
             ],
