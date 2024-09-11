@@ -1,15 +1,20 @@
-import FeedItem from './FeedItem';
-import MainHeader from '../navigation/MainHeader';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import articleBodyStyles from '../articleBodyStyles';
+
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
+import FeedItem from './FeedItem';
+import MainHeader from '../navigation/MainHeader';
+
+import articleBodyStyles from '../articleBodyStyles';
+import {type Activity} from '../activities/ActivityItem';
+
 interface ArticleModalProps {
     object: ObjectProperties;
     actor: ActorProperties;
+    comments: Activity[];
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
@@ -63,7 +68,7 @@ ${image &&
     );
 };
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object, actor}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments}) => {
     const modal = useModal();
     return (
         <Modal
@@ -89,17 +94,34 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor}) => {
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
                     <div className='mx-auto max-w-[580px]'>
-                        <FeedItem actor={actor} layout='modal' object={object} type='Note'/>
+                        <FeedItem
+                            actor={actor}
+                            comments={comments}
+                            layout='modal'
+                            object={object}
+                            type='Note'
+                        />
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
                         {/* {renderAttachment(object)} */}
-                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
+                        {/* <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
                         <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
                         <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
                         <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
                         <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
+                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/> */}
+                        {comments.map((comment, index) => (
+                            <FeedItem
+                                actor={comment.actor}
+                                last={index === comments.length - 1}
+                                layout='reply'
+                                object={comment.object}
+                                type='Note'
+                            />
+                        ))}
                     </div>)}
-                {object.type === 'Article' && <ArticleBody heading={object.name} html={object.content} image={object?.image}/>}
+                {object.type === 'Article' && (
+                    <ArticleBody heading={object.name} html={object.content} image={object?.image} />
+                )}
             </div>
         </Modal>
     );

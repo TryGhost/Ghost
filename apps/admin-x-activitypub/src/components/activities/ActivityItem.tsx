@@ -1,9 +1,12 @@
 import React, {ReactNode} from 'react';
 
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+
 export type Activity = {
     type: string,
-    object: {
-        type: string
+    actor: ActorProperties,
+    object: ObjectProperties & {
+        inReplyTo: string | null // TODO: Move this to the ObjectProperties type
     }
 }
 
