@@ -24,6 +24,23 @@ export function useBrowseInboxForUser(handle: string) {
     });
 }
 
+export function useBrowseOutboxForUser(handle: string) {
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
+    const siteUrl = siteData?.url ?? window.location.origin;
+    const api = new ActivityPubAPI(
+        new URL(siteUrl),
+        new URL('/ghost/api/admin/identities/', window.location.origin),
+        handle
+    );
+    return useQuery({
+        queryKey: [`outbox:${handle}`],
+        async queryFn() {
+            return api.getOutbox();
+        }
+    });
+}
+
 export function useFollowersForUser(handle: string) {
     const site = useBrowseSite();
     const siteData = site.data?.site;
