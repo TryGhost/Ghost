@@ -180,6 +180,11 @@ export const GlobalStyles = `
         margin-right: -4vmin;
     }
 
+    .gh-longform .gh-portal-btn.no-margin-right {
+        margin-right: 0;
+        width: 100%;
+    }
+
     .gh-longform .gh-portal-btn-text {
         color: var(--brandcolor);
         cursor: pointer;
