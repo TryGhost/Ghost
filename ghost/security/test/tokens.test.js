@@ -1,12 +1,12 @@
 require('./utils');
 const should = require('should');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const security = require('../');
 
 describe('Utils: tokens', function () {
     it('generate', function () {
         const expires = Date.now() + 60 * 1000;
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
 
         token = security.tokens.resetToken.generateHash({
@@ -22,7 +22,7 @@ describe('Utils: tokens', function () {
 
     it('compare: success', function () {
         const expires = Date.now() + 60 * 1000;
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let tokenIsCorrect;
 
@@ -45,7 +45,7 @@ describe('Utils: tokens', function () {
 
     it('compare: error from invalid password', function () {
         const expires = Date.now() + 60 * 1000;
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let tokenIsCorrect;
 
@@ -68,7 +68,7 @@ describe('Utils: tokens', function () {
 
     it('compare: error from invalid expires parameter', function () {
         const invalidDate = 'not a date';
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let tokenIsCorrect;
 
@@ -91,7 +91,7 @@ describe('Utils: tokens', function () {
 
     it('compare: error from expired token', function () {
         const dateInThePast = Date.now() - 60 * 1000;
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let tokenIsCorrect;
 
@@ -114,7 +114,7 @@ describe('Utils: tokens', function () {
 
     it('extract', function () {
         const expires = Date.now() + 60 * 1000;
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let parts;
         const email = 'test1@ghost.org';
@@ -138,7 +138,7 @@ describe('Utils: tokens', function () {
 
     it('extract - hashed password', function () {
         const expires = Date.now() + 60 * 1000;
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let parts;
         const email = 'test3@ghost.org';
@@ -163,7 +163,7 @@ describe('Utils: tokens', function () {
     it('can validate an URI encoded reset token', function () {
         const expires = Date.now() + 60 * 1000;
         const email = 'test1@ghost.org';
-        const dbHash = uuid.v4();
+        const dbHash = crypto.randomUUID();
         let token;
         let tokenIsCorrect;
         let parts;

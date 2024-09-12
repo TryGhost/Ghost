@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('importer:posts');
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const BaseImporter = require('./Base');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const validator = require('@tryghost/validator');
@@ -29,7 +29,7 @@ class PostsImporter extends BaseImporter {
     sanitizeAttributes() {
         _.each(this.dataToImport, (obj) => {
             if (!validator.isUUID(obj.uuid || '')) {
-                obj.uuid = uuid.v4();
+                obj.uuid = crypto.randomUUID();
             }
 
             // we used to have post.page=true/false

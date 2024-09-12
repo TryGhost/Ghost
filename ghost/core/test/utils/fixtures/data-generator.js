@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
@@ -1037,7 +1037,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             title: 'title',
             status: 'published',
             feature_image: null,
@@ -1107,7 +1107,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
             client_uri: 'http://localhost:9000',
@@ -1156,7 +1156,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
@@ -1299,7 +1299,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             expires: Date.now() + constants.ONE_DAY_MS
         });
     }
@@ -1309,7 +1309,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),
