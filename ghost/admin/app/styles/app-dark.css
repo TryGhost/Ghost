@@ -1299,6 +1299,20 @@ kbd {
     background: transparent;
 }
 
+.gh-post-analytics-meta .gh-post-list-cta {
+    border: none!important;
+    box-shadow: none!important;
+}
+
+.gh-post-analytics-meta .gh-post-list-cta:hover, .gh-post-analytics-meta .refresh:hover {
+    background: var(--lightgrey-d1);
+    color: var(--black);
+}
+
+.gh-post-analytics-meta .gh-btn.refresh {
+    border: none;
+}
+
 
 /* Post rows */
 
@@ -1435,4 +1449,20 @@ Onboarding checklist: Share publication modal */
 
 .gh-sidebar-banner.gh-error-banner {
     background: var(--lightgrey-d1);
+}
+
+
+/* ---------------------------------
+Publish flow: Share modal */
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+    background: var(--lightgrey-l1)!important;
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
+    background: var(--lightgrey-l2)!important;
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads) svg path {
+    fill: var(--darkgrey);
 }
