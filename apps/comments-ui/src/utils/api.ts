@@ -298,7 +298,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         try {
             labs = (await api.site.settings()).settings.labs;
         } catch (e) {
-            labs = {};
+            // for use in tests since we don't have api.site.settings mocked
+            // TODO: remove this when we have a better way to mock the site settings api
+            labs = {
+                commentsImprovements: true
+            };
         }
         return {member, labs};
     };
