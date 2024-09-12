@@ -53,12 +53,12 @@ describe('Job Manager', function () {
                     data: 'test data',
                     offloaded: false
                 });
-                should(jobManager.queue.idle()).be.false();
+                should(jobManager.inlineQueue.idle()).be.false();
 
                 // give time to execute the job
                 await delay(1);
 
-                should(jobManager.queue.idle()).be.true();
+                should(jobManager.inlineQueue.idle()).be.true();
                 should(spy.called).be.true();
                 should(spy.args[0][0]).equal('test data');
             });
@@ -77,12 +77,12 @@ describe('Job Manager', function () {
                     data: 'test data',
                     offloaded: false
                 });
-                should(jobManager.queue.idle()).be.false();
+                should(jobManager.inlineQueue.idle()).be.false();
 
                 // give time to execute the job
                 await delay(1);
 
-                should(jobManager.queue.idle()).be.true();
+                should(jobManager.inlineQueue.idle()).be.true();
                 should(spy.called).be.true();
                 should(spy.args[0][0]).equal('test data');
                 should(logging.error.called).be.true();
@@ -675,11 +675,11 @@ describe('Job Manager', function () {
                 offloaded: false
             });
 
-            should(jobManager.queue.idle()).be.false();
+            should(jobManager.inlineQueue.idle()).be.false();
 
             await jobManager.shutdown();
 
-            should(jobManager.queue.idle()).be.true();
+            should(jobManager.inlineQueue.idle()).be.true();
         });
 
         it('gracefully shuts down an interval job', async function () {
