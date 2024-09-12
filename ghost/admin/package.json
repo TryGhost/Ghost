@@ -132,6 +132,7 @@
     "liquid-fire": "0.34.0",
     "liquid-wormhole": "3.0.1",
     "loader.js": "4.7.0",
+    "microdiff": "^1.4.0",
     "miragejs": "0.1.48",
     "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
