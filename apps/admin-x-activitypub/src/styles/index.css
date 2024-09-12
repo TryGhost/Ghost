@@ -37,3 +37,17 @@ animation: bump 0.3s ease-in-out;
   margin-top: 1.5rem !important;
 }
 
+.ap-likes .ellipsis::after {
+  content: "…";
+}
+
+.ap-likes .invisible {
+  display: inline-block;
+  font-size: 0;
+  height: 0;
+  line-height: 0;
+  position: absolute;
+  width: 0;
+}
+
+

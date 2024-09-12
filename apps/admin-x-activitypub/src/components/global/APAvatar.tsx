@@ -3,7 +3,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
 type AvatarSize = 'xs' | 'sm' | 'lg';
-export type AvatarBadge = 'user-fill' | 'heart-fill' | undefined;
+export type AvatarBadge = 'user-fill' | 'heart-fill' | 'comment-fill' | undefined;
 
 interface APAvatarProps {
     author?: ActorProperties;
@@ -24,6 +24,9 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         break;
     case 'heart-fill':
         badgeColor = ' bg-red-500';
+        break;
+    case 'comment-fill':
+        badgeColor = ' bg-purple-500';
         break;
     }
     
@@ -47,7 +50,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     return (
         <>
             {author && author.icon?.url ? (
-                <a className='relative z-10 pt-[3px] transition-opacity hover:opacity-80' href={author.url} rel='noopener noreferrer' target='_blank'>
+                <a className='relative z-10 h-10 w-10 pt-[3px] transition-opacity hover:opacity-80' href={author.url} rel='noopener noreferrer' target='_blank'>
                     <img 
                         className={imageClass} 
                         src={author.icon.url}

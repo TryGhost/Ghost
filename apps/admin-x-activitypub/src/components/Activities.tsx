@@ -3,7 +3,7 @@ import React from 'react';
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem from './activities/ActivityItem';
 import MainNavigation from './navigation/MainNavigation';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import getUsername from '../utils/get-username';
 import {useBrowseInboxForUser, useBrowseOutboxForUser, useFollowersForUser} from '../MainContent';
@@ -65,7 +65,7 @@ const getExtendedDescription = (activity: Activity): JSX.Element | null => {
         return (
             <div
                 dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
-                className='ml-2 mt-2 text-sm text-grey-600'
+                className='mt-2'
             />
         );
     }
@@ -92,7 +92,7 @@ const getActorUrl = (activity: Activity): string | null => {
 const getActivityBadge = (activity: Activity): AvatarBadge => {
     switch (activity.type) {
     case ACTVITY_TYPE.CREATE:
-        return 'user-fill'; // TODO: Change this
+        return 'comment-fill';
     case ACTVITY_TYPE.FOLLOW:
         return 'user-fill';
     case ACTVITY_TYPE.LIKE:
@@ -171,19 +171,23 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             <MainNavigation title='Activities' />
             <div className='z-0 flex w-full flex-col items-center'>
                 {activities.length === 0 && (
-                    <div className='mt-8 font-bold'>This is an empty state when there are no activities</div>
+                    <div className='mt-8'>
+                        <NoValueLabel icon='bell'>
+                            When other Fediverse users interact with you, you&apos;ll see it here.
+                        </NoValueLabel>
+                    </div>
                 )}
                 {activities.length > 0 && (
                     <div className='mt-8 flex w-full max-w-[560px] flex-col'>
                         {activities?.map(activity => (
                             <ActivityItem key={activity.id} url={getActivityUrl(activity) || getActorUrl(activity)}>
                                 <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                <div>
+                                <div className='pt-[2px]'>
                                     <div className='text-grey-600'>
                                         <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
                                         {getUsername(activity.actor)}
                                     </div>
-                                    <div className='text-sm'>{getActivityDescription(activity, activityObjectsMap)}</div>
+                                    <div className=''>{getActivityDescription(activity, activityObjectsMap)}</div>
                                     {getExtendedDescription(activity)}
                                 </div>
                                 {isFollower(activity.actor.id) === false && (

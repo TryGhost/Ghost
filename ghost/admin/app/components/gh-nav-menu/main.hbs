@@ -17,6 +17,11 @@
         {{#unless this.session.user.isContributor}}
             <div class="gh-nav-top">
                 <ul class="gh-nav-list gh-nav-main">
+                    {{#if (feature "ActivityPub")}}
+                        <li>
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub</LinkTo>
+                        </li>
+                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative gh-nav-list-home">
                         <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
@@ -126,11 +131,6 @@
                     {{#if (feature "adminXDemo")}}
                         <li>
                             <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>
-                        </li>
-                    {{/if}}
-                    {{#if (feature "ActivityPub")}}
-                        <li>
-                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub Demo</LinkTo>
                         </li>
                     {{/if}}
                 </ul>

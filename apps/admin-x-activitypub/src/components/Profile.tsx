@@ -35,7 +35,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             id: 'likes',
             title: 'Likes',
             contents: (
-                <div>
+                <div className='ap-likes'>
                     {liked.length === 0 ? (
                         <NoValueLabel icon='heart'>
                             You haven&apos;t liked anything yet.
@@ -141,10 +141,10 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         <div className='inline-flex rounded-lg border-4 border-white'>
                             <APAvatar size='lg' />
                         </div>
-                        <Heading className='mt-4' level={3}>John Doe</Heading>
-                        <span className='mt-1 text-[1.5rem] text-grey-800'>@index@site.com</span>
-                        <p className='mt-3 text-[1.5rem]'>This is a summary/bio/etc which could be kinda long in certain cases but not always, so...</p>
-                        <a className='mt-3 block text-[1.5rem] underline' href='#'>www.coolsite.com</a>
+                        <Heading className='mt-4' level={3}>Building ActivityPub</Heading>
+                        <span className='mt-1 text-[1.5rem] text-grey-800'>@index@activitypub.ghost.org</span>
+                        <p className='mt-3 text-[1.5rem]'>Ghost is federating over ActivityPub to become part of the world&apos;s largest publishing network</p>
+                        <a className='mt-3 block text-[1.5rem] underline' href='https://activitypub.ghost.org'>activitypub.ghost.org</a>
                         <TabView<'posts' | 'likes' | 'following' | 'followers'> containerClassName='mt-6' selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                     </div>
                 </div>
