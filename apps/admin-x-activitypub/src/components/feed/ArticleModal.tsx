@@ -70,7 +70,7 @@ ${image &&
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
+    <div className="mx-[-32px] my-5 h-px w-[120%] bg-grey-200"></div>
 );
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments}) => {
