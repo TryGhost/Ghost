@@ -37,6 +37,7 @@
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
+    "test:browser": "node .github/scripts/dev.js --browser-tests --all",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",

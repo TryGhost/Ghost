@@ -343,7 +343,6 @@ jobs:
       run: yarn nx run ghost-admin:build:dev
 
     - name: Run Playwright tests locally
-      working-directory: ghost/core
       run: yarn test:browser
       env:
         CI: true
