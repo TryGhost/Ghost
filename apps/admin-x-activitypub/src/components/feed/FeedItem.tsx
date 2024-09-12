@@ -197,9 +197,12 @@ interface FeedItemProps {
     type: string;
     comments?: Activity[];
     last?: boolean;
+    onClick?: () => void;
 }
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last}) => {
+const noop = () => {};
+
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -219,7 +222,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-6`}>
+                    <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
@@ -262,7 +265,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div>
-                        <div className={`group/article relative cursor-pointer`}>
+                        <div className={`group/article relative cursor-pointer`} onClick={onClick}>
                             {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                                 <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                                 <span className='z-10'>{actor.name} reposted</span>
@@ -309,7 +312,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-5`}>
+                    <div className={`group/article relative cursor-pointer pt-5`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
@@ -354,7 +357,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75'>
+                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
                         <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
                             <APAvatar author={author} size='xs'/>
                             <div className='z-10 w-full'>
