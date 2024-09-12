@@ -8,6 +8,9 @@ const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const ConnectionPoolInstrumentation = require('./ConnectionPoolInstrumentation');
+
+const promClient = require('prom-client');
+
 let knexInstance;
 
 // @TODO:
@@ -64,6 +67,41 @@ function configure(dbConfig) {
 
 if (!knexInstance && config.get('database') && config.get('database').client) {
     knexInstance = knex(configure(config.get('database')));
+    new promClient.Gauge({
+        name: 'ghost_db_connection_pool_used',
+        help: 'Number of connections currently in use in the database connection pool',
+        collect() {
+            this.set(knexInstance.client.pool.numUsed());
+        }
+    });
+    new promClient.Gauge({
+        name: 'ghost_db_connection_pool_free',
+        help: 'Number of free connections in the database connection pool',
+        collect() {
+            this.set(knexInstance.client.pool.numFree());
+        }
+    });
+    new promClient.Gauge({
+        name: 'ghost_db_connection_pool_pending_creates',
+        help: 'Number of pending create requests in the database connection pool',
+        collect() {
+            this.set(knexInstance.client.pool.numPendingCreates());
+        }
+    });
+    new promClient.Gauge({
+        name: 'ghost_db_connection_pool_pending_acquires',
+        help: 'Number of pending acquire requests in the database connection pool',
+        collect() {
+            this.set(knexInstance.client.pool.numPendingAcquires());
+        }
+    });
+    new promClient.Gauge({
+        name: 'ghost_db_connection_pool_utilization',
+        help: 'Percentage of connections in use in the database connection pool',
+        collect() {
+            this.set(knexInstance.client.pool.numUsed() / (knexInstance.client.pool.numUsed() + knexInstance.client.pool.numFree()));
+        }
+    });
     if (config.get('telemetry:connectionPool')) {
         const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
         instrumentation.instrument();
