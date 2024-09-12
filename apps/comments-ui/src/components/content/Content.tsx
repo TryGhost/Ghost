@@ -4,12 +4,13 @@ import ContentTitle from './ContentTitle';
 import MainForm from './forms/MainForm';
 import Pagination from './Pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
-import {useAppContext} from '../../AppContext';
+import {useAppContext, useLabs} from '../../AppContext';
 import {useEffect} from 'react';
 
 const Content = () => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     const commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
+    const labs = useLabs();
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
@@ -47,6 +48,9 @@ const Content = () => {
                     : null
                 }
             </div>
+            {
+                labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
+            }
         </>
     );
 };

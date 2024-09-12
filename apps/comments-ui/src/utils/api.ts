@@ -1,4 +1,4 @@
-import {AddComment, Comment} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../AppContext';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -286,7 +286,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; }>
+        init: (() => {}) as () => Promise<{ member: any; labs: any}>
     };
 
     api.init = async () => {
@@ -294,7 +294,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             api.member.sessionData()
         ]);
 
-        return {member};
+        let labs = {};
+
+        try {
+            const settings = await api.site.settings();
+            if (settings.settings.labs) {
+                Object.assign(labs, settings.settings.labs);
+            }
+        } catch (e) {
+            labs = {};
+        }
+
+        return {member, labs};
     };
 
     return api;
@@ -302,3 +313,4 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
 export default setupGhostApi;
 export type GhostApi = ReturnType<typeof setupGhostApi>;
+export type LabsType = LabsContextType;

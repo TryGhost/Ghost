@@ -33,6 +33,10 @@ export type AddComment = {
     html: string
 }
 
+export type LabsContextType = {
+    [key: string]: boolean
+}
+
 export type CommentsOptions = {
     locale: string,
     siteUrl: string,
@@ -40,7 +44,7 @@ export type CommentsOptions = {
     apiUrl: string | undefined,
     postId: string,
     adminUrl: string | undefined,
-    colorScheme: string| undefined,
+    colorScheme: string | undefined,
     avatarSaturation: number | undefined,
     accentColor: string,
     commentsEnabled: string | undefined,
@@ -63,15 +67,16 @@ export type EditableAppContext = {
     commentCount: number,
     secundaryFormCount: number,
     popup: Page | null,
+    labs: LabsContextType | null
 }
 
-export type TranslationFunction = (key: string, replacements?: Record<string, string|number>) => string;
+export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
 
 export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
     // eslint-disable-next-line @typescript-eslint/ban-types
     t: TranslationFunction,
-    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends {data: any} ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void
+    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void
 }
 
 // Copy time from AppContextType
@@ -81,3 +86,14 @@ export const AppContext = React.createContext<AppContextType>({} as any);
 export const AppContextProvider = AppContext.Provider;
 
 export const useAppContext = () => useContext(AppContext);
+
+// create a hook that will only get labs data from the context
+
+export const useLabs = () => {
+    try {
+        const context = useAppContext();
+        return context.labs;
+    } catch (e) {
+        return null;
+    }
+};

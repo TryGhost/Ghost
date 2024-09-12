@@ -26,7 +26,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         pagination: null,
         commentCount: 0,
         secundaryFormCount: 0,
-        popup: null
+        popup: null,
+        labs: null
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -135,15 +136,15 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     const initSetup = async () => {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {member} = await api.init();
+            const {member, labs} = await api.init();
             const {comments, pagination, count} = await fetchComments();
-
             const state = {
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
-                commentCount: count
+                commentCount: count,
+                labs: labs
             };
 
             setState(state);
