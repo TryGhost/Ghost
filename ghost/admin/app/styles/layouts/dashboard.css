@@ -2770,9 +2770,9 @@ Onboarding checklist */
     align-items: center;
     flex-direction: column;
     min-height: 100vh;
-    margin-bottom: -48px;
     position: relative;
     padding: 32px 0;
+    margin-top: -48px;
 }
 
 .gh-onboarding-header {
