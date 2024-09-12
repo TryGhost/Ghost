@@ -89,10 +89,10 @@ function renderInboxAttachment(object: ObjectProperties) {
         // }
         return (
             <div className='min-w-[160px]'>
-                <div className='relative'>
+                {attachment[0] && <div className='relative'>
                     <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment[0].url} />
                     <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
-                </div>
+                </div>}
             </div>
         );
     }
@@ -103,7 +103,7 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/gif':
         return (
             <div className='min-w-[160px]'>
-                <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />
+                {attachment && <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />}
             </div>
         );
     case 'video/mp4':
@@ -299,7 +299,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
-                        <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
+                        <div className="mx-[-32px] my-3 h-px w-[120%] bg-grey-200"></div>
                     </div>
 
                 )}
@@ -309,12 +309,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-5`}>
+                    <div className={`group/article relative cursor-pointer pt-2`}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-4`} data-test-activity>
+                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author}/>
                             </div>
