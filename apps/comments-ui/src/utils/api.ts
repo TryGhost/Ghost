@@ -299,9 +299,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             labs = (await api.site.settings()).settings.labs;
         } catch (e) {
             // for use in tests since we don't have api.site.settings mocked
+            // haven't found a way friendly way of mocking the site settings api
+            // since it's a separate api from the members api
+            // api.site.settings don't exist in the tests so it will fall back to the catch block
+
             // TODO: remove this when we have a better way to mock the site settings api
             labs = {
-                commentsImprovements: true
+                commentImprovements: true
             };
         }
         return {member, labs};
