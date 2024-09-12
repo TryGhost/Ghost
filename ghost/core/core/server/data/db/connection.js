@@ -102,6 +102,13 @@ if (!knexInstance && config.get('database') && config.get('database').client) {
             this.set(knexInstance.client.pool.numUsed() / (knexInstance.client.pool.numUsed() + knexInstance.client.pool.numFree()));
         }
     });
+    new promClient.Gauge({
+        name: 'ghost_db_connection_pool_max',
+        help: 'Total number of connections in the database connection pool',
+        collect() {
+            this.set(knexInstance.client.pool.max);
+        }
+    });
     if (config.get('telemetry:connectionPool')) {
         const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
         instrumentation.instrument();

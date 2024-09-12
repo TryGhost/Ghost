@@ -10,7 +10,7 @@ const counter = new promClient.Counter({
 const summary = new promClient.Summary({
     name: 'ghost_http_response_time',
     help: 'Summary of response times for all HTTP requests',
-    percentiles: [0.01, 0.1, 0.9, 0.99]
+    percentiles: [0.01, 0.1, 0.5, 0.95, 0.99]
 });
 
 /**
