@@ -1,15 +1,21 @@
-import FeedItem from './FeedItem';
-import MainHeader from '../navigation/MainHeader';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import articleBodyStyles from '../articleBodyStyles';
+
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
+import FeedItem from './FeedItem';
+import MainHeader from '../navigation/MainHeader';
+
+import articleBodyStyles from '../articleBodyStyles';
+import {type Activity} from '../activities/ActivityItem';
+
 interface ArticleModalProps {
     object: ObjectProperties;
     actor: ActorProperties;
+    comments: Activity[];
+    allComments: Map<string, Activity[]>;
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
@@ -63,7 +69,11 @@ ${image &&
     );
 };
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object, actor}) => {
+const FeedItemDivider: React.FC = () => (
+    <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
+);
+
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments}) => {
     const modal = useModal();
     return (
         <Modal
@@ -89,17 +99,55 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor}) => {
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
                     <div className='mx-auto max-w-[580px]'>
-                        <FeedItem actor={actor} layout='modal' object={object} type='Note'/>
+                        <FeedItem
+                            actor={actor}
+                            comments={comments}
+                            layout='modal'
+                            object={object}
+                            type='Note'
+                        />
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
                         {/* {renderAttachment(object)} */}
-                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
+                        {/* <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
                         <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
                         <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
                         <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
                         <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
-                    </div>)}
-                {object.type === 'Article' && <ArticleBody heading={object.name} html={object.content} image={object?.image}/>}
+                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/> */}
+                        {comments.map((comment, index) => {
+                            const showDivider = index !== comments.length - 1;
+                            const nestedComments = allComments.get(comment.object.id) ?? [];
+                            const hasNestedComments = nestedComments.length > 0;
+
+                            return (
+                                <>
+                                    <FeedItem
+                                        actor={comment.actor}
+                                        comments={nestedComments}
+                                        last={true}
+                                        layout='reply'
+                                        object={comment.object}
+                                        type='Note'
+                                    />
+                                    {hasNestedComments && <FeedItemDivider />}
+                                    {nestedComments.map((nestedComment, nestedCommentIndex) => (
+                                        <FeedItem
+                                            actor={nestedComment.actor}
+                                            last={nestedComments.length === nestedCommentIndex + 1}
+                                            layout='reply'
+                                            object={nestedComment.object}
+                                            type='Note'
+                                        />
+                                    ))}
+                                    {showDivider && <FeedItemDivider />}
+                                </>
+                            );
+                        })}
+                    </div>
+                )}
+                {object.type === 'Article' && (
+                    <ArticleBody heading={object.name} html={object.content} image={object?.image} />
+                )}
             </div>
         </Modal>
     );

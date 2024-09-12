@@ -7,7 +7,7 @@ const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent,
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
-const uuid = require('uuid');
+const crypto = require('crypto');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -228,7 +228,7 @@ module.exports = class MemberRepository {
     }
 
     _generateTransientId() {
-        return uuid.v4();
+        return crypto.randomUUID();
     }
 
     async cycleTransientId({id, email}) {
