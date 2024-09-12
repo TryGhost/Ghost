@@ -50,7 +50,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[]) => {
         setArticleContent(object);
         setArticleActor(actor);
-        NiceModal.show(ArticleModal, {object, actor, comments});
+        NiceModal.show(ArticleModal, {object, actor, comments, allComments: commentsMap});
     };
 
     const handleLayoutChange = (newLayout: string) => {
