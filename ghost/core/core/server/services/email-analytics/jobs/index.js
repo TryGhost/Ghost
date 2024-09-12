@@ -29,7 +29,7 @@ module.exports = {
                 const m = Math.floor(Math.random() * 5); // 0-4
 
                 jobsService.addJob({
-                    at: `${s} ${m}/1 * * * *`,
+                    at: `${s} ${m}/5 * * * *`,
                     job: path.resolve(__dirname, 'fetch-latest/index.js'),
                     name: 'email-analytics-fetch-latest'
                 });
