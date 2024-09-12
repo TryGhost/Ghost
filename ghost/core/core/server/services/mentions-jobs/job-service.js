@@ -42,7 +42,7 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents});
+const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, isDuplicate: true});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;
