@@ -17,6 +17,7 @@ services:
     volumes:
       # Turns out you can drop .sql or .sql.gz files in here, cool!
       - ./mysql-preload:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
     healthcheck:
       test: "mysql -uroot -proot ghost -e 'select 1'"
       interval: 1s
@@ -37,3 +38,5 @@ services:
       restart: always
       environment:
         COLLECTOR_ZIPKIN_HOST_PORT: :9411
+volumes:
+  mysql-data:
