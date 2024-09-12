@@ -652,8 +652,9 @@ export default class LexicalEditorController extends Controller {
                 return;
             }
 
-            // re-throw if we have a general server error
             if (error && !isInvalidError(error)) {
+                console.error(error); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}});
                 this.send('error', error);
                 return;
             }
@@ -683,14 +684,9 @@ export default class LexicalEditorController extends Controller {
             // }
         }
 
-        // TODO: There's no need for (at least) most of these scratch values.
-        // Refactor so we're setting model attributes directly
-
         // Set the properties that are indirected
 
-        // Set lexical equal to what's in the editor but create a copy so that
-        // nested objects/arrays don't keep references which can mean that both
-        // scratch and lexical get updated simultaneously
+        // Set lexical equal to what's in the editor
         this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
@@ -698,6 +694,8 @@ export default class LexicalEditorController extends Controller {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
 
+        // TODO: There's no need for most of these scratch values.
+        // Refactor so we're setting model attributes directly
         this.set('post.title', this.get('post.titleScratch'));
         this.set('post.customExcerpt', this.get('post.customExcerptScratch'));
         this.set('post.footerInjection', this.get('post.footerExcerptScratch'));
