@@ -286,7 +286,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; }>
+        init: (() => {}) as () => Promise<{ member: any; labs: any}>
     };
 
     api.init = async () => {
@@ -294,7 +294,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             api.member.sessionData()
         ]);
 
-        return {member};
+        let labs;
+        try {
+            labs = (await api.site.settings()).settings.labs;
+        } catch (e) {
+            labs = {};
+        }
+        return {member, labs};
     };
 
     return api;

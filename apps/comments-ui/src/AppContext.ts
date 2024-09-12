@@ -90,6 +90,10 @@ export const useAppContext = () => useContext(AppContext);
 // create a hook that will only get labs data from the context
 
 export const useLabs = () => {
-    const context = useAppContext();
-    return context.labs;
+    try {
+        const context = useAppContext();
+        return context.labs;
+    } catch (e) {
+        return null;
+    }
 };

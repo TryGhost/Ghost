@@ -136,9 +136,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     const initSetup = async () => {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {member} = await api.init();
+            const {member, labs} = await api.init();
             const {comments, pagination, count} = await fetchComments();
-            const {labs} = (await api.site.settings()).settings;
             const state = {
                 member,
                 initStatus: 'success',
