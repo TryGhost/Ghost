@@ -7,6 +7,12 @@ const counter = new promClient.Counter({
     labelNames: ['method', 'statusCode']
 });
 
+const summary = new promClient.Summary({
+    name: 'ghost_http_response_time',
+    help: 'Summary of response times for all HTTP requests',
+    percentiles: [0.01, 0.1, 0.9, 0.99]
+});
+
 /**
  * @TODO: move this middleware to Framework monorepo?
  *
@@ -31,6 +37,8 @@ module.exports = function logRequest(req, res, next) {
             method: req.method,
             statusCode: res.statusCode
         });
+
+        summary.observe(Date.now() - startTime);
 
         res.removeListener('finish', logResponse);
         res.removeListener('close', logResponse);
