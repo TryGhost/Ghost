@@ -11,9 +11,10 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
+import microdiff from 'microdiff';
 import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
-import {action, computed} from '@ember/object';
+import {action, computed, get} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalizeFirstLetter} from '../helpers/capitalize-first-letter';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
@@ -1157,7 +1158,15 @@ export default class LexicalEditorController extends Controller {
             if (this.post) {
                 Object.assign(this._leaveModalReason, {status: this.post.status});
             }
-            Sentry.captureMessage('showing leave editor modal', {extra: this._leaveModalReason});
+
+            if (this._leaveModalReason.code === 'SCRATCH_DIVERGED_FROM_SECONDARY') {
+                this._assignLexicalDiffToLeaveModalReason();
+            }
+
+            // don't push full lexical state to Sentry, it's too large, gets filtered often and not useful
+            const sentryContext = {...this._leaveModalReason.context, secondaryLexical: undefined, scratch: undefined, lexical: undefined};
+            Sentry.captureMessage('showing leave editor modal', {extra: {...this._leaveModalReason, context: sentryContext}});
+
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
@@ -1248,6 +1257,46 @@ export default class LexicalEditorController extends Controller {
 
     /* Private methods -------------------------------------------------------*/
 
+    _assignLexicalDiffToLeaveModalReason() {
+        try {
+            const parsedSecondary = JSON.parse(this.post.secondaryLexicalState || JSON.stringify({}));
+            const parsedScratch = JSON.parse(this.post.scratch || JSON.stringify({}));
+
+            const diff = microdiff(parsedScratch, parsedSecondary, {cyclesFix: false});
+
+            // create a more useful path by showing the node types
+            diff.forEach((change) => {
+                if (change.path) {
+                // use path array to fill in node types from parsedScratch when path shows an index
+                    let humanPath = [];
+                    change.path.forEach((child, i) => {
+                        if (typeof child === 'number') {
+                            const partialPath = diff.path.slice(0, i + 1);
+                            const node = get(parsedScratch, partialPath.join('.'));
+                            if (node && node.type) {
+                                humanPath.push(`${child}[${node.type}]`);
+                            } else {
+                                humanPath.push(child);
+                            }
+                        } else {
+                            humanPath.push(child);
+                        }
+                    });
+                    change.path = humanPath.join('.');
+                }
+            });
+
+            if (!this._leaveModalReason.context) {
+                this._leaveModalReason.context = {};
+            }
+
+            Object.assign(this._leaveModalReason.context, {diff});
+        } catch (error) {
+            console.error(error); // eslint-disable-line
+            Sentry.captureException(error);
+        }
+    }
+
     _hasDirtyAttributes() {
         let post = this.post;
 
@@ -1257,7 +1306,11 @@ export default class LexicalEditorController extends Controller {
 
         // If the Adapter failed to save the post, isError will be true, and we should consider the post still dirty.
         if (post.get('isError')) {
-            this._leaveModalReason = {reason: 'isError', context: post.errors.messages};
+            this._leaveModalReason = {
+                reason: 'isError',
+                code: 'POST_HAS_ERROR',
+                context: post.errors.messages
+            };
             return true;
         }
 
@@ -1266,13 +1319,21 @@ export default class LexicalEditorController extends Controller {
         let currentTags = (this._tagNames || []).join(', ');
         let previousTags = (this._previousTagNames || []).join(', ');
         if (currentTags !== previousTags) {
-            this._leaveModalReason = {reason: 'tags are different', context: {currentTags, previousTags}};
+            this._leaveModalReason = {
+                reason: 'tags are different',
+                code: 'POST_TAGS_DIVERGED',
+                context: {currentTags, previousTags}
+            };
             return true;
         }
 
         // Title scratch comparison
         if (post.titleScratch.trim() !== post.title.trim()) {
-            this._leaveModalReason = {reason: 'title is different', context: {current: post.title, scratch: post.titleScratch}};
+            this._leaveModalReason = {
+                reason: 'title is different',
+                code: 'POST_TITLE_DIVERGED',
+                context: {current: post.title, scratch: post.titleScratch}
+            };
             return true;
         }
 
@@ -1289,15 +1350,26 @@ export default class LexicalEditorController extends Controller {
         scratchChildNodes.forEach(child => child.direction = null);
         secondaryLexicalChildNodes.forEach(child => child.direction = null);
 
-        // Compare initLexical with scratch
-        let isSecondaryDirty = secondaryLexical && scratch && JSON.stringify(secondaryLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
+        // Determine if main editor (scratch) has diverged from secondary editor
+        // (i.e. manual changes have been made since opening the editor)
+        const isSecondaryDirty = secondaryLexical && scratch && JSON.stringify(secondaryLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
-        // Compare lexical with scratch
-        let isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
+        // Determine if main editor (scratch) has diverged from saved lexical
+        // (i.e. changes have been made since last save)
+        const isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
         // If both comparisons are dirty, consider the post dirty
         if (isSecondaryDirty && isLexicalDirty) {
-            this._leaveModalReason = {reason: 'initLexical and lexical are different from scratch', context: {secondaryLexical, lexical, scratch}};
+            this._leaveModalReason = {
+                reason: 'main editor content has diverged from both hidden editor and saved content',
+                code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
+                context: {
+                    secondaryLexical,
+                    lexical,
+                    scratch
+                }
+            };
+
             return true;
         }
 
@@ -1306,7 +1378,11 @@ export default class LexicalEditorController extends Controller {
         if (post.get('isNew')) {
             let changedAttributes = Object.keys(post.changedAttributes() || {});
             if (changedAttributes.length) {
-                this._leaveModalReason = {reason: 'post.changedAttributes.length > 0', context: post.changedAttributes()};
+                this._leaveModalReason = {
+                    reason: 'post.changedAttributes.length > 0',
+                    code: 'NEW_POST_HAS_CHANGED_ATTRIBUTES',
+                    context: post.changedAttributes()
+                };
             }
             return changedAttributes.length ? true : false;
         }
@@ -1315,7 +1391,11 @@ export default class LexicalEditorController extends Controller {
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
         if (hasDirtyAttributes) {
-            this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
+            this._leaveModalReason = {
+                reason: 'post.hasDirtyAttributes === true',
+                code: 'POST_HAS_DIRTY_ATTRIBUTES',
+                context: post.changedAttributes()
+            };
             return true;
         }
 
