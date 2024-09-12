@@ -18,6 +18,7 @@ Object {
       "audienceFeedback": true,
       "collections": true,
       "collectionsCard": true,
+      "commentImprovements": true,
       "contentVisibility": true,
       "editorExcerpt": true,
       "emailCustomization": true,
