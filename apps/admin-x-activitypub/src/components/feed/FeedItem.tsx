@@ -38,7 +38,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         return (
             <div className={`attachment-gallery mt-2 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
             </div>
         );
@@ -302,7 +302,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
-                        <div className="mx-[-32px] my-3 h-px w-[120%] bg-grey-200"></div>
+                        <div className="mx-[-32px] mt-3 h-px w-[120%] bg-grey-200"></div>
                     </div>
 
                 )}
@@ -312,7 +312,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-2`} onClick={onClick}>
+                    <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
@@ -348,7 +348,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             {/* </div> */}
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-9px] w-[2px] rounded-sm bg-grey-200"></div>}
+                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-grey-200"></div>}
                     </div>
                 )}
             </>
