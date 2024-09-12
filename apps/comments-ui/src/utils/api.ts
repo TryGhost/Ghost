@@ -1,4 +1,4 @@
-import {AddComment, Comment} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../AppContext';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -294,20 +294,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             api.member.sessionData()
         ]);
 
-        let labs;
-        try {
-            labs = (await api.site.settings()).settings.labs;
-        } catch (e) {
-            // for use in tests since we don't have api.site.settings mocked
-            // haven't found a way friendly way of mocking the site settings api
-            // since it's a separate api from the members api
-            // api.site.settings don't exist in the tests so it will fall back to the catch block
+        let labs = {};
 
-            // TODO: remove this when we have a better way to mock the site settings api
-            labs = {
-                commentImprovements: true
-            };
+        try {
+            const settings = await api.site.settings();
+            if (settings.settings.labs) {
+                Object.assign(labs, settings.settings.labs);
+            }
+        } catch (e) {
+            labs = {};
         }
+
         return {member, labs};
     };
 
@@ -316,3 +313,4 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
 export default setupGhostApi;
 export type GhostApi = ReturnType<typeof setupGhostApi>;
+export type LabsType = LabsContextType;
