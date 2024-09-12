@@ -99,7 +99,7 @@ if (!knexInstance && config.get('database') && config.get('database').client) {
         name: 'ghost_db_connection_pool_utilization',
         help: 'Percentage of connections in use in the database connection pool',
         collect() {
-            this.set(knexInstance.client.pool.numUsed() / (knexInstance.client.pool.numUsed() + knexInstance.client.pool.numFree()));
+            this.set(knexInstance.client.pool.numUsed() / (knexInstance.client.pool.max));
         }
     });
     new promClient.Gauge({
@@ -108,6 +108,13 @@ if (!knexInstance && config.get('database') && config.get('database').client) {
         collect() {
             this.set(knexInstance.client.pool.max);
         }
+    });
+    const queryCounter = new promClient.Counter({
+        name: 'ghost_db_queries_total',
+        help: 'Total number of queries executed'
+    });
+    knexInstance.on('query', () => {
+        queryCounter.inc();
     });
     if (config.get('telemetry:connectionPool')) {
         const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
