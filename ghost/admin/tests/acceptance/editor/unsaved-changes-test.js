@@ -1,25 +1,13 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {click, currentURL, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find} from '@ember/test-helpers';
+import {editorSelector, pasteInEditor, titleSelector} from '../../helpers/editor';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-const titleSelector = '[data-test-editor-title-input]';
-const editorSelector = '[data-secondary-instance="false"] [data-lexical-editor]';
 const unsavedModalSelector = '[data-test-modal="unsaved-post-changes"]';
 const backToPostsSelector = '[data-test-link="posts"]';
-
-const pasteInEditor = async (text) => {
-    await waitFor(editorSelector);
-    await click(editorSelector);
-    const dataTransfer = new DataTransfer();
-    dataTransfer.setData('text/plain', text);
-    document.activeElement.dispatchEvent(new ClipboardEvent('paste', {clipboardData: dataTransfer, bubbles: true, cancelable: true}));
-    dataTransfer.clearData();
-    const editor = find(editorSelector);
-    await waitUntil(() => editor.textContent.includes(text));
-};
 
 describe('Acceptance: Editor: Unsaved changes', function () {
     let hooks = setupApplicationTest();
