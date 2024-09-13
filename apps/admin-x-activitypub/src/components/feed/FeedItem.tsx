@@ -9,7 +9,7 @@ import getUsername from '../../utils/get-username';
 import {type Activity} from '../activities/ActivityItem';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
-export function renderFeedAttachment(object: ObjectProperties, layout: string) {
+function getAttachment(object: ObjectProperties) {
     let attachment;
     if (object.image) {
         attachment = object.image;
@@ -18,6 +18,25 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     if (object.type === 'Note' && !attachment) {
         attachment = object.attachment;
     }
+
+    if (!attachment) {
+        return null;
+    }
+
+    if (Array.isArray(attachment)) {
+        if (attachment.length === 0) {
+            return null;
+        }
+        if (attachment.length === 1) {
+            return attachment[0];
+        }
+    }
+
+    return attachment;
+}
+
+export function renderFeedAttachment(object: ObjectProperties, layout: string) {
+    const attachment = getAttachment(object);
 
     if (!attachment) {
         return null;
@@ -66,14 +85,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
 }
 
 function renderInboxAttachment(object: ObjectProperties) {
-    let attachment;
-    if (object.image) {
-        attachment = object.image;
-    }
-
-    if (object.type === 'Note' && !attachment) {
-        attachment = object.attachment;
-    }
+    const attachment = getAttachment(object);
 
     if (!attachment) {
         return null;
@@ -81,18 +93,13 @@ function renderInboxAttachment(object: ObjectProperties) {
 
     if (Array.isArray(attachment)) {
         const attachmentCount = attachment.length;
-        // let gridClass = '';
-        // if (attachmentCount === 2) {
-        //     gridClass = 'grid-cols-2 auto-rows-[150px]'; // Two images, side by side
-        // } else if (attachmentCount === 3 || attachmentCount === 4) {
-        //     gridClass = 'grid-cols-2 auto-rows-[150px]'; // Three or four images, two per row
-        // }
+
         return (
             <div className='min-w-[160px]'>
-                {attachment[0] && <div className='relative'>
+                <div className='relative'>
                     <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment[0].url} />
                     <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
-                </div>}
+                </div>
             </div>
         );
     }
@@ -103,7 +110,7 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/gif':
         return (
             <div className='min-w-[160px]'>
-                {attachment && <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />}
+                <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />
             </div>
         );
     case 'video/mp4':
