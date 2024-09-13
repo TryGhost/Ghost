@@ -180,7 +180,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 {activities.length > 0 && (
                     <div className='mt-8 flex w-full max-w-[560px] flex-col'>
                         {activities?.map(activity => (
-                            <ActivityItem key={activity.id} url={getActivityUrl(activity) || getActorUrl(activity)}>
+                            <ActivityItem key={activity.id} type={activity.type} activity={activity} url={getActivityUrl(activity) || getActorUrl(activity)}>
                                 <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
                                 <div className='pt-[2px]'>
                                     <div className='text-grey-600'>
