@@ -22,7 +22,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
-import {isInvalidError} from 'ember-ajax/errors';
+import {isInvalidError, isNotFoundError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
@@ -649,6 +649,17 @@ export default class LexicalEditorController extends Controller {
             if (isHostLimitError(error)) {
                 this.post.rollbackAttributes();
                 this.openUpgradeModal(error.payload.errors[0]);
+                return;
+            }
+
+            // This shouldn't occur but we have a bug where a new post can get
+            // into a bad state where it's not saved but the store is treating
+            // it as saved and performing PUT requests with no id. We want to
+            // be noisy about this early to avoid data loss
+            if (isNotFoundError(error)) {
+                console.error(error); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}});
+                this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
                 return;
             }
 
