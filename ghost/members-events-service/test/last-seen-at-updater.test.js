@@ -10,6 +10,9 @@ const {MemberPageViewEvent, MemberCommentEvent, MemberSubscribeEvent, MemberLink
 const moment = require('moment');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
 const EventEmitter = require('events');
+const logging = require('@tryghost/logging');
+
+sinon.stub(logging, 'error');
 
 describe('LastSeenAtUpdater', function () {
     let events;
@@ -61,6 +64,32 @@ describe('LastSeenAtUpdater', function () {
             DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
             assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
         });
+
+        it('Catches errors in updateLastSeenAt on MemberPageViewEvents', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc();
+            const previousLastSeen = moment('2022-02-27T23:00:00Z').toISOString();
+            const stub = sinon.stub().resolves();
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {
+                        members: {
+                            update: stub
+                        }
+                    };
+                },
+                events
+            });
+            updater.subscribe(DomainEvents);
+            sinon.stub(updater, 'updateLastSeenAt').throws('Error');
+            DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
+            assert(true, 'The LastSeenAtUpdater should catch errors in updateLastSeenAt');
+        });
     
         it('Calls updateLastSeenAt on MemberLinkClickEvents', async function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
@@ -87,8 +116,34 @@ describe('LastSeenAtUpdater', function () {
             DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
             assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
         });
+
+        it('Catches errors in updateLastSeenAt on MemberLinkClickEvents', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc();
+            const previousLastSeen = moment('2022-02-27T23:00:00Z').toISOString();
+            const stub = sinon.stub().resolves();
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {
+                        members: {
+                            update: stub
+                        }
+                    };
+                },
+                events
+            });
+            updater.subscribe(DomainEvents);
+            sinon.stub(updater, 'updateLastSeenAt').throws('Error');
+            DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
+            assert(true, 'The LastSeenAtUpdater should catch errors in updateLastSeenAt');
+        });
     
-        it('Calls updateLastSeenAt on EmailOpenedEvents', async function () {
+        it('Calls updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
             const settingsCache = sinon.stub().returns('Etc/UTC');
             const db = {
@@ -123,6 +178,40 @@ describe('LastSeenAtUpdater', function () {
             assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
             assert(db.update.calledOnce);
         });
+
+        it('Catches errors in updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc();
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const db = {
+                knex() {
+                    return this;
+                },
+                where() {
+                    return this;
+                },
+                andWhere() {
+                    return this;
+                },
+                update: sinon.stub()
+            };
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {};
+                },
+                db,
+                events
+            });
+            updater.subscribe(DomainEvents);
+            sinon.stub(updater, 'updateLastSeenAtWithoutKnownLastSeen').throws('Error');
+            DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
+            await DomainEvents.allSettled();
+            assert(true, 'The LastSeenAtUpdater should catch errors in updateLastSeenAtWithoutKnownLastSeen');
+        });
     
         it('Calls updateLastCommentedAt on MemberCommentEvents', async function () {
             const now = moment('2022-02-28T18:00:00Z').utc();
@@ -147,6 +236,31 @@ describe('LastSeenAtUpdater', function () {
             sinon.stub(updater, 'updateLastCommentedAt');
             DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1'}, now.toDate()));
             assert(updater.updateLastCommentedAt.calledOnceWithExactly('1', now.toDate()));
+        });
+
+        it('Catches errors in updateLastCommentedAt on MemberCommentEvents', async function () {
+            const now = moment('2022-02-28T18:00:00Z').utc();
+            const stub = sinon.stub().resolves();
+            const settingsCache = sinon.stub().returns('Etc/UTC');
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {
+                        members: {
+                            update: stub
+                        }
+                    };
+                },
+                events
+            });
+            updater.subscribe(DomainEvents);
+            sinon.stub(updater, 'updateLastCommentedAt').throws('Error');
+            DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1'}, now.toDate()));
+            assert(true, 'The LastSeenAtUpdater should catch errors in updateLastCommentedAt');
         });
 
         it('Doesn\'t fire on other events', async function () {
@@ -326,6 +440,137 @@ describe('LastSeenAtUpdater', function () {
                 'member.edited', 
                 sinon.match.any
             ), 'The LastSeenAtUpdater should emit a member.edited event if it updated last_seen_at');
+        });
+    });
+
+    describe('cachedUpdateLastSeenAt', function () {
+        it('calls updateLastSeenAt if the member has not been seen today', async function () {
+            const now = moment.utc('2022-02-28T18:00:00Z');
+            const clock = sinon.useFakeTimers(now.toDate());
+            const saveStub = sinon.stub().resolves();
+            const refreshStub = sinon.stub().resolves({save: saveStub});
+            const settingsCache = sinon.stub().returns('Europe/Brussels');
+            const transactionStub = sinon.stub().callsFake((callback) => {
+                return callback();
+            });
+            const getStub = sinon.stub();
+            getStub.onFirstCall().resolves({get: () => null, save: saveStub, refresh: refreshStub});
+            getStub.onSecondCall().resolves({get: () => now.toDate(), save: saveStub, refresh: refreshStub});
+            getStub.resolves({get: () => now.toDate(), save: saveStub, refresh: refreshStub});
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {
+                        members: {
+                            get: getStub
+                        }
+                    };
+                },
+                db: {
+                    knex: {
+                        transaction: transactionStub
+                    }
+                },
+                events
+            });
+            sinon.stub(events, 'emit');
+            sinon.stub(updater, 'updateLastSeenAt');
+            await updater.cachedUpdateLastSeenAt('1', now.toDate(), now.toDate());
+            assert(updater.updateLastSeenAt.calledOnceWithExactly('1', now.toDate(), now.toDate()));
+            clock.restore();
+        });
+
+        it('only calls updateLastSeenAt once per day per member', async function () {
+            const now = moment.utc('2022-02-28T18:00:00Z');
+            const previousLastSeen = moment.utc('2022-02-26T00:00:00Z').toDate();
+            const clock = sinon.useFakeTimers(now.toDate());
+            const saveStub = sinon.stub().resolves();
+            const refreshStub = sinon.stub().resolves({save: saveStub});
+            const settingsCache = sinon.stub().returns('Europe/Brussels');
+            const transactionStub = sinon.stub().callsFake((callback) => {
+                return callback();
+            });
+            const getStub = sinon.stub();
+            getStub.onFirstCall().resolves({get: () => null, save: saveStub, refresh: refreshStub});
+            getStub.onSecondCall().resolves({get: () => now.toDate(), save: saveStub, refresh: refreshStub});
+            getStub.resolves({get: () => now.toDate(), save: saveStub, refresh: refreshStub});
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {
+                        members: {
+                            get: getStub
+                        }
+                    };
+                },
+                db: {
+                    knex: {
+                        transaction: transactionStub
+                    }
+                },
+                events
+            });
+            sinon.stub(events, 'emit');
+            sinon.spy(updater, 'updateLastSeenAt');
+            await Promise.all([
+                updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()),
+                updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()),
+                updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()),
+                updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate())
+            ]);
+            assert(updater.updateLastSeenAt.calledOnce, 'The LastSeenAtUpdater should only update a member once per day.');
+            clock.restore();
+        });
+
+        it('calls updateLastSeenAt again if it fails the first time', async function () {
+            const now = moment.utc('2022-02-28T18:00:00Z');
+            const previousLastSeen = moment.utc('2022-02-26T00:00:00Z').toDate();
+            const clock = sinon.useFakeTimers(now.toDate());
+            const saveStub = sinon.stub().resolves();
+            const refreshStub = sinon.stub().resolves({save: saveStub});
+            const settingsCache = sinon.stub().returns('Europe/Brussels');
+            // Throw an error on the first transaction, succeed on the second
+            const transactionStub = sinon.stub().onCall(0).throws('Error').onCall(1).callsFake((callback) => {
+                return callback();
+            });
+            const getStub = sinon.stub();
+            getStub.onFirstCall().resolves({get: () => null, save: saveStub, refresh: refreshStub});
+            getStub.onSecondCall().resolves({get: () => now.toDate(), save: saveStub, refresh: refreshStub});
+            getStub.resolves({get: () => now.toDate(), save: saveStub, refresh: refreshStub});
+            const updater = new LastSeenAtUpdater({
+                services: {
+                    settingsCache: {
+                        get: settingsCache
+                    }
+                },
+                getMembersApi() {
+                    return {
+                        members: {
+                            get: getStub
+                        }
+                    };
+                },
+                db: {
+                    knex: {
+                        transaction: transactionStub
+                    }
+                },
+                events
+            });
+            sinon.stub(events, 'emit');
+            sinon.spy(updater, 'updateLastSeenAt');
+            assert.rejects(updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()));
+            await updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate());
+            assert(updater.updateLastSeenAt.calledTwice, 'The LastSeenAtUpdater should attempt to update a member again if the first update fails.');
+            clock.restore();
         });
     });
 
