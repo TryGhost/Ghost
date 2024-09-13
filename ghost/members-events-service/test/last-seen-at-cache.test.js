@@ -99,6 +99,24 @@ describe('LastSeenAtCache', function () {
         });
     });
 
+    describe('remove', function () {
+        it('removes a member id from the cache', async function () {
+            const lastSeenAtCache = new LastSeenAtCache({
+                services: {
+                    settingsCache: {
+                        get() {
+                            return 'Etc/UTC';
+                        }
+                    }
+                }
+            });
+            lastSeenAtCache.add('member-id');
+            assert.equal(lastSeenAtCache._cache.size, 1, 'the member id should be in the cache');
+            lastSeenAtCache.remove('member-id');
+            assert.equal(lastSeenAtCache._cache.size, 0, 'the member id should be removed from the cache');
+        });
+    });
+
     describe('_has', function () {
         it('returns true if the member id is in the cache', async function () {
             const lastSeenAtCache = new LastSeenAtCache({

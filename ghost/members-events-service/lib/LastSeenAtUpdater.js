@@ -128,22 +128,30 @@ class LastSeenAtUpdater {
         // This isn't strictly necessary since we will fetch the member row for update and double check this
         // This is an optimization to avoid unnecessary database queries if last_seen_at is already after the beginning of the current day
         if (memberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(memberLastSeenAt)) {
-            const membersApi = this._getMembersApi();
-            await this._db.knex.transaction(async (trx) => {
-                // To avoid a race condition, we lock the member row for update, then the last_seen_at field again to prevent simultaneous updates
-                const currentMember = await membersApi.members.get({id: memberId}, {require: true, transacting: trx, forUpdate: true});
-                const currentMemberLastSeenAt = currentMember.get('last_seen_at');
-                if (currentMemberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(currentMemberLastSeenAt)) {
-                    const memberToUpdate = await currentMember.refresh({transacting: trx, forUpdate: false, withRelated: ['labels', 'newsletters']});
-                    const updatedMember = await memberToUpdate.save({last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')}, {transacting: trx, patch: true, method: 'update'});
-                    // The standard event doesn't get emitted inside the transaction, so we do it manually
-                    this._events.emit('member.edited', updatedMember);
-                    // Update local cache so we don't update the same member again in the same day
-                    this._lastSeenAtCache.add(memberId);
-                    return Promise.resolve(updatedMember);
-                }
-                return Promise.resolve(undefined);
-            });
+            try {
+                // Pre-emptively update local cache so we don't update the same member again in the same day
+                this._lastSeenAtCache.add(memberId);
+                const membersApi = this._getMembersApi();
+                await this._db.knex.transaction(async (trx) => {
+                    // To avoid a race condition, we lock the member row for update, then the last_seen_at field again to prevent simultaneous updates
+                    const currentMember = await membersApi.members.get({id: memberId}, {require: true, transacting: trx, forUpdate: true});
+                    const currentMemberLastSeenAt = currentMember.get('last_seen_at');
+                    if (currentMemberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(currentMemberLastSeenAt)) {
+                        const memberToUpdate = await currentMember.refresh({transacting: trx, forUpdate: false, withRelated: ['labels', 'newsletters']});
+                        const updatedMember = await memberToUpdate.save({last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')}, {transacting: trx, patch: true, method: 'update'});
+                        // The standard event doesn't get emitted inside the transaction, so we do it manually
+                        this._events.emit('member.edited', updatedMember);
+                        return Promise.resolve(updatedMember);
+                    }
+                    return Promise.resolve(undefined);
+                });
+            } catch (err) {
+                // Remove the member from the cache if an error occurs
+                // This is to ensure that the member is updated on the next event if this one fails
+                this._lastSeenAtCache.remove(memberId);
+                // Bubble up the error to the event listener
+                throw err;
+            }
         }
     }
 

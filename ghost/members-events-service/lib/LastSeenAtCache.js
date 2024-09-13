@@ -31,6 +31,14 @@ class LastSeenAtCache {
     }
 
     /**
+     * @method remove - Removes a member id from the cache
+     * @param {string} memberId 
+     */
+    remove(memberId) {
+        this._cache.delete(memberId);
+    }
+
+    /**
      * @method shouldUpdateMember - Checks if a member should be updated
      * @param {string} memberId 
      * @returns {boolean} - Returns true if the member should be updated
