@@ -706,7 +706,8 @@ describe('Acceptance: Editor', function () {
             await pasteInEditor('Testing');
 
             // we should see an error - previously this was failing silently
-            expect(find('.gh-alert-content')).to.have.trimmed.text('Resource could not be found.');
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
         });
     });
 });
