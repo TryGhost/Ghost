@@ -7,6 +7,7 @@ import {Button, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import getUsername from '../utils/get-username';
 import {useBrowseInboxForUser, useBrowseOutboxForUser, useFollowersForUser} from '../MainContent';
+import {useSiteUrl} from '../hooks/useActivityPubQueries';
 
 interface ActivitiesProps {}
 
@@ -112,6 +113,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     // that a reply was made to)
     const {data: inboxActivities = []} = useBrowseInboxForUser(user);
     const {data: outboxActivities = []} = useBrowseOutboxForUser(user);
+    const siteUrl = useSiteUrl();
 
     // Create a map of activity objects from activities in the inbox and outbox.
     // This allows us to quickly look up an object associated with an activity
@@ -147,7 +149,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             // checking that the hostname associated with the reply object
             // is the same as the hostname of the site. This is not a bullet
             // proof check, but it's a good enough for now
-            const hostname = new URL(window.location.href).hostname;
+            const hostname = new URL(siteUrl).hostname;
             const replyToObjectHostname = new URL(replyToObject.url).hostname;
 
             return hostname === replyToObjectHostname;

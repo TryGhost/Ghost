@@ -2,7 +2,7 @@ import {ActivityPubAPI} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
-const useSiteUrl = () => {
+export function useSiteUrl() {
     const site = useBrowseSite();
     return site.data?.site?.url ?? window.location.origin;
 };
