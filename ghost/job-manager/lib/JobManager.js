@@ -50,9 +50,8 @@ class JobManager {
      * @param {Object} [options.domainEvents] - domain events emitter
      * @param {Object} [options.config] - config
      * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
-     * @param {Object} [options.db] - the database object
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, db}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
@@ -87,14 +86,14 @@ class JobManager {
         });
 
         if (JobModel) {
-            this._jobsRepository = new JobsRepository({JobModel, db});
+            this._jobsRepository = new JobsRepository({JobModel});
         }
 
         // We have a duplicate job manager in Ghost core for the mentions job service that should be
         //  refactored to use the job queue when we're able.
-        if (!isDuplicate && this.#config.get('services:jobs:queue:enabled')) {
+        if (!isDuplicate && this.#config.get('services:jobs:queue:enabled') === true) {
             logging.info(`[JobManager] Initializing job queue based on config`);
-            this.#jobQueueManager = new JobQueueManager({JobModel, config, db});
+            this.#jobQueueManager = new JobQueueManager({JobModel, config});
             this.#jobQueueManager.init();
         }
     }
@@ -443,6 +442,10 @@ class JobManager {
      */
     async shutdown(options) {
         await this.bree.stop();
+
+        if (this.#jobQueueManager) {
+            await this.#jobQueueManager.shutdown();
+        }
 
         if (this.inlineQueue.idle()) {
             return;

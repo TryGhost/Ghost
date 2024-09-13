@@ -9,13 +9,11 @@ class JobsRepository {
      * @constructor
      * @param {Object} options - The options object.
      * @param {Object} options.JobModel - The Job model for database operations.
-     * @param {Object} options.db - The database object.
      */
-    constructor({JobModel, db}) {
+    constructor({JobModel}) {
         // NOTE: We ought to clean this up. We want to use bookshelf models for all db operations,
         //  but we use knex directly in a few places still largely for performance reasons.
         this._JobModel = JobModel;
-        this._db = db;
     }
 
     /**
@@ -98,16 +96,26 @@ class JobsRepository {
      * @returns {Promise<Object>} The added job object.
      */
     async addQueuedJob({name, metadata}) {
-        // We need to use knex here because BookshelfModel.add does not support the `onConflict` method.
-        const result = await this._db.knex('jobs').insert({
-            id: new ObjectID().toHexString(),
-            name: name,
-            status: 'queued',
-            created_at: new Date(),
-            metadata: JSON.stringify(metadata),
-            queue_entry: 1
-        }).onConflict('name').ignore();
-        return result;
+        let job;
+        await this._JobModel.transaction(async (transacting) => {
+            // Check if a job with this name already exists
+            const existingJob = await this._JobModel.findOne({name}, {transacting});
+            
+            if (!existingJob) {
+                // If no existing job, create a new one
+                job = await this._JobModel.add({
+                    id: new ObjectID().toHexString(),
+                    name: name,
+                    status: 'queued',
+                    created_at: new Date(),
+                    metadata: JSON.stringify(metadata),
+                    queue_entry: 1
+                }, {transacting});
+            }
+            // If existingJob is found, do nothing (equivalent to IGNORE)
+        });
+        
+        return job; // Will be undefined if the job already existed
     }
 
     /**

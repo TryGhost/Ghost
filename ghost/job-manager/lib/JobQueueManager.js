@@ -34,10 +34,9 @@ class JobQueueManager {
      * @param {Object} options - Configuration options for the job manager.
      * @param {Object} options.JobModel - A model which can persist job data in storage.
      * @param {Object} options.config - The configuration object.
-     * @param {Object} options.db - The database object.
      */
-    constructor({JobModel, config, db}) {
-        this.jobsRepository = new JobsRepository({JobModel, db});
+    constructor({JobModel, config}) {
+        this.jobsRepository = new JobsRepository({JobModel});
         this.#queueConfig = config?.get('services:jobs:queue') || {};
         this.#logger = this.#createLogger(this.#queueConfig.logLevel);
         let poolOptions = {
@@ -293,6 +292,15 @@ class JobQueueManager {
             this.#logger.info('-- job queue stats --');
             this.#logger.info(JSON.stringify(this.pool.stats(), null, 2));
         }, interval);
+    }
+
+    /**
+     * @method shutdown
+     * @async
+     * @description Shuts down the worker pool.
+     */
+    async shutdown() {
+        await this.pool.terminate();
     }
 }
 
