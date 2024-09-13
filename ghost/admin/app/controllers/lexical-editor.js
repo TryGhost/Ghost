@@ -260,7 +260,7 @@ export default class LexicalEditorController extends Controller {
 
     @computed('post.isDraft')
     get _canAutosave() {
-        return config.environment !== 'test' && this.get('post.isDraft');
+        return this.post.isDraft;
     }
 
     TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
@@ -1217,7 +1217,7 @@ export default class LexicalEditorController extends Controller {
             return this.autosaveTask.perform();
         }
 
-        yield timeout(AUTOSAVE_TIMEOUT);
+        yield timeout(config.environment === 'test' ? 100 : AUTOSAVE_TIMEOUT);
         this.autosaveTask.perform();
     }).restartable())
         _autosaveTask;
