@@ -88,7 +88,8 @@ class LastSeenAtCache {
      */
     _getStartOfCurrentDay() {
         const timezone = this._settingsCache.get('timezone') || 'Etc/UTC';
-        return moment().tz(timezone).startOf('day').utc().toISOString();
+        const startOfDay = moment().tz(timezone).startOf('day').utc().toISOString();
+        return startOfDay;
     }
 }
 
