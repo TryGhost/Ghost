@@ -70,7 +70,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     data-test-view-article
                                     onClick={() => handleViewContent(
                                         activity.object,
-                                        activity.actor,
+                                        typeof activity.object.attributedTo !== 'string' && !Array.isArray(activity.object.attributedTo) ? activity.object.attributedTo : activity.actor,
                                         getCommentsForObject(activity.object.id)
                                     )}
                                 >
