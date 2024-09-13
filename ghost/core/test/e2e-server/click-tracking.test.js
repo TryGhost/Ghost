@@ -4,6 +4,7 @@ const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils
 const urlUtils = require('../../core/shared/url-utils');
 const jobService = require('../../core/server/services/jobs/job-service');
 const {anyGhostAgent, anyContentVersion, anyNumber, anyISODateTime, anyObjectId} = matchers;
+const membersEventsService = require('../../core/server/services/members-events');
 
 describe('Click Tracking', function () {
     let agent;
@@ -20,6 +21,7 @@ describe('Click Tracking', function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
         webhookMockReceiver = mockManager.mockWebhookRequests();
+        membersEventsService.clearLastSeenAtCache();
     });
 
     afterEach(function () {
