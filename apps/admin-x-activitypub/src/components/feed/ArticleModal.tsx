@@ -8,6 +8,7 @@ import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import FeedItem from './FeedItem';
 import MainHeader from '../navigation/MainHeader';
 
+import APReplyBox from '../global/APReplyBox';
 import articleBodyStyles from '../articleBodyStyles';
 import {type Activity} from '../activities/ActivityItem';
 
@@ -143,6 +144,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                             object={object}
                             type='Note'
                         />
+                        <APReplyBox placeholder='Reply to @fake@user...'/>
+
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
                         {/* {renderAttachment(object)} */}
                         {/* <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
