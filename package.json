@@ -118,7 +118,7 @@
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
     "lint-staged": "15.2.10",
-    "nx": "16.8.1",
+    "nx": "19.7.3",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
