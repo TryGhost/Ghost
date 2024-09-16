@@ -22,7 +22,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
-import {isInvalidError} from 'ember-ajax/errors';
+import {isInvalidError, isNotFoundError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
@@ -260,7 +260,7 @@ export default class LexicalEditorController extends Controller {
 
     @computed('post.isDraft')
     get _canAutosave() {
-        return config.environment !== 'test' && this.get('post.isDraft');
+        return this.post.isDraft;
     }
 
     TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
@@ -652,8 +652,20 @@ export default class LexicalEditorController extends Controller {
                 return;
             }
 
-            // re-throw if we have a general server error
+            // This shouldn't occur but we have a bug where a new post can get
+            // into a bad state where it's not saved but the store is treating
+            // it as saved and performing PUT requests with no id. We want to
+            // be noisy about this early to avoid data loss
+            if (isNotFoundError(error)) {
+                console.error(error); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}});
+                this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
+                return;
+            }
+
             if (error && !isInvalidError(error)) {
+                console.error(error); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}});
                 this.send('error', error);
                 return;
             }
@@ -683,14 +695,9 @@ export default class LexicalEditorController extends Controller {
             // }
         }
 
-        // TODO: There's no need for (at least) most of these scratch values.
-        // Refactor so we're setting model attributes directly
-
         // Set the properties that are indirected
 
-        // Set lexical equal to what's in the editor but create a copy so that
-        // nested objects/arrays don't keep references which can mean that both
-        // scratch and lexical get updated simultaneously
+        // Set lexical equal to what's in the editor
         this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
@@ -698,6 +705,8 @@ export default class LexicalEditorController extends Controller {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
 
+        // TODO: There's no need for most of these scratch values.
+        // Refactor so we're setting model attributes directly
         this.set('post.title', this.get('post.titleScratch'));
         this.set('post.customExcerpt', this.get('post.customExcerptScratch'));
         this.set('post.footerInjection', this.get('post.footerExcerptScratch'));
@@ -1219,7 +1228,7 @@ export default class LexicalEditorController extends Controller {
             return this.autosaveTask.perform();
         }
 
-        yield timeout(AUTOSAVE_TIMEOUT);
+        yield timeout(config.environment === 'test' ? 100 : AUTOSAVE_TIMEOUT);
         this.autosaveTask.perform();
     }).restartable())
         _autosaveTask;

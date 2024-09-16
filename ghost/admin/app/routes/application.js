@@ -106,7 +106,7 @@ export default Route.extend(ShortcutsRoute, {
         save: K,
 
         error(error, transition) {
-            // unauthoirized errors are already handled in the ajax service
+            // unauthorized errors are already handled in the ajax service
             if (isUnauthorizedError(error)) {
                 return false;
             }
@@ -114,22 +114,27 @@ export default Route.extend(ShortcutsRoute, {
             if (isNotFoundError(error)) {
                 if (transition) {
                     transition.abort();
+
+                    let routeInfo = transition?.to;
+                    let router = this.router;
+                    let params = [];
+
+                    if (routeInfo) {
+                        for (let key of Object.keys(routeInfo.params)) {
+                            params.push(routeInfo.params[key]);
+                        }
+
+                        let url = router.urlFor(routeInfo.name, ...params)
+                            .replace(/^#\//, '')
+                            .replace(/^\//, '')
+                            .replace(/^ghost\//, '');
+
+                        return this.replaceWith('error404', url);
+                    }
                 }
 
-                let routeInfo = transition.to;
-                let router = this.router;
-                let params = [];
-
-                for (let key of Object.keys(routeInfo.params)) {
-                    params.push(routeInfo.params[key]);
-                }
-
-                let url = router.urlFor(routeInfo.name, ...params)
-                    .replace(/^#\//, '')
-                    .replace(/^\//, '')
-                    .replace(/^ghost\//, '');
-
-                return this.replaceWith('error404', url);
+                // when there's no transition we fall through to our generic error handler
+                // for network errors that will hit the isAjaxError branch below
             }
 
             if (isVersionMismatchError(error)) {

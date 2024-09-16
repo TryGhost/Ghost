@@ -84,15 +84,15 @@ export default class KpisOverview extends Component {
         const _KPITotal = kpi => queryData.reduce((prev, curr) => (curr[kpi] ?? 0) + prev, 0);
 
         // Get total number of sessions
-        const totalVisits = formatNumber(_KPITotal('visits'));
+        const totalVisits = _KPITotal('visits');
 
         // Sum total KPI value from the trend, ponderating using sessions
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);
 
         return {
             avg_session_sec: Math.floor(_ponderatedKPIsTotal('avg_session_sec') / 60),
-            pageviews: _KPITotal('pageviews'),
-            visits: totalVisits,
+            pageviews: formatNumber(_KPITotal('pageviews')),
+            visits: formatNumber(totalVisits),
             bounce_rate: _ponderatedKPIsTotal('bounce_rate').toFixed(2)
         };
     }

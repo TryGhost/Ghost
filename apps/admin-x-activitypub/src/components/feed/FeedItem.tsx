@@ -1,12 +1,15 @@
-import APAvatar from '../global/APAvatar';
 import React, {useState} from 'react';
-import getRelativeTimestamp from '../../utils/get-relative-timestamp';
-import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
+
+import APAvatar from '../global/APAvatar';
+
+import getRelativeTimestamp from '../../utils/get-relative-timestamp';
+import getUsername from '../../utils/get-username';
+import {type Activity} from '../activities/ActivityItem';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
-export function renderFeedAttachment(object: ObjectProperties, layout: string) {
+function getAttachment(object: ObjectProperties) {
     let attachment;
     if (object.image) {
         attachment = object.image;
@@ -15,6 +18,25 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     if (object.type === 'Note' && !attachment) {
         attachment = object.attachment;
     }
+
+    if (!attachment) {
+        return null;
+    }
+
+    if (Array.isArray(attachment)) {
+        if (attachment.length === 0) {
+            return null;
+        }
+        if (attachment.length === 1) {
+            return attachment[0];
+        }
+    }
+
+    return attachment;
+}
+
+export function renderFeedAttachment(object: ObjectProperties, layout: string) {
+    const attachment = getAttachment(object);
 
     if (!attachment) {
         return null;
@@ -35,7 +57,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         return (
             <div className={`attachment-gallery mt-2 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
             </div>
         );
@@ -63,14 +85,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
 }
 
 function renderInboxAttachment(object: ObjectProperties) {
-    let attachment;
-    if (object.image) {
-        attachment = object.image;
-    }
-
-    if (object.type === 'Note' && !attachment) {
-        attachment = object.attachment;
-    }
+    const attachment = getAttachment(object);
 
     if (!attachment) {
         return null;
@@ -78,12 +93,7 @@ function renderInboxAttachment(object: ObjectProperties) {
 
     if (Array.isArray(attachment)) {
         const attachmentCount = attachment.length;
-        // let gridClass = '';
-        // if (attachmentCount === 2) {
-        //     gridClass = 'grid-cols-2 auto-rows-[150px]'; // Two images, side by side
-        // } else if (attachmentCount === 3 || attachmentCount === 4) {
-        //     gridClass = 'grid-cols-2 auto-rows-[150px]'; // Three or four images, two per row
-        // }
+
         return (
             <div className='min-w-[160px]'>
                 <div className='relative'>
@@ -155,13 +165,13 @@ const FeedItemStats: React.FC<{
 
     return (<div className='flex gap-5'>
         <div className='mt-3 flex gap-1'>
-            <Button 
-                className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`} 
-                hideLabel={true} 
-                icon='heart' 
-                id='like' 
-                size='md' 
-                unstyled={true} 
+            <Button
+                className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
+                hideLabel={true}
+                icon='heart'
+                id='like'
+                size='md'
+                unstyled={true}
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
                     handleLikeClick();
@@ -170,13 +180,13 @@ const FeedItemStats: React.FC<{
             {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
         </div>
         <div className='mt-3 flex gap-1'>
-            <Button 
-                className={`self-start text-grey-900`} 
-                hideLabel={true} 
-                icon='comment' 
-                id='comment' 
-                size='md' 
-                unstyled={true} 
+            <Button
+                className={`self-start text-grey-900`}
+                hideLabel={true}
+                icon='comment'
+                id='comment'
+                size='md'
+                unstyled={true}
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
                     onCommentClick();
@@ -192,10 +202,14 @@ interface FeedItemProps {
     object: ObjectProperties;
     layout: string;
     type: string;
+    comments?: Activity[];
     last?: boolean;
+    onClick?: () => void;
 }
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) => {
+const noop = () => {};
+
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -215,7 +229,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-6`}>
+                    <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
@@ -238,7 +252,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
-                                        commentCount={2}
+                                        commentCount={comments.length}
                                         likeCount={1}
                                         object={object}
                                         onCommentClick={onLikeClick}
@@ -258,7 +272,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
             <>
                 {object && (
                     <div>
-                        <div className={`group/article relative cursor-pointer`}>
+                        <div className={`group/article relative cursor-pointer`} onClick={onClick}>
                             {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                                 <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                                 <span className='z-10'>{actor.name} reposted</span>
@@ -283,7 +297,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.6rem] text-grey-900'></div>
                                         {renderFeedAttachment(object, layout)}
                                         <FeedItemStats
-                                            commentCount={2}
+                                            commentCount={comments.length}
                                             likeCount={1}
                                             object={object}
                                             onCommentClick={onLikeClick}
@@ -295,9 +309,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
-                        <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
+                        <div className="mx-[-32px] mt-3 h-px w-[120%] bg-grey-200"></div>
                     </div>
-                    
+
                 )}
             </>
         );
@@ -305,12 +319,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-5`}>
+                    <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-4`} data-test-activity>
+                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author}/>
                             </div>
@@ -330,7 +344,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
                                     <FeedItemStats
-                                        commentCount={2}
+                                        commentCount={comments.length}
                                         likeCount={1}
                                         object={object}
                                         onCommentClick={onLikeClick}
@@ -341,7 +355,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                             {/* </div> */}
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-9px] w-[2px] rounded-sm bg-grey-200"></div>}
+                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-grey-200"></div>}
                     </div>
                 )}
             </>
@@ -350,7 +364,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75'>
+                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
                         <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
                             <APAvatar author={author} size='xs'/>
                             <div className='z-10 w-full'>
@@ -367,7 +381,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, last}) 
                                     {renderInboxAttachment(object)}
                                 </div>
                                 <FeedItemStats
-                                    commentCount={2}
+                                    commentCount={comments.length}
                                     likeCount={1}
                                     object={object}
                                     onCommentClick={onLikeClick}

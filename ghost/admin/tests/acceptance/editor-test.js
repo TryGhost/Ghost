@@ -1,10 +1,12 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
+import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
 import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
@@ -114,9 +116,9 @@ describe('Acceptance: Editor', function () {
         let author;
 
         beforeEach(async function () {
+            this.server.loadFixtures();
             let role = this.server.create('role', {name: 'Administrator'});
             author = this.server.create('user', {roles: [role]});
-            this.server.loadFixtures('settings');
 
             await authenticateSession();
         });
@@ -668,6 +670,44 @@ describe('Acceptance: Editor', function () {
                 find('[data-test-modal="tk-reminder"]'),
                 'TK reminder modal'
             ).to.exist;
+        });
+
+        // We shouldn't ever see 404s from the API but we do/have had a bug where
+        // a new post can enter a state where it appears saved but hasn't hit
+        // the API to create the post meaning it has no ID but the store is
+        // making PUT requests rather than a POST request in which case it's
+        // hitting `/posts/` rather than `/posts/:id` and receiving a 404. On top
+        // of that our application error handler was erroring because there was
+        // no transition alongside the error so this test makes sure that works
+        // and we enter a visible error state rather than letting unsaved changes
+        // pile up and contributing to larger potential data loss.
+        it('handles 404s from API requests', async function () {
+            // this doesn't match what we're actually seeing in the above mentioned
+            // bug state but it's a good enough simulation for testing our error handler
+            this.server.put('/posts/:id/', () => {
+                return new Response(404, {}, {
+                    errors: [
+                        {
+                            message: 'Resource could not be found.',
+                            errorType: 'NotFoundError',
+                            statusCode: 404
+                        }
+                    ]
+                });
+            });
+
+            await visit('/editor/post');
+            await waitFor(editorSelector);
+            await fillIn(titleSelector, 'Test 404 handling');
+            // this triggers the initial creation request - in the actual bug this doesn't happen
+            await blur(titleSelector);
+            expect(currentRouteName()).to.equal('lexical-editor.edit');
+            // this will trigger an autosave which will hit our simulated 404
+            await pasteInEditor('Testing');
+
+            // we should see an error - previously this was failing silently
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
         });
     });
 });

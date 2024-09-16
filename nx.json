@@ -27,12 +27,14 @@
                 "^build"
             ],
             "inputs": [
+                { "env": "GHOST_CDN_URL" },
                 "default",
                 "^default"
             ],
             "outputs": [
                 "{projectRoot}/dist",
                 "{projectRoot}/es",
+                "{projectRoot}/types",
                 "{projectRoot}/umd"
             ]
         },

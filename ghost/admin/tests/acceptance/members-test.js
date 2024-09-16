@@ -143,63 +143,23 @@ describe('Acceptance: Members', function () {
                 .to.equal('example@domain.com');
         });
 
-        /* Due to a limitation with NQL when multiple member filters are used in combination, we currently have a safeguard around member bulk deletion.
-        *  Member bulk deletion is not permitted when:
-        *   1) Multiple newsletters exist, and 2 or more newsletter filters are in use
-        *   2) If any of the following Stripe filters are used, even once:
-        *     - Billing period
-        *     - Stripe subscription status
-        *     - Paid start date
-        *     - Next billing date
-        *     - Subscription started on post/page
-        *     - Offers
-        *
-        * See code: ghost/admin/app/controllers/members.js:isBulkDeletePermitted
-        * See issue https://linear.app/tryghost/issue/ENG-1484 for more context
-        *
-        * TODO: delete this block of tests once the guardrail has been removed
+        /*
+         * Due to a limitation with NQL, member bulk deletion is not permitted if any of the following Stripe subscription filters is used:
+         *     - Billing period
+         *     - Stripe subscription status
+         *     - Paid start date
+         *     - Next billing date
+         *     - Subscription started on post/page
+         *     - Offers
+         *
+         * For more context, see:
+         * - https://linear.app/tryghost/issue/ENG-1484
+         * - https://linear.app/tryghost/issue/ENG-1466
+         *
+         * See code: ghost/admin/app/controllers/members.js:isBulkDeletePermitted
+         * TODO: delete this block of tests once the guardrail has been removed
         */
         describe('[Temp] Guardrail against bulk deletion', function () {
-            it('cannot bulk delete members if more than 1 newsletter filter is used', async function () {
-                // Create two newsletters and members subscribed to 1 or 2 newsletters
-                const newsletterOne = this.server.create('newsletter');
-                const newsletterTwo = this.server.create('newsletter');
-                this.server.createList('member', 2).forEach(member => member.update({newsletters: [newsletterOne], email_disabled: 0}));
-                this.server.createList('member', 2).forEach(member => member.update({newsletters: [newsletterOne, newsletterTwo], email_disabled: 0}));
-
-                await visit('/members');
-                expect(findAll('[data-test-member]').length).to.equal(4);
-
-                // The delete button should not be visible by default
-                await click('[data-test-button="members-actions"]');
-                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
-
-                // Apply a first filter
-                await click('[data-test-button="members-filter-actions"]');
-                await fillIn('[data-test-members-filter="0"] [data-test-select="members-filter"]', `newsletters.slug:${newsletterOne.slug}`);
-                await click(`[data-test-button="members-apply-filter"]`);
-
-                expect(findAll('[data-test-member]').length).to.equal(4);
-                expect(currentURL()).to.equal(`/members?filter=(newsletters.slug%3A${newsletterOne.slug}%2Bemail_disabled%3A0)`);
-
-                // Bulk deletion is permitted
-                await click('[data-test-button="members-actions"]');
-                expect(find('[data-test-button="delete-selected"]')).to.exist;
-
-                // Apply a second filter
-                await click('[data-test-button="members-filter-actions"]');
-                await click('[data-test-button="add-members-filter"]');
-                await fillIn('[data-test-members-filter="1"] [data-test-select="members-filter"]', `newsletters.slug:${newsletterTwo.slug}`);
-                await click(`[data-test-button="members-apply-filter"]`);
-
-                expect(findAll('[data-test-member]').length).to.equal(2);
-                expect(currentURL()).to.equal(`/members?filter=(newsletters.slug%3A${newsletterOne.slug}%2Bemail_disabled%3A0)%2B(newsletters.slug%3A${newsletterTwo.slug}%2Bemail_disabled%3A0)`);
-
-                // Bulk deletion is not permitted anymore
-                await click('[data-test-button="members-actions"]');
-                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
-            });
-
             it('can bulk delete members if a non-Stripe subscription filter is in use (member tier, status)', async function () {
                 const tier = this.server.create('tier', {id: 'qwerty123456789'});
                 this.server.createList('member', 2, {status: 'free'});

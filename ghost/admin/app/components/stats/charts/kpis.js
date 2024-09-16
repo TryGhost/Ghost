@@ -47,41 +47,44 @@ export default class KpisComponent extends Component {
         });
 
         // Create an array with every second date value
-        const dateLabels = [];
-        let currentDate = startDate.clone();
-        let skipDays;
-        switch (chartRange) {
-        case 1:
-            skipDays = 0; // Show all hours for 1 day
-            break;
-        case 7:
-            skipDays = 0; // Skip every other day for 7 days
-            break;
-        case (30 + 1):
-            skipDays = 2; // Skip every 3rd day for 30 and 90 days
-            break;
-        case (90 + 1):
-            skipDays = 5; // Skip every 3rd day for 30 and 90 days
-            break;
-        case (365 + 1):
-        case (12 * (30 + 1)):
-            skipDays = 30; // Skip every 7th day for 1 year
-            break;
-        case 1000:
-            skipDays = 29; // Skip every 30th day for all time
-            break;
-        default:
-            skipDays = 1; // Default to skipping every other day
-        }
+        const dateLabels = [
+            startDate.format('YYYY-MM-DD'),
+            endDate.format('YYYY-MM-DD')
+        ];
+        // let currentDate = startDate.clone();
+        // let skipDays;
+        // switch (chartRange) {
+        // case 1:
+        //     skipDays = 0; // Show all hours for 1 day
+        //     break;
+        // case 7:
+        //     skipDays = 0; // Skip every other day for 7 days
+        //     break;
+        // case (30 + 1):
+        //     skipDays = 2; // Skip every 3rd day for 30 and 90 days
+        //     break;
+        // case (90 + 1):
+        //     skipDays = 5; // Skip every 3rd day for 30 and 90 days
+        //     break;
+        // case (365 + 1):
+        // case (12 * (30 + 1)):
+        //     skipDays = 30; // Skip every 7th day for 1 year
+        //     break;
+        // case 1000:
+        //     skipDays = 29; // Skip every 30th day for all time
+        //     break;
+        // default:
+        //     skipDays = 1; // Default to skipping every other day
+        // }
 
-        let dayCounter = 0;
-        while (currentDate.isSameOrBefore(endDate)) {
-            if (dayCounter % (skipDays + 1) === 0) {
-                dateLabels.push(currentDate.format('YYYY-MM-DD'));
-            }
-            currentDate.add(1, 'days');
-            dayCounter = dayCounter + 1;
-        }
+        // let dayCounter = 0;
+        // while (currentDate.isSameOrBefore(endDate)) {
+        //     if (dayCounter % (skipDays + 1) === 0) {
+        //         dateLabels.push(currentDate.format('YYYY-MM-DD'));
+        //     }
+        //     currentDate.add(1, 'days');
+        //     dayCounter = dayCounter + 1;
+        // }
 
         return (
             <AreaChart
@@ -133,12 +136,19 @@ export default class KpisComponent extends Component {
                         }
                     },
                     yAxis: {
+                        type: 'value',
                         splitLine: {
-                            show: true,
+                            show: false,
                             lineStyle: {
                                 type: 'dashed',
                                 color: '#DDE1E5' // Adjust color as needed
                             }
+                        },
+                        axisLabel: {
+                            show: true
+                        },
+                        axisTick: {
+                            show: false
                         }
                     },
                     tooltip: {
@@ -190,7 +200,7 @@ export default class KpisComponent extends Component {
                                     x2: 0,
                                     y2: 1,
                                     colorStops: [{
-                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.3)
+                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.15)
                                     }, {
                                         offset: 1, color: hexToRgba(LINE_COLOR, 0.0)
                                     }],
@@ -211,7 +221,7 @@ export default class KpisComponent extends Component {
                             symbol: 'circle',
                             symbolSize: 10,
                             z: 8,
-                            smooth: true,
+                            smooth: false,
                             smoothMonotone: 'x',
                             name: CATEGORY,
                             data: (data ?? []).map(row => [

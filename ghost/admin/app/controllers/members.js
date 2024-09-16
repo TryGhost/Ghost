@@ -209,10 +209,8 @@ export default class MembersController extends Controller {
         return uniqueColumns.splice(0, 2); // Maximum 2 columns
     }
 
-    /* Due to a limitation with NQL when multiple member filters are used in combination, we currently have a safeguard around member bulk deletion.
-     * Member bulk deletion is not permitted when:
-     *   1) Multiple newsletters exist, and 2 or more newsletter filters are in use
-     *   2) If any of the following Stripe filters are used, even once:
+    /*
+     * Due to a limitation with NQL, member bulk deletion is not permitted if any of the following Stripe subscription filters is used:
      *     - Billing period
      *     - Stripe subscription status
      *     - Paid start date
@@ -220,16 +218,12 @@ export default class MembersController extends Controller {
      *     - Subscription started on post/page
      *     - Offers
      *
-     * See issue https://linear.app/tryghost/issue/ENG-1484 for more context
+     * For more context, see:
+     * - https://linear.app/tryghost/issue/ENG-1484
+     * - https://linear.app/tryghost/issue/ENG-1466
      */
     get isBulkDeletePermitted() {
         if (!this.isFiltered) {
-            return false;
-        }
-
-        const newsletterFilters = this.filters.filter(f => f.group === 'Newsletters');
-
-        if (newsletterFilters && newsletterFilters.length >= 2) {
             return false;
         }
 
