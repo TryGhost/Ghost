@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, Menu, MenuItem} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 
@@ -220,10 +220,36 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
+    const handleDelete = () => {
+        // Handle delete action
+    };
+
     let author = actor;
     if (type === 'Announce' && object.type === 'Note') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
+
+    const menuItems: MenuItem[] = [];
+
+    // TODO: If this is your own Note/Article, you should be able to delete it
+    menuItems.push({
+        id: 'delete',
+        label: 'Delete',
+        destructive: true,
+        onClick: handleDelete
+    });
+
+    const UserMenuTrigger = (
+        <Button
+            className='relative z-10 ml-auto self-start'
+            hideLabel={true}
+            icon='dotdotdot'
+            iconColorClass='text-grey-600'
+            id='more'
+            size='sm'
+            unstyled={true}
+        />
+    );
 
     if (layout === 'feed') {
         return (
@@ -236,15 +262,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                         </div>}
                         <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-6`} data-test-activity>
                             <APAvatar author={author}/>
-                            {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
-                            <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                                <div className='flex'>
-                                    <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
-                                    <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                            <div className='flex justify-between'>
+                                <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                                    <div className='flex'>
+                                        <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                                    </div>
+                                    <div className='flex'>
+                                        <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                                    </div>
                                 </div>
-                                <div className='flex'>
-                                    <span className='truncate text-grey-700'>{getUsername(author)}</span>
-                                </div>
+                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
