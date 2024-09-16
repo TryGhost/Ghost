@@ -14,12 +14,12 @@ const Count: React.FC<CountProps> = ({showCount, count}) => {
 
     if (count === 1) {
         return (
-            <div className="text-md text-[rgba(0,0,0,0.5)] sm:text-[1.6rem] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('1 comment')}</div>
+            <div className="text-md text-[rgba(0,0,0,0.5)] sm:text-lg dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('1 comment')}</div>
         );
     }
 
     return (
-        <div className="text-md text-[rgba(0,0,0,0.5)] sm:text-[1.6rem] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('{{amount}} comments', {amount: formatNumber(count)})}</div>
+        <div className="text-md text-[rgba(0,0,0,0.5)] sm:text-lg dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('{{amount}} comments', {amount: formatNumber(count)})}</div>
     );
 };
 

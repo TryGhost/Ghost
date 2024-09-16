@@ -105,7 +105,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     return (
         <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[56px] sm:pl-[52px] sm:pt-[64px]'}`}>
             <div
-                className={`shadow-form hover:shadow-formxl text-md w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-2 font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-[1.6rem] dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text py-2 pb-[68px]' : 'min-h-[48px] cursor-pointer overflow-hidden py-3 hover:border-slate-300 sm:py-4'}
+                className={`shadow-form hover:shadow-formxl text-md w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-2 font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text py-2 pb-[68px]' : 'min-h-[48px] cursor-pointer overflow-hidden py-3 hover:border-slate-300 sm:py-4'}
             `}
                 data-testid="form-editor">
                 <EditorContent
@@ -150,23 +150,25 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
             leaveTo="opacity-0"
             show={show}
         >
-            <div
-                className="font-sans text-base font-bold leading-snug text-[rgb(23,23,23)] sm:text-[1.35rem] dark:text-[rgba(255,255,255,0.85)]"
-                data-testid="member-name"
-                onClick={editName}
-            >
-                {name ? name : 'Anonymous'}
-            </div>
-            <div className="flex items-baseline justify-start">
-                <button
-                    className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] sm:max-w-[90%] sm:text-[1.35rem] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] ${!expertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
-                    data-testid="expertise-button"
-                    type="button"
-                    onClick={editExpertise}
+            <div className="flex">
+                <div
+                    className="font-sans text-base font-bold leading-snug text-[rgb(23,23,23)] sm:text-sm dark:text-[rgba(255,255,255,0.85)]"
+                    data-testid="member-name"
+                    onClick={editName}
                 >
-                    <span className="... overflow-hidden text-ellipsis">{expertise ? expertise : 'Add your expertise'}</span>
-                    {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
-                </button>
+                    {name ? name : 'Anonymous'}
+                </div>
+                <div className="flex items-baseline justify-start">
+                    <button
+                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] sm:text-sm dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] ${!expertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
+                        data-testid="expertise-button"
+                        type="button"
+                        onClick={editExpertise}
+                    >
+                        <span><span className="mx-[0.3em]">·</span>{expertise ? expertise : 'Add your expertise'}</span>
+                        {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
+                    </button>
+                </div>
             </div>
         </Transition>
     );
