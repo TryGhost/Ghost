@@ -1,4 +1,4 @@
-const GhostErrors = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
 
 /**
  * @module generic-worker
@@ -17,14 +17,29 @@ const workerpool = require('workerpool');
  * @throws {Error} If the job module doesn't export a function or if the execution fails.
  */
 function executeJob(jobPath, jobData) {
+    let jobModule;
     try {
-        const jobModule = require(jobPath);
-        if (typeof jobModule !== 'function') {
-            throw new GhostErrors.IncorrectUsageError(`Job module at ${jobPath} does not export a function`);
-        }
+        jobModule = require(jobPath);
+    } catch (err) {
+        throw new errors.IncorrectUsageError({
+            message: `Failed to load job module: ${err.message}`,
+            err
+        });
+    }
+
+    if (typeof jobModule !== 'function') {
+        throw new errors.IncorrectUsageError({
+            message: `Job module at ${jobPath} does not export a function`,
+        });
+    }
+
+    try {
         return jobModule(jobData);
-    } catch (error) {
-        throw new GhostErrors.IncorrectUsageError(`Failed to execute job: ${error.message}`);
+    } catch (err) {
+        throw new errors.IncorrectUsageError({
+            message: `Failed to execute job: ${err.message}`,
+            err
+        });
     }
 }
 

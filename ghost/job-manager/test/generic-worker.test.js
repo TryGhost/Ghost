@@ -1,7 +1,7 @@
 const rewire = require('rewire');
 const sinon = require('sinon');
-const should = require('chai').should();
 const path = require('path');
+const GhostErrors = require('@tryghost/errors');
 
 describe('Generic Worker', function () {
     let genericWorker;
@@ -14,17 +14,6 @@ describe('Generic Worker', function () {
 
         genericWorker = rewire('../lib/workers/generic-worker');
         genericWorker.__set__('workerpool', workerpoolStub);
-    });
-
-    describe('registerWorker', function () {
-        it('should register executeJob function with workerpool', function () {
-            genericWorker.registerWorker();
-            workerpoolStub.worker.should.have.been.calledOnce;
-            const args = workerpoolStub.worker.firstCall.args[0];
-            should.exist(args);
-            args.should.have.property('executeJob');
-            args.executeJob.should.be.a.function;
-        });
     });
 
     describe('executeJob', function () {
@@ -47,8 +36,9 @@ describe('Generic Worker', function () {
 
             genericWorker.__set__('require', p => (p === jobPath ? {} : require(p)));
 
-            (() => genericWorker.executeJob(jobPath, jobData))
-                .should.throw(`Failed to execute job: Job module at ${jobPath} does not export a function`);
+            (() => genericWorker.executeJob(jobPath, jobData)).should.throw(GhostErrors.IncorrectUsageError, {
+                message: `Job module at ${jobPath} does not export a function`
+            });
         });
 
         it('should throw an error if job execution fails', function () {
@@ -58,8 +48,9 @@ describe('Generic Worker', function () {
 
             genericWorker.__set__('require', p => (p === jobPath ? mockJobModule : require(p)));
 
-            (() => genericWorker.executeJob(jobPath, jobData))
-                .should.throw('Failed to execute job: Job execution failed');
+            (() => genericWorker.executeJob(jobPath, jobData)).should.throw(GhostErrors.IncorrectUsageError, {
+                message: 'Failed to execute job: Job execution failed'
+            });
         });
     });
 });

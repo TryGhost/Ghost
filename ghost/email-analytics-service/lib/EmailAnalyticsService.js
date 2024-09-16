@@ -514,7 +514,7 @@ module.exports = class EmailAnalyticsService {
         startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
         for (const memberId of memberIds) {
-            if (this.config.get('services:jobs:queue:enabled')) {
+            if (this.config?.get('services:jobs:queue:enabled')) {
                 // With the queue enabled we will dispatch an event to update the member email analytics on the background queue (multithreaded :))
                 await this.domainEvents.dispatch(MemberEmailAnalyticsUpdateEvent.create({memberId}));
             } else {
