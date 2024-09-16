@@ -43,7 +43,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     diff = diff / 60;
     if (diff < 24) {
         if (Math.floor(diff) === 1) {
-            return t(`One hr ago`);
+            return t(`One hour ago`);
         }
         return t('{{amount}} hrs ago', {amount: Math.floor(diff)});
     }
