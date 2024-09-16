@@ -50,8 +50,9 @@ class JobManager {
      * @param {Object} [options.domainEvents] - domain events emitter
      * @param {Object} [options.config] - config
      * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
+     * @param {JobQueueManager} [options.jobQueueManager] - job queue manager instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
@@ -89,12 +90,10 @@ class JobManager {
             this._jobsRepository = new JobsRepository({JobModel});
         }
 
-        // We have a duplicate job manager in Ghost core for the mentions job service that should be
-        //  refactored to use the job queue when we're able.
-        if (!isDuplicate && this.#config.get('services:jobs:queue:enabled') === true) {
-            logging.info(`[JobManager] Initializing job queue based on config`);
+        if (jobQueueManager) {
+            this.#jobQueueManager = jobQueueManager;
+        } else if (this.#config.get('services:jobs:queue:enabled')) {
             this.#jobQueueManager = new JobQueueManager({JobModel, config});
-            this.#jobQueueManager.init();
         }
     }
 
@@ -132,13 +131,11 @@ class JobManager {
      * @returns {Promise<Object>} The added job model.
      */
     async addQueuedJob({name, metadata}) {
-        // Adding some extra security so we don't add jobs when the queue is disabled from callers.
-        if (this.#config.get('services:jobs:queue:enabled')) {
+        if (this.#config.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
             const model = await this.#jobQueueManager.addJob({name, metadata});
             return model;
         }
-        logging.warn('[JobManager] Job queue is disabled but job was attempted to be added. job: ', name);
-        return Promise.reject();
+        return undefined;
     }
 
     async _jobMessageHandler({name, message}) {

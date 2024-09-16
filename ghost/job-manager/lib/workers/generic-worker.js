@@ -26,7 +26,22 @@ function executeJob(jobPath, jobData) {
     }
 }
 
-// Register the executeJob function as a worker method
-workerpool.worker({
-    executeJob: executeJob
-});
+/**
+ * @function registerWorker
+ * @description Registers the executeJob function as a worker method with workerpool.
+ */
+function registerWorker() {
+    workerpool.worker({
+        executeJob: executeJob
+    });
+}
+
+// Only register the worker if this file is being run directly
+if (require.main === module) {
+    registerWorker();
+}
+
+module.exports = {
+    executeJob,
+    registerWorker
+};
