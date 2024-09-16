@@ -13,13 +13,18 @@ export type Activity = {
 interface ActivityItemProps {
     children?: ReactNode;
     url?: string | null;
+    onClick?: () => void;
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null}) => {
+const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null, onClick}) => {
     const childrenArray = React.Children.toArray(children);
 
     const Item = (
-        <div className='flex w-full max-w-[560px] flex-col hover:bg-grey-75'>
+        <div className='flex w-full max-w-[560px] flex-col hover:bg-grey-75' onClick={() => {
+            if (!url && onClick) {
+                onClick();
+            }
+        }}>
             <div className='flex w-full gap-4 border-b border-grey-100 px-2 py-4'>
                 {childrenArray[0]}
                 {childrenArray[1]}
@@ -30,7 +35,12 @@ const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null}) => {
 
     if (url) {
         return (
-            <a href={url} rel='noreferrer' target='_blank'>
+            <a href={url} rel='noreferrer' target='_blank' onClick={(e) => {
+                if (onClick) {
+                    e.preventDefault();
+                    onClick();
+                }
+            }}>
                 {Item}
             </a>
         );

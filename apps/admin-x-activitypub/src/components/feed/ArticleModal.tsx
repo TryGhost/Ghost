@@ -74,6 +74,10 @@ const FeedItemDivider: React.FC = () => (
 );
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments}) => {
+    const MODAL_SIZE_SM = 640;
+    const MODAL_SIZE_LG = 1024;
+
+    const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
 
     // Navigation stack to navigate between comments - This could probably use a
@@ -109,6 +113,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
             allComments: allComments
         });
     };
+    const toggleModalSize = () => {
+        setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
+    };
 
     return (
         <Modal
@@ -118,7 +125,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
             height={'full'}
             padding={false}
             size='bleed'
-            width={640}
+            width={modalSize}
         >
             <MainHeader>
                 {canNavigateBack && (
@@ -129,7 +136,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                 <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                     <span className='text-lg font-semibold text-grey-900'>{object.type}</span>
                 </div>
-                <div className='col-[3/4] flex items-center justify-end px-8'>
+                <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
+                    <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
                     <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                 </div>
             </MainHeader>
