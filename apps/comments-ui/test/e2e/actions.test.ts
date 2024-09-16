@@ -144,7 +144,7 @@ test.describe('Actions', async () => {
         await expect(profileModal).not.toBeVisible();
 
         await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
-        await expect(frame.getByTestId('expertise-button')).toHaveText('Software development');
+        await expect(frame.getByTestId('expertise-button')).toHaveText('·Software development');
     });
 });
 
