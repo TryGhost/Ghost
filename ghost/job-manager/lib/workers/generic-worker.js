@@ -29,7 +29,7 @@ function executeJob(jobPath, jobData) {
 
     if (typeof jobModule !== 'function') {
         throw new errors.IncorrectUsageError({
-            message: `Job module at ${jobPath} does not export a function`,
+            message: `Job module at ${jobPath} does not export a function`
         });
     }
 
