@@ -1,9 +1,12 @@
+import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
+import {Button, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 import APAvatar, {AvatarBadge} from './global/APAvatar';
-import ActivityItem from './activities/ActivityItem';
+import ActivityItem, {type Activity} from './activities/ActivityItem';
+import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
-import {Button, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import getUsername from '../utils/get-username';
 import {useBrowseInboxForUser, useBrowseOutboxForUser, useFollowersForUser} from '../MainContent';
@@ -18,28 +21,7 @@ enum ACTVITY_TYPE {
     FOLLOW = 'Follow'
 }
 
-type Actor = {
-    id: string
-    name: string
-    preferredUsername: string
-    url: string
-}
-
-type ActivityObject = {
-    name: string
-    url: string
-    inReplyTo: string | null
-    content: string
-}
-
-type Activity = {
-    id: string
-    type: ACTVITY_TYPE
-    object?: ActivityObject
-    actor: Actor
-}
-
-const getActivityDescription = (activity: Activity, activityObjectsMap: Map<string, ActivityObject>): string => {
+const getActivityDescription = (activity: Activity, activityObjectsMap: Map<string, ObjectProperties>): string => {
     switch (activity.type) {
     case ACTVITY_TYPE.CREATE:
         const object = activityObjectsMap.get(activity.object?.inReplyTo || '');
@@ -76,7 +58,7 @@ const getExtendedDescription = (activity: Activity): JSX.Element | null => {
 
 const getActivityUrl = (activity: Activity): string | null => {
     if (activity.object) {
-        return activity.object.url;
+        return activity.object.url || null;
     }
 
     return null;
@@ -119,7 +101,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     // This allows us to quickly look up an object associated with an activity
     // We could just make a http request to get the object, but this is more
     // efficient seeming though we already have the data in the inbox and outbox
-    const activityObjectsMap = new Map<string, ActivityObject>();
+    const activityObjectsMap = new Map<string, ObjectProperties>();
 
     outboxActivities.forEach((activity) => {
         if (activity.object) {
@@ -161,6 +143,24 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         // to show the most recent activities first
         .reverse();
 
+    // Create a map of activity comments, grouping them by the parent activity
+    // This allows us to quickly look up all comments for a given activity
+    const commentsMap = new Map<string, Activity[]>();
+
+    for (const activity of activities) {
+        if (activity.type === ACTVITY_TYPE.CREATE && activity.object?.inReplyTo) {
+            const comments = commentsMap.get(activity.object.inReplyTo) ?? [];
+
+            comments.push(activity);
+
+            commentsMap.set(activity.object.inReplyTo, comments.reverse());
+        }
+    }
+
+    const getCommentsForObject = (id: string) => {
+        return commentsMap.get(id) ?? [];
+    };
+
     // Retrieve followers for the user
     const {data: followers = []} = useFollowersForUser(user);
 
@@ -182,7 +182,20 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 {activities.length > 0 && (
                     <div className='mt-8 flex w-full max-w-[560px] flex-col'>
                         {activities?.map(activity => (
-                            <ActivityItem key={activity.id} url={getActivityUrl(activity) || getActorUrl(activity)}>
+                            <ActivityItem
+                                key={activity.id}
+                                url={getActivityUrl(activity) || getActorUrl(activity)}
+                                onClick={
+                                    activity.type === ACTVITY_TYPE.CREATE ? () => {
+                                        NiceModal.show(ArticleModal, {
+                                            object: activity.object,
+                                            actor: activity.actor,
+                                            comments: getCommentsForObject(activity.object.id),
+                                            allComments: commentsMap
+                                        });
+                                    } : undefined
+                                }
+                            >
                                 <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
                                 <div className='pt-[2px]'>
                                     <div className='text-grey-600'>
