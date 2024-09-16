@@ -36,7 +36,7 @@
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-events": "0.0.0",
     "@tryghost/members-payments": "0.0.0",
-    "@tryghost/nql": "0.12.4",
+    "@tryghost/nql": "0.12.5",
     "@tryghost/tpl": "0.1.32",
     "@tryghost/validator": "0.2.14",
     "@types/jsonwebtoken": "9.0.6",

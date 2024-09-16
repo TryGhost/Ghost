@@ -26,7 +26,7 @@
   "dependencies": {
     "@tryghost/errors": "1.3.5",
     "@tryghost/link-redirects": "0.0.0",
-    "@tryghost/nql": "0.12.4",
+    "@tryghost/nql": "0.12.5",
     "@tryghost/tpl": "0.1.32",
     "bson-objectid": "2.0.4",
     "lodash": "4.17.21",
