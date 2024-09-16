@@ -92,7 +92,7 @@ class JobManager {
 
         if (jobQueueManager) {
             this.#jobQueueManager = jobQueueManager;
-        } else if (this.#config.get('services:jobs:queue:enabled')) {
+        } else if (!isDuplicate && this.#config.get('services:jobs:queue:enabled') === true) {
             this.#jobQueueManager = new JobQueueManager({JobModel, config});
         }
     }

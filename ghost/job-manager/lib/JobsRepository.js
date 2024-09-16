@@ -1,4 +1,5 @@
 const ObjectID = require('bson-objectid').default;
+const logging = require('@tryghost/logging');
 
 /**
  * @class JobsRepository
@@ -129,7 +130,7 @@ class JobsRepository {
         try {
             await this._JobModel.destroy({id});
         } catch (error) {
-            console.error(`Error deleting job ${id}:`, error);
+            logging.error(`Error deleting job ${id}:`, error);
         }
     }
 }

@@ -1,3 +1,5 @@
+const GhostErrors = require('@tryghost/errors');
+
 /**
  * @module generic-worker
  * @description A generic worker module for executing jobs in a worker pool. This allows consuming code to pass in a job file
@@ -18,11 +20,11 @@ function executeJob(jobPath, jobData) {
     try {
         const jobModule = require(jobPath);
         if (typeof jobModule !== 'function') {
-            throw new Error(`Job module at ${jobPath} does not export a function`);
+            throw new GhostErrors.IncorrectUsageError(`Job module at ${jobPath} does not export a function`);
         }
         return jobModule(jobData);
     } catch (error) {
-        throw new Error(`Failed to execute job: ${error.message}`);
+        throw new GhostErrors.IncorrectUsageError(`Failed to execute job: ${error.message}`);
     }
 }
 
