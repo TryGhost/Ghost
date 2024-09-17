@@ -6,15 +6,20 @@ const models = require('../../../core/server/models');
 
 // Helper function to wait for job completion
 async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkIntervalMs = 50) {
-    const startTime = Date.now();
-    while (Date.now() - startTime < maxWaitTimeMs) {
-        const job = await models.Job.findOne({name: jobName});
-        if (!job) {
-            return; // Job completed and was removed from the queue
-        }
-        await new Promise(resolve => setTimeout(resolve, checkIntervalMs));
-    }
-    throw new Error(`Job ${jobName} did not complete within ${maxWaitTimeMs}ms`);
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        const intervalId = setInterval(async () => {
+            if (Date.now() - startTime >= maxWaitTimeMs) {
+                clearInterval(intervalId);
+                reject(new Error(`Job ${jobName} did not complete within ${maxWaitTimeMs}ms`));
+            }
+            const job = await models.Job.findOne({name: jobName});
+            if (!job) {
+                clearInterval(intervalId);
+                resolve();
+            }
+        }, checkIntervalMs);
+    });
 }
 
 describe('Job Queue', function () {
