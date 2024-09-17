@@ -153,24 +153,13 @@ class OEmbedService {
     async processImageFromUrl(imageUrl, imageType) {
         // Fetch image buffer from the URL
         const imageBuffer = await this.fetchImageBuffer(imageUrl);
-        const store = this.storage.getStorage('images');
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
-        let ext = path.extname(fileName);
-        let name;
 
-        if (ext) {
-            name = store.getSanitizedFileName(path.basename(fileName, ext));
-        } else {
-            name = store.getSanitizedFileName(path.basename(fileName));
-        }
+        const targetPath = path.join(imageType, fileName);
 
-        let targetDir = path.join(this.config.getContentPath('images'), imageType);
-        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
-        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
-
-        const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
+        const imageStoredUrl = await this.storage.getStorage('images').saveRaw(imageBuffer, targetPath);
 
         return imageStoredUrl;
     }
@@ -266,7 +255,7 @@ class OEmbedService {
      *
      * @returns {Promise<Object>}
      */
-    async fetchBookmarkData(url, html, type) {
+    async fetchBookmarkData(url, html) {
         const gotOpts = {
             headers: {
                 'User-Agent': USER_AGENT
@@ -328,31 +317,20 @@ class OEmbedService {
             });
         }
 
-        if (type === 'bookmark') {
-            await this.processImageFromUrl(metadata.icon, 'icon')
-                .then((processedImageUrl) => {
-                    metadata.icon = processedImageUrl;
-                }).catch((err) => {
-                    metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-                    logging.error(err);
-                });
+        await this.processImageFromUrl(metadata.icon, 'icon')
+            .then((processedImageUrl) => {
+                metadata.icon = processedImageUrl;
+            }).catch((err) => {
+                metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+                logging.error(err);
+            });
 
-            await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
-                .then((processedImageUrl) => {
-                    metadata.thumbnail = processedImageUrl;
-                }).catch((err) => {
-                    logging.error(err);
-                });
-        } else {
-            if (metadata.icon) {
-                try {
-                    await this.externalRequest.head(metadata.icon);
-                } catch (err) {
-                    metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-                    logging.error(err);
-                }
-            }
-        }
+        await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
+            .then((processedImageUrl) => {
+                metadata.thumbnail = processedImageUrl;
+            }).catch((err) => {
+                logging.error(err);
+            });
 
         return {
             version: '1.0',
@@ -486,7 +464,7 @@ class OEmbedService {
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
-                return this.fetchBookmarkData(url, body, type);
+                return this.fetchBookmarkData(url, body);
             }
 
             // mentions need to return bookmark data (metadata) and body (html) for link verification
@@ -509,7 +487,7 @@ class OEmbedService {
                     };
                     return {...bookmark, body};
                 }
-                const bookmark = await this.fetchBookmarkData(url, body, type);
+                const bookmark = await this.fetchBookmarkData(url, body);
                 return {...bookmark, body, contentType};
             }
 
@@ -528,7 +506,7 @@ class OEmbedService {
 
             // fallback to bookmark when we can't get oembed
             if (!data && !type) {
-                data = await this.fetchBookmarkData(url, body, type);
+                data = await this.fetchBookmarkData(url, body);
             }
 
             // couldn't get anything, throw a validation error
