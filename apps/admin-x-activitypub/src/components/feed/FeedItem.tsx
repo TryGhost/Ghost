@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Icon, Menu, MenuItem} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 
@@ -214,6 +214,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const date = new Date(object?.published ?? new Date());
+    const [isCopied, setIsCopied] = useState(false);
 
     const onLikeClick = () => {
         // Do API req or smth
@@ -224,12 +225,30 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Handle delete action
     };
 
+    const handleCopyLink = async () => {
+        if (object?.url) { // Check if url is defined
+            await navigator.clipboard.writeText(object.url);
+            setIsCopied(true);
+            showToast({
+                title: 'Link copied',
+                type: 'success'
+            });
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    };
+
     let author = actor;
     if (type === 'Announce' && object.type === 'Note') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
     const menuItems: MenuItem[] = [];
+
+    menuItems.push({
+        id: 'copy-link',
+        label: 'Copy link to post',
+        onClick: handleCopyLink
+    });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
     menuItems.push({
@@ -241,7 +260,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const UserMenuTrigger = (
         <Button
-            className='relative z-10 ml-auto self-start'
+            className={`relative z-10 ml-auto self-start ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
             iconColorClass='text-grey-600'
