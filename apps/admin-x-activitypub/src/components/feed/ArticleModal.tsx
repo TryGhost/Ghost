@@ -76,7 +76,7 @@ const FeedItemDivider: React.FC = () => (
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments}) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 1024;
+    const MODAL_SIZE_LG = 2800;
 
     const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
@@ -144,7 +144,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
             </MainHeader>
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
-                    <div className='mx-auto max-w-[580px]'>
+                    <div className='mx-auto max-w-[580px] pb-16'>
                         <FeedItem
                             actor={actor}
                             comments={comments}
@@ -153,6 +153,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                             type='Note'
                         />
                         <APReplyBox placeholder='Reply to @fake@user...'/>
+                        <FeedItemDivider />
 
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
                         {/* {renderAttachment(object)} */}

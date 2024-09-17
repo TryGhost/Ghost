@@ -50,4 +50,6 @@ animation: bump 0.3s ease-in-out;
   width: 0;
 }
 
-
+.ap-textarea {
+  field-sizing: content;
+}
