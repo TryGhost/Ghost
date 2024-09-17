@@ -47,8 +47,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     // };
 
     const styles = clsx(
-        'order-2 w-full resize-none rounded-lg border bg-grey-150 px-3 py-2 text-[1.5rem] transition-all dark:bg-grey-900 dark:text-white',
-        error ? 'border-red bg-white' : 'border-transparent placeholder:text-grey-500 hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] dark:placeholder:text-grey-800 dark:hover:bg-grey-925 dark:focus:bg-grey-950',
+        'ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
+        error ? 'border-red' : 'border-transparent placeholder:text-grey-500 dark:placeholder:text-grey-800',
         title && 'mt-1.5',
         className
     );
