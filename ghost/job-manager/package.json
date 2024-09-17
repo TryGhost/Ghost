@@ -34,6 +34,7 @@
     "bree": "6.5.0",
     "cron-validate": "1.4.5",
     "fastq": "1.17.1",
-    "p-wait-for": "3.2.0"
+    "p-wait-for": "3.2.0",
+    "workerpool": "^9.1.3"
   }
 }
