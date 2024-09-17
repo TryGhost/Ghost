@@ -99,9 +99,8 @@ class JobsRepository {
     async addQueuedJob({name, metadata}) {
         let job;
         await this._JobModel.transaction(async (transacting) => {
-            // Check if a job with this name already exists
+            // Check if a job with this name already exist
             const existingJob = await this._JobModel.findOne({name}, {transacting});
-            
             if (!existingJob) {
                 // If no existing job, create a new one
                 job = await this._JobModel.add({

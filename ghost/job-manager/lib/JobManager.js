@@ -92,8 +92,9 @@ class JobManager {
 
         if (jobQueueManager) {
             this.#jobQueueManager = jobQueueManager;
-        } else if (!isDuplicate && this.#config.get('services:jobs:queue:enabled') === true) {
+        } else if (!isDuplicate && this.#config?.get('services:jobs:queue:enabled') === true) {
             this.#jobQueueManager = new JobQueueManager({JobModel, config});
+            this.#jobQueueManager.init();
         }
     }
 
@@ -131,7 +132,7 @@ class JobManager {
      * @returns {Promise<Object>} The added job model.
      */
     async addQueuedJob({name, metadata}) {
-        if (this.#config.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
+        if (this.#config?.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
             const model = await this.#jobQueueManager.addJob({name, metadata});
             return model;
         }
