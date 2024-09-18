@@ -43,14 +43,19 @@ export default class KpisOverview extends Component {
 
     constructor() {
         super(...arguments);
-        this.fetchData.perform();
+        this.fetchDataIfNeeded();
+    }
+
+    @action
+    fetchDataIfNeeded() {
+        this.fetchData.perform(this.args.chartRange, this.args.audience);
     }
 
     @task
-    *fetchData() {
+    *fetchData(chartRange, audience) {
         try {
             const endDate = moment().endOf('day');
-            const startDate = moment().subtract(this.args.chartRange - 1, 'days').startOf('day');
+            const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
             const params = new URLSearchParams({
                 site_uuid: this.config.stats.id,
@@ -58,8 +63,8 @@ export default class KpisOverview extends Component {
                 date_to: endDate.format('YYYY-MM-DD')
             });
 
-            if (this.args.audience.length > 0) {
-                params.append('member_status', this.args.audience.join(','));
+            if (audience.length > 0) {
+                params.append('member_status', audience.join(','));
             }
 
             const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {
