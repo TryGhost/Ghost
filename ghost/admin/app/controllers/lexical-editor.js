@@ -313,7 +313,6 @@ export default class LexicalEditorController extends Controller {
             lexicalScratch: lexical,
             post: this.post
         });
-
         this.set('post.lexicalScratch', JSON.stringify(lexical));
         // save 3 seconds after last edit
         this._autosaveTask.perform();
