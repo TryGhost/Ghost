@@ -7,7 +7,7 @@ import React, {useState} from 'react';
 import {type Activity} from './activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
-import {useBrowseInboxForUser} from '../MainContent';
+import {useAllActivitiesForUser} from '../hooks/useActivityPubQueries';
 
 interface InboxProps {}
 
@@ -16,18 +16,15 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const [, setArticleActor] = useState<ActorProperties | null>(null);
     const [layout, setLayout] = useState('inbox');
 
-    // Retrieve activities from the inbox
-    const {data: inboxActivities = []} = useBrowseInboxForUser('index');
+    // Retrieve all activities for the user
+    let {data: activities = []} = useAllActivitiesForUser('index');
 
-    const activities = inboxActivities.filter((activity: Activity) => {
+    activities = activities.filter((activity: Activity) => {
         const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
         const isAnnounce = activity.type === 'Announce' && activity.object.type === 'Note';
 
         return isCreate || isAnnounce;
-    })
-        // API endpoint currently returns items oldest-newest, so reverse them
-        // to show the most recent activities first
-        .reverse();
+    });
 
     // Create a map of activity comments, grouping them by the parent activity
     // This allows us to quickly look up all comments for a given activity
