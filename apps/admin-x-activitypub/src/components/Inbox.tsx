@@ -24,10 +24,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         const isAnnounce = activity.type === 'Announce' && activity.object.type === 'Note';
 
         return isCreate || isAnnounce;
-    })
-        // API endpoint currently returns items oldest-newest, so reverse them
-        // to show the most recent activities first
-        .reverse();
+    });
 
     // Create a map of activity comments, grouping them by the parent activity
     // This allows us to quickly look up all comments for a given activity
