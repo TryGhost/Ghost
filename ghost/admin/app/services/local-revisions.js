@@ -1,4 +1,5 @@
-import Service, {inject as service} from '@ember/service';
+import Service from '@ember/service';
+import { task, timeout } from 'ember-concurrency';
 
 export default class LocalRevisionsService extends Service {
     constructor() {
@@ -7,6 +8,8 @@ export default class LocalRevisionsService extends Service {
     }
 
     _prefix = 'post-revision';
+    MIN_REVISION_TIME = 60000; // 1 minute in milliseconds
+    lastRevisionTime = null;
 
     generateKey(data) {
         const timestamp = new Date().getTime();
@@ -17,10 +20,30 @@ export default class LocalRevisionsService extends Service {
         return `${key}-${timestamp}`;
     }
 
-    saveRevision(data) {
+    @task({drop: true})
+    *saveRevisionTask(data) {
+        const currentTime = Date.now();
+        if (!this.lastRevisionTime || currentTime - this.lastRevisionTime >= this.MIN_REVISION_TIME) {
+            yield this.performSaveRevision(data);
+            this.lastRevisionTime = currentTime;
+        } else {
+            const waitTime = this.MIN_REVISION_TIME - (currentTime - this.lastRevisionTime);
+            yield timeout(waitTime);
+            yield this.performSaveRevision(data);
+            this.lastRevisionTime = Date.now();
+        }
+    }
+
+    performSaveRevision(data) {
         console.log('Saving local revision with data: ', data);
         const key = this.generateKey(data);
         this.revisions[key] = data;
+        console.log('Local revisions: ', this.getLocalRevisions());
+    }
+
+    // Use this method to trigger the revision save
+    scheduleRevisionSave(data) {
+        this.saveRevisionTask.perform(data);
     }
 
     getRevision(key) {
