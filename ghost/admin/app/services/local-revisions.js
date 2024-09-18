@@ -4,6 +4,7 @@ import {task, timeout} from 'ember-concurrency';
 export default class LocalRevisionsService extends Service {
     constructor() {
         super(...arguments);
+        this.revisions = {};
     }
 
     _prefix = 'post-revision';
@@ -37,10 +38,7 @@ export default class LocalRevisionsService extends Service {
 
     performSaveRevision(data) {
         const key = this.generateKey(data);
-        const keys = this._getKeys();
-        keys.push(key);
-        localStorage.setItem('revisions', JSON.stringify(keys));
-        localStorage.setItem(key, JSON.stringify(data));
+        this.revisions[key] = data;
     }
 
     // Use this method to trigger the revision save
@@ -48,32 +46,22 @@ export default class LocalRevisionsService extends Service {
         this.saveRevisionTask.perform(data);
     }
 
-    findOne(key) {
-        return JSON.parse(localStorage.getItem(key));
+    get(key) {
+        return this.revisions[key];
     }
 
-    findAll() {
-        const keys = this._getKeys();
-        const revisions = [];
-        for (let key of keys) {
-            revisions[key] = this.findOne(key);
-        }
-        return revisions;
+    getAll() {
+        return this.revisions;
     }
 
-    findByPostId(postId = 'draft') {
-        const keys = this._getKeys();
-        const revisions = [];
-        for (let key of keys) {
-            if (key.includes(postId)) {
-                revisions[key] = this.findOne(key);
+    getByPostId(postId = undefined) {
+        const prefix = this._prefix;
+        const keyPrefix = postId ? `${prefix}-${postId}` : `${prefix}-draft`;
+        return Object.keys(this.revisions).reduce((acc, key) => {
+            if (key.indexOf(keyPrefix) === 0) {
+                acc[key] = this.revisions[key];
             }
-        }
-        return revisions;
-    }
-
-    _getKeys() {
-        const keys = JSON.parse(localStorage.getItem('revisions') || '[]');
-        return keys;
+            return acc;
+        }, {});
     }
 }
