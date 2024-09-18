@@ -662,9 +662,9 @@ export default class LexicalEditorController extends Controller {
             // it as saved and performing PUT requests with no id. We want to
             // be noisy about this early to avoid data loss
             if (isNotFoundError(error)) {
-                const context = this._getNotFoundErrorContext();
-                console.error('saveTask failed with 404', context); // eslint-disable-line no-console
-                Sentry.captureException(error, {tags: {savePostTask: true}, context});
+                const notFoundContext = this._getNotFoundErrorContext();
+                console.error('saveTask failed with 404', notFoundContext); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}, extra: notFoundContext});
                 this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
                 return;
             }
