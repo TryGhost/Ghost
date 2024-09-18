@@ -402,7 +402,7 @@ export default class LexicalEditorController extends Controller {
         this._koenig = koenig;
 
         // remove any empty cards when displaying a draft post
-        // - empty cards may be left in draft posts due to autosave occuring
+        // - empty cards may be left in draft posts due to autosave occurring
         //   whilst an empty card is present then the user closing the browser
         //   or refreshing the page
         // TODO: not yet implemented in react editor
