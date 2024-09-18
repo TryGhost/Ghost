@@ -1178,7 +1178,7 @@ export default class LexicalEditorController extends Controller {
             }
 
             // don't push full lexical state to Sentry, it's too large, gets filtered often and not useful
-            const sentryContext = {...this._leaveModalReason.context, secondaryLexical: undefined, scratch: undefined, lexical: undefined};
+            const sentryContext = {...this._leaveModalReason.context, diff: JSON.stringify(this._leaveModalReason.context?.diff), secondaryLexical: undefined, scratch: undefined, lexical: undefined};
             Sentry.captureMessage('showing leave editor modal', {extra: {...this._leaveModalReason, context: sentryContext}});
 
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
