@@ -4,6 +4,7 @@ DESCRIPTION >
     Also `skip` and `limit` parameters for pagination.
 
 TOKEN "dashboard" READ
+TOKEN "stats page" READ
 
 NODE endpoint
 DESCRIPTION >
