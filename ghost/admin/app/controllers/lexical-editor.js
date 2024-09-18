@@ -159,6 +159,7 @@ export default class LexicalEditorController extends Controller {
     @service session;
     @service settings;
     @service ui;
+    @service localRevisions;
 
     @inject config;
 
@@ -306,8 +307,15 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateScratch(lexical) {
+        // save local revision here on every change
+        // the revisions service will decide if/when to save a revision
+        this.localRevisions.saveRevision({
+            lexicalScratch: lexical,
+            post: this.post
+        });
+        // Log all the local revisions for debugging
+        console.log(this.localRevisions.getLocalRevisions());
         this.set('post.lexicalScratch', JSON.stringify(lexical));
-
         // save 3 seconds after last edit
         this._autosaveTask.perform();
         // force save at 60 seconds
