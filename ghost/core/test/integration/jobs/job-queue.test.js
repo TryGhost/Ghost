@@ -28,7 +28,7 @@ describe('Job Queue', function () {
     describe.only('enabled by config', function () {
         beforeEach(async function () {
             models.init();
-            await configUtils.set('services:jobs:queue:enabled', true);
+            configUtils.set('services:jobs:queue:enabled', true);
             await new Promise((resolve) => {
                 setTimeout(resolve, 500);
             });
