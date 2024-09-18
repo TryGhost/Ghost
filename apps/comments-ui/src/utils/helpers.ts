@@ -27,9 +27,9 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     diff = diff / 60;
     if (diff < 60) {
         if (Math.floor(diff) === 1) {
-            return t(`One minute ago`);
+            return t(`One min ago`);
         }
-        return t('{{amount}} minutes ago', {amount: Math.floor(diff)});
+        return t('{{amount}} mins ago', {amount: Math.floor(diff)});
     }
 
     // First check for yesterday
@@ -45,7 +45,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         if (Math.floor(diff) === 1) {
             return t(`One hour ago`);
         }
-        return t('{{amount}} hours ago', {amount: Math.floor(diff)});
+        return t('{{amount}} hrs ago', {amount: Math.floor(diff)});
     }
 
     // Diff in days
