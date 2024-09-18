@@ -115,6 +115,7 @@ class JobsRepository {
                     queue_entry: 1
                 }, {transacting});
                 console.log(`[JobsRepository] New job created: ${job}`);
+            }
             // If existingJob is found, do nothing (equivalent to IGNORE)
         });
         
