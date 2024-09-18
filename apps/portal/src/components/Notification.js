@@ -106,6 +106,12 @@ const NotificationText = ({type, status, context}) => {
                 {t('Plan checkout was cancelled.')}
             </p>
         );
+    } else if (type === 'support' && status === 'success') {
+        return (
+            <p>
+                {t('Thank you for your support!')}
+            </p>
+        );
     }
     return (
         <p>
@@ -243,7 +249,7 @@ export default class Notification extends React.Component {
         const {type, status, autoHide, duration} = this.state;
         if (type && status) {
             return (
-                <Frame style={frameStyle} title="portal-notification" head={this.renderFrameStyles()} className='gh-portal-notification-iframe' >
+                <Frame style={frameStyle} title="portal-notification" head={this.renderFrameStyles()} className='gh-portal-notification-iframe' data-testid="portal-notification-frame" >
                     <NotificationContent {...{type, status, autoHide, duration}} onHideNotification={e => this.onHideNotification(e)} />
                 </Frame>
             );

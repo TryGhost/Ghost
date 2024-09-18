@@ -53,9 +53,23 @@ To run tests in watch mode:
 yarn test
 ```
 
+### Ghost e2e browser tests
+
+Portal is primarily tested via Ghost's e2e browser tests. In order to test against your local changes rather than the last published package on npm you need to have the local portal build being served and to configure Ghost to use the local URL.
+
+1. Run `yarn dev` in `ghost/apps/portal` to serve the local portal build on http://localhost:4175/portal.min.js
+2. Run the Ghost e2e tests in `ghost/core`, providing an ENV variable to override the portal URL:
+   ```
+   portal__url=http://localhost:4175/portal.min.js STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser:portal
+   ```
+
 ## Release
 
 A patch release can be rolled out instantly in production, whereas a minor/major release requires the Ghost monorepo to be updated and released. In either case, you need sufficient permissions to release `@tryghost` packages on NPM.
+
+If you're releasing new code that should not immediately go live _always_ use a minor or major version when publishing.
+
+In order to have Ghost's e2e tests run against the new code on CI or to test the new code in staging, you need to publish to npm following the Minor / major release process below.
 
 ### Patch release
 

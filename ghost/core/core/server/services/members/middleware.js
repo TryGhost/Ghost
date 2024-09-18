@@ -15,10 +15,12 @@ const tpl = require('@tryghost/tpl');
 const onHeaders = require('on-headers');
 const tiersService = require('../tiers/service');
 const config = require('../../../shared/config');
+const settingsHelpers = require('../settings-helpers');
 
 const messages = {
     missingUuid: 'Missing uuid.',
-    invalidUuid: 'Invalid uuid.'
+    invalidUuid: 'Invalid uuid.',
+    invalidKey: 'Invalid key.'
 };
 
 const getFreeTier = async function getFreeTier() {
@@ -33,7 +35,7 @@ const getFreeTier = async function getFreeTier() {
  * @param {import('express').Request} req - The member object
  * @param {import('express').Response} res - The express response object to set the cookies on
  * @param {Object} freeTier - The free tier object
- * @returns 
+ * @returns
  */
 const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
     if (!member) {
@@ -97,7 +99,7 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
 };
 
 /**
- * Require member authentication, and make it possible to authenticate via uuid.
+ * Require member authentication, and make it possible to authenticate via uuid + hashed key.
  * You can chain this after loadMemberSession to make it possible to authenticate via both the uuid and the session.
  */
 const authMemberByUuid = async function authMemberByUuid(req, res, next) {
@@ -110,7 +112,23 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
             }
 
             throw new errors.UnauthorizedError({
-                messsage: tpl(messages.missingUuid)
+                message: tpl(messages.missingUuid)
+            });
+        }
+
+        const key = req.query.key;
+        if (!key) {
+            throw new errors.UnauthorizedError({
+                message: tpl(messages.invalidKey)
+            });
+        }
+
+        // the request key is a hashed value from the member uuid and the members validation key so we can verify the source
+        //  (only Ghost should be able to generate the key)
+        const memberHmac = crypto.createHmac('sha256', settingsHelpers.getMembersValidationKey()).update(uuid).digest('hex');
+        if (memberHmac !== key) {
+            throw new errors.UnauthorizedError({
+                message: tpl(messages.invalidKey)
             });
         }
 
@@ -136,6 +154,44 @@ const getIdentityToken = async function getIdentityToken(req, res) {
     } catch (err) {
         res.writeHead(204);
         res.end();
+    }
+};
+
+const createIntegrityToken = async function createIntegrityToken(req, res) {
+    try {
+        const token = membersService.requestIntegrityTokenProvider.create();
+        res.writeHead(200);
+        res.end(token);
+    } catch (err) {
+        res.writeHead(204);
+        res.end();
+    }
+};
+
+const verifyIntegrityToken = async function verifyIntegrityToken(req, res, next) {
+    const shouldThrowForInvalidToken = config.get('verifyRequestIntegrity');
+    try {
+        const token = req.body.integrityToken;
+        if (!token) {
+            logging.warn('Request with missing integrity token.');
+            if (shouldThrowForInvalidToken) {
+                throw new errors.BadRequestError();
+            } else {
+                return next();
+            }
+        }
+        if (membersService.requestIntegrityTokenProvider.validate(token)) {
+            return next();
+        } else {
+            logging.warn('Request with invalid integrity token.');
+            if (shouldThrowForInvalidToken) {
+                throw new errors.BadRequestError();
+            } else {
+                return next();
+            }
+        }
+    } catch (err) {
+        next(err);
     }
 };
 
@@ -193,25 +249,14 @@ const deleteSuppression = async function deleteSuppression(req, res) {
 
 const getMemberNewsletters = async function getMemberNewsletters(req, res) {
     try {
-        const memberUuid = req.query.uuid;
-
-        if (!memberUuid) {
-            res.writeHead(400);
-            return res.end('Invalid member uuid');
-        }
-
-        const memberData = await membersService.api.members.get({
-            uuid: memberUuid
-        }, {
-            withRelated: ['newsletters']
-        });
+        const memberData = req.member; // validation assumed
 
         if (!memberData) {
             res.writeHead(404);
             return res.end('Email address not found.');
         }
 
-        const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
+        const data = _.pick(memberData, 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
 
         if (data.newsletters) {
             data.newsletters = formatNewsletterResponse(data.newsletters);
@@ -226,23 +271,15 @@ const getMemberNewsletters = async function getMemberNewsletters(req, res) {
 
 const updateMemberNewsletters = async function updateMemberNewsletters(req, res) {
     try {
-        const memberUuid = req.query.uuid;
-        if (!memberUuid) {
-            res.writeHead(400);
-            return res.end('Invalid member uuid');
-        }
-
-        const data = _.pick(req.body, 'newsletters', 'enable_comment_notifications');
-        const memberData = await membersService.api.members.get({
-            uuid: memberUuid
-        });
+        const memberData = req.member; // validation assumed
         if (!memberData) {
             res.writeHead(404);
             return res.end('Email address not found.');
         }
 
+        const data = _.pick(req.body, 'newsletters', 'enable_comment_notifications');
         const options = {
-            id: memberData.get('id'),
+            id: memberData.id,
             withRelated: ['newsletters']
         };
 
@@ -398,5 +435,7 @@ module.exports = {
     updateMemberNewsletters,
     deleteSession,
     accessInfoSession,
-    deleteSuppression
+    deleteSuppression,
+    createIntegrityToken,
+    verifyIntegrityToken
 };

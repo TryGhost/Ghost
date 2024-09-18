@@ -105,18 +105,20 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-publish-flow="confirm"]'), 'confirm step').to.exist;
 
         expect(find('[data-test-text="confirm-details"]'), 'confirmation text')
-            .to.have.rendered.text('Your post will be published on your site.');
+            .to.have.rendered.trimmed.text('Your post will be published on your site.');
 
         expect(find('[data-test-button="confirm-publish"]'), 'publish button text')
-            .to.have.rendered.text('Publish post, right now');
+            .to.have.rendered.trimmed.text('Publish post, right now');
 
         await click('[data-test-button="confirm-publish"]');
 
         expect(post.status, 'post status after publish').to.equal('published');
 
         expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.text('Boom. It’s out there. That’s 1 post published, keep going!');
+        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
         expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+
+        await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
@@ -133,7 +135,7 @@ describe('Acceptance: Publish flow', function () {
         await click('[data-test-button="update-flow"]');
 
         expect(find('[data-test-modal="update-flow"]'), 'update flow modal').to.exist;
-        expect(find('[data-test-update-flow-title]')).to.have.rendered.text('This post has been published');
+        expect(find('[data-test-update-flow-title]')).to.have.rendered.trimmed.text('This post has been published');
         expect(find('[data-test-update-flow-confirmation]')).to.contain.rendered.text('Your post was published on your site');
         const savedPublishAt = moment(post.publishedAt).utc();
         expect(find('[data-test-update-flow-confirmation]')).to.contain.rendered.text(`on ${savedPublishAt.format('D MMM YYYY')} at ${savedPublishAt.format('HH:mm')}`);
@@ -257,14 +259,14 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-text="confirm-details"]')).to.contain.rendered
                 .text('will be published on your site, and delivered to all 7 subscribers.');
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
             await click('[data-test-button="confirm-publish"]');
 
             // complete text has right count
             expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('That’s 1 post published');
+                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
         });
 
         it('can publish+send with multiple newsletters', async function () {
@@ -313,7 +315,7 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-text="confirm-details"]')).to.contain.rendered
                 .text('will be published on your site, and delivered to all 1 subscriber of Second newsletter.');
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
             await click('[data-test-button="confirm-publish"]');
@@ -328,7 +330,7 @@ describe('Acceptance: Publish flow', function () {
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Right now');
 
             const siteTz = this.server.db.settings.findBy({key: 'timezone'}).value;
@@ -356,16 +358,16 @@ describe('Acceptance: Publish flow', function () {
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]')).to.have.value(newDate.format('HH:mm'));
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered.trimmed
                 .text('In 4 days');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`On ${newDate.format('D MMM YYYY')} at ${newDate.format('HH:mm')} your post will be published on your site, and delivered to all 7 subscribers.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Publish & send, on ${newDate.format('MMMM Do')}`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -385,16 +387,16 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
             await click('[data-test-publish-type="send"]');
 
-            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Email');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`Your post will be delivered to all 7 subscribers, and will not be published on your site.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Send email, right now`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -411,7 +413,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
             await click('[data-test-publish-type="send"]');
 
-            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Email');
 
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
@@ -425,16 +427,16 @@ describe('Acceptance: Publish flow', function () {
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]')).to.have.value(newDate.format('HH:mm'));
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered.trimmed
                 .text('In 4 days');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`On ${newDate.format('D MMM YYYY')} at ${newDate.format('HH:mm')} your post will be delivered to all 7 subscribers, and will not be published on your site.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Send email, on ${newDate.format('MMMM Do')}`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -625,78 +627,5 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
         it('handles email sending error');
-    });
-
-    describe('Are you sure you want to leave? modal', function () {
-        // draft content should autosave and leave without warning
-        it(`Doesn't display for draft content`, async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'draft'
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-        });
-        // published content should never autosave and should warn on leaving when there's changes
-        it('Displays when published content title has changed', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'published'
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-        });
-        it('Displays when scheduled content has changed', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'scheduled'
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-        });
-        // published and edited content should not warn when changes are reverted (either via undo or manually)
-        it(`Does not display when changed content is changed back`, async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'published',
-                lexical: `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-            await click('[data-test-stay-button]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-            // revert title
-            await fillIn('[data-test-editor-title-input]', 'Test Post');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-        });
-        it(`Does not save changes when leaving`, async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {
-                title: 'Test Post',
-                status: 'published',
-                lexical: `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Sample content","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`
-            });
-            await visit('/editor/post/' + post.id);
-            await fillIn('[data-test-editor-title-input]', 'New Title');
-            await click('[data-test-link="posts"]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.exist;
-            await click('[data-test-leave-button]');
-            expect(find('[data-test-modal="unsaved-post-changes"]'), 'unsaved changes modal').to.not.exist;
-            // check that the title wasn't saved
-            expect(this.server.db.posts.find(post.id).title === 'Test Post').to.be.true;
-        });
     });
 });

@@ -5,12 +5,13 @@ const glob = require('glob');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, blogIcon, urlUtils, labs}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsHelpers = settingsHelpers;
         this.settingsCache = settingsCache;
+        this.blogIcon = blogIcon;
         this.urlUtils = urlUtils;
         this.labs = labs;
 
@@ -44,6 +45,7 @@ class StaffServiceEmails {
                 attributionUrl: attribution?.url || '',
                 referrerSource: attribution?.referrerSource,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -103,6 +105,7 @@ class StaffServiceEmails {
                 offerData,
                 subscriptionData,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -153,6 +156,7 @@ class StaffServiceEmails {
                 tierData,
                 subscriptionData,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -182,6 +186,7 @@ class StaffServiceEmails {
 
         return {
             siteTitle: this.settingsCache.get('title'),
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             accentColor: this.settingsCache.get('accent_color'),
@@ -282,6 +287,7 @@ class StaffServiceEmails {
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteDomain: this.siteDomain,
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
@@ -290,7 +296,8 @@ class StaffServiceEmails {
                 donation: {
                     name: donationPaymentEvent.name ?? donationPaymentEvent.email,
                     email: donationPaymentEvent.email,
-                    amount: formattedAmount
+                    amount: formattedAmount,
+                    donationMessage: donationPaymentEvent.donationMessage
                 },
                 memberData,
                 accentColor: this.settingsCache.get('accent_color')
@@ -488,10 +495,14 @@ class StaffServiceEmails {
             sharedData = await this.getSharedData(data.recipient);
         }
 
-        return htmlTemplate({
+        const html = htmlTemplate({
             ...data,
             ...sharedData
         });
+
+        const juice = require('juice');
+
+        return juice(html, {inlinePseudoElements: true, removeStyleTags: true});
     }
 
     async renderText(templateName, data) {

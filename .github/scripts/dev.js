@@ -58,6 +58,14 @@ const COMMAND_ADMIN = {
     env: {}
 };
 
+const COMMAND_BROWSERTESTS = {
+    name: 'browser-tests',
+    command: 'nx run ghost:test:browser',
+    cwd: path.resolve(__dirname, '../../ghost/core'),
+    prefixColor: 'blue',
+    env: {}
+};
+
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
     command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
@@ -72,13 +80,13 @@ const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
     command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build; done',
     cwd: path.resolve(__dirname, '../..'),
-    prefixColor: '#C35831',
+    prefixColor: '#C72AF7',
     env: {}
 }, {
     name: 'adminX',
     command: `nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings', '../../apps/admin-x-activitypub'),
-    prefixColor: '#C35831',
+    prefixColor: '#C72AF7',
     env: {}
 }];
 
@@ -86,6 +94,8 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
+} else if (DASH_DASH_ARGS.includes('browser-tests')) {
+    commands = [COMMAND_BROWSERTESTS, COMMAND_TYPESCRIPT];
 } else {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }

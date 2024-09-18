@@ -209,6 +209,40 @@ export default class MembersController extends Controller {
         return uniqueColumns.splice(0, 2); // Maximum 2 columns
     }
 
+    /*
+     * Due to a limitation with NQL, member bulk deletion is not permitted if any of the following Stripe subscription filters is used:
+     *     - Billing period
+     *     - Stripe subscription status
+     *     - Paid start date
+     *     - Next billing date
+     *     - Subscription started on post/page
+     *     - Offers
+     *
+     * For more context, see:
+     * - https://linear.app/tryghost/issue/ENG-1484
+     * - https://linear.app/tryghost/issue/ENG-1466
+     */
+    get isBulkDeletePermitted() {
+        if (!this.isFiltered) {
+            return false;
+        }
+
+        const stripeFilters = this.filters.filter(f => [
+            'subscriptions.plan_interval',
+            'subscriptions.status',
+            'subscriptions.start_date',
+            'subscriptions.current_period_end',
+            'conversion',
+            'offer_redemptions'
+        ].includes(f.type));
+
+        if (stripeFilters && stripeFilters.length >= 1) {
+            return false;
+        }
+
+        return true;
+    }
+
     includeTierQuery() {
         const availableFilters = this.filters.length ? this.filters : this.softFilters;
         return availableFilters.some((f) => {

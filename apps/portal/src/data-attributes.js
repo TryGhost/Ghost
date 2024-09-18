@@ -56,12 +56,21 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         }
     }
 
-    fetch(`${siteUrl}/members/api/send-magic-link/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(reqBody)
+    return fetch(`${siteUrl}/members/api/integrity-token/`, {
+        method: 'GET'
+    }).then((res) => {
+        return res.text();
+    }).then((integrityToken) => {
+        return fetch(`${siteUrl}/members/api/send-magic-link/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...reqBody,
+                integrityToken
+            })
+        });
     }).then(function (res) {
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
