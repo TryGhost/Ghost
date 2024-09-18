@@ -65,7 +65,7 @@
     "@opentelemetry/sdk-node": "0.52.1",
     "@opentelemetry/sdk-trace-node": "1.25.1",
     "@sentry/node": "7.119.0",
-    "@slack/webhook": "7.0.1",
+    "@slack/webhook": "7.0.3",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
