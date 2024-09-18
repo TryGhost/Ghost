@@ -90,10 +90,15 @@ class JobManager {
             this._jobsRepository = new JobsRepository({JobModel});
         }
 
+        console.log(`[JobManager] Config: ${this.#config}`);
+        console.log(`[JobManager] Config: ${this.#config?.get('services:jobs:queue:enabled')}`);
+        console.log(`[JobManager] JobQueueManager: ${this.#jobQueueManager}`);
         if (jobQueueManager) {
             this.#jobQueueManager = jobQueueManager;
         } else if (!isDuplicate && this.#config?.get('services:jobs:queue:enabled') === true) {
+            console.log(`[JobManager] Creating JobQueueManager`);
             this.#jobQueueManager = new JobQueueManager({JobModel, config});
+            console.log(`[JobManager] JobQueueManager initializing`);
             this.#jobQueueManager.init();
         }
     }

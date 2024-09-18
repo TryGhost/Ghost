@@ -25,7 +25,7 @@ async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkInterval
 describe('Job Queue', function () {
     let jobService;
 
-    describe('enabled by config', function () {
+    describe.only('enabled by config', function () {
         beforeEach(async function () {
             models.init();
             await configUtils.set('services:jobs:queue:enabled', true);
