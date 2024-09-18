@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -45,18 +46,23 @@ export default class KpisOverview extends Component {
         this.fetchData.perform();
     }
 
-    setupFocusListener() {
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.fetchData.perform();
-            }
-        });
-    }
-
     @task
     *fetchData() {
         try {
-            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?site_uuid=${this.config.stats.id}`, {
+            const endDate = moment().endOf('day');
+            const startDate = moment().subtract(this.args.chartRange - 1, 'days').startOf('day');
+
+            const params = new URLSearchParams({
+                site_uuid: this.config.stats.id,
+                date_from: startDate.format('YYYY-MM-DD'),
+                date_to: endDate.format('YYYY-MM-DD')
+            });
+
+            if (this.args.audience.length > 0) {
+                params.append('member_status', this.args.audience.join(','));
+            }
+
+            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
