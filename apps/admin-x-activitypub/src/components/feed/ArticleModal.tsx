@@ -152,7 +152,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                             object={object}
                             type='Note'
                         />
-                        <APReplyBox placeholder='Reply to @fake@user...'/>
+                        <APReplyBox object={object}/>
                         <FeedItemDivider />
 
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}

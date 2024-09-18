@@ -1,9 +1,11 @@
-import React, {HTMLProps, useId} from 'react';
+import React, {HTMLProps, useId, useState} from 'react';
 
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import {Button} from '@tryghost/admin-x-design-system';
+import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {useReplyMutationForUser} from '../../hooks/useActivityPubQueries';
 // import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
@@ -16,6 +18,7 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     hint?: React.ReactNode;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    object: ObjectProperties;
 }
 
 const APReplyBox: React.FC<APTextAreaProps> = ({
@@ -28,23 +31,15 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     placeholder,
     hint,
     className,
+    object,
     // onChange,
     // onFocus,
     // onBlur,
     ...props
 }) => {
     const id = useId();
-    // const {setFocusState} = useFocusContext();
-
-    // const handleFocus: FocusEventHandler<HTMLTextAreaElement> = (e) => {
-    //     setFocusState(true);
-    //     onFocus?.(e);
-    // };
-
-    // const handleBlur: FocusEventHandler<HTMLTextAreaElement> = (e) => {
-    //     setFocusState(false);
-    //     onBlur?.(e);
-    // };
+    const [textValue, setTextValue] = useState(''); // Manage the textarea value with state
+    const replyMutation = useReplyMutationForUser('index');
 
     const styles = clsx(
         'ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
@@ -52,6 +47,15 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         title && 'mt-1.5',
         className
     );
+
+    async function handleClick(event: React.MouseEvent) {
+        event.preventDefault();
+        await replyMutation.mutate({id: object.id, content: textValue});
+    }
+
+    function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+        setTextValue(event.target.value); // Update the state on every change
+    }
 
     return (
         <div className='flex w-full gap-x-3 py-6'>
@@ -69,8 +73,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     placeholder={placeholder}
                                     rows={rows}
                                     value={value}
+                                    onChange={handleChange}
                                     // onBlur={handleBlur}
-                                    // onChange={onChange}
                                     // onFocus={handleFocus}
                                     {...props}>
                                 </textarea>
@@ -81,7 +85,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 </FormPrimitive.Root>
                 <div className='absolute bottom-[6px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' id='post' label='Post' size='sm' />
+                    <Button color='black' id='post' label='Post' size='sm' onClick={handleClick} />
                 </div>
             </div>
         </div>
