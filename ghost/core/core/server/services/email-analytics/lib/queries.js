@@ -117,8 +117,8 @@ module.exports = {
                 await db.knex('jobs').insert({
                     id: new ObjectID().toHexString(),
                     name: jobName,
-                    [updateField]: date,
-                    updated_at: date,
+                    [updateField]: date.toISOString(), // force to iso string for sqlite
+                    updated_at: date.toISOString(), // force to iso string for sqlite
                     status: status
                 });
             }
