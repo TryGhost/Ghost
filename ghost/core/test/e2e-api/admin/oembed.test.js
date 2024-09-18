@@ -279,7 +279,7 @@ describe('Oembed API', function () {
         pageMock.isDone().should.be.true();
 
         // Check that the substitute icon URL is returned in place of the original
-        res.body.metadata.icon.should.eql(`${urlUtils.urlFor('home', true)}/content/images/icon/image-01.png`);
+        res.body.metadata.icon.should.eql(`${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
     });
 
     it('should fetch and store thumbnails', async function () {
@@ -303,7 +303,7 @@ describe('Oembed API', function () {
         pageMock.isDone().should.be.true();
 
         // Check that the substitute thumbnail URL is returned in place of the original
-        res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}/content/images/thumbnail/image-01.png`);
+        res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
     });
 
     describe('with unknown provider', function () {
