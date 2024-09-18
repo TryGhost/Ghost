@@ -26,6 +26,16 @@ export function useLikedForUser(handle: string) {
     });
 }
 
+export function useReplyMutationForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useMutation({
+        mutationFn({id, content}: {id: string, content: string}) {
+            return api.reply(id, content);
+        }
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const queryClient = useQueryClient();
     const siteUrl = useSiteUrl();
