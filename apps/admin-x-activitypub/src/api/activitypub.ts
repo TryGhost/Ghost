@@ -160,4 +160,52 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/actions/unlike/${encodeURIComponent(id)}`, this.apiUrl);
         await this.fetchJSON(url, 'POST');
     }
+
+    get activitiesApiUrl() {
+        return new URL(`.ghost/activitypub/activities/${this.handle}`, this.apiUrl);
+    }
+
+    async getAllActivities(): Promise<Activity[]> {
+        const LIMIT = 50;
+
+        const fetchActivities = async (url: URL): Promise<Activity[]> => {
+            const json = await this.fetchJSON(url);
+
+            // If the response is null, return early
+            if (json === null) {
+                return [];
+            }
+
+            // If the response doesn't have an items array, return early
+            if (!('items' in json)) {
+                return [];
+            }
+
+            // If the response has an items property, but it's not an array
+            // use an empty array
+            const items = Array.isArray(json.items) ? json.items : [];
+
+            // If the response has a nextCursor property, fetch the next page
+            // recursively and concatenate the results
+            if ('nextCursor' in json && typeof json.nextCursor === 'string') {
+                const nextUrl = new URL(url);
+
+                nextUrl.searchParams.set('cursor', json.nextCursor);
+                nextUrl.searchParams.set('limit', LIMIT.toString());
+
+                const nextItems = await fetchActivities(nextUrl);
+
+                return items.concat(nextItems);
+            }
+
+            return items;
+        };
+
+        // Make a copy of the activities API URL and set the limit
+        const url = new URL(this.activitiesApiUrl);
+        url.searchParams.set('limit', LIMIT.toString());
+
+        // Fetch the activities
+        return fetchActivities(url);
+    }
 }

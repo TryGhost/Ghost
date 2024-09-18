@@ -165,3 +165,14 @@ export function useFollowersForUser(handle: string) {
         }
     });
 }
+
+export function useAllActivitiesForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useQuery({
+        queryKey: [`activities:${handle}`],
+        async queryFn() {
+            return api.getAllActivities();
+        }
+    });
+}
