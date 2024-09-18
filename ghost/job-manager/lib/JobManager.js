@@ -132,8 +132,11 @@ class JobManager {
      * @returns {Promise<Object>} The added job model.
      */
     async addQueuedJob({name, metadata}) {
+        console.log(`[JobManager] Trying to add queued job: ${name}`);
         if (this.#config?.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
+            console.log(`[JobManager] Adding queued job: ${name}`);
             const model = await this.#jobQueueManager.addJob({name, metadata});
+            console.log(`[JobManager] Queued job added: ${name}`);
             return model;
         }
         return undefined;

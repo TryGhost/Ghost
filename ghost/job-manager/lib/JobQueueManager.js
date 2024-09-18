@@ -164,7 +164,10 @@ class JobQueueManager {
     }
 
     async addJob({name, metadata}) {
-        return this.jobsRepository.addQueuedJob({name, metadata});
+        console.log(`[JobQueueManager] Trying to add job: ${name}`);
+        const model = await this.jobsRepository.addQueuedJob({name, metadata});
+        console.log(`[JobQueueManager] Job added: ${name}`);
+        return model;
     }
 
     async getStats() {
