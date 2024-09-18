@@ -4,6 +4,7 @@ DESCRIPTION >
     Works great for the realtime chart.
 
 TOKEN "dashboard" READ
+TOKEN "stats page" READ
 
 NODE timeseries
 DESCRIPTION >

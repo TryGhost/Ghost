@@ -2,6 +2,7 @@ DESCRIPTION >
     Parsed `page_hit` events, implementing `browser` and `device` detection logic.
 
 TOKEN "dashboard" READ
+TOKEN "stats page" READ
 
 NODE parsed_hits
 DESCRIPTION >

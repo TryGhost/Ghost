@@ -4,6 +4,7 @@ DESCRIPTION >
     Daily granularity, except when filtering one single day (hourly)
 
 TOKEN "dashboard" READ
+TOKEN "stats page" READ
 
 NODE timeseries
 DESCRIPTION >
