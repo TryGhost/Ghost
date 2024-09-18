@@ -133,6 +133,8 @@ class JobManager {
      */
     async addQueuedJob({name, metadata}) {
         console.log(`[JobManager] Trying to add queued job: ${name}`);
+        console.log(`[JobManager] Config: ${this.#config?.get('services:jobs:queue:enabled')}`);
+        console.log(`[JobManager] JobQueueManager: ${this.#jobQueueManager}`);
         if (this.#config?.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
             console.log(`[JobManager] Adding queued job: ${name}`);
             const model = await this.#jobQueueManager.addJob({name, metadata});
