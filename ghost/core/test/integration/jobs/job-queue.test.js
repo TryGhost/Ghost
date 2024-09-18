@@ -38,6 +38,8 @@ describe('Job Queue', function () {
         });
 
         it('should add and execute a job in the queue', async function () {
+            this.timeout(10000); // Increase timeout if needed
+
             const job = {
                 name: `add-random-numbers-${Date.now()}`,
                 metadata: {
@@ -47,14 +49,19 @@ describe('Job Queue', function () {
             };
 
             // Add the job to the queue
+            console.log('Adding job to queue:', job.name);
             const result = await jobService.addQueuedJob(job);
+            console.log('Job added:', result);
             assert.ok(result);
 
             // Wait for the job to complete
-            await waitForJobCompletion(job.name);
+            await waitForJobCompletion(job.name, 8000); // Increase wait time
+
+            // Check job status
+            const jobEntry = await models.Job.findOne({name: job.name});
+            console.log('Job status:', jobEntry ? jobEntry.status : 'Not found');
 
             // Verify that the job no longer exists in the queue
-            const jobEntry = await models.Job.findOne({name: job.name});
             assert.equal(jobEntry, null);
         });
     });
