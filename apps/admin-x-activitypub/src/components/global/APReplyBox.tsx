@@ -3,6 +3,7 @@ import React, {HTMLProps, useId, useState} from 'react';
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
+import getUsername from '../../utils/get-username';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useReplyMutationForUser} from '../../hooks/useActivityPubQueries';
@@ -28,7 +29,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     rows = 1,
     maxLength,
     error,
-    placeholder,
     hint,
     className,
     object,
@@ -70,7 +70,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     className={styles}
                                     id={id}
                                     maxLength={maxLength}
-                                    placeholder={placeholder}
+                                    placeholder={`Reply to ${getUsername(object.attributedTo)}...`}
                                     rows={rows}
                                     value={value}
                                     onChange={handleChange}
