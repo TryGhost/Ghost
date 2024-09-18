@@ -38,7 +38,7 @@ export default class KpisComponent extends Component {
 
         const LINE_COLOR = statsStaticColors[0];
         const INDEX = 'date';
-        const CATEGORY = props.selected === 'unique_visitors' ? 'visits' : props.selected;
+        const CATEGORY = props.selected === 'unique_visits' ? 'visits' : props.selected;
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
