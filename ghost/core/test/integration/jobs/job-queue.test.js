@@ -29,6 +29,9 @@ describe('Job Queue', function () {
         beforeEach(async function () {
             models.init();
             await configUtils.set('services:jobs:queue:enabled', true);
+            await new Promise((resolve) => {
+                setTimeout(resolve, 500);
+            });
             jobService = require('../../../core/server/services/jobs/job-service');
         });
 
