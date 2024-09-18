@@ -101,9 +101,10 @@ module.exports = {
         },
         fontSize: {
             xs: '1.2rem',
+            base: '1.3rem',
             sm: '1.4rem',
             md: '1.5rem',
-            lg: '1.8rem',
+            lg: '1.65rem',
             xl: '2rem',
             '2xl': '2.4rem',
             '3xl': '3rem',

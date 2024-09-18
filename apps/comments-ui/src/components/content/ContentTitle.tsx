@@ -14,12 +14,12 @@ const Count: React.FC<CountProps> = ({showCount, count}) => {
 
     if (count === 1) {
         return (
-            <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('1 comment')}</div>
+            <div className="text-md text-[rgba(0,0,0,0.5)] sm:text-lg dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('1 comment')}</div>
         );
     }
 
     return (
-        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('{{amount}} comments', {amount: formatNumber(count)})}</div>
+        <div className="text-md text-[rgba(0,0,0,0.5)] sm:text-lg dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('{{amount}} comments', {amount: formatNumber(count)})}</div>
     );
 };
 
@@ -48,7 +48,7 @@ const ContentTitle: React.FC<ContentTitleProps> = ({title, showCount, count}) =>
 
     return (
         <div className="mb-8 flex w-full items-baseline justify-between font-sans">
-            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
+            <h2 className="text-[2.2rem] font-bold tracking-tight sm:text-2xl dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
                 <Title title={title}/>
             </h2>
             <Count count={count} showCount={showCount} />

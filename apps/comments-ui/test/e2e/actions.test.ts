@@ -126,7 +126,7 @@ test.describe('Actions', async () => {
 
         const expertiseButton = frame.getByTestId('expertise-button');
         await expect(expertiseButton).toBeVisible();
-        await expect(expertiseButton).toHaveText('Add your expertise');
+        await expect(expertiseButton).toHaveText('·Add your expertise');
         await expertiseButton.click();
 
         const detailsFrame = page.frameLocator('iframe[title="addDetailsPopup"]');
@@ -144,7 +144,7 @@ test.describe('Actions', async () => {
         await expect(profileModal).not.toBeVisible();
 
         await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
-        await expect(frame.getByTestId('expertise-button')).toHaveText('Software development');
+        await expect(frame.getByTestId('expertise-button')).toHaveText('·Software development');
     });
 });
 
