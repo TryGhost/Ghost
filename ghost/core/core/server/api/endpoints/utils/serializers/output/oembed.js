@@ -4,10 +4,10 @@ const mappers = require('./mappers');
 module.exports = {
     all(data, apiConfig, frame) {
         debug('all');
-        if(data?.metadata?.thumbnail) {
+        if (data?.metadata?.thumbnail) {
             data.metadata.thumbnail = mappers.oembed(data.metadata.thumbnail);
         }
-        if(data?.metadata?.icon) {
+        if (data?.metadata?.icon) {
             data.metadata.icon = mappers.oembed(data.metadata.icon);
         }
         frame.response = data;
