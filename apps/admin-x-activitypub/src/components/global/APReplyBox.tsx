@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {useReplyMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
 // import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
@@ -41,6 +41,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
     const replyMutation = useReplyMutationForUser('index');
 
+    const {data: user} = useUserDataForUser('index');
+
     const styles = clsx(
         'ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
         error ? 'border-red' : 'border-transparent placeholder:text-grey-500 dark:placeholder:text-grey-800',
@@ -67,7 +69,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
     return (
         <div className='flex w-full gap-x-3 py-6'>
-            <APAvatar/>
+            <APAvatar author={user} />
             <div className='relative w-full'>
                 <FormPrimitive.Root asChild>
                     <div className='flex w-full flex-col'>
