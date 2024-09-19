@@ -42,31 +42,31 @@ describe('Unit: Service: local-revisions', function () {
             // save a revision
             this.service.save(createPost({id: 'draft', lexical: 'test'}));
             // grab the key of the saved revision
-            const revisions = this.service.getAll();
+            const revisions = this.service.findAll();
             const key = Object.keys(revisions)[0];
             expect(key).to.match(/post-revision-draft-\d+/);
-            expect(this.service.get(key)).to.deep.equal({id: 'draft', lexical: 'test'});
+            expect(this.service.find(key)).to.deep.equal({id: 'draft', lexical: 'test'});
         });
 
         it('saves a revision with a post id', function () {
             // save a revision
             this.service.save(createPost({id: 'test-id', lexical: 'test'}));
             // grab the key of the saved revision
-            const revisions = this.service.getAll();
+            const revisions = this.service.findAll();
             const key = Object.keys(revisions)[0];
             expect(key).to.match(/post-revision-test-id-\d+/);
-            expect(this.service.get(key)).to.deep.equal({id: 'test-id', lexical: 'test'});
+            expect(this.service.find(key)).to.deep.equal({id: 'test-id', lexical: 'test'});
         });
     });
 
-    describe('get', function () {
+    describe('find', function () {
         it('gets a revision by key', function () {
             // save a revision
             this.service.save(createPost({lexical: 'test'}));
             // grab the key of the saved revision
-            const revisions = this.service.getAll();
+            const revisions = this.service.findAll();
             const key = Object.keys(revisions)[0];
-            const result = this.service.get(key);
+            const result = this.service.find(key);
             expect(result).to.deep.equal({
                 id: 'draft',
                 lexical: 'test'
@@ -74,24 +74,24 @@ describe('Unit: Service: local-revisions', function () {
         });
     });
 
-    describe('getAll', function () {
+    describe('findAll', function () {
         it('gets all revisions if no prefix is provided', function () {
             // save a revision
             this.service.save(createPost({id: 'test-id', lexical: 'test'}));
             this.service.save(createPost({lexical: 'data-2'}));
-            const result = this.service.getAll();
+            const result = this.service.findAll();
             expect(Object.keys(result)).to.have.lengthOf(2);
         });
     });
 
-    describe('getByPostId', function () {
+    describe('findByPostId', function () {
         it('gets all revisions for a post id', async function () {
             // save a revision
             this.service.save(createPost({id: 'test-id', lexical: 'test'}));
             this.service.save(createPost({lexical: 'data-2'}));
             await sleep(2);
             this.service.save(createPost({id: 'test-id', lexical: 'data-3'}));
-            const result = this.service.getByPostId('test-id');
+            const result = this.service.findByPostId('test-id');
             expect(Object.keys(result)).to.have.lengthOf(2);
         });
 
@@ -101,7 +101,7 @@ describe('Unit: Service: local-revisions', function () {
             this.service.save(createPost({lexical: 'data-2'}));
             await sleep(1);
             this.service.save(createPost({lexical: 'data-3'}));
-            const result = this.service.getByPostId();
+            const result = this.service.findByPostId();
             expect(Object.keys(result)).to.have.lengthOf(2);
         });
     });
@@ -126,7 +126,7 @@ describe('Unit: Service: local-revisions', function () {
             this.service.remove(keyToRemove);
             const updatedKeys = this.service.keys();
             expect(updatedKeys).to.have.lengthOf(1);
-            expect(this.service.get(keyToRemove)).to.be.null;
+            expect(this.service.find(keyToRemove)).to.be.null;
         });
     });
 });

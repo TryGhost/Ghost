@@ -39,15 +39,27 @@ export default class LocalRevisionsService extends Service {
         }
     }
 
-    get(key) {
+    find(key) {
         return JSON.parse(localStorage.getItem(key));
     }
 
-    getAll() {
+    findAll() {
         const keys = this.keys();
         const revisions = {};
         for (const key of keys) {
             revisions[key] = JSON.parse(localStorage.getItem(key));
+        }
+        return revisions;
+    }
+
+    findByPostId(postId = undefined) {
+        const prefix = this._prefix;
+        const keyPrefix = postId ? `${prefix}-${postId}` : `${prefix}-draft`;
+        const keys = this.keys();
+        const filteredKeys = keys.filter(key => key.startsWith(keyPrefix));
+        const revisions = [];
+        for (const key of filteredKeys) {
+            revisions.push(this.find(key));
         }
         return revisions;
     }
@@ -60,18 +72,6 @@ export default class LocalRevisionsService extends Service {
         }
         localStorage.setItem(this._indexKey, JSON.stringify(keys));
         localStorage.removeItem(key);
-    }
-
-    getByPostId(postId = undefined) {
-        const prefix = this._prefix;
-        const keyPrefix = postId ? `${prefix}-${postId}` : `${prefix}-draft`;
-        const keys = this.keys();
-        const filteredKeys = keys.filter(key => key.startsWith(keyPrefix));
-        const revisions = [];
-        for (const key of filteredKeys) {
-            revisions.push(JSON.parse(localStorage.getItem(key)));
-        }
-        return revisions;
     }
 
     clear() {
