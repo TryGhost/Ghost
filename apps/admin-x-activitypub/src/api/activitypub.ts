@@ -53,24 +53,6 @@ export class ActivityPubAPI {
         return [];
     }
 
-    get outboxApiUrl() {
-        return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getOutbox(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.outboxApiUrl);
-        if (json === null) {
-            return [];
-        }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
-        }
-        return [];
-    }
-
     get followingApiUrl() {
         return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
     }
@@ -165,7 +147,7 @@ export class ActivityPubAPI {
         return new URL(`.ghost/activitypub/activities/${this.handle}`, this.apiUrl);
     }
 
-    async getAllActivities(): Promise<Activity[]> {
+    async getAllActivities(includeOwn: boolean = false): Promise<Activity[]> {
         const LIMIT = 50;
 
         const fetchActivities = async (url: URL): Promise<Activity[]> => {
@@ -192,6 +174,7 @@ export class ActivityPubAPI {
 
                 nextUrl.searchParams.set('cursor', json.nextCursor);
                 nextUrl.searchParams.set('limit', LIMIT.toString());
+                nextUrl.searchParams.set('includeOwn', includeOwn.toString());
 
                 const nextItems = await fetchActivities(nextUrl);
 
@@ -204,6 +187,7 @@ export class ActivityPubAPI {
         // Make a copy of the activities API URL and set the limit
         const url = new URL(this.activitiesApiUrl);
         url.searchParams.set('limit', LIMIT.toString());
+        url.searchParams.set('includeOwn', includeOwn.toString());
 
         // Fetch the activities
         return fetchActivities(url);

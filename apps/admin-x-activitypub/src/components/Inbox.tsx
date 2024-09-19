@@ -17,7 +17,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const [layout, setLayout] = useState('inbox');
 
     // Retrieve all activities for the user
-    let {data: activities = []} = useAllActivitiesForUser('index');
+    let {data: activities = []} = useAllActivitiesForUser({handle: 'index'});
 
     activities = activities.filter((activity: Activity) => {
         const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
