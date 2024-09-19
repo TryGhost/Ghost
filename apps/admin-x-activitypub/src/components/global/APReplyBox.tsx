@@ -62,7 +62,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     );
 
     async function handleClick(event: React.MouseEvent) {
-        event.preventDefault();
         await replyMutation.mutate({id: object.id, content: textValue}, {
             onSuccess(activity) {
                 setTextValue('');
@@ -111,6 +110,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                     onFocus={handleFocus}
+                                    disabled={replyMutation.isLoading}
                                     {...props}>
                                 </textarea>
                             </FormPrimitive.Control>
