@@ -26,8 +26,12 @@ export const getRelativeTimestamp = (date: Date): string => {
     if (interval >= 1) {
         return `${interval}m`;
     }
+
+    if (seconds < 1) {
+        return `Just now`;
+    }
   
-    return `${seconds} seconds`;
+    return `${seconds}s`;
 };
 
 export default getRelativeTimestamp;
