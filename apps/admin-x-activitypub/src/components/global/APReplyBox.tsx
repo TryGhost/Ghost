@@ -4,7 +4,7 @@ import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useReplyMutationForUser} from '../../hooks/useActivityPubQueries';
 // import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
@@ -53,6 +53,10 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         await replyMutation.mutate({id: object.id, content: textValue}, {
             onSuccess() {
                 setTextValue('');
+                showToast({
+                    message: 'Reply sent',
+                    type: 'success'
+                });
             }
         });
     }
@@ -89,7 +93,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 </FormPrimitive.Root>
                 <div className='absolute bottom-[6px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
-                    <Button disabled={replyMutation.isLoading} loading={replyMutation.isLoading} color='black' id='post' label='Post' size='sm' onClick={handleClick} />
+                    <Button color='black' disabled={replyMutation.isLoading} id='post' label='Post' loading={replyMutation.isLoading} size='sm' onClick={handleClick} />
                 </div>
             </div>
         </div>
