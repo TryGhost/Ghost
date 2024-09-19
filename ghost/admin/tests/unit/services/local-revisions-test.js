@@ -36,7 +36,6 @@ describe('Unit: Service: local-revisions', function () {
             this.service.save({test: 'data'});
             // grab the key of the saved revision
             const revisions = this.service.getAll();
-            console.log(revisions);
             const key = Object.keys(revisions)[0];
             expect(key).to.match(/post-revision-draft-\d+/);
             expect(this.service.get(key)).to.deep.equal({test: 'data'});
