@@ -78,7 +78,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
             if (response.type === 'bookmark') {
                 editor.update(() => {
                     const node = $getNodeByKey(nodeKey);
-                    const bookmarkNode = $createBookmarkNode({url: response.url});
+                    const bookmarkNode = $createBookmarkNode({url: response.url, metadata: response.metadata});
                     node.replace(bookmarkNode);
                 });
                 return;
