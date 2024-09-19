@@ -221,4 +221,13 @@ export class ActivityPubAPI {
         const response = await this.fetchJSON(url, 'POST', {content});
         return response;
     }
+
+    get userApiUrl() {
+        return new URL(`.ghost/activitypub/users/${this.handle}`, this.apiUrl);
+    }
+
+    async getUser() {
+        const json = await this.fetchJSON(this.userApiUrl);
+        return json;
+    }
 }
