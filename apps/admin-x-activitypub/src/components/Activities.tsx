@@ -9,8 +9,8 @@ import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
 
 import getUsername from '../utils/get-username';
-import {useBrowseInboxForUser, useBrowseOutboxForUser, useFollowersForUser} from '../MainContent';
-import {useSiteUrl} from '../hooks/useActivityPubQueries';
+import {useAllActivitiesForUser, useSiteUrl} from '../hooks/useActivityPubQueries';
+import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
 
@@ -88,13 +88,7 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
 
-    // Retrieve activities from the inbox AND the outbox
-    // Why the need for the outbox? The outbox contains activities that the user
-    // has performed, and we sometimes need information about the object
-    // associated with the activity (i.e when displaying the name of an article
-    // that a reply was made to)
-    const {data: inboxActivities = []} = useBrowseInboxForUser(user);
-    const {data: outboxActivities = []} = useBrowseOutboxForUser(user);
+    let {data: activities = []} = useAllActivitiesForUser({handle: 'index', includeOwn: true});
     const siteUrl = useSiteUrl();
 
     // Create a map of activity objects from activities in the inbox and outbox.
@@ -103,22 +97,18 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     // efficient seeming though we already have the data in the inbox and outbox
     const activityObjectsMap = new Map<string, ObjectProperties>();
 
-    outboxActivities.forEach((activity) => {
-        if (activity.object) {
-            activityObjectsMap.set(activity.object.id, activity.object);
-        }
-    });
-    inboxActivities.forEach((activity) => {
+    activities.forEach((activity) => {
         if (activity.object) {
             activityObjectsMap.set(activity.object.id, activity.object);
         }
     });
 
     // Filter the activities to show
-    const activities = inboxActivities.filter((activity) => {
-        // Only show "Create" activities that are replies to a post created
-        // by the user
+    activities = activities.filter((activity) => {
         if (activity.type === ACTVITY_TYPE.CREATE) {
+            // Only show "Create" activities that are replies to a post created
+            // by the user
+
             const replyToObject = activityObjectsMap.get(activity.object?.inReplyTo || '');
 
             // If the reply object is not found, or it doesn't have a URL or
@@ -138,10 +128,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         }
 
         return [ACTVITY_TYPE.FOLLOW, ACTVITY_TYPE.LIKE].includes(activity.type);
-    })
-        // API endpoint currently returns items oldest-newest, so reverse them
-        // to show the most recent activities first
-        .reverse();
+    });
 
     // Create a map of activity comments, grouping them by the parent activity
     // This allows us to quickly look up all comments for a given activity

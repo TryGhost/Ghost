@@ -213,7 +213,14 @@ export default Route.extend(ShortcutsRoute, {
                     // - http://ember-concurrency.com/docs/cancelation
                     'TaskCancelation'
                 ],
-                integrations: []
+                integrations: [],
+                beforeBreadcrumb(breadcrumb) {
+                    // ignore breadcrumbs for event tracking to reduce noise in error reports
+                    if (breadcrumb.category === 'http' && breadcrumb.data?.url?.match(/\/e\.ghost\.org|plausible\.io/)) {
+                        return null;
+                    }
+                    return breadcrumb;
+                }
             };
 
             try {
