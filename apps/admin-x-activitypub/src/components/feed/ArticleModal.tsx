@@ -78,6 +78,7 @@ const FeedItemDivider: React.FC = () => (
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 2800;
+    const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
         if (focused) {
@@ -114,7 +115,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
     };
     const navigateForward = (nextObject: ObjectProperties, nextActor: ActorProperties, nextComments: Activity[]) => {
         setCanNavigateBack(true);
-        setNavigationStack([...navigationStack, [object, actor, comments]]);
+        setNavigationStack([...navigationStack, [object, actor, commentsState]]);
 
         modal.show({
             object: nextObject,
@@ -123,6 +124,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
             allComments: allComments
         });
     };
+
+    function handleNewReply(activity: Activity) {
+        setCommentsState(prev => [activity].concat(prev));
+    }
 
     return (
         <Modal
@@ -160,7 +165,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                                 setReplyBoxFocused(true);
                             }}
                         />
-                        <APReplyBox focused={isFocused} object={object}/>
+                        <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
                         <FeedItemDivider />
 
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
@@ -171,8 +176,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                         <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
                         <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
                         <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/> */}
-                        {comments.map((comment, index) => {
-                            const showDivider = index !== comments.length - 1;
+                        {commentsState.map((comment, index) => {
+                            const showDivider = index !== commentsState.length - 1;
                             const nestedComments = allComments.get(comment.object.id) ?? [];
                             const hasNestedComments = nestedComments.length > 0;
 
