@@ -594,12 +594,13 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
 
 function ProductCardPrice({product}) {
     const {selectedInterval} = useContext(ProductsContext);
-    const {site} = useContext(AppContext);
+    const {t, site} = useContext(AppContext);
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
     const trialDays = product.trial_days;
     const activePrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
     const alternatePrice = selectedInterval === 'month' ? yearlyPrice : monthlyPrice;
+    const interval = activePrice.interval === 'year' ? t('year') : t('month');
     if (!monthlyPrice || !yearlyPrice) {
         return null;
     }
@@ -615,7 +616,7 @@ function ProductCardPrice({product}) {
                         <div className="gh-portal-product-price">
                             <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
                             <span className="amount" data-testid="product-amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
-                            <span className="billing-period">/{activePrice.interval}</span>
+                            <span className="billing-period">/{interval}</span>
                         </div>
                         <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} selectedInterval={selectedInterval} />
                     </div>
