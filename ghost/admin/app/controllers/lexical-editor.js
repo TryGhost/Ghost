@@ -311,7 +311,7 @@ export default class LexicalEditorController extends Controller {
 
         // save local revision to localStorage on every change
         // the localRevisions service will decide if/when to save a revision
-        this.localRevisions.save(this.post);
+        this.localRevisions.save(this.post.displayName, this.post.serialize({includeId: true}));
         // save 3 seconds after last edit
         this._autosaveTask.perform();
         // force save at 60 seconds
