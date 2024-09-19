@@ -184,6 +184,10 @@ export default class LexicalEditorController extends Controller {
     _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
 
+    /* debug properties ------------------------------------------------------*/
+
+    _setPostState = null;
+
     /* computed properties ---------------------------------------------------*/
 
     @alias('model')
@@ -658,8 +662,9 @@ export default class LexicalEditorController extends Controller {
             // it as saved and performing PUT requests with no id. We want to
             // be noisy about this early to avoid data loss
             if (isNotFoundError(error)) {
-                console.error(error); // eslint-disable-line no-console
-                Sentry.captureException(error, {tags: {savePostTask: true}});
+                const notFoundContext = this._getNotFoundErrorContext();
+                console.error('saveTask failed with 404', notFoundContext); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}, extra: notFoundContext});
                 this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
                 return;
             }
@@ -679,6 +684,13 @@ export default class LexicalEditorController extends Controller {
 
             return this.post;
         }
+    }
+
+    _getNotFoundErrorContext() {
+        return {
+            setPostState: this._setPostState,
+            currentPostState: this.post.currentState.stateName
+        };
     }
 
     @task
@@ -702,7 +714,7 @@ export default class LexicalEditorController extends Controller {
         this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
-        if (!this.get('post.titleScratch').trim()) {
+        if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
 
@@ -1042,6 +1054,8 @@ export default class LexicalEditorController extends Controller {
         // reset everything ready for a new post
         this.reset();
 
+        this._setPostState = post.currentState.stateName;
+
         this.set('post', post);
         this.backgroundLoaderTask.perform();
 
@@ -1164,7 +1178,7 @@ export default class LexicalEditorController extends Controller {
             }
 
             // don't push full lexical state to Sentry, it's too large, gets filtered often and not useful
-            const sentryContext = {...this._leaveModalReason.context, secondaryLexical: undefined, scratch: undefined, lexical: undefined};
+            const sentryContext = {...this._leaveModalReason.context, diff: JSON.stringify(this._leaveModalReason.context?.diff), secondaryLexical: undefined, scratch: undefined, lexical: undefined};
             Sentry.captureMessage('showing leave editor modal', {extra: {...this._leaveModalReason, context: sentryContext}});
 
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
@@ -1210,6 +1224,8 @@ export default class LexicalEditorController extends Controller {
         this._previousTagNames = [];
         this._leaveConfirmed = false;
         this._saveOnLeavePerformed = false;
+
+        this._setPostState = null;
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);

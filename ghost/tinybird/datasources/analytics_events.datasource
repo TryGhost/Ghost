@@ -1,6 +1,8 @@
 DESCRIPTION >
     Analytics events landing data source
 
+TOKEN "tracker" APPEND
+
 SCHEMA >
     `timestamp` DateTime `json:$.timestamp`,
     `session_id` String `json:$.session_id`,

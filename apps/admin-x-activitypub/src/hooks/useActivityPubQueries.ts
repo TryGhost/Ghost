@@ -157,7 +157,6 @@ export function useFollowingForUser(handle: string) {
 export function useFollowersForUser(handle: string) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
-
     return useQuery({
         queryKey: [`followers:${handle}`],
         async queryFn() {
@@ -166,13 +165,13 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useAllActivitiesForUser(handle: string) {
+export function useAllActivitiesForUser({handle, includeOwn = false}: {handle: string, includeOwn?: boolean}) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
     return useQuery({
-        queryKey: [`activities:${handle}`],
+        queryKey: [`activities:${handle}:includeOwn=${includeOwn.toString()}`],
         async queryFn() {
-            return api.getAllActivities();
+            return api.getAllActivities(includeOwn);
         }
     });
 }
