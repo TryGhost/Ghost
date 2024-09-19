@@ -10,8 +10,8 @@ export default class LocalRevisionsService extends Service {
     generateKey(data) {
         const timestamp = new Date().getTime();
         let key = this._prefix;
-        if (data && data.post && data.post.id) {
-            key = `${key}-${data.post.id}`;
+        if (data && data.id) {
+            key = `${key}-${data.id}`;
         } else {
             key = `${key}-draft`;
         }
@@ -19,11 +19,17 @@ export default class LocalRevisionsService extends Service {
     }
 
     save(data) {
-        const key = this.generateKey(data);
-        const revisions = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
-        revisions.push(key);
-        localStorage.setItem('ghost-revisions', JSON.stringify(revisions));
-        localStorage.setItem(key, JSON.stringify(data));
+        try {
+            const key = this.generateKey(data);
+            const revisions = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
+            revisions.push(key);
+            localStorage.setItem('ghost-revisions', JSON.stringify(revisions));
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (err) {
+            if (err.name === 'QuotaExceededError') {
+                console.warn('Quota Exceeded');
+            }
+        }
     }
 
     get(key) {
