@@ -3,7 +3,6 @@ import Service from '@ember/service';
 export default class LocalRevisionsService extends Service {
     constructor() {
         super(...arguments);
-        this.revisions = {};
     }
 
     _prefix = 'post-revision';
@@ -21,25 +20,42 @@ export default class LocalRevisionsService extends Service {
 
     save(data) {
         const key = this.generateKey(data);
-        this.revisions[key] = data;
+        const revisions = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
+        revisions.push(key);
+        localStorage.setItem('ghost-revisions', JSON.stringify(revisions));
+        localStorage.setItem(key, JSON.stringify(data));
     }
 
     get(key) {
-        return this.revisions[key];
+        return JSON.parse(localStorage.getItem(key));
     }
 
     getAll() {
-        return this.revisions;
+        const keys = JSON.parse(localStorage.getItem('ghost-revisions'));
+        const revisions = {};
+        for (const key of keys) {
+            revisions[key] = JSON.parse(localStorage.getItem(key));
+        }
+        return revisions;
     }
 
     getByPostId(postId = undefined) {
         const prefix = this._prefix;
         const keyPrefix = postId ? `${prefix}-${postId}` : `${prefix}-draft`;
-        return Object.keys(this.revisions).reduce((acc, key) => {
-            if (key.indexOf(keyPrefix) === 0) {
-                acc[key] = this.revisions[key];
-            }
-            return acc;
-        }, {});
+        const keys = JSON.parse(localStorage.getItem('ghost-revisions'));
+        const filteredKeys = keys.filter(key => key.startsWith(keyPrefix));
+        const revisions = [];
+        for (const key of filteredKeys) {
+            revisions.push(JSON.parse(localStorage.getItem(key)));
+        }
+        return revisions;
+    }
+
+    clear() {
+        const keys = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
+        for (const key of keys) {
+            localStorage.removeItem(key);
+        }
+        localStorage.removeItem('ghost-revisions');
     }
 }
