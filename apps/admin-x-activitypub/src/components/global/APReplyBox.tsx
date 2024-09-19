@@ -2,6 +2,7 @@ import React, {HTMLProps, useEffect, useId, useRef, useState} from 'react';
 
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
+import Activity from '../activities/ActivityItem';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
@@ -18,6 +19,7 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     hint?: React.ReactNode;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    onNewReply?: (activity: Activity) => void;
     object: ObjectProperties;
     focused: number;
 }
@@ -32,6 +34,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     className,
     object,
     focused,
+    onNewReply,
     // onChange,
     // onFocus,
     // onBlur,
@@ -61,12 +64,13 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     async function handleClick(event: React.MouseEvent) {
         event.preventDefault();
         await replyMutation.mutate({id: object.id, content: textValue}, {
-            onSuccess() {
+            onSuccess(activity) {
                 setTextValue('');
                 showToast({
                     message: 'Reply sent',
                     type: 'success'
                 });
+                onNewReply(activity);
             }
         });
     }
