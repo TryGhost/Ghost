@@ -19,7 +19,7 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
     object: ObjectProperties;
-    focused: boolean;
+    focused: number;
 }
 
 const APReplyBox: React.FC<APTextAreaProps> = ({
