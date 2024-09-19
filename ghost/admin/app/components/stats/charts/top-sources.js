@@ -13,7 +13,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-export default class TopPages extends Component {
+export default class TopSources extends Component {
     @inject config;
     @service modals;
 

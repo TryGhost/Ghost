@@ -8,7 +8,7 @@ import {formatNumber} from '../../../helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
 
-export default class KpisComponent extends Component {
+export default class TechnicalComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
@@ -19,15 +19,6 @@ export default class KpisComponent extends Component {
 
         const colorPalette = statsStaticColors.slice(1, 5);
 
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
@@ -137,7 +128,7 @@ export default class KpisComponent extends Component {
                             series: [
                                 {
                                     animation: true,
-                                    name: 'Browser',
+                                    name: tableHead,
                                     type: 'pie',
                                     radius: ['60%', '90%'],
                                     center: ['50%', '50%'], // Adjusted to align the chart to the top
