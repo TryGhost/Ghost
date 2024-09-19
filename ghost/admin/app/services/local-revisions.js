@@ -5,20 +5,24 @@ export default class LocalRevisionsService extends Service {
         super(...arguments);
     }
 
+    // base key prefix to avoid collisions in localStorage
     _prefix = 'post-revision';
+
+    // only save important fields since localStorage quotas are limited
+    _fieldsToSave = ['id', 'lexical', 'title', 'customExcerpt'];
 
     generateKey(data) {
         const timestamp = new Date().getTime();
-        let key = this._prefix;
-        if (data && data.id) {
-            key = `${key}-${data.id}`;
-        } else {
-            key = `${key}-draft`;
-        }
-        return `${key}-${timestamp}`;
+        return `${this._prefix}-${data.id}-${timestamp}`;
     }
 
-    save(data) {
+    save(post) {
+        const data = {
+            id: post.id || 'draft',
+            lexical: post.get('lexical'),
+            title: post.get('title'),
+            customExcerpt: post.get('customExcerpt')
+        };
         try {
             const key = this.generateKey(data);
             const revisions = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
@@ -27,7 +31,7 @@ export default class LocalRevisionsService extends Service {
             localStorage.setItem(key, JSON.stringify(data));
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
-                console.warn('Quota Exceeded');
+                // evict old revisions and retry save here
             }
         }
     }
@@ -43,6 +47,16 @@ export default class LocalRevisionsService extends Service {
             revisions[key] = JSON.parse(localStorage.getItem(key));
         }
         return revisions;
+    }
+
+    remove(key) {
+        const keys = this.keys();
+        let index = keys.indexOf(key);
+        if (index !== -1) {
+            keys.splice(index, 1);
+        }
+        localStorage.setItem('ghost-revisions', JSON.stringify(keys));
+        localStorage.removeItem(key);
     }
 
     getByPostId(postId = undefined) {
@@ -63,5 +77,9 @@ export default class LocalRevisionsService extends Service {
             localStorage.removeItem(key);
         }
         localStorage.removeItem('ghost-revisions');
+    }
+
+    keys() {
+        return JSON.parse(localStorage.getItem('ghost-revisions' || '[]'));
     }
 }
