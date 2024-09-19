@@ -17,6 +17,7 @@ interface ArticleModalProps {
     actor: ActorProperties;
     comments: Activity[];
     allComments: Map<string, Activity[]>;
+    focusReply: boolean;
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
@@ -74,7 +75,7 @@ const FeedItemDivider: React.FC = () => (
     <div className="mx-[-32px] h-px w-[120%] bg-grey-200"></div>
 );
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 2800;
 
@@ -148,7 +149,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                             object={object}
                             type='Note'
                         />
-                        <APReplyBox object={object}/>
+                        <APReplyBox focused={focusReply} object={object}/>
                         <FeedItemDivider />
 
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}

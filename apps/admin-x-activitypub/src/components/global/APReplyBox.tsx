@@ -1,4 +1,4 @@
-import React, {HTMLProps, useId, useState} from 'react';
+import React, {HTMLProps, useEffect, useId, useRef, useState} from 'react';
 
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
@@ -10,7 +10,6 @@ import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivi
 // import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
-    inputRef?: React.RefObject<HTMLTextAreaElement>;
     title?: string;
     value?: string;
     rows?: number;
@@ -20,10 +19,10 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
     object: ObjectProperties;
+    focused: boolean;
 }
 
 const APReplyBox: React.FC<APTextAreaProps> = ({
-    inputRef,
     title,
     value,
     rows = 1,
@@ -32,6 +31,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     hint,
     className,
     object,
+    focused,
     // onChange,
     // onFocus,
     // onBlur,
@@ -42,6 +42,14 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     const replyMutation = useReplyMutationForUser('index');
 
     const {data: user} = useUserDataForUser('index');
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (textareaRef.current && focused) {
+            textareaRef.current.focus();
+        }
+    }, [focused]);
 
     const styles = clsx(
         'ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
@@ -76,7 +84,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                         <FormPrimitive.Field name={id} asChild>
                             <FormPrimitive.Control asChild>
                                 <textarea
-                                    ref={inputRef}
+                                    ref={textareaRef}
                                     className={styles}
                                     id={id}
                                     maxLength={maxLength}
