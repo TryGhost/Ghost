@@ -75,6 +75,19 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         setTextValue(event.target.value); // Update the state on every change
     }
 
+    const [isFocused, setFocused] = useState(false);
+
+    function handleBlur() {
+        setFocused(false);
+    }
+
+    function handleFocus() {
+        setFocused(true);
+    }
+
+    // We disable the button if either the textbox isn't focused, or the reply is currently being sent.
+    const buttonDisabled = !isFocused || replyMutation.isLoading;
+
     return (
         <div className='flex w-full gap-x-3 py-6'>
             <APAvatar author={user} />
@@ -91,9 +104,9 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     placeholder={`Reply to ${getUsername(object.attributedTo)}...`}
                                     rows={rows}
                                     value={textValue}
+                                    onBlur={handleBlur}
                                     onChange={handleChange}
-                                    // onBlur={handleBlur}
-                                    // onFocus={handleFocus}
+                                    onFocus={handleFocus}
                                     {...props}>
                                 </textarea>
                             </FormPrimitive.Control>
@@ -103,7 +116,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 </FormPrimitive.Root>
                 <div className='absolute bottom-[6px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' disabled={replyMutation.isLoading} id='post' label='Post' loading={replyMutation.isLoading} size='sm' onClick={handleClick} />
+                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={replyMutation.isLoading} size='sm' onClick={handleClick} />
                 </div>
             </div>
         </div>
