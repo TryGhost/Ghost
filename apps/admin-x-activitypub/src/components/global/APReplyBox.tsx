@@ -54,13 +54,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         }
     }, [focused]);
 
-    const styles = clsx(
-        'ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
-        error ? 'border-red' : 'border-transparent placeholder:text-grey-500 dark:placeholder:text-grey-800',
-        title && 'mt-1.5',
-        className
-    );
-
     async function handleClick() {
         await replyMutation.mutate({id: object.id, content: textValue}, {
             onSuccess(activity) {
@@ -88,6 +81,13 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         setFocused(true);
     }
 
+    const styles = clsx(
+        `ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white ${isFocused && 'pb-12'}`,
+        error ? 'border-red' : 'border-transparent placeholder:text-grey-500 dark:placeholder:text-grey-800',
+        title && 'mt-1.5',
+        className
+    );
+
     // We disable the button if either the textbox isn't focused, or the reply is currently being sent.
     const buttonDisabled = !isFocused || replyMutation.isLoading;
 
@@ -106,7 +106,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     id={id}
                                     maxLength={maxLength}
                                     placeholder={`Reply to ${getUsername(object.attributedTo)}...`}
-                                    rows={rows}
+                                    rows={isFocused ? 3 : rows}
                                     value={textValue}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
