@@ -78,6 +78,14 @@ const FeedItemDivider: React.FC = () => (
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 2800;
+    const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
+    function setReplyBoxFocused(focused: boolean) {
+        if (focused) {
+            setFocused(prev => prev + 1);
+        } else {
+            setFocused(0);
+        }
+    }
 
     const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
@@ -148,8 +156,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                             layout='modal'
                             object={object}
                             type='Note'
+                            onCommentClick={() => {
+                                setReplyBoxFocused(true);
+                            }}
                         />
-                        <APReplyBox focused={focusReply} object={object}/>
+                        <APReplyBox focused={isFocused} object={object}/>
                         <FeedItemDivider />
 
                         {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
