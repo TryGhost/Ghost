@@ -60,7 +60,7 @@ describe('Acceptance: Stats', function () {
         it('can filter by date range', async function () {});
         it('can filter by number of days', async function () {});
 
-        it('shows sum of unique visitors', async function () {});
+        it('shows sum of unique visits', async function () {});
         it('shows sum of visits', async function () {});
         it('shows sum of pageviews', async function () {});
         it('shows average bounce rate', async function () {});
@@ -68,7 +68,7 @@ describe('Acceptance: Stats', function () {
 
         it('can switch between kpi tabs', async function () {});
 
-        it('shows unique visitors chart', async function () {});
+        it('shows unique visits chart', async function () {});
         it('shows visits chart', async function () {});
         it('shows pageviews chart', async function () {});
         it('shows bounce rate chart', async function () {});

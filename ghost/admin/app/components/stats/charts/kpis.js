@@ -175,7 +175,7 @@ export default class KpisComponent extends Component {
                                 displayValue = fparams[0].value[1] !== null && fparams[0].value[1].toFixed(2) + '%';
                                 break;
                             default:
-                                tooltipTitle = 'Unique visitors';
+                                tooltipTitle = 'Unique visits';
                                 displayValue = fparams[0].value[1] !== null && formatNumber(fparams[0].value[1]);
                                 break;
                             }
