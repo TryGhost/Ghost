@@ -80,16 +80,16 @@ export default class AllStatsModal extends Component {
                 loading={loading}
                 index={indexBy}
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">{labelText}</span>,
+                    label: <span className="gh-stats-data-header">{labelText}</span>,
                     renderBarContent: ({label}) => (
-                        <span className={`gh-stats-detail-label ${type === 'top-sources' && 'gh-stats-domain'}`}>{(type === 'top-locations') && getCountryFlag(label)} {type === 'top-sources' && (<img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />)} {label || unknownOption}</span>
+                        <span className={`gh-stats-data-label ${type === 'top-sources' && 'gh-stats-domain'}`}>{(type === 'top-locations') && getCountryFlag(label)} {type === 'top-sources' && (<img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />)} {label || unknownOption}</span>
                     )
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

@@ -69,8 +69,8 @@ export default class TechnicalComponent extends Component {
                 <table>
                     <thead>
                         <tr>
-                            <th><span className="gh-stats-detail-header">{tableHead}</span></th>
-                            <th><span className="gh-stats-detail-header">Visits</span></th>
+                            <th><span className="gh-stats-data-header">{tableHead}</span></th>
+                            <th><span className="gh-stats-data-header">Visits</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,13 +83,13 @@ export default class TechnicalComponent extends Component {
                                             e.preventDefault();
                                             this.navigateToFilter(indexBy, item.name.toLowerCase());
                                         }}
-                                        className="gh-stats-domain"
+                                        className="gh-stats-data-label"
                                     >
                                         <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
                                         {item.name}
                                     </a>
                                 </td>
-                                <td>{formatNumber(item.value)}</td>
+                                <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>
                             </tr>
                         ))}
                     </tbody>

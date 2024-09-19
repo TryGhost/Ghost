@@ -57,7 +57,7 @@ export default class TopLocations extends Component {
                 loading={loading}
                 index="location"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Country</span>,
+                    label: <span className="gh-stats-data-header">Country</span>,
                     renderBarContent: ({label}) => (
                         <span className="gh-stats-data-label">
                             <a
@@ -76,8 +76,8 @@ export default class TopLocations extends Component {
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

@@ -66,7 +66,7 @@ export default class TopPages extends Component {
                 loading={loading}
                 index="pathname"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Post or page</span>,
+                    label: <span className="gh-stats-data-header">Post or page</span>,
                     renderBarContent: ({label}) => (
                         <span className="gh-stats-data-label">
                             <a
@@ -85,8 +85,8 @@ export default class TopPages extends Component {
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

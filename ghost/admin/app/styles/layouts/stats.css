@@ -198,7 +198,7 @@
     }
 }
 
-.gh-stats-detail-header {
+.gh-stats-data-header {
     font-size: 12px;
     font-weight: 500;
     text-transform: none;
@@ -216,10 +216,22 @@
     color: var(--green);
 }
 
-.gh-stats-detail-label,
-.gh-stats-detail-value {
-    font-size: 13.5px;
+.gh-stats-data-label,
+.gh-stats-data-value {
     font-weight: 500;
+    font-size: 13px;
+}
+
+.gh-stats-data-label {
+    color: var(--black);
+}
+
+a.gh-stats-data-label:hover {
+    text-decoration: underline;
+}
+
+.gh-stats-data-value {
+    color: var(--middarkgrey);
 }
 
 .gh-stats-see-all-container {
@@ -227,6 +239,7 @@
 }
 
 .gh-stats-see-all-container::before {
+    pointer-events: none;
     position: absolute;
     display: block;
     content: '';
@@ -246,9 +259,44 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--black);
+}
+
+.gh-stats-domain:hover {
+    text-decoration: underline;
 }
 
 .gh-stats-favicon {
     width: 16px;
     height: 16px;
+}
+
+.gh-stats-tooltip-header {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.gh-stats-tooltip-data {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-stats-tooltip-label {
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--middarkgrey)
+}
+
+.gh-stats-tooltip-value {
+    font-family: var(--font-family-mono);
+    font-size: 12.5px;
+    margin-left: 10px;
+}
+
+.gh-stats-tooltip-marker {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 3px;
 }

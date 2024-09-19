@@ -112,7 +112,7 @@ export default class KpisComponent extends Component {
                             type: 'line',
                             z: 1
                         },
-                        extraCssText: 'box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);',
+                        extraCssText: 'box-shadow: 0 0 0 1px rgba(0,0,0,0.03), 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02); padding: 6px 8px;',
                         formatter: function (fparams) {
                             let displayValue;
                             let tooltipTitle;
@@ -133,7 +133,7 @@ export default class KpisComponent extends Component {
                             if (!displayValue) {
                                 displayValue = 'N/A';
                             }
-                            return `<div><div>${moment(fparams[0].value[0]).format('D MMM, YYYY')}</div><div><span style="display: inline-block; margin-right: 16px; font-weight: 600;">${tooltipTitle}</span> ${displayValue}</div></div>`;
+                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format('D MMM YYYY')}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
                         }
                     },
                     series: [

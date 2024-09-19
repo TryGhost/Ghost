@@ -64,9 +64,9 @@ export default class TopSources extends Component {
                 loading={loading}
                 index="source"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Source</span>,
+                    label: <span className="gh-stats-data-header">Source</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">
+                        <span className="gh-stats-data-label">
                             <a
                                 href="#"
                                 onClick={(e) => {
@@ -84,8 +84,8 @@ export default class TopSources extends Component {
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}
