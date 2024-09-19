@@ -205,11 +205,12 @@ interface FeedItemProps {
     comments?: Activity[];
     last?: boolean;
     onClick?: () => void;
+    onCommentClick?: () => void;
 }
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -292,7 +293,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                 </div>
                                 <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-                                
+
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
@@ -303,7 +304,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         commentCount={comments.length}
                                         likeCount={1}
                                         object={object}
-                                        onCommentClick={onLikeClick}
+                                        onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />
                                 </div>
@@ -348,7 +349,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             commentCount={comments.length}
                                             likeCount={1}
                                             object={object}
-                                            onCommentClick={onLikeClick}
+                                            onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
                                     </div>
@@ -395,7 +396,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         commentCount={comments.length}
                                         likeCount={1}
                                         object={object}
-                                        onCommentClick={onLikeClick}
+                                        onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />
                                 </div>
@@ -432,7 +433,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     commentCount={comments.length}
                                     likeCount={1}
                                     object={object}
-                                    onCommentClick={onLikeClick}
+                                    onCommentClick={onCommentClick}
                                     onLikeClick={onLikeClick}
                                 />
                             </div>
