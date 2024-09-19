@@ -16,6 +16,7 @@ import {tracked} from '@glimmer/tracking';
 export default class TopSources extends Component {
     @inject config;
     @service modals;
+    @service router;
 
     @tracked campaignOption = CAMPAIGN_OPTIONS[0];
     @tracked campaignOptions = CAMPAIGN_OPTIONS;
@@ -34,27 +35,32 @@ export default class TopSources extends Component {
         });
     }
 
+    @action
+    navigateToFilter(source) {
+        this.updateQueryParams({source});
+    }
+
+    @action
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.replaceWith(currentRoute.name, {queryParams: newQueryParams});
+    }
+
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
+        let {chartRange, audience, device, browser} = props;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
+            device,
+            browser,
             limit: 7
         };
 
@@ -74,7 +80,19 @@ export default class TopSources extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Source</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label"><span className="gh-stats-domain"><img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />{label || 'Direct'}</span></span>
+                        <span className="gh-stats-detail-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label || 'direct');
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                <img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />
+                                {label || 'Direct'}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}

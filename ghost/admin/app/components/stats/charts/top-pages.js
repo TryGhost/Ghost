@@ -36,8 +36,7 @@ export default class TopPages extends Component {
     }
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
+        let {chartRange, audience, device, browser} = props;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -62,6 +61,8 @@ export default class TopPages extends Component {
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_pages.json`,
             token: this.config.stats.token,
+            device,
+            browser,
             params
         });
 

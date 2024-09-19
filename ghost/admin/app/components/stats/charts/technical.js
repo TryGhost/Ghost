@@ -4,16 +4,31 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
+import {action} from '@ember/object';
 import {formatNumber} from '../../../helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 import {statsStaticColors} from 'ghost-admin/utils/stats';
 
 export default class TechnicalComponent extends Component {
     @inject config;
+    @service router;
+
+    @action
+    navigateToFilter(type, value) {
+        this.updateQueryParams({[type]: value});
+    }
+
+    @action
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.replaceWith(currentRoute.name, {queryParams: newQueryParams});
+    }
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
+        let {chartRange, audience, device, browser} = props;
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
@@ -24,6 +39,8 @@ export default class TechnicalComponent extends Component {
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
+            device,
+            browser,
             limit: 5
         };
 
@@ -80,8 +97,17 @@ export default class TechnicalComponent extends Component {
                         {transformedData.map((item, index) => (
                             <tr key={index}>
                                 <td>
-                                    <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
-                                    {item.name}
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
+                                        }}
+                                        className="gh-stats-domain"
+                                    >
+                                        <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
+                                        {item.name}
+                                    </a>
                                 </td>
                                 <td>{formatNumber(item.value)}</td>
                             </tr>

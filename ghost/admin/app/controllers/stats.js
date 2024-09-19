@@ -4,6 +4,11 @@ import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class StatsController extends Controller {
+    queryParams = ['device', 'browser'];
+
+    @tracked device = null;
+    @tracked browser = null;
+
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
     /**

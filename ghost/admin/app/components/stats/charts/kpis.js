@@ -13,8 +13,7 @@ export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
+        let {selected, chartRange, audience, device, browser} = props;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -33,12 +32,14 @@ export default class KpisComponent extends Component {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
             date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
+            member_status: audience.length === 0 ? null : audience.join(','),
+            device,
+            browser
         };
 
         const LINE_COLOR = statsStaticColors[0];
         const INDEX = 'date';
-        const CATEGORY = props.selected === 'unique_visits' ? 'visits' : props.selected;
+        const CATEGORY = selected === 'unique_visits' ? 'visits' : selected;
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
