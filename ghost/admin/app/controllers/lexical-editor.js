@@ -25,6 +25,7 @@ import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError, isNotFoundError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
+import {observes} from '@ember-decorators/object';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
 import {tracked} from '@glimmer/tracking';
@@ -187,6 +188,17 @@ export default class LexicalEditorController extends Controller {
     /* debug properties ------------------------------------------------------*/
 
     _setPostState = null;
+    _postStates = [];
+
+    // eslint-disable-next-line ghost/ember/no-observers
+    @observes('post.currentState.stateName')
+    _pushPostState() {
+        const stateName = this.post?.currentState.stateName;
+        if (stateName) {
+            console.log('post state changed:', stateName); // eslint-disable-line no-console
+            this._postStates.push(stateName);
+        }
+    }
 
     /* computed properties ---------------------------------------------------*/
 
@@ -689,7 +701,8 @@ export default class LexicalEditorController extends Controller {
     _getNotFoundErrorContext() {
         return {
             setPostState: this._setPostState,
-            currentPostState: this.post.currentState.stateName
+            currentPostState: this.post.currentState.stateName,
+            allPostStates: this._postStates
         };
     }
 
@@ -1226,6 +1239,7 @@ export default class LexicalEditorController extends Controller {
         this._saveOnLeavePerformed = false;
 
         this._setPostState = null;
+        this._postStates = [];
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
