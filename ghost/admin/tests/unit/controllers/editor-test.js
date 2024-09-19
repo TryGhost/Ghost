@@ -473,5 +473,15 @@ describe('Unit: Controller: lexical-editor', function () {
             controller.post = {currentState: {stateName: 'this.is.a.test'}};
             expect(controller._getNotFoundErrorContext().currentPostState).to.equal('this.is.a.test');
         });
+
+        it('_getNotFoundErrorContext() includes all post states', async function () {
+            const newPost = store.createRecord('post');
+            controller.setPost(newPost);
+            controller.post = {currentState: {stateName: 'state.one'}};
+            controller.post = {currentState: {stateName: 'state.two'}};
+            expect(controller._getNotFoundErrorContext().allPostStates).to.deep.equal(
+                ['root.loaded.created.uncommitted', 'state.one', 'state.two']
+            );
+        });
     });
 });
