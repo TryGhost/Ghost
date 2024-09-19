@@ -61,7 +61,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         className
     );
 
-    async function handleClick(event: React.MouseEvent) {
+    async function handleClick() {
         await replyMutation.mutate({id: object.id, content: textValue}, {
             onSuccess(activity) {
                 setTextValue('');
@@ -102,6 +102,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                 <textarea
                                     ref={textareaRef}
                                     className={styles}
+                                    disabled={replyMutation.isLoading}
                                     id={id}
                                     maxLength={maxLength}
                                     placeholder={`Reply to ${getUsername(object.attributedTo)}...`}
@@ -110,7 +111,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                     onFocus={handleFocus}
-                                    disabled={replyMutation.isLoading}
                                     {...props}>
                                 </textarea>
                             </FormPrimitive.Control>
