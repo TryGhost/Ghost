@@ -55,7 +55,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         }
 
         return (
-            <div className={`attachment-gallery mt-2 grid ${gridClass} gap-2`}>
+            <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
                     <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
@@ -67,10 +67,10 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     case 'image/jpeg':
     case 'image/png':
     case 'image/gif':
-        return <img alt='attachment' className='mt-2 rounded-md outline outline-1 -outline-offset-1 outline-black/10' src={attachment.url} />;
+        return <img alt='attachment' className='mt-3 rounded-md outline outline-1 -outline-offset-1 outline-black/10' src={attachment.url} />;
     case 'video/mp4':
     case 'video/webm':
-        return <div className='relative mb-4 mt-2'>
+        return <div className='relative mb-4 mt-3'>
             <video className='h-[300px] w-full rounded object-cover' src={attachment.url} controls/>
         </div>;
 
@@ -164,9 +164,9 @@ const FeedItemStats: React.FC<{
     };
 
     return (<div className='flex gap-5'>
-        <div className='mt-3 flex gap-1'>
+        <div className='flex gap-1'>
             <Button
-                className={`self-start text-grey-900 transition-all hover:opacity-70 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
+                className={`self-start text-grey-900 transition-all hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
                 hideLabel={true}
                 icon='heart'
                 id='like'
@@ -179,9 +179,9 @@ const FeedItemStats: React.FC<{
             />
             {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
         </div>
-        <div className='mt-3 flex gap-1'>
+        <div className='flex gap-1'>
             <Button
-                className={`self-start text-grey-900`}
+                className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
                 hideLabel={true}
                 icon='comment'
                 id='comment'
@@ -192,7 +192,9 @@ const FeedItemStats: React.FC<{
                     onCommentClick();
                 }}
             />
-            <span className={`text-grey-900`}>{commentCount}</span>
+            {commentCount > 0 && (
+                <span className={`text-grey-900`}>{commentCount}</span>
+            )}
         </div>
     </div>);
 };
@@ -261,7 +263,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const UserMenuTrigger = (
         <Button
-            className={`relative z-10 ml-auto self-start ${isCopied ? 'bump' : ''}`}
+            className={`relative z-10 ml-auto h-5 w-5 self-start ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
             iconColorClass='text-grey-600'
@@ -284,29 +286,32 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <APAvatar author={author}/>
                             <div className='flex justify-between'>
                                 <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                                    <div className='flex'>
-                                        <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
-                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
-                                    </div>
-                                    <div className='flex'>
-                                        <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                                    <div className='flex justify-between'>
+                                        <div className='flex'>
+                                            <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                            <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
+                                        </div>
+                                        <span className='whitespace-nowrap text-grey-700' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                                     </div>
                                 </div>
-                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
-                                    {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                    <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                                    {renderFeedAttachment(object, layout)}
-                                    <FeedItemStats
-                                        commentCount={comments.length}
-                                        likeCount={1}
-                                        object={object}
-                                        onCommentClick={onCommentClick}
-                                        onLikeClick={onLikeClick}
-                                    />
+                                    <div className='mt-[-24px]'>
+                                        {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
+                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
+                                        {renderFeedAttachment(object, layout)}
+                                    </div>
+                                    <div className='space-between mt-5 flex'>
+                                        <FeedItemStats
+                                            commentCount={comments.length}
+                                            likeCount={1}
+                                            object={object}
+                                            onCommentClick={onCommentClick}
+                                            onLikeClick={onLikeClick}
+                                        />
+                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                    </div>
                                 </div>
                             </div>
                             {/* </div> */}
@@ -343,22 +348,25 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.6rem] text-grey-900'></div>
+                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
                                         {renderFeedAttachment(object, layout)}
-                                        <FeedItemStats
-                                            commentCount={comments.length}
-                                            likeCount={1}
-                                            object={object}
-                                            onCommentClick={onCommentClick}
-                                            onLikeClick={onLikeClick}
-                                        />
+                                        <div className='space-between mt-5 flex'>
+                                            <FeedItemStats
+                                                commentCount={comments.length}
+                                                likeCount={1}
+                                                object={object}
+                                                onCommentClick={onCommentClick}
+                                                onLikeClick={onLikeClick}
+                                            />
+                                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        </div>
                                     </div>
                                 </div>
                                 {/* </div> */}
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
-                        <div className="mx-[-32px] mt-3 h-px w-[120%] bg-grey-200"></div>
+                        <div className="mt-3 h-px bg-grey-200"></div>
                     </div>
 
                 )}
@@ -392,13 +400,16 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                     <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
                                     {renderFeedAttachment(object, layout)}
-                                    <FeedItemStats
-                                        commentCount={comments.length}
-                                        likeCount={1}
-                                        object={object}
-                                        onCommentClick={onCommentClick}
-                                        onLikeClick={onLikeClick}
-                                    />
+                                    <div className='space-between mt-5 flex'>
+                                        <FeedItemStats
+                                            commentCount={comments.length}
+                                            likeCount={1}
+                                            object={object}
+                                            onCommentClick={onCommentClick}
+                                            onLikeClick={onLikeClick}
+                                        />
+                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                    </div>
                                 </div>
                             </div>
                             {/* </div> */}
@@ -429,13 +440,16 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                     {renderInboxAttachment(object)}
                                 </div>
-                                <FeedItemStats
-                                    commentCount={comments.length}
-                                    likeCount={1}
-                                    object={object}
-                                    onCommentClick={onCommentClick}
-                                    onLikeClick={onLikeClick}
-                                />
+                                <div className='space-between mt-5 flex'>
+                                    <FeedItemStats
+                                        commentCount={comments.length}
+                                        likeCount={1}
+                                        object={object}
+                                        onCommentClick={onCommentClick}
+                                        onLikeClick={onLikeClick}
+                                    />
+                                    <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                </div>
                             </div>
                         </div>
                     </div>
