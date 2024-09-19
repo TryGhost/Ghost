@@ -3,6 +3,7 @@ import Service, {inject as service} from '@ember/service';
 export default class LocalRevisionsService extends Service {
     constructor() {
         super(...arguments);
+        this.save = this.save.bind(this);
     }
 
     @service store;
@@ -18,11 +19,11 @@ export default class LocalRevisionsService extends Service {
     }
 
     save(type, data) {
+        data.id = data.id || 'draft';
+        data.type = type;
+        data.revisionTimestamp = Date.now();
+        const key = this.generateKey(data);
         try {
-            data.id = data.id || 'draft';
-            data.type = type;
-            data.revisionTimestamp = Date.now();
-            const key = this.generateKey(data);
             const allKeys = this.keys();
             allKeys.push(key);
             localStorage.setItem(this._indexKey, JSON.stringify(allKeys));
@@ -30,7 +31,12 @@ export default class LocalRevisionsService extends Service {
             return key;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
-                // evict oldest revision and retry save here
+                // Remove the current key in case it's already in the index
+                this.remove(key);
+                // Remove the oldest revision to make space
+                this.removeOldest();
+                // Try to save again
+                return this.save(type, data);
             }
         }
     }
@@ -48,17 +54,6 @@ export default class LocalRevisionsService extends Service {
         return revisions;
     }
 
-    findByPostId(postId = undefined) {
-        const prefix = this._prefix;
-        const keyPrefix = postId ? `${prefix}-${postId}` : `${prefix}-draft`;
-        const keys = this.keys(keyPrefix);
-        const revisions = [];
-        for (const key of keys) {
-            revisions.push(this.find(key));
-        }
-        return revisions;
-    }
-
     remove(key) {
         const keys = this.keys();
         let index = keys.indexOf(key);
@@ -67,6 +62,13 @@ export default class LocalRevisionsService extends Service {
         }
         localStorage.setItem(this._indexKey, JSON.stringify(keys));
         localStorage.removeItem(key);
+    }
+
+    removeOldest() {
+        const keys = this.keys();
+        const keysByTimestamp = keys.map(key => ({key, timestamp: this.find(key).revisionTimestamp}));
+        keysByTimestamp.sort((a, b) => a.timestamp - b.timestamp);
+        this.remove(keysByTimestamp[0].key);
     }
 
     clear() {

@@ -11,7 +11,18 @@ const sleep = ms => new Promise((resolve) => {
 describe('Unit: Service: local-revisions', function () {
     setupTest();
 
+    let localStore, setItemStub;
+
     this.beforeEach(function () {
+        // Mock localStorage
+        sinon.restore();
+        localStore = {};
+        sinon.stub(localStorage, 'getItem').callsFake(key => localStore[key] || null);
+        setItemStub = sinon.stub(localStorage, 'setItem').callsFake((key, value) => localStore[key] = value + '');
+        sinon.stub(localStorage, 'removeItem').callsFake(key => delete localStore[key]);
+        sinon.stub(localStorage, 'clear').callsFake(() => localStore = {});
+
+        // Create the service
         this.service = this.owner.lookup('service:local-revisions');
         this.service.clear();
     });
@@ -37,10 +48,7 @@ describe('Unit: Service: local-revisions', function () {
     describe('save', function () {
         it('saves a revision without a post id', function () {
             // save a revision
-            this.service.save('post', {id: 'draft', lexical: 'test'});
-            // grab the key of the saved revision
-            const revisions = this.service.findAll();
-            const key = Object.keys(revisions)[0];
+            const key = this.service.save('post', {id: 'draft', lexical: 'test'});
             const revision = this.service.find(key);
             expect(key).to.match(/post-revision-draft-\d+/);
             expect(revision.id).to.equal('draft');
@@ -49,27 +57,72 @@ describe('Unit: Service: local-revisions', function () {
 
         it('saves a revision with a post id', function () {
             // save a revision
-            const revisionTimestamp = Date.now();
-            this.service.save('post', {id: 'test-id', lexical: 'test', revisionTimestamp});
-            // grab the key of the saved revision
-            const revisions = this.service.findAll();
-            const key = Object.keys(revisions)[0];
+            const key = this.service.save('post', {id: 'test-id', lexical: 'test'});
+            const revision = this.service.find(key);
             expect(key).to.match(/post-revision-test-id-\d+/);
-            expect(this.service.find(key)).to.deep.equal({id: 'test-id', lexical: 'test', revisionTimestamp, type: 'post'});
+            expect(revision.id).to.equal('test-id');
+            expect(revision.lexical).to.equal('test');
+        });
+
+        it('evicts the oldest version if localStorage is full', async function () {
+            // save a few revisions
+            const keyToRemove = this.service.save('post', {id: 'test-id', lexical: 'test'});
+            await sleep(1);
+            this.service.save('post', {id: 'test-id', lexical: 'data-2'});
+            await sleep(1);
+
+            // Simulate a quota exceeded error
+            const quotaError = new Error('QuotaExceededError');
+            quotaError.name = 'QuotaExceededError';
+            const callCount = setItemStub.callCount;
+            setItemStub.onCall(callCount).throws(quotaError);
+            const keyToAdd = this.service.save('post', {id: 'test-id', lexical: 'data-3'});
+
+            // Ensure the oldest revision was removed
+            expect(this.service.find(keyToRemove)).to.be.null;
+
+            // Ensure the latest revision saved
+            expect(this.service.find(keyToAdd)).to.not.be.null;
+        });
+
+        it('evicts multiple oldest versions if localStorage is full', async function () {
+            // save a few revisions
+            const keyToRemove = this.service.save('post', {id: 'test-id-1', lexical: 'test'});
+            await sleep(1);
+            const nextKeyToRemove = this.service.save('post', {id: 'test-id-2', lexical: 'data-2'});
+            await sleep(1);
+            // Simulate a quota exceeded error
+            const quotaError = new Error('QuotaExceededError');
+            quotaError.name = 'QuotaExceededError';
+
+            setItemStub.onCall(setItemStub.callCount).throws(quotaError);
+            // remove calls setItem() to remove the key from the index
+            // it's called twice for each quota error, hence the + 3
+            setItemStub.onCall(setItemStub.callCount + 3).throws(quotaError);
+            const keyToAdd = this.service.save('post', {id: 'test-id-3', lexical: 'data-3'});
+
+            // Ensure the oldest revision was removed
+            expect(this.service.find(keyToRemove)).to.be.null;
+            expect(this.service.find(nextKeyToRemove)).to.be.null;
+
+            // Ensure the latest revision saved
+            expect(this.service.find(keyToAdd)).to.not.be.null;
         });
     });
 
     describe('find', function () {
         it('gets a revision by key', function () {
             // save a revision
-            this.service.save('post', {lexical: 'test'});
-            // grab the key of the saved revision
-            const revisions = this.service.findAll();
-            const key = Object.keys(revisions)[0];
+            const key = this.service.save('post', {lexical: 'test'});
             const result = this.service.find(key);
             expect(result.id).to.equal('draft');
             expect(result.lexical).to.equal('test');
             expect(result.revisionTimestamp).to.match(/\d+/);
+        });
+
+        it('returns null if the key does not exist', function () {
+            const result = this.service.find('non-existent-key');
+            expect(result).to.be.null;
         });
     });
 
@@ -89,27 +142,10 @@ describe('Unit: Service: local-revisions', function () {
             const result = this.service.findAll('post-revision-test-id');
             expect(Object.keys(result)).to.have.lengthOf(1);
         });
-    });
 
-    describe('findByPostId', function () {
-        it('gets all revisions for a post id', async function () {
-            // save a revision
-            this.service.save('post', {id: 'test-id', lexical: 'test'});
-            this.service.save('post', {lexical: 'data-2'});
-            await sleep(2);
-            this.service.save('post', {id: 'test-id', lexical: 'data-3'});
-            const result = this.service.findByPostId('test-id');
-            expect(Object.keys(result)).to.have.lengthOf(2);
-        });
-
-        it('gets all revisions without an id if no id is provided', async function () {
-            // save a revision
-            this.service.save('post', {id: 'test-id', lexical: 'data'});
-            this.service.save('post', {lexical: 'data-2'});
-            await sleep(1);
-            this.service.save('post', {lexical: 'data-3'});
-            const result = this.service.findByPostId();
-            expect(Object.keys(result)).to.have.lengthOf(2);
+        it('returns an empty object if there are no revisions', function () {
+            const result = this.service.findAll();
+            expect(result).to.deep.equal({});
         });
     });
 
@@ -140,13 +176,35 @@ describe('Unit: Service: local-revisions', function () {
     describe('remove', function () {
         it('removes the specified key', function () {
             // save revision
-            this.service.save('post', {id: 'test-id', lexical: 'data'});
+            const key = this.service.save('post', {id: 'test-id', lexical: 'data'});
             this.service.save('post', {id: 'test-2', lexical: 'data'});
-            const keys = this.service.keys();
-            const keyToRemove = keys[0];
-            this.service.remove(keyToRemove);
+            this.service.remove(key);
             const updatedKeys = this.service.keys();
             expect(updatedKeys).to.have.lengthOf(1);
+            expect(this.service.find(key)).to.be.null;
+        });
+
+        it('does nothing if the key does not exist', function () {
+            // save revision
+            this.service.save('post', {id: 'test-id', lexical: 'data'});
+            this.service.save('post', {id: 'test-2', lexical: 'data'});
+            this.service.remove('non-existent-key');
+            const updatedKeys = this.service.keys();
+            expect(updatedKeys).to.have.lengthOf(2);
+        });
+    });
+
+    describe('removeOldest', function () {
+        it('removes the oldest revision', async function () {
+            // save revision
+            const keyToRemove = this.service.save('post', {id: 'test-id', lexical: 'data'});
+            await sleep(1);
+            this.service.save('post', {id: 'test-2', lexical: 'data'});
+            await sleep(1);
+            this.service.save('post', {id: 'test-3', lexical: 'data'});
+            this.service.removeOldest();
+            const updatedKeys = this.service.keys();
+            expect(updatedKeys).to.have.lengthOf(2);
             expect(this.service.find(keyToRemove)).to.be.null;
         });
     });
