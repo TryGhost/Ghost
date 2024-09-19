@@ -606,6 +606,23 @@ describe('Acceptance: Editor', function () {
             ).to.equal(`/ghost/posts/analytics/${post.id}`);
         });
 
+        it('does not render analytics breadcrumb for a new post', async function () {
+            const post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            // visit the analytics page for the post
+            await visit(`/posts/analytics/${post.id}`);
+            // start a new post
+            await visit('/editor/post');
+
+            // Breadcrumbs should not contain Analytics link
+            expect(find('[data-test-breadcrumb]'), 'breadcrumb text').to.contain.text('Posts');
+            expect(find('[data-test-editor-post-status]')).to.contain.text('New');
+        });
+
         it('handles TKs in title', async function () {
             let post = this.server.create('post', {authors: [author]});
 
