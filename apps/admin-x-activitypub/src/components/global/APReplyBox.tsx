@@ -38,7 +38,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     ...props
 }) => {
     const id = useId();
-    const [textValue, setTextValue] = useState(''); // Manage the textarea value with state
+    const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
     const replyMutation = useReplyMutationForUser('index');
 
     const styles = clsx(
@@ -50,7 +50,11 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
     async function handleClick(event: React.MouseEvent) {
         event.preventDefault();
-        await replyMutation.mutate({id: object.id, content: textValue});
+        await replyMutation.mutate({id: object.id, content: textValue}, {
+            onSuccess() {
+                setTextValue('');
+            }
+        });
     }
 
     function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -72,7 +76,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     maxLength={maxLength}
                                     placeholder={`Reply to ${getUsername(object.attributedTo)}...`}
                                     rows={rows}
-                                    value={value}
+                                    value={textValue}
                                     onChange={handleChange}
                                     // onBlur={handleBlur}
                                     // onFocus={handleFocus}
