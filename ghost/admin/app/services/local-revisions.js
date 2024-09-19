@@ -8,6 +8,9 @@ export default class LocalRevisionsService extends Service {
     // base key prefix to avoid collisions in localStorage
     _prefix = 'post-revision';
 
+    // key to store a simple index of all revisions
+    _indexKey = 'ghost-revisions';
+
     // only save important fields since localStorage quotas are limited
     _fieldsToSave = ['id', 'lexical', 'title', 'customExcerpt'];
 
@@ -17,17 +20,17 @@ export default class LocalRevisionsService extends Service {
     }
 
     save(post) {
-        const data = {
-            id: post.id || 'draft',
-            lexical: post.get('lexical'),
-            title: post.get('title'),
-            customExcerpt: post.get('customExcerpt')
-        };
         try {
+            const data = {
+                id: post.id || 'draft',
+                lexical: post.get('lexical'),
+                title: post.get('title'),
+                customExcerpt: post.get('customExcerpt')
+            };
             const key = this.generateKey(data);
-            const revisions = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
-            revisions.push(key);
-            localStorage.setItem('ghost-revisions', JSON.stringify(revisions));
+            const allKeys = this.keys();
+            allKeys.push(key);
+            localStorage.setItem(this._indexKey, JSON.stringify(allKeys));
             localStorage.setItem(key, JSON.stringify(data));
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
@@ -41,7 +44,7 @@ export default class LocalRevisionsService extends Service {
     }
 
     getAll() {
-        const keys = JSON.parse(localStorage.getItem('ghost-revisions'));
+        const keys = this.keys();
         const revisions = {};
         for (const key of keys) {
             revisions[key] = JSON.parse(localStorage.getItem(key));
@@ -55,14 +58,14 @@ export default class LocalRevisionsService extends Service {
         if (index !== -1) {
             keys.splice(index, 1);
         }
-        localStorage.setItem('ghost-revisions', JSON.stringify(keys));
+        localStorage.setItem(this._indexKey, JSON.stringify(keys));
         localStorage.removeItem(key);
     }
 
     getByPostId(postId = undefined) {
         const prefix = this._prefix;
         const keyPrefix = postId ? `${prefix}-${postId}` : `${prefix}-draft`;
-        const keys = JSON.parse(localStorage.getItem('ghost-revisions'));
+        const keys = this.keys();
         const filteredKeys = keys.filter(key => key.startsWith(keyPrefix));
         const revisions = [];
         for (const key of filteredKeys) {
@@ -72,14 +75,13 @@ export default class LocalRevisionsService extends Service {
     }
 
     clear() {
-        const keys = JSON.parse(localStorage.getItem('ghost-revisions') || '[]');
+        const keys = this.keys();
         for (const key of keys) {
-            localStorage.removeItem(key);
+            this.remove(key);
         }
-        localStorage.removeItem('ghost-revisions');
     }
 
     keys() {
-        return JSON.parse(localStorage.getItem('ghost-revisions' || '[]'));
+        return JSON.parse(localStorage.getItem(this._indexKey) || '[]');
     }
 }
