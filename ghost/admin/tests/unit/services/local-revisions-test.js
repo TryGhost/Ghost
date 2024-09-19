@@ -1,23 +1,16 @@
-import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
+const sleep = ms => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+});
+
 describe('Unit: Service: local-revisions', function () {
     setupTest();
 
-    this.beforeAll(function () {
-        this.t0 = new Date();
-        this.clock = sinon.useFakeTimers();
-    });
-
     this.beforeEach(function () {
         this.service = this.owner.lookup('service:local-revisions');
-        this.clock = sinon.useFakeTimers({now: this.t0, shouldAdvanceTime: false});
-    });
-
-    this.afterEach(function () {
-        this.clock.restore();
     });
 
     it('exists', function () {
@@ -36,10 +29,10 @@ describe('Unit: Service: local-revisions', function () {
         });
     });
 
-    describe('performSaveRevision', function () {
+    describe('save', function () {
         it('saves a revision without a post id', function () {
             // save a revision
-            this.service.performSaveRevision({test: 'data'});
+            this.service.save({test: 'data'});
             // grab the key of the saved revision
             const revisions = this.service.getAll();
             const key = Object.keys(revisions)[0];
@@ -49,7 +42,7 @@ describe('Unit: Service: local-revisions', function () {
 
         it('saves a revision with a post id', function () {
             // save a revision
-            this.service.performSaveRevision({post: {id: 'test-id'}, test: 'data'});
+            this.service.save({post: {id: 'test-id'}, test: 'data'});
             // grab the key of the saved revision
             const revisions = this.service.getAll();
             const key = Object.keys(revisions)[0];
@@ -61,76 +54,46 @@ describe('Unit: Service: local-revisions', function () {
     describe('get', function () {
         it('gets a revision by key', function () {
             // save a revision
-            this.service.performSaveRevision({test: 'data'});
+            this.service.save({test: 'data'});
             // grab the key of the saved revision
-            const key = `${this.service._prefix}-draft-${this.t0.getTime()}`;
-            expect(this.service.get(key)).to.deep.equal({test: 'data'});
+            const revisions = this.service.getAll();
+            const key = Object.keys(revisions)[0];
+            const result = this.service.get(key);
+            expect(result).to.deep.equal({
+                test: 'data'
+            });
         });
     });
 
     describe('getAll', function () {
         it('gets all revisions if no prefix is provided', function () {
             // save a revision
-            this.service.performSaveRevision({post: {id: 'test-id'}, test: 'data'});
-            this.service.performSaveRevision({test: 'data-2'});
-            const key1 = `${this.service._prefix}-test-id-${this.t0.getTime()}`;
-            const key2 = `${this.service._prefix}-draft-${this.t0.getTime()}`;
-            const expected = {
-                [key1]: {post: {id: 'test-id'}, test: 'data'},
-                [key2]: {test: 'data-2'}
-            };
-            expect(this.service.getAll()).to.deep.equal(expected);
+            this.service.save({post: {id: 'test-id'}, test: 'data'});
+            this.service.save({test: 'data-2'});
+            const result = this.service.getAll();
+            expect(Object.keys(result)).to.have.lengthOf(2);
         });
     });
 
     describe('getByPostId', function () {
-        it('gets all revisions for a post id', function () {
+        it('gets all revisions for a post id', async function () {
             // save a revision
-            this.service.performSaveRevision({post: {id: 'test-id'}, test: 'data'});
-            this.service.performSaveRevision({test: 'data-2'});
-            // advance the clock by 1ms to create another revision
-            this.clock.tick(1);
-            this.service.performSaveRevision({post: {id: 'test-id'}, test: 'data-3'});
-            const key1 = `${this.service._prefix}-test-id-${this.t0.getTime()}`;
-            const key2 = `${this.service._prefix}-test-id-${this.t0.getTime() + 1}`;
-            const expected = {
-                [key1]: {post: {id: 'test-id'}, test: 'data'},
-                [key2]: {post: {id: 'test-id'}, test: 'data-3'}
-            };
-            expect(this.service.getByPostId('test-id')).to.deep.equal(expected);
+            this.service.save({post: {id: 'test-id'}, test: 'data'});
+            this.service.save({test: 'data-2'});
+            await sleep(2);
+            this.service.save({post: {id: 'test-id'}, test: 'data-3'});
+            const result = this.service.getByPostId('test-id');
+            expect(Object.keys(result)).to.have.lengthOf(2);
         });
 
-        it('gets all revisions without an id if no id is provided', function () {
+        it('gets all revisions without an id if no id is provided', async function () {
             // save a revision
-            this.service.performSaveRevision({post: {id: 'test-id'}, test: 'data'});
-            this.service.performSaveRevision({test: 'data-2'});
-            const key2 = `${this.service._prefix}-draft-${this.t0.getTime()}`;
-            const expected = {
-                [key2]: {test: 'data-2'}
-            };
-            expect(this.service.getByPostId()).to.deep.equal(expected);
-        });
-    });
-
-    describe('saveRevisionTask', function () {
-        it('saves a revision immediately if no revision has been saved yet', function () {
-            this.service.saveRevisionTask.perform({test: 'data'});
-            const key = `${this.service._prefix}-draft-${this.t0.getTime()}`;
-            expect(this.service.get(key)).to.deep.equal({test: 'data'});
-        });
-
-        it('does not save a revision if a revision has been saved recently', function () {
-            this.service.saveRevisionTask.perform({test: 'data'});
-            this.clock.tick(this.service.MIN_REVISION_TIME - 1);
-            this.service.saveRevisionTask.perform({test: 'data-2'});
-            expect(Object.keys(this.service.getAll())).to.have.length(1);
-        });
-
-        it('saves a revisions if a revision has not been saved recently', function () {
-            this.service.saveRevisionTask.perform({test: 'data'});
-            this.clock.tick(this.service.MIN_REVISION_TIME + 1);
-            this.service.saveRevisionTask.perform({test: 'data-2'});
-            expect(Object.keys(this.service.getAll())).to.have.length(2);
+            this.service.save({post: {id: 'test-id'}, test: 'data'});
+            this.service.save({test: 'data-2'});
+            await sleep(1);
+            this.service.save({test: 'data-3'});
+            const result = this.service.getByPostId();
+            expect(Object.keys(result)).to.have.lengthOf(2);
         });
     });
 });
