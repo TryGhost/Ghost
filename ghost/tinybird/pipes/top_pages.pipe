@@ -36,6 +36,12 @@ SQL >
         {% else %} and date <= today()
         {% end %}
 
+        {% if defined(device) %} and device = {{ String(device) }} {% end %}
+        {% if defined(browser) %} and browser = {{ String(browser) }} {% end %}
+        {% if defined(referrer) %} and referrer = {{ String(referrer) }} {% end %}
+        {% if defined(location) %} and location = {{ String(location) }} {% end %}
+        {% if defined(pathname) %} and pathname = {{ String(pathname) }} {% end %}
+
     group by pathname
     order by visits desc
     limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
