@@ -32,15 +32,6 @@ export default class TopLocations extends Component {
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
-        /**
-         * @typedef {Object} Params
-         * @property {string} site_uuid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),

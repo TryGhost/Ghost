@@ -13,7 +13,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-export default class TopPages extends Component {
+export default class TopSources extends Component {
     @inject config;
     @service modals;
 
@@ -41,15 +41,6 @@ export default class TopPages extends Component {
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
 
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
         const params = {
             site_uuid: this.config.stats.id,
             date_from: startDate.format('YYYY-MM-DD'),
