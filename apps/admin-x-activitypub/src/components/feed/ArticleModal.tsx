@@ -6,7 +6,6 @@ import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 import FeedItem from './FeedItem';
-import MainHeader from '../navigation/MainHeader';
 
 import APReplyBox from '../global/APReplyBox';
 import articleBodyStyles from '../articleBodyStyles';
@@ -72,7 +71,7 @@ ${image &&
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="mx-[-32px] h-px w-[120%] bg-grey-200"></div>
+    <div className="h-px bg-grey-200"></div>
 );
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
@@ -142,20 +141,22 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
             size='bleed'
             width={modalSize}
         >
-            <MainHeader>
-                {canNavigateBack && (
-                    <div className='col-[1/2] flex items-center justify-between px-8'>
-                        <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+            <div className='sticky top-0 z-50 border-grey-200 bg-white py-3'>
+                <div className='grid h-8 grid-cols-3'>
+                    {canNavigateBack && (
+                        <div className='col-[1/2] flex items-center justify-between px-8'>
+                            <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                        </div>
+                    )}
+                    <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
+                        {/* <span className='text-lg font-semibold text-grey-900'>{object.type}</span> */}
                     </div>
-                )}
-                <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
-                    <span className='text-lg font-semibold text-grey-900'>{object.type}</span>
+                    <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
+                        <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
+                        <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                    </div>
                 </div>
-                <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                    <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
-                    <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                </div>
-            </MainHeader>
+            </div>
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
                     <div className='mx-auto max-w-[580px] pb-16'>
@@ -172,14 +173,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                         <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
                         <FeedItemDivider />
 
-                        {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
-                        {/* {renderAttachment(object)} */}
-                        {/* <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
-                        <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
-                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/> */}
                         {commentsState.map((comment, index) => {
                             const showDivider = index !== commentsState.length - 1;
                             const nestedComments = allComments.get(comment.object.id) ?? [];
