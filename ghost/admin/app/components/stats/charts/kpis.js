@@ -13,7 +13,7 @@ export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let {selected, chartRange, audience, device, browser} = props;
+        let {selected, chartRange, audience, device, browser, location, source} = props;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -24,7 +24,9 @@ export default class KpisComponent extends Component {
             date_to: endDate.format('YYYY-MM-DD'),
             member_status: audience.length === 0 ? null : audience.join(','),
             device,
-            browser
+            browser,
+            location,
+            referrer: source === 'direct' ? null : source
         };
 
         const LINE_COLOR = statsStaticColors[0];

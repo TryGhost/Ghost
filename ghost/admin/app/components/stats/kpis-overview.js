@@ -53,7 +53,7 @@ export default class KpisOverview extends Component {
 
     @task
     *fetchData(args) {
-        const {chartRange, audience, device, browser, location, referrer, pathname} = args;
+        const {chartRange, audience, device, browser, location, source, pathname} = args;
         try {
             const endDate = moment().endOf('day');
             const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -81,8 +81,8 @@ export default class KpisOverview extends Component {
                 params.append('location', location);
             }
 
-            if (referrer) {
-                params.append('referrer', referrer);
+            if (source) {
+                params.append('referrer', source === 'direct' ? null : source);
             }
 
             if (pathname) {

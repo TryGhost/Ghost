@@ -4,10 +4,13 @@ import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class StatsController extends Controller {
-    queryParams = ['device', 'browser'];
+    queryParams = ['device', 'browser', 'location', 'source', 'pathname'];
 
     @tracked device = null;
     @tracked browser = null;
+    @tracked location = null;
+    @tracked source = null;
+    @tracked pathname = null;
 
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;

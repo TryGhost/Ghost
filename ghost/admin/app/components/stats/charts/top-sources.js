@@ -49,7 +49,7 @@ export default class TopSources extends Component {
     }
 
     ReactComponent = (props) => {
-        let {chartRange, audience, device, browser, location, referrer, pathname} = props;
+        let {chartRange, audience, device, browser, location, source, pathname} = props;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -62,7 +62,7 @@ export default class TopSources extends Component {
             device,
             browser,
             location,
-            referrer,
+            referrer: source === 'direct' ? null : source,
             pathname,
             limit: 7
         };
