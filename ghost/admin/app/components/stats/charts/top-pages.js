@@ -33,6 +33,18 @@ export default class TopPages extends Component {
         this.contentOption = selected;
     }
 
+    @action
+    navigateToFilter(pathname) {
+        this.updateQueryParams({pathname});
+    }
+
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
     ReactComponent = (props) => {
         const {chartRange, audience} = props;
 
@@ -59,7 +71,18 @@ export default class TopPages extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Post or page</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{label}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label);
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {label}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}

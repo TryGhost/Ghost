@@ -23,6 +23,18 @@ export default class TopLocations extends Component {
         });
     }
 
+    @action
+    navigateToFilter(location) {
+        this.updateQueryParams({location});
+    }
+
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
     ReactComponent = (props) => {
         const {chartRange, audience} = props;
 
@@ -49,7 +61,18 @@ export default class TopLocations extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Country</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{getCountryFlag(label)} {label || 'Unknown'}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label || 'Unknown');
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {getCountryFlag(label)} {label || 'Unknown'}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}
