@@ -27,35 +27,39 @@ describe('Unit: Service: local-revisions', function () {
 
     describe('generateKey', function () {
         it('generates a key for a post with an id', function () {
-            const key = this.service.generateKey(createPost({id: 'test'}));
-            expect(key).to.match(/post-revision-test-\d+/);
+            const timestamp = Date.now();
+            const key = this.service.generateKey({id: 'test', timestamp});
+            expect(key).to.equal(`post-revision-test-${timestamp}`);
         });
         
         it('generates a key for a post without a post id', function () {
-            const key = this.service.generateKey(createPost({id: 'draft'}));
-            expect(key).to.match(/post-revision-draft-\d+/);
+            const timestamp = Date.now();
+            const key = this.service.generateKey({id: 'draft', timestamp});
+            expect(key).to.equal(`post-revision-draft-${timestamp}`);
         });
     });
 
     describe('save', function () {
         it('saves a revision without a post id', function () {
+            const timestamp = Date.now();
             // save a revision
-            this.service.save(createPost({id: 'draft', lexical: 'test'}));
+            this.service.save(createPost({id: 'draft', lexical: 'test', timestamp}));
             // grab the key of the saved revision
             const revisions = this.service.findAll();
             const key = Object.keys(revisions)[0];
             expect(key).to.match(/post-revision-draft-\d+/);
-            expect(this.service.find(key)).to.deep.equal({id: 'draft', lexical: 'test'});
+            expect(this.service.find(key)).to.deep.equal({id: 'draft', lexical: 'test', timestamp});
         });
 
         it('saves a revision with a post id', function () {
             // save a revision
-            this.service.save(createPost({id: 'test-id', lexical: 'test'}));
+            const timestamp = Date.now();
+            this.service.save(createPost({id: 'test-id', lexical: 'test', timestamp}));
             // grab the key of the saved revision
             const revisions = this.service.findAll();
             const key = Object.keys(revisions)[0];
             expect(key).to.match(/post-revision-test-id-\d+/);
-            expect(this.service.find(key)).to.deep.equal({id: 'test-id', lexical: 'test'});
+            expect(this.service.find(key)).to.deep.equal({id: 'test-id', lexical: 'test', timestamp});
         });
     });
 
@@ -67,10 +71,9 @@ describe('Unit: Service: local-revisions', function () {
             const revisions = this.service.findAll();
             const key = Object.keys(revisions)[0];
             const result = this.service.find(key);
-            expect(result).to.deep.equal({
-                id: 'draft',
-                lexical: 'test'
-            });
+            expect(result.id).to.equal('draft');
+            expect(result.lexical).to.equal('test');
+            expect(result.timestamp).to.match(/\d+/);
         });
     });
 

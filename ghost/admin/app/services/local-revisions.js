@@ -15,8 +15,7 @@ export default class LocalRevisionsService extends Service {
     _fieldsToSave = ['id', 'lexical', 'title', 'customExcerpt'];
 
     generateKey(data) {
-        const timestamp = new Date().getTime();
-        return `${this._prefix}-${data.id}-${timestamp}`;
+        return `${this._prefix}-${data.id}-${data.timestamp}`;
     }
 
     save(post) {
@@ -25,7 +24,8 @@ export default class LocalRevisionsService extends Service {
                 id: post.id || 'draft',
                 lexical: post.get('lexical'),
                 title: post.get('title'),
-                customExcerpt: post.get('customExcerpt')
+                customExcerpt: post.get('customExcerpt'),
+                timestamp: new Date().getTime()
             };
             const key = this.generateKey(data);
             const allKeys = this.keys();
