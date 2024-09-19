@@ -14,7 +14,7 @@ interface APAvatarProps {
 const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     let iconSize = 18;
     let containerClass = '';
-    let imageClass = 'z-10 rounded w-10 h-10';
+    let imageClass = 'z-10 rounded w-10 h-10 object-cover';
     const badgeClass = `w-6 h-6 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
     let badgeColor = '';
 
@@ -34,7 +34,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     case 'xs':
         iconSize = 12;
         containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[3px] w-6 h-6';
-        imageClass = 'z-10 rounded w-6 h-6';
+        imageClass = 'z-10 rounded w-6 h-6 object-cover';
         break;
     case 'sm':
         containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-10 h-10';
@@ -50,7 +50,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     return (
         <>
             {author && author.icon?.url ? (
-                <a className='relative z-10 h-10 w-10 pt-[3px] transition-opacity hover:opacity-80' href={author.url} rel='noopener noreferrer' target='_blank'>
+                <a className='relative z-10 h-10 w-10 shrink-0 pt-[3px] transition-opacity hover:opacity-80' href={author.url} rel='noopener noreferrer' target='_blank'>
                     <img 
                         className={imageClass} 
                         src={author.icon.url}
