@@ -48,11 +48,12 @@ export default class KpisOverview extends Component {
 
     @action
     fetchDataIfNeeded() {
-        this.fetchData.perform(this.args.chartRange, this.args.audience);
+        this.fetchData.perform(this.args);
     }
 
     @task
-    *fetchData(chartRange, audience) {
+    *fetchData(args) {
+        const {chartRange, audience, device, browser, location, referrer, pathname} = args;
         try {
             const endDate = moment().endOf('day');
             const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -63,8 +64,29 @@ export default class KpisOverview extends Component {
                 date_to: endDate.format('YYYY-MM-DD')
             });
 
+            // Don't pass undefined through to tinybird. Tinybird charts does this automatically it seems
             if (audience.length > 0) {
                 params.append('member_status', audience.join(','));
+            }
+
+            if (device) {
+                params.append('device', device);
+            }
+
+            if (browser) {
+                params.append('browser', browser);
+            }
+
+            if (location) {
+                params.append('location', location);
+            }
+
+            if (referrer) {
+                params.append('referrer', referrer);
+            }
+
+            if (pathname) {
+                params.append('pathname', pathname);
             }
 
             const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {
@@ -111,7 +133,7 @@ export default class KpisOverview extends Component {
     willDestroy() {
         super.willDestroy();
         // Remove the event listener when the component is destroyed
-        document.removeEventListener('visibilitychange', this.fetchData.perform);
+        document.removeEventListener('visibilitychange', this.fetchDataIfNeeded);
     }
 
     @action

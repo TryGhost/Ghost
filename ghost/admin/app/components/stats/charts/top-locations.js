@@ -26,7 +26,7 @@ export default class TopLocations extends Component {
     }
 
     ReactComponent = (props) => {
-        let {chartRange, audience, device, browser} = props;
+        let {chartRange, audience, device, browser, location, referrer, pathname} = props;
 
         const endDate = moment().endOf('day');
         const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
@@ -47,6 +47,9 @@ export default class TopLocations extends Component {
             member_status: audience.length === 0 ? null : audience.join(','),
             device,
             browser,
+            location,
+            referrer,
+            pathname,
             limit: 7
         };
 

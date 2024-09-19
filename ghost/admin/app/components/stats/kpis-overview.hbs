@@ -45,5 +45,14 @@
     </div>
 </div>
 <div class="gh-stats-kpis-chart-container">
-    <Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />
+    <Stats::Charts::Kpis
+        @chartRange={{@chartRange}}
+        @audience={{@audience}}
+        @device={{@device}}
+        @browser={{@browser}}
+        @location={{@location}}
+        @referrer={{@referrer}}
+        @pathname={{@pathname}}
+        @selected={{this.selected}}
+    />
 </div>
