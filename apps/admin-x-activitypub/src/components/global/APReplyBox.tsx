@@ -85,7 +85,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 </FormPrimitive.Root>
                 <div className='absolute bottom-[6px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' id='post' label='Post' size='sm' onClick={handleClick} />
+                    <Button disabled={replyMutation.isLoading} loading={replyMutation.isLoading} color='black' id='post' label='Post' size='sm' onClick={handleClick} />
                 </div>
             </div>
         </div>
