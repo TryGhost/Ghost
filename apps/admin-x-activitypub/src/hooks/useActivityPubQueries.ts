@@ -131,6 +131,17 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+export function useUserDataForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useQuery({
+        queryKey: [`user:${handle}`],
+        async queryFn() {
+            return api.getUser();
+        }
+    });
+}
+
 export function useFollowersCountForUser(handle: string) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
