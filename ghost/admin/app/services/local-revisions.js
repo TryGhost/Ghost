@@ -1,15 +1,22 @@
 import Service, {inject as service} from '@ember/service';
-
+import config from 'ghost-admin/config/environment';
+import {task, timeout} from 'ember-concurrency';
 export default class LocalRevisionsService extends Service {
     constructor() {
         super(...arguments);
-        this.save = this.save.bind(this);
+        if (this.isTesting === undefined) {
+            this.isTesting = config.environment === 'test';
+        }
+        this.MIN_REVISION_TIME = this.isTesting ? 50 : 60000; // 1 minute in ms
+        this.performSave = this.performSave.bind(this);
     }
 
     @service store;
 
     // base key prefix to avoid collisions in localStorage
     _prefix = 'post-revision';
+
+    latestRevisionTime = null;
 
     // key to store a simple index of all revisions
     _indexKey = 'ghost-revisions';
@@ -18,7 +25,21 @@ export default class LocalRevisionsService extends Service {
         return `${this._prefix}-${data.id}-${data.revisionTimestamp}`;
     }
 
-    save(type, data) {
+    @task({keepLatest: true})
+    *saveTask(type, data) {
+        const currentTime = Date.now();
+        if (!this.lastRevisionTime || currentTime - this.lastRevisionTime > this.MIN_REVISION_TIME) {
+            yield this.performSave(type, data);
+            this.lastRevisionTime = currentTime;
+        } else {
+            const waitTime = this.MIN_REVISION_TIME - (currentTime - this.lastRevisionTime);
+            yield timeout(waitTime);
+            yield this.performSave(type, data);
+            this.lastRevisionTime = Date.now();
+        }
+    }
+
+    performSave(type, data) {
         data.id = data.id || 'draft';
         data.type = type;
         data.revisionTimestamp = Date.now();
@@ -33,12 +54,21 @@ export default class LocalRevisionsService extends Service {
             if (err.name === 'QuotaExceededError') {
                 // Remove the current key in case it's already in the index
                 this.remove(key);
-                // Remove the oldest revision to make space
-                this.removeOldest();
-                // Try to save again
-                return this.save(type, data);
+                
+                // If there are any revisions, remove the oldest one and try to save again
+                if (this.keys().length) {
+                    this.removeOldest();
+                    return this.performSave(type, data);
+                }
+                // LocalStorage is full and there are no revisions to remove
+                // We can't save the revision
             }
         }
+    }
+
+    // Use this method to trigger the revision save
+    scheduleSave(type, data) {
+        this.saveTask.perform(type, data);
     }
 
     find(key) {
@@ -55,13 +85,13 @@ export default class LocalRevisionsService extends Service {
     }
 
     remove(key) {
+        localStorage.removeItem(key);
         const keys = this.keys();
         let index = keys.indexOf(key);
         if (index !== -1) {
             keys.splice(index, 1);
         }
         localStorage.setItem(this._indexKey, JSON.stringify(keys));
-        localStorage.removeItem(key);
     }
 
     removeOldest() {
@@ -86,23 +116,37 @@ export default class LocalRevisionsService extends Service {
         return keys;
     }
 
-    showRevisions() {
+    list() {
         const revisions = this.findAll();
-        const tableData = [];
+        const data = {};
         for (const [key, revision] of Object.entries(revisions)) {
-            tableData.push({
+            if (!data[revision.title]) {
+                data[revision.title] = [];
+            }
+            data[revision.title].push({
                 key,
                 timestamp: revision.revisionTimestamp,
                 time: new Date(revision.revisionTimestamp).toLocaleString(),
                 title: revision.title,
-                type: revision.type
+                type: revision.type,
+                id: revision.id
             });
         }
-        tableData.sort((a, b) => b.timestamp - a.timestamp);
-        for (const row of tableData) {
+        /* eslint-disable no-console */
+        console.groupCollapsed('Local revisions');
+        for (const [title, row] of Object.entries(data)) {
             // eslint-disable-next-line no-console
-            console.log(row.key, row.time, row.title, row.type, row.plaintext);
+            console.groupCollapsed(`${title}`);
+            for (const item of row.sort((a, b) => b.timestamp - a.timestamp)) {
+                // eslint-disable-next-line no-console
+                console.groupCollapsed(`${item.time}`);
+                console.log('Revision ID: ', item.key);
+                console.groupEnd();
+            }
+            console.groupEnd();
         }
+        console.groupEnd();
+        /* eslint-enable no-console */
     }
 
     // Take a revision from localStorage and create a post with its data
