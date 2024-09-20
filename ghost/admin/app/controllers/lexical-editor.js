@@ -194,10 +194,17 @@ export default class LexicalEditorController extends Controller {
     // eslint-disable-next-line ghost/ember/no-observers
     @observes('post.currentState.stateName')
     _pushPostState() {
-        const stateName = this.post?.currentState.stateName;
+        const post = this.post;
+
+        if (!post) {
+            return;
+        }
+
+        const {stateName, isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid} = post.currentState;
         if (stateName) {
-            console.log('post state changed:', stateName); // eslint-disable-line no-console
-            this._postStates.push(stateName);
+            const postState = [stateName, {isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid}];
+            console.log('post state changed:', ...postState); // eslint-disable-line no-console
+            this._postStates.push(postState);
         }
     }
 
@@ -318,7 +325,7 @@ export default class LexicalEditorController extends Controller {
         } catch (err) {
             // ignore errors
         }
-        
+
         // save 3 seconds after last edit
         this._autosaveTask.perform();
         // force save at 60 seconds
