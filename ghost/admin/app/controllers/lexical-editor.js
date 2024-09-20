@@ -193,10 +193,17 @@ export default class LexicalEditorController extends Controller {
     // eslint-disable-next-line ghost/ember/no-observers
     @observes('post.currentState.stateName')
     _pushPostState() {
-        const stateName = this.post?.currentState.stateName;
+        const post = this.post;
+
+        if (!post) {
+            return;
+        }
+
+        const {stateName, isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid} = post.currentState;
         if (stateName) {
-            console.log('post state changed:', stateName); // eslint-disable-line no-console
-            this._postStates.push(stateName);
+            const postState = [stateName, {isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid}];
+            console.log('post state changed:', ...postState); // eslint-disable-line no-console
+            this._postStates.push(postState);
         }
     }
 
@@ -307,6 +314,15 @@ export default class LexicalEditorController extends Controller {
     @action
     updateScratch(lexical) {
         this.set('post.lexicalScratch', JSON.stringify(lexical));
+
+        try {
+            // schedule a local revision save
+            if (this.post.status === 'draft') {
+                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
+            }
+        } catch (err) {
+            // ignore errors
+        }
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
