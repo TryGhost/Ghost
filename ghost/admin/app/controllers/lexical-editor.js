@@ -699,11 +699,17 @@ export default class LexicalEditorController extends Controller {
             // into a bad state where it's not saved but the store is treating
             // it as saved and performing PUT requests with no id. We want to
             // be noisy about this early to avoid data loss
-            if (isNotFoundError(error)) {
+            if (isNotFoundError(error) && !this.post.id) {
                 const notFoundContext = this._getNotFoundErrorContext();
                 console.error('saveTask failed with 404', notFoundContext); // eslint-disable-line no-console
                 Sentry.captureException(error, {tags: {savePostTask: true}, extra: notFoundContext});
                 this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
+                return;
+            }
+            if (isNotFoundError(error) && this.post.id) {
+                const type = this.post.isPage ? 'page' : 'post';
+                Sentry.captureMessage(`Attempted to edit deleted ${type}`, {extra: {post_id: this.post.id}});
+                this._showErrorAlert(prevStatus, this.post.status, `${capitalizeFirstLetter(type)} has been deleted in a different session. If you need to keep this content, copy it and paste into a new ${type}.`);
                 return;
             }
 
