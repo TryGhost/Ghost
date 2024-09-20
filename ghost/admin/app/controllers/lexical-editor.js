@@ -310,10 +310,15 @@ export default class LexicalEditorController extends Controller {
         const lexicalString = JSON.stringify(lexical);
         this.set('post.lexicalScratch', lexicalString);
 
-        // schedule a local revision save
-        if (this.post.isDraft === true) {
-            this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
+        try {
+            // schedule a local revision save
+            if (this.post.status === 'draft') {
+                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
+            }
+        } catch (err) {
+            // ignore errors
         }
+        
         // save 3 seconds after last edit
         this._autosaveTask.perform();
         // force save at 60 seconds
@@ -328,8 +333,14 @@ export default class LexicalEditorController extends Controller {
     @action
     updateTitleScratch(title) {
         this.set('post.titleScratch', title);
-        // schedule a local revision save
-        this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
+        try {
+            // schedule a local revision save
+            if (this.post.status === 'draft') {
+                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
+            }
+        } catch (err) {
+            // ignore errors
+        }
     }
 
     @action
