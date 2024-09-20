@@ -1,6 +1,10 @@
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {task, timeout} from 'ember-concurrency';
+
+/**
+ * Service to manage local post revisions in localStorage
+ */
 export default class LocalRevisionsService extends Service {
     constructor() {
         super(...arguments);
@@ -15,16 +19,27 @@ export default class LocalRevisionsService extends Service {
 
     // base key prefix to avoid collisions in localStorage
     _prefix = 'post-revision';
-
     latestRevisionTime = null;
 
     // key to store a simple index of all revisions
     _indexKey = 'ghost-revisions';
 
+    /**
+     * 
+     * @param {object} data - serialized post data, must include id and revisionTimestamp
+     * @returns {string} - key to store the revision in localStorage
+     */
     generateKey(data) {
         return `${this._prefix}-${data.id}-${data.revisionTimestamp}`;
     }
 
+    /**
+     * Performs the save operations, either immediately or after a delay
+     * 
+     * leepLatest ensures the latest changes will be saved
+     * @param {string} type - post or page
+     * @param {object} data - serialized post data
+     */
     @task({keepLatest: true})
     *saveTask(type, data) {
         const currentTime = Date.now();
@@ -39,6 +54,14 @@ export default class LocalRevisionsService extends Service {
         }
     }
 
+    /**
+     * Saves the revision to localStorage
+     * 
+     * If localStorage is full, the oldest revision will be removed
+     * @param {string} type - post or page
+     * @param {object} data - serialized post data
+     * @returns {string | undefined} - key of the saved revision or undefined if it couldn't be saved
+     */
     performSave(type, data) {
         data.id = data.id || 'draft';
         data.type = type;
@@ -66,15 +89,29 @@ export default class LocalRevisionsService extends Service {
         }
     }
 
-    // Use this method to trigger the revision save
+    /**
+     * Method to trigger the save task
+     * @param {string} type - post or page
+     * @param {object} data - serialized post data
+     */
     scheduleSave(type, data) {
         this.saveTask.perform(type, data);
     }
 
+    /**
+     * Returns the specified revision from localStorage, or null if it doesn't exist
+     * @param {string} key - key of the revision to find
+     * @returns {string | null}
+     */
     find(key) {
         return JSON.parse(localStorage.getItem(key));
     }
 
+    /**
+     * Returns all revisions from localStorage, optionally filtered by key prefix
+     * @param {string | undefined} prefix - optional prefix to filter revision keys
+     * @returns 
+     */
     findAll(prefix = undefined) {
         const keys = this.keys(prefix);
         const revisions = {};
@@ -84,6 +121,10 @@ export default class LocalRevisionsService extends Service {
         return revisions;
     }
 
+    /**
+     * Removes the specified key from localStorage
+     * @param {string} key 
+     */
     remove(key) {
         localStorage.removeItem(key);
         const keys = this.keys();
@@ -94,6 +135,9 @@ export default class LocalRevisionsService extends Service {
         localStorage.setItem(this._indexKey, JSON.stringify(keys));
     }
 
+    /**
+     * Finds the oldest revision and removes it from localStorage to clear up space
+     */
     removeOldest() {
         const keys = this.keys();
         const keysByTimestamp = keys.map(key => ({key, timestamp: this.find(key).revisionTimestamp}));
@@ -101,6 +145,9 @@ export default class LocalRevisionsService extends Service {
         this.remove(keysByTimestamp[0].key);
     }
 
+    /**
+     * Removes all revisions from localStorage
+     */
     clear() {
         const keys = this.keys();
         for (const key of keys) {
@@ -108,6 +155,11 @@ export default class LocalRevisionsService extends Service {
         }
     }
 
+    /**
+     * Returns all revision keys from localStorage, optionally filtered by key prefix
+     * @param {string | undefined} prefix 
+     * @returns {string[]}
+     */
     keys(prefix = undefined) {
         let keys = JSON.parse(localStorage.getItem(this._indexKey) || '[]');
         if (prefix) {
@@ -116,6 +168,11 @@ export default class LocalRevisionsService extends Service {
         return keys;
     }
 
+    /**
+     * Logs all revisions to the console
+     * 
+     * Currently this is the only UI for local revisions
+     */
     list() {
         const revisions = this.findAll();
         const data = {};
@@ -149,7 +206,12 @@ export default class LocalRevisionsService extends Service {
         /* eslint-enable no-console */
     }
 
-    // Take a revision from localStorage and create a post with its data
+    /**
+     * Creates a new post from the specified revision
+     * 
+     * @param {string} key 
+     * @returns {Promise} - the new post model
+     */
     async restore(key) {
         try {
             const revision = this.find(key);
