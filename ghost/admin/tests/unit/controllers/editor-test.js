@@ -477,11 +477,15 @@ describe('Unit: Controller: lexical-editor', function () {
         it('_getNotFoundErrorContext() includes all post states', async function () {
             const newPost = store.createRecord('post');
             controller.setPost(newPost);
-            controller.post = {currentState: {stateName: 'state.one'}};
-            controller.post = {currentState: {stateName: 'state.two'}};
-            expect(controller._getNotFoundErrorContext().allPostStates).to.deep.equal(
-                ['root.loaded.created.uncommitted', 'state.one', 'state.two']
-            );
+            controller.post = {currentState: {stateName: 'state.one', isDirty: true}};
+            controller.post = {currentState: {stateName: 'state.two', isDirty: false}};
+            const allPostStates = controller._getNotFoundErrorContext().allPostStates;
+            const expectedStates = [
+                ['root.loaded.created.uncommitted', {isDeleted: false, isDirty: true, isEmpty: false, isLoading: false, isLoaded: true, isNew: true, isSaving: false, isValid: true}],
+                ['state.one', {isDeleted: undefined, isDirty: true, isEmpty: undefined, isLoading: undefined, isLoaded: undefined, isNew: undefined, isSaving: undefined, isValid: undefined}],
+                ['state.two', {isDeleted: undefined, isDirty: false, isEmpty: undefined, isLoading: undefined, isLoaded: undefined, isNew: undefined, isSaving: undefined, isValid: undefined}]
+            ];
+            expect(allPostStates).to.deep.equal(expectedStates);
         });
     });
 });
