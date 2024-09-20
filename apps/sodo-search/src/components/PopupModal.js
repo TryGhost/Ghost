@@ -71,7 +71,7 @@ class PopupContent extends React.Component {
 }
 
 function SearchBox() {
-    const {searchValue, dispatch, inputRef} = useContext(AppContext);
+    const {searchValue, dispatch, inputRef, t} = useContext(AppContext);
     const containerRef = useRef(null);
     useEffect(() => {
         setTimeout(() => {
@@ -117,7 +117,7 @@ function SearchBox() {
                     }
                 }}
                 className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
-                placeholder='Search posts, tags and authors'
+                placeholder={t('Search posts, tags and authors')}
             />
             <Loading />
             <CancelButton />
@@ -154,7 +154,7 @@ function Loading() {
 }
 
 function CancelButton() {
-    const {dispatch} = useContext(AppContext);
+    const {dispatch, t} = useContext(AppContext);
 
     return (
         <button
@@ -165,7 +165,7 @@ function CancelButton() {
                 });
             }}
         >
-            Cancel
+            {t('Cancel')}
         </button>
     );
 }
@@ -195,6 +195,8 @@ function TagListItem({tag, selectedResult, setSelectedResult}) {
 }
 
 function TagResults({tags, selectedResult, setSelectedResult}) {
+    const {t} = useContext(AppContext);
+
     if (!tags?.length) {
         return null;
     }
@@ -210,7 +212,7 @@ function TagResults({tags, selectedResult, setSelectedResult}) {
     });
     return (
         <div className='border-t border-gray-200 py-3 px-4 sm:px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Tags</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Tags')}</h1>
             {TagItems}
         </div>
     );
@@ -355,6 +357,8 @@ function HighlightWord({word, isExcerpt}) {
 }
 
 function ShowMoreButton({posts, maxPosts, setMaxPosts}) {
+    const {t} = useContext(AppContext);
+
     if (!posts?.length || maxPosts >= posts?.length) {
         return null;
     }
@@ -366,12 +370,13 @@ function ShowMoreButton({posts, maxPosts, setMaxPosts}) {
                 setMaxPosts(updatedMaxPosts);
             }}
         >
-            Show more results
+            {t('Show more results')}
         </button>
     );
 }
 
 function PostResults({posts, selectedResult, setSelectedResult}) {
+    const {t} = useContext(AppContext);
     const [maxPosts, setMaxPosts] = useState(DEFAULT_MAX_POSTS);
     useEffect(() => {
         setMaxPosts(DEFAULT_MAX_POSTS);
@@ -392,7 +397,7 @@ function PostResults({posts, selectedResult, setSelectedResult}) {
     });
     return (
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Posts')}</h1>
             {PostItems}
             <ShowMoreButton setMaxPosts={setMaxPosts} maxPosts={maxPosts} posts={posts} />
         </div>
@@ -437,6 +442,8 @@ function AuthorAvatar({name, avatar}) {
 }
 
 function AuthorResults({authors, selectedResult, setSelectedResult}) {
+    const {t} = useContext(AppContext);
+
     if (!authors?.length) {
         return null;
     }
@@ -453,7 +460,7 @@ function AuthorResults({authors, selectedResult, setSelectedResult}) {
 
     return (
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Authors</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Authors')}</h1>
             {AuthorItems}
         </div>
     );
@@ -572,9 +579,10 @@ function Results({posts, authors, tags}) {
 }
 
 function NoResultsBox() {
+    const {t} = useContext(AppContext);
     return (
         <div className='py-4 px-7'>
-            <p className='text-[1.65rem] text-neutral-400 leading-normal'>No matches found</p>
+            <p className='text-[1.65rem] text-neutral-400 leading-normal'>{t('No matches found')}</p>
         </div>
     );
 }

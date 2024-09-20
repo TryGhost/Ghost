@@ -13,7 +13,8 @@ const AppContext = React.createContext({
     dispatch: (_action, _data) => {},
     searchIndex: null,
     indexComplete: false,
-    searchValue: ''
+    searchValue: '',
+    t: () => {}
 });
 
 export default AppContext;
