@@ -34,6 +34,10 @@
     transition: all ease-in-out 0.3s;
 }
 
+.gh-stats-container.no-gap {
+    gap: 0;
+}
+
 .gh-stats-container > .gh-stats-metric-label,
 .gh-stats-metric-header {
     margin-bottom: 12px;
@@ -71,12 +75,12 @@
 .gh-stats-tab {
     position: relative;
     margin: 0 0 1px 0;
-    color: var(--midlightgrey);
+    /* color: var(--darkgrey); */
 }
 
-.gh-stats-tab:not(.is-selected) .gh-stats-metric-label {
-    color: var(--midlightgrey);
-}
+/* .gh-stats-tab:not(.is-selected) .gh-stats-metric-label {
+    color: var(--darkgrey);
+} */
 
 .gh-stats-tab:hover {
     background-color: var(--whitegrey-l2);
@@ -111,6 +115,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--whitegrey);
+    margin: -4px -20px 12px;
+    padding: 0 20px 16px;
 }
 
 .gh-stats-metric-data {
@@ -141,7 +148,7 @@
 }
 
 .gh-stats-piechart-container table {
-    margin-top: 5px;
+    margin-top: -15px;
     width: 100%;
     margin-bottom: 0;
 }
@@ -192,8 +199,10 @@
 }
 
 .gh-stats-detail-header {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
+    text-transform: none;
+    color: var(--midgrey);
 }
 
 .gh-stats-see-all-btn span {
@@ -210,4 +219,36 @@
 .gh-stats-detail-label,
 .gh-stats-detail-value {
     font-size: 13.5px;
+    font-weight: 500;
+}
+
+.gh-stats-see-all-container {
+    position: relative;
+}
+
+.gh-stats-see-all-container::before {
+    position: absolute;
+    display: block;
+    content: '';
+    left: 0;
+    right: 0;
+    top: -60px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.0) 0%, #FFF 100%);
+    height: 60px;
+    z-index: 9999;
+}
+
+.gh-stats-kpis-chart-container {
+    margin-top: -20px;
+}
+
+.gh-stats-domain {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-stats-favicon {
+    width: 16px;
+    height: 16px;
 }

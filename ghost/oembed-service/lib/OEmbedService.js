@@ -50,6 +50,7 @@ const findUrlWithProvider = (url) => {
 /**
  * @typedef {Object} IConfig
  * @prop {(key: string) => string} get
+ * @prop {(key: string) => string} getContentPath
  */
 
 /**
@@ -153,13 +154,24 @@ class OEmbedService {
     async processImageFromUrl(imageUrl, imageType) {
         // Fetch image buffer from the URL
         const imageBuffer = await this.fetchImageBuffer(imageUrl);
+        const store = this.storage.getStorage('images');
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
+        let ext = path.extname(fileName);
+        let name;
 
-        const targetPath = path.join(imageType, fileName);
+        if (ext) {
+            name = store.getSanitizedFileName(path.basename(fileName, ext));
+        } else {
+            name = store.getSanitizedFileName(path.basename(fileName));
+        }
 
-        const imageStoredUrl = await this.storage.getStorage('images').saveRaw(imageBuffer, targetPath);
+        let targetDir = path.join(this.config.getContentPath('images'), imageType);
+        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
+        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
+
+        const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
 
         return imageStoredUrl;
     }

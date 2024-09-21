@@ -7,6 +7,7 @@ const config = require('../../../core/shared/config/index');
 const localUtils = require('./utils');
 const {mockManager} = require('../../utils/e2e-framework');
 const oembed = require('../../../../core/core/server/services/oembed');
+const urlUtils = require('../../../core/shared/url-utils');
 
 // for sinon stubs
 const dnsPromises = require('dns').promises;
@@ -26,11 +27,11 @@ describe('Oembed API', function () {
         // ensure sure we're not network dependent
         mockManager.disableNetwork();
         processImageFromUrlStub = sinon.stub(oembed, 'processImageFromUrl');
-        processImageFromUrlStub.callsFake(async function (imageUrl) {
+        processImageFromUrlStub.callsFake(async function (imageUrl, imageType) {
             if (imageUrl === 'http://example.com/bad-image') {
                 throw new Error('Failed to process image');
             }
-            return '/content/images/image-01.png';
+            return `/content/images/${imageType}/image-01.png`;
         });
     });
 
@@ -278,7 +279,7 @@ describe('Oembed API', function () {
         pageMock.isDone().should.be.true();
 
         // Check that the substitute icon URL is returned in place of the original
-        res.body.metadata.icon.should.eql('/content/images/image-01.png');
+        res.body.metadata.icon.should.eql(`${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
     });
 
     it('should fetch and store thumbnails', async function () {
@@ -302,7 +303,7 @@ describe('Oembed API', function () {
         pageMock.isDone().should.be.true();
 
         // Check that the substitute thumbnail URL is returned in place of the original
-        res.body.metadata.thumbnail.should.eql('/content/images/image-01.png');
+        res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
     });
 
     describe('with unknown provider', function () {

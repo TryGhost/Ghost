@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -8,7 +9,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
-    @tracked selected = 'unique_visitors';
+    @tracked selected = 'unique_visits';
     @tracked totals = null;
     @tracked showGranularity = true;
 
@@ -42,21 +43,31 @@ export default class KpisOverview extends Component {
 
     constructor() {
         super(...arguments);
-        this.fetchData.perform();
+        this.fetchDataIfNeeded();
     }
 
-    setupFocusListener() {
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.fetchData.perform();
-            }
-        });
+    @action
+    fetchDataIfNeeded() {
+        this.fetchData.perform(this.args.chartRange, this.args.audience);
     }
 
     @task
-    *fetchData() {
+    *fetchData(chartRange, audience) {
         try {
-            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?site_uuid=${this.config.stats.id}`, {
+            const endDate = moment().endOf('day');
+            const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+
+            const params = new URLSearchParams({
+                site_uuid: this.config.stats.id,
+                date_from: startDate.format('YYYY-MM-DD'),
+                date_to: endDate.format('YYYY-MM-DD')
+            });
+
+            if (audience.length > 0) {
+                params.append('member_status', audience.join(','));
+            }
+
+            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -84,15 +95,15 @@ export default class KpisOverview extends Component {
         const _KPITotal = kpi => queryData.reduce((prev, curr) => (curr[kpi] ?? 0) + prev, 0);
 
         // Get total number of sessions
-        const totalVisits = formatNumber(_KPITotal('visits'));
+        const totalVisits = _KPITotal('visits');
 
         // Sum total KPI value from the trend, ponderating using sessions
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);
 
         return {
             avg_session_sec: Math.floor(_ponderatedKPIsTotal('avg_session_sec') / 60),
-            pageviews: _KPITotal('pageviews'),
-            visits: totalVisits,
+            pageviews: formatNumber(_KPITotal('pageviews')),
+            visits: formatNumber(totalVisits),
             bounce_rate: _ponderatedKPIsTotal('bounce_rate').toFixed(2)
         };
     }
@@ -104,13 +115,8 @@ export default class KpisOverview extends Component {
     }
 
     @action
-    changeTabToUniqueVisitors() {
-        this.selected = 'unique_visitors';
-    }
-
-    @action
-    changeTabToVisits() {
-        this.selected = 'visits';
+    changeTabToUniqueVisits() {
+        this.selected = 'unique_visits';
     }
 
     @action
@@ -128,12 +134,8 @@ export default class KpisOverview extends Component {
         this.selected = 'bounce_rate';
     }
 
-    get uniqueVisitorsTabSelected() {
-        return (this.selected === 'unique_visitors');
-    }
-
-    get visitsTabSelected() {
-        return (this.selected === 'visits');
+    get uniqueVisitsTabSelected() {
+        return (this.selected === 'unique_visits');
     }
 
     get pageviewsTabSelected() {

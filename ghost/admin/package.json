@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.94.0",
+  "version": "5.94.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -50,10 +50,10 @@
     "@tryghost/helpers": "1.1.90",
     "@tryghost/kg-clean-basic-html": "4.1.4",
     "@tryghost/kg-converters": "1.0.7",
-    "@tryghost/koenig-lexical": "1.3.25",
+    "@tryghost/koenig-lexical": "1.3.26",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
-    "@tryghost/nql": "0.12.4",
+    "@tryghost/nql": "0.12.5",
     "@tryghost/nql-lang": "0.6.1",
     "@tryghost/string": "0.2.12",
     "@tryghost/timezone-data": "0.4.3",
@@ -132,6 +132,7 @@
     "liquid-fire": "0.34.0",
     "liquid-wormhole": "3.0.1",
     "loader.js": "4.7.0",
+    "microdiff": "^1.4.0",
     "miragejs": "0.1.48",
     "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
@@ -175,7 +176,7 @@
   "dependencies": {
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.93.0"
+    "webpack": "5.94.0"
   },
   "nx": {
     "targets": {
@@ -193,6 +194,10 @@
         ]
       },
       "build": {
+        "outputs": [
+          "{projectRoot}/dist",
+          "{workspaceRoot}/ghost/core/core/built/admin"
+        ],
         "dependsOn": [
           "build",
           {

@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
+import {authenticateSession} from 'ember-simple-auth/test-support';
 import {defineProperty} from '@ember/object';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -422,6 +423,69 @@ describe('Unit: Controller: lexical-editor', function () {
             let isDirty = controller.hasDirtyAttributes;
             // The test passes if no errors occur and it doesn't return true for new post condition
             expect(isDirty).to.be.false;
+        });
+    });
+
+    describe('post state debugging', function () {
+        let controller, store;
+
+        beforeEach(async function () {
+            controller = this.owner.lookup('controller:lexical-editor');
+            store = this.owner.lookup('service:store');
+
+            // avoid any unwanted network calls
+            const slugGenerator = this.owner.lookup('service:slug-generator');
+            slugGenerator.generateSlug = async () => 'test-slug';
+
+            Object.defineProperty(controller, 'backgroundLoaderTask', {
+                get: () => ({perform: () => {}})
+            });
+
+            // avoid waiting forever for authenticate modal
+            await authenticateSession();
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('should call _getNotFoundErrorContext() when hitting 404 during save', async function () {
+            const getErrorContextSpy = sinon.spy(controller, '_getNotFoundErrorContext');
+
+            const post = createPost();
+            post.save = () => RSVP.reject(404);
+
+            controller.set('post', post);
+            await controller.saveTask.perform(); // should not throw
+
+            expect(getErrorContextSpy.calledOnce).to.be.true;
+        });
+
+        it('_getNotFoundErrorContext() includes setPost model state', async function () {
+            const newPost = store.createRecord('post');
+            controller.setPost(newPost);
+            expect(controller._getNotFoundErrorContext().setPostState).to.equal('root.loaded.created.uncommitted');
+        });
+
+        it('_getNotFoundErrorContext() includes current model state', async function () {
+            const newPost = store.createRecord('post');
+            controller.setPost(newPost);
+            controller.post = {currentState: {stateName: 'this.is.a.test'}};
+            expect(controller._getNotFoundErrorContext().currentPostState).to.equal('this.is.a.test');
+        });
+
+        it('_getNotFoundErrorContext() includes all post states', async function () {
+            const newPost = store.createRecord('post');
+            controller.setPost(newPost);
+            controller.post = {currentState: {stateName: 'state.one', isDirty: true}};
+            controller.post = {currentState: {stateName: 'state.two', isDirty: false}};
+            const allPostStates = controller._getNotFoundErrorContext().allPostStates;
+            const expectedStates = [
+                ['root.loaded.created.uncommitted', {isDeleted: false, isDirty: true, isEmpty: false, isLoading: false, isLoaded: true, isNew: true, isSaving: false, isValid: true}],
+                ['state.one', {isDeleted: undefined, isDirty: true, isEmpty: undefined, isLoading: undefined, isLoaded: undefined, isNew: undefined, isSaving: undefined, isValid: undefined}],
+                ['state.two', {isDeleted: undefined, isDirty: false, isEmpty: undefined, isLoading: undefined, isLoaded: undefined, isNew: undefined, isSaving: undefined, isValid: undefined}]
+            ];
+            expect(allPostStates).to.deep.equal(expectedStates);
         });
     });
 });

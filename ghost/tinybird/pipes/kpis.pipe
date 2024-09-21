@@ -4,6 +4,7 @@ DESCRIPTION >
     Daily granularity, except when filtering one single day (hourly)
 
 TOKEN "dashboard" READ
+TOKEN "stats page" READ
 
 NODE timeseries
 DESCRIPTION >
@@ -116,7 +117,7 @@ SQL >
         member_status,
         uniq(session_id) as visits,
         sum(pageviews) as pageviews,
-        sum(case when latest_hit_aux = first_hit_aux then 1 end) / visits as bounce_rate,
+        sum(case when latest_hit_aux = first_hit_aux then 1 else 0 end) / visits as bounce_rate,
         avg(latest_hit_aux - first_hit_aux) as avg_session_sec
     from hits
     group by date, site_uuid, member_status
@@ -141,3 +142,4 @@ SQL >
             and member_status IN {{ Array(member_status) }}
   {% end %}
   group by date
+  order by date WITH FILL STEP 1

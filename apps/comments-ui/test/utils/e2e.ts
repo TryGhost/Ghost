@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
+import {LabsType, MockedApi} from './MockedApi';
 import {Locator, Page} from '@playwright/test';
-import {MockedApi} from './MockedApi';
 import {expect} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
@@ -84,7 +84,7 @@ export async function mockAdminAuthFrame204({admin, page}) {
     });
 }
 
-export async function initialize({mockedApi, page, bodyStyle, ...options}: {
+export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '12345678', api = MOCKED_SITE_URL, ...options}: {
     mockedApi: MockedApi,
     page: Page,
     path?: string;
@@ -101,8 +101,18 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
     publication?: string,
     postId?: string,
     bodyStyle?: string,
+    labs?: LabsType
 }) {
     const sitePath = MOCKED_SITE_URL;
+
+    mockedApi.setSettings({
+        settings: {
+            labs: {
+                ...labs
+            }
+        }
+    });
+    
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
@@ -122,6 +132,14 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
 
     if (!options.postId) {
         options.postId = mockedApi.postId;
+    }
+
+    if (!options.key) {
+        options.key = key;
+    }
+
+    if (!options.api) {
+        options.api = api;
     }
 
     await page.evaluate((data) => {
@@ -194,7 +212,7 @@ export async function setClipboard(page, text) {
 }
 
 export function getModifierKey() {
-    const os = require('os');
+    const os = require('os'); // eslint-disable-line @typescript-eslint/no-var-requires
     const platform = os.platform();
     if (platform === 'darwin') {
         return 'Meta';

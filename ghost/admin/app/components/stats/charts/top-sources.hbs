@@ -22,7 +22,7 @@
     <div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience)}}></div>
 </div>
 
-<div>
+<div class="gh-stats-see-all-container">
     <button type="button" class="gh-btn gh-btn-link gh-stats-see-all-btn" {{on "click" (fn this.openSeeAll @chartRange @audience)}}>
         <span>See all &rarr;</span>
     </button>
