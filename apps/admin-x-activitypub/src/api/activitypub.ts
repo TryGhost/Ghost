@@ -24,7 +24,7 @@ export class ActivityPubAPI {
 
     private async fetchJSON(url: URL, method: 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
         const token = await this.getToken();
-        const options = {
+        const options: RequestInit = {
             method,
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -33,7 +33,7 @@ export class ActivityPubAPI {
         };
         if (body) {
             options.body = JSON.stringify(body);
-            options.headers['Content-Type'] = 'application/json';
+            (options.headers! as Record<string, string>)['Content-Type'] = 'application/json';
         }
         const response = await this.fetch(url, options);
         const json = await response.json();

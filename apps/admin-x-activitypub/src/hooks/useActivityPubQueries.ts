@@ -1,3 +1,4 @@
+import {Activity} from '../components/activities/ActivityItem';
 import {ActivityPubAPI} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
@@ -30,8 +31,8 @@ export function useReplyMutationForUser(handle: string) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
     return useMutation({
-        mutationFn({id, content}: {id: string, content: string}) {
-            return api.reply(id, content);
+        async mutationFn({id, content}: {id: string, content: string}) {
+            return await api.reply(id, content) as Activity;
         }
     });
 }
