@@ -2,11 +2,11 @@ import React, {HTMLProps, useEffect, useId, useRef, useState} from 'react';
 
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
-import Activity from '../activities/ActivityItem';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
+import {Activity} from '../activities/ActivityItem';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
-import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
 // import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
 
@@ -55,14 +55,19 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     }, [focused]);
 
     async function handleClick() {
+        if (!textValue) {
+            return;
+        }
         await replyMutation.mutate({id: object.id, content: textValue}, {
-            onSuccess(activity) {
+            onSuccess(activity: Activity) {
                 setTextValue('');
                 showToast({
                     message: 'Reply sent',
                     type: 'success'
                 });
-                onNewReply(activity);
+                if (onNewReply) {
+                    onNewReply(activity);
+                }
             }
         });
     }
@@ -91,9 +96,16 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     // We disable the button if either the textbox isn't focused, or the reply is currently being sent.
     const buttonDisabled = !isFocused || replyMutation.isLoading;
 
+    let placeholder = 'Reply...';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const attributedTo = (object.attributedTo || {}) as any;
+    if (typeof attributedTo.preferredUsername === 'string' && typeof attributedTo.id === 'string') {
+        placeholder = `Reply to ${getUsername(attributedTo)}...`;
+    }
+
     return (
         <div className='flex w-full gap-x-3 py-6'>
-            <APAvatar author={user} />
+            <APAvatar author={user as ActorProperties} />
             <div className='relative w-full'>
                 <FormPrimitive.Root asChild>
                     <div className='flex w-full flex-col'>
@@ -105,7 +117,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     disabled={replyMutation.isLoading}
                                     id={id}
                                     maxLength={maxLength}
-                                    placeholder={`Reply to ${getUsername(object.attributedTo)}...`}
+                                    placeholder={placeholder}
                                     rows={isFocused ? 3 : rows}
                                     value={textValue}
                                     onBlur={handleBlur}

@@ -52,6 +52,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
+                                        onCommentClick={() => {}}
                                     />
                                     {index < liked.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>

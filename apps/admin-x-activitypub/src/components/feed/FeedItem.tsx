@@ -207,7 +207,7 @@ interface FeedItemProps {
     comments?: Activity[];
     last?: boolean;
     onClick?: () => void;
-    onCommentClick?: () => void;
+    onCommentClick: () => void;
 }
 
 const noop = () => {};
