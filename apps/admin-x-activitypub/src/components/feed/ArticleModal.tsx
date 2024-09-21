@@ -75,8 +75,6 @@ const FeedItemDivider: React.FC = () => (
 );
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
-    const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 2800;
     const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
@@ -87,7 +85,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
         }
     }
 
-    const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
 
     // Navigation stack to navigate between comments - This could probably use a
