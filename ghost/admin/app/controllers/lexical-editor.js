@@ -159,6 +159,7 @@ export default class LexicalEditorController extends Controller {
     @service session;
     @service settings;
     @service ui;
+    @service localRevisions;
 
     @inject config;
 
@@ -193,10 +194,17 @@ export default class LexicalEditorController extends Controller {
     // eslint-disable-next-line ghost/ember/no-observers
     @observes('post.currentState.stateName')
     _pushPostState() {
-        const stateName = this.post?.currentState.stateName;
+        const post = this.post;
+
+        if (!post) {
+            return;
+        }
+
+        const {stateName, isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid} = post.currentState;
         if (stateName) {
-            console.log('post state changed:', stateName); // eslint-disable-line no-console
-            this._postStates.push(stateName);
+            const postState = [stateName, {isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid}];
+            console.log('post state changed:', ...postState); // eslint-disable-line no-console
+            this._postStates.push(postState);
         }
     }
 
@@ -306,7 +314,17 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateScratch(lexical) {
-        this.set('post.lexicalScratch', JSON.stringify(lexical));
+        const lexicalString = JSON.stringify(lexical);
+        this.set('post.lexicalScratch', lexicalString);
+
+        try {
+            // schedule a local revision save
+            if (this.post.status === 'draft') {
+                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
+            }
+        } catch (err) {
+            // ignore errors
+        }
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
@@ -322,6 +340,14 @@ export default class LexicalEditorController extends Controller {
     @action
     updateTitleScratch(title) {
         this.set('post.titleScratch', title);
+        try {
+            // schedule a local revision save
+            if (this.post.status === 'draft') {
+                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
+            }
+        } catch (err) {
+            // ignore errors
+        }
     }
 
     @action
@@ -673,11 +699,17 @@ export default class LexicalEditorController extends Controller {
             // into a bad state where it's not saved but the store is treating
             // it as saved and performing PUT requests with no id. We want to
             // be noisy about this early to avoid data loss
-            if (isNotFoundError(error)) {
+            if (isNotFoundError(error) && !this.post.id) {
                 const notFoundContext = this._getNotFoundErrorContext();
                 console.error('saveTask failed with 404', notFoundContext); // eslint-disable-line no-console
                 Sentry.captureException(error, {tags: {savePostTask: true}, extra: notFoundContext});
                 this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
+                return;
+            }
+            if (isNotFoundError(error) && this.post.id) {
+                const type = this.post.isPage ? 'page' : 'post';
+                Sentry.captureMessage(`Attempted to edit deleted ${type}`, {extra: {post_id: this.post.id}});
+                this._showErrorAlert(prevStatus, this.post.status, `${capitalizeFirstLetter(type)} has been deleted in a different session. If you need to keep this content, copy it and paste into a new ${type}.`);
                 return;
             }
 

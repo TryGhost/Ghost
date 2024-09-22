@@ -25,10 +25,10 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         }
     });
 
-    const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[]) => {
+    const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
         setArticleContent(object);
         setArticleActor(actor);
-        NiceModal.show(ArticleModal, {object, actor, comments});
+        NiceModal.show(ArticleModal, {object, actor, comments, focusReply});
     };
 
     function getContentAuthor(activity: Activity) {
@@ -82,6 +82,12 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
+                                        onCommentClick={() => handleViewContent(
+                                            activity.object,
+                                            getContentAuthor(activity),
+                                            activity.object.replies,
+                                            true
+                                        )}
                                     />
                                     {index < activities.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
