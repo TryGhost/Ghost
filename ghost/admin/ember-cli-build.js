@@ -205,6 +205,9 @@ module.exports = function (defaults) {
         },
         autoImport: {
             publicAssetURL,
+            alias: {
+                'sentry-testkit/browser': 'sentry-testkit/dist/browser'
+            },
             webpack: {
                 devtool: 'source-map',
                 resolve: {

@@ -147,6 +147,8 @@
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
     "semver": "7.6.3",
+    "sentry-testkit": "5.0.9",
+    "sinon-chai": "4.0.0",
     "testem": "3.15.1",
     "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
