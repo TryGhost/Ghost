@@ -3,35 +3,36 @@
 
 /* Base button style */
 /* Should only be applied to <a> tags */
-.gh-btn,
-.gh-btn-grey {
+.gh-btn {
     display: inline-block;
     outline: none;
-    background: var(--whitegrey);
+    border: 1px solid var(--whitegrey-d1);
     color: var(--darkgrey);
     text-decoration: none !important;
     user-select: none;
     fill: var(--white);
     font-weight: 500;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     transition: all 0.2s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
 
     -webkit-font-smoothing: subpixel-antialiased;
 }
 
+.gh-btn.no-border {
+    border: none;
+}
+
 /* ALL buttons must have a span for content */
-.gh-btn span,
-.gh-btn-grey span {
+.gh-btn span {
     display: block;
     overflow: hidden;
     padding: 0 14px;
     height: 34px;
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     line-height: 34px;
     text-align: center;
-    letter-spacing: 0.2px;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     white-space: nowrap;
     text-overflow: ellipsis;
 }
@@ -45,10 +46,8 @@
     letter-spacing: .4px;
 }
 
-.gh-btn:hover,
-.gh-btn-grey:hover {
-    color: var(--darkgrey);
-    background: var(--whitegrey-d1);
+.gh-btn:hover {
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn svg {
@@ -76,7 +75,7 @@ fieldset[disabled] .gh-btn {
 .gh-btn-black {
     color: var(--white);
     background: var(--black);
-    font-weight: 500;
+    border: none;
 }
 
 .gh-btn-primary:hover,
@@ -93,18 +92,20 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     fill: #fff;
     background: var(--blue);
-    font-weight: 500;
+    border: none;
 }
 
 .gh-btn-blue:hover {
     color: #fff !important;
     background: color-mod(var(--blue) l(-4%)) !important;
+    border: none;
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-blue:active,
 .gh-btn-blue:focus {
     background: color-mod(var(--blue) l(-7%)) !important;
+    border: none;
 }
 
 /* Green button
@@ -115,7 +116,6 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     fill: #fff;
     background: var(--green);
-    font-weight: 500;
 }
 
 .gh-btn-green:hover {
@@ -139,7 +139,7 @@ fieldset[disabled] .gh-btn {
     fill: #fff;
     box-shadow: none;
     background: var(--red);
-    font-weight: 500;
+    border: none;
 }
 
 .gh-btn-red:hover {
@@ -263,7 +263,7 @@ fieldset[disabled] .gh-btn {
 
 .gh-btn:not(.gh-btn-blue):not(.gh-btn-green):not(.gh-btn-red) svg.gh-icon-spinner rect {
     fill: color-mod(var(--midgrey) l(-7%));
-} 
+}
 
 .gh-btn-icon-right svg,
 svg.gh-btn-icon-right {
@@ -418,7 +418,7 @@ Usage: CTA buttons grouped together horizontally.
     display: flex;
     align-items: center;
     background: var(--whitegrey-l1);
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     line-height: 0;
 }
 
@@ -437,7 +437,7 @@ Usage: CTA buttons grouped together horizontally.
     border-radius: 0;
     height: 30px;
     line-height: 30px;
-    border-radius: 3px;
+    border-radius: calc(var(--border-radius) - 1px);
     background: transparent !important;
     font-weight: 500 !important;
 }
