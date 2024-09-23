@@ -47,6 +47,10 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
+      - name: Get branch name
+        id: branch_name
+        run: echo "BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get metadata (push)
         if: github.event_name == 'push'
         run: |
@@ -179,6 +183,7 @@ jobs:
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
+      branch_name: ${{ steps.branch_name.outputs.BRANCH_NAME }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ env.IS_MAIN }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
@@ -949,14 +954,10 @@ jobs:
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success' && needs.job_setup.result == 'success'
+    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success'
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
-
-      - name: Set env variables
-        run: |
-          echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
 
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
@@ -965,6 +966,6 @@ jobs:
           workflow: .github/workflows/deploy.yml
           ref: 'refs/heads/main'
           repo: TryGhost/Ghost-Moya
-          inputs: ${{ env.CANARY_BUILD_INPUTS }}
+          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ needs.job_setup.outputs.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
