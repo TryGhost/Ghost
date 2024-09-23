@@ -10,7 +10,7 @@ SQL >
         device,
         browser,
         location,
-        referrer,
+        source,
         pathname,
         maxIf(
             member_status,
@@ -19,7 +19,7 @@ SQL >
         uniqState(session_id) AS visits,
         countState() AS hits
     FROM analytics_hits
-        GROUP BY date, device, browser, location, referrer, pathname, post_uuid,site_uuid
+        GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
 
 TYPE MATERIALIZED
 DATASOURCE analytics_pages_mv

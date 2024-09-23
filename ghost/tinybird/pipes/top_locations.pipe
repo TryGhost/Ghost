@@ -35,7 +35,7 @@ SQL >
 
         {% if defined(device) %} and device = {{ String(device) }} {% end %}
         {% if defined(browser) %} and browser = {{ String(browser) }} {% end %}
-        {% if defined(referrer) %} and referrer = {{ String(referrer) }} {% end %}
+        {% if defined(source) %} and source = {{ String(source) }} {% end %}
         {% if defined(location) %} and location = {{ String(location) }} {% end %}
         {% if defined(pathname) %} and pathname = {{ String(pathname) }} {% end %}
 

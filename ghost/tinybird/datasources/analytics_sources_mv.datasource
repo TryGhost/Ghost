@@ -4,7 +4,7 @@ SCHEMA >
     `device` String,
     `browser` String,
     `location` String,
-    `referrer` String,
+    `source` String,
     `pathname` String,
     `member_status` SimpleAggregateFunction(any, String),
     `visits` AggregateFunction(uniq, String),
@@ -12,4 +12,4 @@ SCHEMA >
 
 ENGINE AggregatingMergeTree
 ENGINE_PARTITION_KEY toYYYYMM(date)
-ENGINE_SORTING_KEY date, device, browser, location, referrer, pathname, site_uuid
+ENGINE_SORTING_KEY date, device, browser, location, source, pathname, site_uuid

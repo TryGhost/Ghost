@@ -9,11 +9,11 @@ TOKEN "stats page" READ
 
 NODE endpoint
 DESCRIPTION >
-    Group by referral and calculate hits and visits
+    Group by source and calculate hits and visits
 
 SQL >
     %
-    select domainWithoutWWW(referrer) as referrer, uniqMerge(visits) as visits, countMerge(hits) as hits
+    select source, uniqMerge(visits) as visits, countMerge(hits) as hits
     from analytics_sources_mv
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
@@ -36,10 +36,10 @@ SQL >
 
         {% if defined(device) %} and device = {{ String(device) }} {% end %}
         {% if defined(browser) %} and browser = {{ String(browser) }} {% end %}
-        {% if defined(referrer) %} and referrer = {{ String(referrer) }} {% end %}
+        {% if defined(source) %} and source = {{ String(source) }} {% end %}
         {% if defined(location) %} and location = {{ String(location) }} {% end %}
         {% if defined(pathname) %} and pathname = {{ String(pathname) }} {% end %}
 
-    group by referrer
+    group by source
     order by visits desc
     limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}

@@ -79,7 +79,7 @@ SQL >
             device,
             browser,
             location,
-            referrer,
+            source,
             pathname,
             uniq(session_id) as visits,
             count() as pageviews,
@@ -88,7 +88,7 @@ SQL >
             min(timestamp) as first_hit_aux
         from analytics_hits
         where toDate(timestamp) = {{ Date(date_from) }}
-        group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, referrer, pathname
+        group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname
     {% else %}
         select
             site_uuid,
@@ -97,7 +97,7 @@ SQL >
             device,
             browser,
             location,
-            referrer,
+            source,
             pathname,
             session_id,
             uniq(session_id) as visits,
@@ -113,7 +113,7 @@ SQL >
             {% if defined(date_to) %} and date <= {{ Date(date_to) }}
             {% else %} and date <= today()
             {% end %}
-        group by date, session_id, site_uuid, member_status, device, browser, location, referrer, pathname
+        group by date, session_id, site_uuid, member_status, device, browser, location, source, pathname
     {% end %}
 
 NODE data
@@ -128,14 +128,14 @@ SQL >
         device,
         browser,
         location,
-        referrer,
+        source,
         pathname,
         uniq(session_id) as visits,
         sum(pageviews) as pageviews,
         sum(case when latest_hit_aux = first_hit_aux then 1 else 0 end) / visits as bounce_rate,
         avg(latest_hit_aux - first_hit_aux) as avg_session_sec
     from hits
-    group by date, site_uuid, member_status, device, browser, location, referrer, pathname
+    group by date, site_uuid, member_status, device, browser, location, source, pathname
 
 NODE endpoint
 DESCRIPTION >
@@ -156,7 +156,7 @@ SQL >
         {% if defined(member_status) %} and member_status IN {{ Array(member_status) }} {% end %}
         {% if defined(device) %} and device = {{ String(device) }} {% end %}
         {% if defined(browser) %} and browser = {{ String(browser) }} {% end %}
-        {% if defined(referrer) %} and referrer = {{ String(referrer) }} {% end %}
+        {% if defined(source) %} and source = {{ String(source) }} {% end %}
         {% if defined(location) %} and location = {{ String(location) }} {% end %}
         {% if defined(pathname) %} and pathname = {{ String(pathname) }} {% end %}
   group by date
