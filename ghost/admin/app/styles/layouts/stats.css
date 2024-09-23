@@ -300,3 +300,7 @@ a.gh-stats-data-label:hover {
     border-radius: 3px;
     margin-right: 3px;
 }
+
+.gh-btn-clear-filters {
+    margin-right: 12px;
+}
