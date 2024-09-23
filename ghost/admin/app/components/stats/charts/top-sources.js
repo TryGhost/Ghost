@@ -62,7 +62,7 @@ export default class TopSources extends Component {
             device,
             browser,
             location,
-            referrer: source === 'direct' ? null : source,
+            source: source === 'direct' ? null : source,
             pathname,
             limit: 7
         };
@@ -79,7 +79,7 @@ export default class TopSources extends Component {
                 meta={meta}
                 error={error}
                 loading={loading}
-                index="referrer"
+                index="source"
                 indexConfig={{
                     label: <span className="gh-stats-data-header">Source</span>,
                     renderBarContent: ({label}) => (

@@ -42,7 +42,7 @@ export default class TechnicalComponent extends Component {
             device,
             browser,
             location,
-            referrer: source === 'direct' ? null : source,
+            source: source === 'direct' ? null : source,
             pathname,
             limit: 5
         };

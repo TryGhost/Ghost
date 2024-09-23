@@ -82,7 +82,7 @@ export default class KpisOverview extends Component {
             }
 
             if (source) {
-                params.append('referrer', source === 'direct' ? null : source);
+                params.append('source', source === 'direct' ? null : source);
             }
 
             if (pathname) {
