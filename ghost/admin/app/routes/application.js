@@ -7,9 +7,7 @@ import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {Debug} from '@sentry/integrations';
-import {Replay} from '@sentry/replay';
-import {beforeSend} from 'ghost-admin/utils/sentry';
+import {getSentryConfig} from '../utils/sentry';
 import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -184,68 +182,7 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            const sentryConfig = {
-                dsn: this.config.sentry_dsn,
-                environment: this.config.sentry_env,
-                release: `ghost@${this.config.version}`,
-                beforeSend,
-                ignoreErrors: [
-                    // Browser autoplay policies (this regex covers a few)
-                    /The play\(\) request was interrupted.*/,
-                    /The request is not allowed by the user agent or the platform in the current context/,
-
-                    // Network errors that we don't control
-                    /Server was unreachable/,
-                    /NetworkError when attempting to fetch resource./,
-                    /Failed to fetch/,
-                    /Load failed/,
-                    /The operation was aborted./,
-
-                    // TransitionAborted errors surface from normal application behaviour
-                    // - https://github.com/emberjs/ember.js/issues/12505
-                    /^TransitionAborted$/,
-                    // ResizeObserver loop errors occur often from extensions and
-                    // embedded content, generally harmless and not useful to report
-                    /^ResizeObserver loop completed with undelivered notifications/,
-                    /^ResizeObserver loop limit exceeded/,
-                    // When tasks in ember-concurrency are canceled, they sometimes lead to unhandled Promise rejections
-                    // This doesn't affect the application and is not useful to report
-                    // - http://ember-concurrency.com/docs/cancelation
-                    'TaskCancelation'
-                ],
-                integrations: [],
-                beforeBreadcrumb(breadcrumb) {
-                    // ignore breadcrumbs for event tracking to reduce noise in error reports
-                    if (breadcrumb.category === 'http' && breadcrumb.data?.url?.match(/\/e\.ghost\.org|plausible\.io/)) {
-                        return null;
-                    }
-                    return breadcrumb;
-                }
-            };
-
-            try {
-                // Session Replay on errors
-                // Docs: https://docs.sentry.io/platforms/javascript/session-replay
-                sentryConfig.replaysOnErrorSampleRate = 0.5;
-                sentryConfig.integrations.push(
-                    // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
-                    // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
-                    new Replay({
-                        mask: ['.koenig-lexical', '.gh-dashboard'],
-                        unmask: ['[role="menu"]', '[data-testid="settings-panel"]', '.gh-nav'],
-                        maskAllText: false,
-                        maskAllInputs: true,
-                        blockAllMedia: true
-                    })
-                );
-            } catch (e) {
-                // no-op, Session Replay is not critical
-                console.error('Error enabling Sentry Replay:', e); // eslint-disable-line no-console
-            }
-
-            if (this.config.sentry_env === 'development') {
-                sentryConfig.integrations.push(new Debug());
-            }
+            const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
             Sentry.init(sentryConfig);
         }
 
