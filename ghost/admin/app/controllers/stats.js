@@ -44,6 +44,15 @@ export default class StatsController extends Controller {
         }
     }
 
+    @action
+    clearFilters() {
+        this.device = null;
+        this.browser = null;
+        this.location = null;
+        this.source = null;
+        this.pathname = null;
+    }
+
     get selectedRangeOption() {
         return this.rangeOptions.find(d => d.value === this.chartRange);
     }
