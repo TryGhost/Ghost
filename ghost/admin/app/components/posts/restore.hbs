@@ -1,13 +1,29 @@
-<h1>Local Revisions</h1>
+<div style="margin-left: 20px; margin-top: 20px;">
+  <h1>Local Revisions</h1>
 
-{{#if this.args.model.length}}
-  <p>Number of revisions: {{this.args.model.length}}</p>
-  {{#each this.args.model as |revision|}}
-    <div class="revision">
-      <h2>{{if revision.title revision.title "(no title)"}}</h2>
-      <p>Key: {{revision.key}}</p>
-    </div>
-  {{/each}}
-{{else}}
-  <p>No revisions found. Model length: {{this.args.model.length}}</p>
-{{/if}}
+  {{#if this.args.model.length}}
+    <p>Number of revisions: {{this.args.model.length}}</p>
+    {{#each this.args.model as |revision|}}
+      <div class="revision" style="margin-bottom: 20px;">
+        <h2>{{if revision.title revision.title "(no title)"}}</h2>
+        <p>Key: {{revision.key}}</p>
+        <GhTaskButton
+          @task={{this.restorePostTask}}
+          @buttonText="Restore"
+          @runningText="Restoring..."
+          @successText="Restored"
+          @idleClass="green"
+          @runningClass="midlightgrey"
+          @successClass="midlightgrey"
+          @failureClass="red"
+          @taskArgs={{revision}}
+          @class="gh-btn gh-btn-green gh-btn-icon"
+          @autoReset={{true}}
+          data-test-button="restore-revision"
+        />
+      </div>
+    {{/each}}
+  {{else}}
+    <p>No revisions found. Model length: {{this.args.model.length}}</p>
+  {{/if}}
+</div>
