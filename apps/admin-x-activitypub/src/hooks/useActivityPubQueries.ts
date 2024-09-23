@@ -231,3 +231,27 @@ export function useActivitiesForUser({
         }
     });
 }
+export function useSearchForUser(handle: string, query: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useQuery({
+        enabled: query !== '',
+        queryKey: ['search', {handle, query}],
+        async queryFn() {
+            return api.search(query);
+        }
+    });
+}
+
+export function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useMutation({
+        async mutationFn(username: string) {
+            return api.follow(username);
+        },
+        onSuccess,
+        onError
+    });
+}
+

@@ -1,28 +1,10 @@
-import NiceModal from '@ebay/nice-modal-react';
-import {ActivityPubAPI} from '../../api/activitypub';
-import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useMutation} from '@tanstack/react-query';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
-function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useMutation({
-        async mutationFn(username: string) {
-            return api.follow(username);
-        },
-        onSuccess,
-        onError
-    });
-}
+import NiceModal from '@ebay/nice-modal-react';
+import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+import {useFollow} from '../../hooks/useActivityPubQueries';
 
 const FollowSite = NiceModal.create(() => {
     const {updateRoute} = useRouting();
