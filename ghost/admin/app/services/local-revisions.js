@@ -110,7 +110,7 @@ export default class LocalRevisionsService extends Service {
      * @param {object} data - serialized post data
      */
     scheduleSave(type, data) {
-        if (data.status && data.status === 'draft') {
+        if (data && data.status && data.status === 'draft') {
             this.saveTask.perform(type, data);
         }
     }
