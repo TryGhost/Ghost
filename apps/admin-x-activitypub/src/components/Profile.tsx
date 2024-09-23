@@ -145,7 +145,10 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         <Heading className='mt-4' level={3}>Building ActivityPub</Heading>
                         <span className='mt-1 text-[1.5rem] text-grey-800'>@index@activitypub.ghost.org</span>
                         <p className='mt-3 text-[1.5rem]'>Ghost is federating over ActivityPub to become part of the world&apos;s largest publishing network</p>
-                        <a className='mt-3 block text-[1.5rem] underline' href='https://activitypub.ghost.org'>activitypub.ghost.org</a>
+                        <span className='mt-3 line-clamp-1 flex'>
+                            <span className={`mr-1 after:content-[":"]`}>Website</span>
+                            <a className='truncate text-[1.5rem] underline' href='https://activitypub.ghost.org'>activitypub.ghost.org</a>
+                        </span>
                         <TabView<'posts' | 'likes' | 'following' | 'followers'> containerClassName='mt-6' selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                     </div>
                 </div>
