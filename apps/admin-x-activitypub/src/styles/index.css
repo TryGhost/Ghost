@@ -26,6 +26,7 @@ animation: bump 0.3s ease-in-out;
 
 .ap-note-content a {
   color: rgb(236 72 153) !important;
+  word-break: break-all;
 }
 
 .ap-note-content a:hover {
