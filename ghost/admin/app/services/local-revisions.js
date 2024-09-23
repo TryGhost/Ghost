@@ -108,18 +108,24 @@ export default class LocalRevisionsService extends Service {
     }
 
     /**
-     * Returns all revisions from localStorage, optionally filtered by key prefix
+     * Returns all revisions from localStorage as an array, optionally filtered by key prefix and ordered by timestamp
      * @param {string | undefined} prefix - optional prefix to filter revision keys
-     * @returns {object} - all revisions matching the prefix
+     * @returns {Array} - all revisions matching the prefix, ordered by timestamp (newest first)
      */
     findAll(prefix = this._prefix) {
         const keys = this.keys(prefix);
-        console.log('findAll', keys);
-        const revisions = {};
-        for (const key of keys) {
-            revisions[key] = JSON.parse(localStorage.getItem(key));
-        }
-        console.log('revisions', revisions);
+        const revisions = keys.map(key => {
+            const revision = JSON.parse(localStorage.getItem(key));
+            return {
+                key,
+                ...revision
+            };
+        });
+        console.log('findAll > revisions', revisions);
+        
+        // Sort revisions by timestamp, newest first
+        revisions.sort((a, b) => b.revisionTimestamp - a.revisionTimestamp);
+        
         return revisions;
     }
 

@@ -5,9 +5,6 @@ export default class RevisionsRoute extends AuthenticatedRoute {
     @service localRevisions;
 
     model() {
-        const revisions = this.localRevisions.findAll();
-        const parsedRevisions = Object.entries(revisions);
-        console.log('parsedRevisions', parsedRevisions); 
-        return parsedRevisions;
+        return this.localRevisions.findAll();
     }
 }
