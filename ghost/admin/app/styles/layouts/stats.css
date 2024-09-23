@@ -1,3 +1,13 @@
+.gh-stats-header header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+}
+
+.gh-stats-header header .view-actions {
+    justify-self: end;
+}
+
 .gh-stats .view-container {
     display: flex;
     flex-direction: column;
@@ -301,6 +311,56 @@ a.gh-stats-data-label:hover {
     margin-right: 3px;
 }
 
+/* Filters */
+.gh-stats-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: -24px;
+}
+
+.gh-stats-filters {
+    grid-column: span 2;
+}
+
+.gh-stats-filter-pill {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--whitegrey);
+    border-radius: 999px;
+    padding: 4px 12px;
+}
+
+.gh-stats-filter-pill .value {
+    font-weight: 700;
+}
+
 .gh-btn-clear-filters {
-    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 999px;
+    color: var(--black);
+    padding: 4px 12px;
+    border: 1px solid var(--whitegrey);
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-btn-clear-filters:hover {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-btn-clear-filters svg {
+    width: 10px;
+    height: 10px;
+    stroke: var(--red);
+}
+
+.gh-btn-clear-filters svg path {
+    stroke-width: 2px;
 }
