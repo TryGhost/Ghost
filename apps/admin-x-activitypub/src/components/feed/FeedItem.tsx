@@ -185,7 +185,7 @@ const FeedItemStats: React.FC<{
                     handleLikeClick();
                 }}
             />
-            {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
+            {isLiked && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
         </div>
         <div className='flex gap-1'>
             <Button
@@ -201,7 +201,7 @@ const FeedItemStats: React.FC<{
                 }}
             />
             {commentCount > 0 && (
-                <span className={`text-grey-900`}>{commentCount}</span>
+                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
             )}
         </div>
     </div>);
