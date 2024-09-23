@@ -1,9 +1,13 @@
 <h1>Local Revisions</h1>
 
-{{#each model as |revision key|}}
+{{#if this.args.model.length}}
+  <p>Number of revisions: {{this.args.model.length}}</p>
+  {{#each this.args.model as |revision|}}
     <div class="revision">
-        <h2>{{revision.title}}</h2>
-        <p>Last saved: {{format-date revision.revisionTimestamp}}</p>
-        <button {{on "click" (fn this.restoreRevision key)}}>Restore</button>
+      <h2>{{if revision.title revision.title "(no title)"}}</h2>
+      <p>Key: {{revision.key}}</p>
     </div>
-{{/each}}
+  {{/each}}
+{{else}}
+  <p>No revisions found. Model length: {{this.args.model.length}}</p>
+{{/if}}
