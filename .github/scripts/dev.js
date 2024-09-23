@@ -196,7 +196,7 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
 
 async function handleStripe() {
     if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
-        if (DASH_DASH_ARGS.includes('offline')) {
+        if (DASH_DASH_ARGS.includes('offline') || DASH_DASH_ARGS.includes('browser-tests')) {
             return;
         }
 
