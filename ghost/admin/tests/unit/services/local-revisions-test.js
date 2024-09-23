@@ -1,8 +1,14 @@
+import * as Sentry from '@sentry/ember';
 import Service from '@ember/service';
+import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {getSentryTestConfig} from 'ghost-admin/utils/sentry';
 import {setupTest} from 'ember-mocha';
+import {waitUntil} from '@ember/test-helpers';
+
+const {sentryTransport, testkit} = sentryTestKit();
 
 const sleep = ms => new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -13,6 +19,10 @@ describe('Unit: Service: local-revisions', function () {
 
     let localStore, setItemStub;
 
+    before(function () {
+        Sentry.init(getSentryTestConfig(sentryTransport));
+    });
+
     this.beforeEach(function () {
         // Mock localStorage
         sinon.restore();
@@ -21,6 +31,9 @@ describe('Unit: Service: local-revisions', function () {
         setItemStub = sinon.stub(localStorage, 'setItem').callsFake((key, value) => localStore[key] = value + '');
         sinon.stub(localStorage, 'removeItem').callsFake(key => delete localStore[key]);
         sinon.stub(localStorage, 'clear').callsFake(() => localStore = {});
+
+        // Reset the Sentry testkit
+        testkit.reset();
 
         // Create the service
         this.service = this.owner.lookup('service:local-revisions');
@@ -109,6 +122,56 @@ describe('Unit: Service: local-revisions', function () {
             expect(this.service.find(keyToAdd)).to.not.be.null;
         });
 
+        it('logs to Sentry when it has to evict older revisions', async function () {
+            // save a few revisions
+            this.service.performSave('post', {id: 'test-id', lexical: 'test'});
+            await sleep(1);
+            this.service.performSave('post', {id: 'test-id', lexical: 'data-2'});
+            await sleep(1);
+
+            // Simulate a quota exceeded error
+            const quotaError = new Error('QuotaExceededError');
+            quotaError.name = 'QuotaExceededError';
+            setItemStub.onCall(setItemStub.callCount).throws(quotaError);
+            this.service.performSave('post', {id: 'test-id', lexical: 'data-3'});
+
+            await waitUntil(() => testkit.reports().length > 0);
+            expect(testkit.reports()).to.have.lengthOf(1);
+
+            const report = testkit.reports()[0];
+            expect(report.tags.localRevisions).to.equal('quotaExceeded');
+            expect(report.message).to.equal('LocalStorage quota exceeded. Removing old revisions.');
+        });
+
+        it('logs to sentry when it is unable to save a revision due to quota exceeded', async function () {
+            // Simulate a quota exceeded error
+            const quotaError = new Error('QuotaExceededError');
+            quotaError.name = 'QuotaExceededError';
+            setItemStub.onCall(setItemStub.callCount).throws(quotaError);
+            this.service.performSave('post', {id: 'test-id', lexical: 'data-3'});
+
+            await waitUntil(() => testkit.reports().length > 0);
+            expect(testkit.reports()).to.have.lengthOf(1);
+
+            const report = testkit.reports()[0];
+            expect(report.tags.localRevisions).to.equal('quotaExceededNoSpace');
+            expect(report.message).to.equal('LocalStorage quota exceeded. Unable to save revision.');
+        });
+
+        it('logs to sentry if an unexpected error occurs while saving a revision', async function () {
+            // Simulate an unexpected error
+            const error = new Error('Test error');
+            setItemStub.throws(error);
+            this.service.performSave('post', {id: 'test-id', lexical: 'data-3'});
+
+            await waitUntil(() => testkit.reports().length > 0);
+            expect(testkit.reports()).to.have.lengthOf(1);
+
+            const report = testkit.reports()[0];
+            expect(report.error.message).to.equal('Test error');
+            expect(report.tags.localRevisions).to.equal('saveError');
+        });
+
         it('keeps only the latest 5 revisions for a given post ID', async function () {
             const postId = 'test-id';
             const revisionCount = 7;
@@ -155,9 +218,9 @@ describe('Unit: Service: local-revisions', function () {
     });
 
     describe('scheduleSave', function () {
-        it('saves a revision', function () {
+        it('saves a revision if the post is a draft', function () {
             // save a revision
-            this.service.scheduleSave('post', {id: 'draft', lexical: 'test'});
+            this.service.scheduleSave('post', {id: 'draft', lexical: 'test', status: 'draft'});
             const key = this.service.keys()[0];
             const revision = this.service.find(key);
             expect(key).to.match(/post-revision-draft-\d+/);
@@ -165,9 +228,16 @@ describe('Unit: Service: local-revisions', function () {
             expect(revision.lexical).to.equal('test');
         });
 
+        it('does not save a revision if the post is not a draft', function () {
+            // save a revision
+            this.service.scheduleSave('post', {id: 'draft', lexical: 'test', status: 'published'});
+            const keys = this.service.keys();
+            expect(keys).to.have.lengthOf(0);
+        });
+
         it('does not save a revision more than once if scheduled multiple times', async function () {
             // interval is set to 200 ms in testing
-            this.service.scheduleSave('post', {id: 'draft', lexical: 'test'});
+            this.service.scheduleSave('post', {id: 'draft', lexical: 'test', status: 'draft'});
             await sleep(40);
             this.service.scheduleSave('post', {id: 'draft', lexical: 'test'});
             const keys = this.service.keys();
@@ -176,11 +246,24 @@ describe('Unit: Service: local-revisions', function () {
 
         it('saves another revision if it has been longer than the revision interval', async function () {
             // interval is set to 200 ms in testing
-            this.service.scheduleSave('post', {id: 'draft', lexical: 'test'});
+            this.service.scheduleSave('post', {id: 'draft', lexical: 'test', status: 'draft'});
             await sleep(100);
-            this.service.scheduleSave('post', {id: 'draft', lexical: 'test'});
+            this.service.scheduleSave('post', {id: 'draft', lexical: 'test', status: 'draft'});
             const keys = this.service.keys();
             expect(keys).to.have.lengthOf(2);
+        });
+
+        it('logs any errors that occur during the save to Sentry', async function () {
+            sinon.stub(this.service, 'performSave').throws(new Error('Test error'));
+
+            this.service.scheduleSave('post', {id: 'draft', lexical: 'test', status: 'draft'});
+
+            await waitUntil(() => testkit.reports().length > 0);
+            expect(testkit.reports()).to.have.lengthOf(1);
+
+            const report = testkit.reports()[0];
+            expect(report.error.message).to.equal('Test error');
+            expect(report.tags.localRevisions).to.equal('saveTaskError');
         });
     });
 

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {task, timeout} from 'ember-concurrency';
@@ -42,15 +43,19 @@ export default class LocalRevisionsService extends Service {
      */
     @task({keepLatest: true})
     *saveTask(type, data) {
-        const currentTime = Date.now();
-        if (!this.lastRevisionTime || currentTime - this.lastRevisionTime > this.MIN_REVISION_TIME) {
-            yield this.performSave(type, data);
-            this.lastRevisionTime = currentTime;
-        } else {
-            const waitTime = this.MIN_REVISION_TIME - (currentTime - this.lastRevisionTime);
-            yield timeout(waitTime);
-            yield this.performSave(type, data);
-            this.lastRevisionTime = Date.now();
+        try {
+            const currentTime = Date.now();
+            if (!this.lastRevisionTime || currentTime - this.lastRevisionTime > this.MIN_REVISION_TIME) {
+                yield this.performSave(type, data);
+                this.lastRevisionTime = currentTime;
+            } else {
+                const waitTime = this.MIN_REVISION_TIME - (currentTime - this.lastRevisionTime);
+                yield timeout(waitTime);
+                yield this.performSave(type, data);
+                this.lastRevisionTime = Date.now();
+            }
+        } catch (err) {
+            Sentry.captureException(err, {tags: {localRevisions: 'saveTaskError'}});
         }
     }
 
@@ -84,11 +89,17 @@ export default class LocalRevisionsService extends Service {
                 
                 // If there are any revisions, remove the oldest one and try to save again
                 if (this.keys().length) {
+                    Sentry.captureMessage('LocalStorage quota exceeded. Removing old revisions.', {tags: {localRevisions: 'quotaExceeded'}});
                     this.removeOldest();
                     return this.performSave(type, data);
                 }
                 // LocalStorage is full and there are no revisions to remove
                 // We can't save the revision
+                Sentry.captureMessage('LocalStorage quota exceeded. Unable to save revision.', {tags: {localRevisions: 'quotaExceededNoSpace'}});
+                return;
+            } else {
+                Sentry.captureException(err, {tags: {localRevisions: 'saveError'}});
+                return;
             }
         }
     }
@@ -99,7 +110,9 @@ export default class LocalRevisionsService extends Service {
      * @param {object} data - serialized post data
      */
     scheduleSave(type, data) {
-        this.saveTask.perform(type, data);
+        if (data.status && data.status === 'draft') {
+            this.saveTask.perform(type, data);
+        }
     }
 
     /**
