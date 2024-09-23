@@ -20,6 +20,7 @@ export default class TopPages extends Component {
     @tracked contentOptions = CONTENT_OPTIONS;
 
     @service modals;
+    @service router;
 
     @action
     openSeeAll(chartRange, audience) {
@@ -28,6 +29,19 @@ export default class TopPages extends Component {
             chartRange,
             audience
         });
+    }
+
+    @action
+    navigateToFilter(pathname) {
+        this.updateQueryParams({pathname});
+    }
+
+    @action
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.replaceWith(currentRoute.name, {queryParams: newQueryParams});
     }
 
     @action
@@ -79,7 +93,18 @@ export default class TopPages extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-data-header">Post or page</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-data-label">{label}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label);
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {label}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}

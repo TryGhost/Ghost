@@ -15,6 +15,7 @@ import {inject as service} from '@ember/service';
 export default class TopLocations extends Component {
     @inject config;
     @service modals;
+    @service router;
 
     @action
     openSeeAll() {
@@ -23,6 +24,19 @@ export default class TopLocations extends Component {
             chartRange: this.args.chartRange,
             audience: this.args.audience
         });
+    }
+
+    @action
+    navigateToFilter(location) {
+        this.updateQueryParams({location});
+    }
+
+    @action
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.replaceWith(currentRoute.name, {queryParams: newQueryParams});
     }
 
     ReactComponent = (props) => {
@@ -69,7 +83,18 @@ export default class TopLocations extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-data-header">Country</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-data-label">{getCountryFlag(label)} {label || 'Unknown'}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label || 'Unknown');
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {getCountryFlag(label)} {label || 'Unknown'}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}
