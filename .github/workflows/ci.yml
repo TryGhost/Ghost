@@ -20,10 +20,6 @@ env:
     ~/.cache/ms-playwright/
   CACHED_BUILD_PATHS: |
     ${{ github.workspace }}/ghost/*/build
-  NX_CACHE_RESTORE_KEYS: |
-    nx-Linux-${{ github.ref }}-${{ github.sha }}
-    nx-Linux-${{ github.ref }}
-    nx-Linux
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
 
 concurrency:
@@ -136,7 +132,10 @@ jobs:
         with:
           path: .nxcache
           key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-          restore-keys: ${{ env.IS_MAIN == 'false' && env.NX_CACHE_RESTORE_KEYS || 'nx-never-restore'}}
+          restore-keys: |
+            nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
+            nx-Linux-${{ github.ref }}
+            nx-Linux
 
       - name: Check dependency cache
         uses: actions/cache@v4
