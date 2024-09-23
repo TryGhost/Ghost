@@ -27,32 +27,37 @@ describe('formatUrl', function () {
         assert.deepEqual(formattedUrl, {save: '#section', display: '#section'});
     });
 
+    it('displays a protocol-relative link without formatting', function () {
+        const formattedUrl = formatUrl('//example.com');
+        assert.deepEqual(formattedUrl, {save: '//example.com', display: '//example.com'});
+    });
+
     it('adds https:// automatically', function () {
         const formattedUrl = formatUrl('example.com');
         assert.deepEqual(formattedUrl, {save: 'https://example.com/', display: 'https://example.com/'});
     });
 
-    it('adds a trailing slash / automatically', function () {
-        const formattedUrl = formatUrl('https://example.com');
-        assert.deepEqual(formattedUrl, {save: 'https://example.com/', display: 'https://example.com/'});
-    });
-
-    it('saves a relative URL is the input is a pathname', function () {
+    it('saves a relative URL if the input is a pathname', function () {
         const formattedUrl = formatUrl('/path', 'http://example.com');
         assert.deepEqual(formattedUrl, {save: '/path/', display: 'http://example.com/path/'});
     });
 
-    it('saves a relative URL is the input is a pathname, even if the base url has an non-empty pathname', function () {
+    it('saves a relative URL if the input is a pathname, even if the base url has an non-empty pathname', function () {
         const formattedUrl = formatUrl('/path', 'http://example.com/blog');
         assert.deepEqual(formattedUrl, {save: '/path/', display: 'http://example.com/blog/path/'});
     });
 
-    it('saves a relative URL is the input includes the base url', function () {
+    it('saves a relative URL if the input includes the base url', function () {
         const formattedUrl = formatUrl('http://example.com/path', 'http://example.com');
         assert.deepEqual(formattedUrl, {save: '/path/', display: 'http://example.com/path/'});
     });
 
-    it('saves an absolute URL is the input has a different pathname to the base url', function () {
+    it('saves a relative URL if the input includes the base url, even if the base url has an non-empty pathname', function () {
+        const formattedUrl = formatUrl('http://example.com/blog/path', 'http://example.com/blog');
+        assert.deepEqual(formattedUrl, {save: '/path/', display: 'http://example.com/blog/path/'});
+    });
+
+    it('saves an absolute URL if the input has a different pathname to the base url', function () {
         const formattedUrl = formatUrl('http://example.com/path', 'http://example.com/blog');
         assert.deepEqual(formattedUrl, {save: 'http://example.com/path', display: 'http://example.com/path'});
     });

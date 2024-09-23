@@ -70,22 +70,31 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
         url = url.replace(parsedBaseUrl.host, '');
         url = url.replace(parsedBaseUrl.pathname, '');
 
-        // handle case where url path is same as baseUrl path but missing trailing slash
-        if (parsedUrl.pathname.slice(-1) !== '/') {
-            url = url.replace(parsedBaseUrl.pathname.slice(0, -1), '');
-        }
-
         if (!url.match(/^\//)) {
             url = `/${url}`;
         }
+    }
 
-        if (!url.match(/\/$/) && !url.match(/[.#?]/)) {
-            url = `${url}/`;
-        }
+    if (!url.match(/\/$/) && !url.match(/[.#?]/)) {
+        url = `${url}/`;
     }
 
     // we update with the relative URL but then transform it back to absolute
     // for the input value. This avoids problems where the underlying relative
     // value hasn't changed even though the input value has
-    return {save: url, display: new URL(url, baseUrl).toString()};
+    return {save: url, display: displayFromBase(url, baseUrl)};
+};
+
+const displayFromBase = (url: string, baseUrl: string) => {
+    // Ensure base url has a trailing slash
+    if (!baseUrl.endsWith('/')) {
+        baseUrl += '/';
+    }
+
+    // Remove leading slash from url
+    if (url.startsWith('/')) {
+        url = url.substring(1);
+    }
+
+    return new URL(url, baseUrl).toString();
 };
