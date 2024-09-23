@@ -50,7 +50,7 @@ export {default as Toggle} from './global/form/Toggle';
 export type {ToggleProps} from './global/form/Toggle';
 export {default as ToggleGroup} from './global/form/ToggleGroup';
 export type {ToggleGroupProps} from './global/form/ToggleGroup';
-export {default as URLTextField, formatUrl} from './global/form/URLTextField';
+export {default as URLTextField} from './global/form/URLTextField';
 export type {URLTextFieldProps} from './global/form/URLTextField';
 
 export {default as ConfirmationModal, ConfirmationModalContent} from './global/modal/ConfirmationModal';
@@ -166,6 +166,7 @@ export {default as useSortableIndexedList} from './hooks/useSortableIndexedList'
 
 export {debounce} from './utils/debounce';
 export {confirmIfDirty} from './utils/modals';
+export {formatUrl} from './utils/formatUrl';
 
 export {default as DesignSystemApp} from './DesignSystemApp';
 export type {DesignSystemAppProps} from './DesignSystemApp';
