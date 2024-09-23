@@ -1,3 +1,4 @@
+import {Activity} from '../components/activities/ActivityItem';
 import {ActivityPubAPI} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
@@ -22,6 +23,16 @@ export function useLikedForUser(handle: string) {
         queryKey: [`liked:${handle}`],
         async queryFn() {
             return api.getLiked();
+        }
+    });
+}
+
+export function useReplyMutationForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useMutation({
+        async mutationFn({id, content}: {id: string, content: string}) {
+            return await api.reply(id, content) as Activity;
         }
     });
 }
@@ -117,6 +128,17 @@ export function useUnlikeMutationForUser(handle: string) {
             if (context?.previousLiked) {
                 queryClient.setQueryData([`liked:${handle}`], context?.previousLiked);
             }
+        }
+    });
+}
+
+export function useUserDataForUser(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useQuery({
+        queryKey: [`user:${handle}`],
+        async queryFn() {
+            return api.getUser();
         }
     });
 }

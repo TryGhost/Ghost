@@ -698,7 +698,35 @@ describe('Acceptance: Editor', function () {
         // no transition alongside the error so this test makes sure that works
         // and we enter a visible error state rather than letting unsaved changes
         // pile up and contributing to larger potential data loss.
-        it('handles 404s from API requests', async function () {
+        it('handles 404 from invalid PUT API request', async function () {
+            this.server.put('/posts/', () => {
+                return new Response(404, {}, {
+                    errors: [
+                        {
+                            message: 'Resource could not be found.',
+                            errorType: 'NotFoundError',
+                            statusCode: 404
+                        }
+                    ]
+                });
+            });
+
+            await visit('/editor/post');
+            await waitFor(editorSelector);
+
+            // simulate the bad state where a post.save will trigger a PUT with no id
+            const controller = this.owner.lookup('controller:lexical-editor');
+            controller.post.transitionTo('updated.uncommitted');
+
+            // this will trigger an autosave which will hit our simulated 404
+            await pasteInEditor('Testing');
+
+            // we should see an error - previously this was failing silently
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
+        });
+
+        it('handles 404 from valid PUT API request', async function () {
             // this doesn't match what we're actually seeing in the above mentioned
             // bug state but it's a good enough simulation for testing our error handler
             this.server.put('/posts/:id/', () => {
@@ -724,7 +752,7 @@ describe('Acceptance: Editor', function () {
 
             // we should see an error - previously this was failing silently
             // error message comes from editor's own handling rather than our generic API error fallback
-            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
+            expect(find('.gh-alert-content')).to.contain.text('Post has been deleted in a different session');
         });
     });
 });

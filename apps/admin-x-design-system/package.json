@@ -76,7 +76,7 @@
     "@sentry/react": "7.119.0",
     "@tailwindcss/forms": "0.5.9",
     "@tailwindcss/line-clamp": "0.4.4",
-    "@uiw/react-codemirror": "4.23.2",
+    "@uiw/react-codemirror": "4.23.3",
     "autoprefixer": "10.4.19",
     "clsx": "2.1.1",
     "postcss": "8.4.39",
@@ -84,7 +84,7 @@
     "react-colorful": "5.6.1",
     "react-hot-toast": "2.4.1",
     "react-select": "5.8.1",
-    "tailwindcss": "3.4.11"
+    "tailwindcss": "3.4.12"
   },
   "peerDependencies": {
     "react": "^18.2.0",

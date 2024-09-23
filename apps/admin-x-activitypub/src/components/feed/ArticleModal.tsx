@@ -6,8 +6,8 @@ import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 import FeedItem from './FeedItem';
-import MainHeader from '../navigation/MainHeader';
 
+import APReplyBox from '../global/APReplyBox';
 import articleBodyStyles from '../articleBodyStyles';
 import {type Activity} from '../activities/ActivityItem';
 
@@ -16,6 +16,7 @@ interface ArticleModalProps {
     actor: ActorProperties;
     comments: Activity[];
     allComments: Map<string, Activity[]>;
+    focusReply: boolean;
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
@@ -70,12 +71,21 @@ ${image &&
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="mx-[-32px] h-px w-[120%] bg-grey-200"></div>
+    <div className="h-px bg-grey-200"></div>
 );
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 1024;
+    const MODAL_SIZE_LG = 2800;
+    const [commentsState, setCommentsState] = useState(comments);
+    const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
+    function setReplyBoxFocused(focused: boolean) {
+        if (focused) {
+            setFocused(prev => prev + 1);
+        } else {
+            setFocused(0);
+        }
+    }
 
     const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
@@ -104,7 +114,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
     };
     const navigateForward = (nextObject: ObjectProperties, nextActor: ActorProperties, nextComments: Activity[]) => {
         setCanNavigateBack(true);
-        setNavigationStack([...navigationStack, [object, actor, comments]]);
+        setNavigationStack([...navigationStack, [object, actor, commentsState]]);
 
         modal.show({
             object: nextObject,
@@ -117,6 +127,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
         setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
     };
 
+    function handleNewReply(activity: Activity) {
+        setCommentsState(prev => [activity].concat(prev));
+    }
+
     return (
         <Modal
             align='right'
@@ -127,40 +141,40 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
             size='bleed'
             width={modalSize}
         >
-            <MainHeader>
-                {canNavigateBack && (
-                    <div className='col-[1/2] flex items-center justify-between px-8'>
-                        <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+            <div className='sticky top-0 z-50 border-grey-200 bg-white py-3'>
+                <div className='grid h-8 grid-cols-3'>
+                    {canNavigateBack && (
+                        <div className='col-[1/2] flex items-center justify-between px-8'>
+                            <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                        </div>
+                    )}
+                    <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
+                        {/* <span className='text-lg font-semibold text-grey-900'>{object.type}</span> */}
                     </div>
-                )}
-                <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
-                    <span className='text-lg font-semibold text-grey-900'>{object.type}</span>
+                    <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
+                        <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
+                        <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                    </div>
                 </div>
-                <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                    <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
-                    <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                </div>
-            </MainHeader>
+            </div>
             <div className='mt-10 w-auto'>
                 {object.type === 'Note' && (
-                    <div className='mx-auto max-w-[580px]'>
+                    <div className='mx-auto max-w-[580px] pb-16'>
                         <FeedItem
                             actor={actor}
                             comments={comments}
                             layout='modal'
                             object={object}
                             type='Note'
+                            onCommentClick={() => {
+                                setReplyBoxFocused(true);
+                            }}
                         />
-                        {/* {object.content && <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>} */}
-                        {/* {renderAttachment(object)} */}
-                        {/* <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/>
-                        <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
-                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={false} layout='reply' object={object} type='Note'/>
-                        <FeedItem actor={actor} last={true} layout='reply' object={object} type='Note'/> */}
-                        {comments.map((comment, index) => {
-                            const showDivider = index !== comments.length - 1;
+                        <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
+                        <FeedItemDivider />
+
+                        {commentsState.map((comment, index) => {
+                            const showDivider = index !== commentsState.length - 1;
                             const nestedComments = allComments.get(comment.object.id) ?? [];
                             const hasNestedComments = nestedComments.length > 0;
 
@@ -176,6 +190,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                                         onClick={() => {
                                             navigateForward(comment.object, comment.actor, nestedComments);
                                         }}
+                                        onCommentClick={() => {}}
                                     />
                                     {hasNestedComments && <FeedItemDivider />}
                                     {nestedComments.map((nestedComment, nestedCommentIndex) => {
@@ -192,6 +207,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                                                 onClick={() => {
                                                     navigateForward(nestedComment.object, nestedComment.actor, nestedNestedComments);
                                                 }}
+                                                onCommentClick={() => {}}
                                             />
                                         );
                                     })}

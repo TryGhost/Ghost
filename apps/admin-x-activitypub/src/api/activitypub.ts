@@ -22,15 +22,20 @@ export class ActivityPubAPI {
         }
     }
 
-    private async fetchJSON(url: URL, method: 'GET' | 'POST' = 'GET'): Promise<object | null> {
+    private async fetchJSON(url: URL, method: 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
         const token = await this.getToken();
-        const response = await this.fetch(url, {
+        const options: RequestInit = {
             method,
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/activity+json'
             }
-        });
+        };
+        if (body) {
+            options.body = JSON.stringify(body);
+            (options.headers! as Record<string, string>)['Content-Type'] = 'application/json';
+        }
+        const response = await this.fetch(url, options);
         const json = await response.json();
         return json;
     }
@@ -191,5 +196,20 @@ export class ActivityPubAPI {
 
         // Fetch the activities
         return fetchActivities(url);
+    }
+
+    async reply(id: string, content: string) {
+        const url = new URL(`.ghost/activitypub/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
+        const response = await this.fetchJSON(url, 'POST', {content});
+        return response;
+    }
+
+    get userApiUrl() {
+        return new URL(`.ghost/activitypub/users/${this.handle}`, this.apiUrl);
+    }
+
+    async getUser() {
+        const json = await this.fetchJSON(this.userApiUrl);
+        return json;
     }
 }
