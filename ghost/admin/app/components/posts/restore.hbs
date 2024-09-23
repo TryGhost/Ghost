@@ -1,0 +1,9 @@
+<h1>Local Revisions</h1>
+
+{{#each model as |revision key|}}
+    <div class="revision">
+        <h2>{{revision.title}}</h2>
+        <p>Last saved: {{format-date revision.revisionTimestamp}}</p>
+        <button {{on "click" (fn this.restoreRevision key)}}>Restore</button>
+    </div>
+{{/each}}

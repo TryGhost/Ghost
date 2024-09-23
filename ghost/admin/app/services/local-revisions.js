@@ -110,14 +110,16 @@ export default class LocalRevisionsService extends Service {
     /**
      * Returns all revisions from localStorage, optionally filtered by key prefix
      * @param {string | undefined} prefix - optional prefix to filter revision keys
-     * @returns 
+     * @returns {object} - all revisions matching the prefix
      */
-    findAll(prefix = undefined) {
+    findAll(prefix = this._prefix) {
         const keys = this.keys(prefix);
+        console.log('findAll', keys);
         const revisions = {};
         for (const key of keys) {
             revisions[key] = JSON.parse(localStorage.getItem(key));
         }
+        console.log('revisions', revisions);
         return revisions;
     }
 
