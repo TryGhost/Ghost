@@ -50,7 +50,7 @@ export default class AllStatsModal extends Component {
         case 'top-sources':
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_sources.json`;
             labelText = 'Source';
-            indexBy = 'referrer';
+            indexBy = 'source';
             unknownOption = 'Direct';
             break;
         case 'top-locations':
