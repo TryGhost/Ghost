@@ -20,7 +20,8 @@ function getSiteData() {
         const adminUrl = scriptTag.dataset.sodoSearch;
         const apiKey = scriptTag.dataset.key;
         const stylesUrl = scriptTag.dataset.styles;
-        return {adminUrl, apiKey, stylesUrl};
+        const locale = scriptTag.dataset.locale || 'en';
+        return {adminUrl, apiKey, stylesUrl, locale};
     }
     return {};
 }
@@ -30,14 +31,14 @@ function setup() {
 }
 
 function init() {
-    const {adminUrl, apiKey, stylesUrl} = getSiteData();
+    const {adminUrl, apiKey, stylesUrl, locale} = getSiteData();
     const adminBaseUrl = (adminUrl || window.location.origin)?.replace(/\/+$/, '');
     setup();
     ReactDOM.render(
         <React.StrictMode>
             <App
                 adminUrl={adminBaseUrl} apiKey={apiKey}
-                stylesUrl={stylesUrl}
+                stylesUrl={stylesUrl} locale={locale}
             />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
