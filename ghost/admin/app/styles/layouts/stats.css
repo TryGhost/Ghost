@@ -1,3 +1,13 @@
+.gh-stats-header header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+}
+
+.gh-stats-header header .view-actions {
+    justify-self: end;
+}
+
 .gh-stats .view-container {
     display: flex;
     flex-direction: column;
@@ -198,7 +208,7 @@
     }
 }
 
-.gh-stats-detail-header {
+.gh-stats-data-header {
     font-size: 12px;
     font-weight: 500;
     text-transform: none;
@@ -216,10 +226,22 @@
     color: var(--green);
 }
 
-.gh-stats-detail-label,
-.gh-stats-detail-value {
-    font-size: 13.5px;
+.gh-stats-data-label,
+.gh-stats-data-value {
     font-weight: 500;
+    font-size: 13px;
+}
+
+.gh-stats-data-label {
+    color: var(--black);
+}
+
+a.gh-stats-data-label:hover {
+    text-decoration: underline;
+}
+
+.gh-stats-data-value {
+    color: var(--middarkgrey);
 }
 
 .gh-stats-see-all-container {
@@ -227,6 +249,7 @@
 }
 
 .gh-stats-see-all-container::before {
+    pointer-events: none;
     position: absolute;
     display: block;
     content: '';
@@ -246,9 +269,98 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--black);
+}
+
+.gh-stats-domain:hover {
+    text-decoration: underline;
 }
 
 .gh-stats-favicon {
     width: 16px;
     height: 16px;
+}
+
+.gh-stats-tooltip-header {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.gh-stats-tooltip-data {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-stats-tooltip-label {
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--middarkgrey)
+}
+
+.gh-stats-tooltip-value {
+    font-family: var(--font-family-mono);
+    font-size: 12.5px;
+    margin-left: 10px;
+}
+
+.gh-stats-tooltip-marker {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 3px;
+}
+
+/* Filters */
+.gh-stats-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: -24px;
+}
+
+.gh-stats-filters {
+    grid-column: span 2;
+}
+
+.gh-stats-filter-pill {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--whitegrey);
+    border-radius: 999px;
+    padding: 4px 12px;
+}
+
+.gh-stats-filter-pill .value {
+    font-weight: 700;
+}
+
+.gh-btn-clear-filters {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 999px;
+    color: var(--black);
+    padding: 4px 12px;
+    border: 1px solid var(--whitegrey);
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-btn-clear-filters:hover {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-btn-clear-filters svg {
+    width: 10px;
+    height: 10px;
+    stroke: var(--red);
+}
+
+.gh-btn-clear-filters svg path {
+    stroke-width: 2px;
 }
