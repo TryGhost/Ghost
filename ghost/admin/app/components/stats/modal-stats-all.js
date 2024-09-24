@@ -4,9 +4,8 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {barListColor} from '../utils/stats';
+import {barListColor, getCountryFlag} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
-import {getCountryFlag} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 
 export default class AllStatsModal extends Component {

@@ -1,6 +1,6 @@
 'use client';
 
-import AllStatsModal from '../../modal-stats-all';
+import AllStatsModal from '../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
