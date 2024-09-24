@@ -1,3 +1,5 @@
+import moment from 'moment-timezone';
+
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
     {name: 'Last 7 days', value: 7},
@@ -119,3 +121,26 @@ export const getCountryFlag = (countryCode) => {
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
     );
 };
+
+export function getDateRange(chartRange) {
+    const endDate = moment().endOf('day');
+    const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+    return {startDate, endDate};
+}
+
+export function getStatsParams(config, chartRange, audience, additionalParams = {}) {
+    const {startDate, endDate} = getDateRange(chartRange);
+
+    const params = {
+        site_uuid: config.stats.id,
+        date_from: startDate.format('YYYY-MM-DD'),
+        date_to: endDate.format('YYYY-MM-DD'),
+        ...additionalParams
+    };
+
+    if (audience.length > 0) {
+        params.member_status = audience.join(',');
+    }
+
+    return params;
+}

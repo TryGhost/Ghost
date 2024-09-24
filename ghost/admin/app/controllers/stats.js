@@ -30,7 +30,6 @@ export default class StatsController extends Controller {
             this.audience = this.audienceOptions
                 .filter(a => !this.excludedAudiences.includes(a.value))
                 .map(a => a.value);
-            // this.audience = this.audienceOptions.filter(a => !this.excludedAudiences.includes(a.value));
         } else {
             this.excludedAudiences = '';
             this.audience = this.audienceOptions.map(a => a.value);
