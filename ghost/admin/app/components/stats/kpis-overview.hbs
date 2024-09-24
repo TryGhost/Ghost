@@ -25,7 +25,7 @@
                 @value="{{this.totals.avg_session_sec}}m" />
         </button>
     </div>
-    <div class="gh-stats-kpi-granularity">
+    {{!-- <div class="gh-stats-kpi-granularity">
         {{#if this.showGranularity}}
             <PowerSelect
                 @selected={{this.granularity}}
@@ -42,7 +42,7 @@
             {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
             </PowerSelect>
         {{/if}}
-    </div>
+    </div> --}}
 </div>
 <div class="gh-stats-kpis-chart-container">
     <Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />
