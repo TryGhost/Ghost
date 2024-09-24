@@ -15,11 +15,12 @@ const semver = require('semver');
     const firstArg = process.argv[2];
     console.log('firstArg', firstArg);
 
+    const buildString = await exec('git rev-parse --short HEAD').then(({stdout}) => stdout.trim());
+
     let newVersion;
 
     if (firstArg === 'canary') {
         const bumpedVersion = semver.inc(current_version, 'minor');
-        const buildString = await exec('git rev-parse --short HEAD').then(({stdout}) => stdout.trim());
         newVersion = `${bumpedVersion}-pre-g${buildString}`;
     } else {
         const gitVersion = await exec('git describe --long HEAD').then(({stdout}) => stdout.trim().replace(/^v/, ''));
@@ -40,4 +41,5 @@ const semver = require('semver');
     console.log('Version bumped to', newVersion);
 
     core.setOutput('BUILD_VERSION', newVersion);
+    core.setOutput('GIT_COMMIT_HASH', buildString)
 })();
