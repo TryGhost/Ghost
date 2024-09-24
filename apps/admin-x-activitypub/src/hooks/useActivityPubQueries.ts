@@ -187,13 +187,23 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useAllActivitiesForUser({handle, includeOwn = false}: {handle: string, includeOwn?: boolean}) {
+export function useAllActivitiesForUser({
+    handle,
+    includeOwn = false,
+    includeReplies = false,
+    filter = null
+}: {
+    handle: string;
+    includeOwn?: boolean;
+    includeReplies?: boolean;
+    filter?: {type?: string[]} | null;
+}) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
     return useQuery({
-        queryKey: [`activities:${handle}:includeOwn=${includeOwn.toString()}`],
+        queryKey: [`activities:${JSON.stringify({handle, includeOwn, includeReplies, filter})}`],
         async queryFn() {
-            return api.getAllActivities(includeOwn);
+            return api.getAllActivities(includeOwn, includeReplies, filter);
         }
     });
 }

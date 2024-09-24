@@ -1,7 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import {Button, NoValueLabel} from '@tryghost/admin-x-design-system';
-import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
@@ -21,13 +20,11 @@ enum ACTVITY_TYPE {
     FOLLOW = 'Follow'
 }
 
-const getActivityDescription = (activity: Activity, activityObjectsMap: Map<string, ObjectProperties>): string => {
+const getActivityDescription = (activity: Activity): string => {
     switch (activity.type) {
     case ACTVITY_TYPE.CREATE:
-        const object = activityObjectsMap.get(activity.object?.inReplyTo || '');
-
-        if (object?.name) {
-            return `Commented on your article "${object.name}"`;
+        if (activity.object?.inReplyTo && typeof activity.object?.inReplyTo !== 'string') {
+            return `Commented on your article "${activity.object.inReplyTo.name}"`;
         }
 
         return '';
@@ -87,66 +84,16 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
-
-    let {data: activities = []} = useAllActivitiesForUser({handle: 'index', includeOwn: true});
     const siteUrl = useSiteUrl();
 
-    // Create a map of activity objects from activities in the inbox and outbox.
-    // This allows us to quickly look up an object associated with an activity
-    // We could just make a http request to get the object, but this is more
-    // efficient seeming though we already have the data in the inbox and outbox
-    const activityObjectsMap = new Map<string, ObjectProperties>();
-
-    activities.forEach((activity) => {
-        if (activity.object) {
-            activityObjectsMap.set(activity.object.id, activity.object);
+    const {data: activities = []} = useAllActivitiesForUser({
+        handle: user,
+        includeOwn: true,
+        includeReplies: true,
+        filter: {
+            type: ['Follow', 'Like', `Create:Note:isReplyToOwn,${new URL(siteUrl).hostname}`]
         }
     });
-
-    // Filter the activities to show
-    activities = activities.filter((activity) => {
-        if (activity.type === ACTVITY_TYPE.CREATE) {
-            // Only show "Create" activities that are replies to a post created
-            // by the user
-
-            const replyToObject = activityObjectsMap.get(activity.object?.inReplyTo || '');
-
-            // If the reply object is not found, or it doesn't have a URL or
-            // name, do not show the activity
-            if (!replyToObject || !replyToObject.url || !replyToObject.name) {
-                return false;
-            }
-
-            // Verify that the reply is to a post created by the user by
-            // checking that the hostname associated with the reply object
-            // is the same as the hostname of the site. This is not a bullet
-            // proof check, but it's a good enough for now
-            const hostname = new URL(siteUrl).hostname;
-            const replyToObjectHostname = new URL(replyToObject.url).hostname;
-
-            return hostname === replyToObjectHostname;
-        }
-
-        return [ACTVITY_TYPE.FOLLOW, ACTVITY_TYPE.LIKE].includes(activity.type);
-    });
-
-    // Create a map of activity comments, grouping them by the parent activity
-    // This allows us to quickly look up all comments for a given activity
-    const commentsMap = new Map<string, Activity[]>();
-
-    for (const activity of activities) {
-        if (activity.type === ACTVITY_TYPE.CREATE && activity.object?.inReplyTo) {
-            const comments = commentsMap.get(activity.object.inReplyTo) ?? [];
-
-            comments.push(activity);
-
-            commentsMap.set(activity.object.inReplyTo, comments.reverse());
-        }
-    }
-
-    const getCommentsForObject = (id: string) => {
-        return commentsMap.get(id) ?? [];
-    };
 
     // Retrieve followers for the user
     const {data: followers = []} = useFollowersForUser(user);
@@ -177,8 +124,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         NiceModal.show(ArticleModal, {
                                             object: activity.object,
                                             actor: activity.actor,
-                                            comments: getCommentsForObject(activity.object.id),
-                                            allComments: commentsMap
+                                            comments: activity.object.replies
                                         });
                                     } : undefined
                                 }
@@ -189,7 +135,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
                                         {getUsername(activity.actor)}
                                     </div>
-                                    <div className=''>{getActivityDescription(activity, activityObjectsMap)}</div>
+                                    <div className=''>{getActivityDescription(activity)}</div>
                                     {getExtendedDescription(activity)}
                                 </div>
                                 {isFollower(activity.actor.id) === false && (
