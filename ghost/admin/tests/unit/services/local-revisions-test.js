@@ -108,6 +108,50 @@ describe('Unit: Service: local-revisions', function () {
             // Ensure the latest revision saved
             expect(this.service.find(keyToAdd)).to.not.be.null;
         });
+
+        it('keeps only the latest 5 revisions for a given post ID', async function () {
+            const postId = 'test-id';
+            const revisionCount = 7;
+
+            // Save 7 revisions for the same post ID
+            for (let i = 0; i < revisionCount; i++) {
+                await sleep(1); // Ensure unique timestamps
+                this.service.performSave('post', {id: postId, lexical: `test-${i}`});
+            }
+
+            // Get all revisions for the post ID
+            const revisions = this.service.findAll(`post-revision-${postId}`);
+
+            // Check that only 5 revisions are kept
+            expect(revisions).to.have.lengthOf(5);
+
+            // Check that the kept revisions are the latest ones
+            for (let i = 0; i < 5; i++) {
+                expect(revisions[i].lexical).to.equal(`test-${revisionCount - 1 - i}`);
+            }
+        });
+
+        it('does not limit revisions for drafts', async function () {
+            const postId = 'draft';
+            const revisionCount = 7;
+
+            // Save 7 revisions for a draft
+            for (let i = 0; i < revisionCount; i++) {
+                await sleep(1); // Ensure unique timestamps
+                this.service.performSave('post', {id: postId, lexical: `test-${i}`});
+            }
+
+            // Get all revisions for the draft
+            const revisions = this.service.findAll(`post-revision-${postId}`);
+
+            // Check that all 7 revisions are kept for the draft
+            expect(revisions).to.have.lengthOf(revisionCount);
+
+            // Check that all revisions are present
+            for (let i = 0; i < revisionCount; i++) {
+                expect(revisions[i].lexical).to.equal(`test-${revisionCount - 1 - i}`);
+            }
+        });
     });
 
     describe('scheduleSave', function () {
@@ -175,7 +219,7 @@ describe('Unit: Service: local-revisions', function () {
 
         it('returns an empty object if there are no revisions', function () {
             const result = this.service.findAll();
-            expect(result).to.deep.equal({});
+            expect(result).to.deep.equal([]);
         });
     });
 
