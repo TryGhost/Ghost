@@ -50,7 +50,6 @@
     "Reply to comment": "댓글에 답변",
     "Report": "신고",
     "Report comment": "댓글 신고",
-    "Report this comment": "이 댓글을 신고",
     "Report this comment?": "이 댓글을 신고하시겠어요?",
     "Save": "저장",
     "Sending": "전송중",
@@ -68,6 +67,5 @@
     "This comment has been removed.": "삭제 된 댓글이에요.",
     "Upgrade now": "업그레이드",
     "Yesterday": "어제",
-    "You want to report this comment?": "이 댓글을 신고하시겠어요?",
     "Your request will be sent to the owner of this site.": "운영자에게 요구사항이 전달되었어요."
 }

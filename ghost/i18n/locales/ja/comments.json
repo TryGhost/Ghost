@@ -50,7 +50,6 @@
     "Reply to comment": "コメントに返信する",
     "Report": "通報する",
     "Report comment": "コメントを通報する",
-    "Report this comment": "このコメントを通報する",
     "Report this comment?": "このコメントを通報しますか？",
     "Save": "保存",
     "Sending": "送信中",
@@ -68,6 +67,5 @@
     "This comment has been removed.": "このコメントは削除されました。",
     "Upgrade now": "今すぐアップデートする",
     "Yesterday": "昨日",
-    "You want to report this comment?": "このコメントを通報しますか？",
     "Your request will be sent to the owner of this site.": "あなたのリクエストはこのサイトの管理者に送信されます。"
 }

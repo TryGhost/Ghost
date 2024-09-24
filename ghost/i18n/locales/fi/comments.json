@@ -50,7 +50,6 @@
     "Reply to comment": "Vastaa kommenttiin",
     "Report": "Ilmianna",
     "Report comment": "Ilmianna kommentti",
-    "Report this comment": "Ilmianna tämä kommentti",
     "Report this comment?": "Haluatko ilmiantaa tämän kommentin?",
     "Save": "Tallenna",
     "Sending": "Lähetetään",
@@ -68,6 +67,5 @@
     "This comment has been removed.": "Tämä kommentti on poistettu",
     "Upgrade now": "Korota nyt",
     "Yesterday": "Eilen",
-    "You want to report this comment?": "Haluatko ilmiantaa tämän kommentin?",
     "Your request will be sent to the owner of this site.": "Sinun pyyntösi lähetetään sivun omistajalle"
 }
