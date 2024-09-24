@@ -2,48 +2,38 @@
 
 import Component from '@glimmer/component';
 import React from 'react';
-import moment from 'moment-timezone';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
 import {formatNumber} from '../../../helpers/format-number';
+import {getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from 'ghost-admin/utils/stats';
-
-export default class KpisComponent extends Component {
+export default class TechnicalComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+        const {chartRange, audience, selected} = props;
 
         const colorPalette = statsStaticColors.slice(1, 5);
 
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 5
-        };
+        const params = getStatsParams(
+            this.config,
+            chartRange,
+            audience,
+            {limit: 5}
+        );
 
         let endpoint;
-
-        switch (props.selected) {
+        let indexBy;
+        let tableHead;
+        switch (selected) {
         case 'browsers':
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`;
+            indexBy = 'browser';
+            tableHead = 'Browser';
             break;
         default:
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices.json`;
+            indexBy = 'device';
+            tableHead = 'Device';
         }
 
         const {data, meta, error, loading} = useQuery({
@@ -52,29 +42,11 @@ export default class KpisComponent extends Component {
             params
         });
 
-        let transformedData;
-        let indexBy;
-        let tableHead;
-
-        switch (props.selected) {
-        case 'browsers':
-            transformedData = (data ?? []).map((item, index) => ({
-                name: item.browser.charAt(0).toUpperCase() + item.browser.slice(1),
-                value: item.hits,
-                color: colorPalette[index]
-            }));
-            indexBy = 'browser';
-            tableHead = 'Browser';
-            break;
-        default:
-            transformedData = (data ?? []).map((item, index) => ({
-                name: item.device.charAt(0).toUpperCase() + item.device.slice(1),
-                value: item.hits,
-                color: colorPalette[index]
-            }));
-            indexBy = 'device';
-            tableHead = 'Device';
-        }
+        const transformedData = (data ?? []).map((item, index) => ({
+            name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
+            value: item.hits,
+            color: colorPalette[index]
+        }));
 
         return (
             <div className="gh-stats-piechart-container">
@@ -137,7 +109,7 @@ export default class KpisComponent extends Component {
                             series: [
                                 {
                                     animation: true,
-                                    name: 'Browser',
+                                    name: tableHead,
                                     type: 'pie',
                                     radius: ['60%', '90%'],
                                     center: ['50%', '50%'], // Adjusted to align the chart to the top
