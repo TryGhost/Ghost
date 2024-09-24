@@ -814,8 +814,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
-        working-directory: ghost/core
+      - run: node .github/scripts/bump-version.js canary
 
       - run: npm pack
         working-directory: ghost/core
