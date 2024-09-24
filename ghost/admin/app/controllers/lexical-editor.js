@@ -505,7 +505,9 @@ export default class LexicalEditorController extends Controller {
 
     @action
     setFeatureImageCaption(html) {
-        this.post.set('featureImageCaption', html);
+        if (!this.post.isDestroyed || !this.post.isDestroying) {
+            this.post.set('featureImageCaption', html);
+        }
     }
 
     @action
