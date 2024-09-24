@@ -5,30 +5,21 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
 import {formatNumber} from '../../../helpers/format-number';
+import {getDateRange, getStatsParams, statsStaticColors} from '../../../utils/stats';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from '../../../utils/stats';
 
 export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
+        const {chartRange, audience, selected} = props;
 
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
-        };
-
-        const LINE_COLOR = statsStaticColors[0];
-        const INDEX = 'date';
-        const CATEGORY = props.selected === 'unique_visits' ? 'visits' : props.selected;
+        const params = getStatsParams(
+            this.config,
+            chartRange,
+            audience
+        );
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
@@ -36,10 +27,16 @@ export default class KpisComponent extends Component {
             params
         });
 
+        const LINE_COLOR = statsStaticColors[0];
+        const INDEX = 'date';
+        const CATEGORY = selected === 'unique_visits' ? 'visits' : selected;
+
         const dateLabels = [
-            startDate.format('YYYY-MM-DD'),
-            endDate.format('YYYY-MM-DD')
+            params.date_from,
+            params.date_to
         ];
+
+        const {endDate, startDate} = getDateRange(chartRange);
 
         return (
             <AreaChart

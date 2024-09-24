@@ -2,9 +2,8 @@
 
 import Component from '@glimmer/component';
 import React from 'react';
-import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {barListColor, getCountryFlag} from 'ghost-admin/utils/stats';
+import {barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 
@@ -35,19 +34,13 @@ export default class AllStatsModal extends Component {
     }
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience || [];
-        let type = props.type;
+        const {chartRange, audience, type} = props;
 
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
-        };
+        const params = getStatsParams(
+            this.config,
+            chartRange,
+            audience
+        );
 
         let endpoint;
         let labelText;
