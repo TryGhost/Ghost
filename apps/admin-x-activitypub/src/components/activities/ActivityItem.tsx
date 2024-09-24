@@ -6,7 +6,8 @@ export type Activity = {
     type: string,
     actor: ActorProperties,
     object: ObjectProperties & {
-        inReplyTo: string | null // TODO: Move this to the ObjectProperties type
+        inReplyTo: ObjectProperties | string | null
+        replies: Activity[]
     }
 }
 

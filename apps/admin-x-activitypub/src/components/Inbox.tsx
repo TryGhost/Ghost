@@ -17,37 +17,18 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const [layout, setLayout] = useState('inbox');
 
     // Retrieve all activities for the user
-    let {data: activities = []} = useAllActivitiesForUser({handle: 'index'});
-
-    activities = activities.filter((activity: Activity) => {
-        const isCreate = activity.type === 'Create' && ['Article', 'Note'].includes(activity.object.type);
-        const isAnnounce = activity.type === 'Announce' && activity.object.type === 'Note';
-
-        return isCreate || isAnnounce;
-    });
-
-    // Create a map of activity comments, grouping them by the parent activity
-    // This allows us to quickly look up all comments for a given activity
-    const commentsMap = new Map<string, Activity[]>();
-
-    for (const activity of activities) {
-        if (activity.type === 'Create' && activity.object.inReplyTo) {
-            const comments = commentsMap.get(activity.object.inReplyTo) ?? [];
-
-            comments.push(activity);
-
-            commentsMap.set(activity.object.inReplyTo, comments.reverse());
+    const {data: activities = []} = useAllActivitiesForUser({
+        handle: 'index',
+        includeReplies: true,
+        filter: {
+            type: ['Create:Article', 'Create:Note', 'Announce:Note']
         }
-    }
-
-    const getCommentsForObject = (id: string) => {
-        return commentsMap.get(id) ?? [];
-    };
+    });
 
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
         setArticleContent(object);
         setArticleActor(actor);
-        NiceModal.show(ArticleModal, {object, actor, comments, allComments: commentsMap, focusReply});
+        NiceModal.show(ArticleModal, {object, actor, comments, focusReply});
     };
 
     function getContentAuthor(activity: Activity) {
@@ -92,19 +73,19 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     onClick={() => handleViewContent(
                                         activity.object,
                                         getContentAuthor(activity),
-                                        getCommentsForObject(activity.object.id)
+                                        activity.object.replies
                                     )}
                                 >
                                     <FeedItem
                                         actor={activity.actor}
-                                        comments={getCommentsForObject(activity.object.id)}
+                                        comments={activity.object.replies}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
                                         onCommentClick={() => handleViewContent(
                                             activity.object,
                                             getContentAuthor(activity),
-                                            getCommentsForObject(activity.object.id),
+                                            activity.object.replies,
                                             true
                                         )}
                                     />

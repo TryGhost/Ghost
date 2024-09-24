@@ -15,7 +15,6 @@ interface ArticleModalProps {
     object: ObjectProperties;
     actor: ActorProperties;
     comments: Activity[];
-    allComments: Map<string, Activity[]>;
     focusReply: boolean;
 }
 
@@ -74,7 +73,7 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-grey-200"></div>
 );
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, allComments, focusReply}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 2800;
     const [commentsState, setCommentsState] = useState(comments);
@@ -108,8 +107,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
         modal.show({
             object: previousObject,
             actor: previousActor,
-            comments: previousComments,
-            allComments: allComments
+            comments: previousComments
         });
     };
     const navigateForward = (nextObject: ObjectProperties, nextActor: ActorProperties, nextComments: Activity[]) => {
@@ -119,8 +117,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
         modal.show({
             object: nextObject,
             actor: nextActor,
-            comments: nextComments,
-            allComments: allComments
+            comments: nextComments
         });
     };
     const toggleModalSize = () => {
@@ -174,8 +171,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                         <FeedItemDivider />
 
                         {commentsState.map((comment, index) => {
-                            const showDivider = index !== commentsState.length - 1;
-                            const nestedComments = allComments.get(comment.object.id) ?? [];
+                            const showDivider = index !== comments.length - 1;
+                            const nestedComments = comment.object.replies ?? [];
                             const hasNestedComments = nestedComments.length > 0;
 
                             return (
@@ -194,7 +191,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, all
                                     />
                                     {hasNestedComments && <FeedItemDivider />}
                                     {nestedComments.map((nestedComment, nestedCommentIndex) => {
-                                        const nestedNestedComments = allComments.get(nestedComment.object.id) ?? [];
+                                        const nestedNestedComments = nestedComment.object.replies ?? [];
 
                                         return (
                                             <FeedItem
