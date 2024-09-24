@@ -13,11 +13,11 @@ import {tracked} from '@glimmer/tracking';
 
 export default class TopPages extends Component {
     @inject config;
+    @service modals;
+    @service router;
 
     @tracked contentOption = CONTENT_OPTIONS[0];
     @tracked contentOptions = CONTENT_OPTIONS;
-
-    @service modals;
 
     @action
     openSeeAll(chartRange, audience) {
@@ -33,13 +33,22 @@ export default class TopPages extends Component {
         this.contentOption = selected;
     }
 
-    ReactComponent = (props) => {
-        const {chartRange, audience} = props;
+    @action
+    navigateToFilter(pathname) {
+        this.updateQueryParams({pathname});
+    }
 
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
+    ReactComponent = (props) => {
         const params = getStatsParams(
             this.config,
-            chartRange,
-            audience,
+            props,
             {limit: 7}
         );
 
@@ -57,16 +66,27 @@ export default class TopPages extends Component {
                 loading={loading}
                 index="pathname"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Post or page</span>,
+                    label: <span className="gh-stats-data-header">Post or page</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{label}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label);
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {label}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

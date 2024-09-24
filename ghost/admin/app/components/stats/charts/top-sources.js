@@ -33,16 +33,25 @@ export default class TopSources extends Component {
         });
     }
 
-    ReactComponent = (props) => {
-        const {chartRange, audience} = props;
+    @action
+    navigateToFilter(source) {
+        this.updateQueryParams({source});
+    }
 
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
+    ReactComponent = (props) => {
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
             token: this.config.stats.token,
             params: getStatsParams(
                 this.config,
-                chartRange,
-                audience,
+                props,
                 {limit: 7}
             )
         });
@@ -55,9 +64,9 @@ export default class TopSources extends Component {
                 loading={loading}
                 index="source"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Source</span>,
+                    label: <span className="gh-stats-data-header">Source</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">
+                        <span className="gh-stats-data-label">
                             <a
                                 href="#"
                                 onClick={(e) => {
@@ -75,8 +84,8 @@ export default class TopSources extends Component {
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

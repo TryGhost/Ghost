@@ -48,16 +48,15 @@ export default class KpisOverview extends Component {
 
     @action
     fetchDataIfNeeded() {
-        this.fetchData.perform(this.args.chartRange, this.args.audience);
+        this.fetchData.perform(this.args);
     }
 
     @task
-    *fetchData(chartRange, audience) {
+    *fetchData(args) {
         try {
             const params = new URLSearchParams(getStatsParams(
                 this.config,
-                chartRange,
-                audience
+                args
             ));
 
             const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {

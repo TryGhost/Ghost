@@ -13,6 +13,7 @@ import {inject as service} from '@ember/service';
 export default class TopLocations extends Component {
     @inject config;
     @service modals;
+    @service router;
 
     @action
     openSeeAll() {
@@ -23,13 +24,22 @@ export default class TopLocations extends Component {
         });
     }
 
-    ReactComponent = (props) => {
-        const {chartRange, audience} = props;
+    @action
+    navigateToFilter(location) {
+        this.updateQueryParams({location});
+    }
 
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
+    ReactComponent = (props) => {
         const params = getStatsParams(
             this.config,
-            chartRange,
-            audience,
+            props,
             {limit: 7}
         );
 
@@ -47,16 +57,27 @@ export default class TopLocations extends Component {
                 loading={loading}
                 index="location"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Country</span>,
+                    label: <span className="gh-stats-data-header">Country</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{getCountryFlag(label)} {label || 'Unknown'}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label || 'Unknown');
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {getCountryFlag(label)} {label || 'Unknown'}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

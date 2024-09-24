@@ -11,6 +11,7 @@ SQL >
         browser,
         location,
         source,
+        pathname,
         maxIf(
             member_status,
             member_status IN ('paid', 'free', 'undefined')
@@ -19,7 +20,7 @@ SQL >
         countState() AS hits
     FROM analytics_hits
     WHERE source != current_domain
-    GROUP BY date, device, browser, location, source, site_uuid
+    GROUP BY date, device, browser, location, source, pathname, site_uuid
 
 TYPE MATERIALIZED
 DATASOURCE analytics_sources_mv
