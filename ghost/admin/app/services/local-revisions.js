@@ -72,6 +72,10 @@ export default class LocalRevisionsService extends Service {
             allKeys.push(key);
             localStorage.setItem(this._indexKey, JSON.stringify(allKeys));
             localStorage.setItem(key, JSON.stringify(data));
+            
+            // Apply the filter after saving
+            this.filterRevisions(data.id);
+            
             return key;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
@@ -108,16 +112,23 @@ export default class LocalRevisionsService extends Service {
     }
 
     /**
-     * Returns all revisions from localStorage, optionally filtered by key prefix
+     * Returns all revisions from localStorage as an array, optionally filtered by key prefix and ordered by timestamp
      * @param {string | undefined} prefix - optional prefix to filter revision keys
-     * @returns 
+     * @returns {Array} - all revisions matching the prefix, ordered by timestamp (newest first)
      */
-    findAll(prefix = undefined) {
+    findAll(prefix = this._prefix) {
         const keys = this.keys(prefix);
-        const revisions = {};
-        for (const key of keys) {
-            revisions[key] = JSON.parse(localStorage.getItem(key));
-        }
+        const revisions = keys.map((key) => {
+            const revision = JSON.parse(localStorage.getItem(key));
+            return {
+                key,
+                ...revision
+            };
+        });
+        
+        // Sort revisions by timestamp, newest first
+        revisions.sort((a, b) => b.revisionTimestamp - a.revisionTimestamp);
+        
         return revisions;
     }
 
@@ -241,6 +252,24 @@ export default class LocalRevisionsService extends Service {
         } catch (err) {
             // eslint-disable-next-line no-console
             console.warn(err);
+        }
+    }
+
+    /**
+     * Filters revisions to keep only the most recent 5 for a given post ID
+     * @param {string} postId - ID of the post to filter revisions for
+     */
+    filterRevisions(postId) {
+        if (postId === 'draft') {
+            return; // Ignore filter for drafts
+        }
+
+        const allRevisions = this.findAll(`${this._prefix}-${postId}`);
+        if (allRevisions.length > 5) {
+            const revisionsToRemove = allRevisions.slice(5);
+            revisionsToRemove.forEach((revision) => {
+                this.remove(revision.key);
+            });
         }
     }
 }

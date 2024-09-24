@@ -33,6 +33,8 @@ Router.map(function () {
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
+    
+    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 
