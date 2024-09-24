@@ -46,8 +46,6 @@ describe('Acceptance: Feature Image', function () {
 
         await click('[data-test-button="delete-post-confirm"]');
 
-        await this.pauseTest();
-
         expect(currentURL()).to.equal('/posts');
     });
 });
