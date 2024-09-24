@@ -39,7 +39,7 @@ SQL >
         member_status,
         post_uuid,
         location,
-        referrer,
+        domainWithoutWWW(referrer) as source,
         pathname,
         href,
         case
