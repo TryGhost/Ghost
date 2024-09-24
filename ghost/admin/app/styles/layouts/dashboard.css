@@ -344,12 +344,6 @@ Dashboard Layout */
 }
 
 .gh-dashboard-select .ember-power-select-selected-item {
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -.1px;
-    line-height: 1em;
-    padding: 0 0 10px;
-    color: var(--middarkgrey);
     white-space: nowrap;
 }
 
@@ -2925,7 +2919,7 @@ Onboarding checklist */
     .gh-onboarding-item-content {
         padding-right: 16px;
     }
-    
+
     .gh-onboarding-item--next {
         padding: 24px 20px;
     }
@@ -3155,7 +3149,7 @@ Share publication modal */
     flex-direction: row;
 }
 
-.gh-share-links li { 
+.gh-share-links li {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
@@ -3169,7 +3163,7 @@ Share publication modal */
     margin: 0;
 }
 
-.gh-share-links li a { 
+.gh-share-links li a {
     display: block;
     padding: 20px 0;
     text-align: center;
@@ -3226,7 +3220,7 @@ span.gh-tip {
     display: block;
 }
 
-span.gh-tip a { 
+span.gh-tip a {
     text-decoration: underline;
     color: var(--midgrey);
 }
