@@ -96,7 +96,7 @@ export default class KpisOverview extends Component {
             avg_session_sec: Math.floor(_ponderatedKPIsTotal('avg_session_sec') / 60),
             pageviews: formatNumber(_KPITotal('pageviews')),
             visits: formatNumber(totalVisits),
-            bounce_rate: _ponderatedKPIsTotal('bounce_rate').toFixed(2)
+            bounce_rate: (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0)
         };
     }
 

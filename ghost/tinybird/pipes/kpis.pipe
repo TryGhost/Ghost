@@ -147,7 +147,7 @@ SQL >
         a.date as date,
         sum(b.visits) as visits,
         sum(b.pageviews) as pageviews,
-        sum(b.bounce_rate) as bounce_rate,
+        avg(b.bounce_rate) as bounce_rate,
         sum(b.avg_session_sec) as avg_session_sec
     from timeseries a
     left join data b using date
