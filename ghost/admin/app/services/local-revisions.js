@@ -72,6 +72,10 @@ export default class LocalRevisionsService extends Service {
             allKeys.push(key);
             localStorage.setItem(this._indexKey, JSON.stringify(allKeys));
             localStorage.setItem(key, JSON.stringify(data));
+            
+            // Apply the filter after saving
+            this.filterRevisions(data.id);
+            
             return key;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
@@ -114,7 +118,7 @@ export default class LocalRevisionsService extends Service {
      */
     findAll(prefix = this._prefix) {
         const keys = this.keys(prefix);
-        const revisions = keys.map(key => {
+        const revisions = keys.map((key) => {
             const revision = JSON.parse(localStorage.getItem(key));
             return {
                 key,
@@ -249,6 +253,24 @@ export default class LocalRevisionsService extends Service {
         } catch (err) {
             // eslint-disable-next-line no-console
             console.warn(err);
+        }
+    }
+
+    /**
+     * Filters revisions to keep only the most recent 5 for a given post ID
+     * @param {string} postId - ID of the post to filter revisions for
+     */
+    filterRevisions(postId) {
+        if (postId === 'draft') {
+            return; // Ignore filter for drafts
+        }
+
+        const allRevisions = this.findAll(`${this._prefix}-${postId}`);
+        if (allRevisions.length > 5) {
+            const revisionsToRemove = allRevisions.slice(5);
+            revisionsToRemove.forEach((revision) => {
+                this.remove(revision.key);
+            });
         }
     }
 }
