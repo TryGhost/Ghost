@@ -111,17 +111,18 @@
     "*.js": "eslint"
   },
   "devDependencies": {
+    "@actions/core": "1.10.1",
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
     "eslint": "8.44.0",
     "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
+    "inquirer": "8.2.6",
     "lint-staged": "15.2.10",
     "nx": "16.8.1",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
-    "typescript": "5.4.5",
-    "inquirer": "8.2.6"
+    "typescript": "5.4.5"
   }
 }
