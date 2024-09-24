@@ -3,12 +3,15 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {action} from '@ember/object';
 import {barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 
 export default class AllStatsModal extends Component {
     @inject config;
+    @service router;
 
     get type() {
         return this.args.data.type;
@@ -33,13 +36,33 @@ export default class AllStatsModal extends Component {
         }
     }
 
+    @action
+    navigateToFilter(label) {
+        const params = {};
+        if (this.type === 'top-sources') {
+            params.source = label || 'direct';
+        } else if (this.type === 'top-locations') {
+            params.location = label || 'unknown';
+        } else if (this.type === 'top-pages') {
+            params.pathname = label;
+        }
+
+        this.updateQueryParams(params);
+    }
+
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
     ReactComponent = (props) => {
-        const {chartRange, audience, type} = props;
+        const {type} = props;
 
         const params = getStatsParams(
             this.config,
-            chartRange,
-            audience
+            props
         );
 
         let endpoint;
@@ -82,7 +105,25 @@ export default class AllStatsModal extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-data-header">{labelText}</span>,
                     renderBarContent: ({label}) => (
-                        <span className={`gh-stats-data-label ${type === 'top-sources' && 'gh-stats-domain'}`}>{(type === 'top-locations') && getCountryFlag(label)} {type === 'top-sources' && (<img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />)} {label || unknownOption}</span>
+                        <span className={`gh-stats-data-label ${type === 'top-sources' && 'gh-stats-domain'}`}>
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label);
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {(type === 'top-locations') && getCountryFlag(label)}
+                                {(type === 'top-sources') && (
+                                    <img
+                                        src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`}
+                                        className="gh-stats-favicon"
+                                    />
+                                )}
+                                {label || unknownOption}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}
