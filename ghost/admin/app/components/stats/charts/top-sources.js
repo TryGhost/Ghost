@@ -53,7 +53,7 @@ export default class TopSources extends Component {
                 meta={meta}
                 error={error}
                 loading={loading}
-                index="referrer"
+                index="source"
                 indexConfig={{
                     label: <span className="gh-stats-detail-header">Source</span>,
                     renderBarContent: ({label}) => (
