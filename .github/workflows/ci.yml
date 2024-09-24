@@ -61,6 +61,22 @@ jobs:
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
+      - name: Check user org membership
+        id: check_user_org_membership
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Looking up: ${{ github.event.pull_request.user.login }}"
+
+          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location 'https://api.github.com/orgs/tryghost/members/${{ github.event.pull_request.user.login }}' --header 'Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}')
+
+          if [ "$LOOKUP_USER" == "204" ]; then
+            echo "User is in the org"
+            echo "is_member=true" >> $GITHUB_OUTPUT
+          else
+            echo "User is not in the org"
+            echo "is_member=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Determine added packages
         uses: dorny/paths-filter@v2.12.0
         id: added
@@ -179,9 +195,8 @@ jobs:
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
-      branch_name: ${{ github.ref_name }}
-      is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ env.IS_MAIN }}
+      member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
 
@@ -950,10 +965,29 @@ jobs:
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success' && needs.job_required_tests.result == 'success'
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_required_tests.result == 'success'
+      && (
+        needs.job_setup.outputs.is_main == 'true'
+        || (
+          github.event_name == 'pull_request'
+          && needs.job_setup.outputs.member_is_in_org == 'true'
+          && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
+        )
+      )
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
+
+      - name: Compute branch name (push)
+        if: github.event_name == 'push'
+        run: echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Compute branch name (pull_request)
+        if: github.event_name == 'pull_request'
+        run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
@@ -962,6 +996,6 @@ jobs:
           workflow: .github/workflows/deploy.yml
           ref: 'refs/heads/main'
           repo: TryGhost/Ghost-Moya
-          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ needs.job_setup.outputs.branch_name }}"}'
+          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
