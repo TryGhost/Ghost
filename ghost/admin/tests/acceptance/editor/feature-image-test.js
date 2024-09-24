@@ -1,9 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {blur, click, currentURL, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
-// import {enableLabsFlag} from '../../helpers/labs-flag';
+import {click, currentURL, find} from '@ember/test-helpers';
 import {expect} from 'chai';
-// import {feature} from '../../../app/services/feature';
-// import {invalidateSession} from 'ember-simple-auth/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
