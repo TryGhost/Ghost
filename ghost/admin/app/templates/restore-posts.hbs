@@ -1,29 +1,23 @@
 <section class="gh-canvas gh-post-restore" {{did-insert this.loadData}}>
     <GhCanvasHeader class="gh-canvas-header gh-post-restore-header">
         <div class="flex flex-column flex-grow-1">
-            <div class="gh-canvas-breadcrumb">
-                <LinkTo @route="posts">
-                    Posts
-                </LinkTo>
-                {{svg-jar "arrow-right-small"}}
-                Restore
-            </div>
             <h2 class="gh-canvas-title gh-post-title">
                 Restore Posts
             </h2>
         </div>
     </GhCanvasHeader>
 
+    {{log "model" this.model}}
     <section class="view-container content-list">
         <p>Posts are regularly saved locally on your device. If you've lost a post, you can restore it from here as long as too much time hasn't passed.</p>
-        <ol class="revisions-list gh-list {{unless this.args.model.length "no-revisions"}}">
-            {{#if this.args.model.length}}
+        <ol class="revisions-list gh-list {{unless this.model.length "no-revisions"}}">
+            {{#if this.model.length}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-list-cellwidth-70">Title</div>
                     <div class="gh-list-header gh-list-cellwidth-20">Created</div>
                     <div class="gh-list-header gh-list-cellwidth-10"></div>
                 </li>
-                <VerticalCollection @items={{this.args.model}} @key="key" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |revision|>
+                <VerticalCollection @items={{this.model}} @key="key" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |revision|>
                     <li class="gh-list-row">
                         <div class="gh-list-data gh-list-cellwidth-70">
                             <h3 class="gh-revision-title">{{if revision.title revision.title "(no title)"}}</h3>
