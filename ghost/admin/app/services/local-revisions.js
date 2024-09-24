@@ -14,6 +14,7 @@ export default class LocalRevisionsService extends Service {
         }
         this.MIN_REVISION_TIME = this.isTesting ? 50 : 60000; // 1 minute in ms
         this.performSave = this.performSave.bind(this);
+        this.storage = window.localStorage;
     }
 
     @service store;
@@ -75,8 +76,8 @@ export default class LocalRevisionsService extends Service {
         try {
             const allKeys = this.keys();
             allKeys.push(key);
-            localStorage.setItem(this._indexKey, JSON.stringify(allKeys));
-            localStorage.setItem(key, JSON.stringify(data));
+            this.storage.setItem(this._indexKey, JSON.stringify(allKeys));
+            this.storage.setItem(key, JSON.stringify(data));
             
             // Apply the filter after saving
             this.filterRevisions(data.id);
@@ -121,7 +122,7 @@ export default class LocalRevisionsService extends Service {
      * @returns {string | null}
      */
     find(key) {
-        return JSON.parse(localStorage.getItem(key));
+        return JSON.parse(this.storage.getItem(key));
     }
 
     /**
@@ -132,7 +133,7 @@ export default class LocalRevisionsService extends Service {
     findAll(prefix = this._prefix) {
         const keys = this.keys(prefix);
         const revisions = keys.map((key) => {
-            const revision = JSON.parse(localStorage.getItem(key));
+            const revision = JSON.parse(this.storage.getItem(key));
             return {
                 key,
                 ...revision
@@ -150,13 +151,13 @@ export default class LocalRevisionsService extends Service {
      * @param {string} key 
      */
     remove(key) {
-        localStorage.removeItem(key);
+        this.storage.removeItem(key);
         const keys = this.keys();
         let index = keys.indexOf(key);
         if (index !== -1) {
             keys.splice(index, 1);
         }
-        localStorage.setItem(this._indexKey, JSON.stringify(keys));
+        this.storage.setItem(this._indexKey, JSON.stringify(keys));
     }
 
     /**
@@ -185,7 +186,7 @@ export default class LocalRevisionsService extends Service {
      * @returns {string[]}
      */
     keys(prefix = undefined) {
-        let keys = JSON.parse(localStorage.getItem(this._indexKey) || '[]');
+        let keys = JSON.parse(this.storage.getItem(this._indexKey) || '[]');
         if (prefix) {
             keys = keys.filter(key => key.startsWith(prefix));
         }

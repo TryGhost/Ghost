@@ -17,26 +17,34 @@ const sleep = ms => new Promise((resolve) => {
 describe('Unit: Service: local-revisions', function () {
     setupTest();
 
-    let localStore, setItemStub;
+    let localStore, setItemStub, getItemStub, removeItemStub, clearStub, localStorageMock;
 
     before(function () {
         Sentry.init(getSentryTestConfig(sentryTransport));
     });
 
     this.beforeEach(function () {
-        // Mock localStorage
-        sinon.restore();
-        localStore = {};
-        sinon.stub(localStorage, 'getItem').callsFake(key => localStore[key] || null);
-        setItemStub = sinon.stub(localStorage, 'setItem').callsFake((key, value) => localStore[key] = value + '');
-        sinon.stub(localStorage, 'removeItem').callsFake(key => delete localStore[key]);
-        sinon.stub(localStorage, 'clear').callsFake(() => localStore = {});
-
         // Reset the Sentry testkit
         testkit.reset();
 
+        // Mock localStorage
+        sinon.restore();
+        localStore = {};
+        getItemStub = sinon.stub().callsFake(key => localStore[key] || null
+        );
+        setItemStub = sinon.stub().callsFake((key, value) => localStore[key] = value + '');
+        removeItemStub = sinon.stub().callsFake(key => delete localStore[key]);
+        clearStub = sinon.stub().callsFake(() => localStore = {});
+        localStorageMock = {
+            getItem: getItemStub,
+            setItem: setItemStub,
+            removeItem: removeItemStub,
+            clear: clearStub
+        };
+
         // Create the service
         this.service = this.owner.lookup('service:local-revisions');
+        this.service.storage = localStorageMock;
         this.service.clear();
     });
 
@@ -61,7 +69,7 @@ describe('Unit: Service: local-revisions', function () {
     describe('performSave', function () {
         it('saves a revision without a post id', function () {
             // save a revision
-            const key = this.service.performSave('post', {id: 'draft', lexical: 'test'});
+            const key = this.service.performSave('post', {id: 'draft', lexical: 'test', status: 'draft'});
             const revision = this.service.find(key);
             expect(key).to.match(/post-revision-draft-\d+/);
             expect(revision.id).to.equal('draft');
@@ -90,7 +98,7 @@ describe('Unit: Service: local-revisions', function () {
             const callCount = setItemStub.callCount;
             setItemStub.onCall(callCount).throws(quotaError);
             const keyToAdd = this.service.performSave('post', {id: 'test-id', lexical: 'data-3'});
-
+            
             // Ensure the oldest revision was removed
             expect(this.service.find(keyToRemove)).to.be.null;
 
