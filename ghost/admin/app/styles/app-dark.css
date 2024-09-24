@@ -259,7 +259,7 @@ input:focus,
 }
 
 .gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger) {
-    background: var(--lightgrey);
+    border: 1px solid var(--lightgrey);
     color: var(--black);
 }
 
@@ -663,6 +663,17 @@ input:focus,
     background: var(--dark-main-bg-color);
 }
 
+.gh-posts-list-item-group,
+.gh-list-scrolling tbody .gh-list-data,
+.gh-list-scrolling thead th {
+    border-color: var(--lightgrey);
+}
+
+.gh-list-scrolling thead th:first-child::before,
+.gh-list-scrolling tbody .gh-list-data:first-child::before {
+    background: var(--lightgrey);
+}
+
 .gh-posts-list-item:hover,
 .ember-power-select-group .ember-power-select-option[aria-current=true],
 .settings-tag .tag-edit-button.active,
@@ -841,7 +852,6 @@ input:focus,
 }
 
 .gh-post-list-cta {
-    background: #26282b;
     color: #ffffff;
     border-color: #33373d;
 }
@@ -871,6 +881,10 @@ input:focus,
 }
 
 /* Members */
+.members-header .view-actions input.gh-members-list-searchfield {
+    border-color: var(--lightgrey)
+}
+
 .gh-members-help-card,
 .gh-offers-help-card {
     background: var(--dark-main-bg-color);
@@ -1080,6 +1094,13 @@ kbd {
 
 
 /* Dashboard */
+
+.gh-dashboard-box.is-secondary, .gh-dashboard-resource-box,
+.gh-main-section-content.grey,
+.gh-expandable,
+.gh-expandable-content {
+    background: #1C1E22;
+}
 
 .gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats {
     background: transparent;
@@ -1465,4 +1486,10 @@ Publish flow: Share modal */
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads) svg path {
     fill: var(--darkgrey);
+}
+
+
+/* --------------------------------- */
+.gh-contentfilter-menu-trigger.bordered {
+    border-color: var(--lightgrey);
 }

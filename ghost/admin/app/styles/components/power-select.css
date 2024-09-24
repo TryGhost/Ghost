@@ -21,10 +21,9 @@
 }
 
 .ember-power-select-trigger:not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
-    height: 4px;
-    width: 6.11px;
+    height: 6px;
     margin-left: 2px;
-    margin-top: -2px;
+    margin-right: -4px;
     vertical-align: middle;
 }
 

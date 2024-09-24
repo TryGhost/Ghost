@@ -1026,7 +1026,7 @@
 .modal-post-success .modal-footer .gh-btn {
     min-width: 64px;
     height: 40px;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1058,6 +1058,7 @@
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
     width: 56px;
     background: var(--whitegrey-l1);
+    border-color: transparent;
 }
 
 .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {

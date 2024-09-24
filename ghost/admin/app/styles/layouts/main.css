@@ -1616,9 +1616,7 @@
 }
 
 .view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):not(.gh-btn-link) {
-    border: none;
     box-shadow: none;
-    background: color-mod(var(--whitegrey-l1) l(-3%));
 }
 
 .view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):not(.gh-btn-link):hover {
