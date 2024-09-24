@@ -8,7 +8,6 @@ export default class RestorePostsController extends Controller {
 
     @task
     *restorePostTask(revision) {
-        console.log('restorePostTask', revision);
         try {
             yield this.localRevisions.restore(revision.key);
             this.notifications.showNotification('Post restored successfully', {type: 'success'});
