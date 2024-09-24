@@ -13,6 +13,7 @@ import {inject as service} from '@ember/service';
 export default class TopLocations extends Component {
     @inject config;
     @service modals;
+    @service router;
 
     @action
     openSeeAll() {
@@ -36,12 +37,9 @@ export default class TopLocations extends Component {
     }
 
     ReactComponent = (props) => {
-        const {chartRange, audience} = props;
-
         const params = getStatsParams(
             this.config,
-            chartRange,
-            audience,
+            props,
             {limit: 7}
         );
 

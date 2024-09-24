@@ -13,11 +13,11 @@ import {tracked} from '@glimmer/tracking';
 
 export default class TopPages extends Component {
     @inject config;
+    @service modals;
+    @service router;
 
     @tracked contentOption = CONTENT_OPTIONS[0];
     @tracked contentOptions = CONTENT_OPTIONS;
-
-    @service modals;
 
     @action
     openSeeAll(chartRange, audience) {
@@ -46,12 +46,9 @@ export default class TopPages extends Component {
     }
 
     ReactComponent = (props) => {
-        const {chartRange, audience} = props;
-
         const params = getStatsParams(
             this.config,
-            chartRange,
-            audience,
+            props,
             {limit: 7}
         );
 

@@ -26,24 +26,63 @@
 
     <section class="view-container">
         <section class="gh-stats-container no-gap">
-            <Stats::KpisOverview @chartRange={{this.chartRange}} @audience={{this.audience}} />
+            <Stats::KpisOverview
+                @chartRange={{this.chartRange}}
+                @audience={{this.audience}}
+                @device={{this.device}}
+                @browser={{this.browser}}
+                @location={{this.location}}
+                @source={{this.source}}
+                @pathname={{this.pathname}}/>
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
-                <Stats::Charts::TopPages @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                <Stats::Charts::TopPages
+                    @chartRange={{this.chartRange}}
+                    @audience={{this.audience}}
+                    @device={{this.device}}
+                    @browser={{this.browser}}
+                    @location={{this.location}}
+                    @source={{this.source}}
+                    @pathname={{this.pathname}}
+                />
             </div>
             <div class="gh-stats-container">
-                <Stats::Charts::TopSources @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                <Stats::Charts::TopSources
+                    @chartRange={{this.chartRange}}
+                    @audience={{this.audience}}
+                    @device={{this.device}}
+                    @browser={{this.browser}}
+                    @location={{this.location}}
+                    @source={{this.source}}
+                    @pathname={{this.pathname}}
+                />
             </div>
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
-                <Stats::Charts::TopLocations @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                    <Stats::Charts::TopLocations
+                    @chartRange={{this.chartRange}}
+                    @audience={{this.audience}}
+                    @device={{this.device}}
+                    @browser={{this.browser}}
+                    @location={{this.location}}
+                    @source={{this.source}}
+                    @pathname={{this.pathname}}
+                />
             </div>
             <div class="gh-stats-container">
-                <Stats::TechnicalOverview @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                    <Stats::TechnicalOverview
+                        @chartRange={{this.chartRange}}
+                        @audience={{this.audience}}
+                        @device={{this.device}}
+                        @browser={{this.browser}}
+                        @location={{this.location}}
+                        @source={{this.source}}
+                        @pathname={{this.pathname}}
+                    />
             </div>
         </section>
 

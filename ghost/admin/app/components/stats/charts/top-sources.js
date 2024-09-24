@@ -33,16 +33,25 @@ export default class TopSources extends Component {
         });
     }
 
-    ReactComponent = (props) => {
-        const {chartRange, audience} = props;
+    @action
+    navigateToFilter(source) {
+        this.updateQueryParams({source});
+    }
 
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
+    ReactComponent = (props) => {
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
             token: this.config.stats.token,
             params: getStatsParams(
                 this.config,
-                chartRange,
-                audience,
+                props,
                 {limit: 7}
             )
         });

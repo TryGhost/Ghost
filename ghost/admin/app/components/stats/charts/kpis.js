@@ -13,12 +13,11 @@ export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        const {chartRange, audience, selected} = props;
+        const {chartRange, selected} = props;
 
         const params = getStatsParams(
             this.config,
-            chartRange,
-            audience
+            props
         );
 
         const {data, meta, error, loading} = useQuery({

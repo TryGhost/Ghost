@@ -128,7 +128,8 @@ export function getDateRange(chartRange) {
     return {startDate, endDate};
 }
 
-export function getStatsParams(config, chartRange, audience, additionalParams = {}) {
+export function getStatsParams(config, props, additionalParams = {}) {
+    const {chartRange, audience, device, browser, location, source, pathname} = props;
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
@@ -140,6 +141,26 @@ export function getStatsParams(config, chartRange, audience, additionalParams = 
 
     if (audience.length > 0) {
         params.member_status = audience.join(',');
+    }
+
+    if (device) {
+        params.device = device;
+    }
+
+    if (browser) {
+        params.browser = browser;
+    }
+
+    if (location) {
+        params.location = location;
+    }
+
+    if (source) {
+        params.source = source === 'direct' ? '' : source;
+    }
+
+    if (pathname) {
+        params.pathname = pathname;
     }
 
     return params;
