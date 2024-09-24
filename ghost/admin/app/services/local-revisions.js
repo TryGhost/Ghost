@@ -125,7 +125,6 @@ export default class LocalRevisionsService extends Service {
                 ...revision
             };
         });
-        console.log('findAll > revisions', revisions);
         
         // Sort revisions by timestamp, newest first
         revisions.sort((a, b) => b.revisionTimestamp - a.revisionTimestamp);
