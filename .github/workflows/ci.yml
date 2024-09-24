@@ -946,14 +946,46 @@ jobs:
   canary:
     needs: [
       job_setup,
-      job_required_tests
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success'
+    if: needs.job_setup.result == 'success'
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '20.15.1'
+          cache: yarn
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Bump version
+        run: node .github/scripts/bump-version.js canary
+
+      - name: Update submodules
+        run: yarn main:submodules
+
+      - name: Build Ghost
+        env:
+          GHOST_CDN_URL: __ASSETS_CDN_PLACEHOLDER__/
+        run: |
+          yarn archive
+          mv ghost/core/ghost*.tgz ghost.tgz
+          tar -zxf ghost.tgz
+          mv package/ /tmp/ghost/
+          cp yarn.lock /tmp/ghost/
+          cp -r /tmp/ghost/core/built/admin /tmp/admin-build-placeholder
 
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
