@@ -137,6 +137,14 @@ function renderInboxAttachment(object: ObjectProperties) {
     }
 }
 
+function renderTimestamp(object: ObjectProperties) {
+    const timestamp =
+        new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
+
+    const date = new Date(object?.published ?? new Date());
+    return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
+}
+
 const FeedItemStats: React.FC<{
     object: ObjectProperties;
     likeCount: number;
@@ -177,7 +185,7 @@ const FeedItemStats: React.FC<{
                     handleLikeClick();
                 }}
             />
-            {isLiked && <span className={`text-grey-900`}>{likeCount}</span>}
+            {isLiked && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
         </div>
         <div className='flex gap-1'>
             <Button
@@ -193,7 +201,7 @@ const FeedItemStats: React.FC<{
                 }}
             />
             {commentCount > 0 && (
-                <span className={`text-grey-900`}>{commentCount}</span>
+                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
             )}
         </div>
     </div>);
@@ -217,6 +225,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const date = new Date(object?.published ?? new Date());
+
     const [isCopied, setIsCopied] = useState(false);
 
     const onLikeClick = () => {
@@ -291,7 +300,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
                                             <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
                                         </div>
-                                        <span className='whitespace-nowrap text-grey-700' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                                        {renderTimestamp(object)}
                                     </div>
                                 </div>
                             </div>
@@ -338,8 +347,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
                                 <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
                                     <div className='flex'>
-                                        <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
-                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                                        <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                        {renderTimestamp(object)}
                                     </div>
                                     <div className='flex'>
                                         <span className='truncate text-grey-700'>{getUsername(author)}</span>
@@ -385,11 +394,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author}/>
                             </div>
-                            {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
                             <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex'>
-                                    <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
-                                    <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                                    <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                    {renderTimestamp(object)}
                                 </div>
                                 <div className='flex'>
                                     <span className='truncate text-grey-700'>{getUsername(author)}</span>
@@ -412,7 +420,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                 </div>
                             </div>
-                            {/* </div> */}
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-grey-200"></div>}

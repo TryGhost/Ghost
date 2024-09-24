@@ -152,7 +152,11 @@ export class ActivityPubAPI {
         return new URL(`.ghost/activitypub/activities/${this.handle}`, this.apiUrl);
     }
 
-    async getAllActivities(includeOwn: boolean = false): Promise<Activity[]> {
+    async getAllActivities(
+        includeOwn: boolean = false,
+        includeReplies: boolean = false,
+        filter: {type?: string[]} | null = null
+    ): Promise<Activity[]> {
         const LIMIT = 50;
 
         const fetchActivities = async (url: URL): Promise<Activity[]> => {
@@ -179,7 +183,15 @@ export class ActivityPubAPI {
 
                 nextUrl.searchParams.set('cursor', json.nextCursor);
                 nextUrl.searchParams.set('limit', LIMIT.toString());
-                nextUrl.searchParams.set('includeOwn', includeOwn.toString());
+                if (includeOwn) {
+                    nextUrl.searchParams.set('includeOwn', includeOwn.toString());
+                }
+                if (includeReplies) {
+                    nextUrl.searchParams.set('includeReplies', includeReplies.toString());
+                }
+                if (filter) {
+                    nextUrl.searchParams.set('filter', JSON.stringify(filter));
+                }
 
                 const nextItems = await fetchActivities(nextUrl);
 
@@ -192,7 +204,15 @@ export class ActivityPubAPI {
         // Make a copy of the activities API URL and set the limit
         const url = new URL(this.activitiesApiUrl);
         url.searchParams.set('limit', LIMIT.toString());
-        url.searchParams.set('includeOwn', includeOwn.toString());
+        if (includeOwn) {
+            url.searchParams.set('includeOwn', includeOwn.toString());
+        }
+        if (includeReplies) {
+            url.searchParams.set('includeReplies', includeReplies.toString());
+        }
+        if (filter) {
+            url.searchParams.set('filter', JSON.stringify(filter));
+        }
 
         // Fetch the activities
         return fetchActivities(url);

@@ -196,7 +196,7 @@ export default class LexicalEditorController extends Controller {
     _pushPostState() {
         const post = this.post;
 
-        if (!post) {
+        if (!post || !post.currentState) {
             return;
         }
 

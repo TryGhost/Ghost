@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
@@ -17,6 +17,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     let imageClass = 'z-10 rounded w-10 h-10 object-cover';
     const badgeClass = `w-6 h-6 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
     let badgeColor = '';
+    const [iconUrl, setIconUrl] = useState(author?.icon?.url);
 
     switch (badge) {
     case 'user-fill':
@@ -47,34 +48,35 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         break;
     }
 
+    if (iconUrl) {
+        return (
+            <a className='relative z-10 h-10 w-10 shrink-0 pt-[3px] transition-opacity hover:opacity-80' href={author?.url} rel='noopener noreferrer' target='_blank'>
+                <img
+                    className={imageClass}
+                    src={iconUrl}
+                    onError={() => setIconUrl(null)}
+                />
+                {badge && (
+                    <div className={`${badgeClass} ${badgeColor}`}>
+                        <Icon
+                            colorClass='text-white'
+                            name={badge}
+                            size='xs'
+                        />
+                    </div>
+                )}
+            </a>
+        );
+    }
+
     return (
-        <>
-            {author && author.icon?.url ? (
-                <a className='relative z-10 h-10 w-10 shrink-0 pt-[3px] transition-opacity hover:opacity-80' href={author.url} rel='noopener noreferrer' target='_blank'>
-                    <img 
-                        className={imageClass} 
-                        src={author.icon.url}
-                    />
-                    {badge && (
-                        <div className={`${badgeClass} ${badgeColor}`}>
-                            <Icon
-                                colorClass='text-white'
-                                name={badge} 
-                                size='xs'
-                            />
-                        </div>
-                    )}
-                </a>
-            ) : (
-                <div className={containerClass}>
-                    <Icon 
-                        colorClass='text-grey-600' 
-                        name='user' 
-                        size={iconSize} 
-                    />
-                </div>
-            )}
-        </>
+        <div className={containerClass}>
+            <Icon
+                colorClass='text-grey-600'
+                name='user'
+                size={iconSize}
+            />
+        </div>
     );
 };
 

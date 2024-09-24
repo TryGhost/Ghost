@@ -50,7 +50,11 @@ export const TabButton: React.FC<TabButtonProps> = ({
         >
             {icon && <Icon className='mb-0.5 mr-1.5 inline' name={icon} size='sm' />}
             {title}
-            {(typeof counter === 'number') && <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-medium text-grey-800 dark:bg-grey-900 dark:text-grey-300'>{counter}</span>}
+            {(typeof counter === 'number') && 
+                <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-medium text-grey-800 dark:bg-grey-900 dark:text-grey-300'>
+                    {new Intl.NumberFormat().format(counter)}
+                </span>
+            }
         </TabsPrimitive.Trigger>
     );
 };
