@@ -25,15 +25,11 @@ describe('Acceptance: Feature Image', function () {
         // avoids an infinite loop when the post is deleted and the save button is clicked, potential race condition
         const post = this.server.create('post', {status: 'published', featureImage: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg', featureImageCaption: '<span style="white-space: pre-wrap;">Hello dogggos</span>'});
         await visit(`/editor/post/${post.id}`);
-        const createdPost = this.server.schema.posts.find(post.id);
 
-        // delete created post
-
-        await createdPost.destroy();
+        this.server.db.posts.update(post.id, {isDeleted: true});
 
         await click('[data-test-psm-trigger]');
         await click('[data-test-button="delete-post"]');
-
         await click('[data-test-button="delete-post-confirm"]');
 
         expect(currentURL()).to.equal('/posts');
