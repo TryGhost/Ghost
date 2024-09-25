@@ -173,13 +173,12 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         <div className=''>{getActivityDescription(activity)}</div>
                                         {getExtendedDescription(activity)}
                                     </div>
-                                    {isFollower(activity.actor.id) === false && (
-                                        <FollowButton
-                                            className='ml-auto'
-                                            toFollow={getUsername(activity.actor)}
-                                            type='link'
-                                        />
-                                    )}
+                                    <FollowButton
+                                        className='ml-auto'
+                                        isFollowing={isFollower(activity.actor.id)}
+                                        toFollow={getUsername(activity.actor)}
+                                        type='link'
+                                    />
                                 </ActivityItem>
                             ))}
                         </div>
