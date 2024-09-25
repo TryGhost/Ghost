@@ -140,7 +140,6 @@ class JobManager {
      * @returns {Promise<Object>} The added job model.
      */
     async addQueuedJob({name, metadata}) {
-
         // Try to initialize JobQueueManager if it's missing
         if (!this.#jobQueueManager) {
             this.#initializeJobQueueManager();
