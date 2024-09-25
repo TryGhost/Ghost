@@ -43,7 +43,13 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config});
+function createJobManager() {
+    return new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config});
+}
+
+const jobManager = createJobManager();
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;
+module.exports.createJobManager = createJobManager; // export for testing
+

@@ -3,6 +3,7 @@ const path = require('path');
 const configUtils = require('../../utils/configUtils');
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils/');
+const {createJobManager} = require('../../../core/server/services/jobs/job-service');
 
 // Helper function to wait for job completion
 async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkIntervalMs = 50) {
@@ -33,7 +34,7 @@ describe('Job Queue', function () {
     describe('enabled by config', function () {
         beforeEach(async function () {
             configUtils.set('services:jobs:queue:enabled', true);
-            jobService = require('../../../core/server/services/jobs/job-service');
+            jobService = createJobManager();
         });
 
         it('should add and execute a job in the queue', async function () {
