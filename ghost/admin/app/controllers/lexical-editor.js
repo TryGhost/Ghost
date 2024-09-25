@@ -498,7 +498,9 @@ export default class LexicalEditorController extends Controller {
 
     @action
     setFeatureImageCaption(html) {
-        this.post.set('featureImageCaption', html);
+        if (!this.post.isDestroyed || !this.post.isDestroying) {
+            this.post.set('featureImageCaption', html);
+        }
     }
 
     @action
@@ -1160,6 +1162,11 @@ export default class LexicalEditorController extends Controller {
 
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+
+        if (state.isDeleted) {
+            // if the post is deleted, we don't need to save it
+            hasDirtyAttributes = false;
+        }
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
