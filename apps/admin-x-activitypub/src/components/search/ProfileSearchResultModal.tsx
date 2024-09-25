@@ -37,11 +37,11 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({prof
                     </div>
                 </div>
             </div>
-            <div className='mt-10 w-auto'>
+            <div className='mt-4 w-auto'>
                 <div className='mx-auto max-w-[580px] pb-16'>
                     <div className='z-0 flex w-full flex-col items-center'>
-                        <div className='mx-auto w-full max-w-[560px]'>
-                            <div className='h-[200px] w-full rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
+                        <div className='mx-auto w-full'>
+                            <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
                                 {profile.actor.image && (
                                     <img
                                         alt={profile.actor.name}
@@ -50,29 +50,29 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({prof
                                     />
                                 )}
                             </div>
-                            <div className='-mt-8 px-4'>
-                                <div className='flex items-center justify-between'>
-                                    <div className='rounded-lg border-4 border-white'>
+                            <div className='-mt-12 px-4'>
+                                <div className='flex items-end justify-between'>
+                                    <div className='rounded-xl outline outline-4 outline-white'>
                                         <APAvatar
                                             author={profile.actor}
                                             size='lg'
                                         />
                                     </div>
-                                    {profile.isFollowing === false && (
-                                        <FollowButton toFollow={profile.handle} />
-                                    )}
+                                    {/* {profile.isFollowing === false && ( */}
+                                    <FollowButton isFollowing={profile.isFollowing} toFollow={profile.handle} />
+                                    {/* )} */}
                                 </div>
                                 <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                                <span className='mt-1 text-[1.5rem] text-grey-800'>{profile.handle}</span>
+                                <span className='mt-2 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>
                                 <div
                                     dangerouslySetInnerHTML={{__html: profile.actor.summary}}
-                                    className='mt-3 text-[1.5rem]'
+                                    className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                 />
                                 {attachments.map(attachment => (
-                                    <div className='mt-3 block text-[1.5rem]'>
-                                        <span className='font-bold'>{attachment.name}: </span>
-                                        <span dangerouslySetInnerHTML={{__html: attachment.value}} />
-                                    </div>
+                                    <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
+                                        <span className={`mr-1 text-xs font-semibold after:content-[":"]`}>{attachment.name}</span>
+                                        <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
+                                    </span>
                                 ))}
                             </div>
                         </div>
