@@ -129,6 +129,6 @@ export default [
     setting('editor', 'editor_default_email_recipients_filter', 'all'),
 
     // DONATIONS
-    setting('donations_suggested_amount', 'donations', 0),
+    setting('donations_suggested_amount', 'donations', 500),
     setting('donations_currency', 'donations', 'USD')
 ];

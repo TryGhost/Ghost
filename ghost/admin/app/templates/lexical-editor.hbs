@@ -69,6 +69,7 @@
                 @excerpt={{readonly this.post.customExcerpt}}
                 @excerptHasTk={{this.excerptHasTk}}
                 @setExcerpt={{this.updateExcerpt}}
+                @onExcerptBlur={{perform this.saveExcerptTask}}
                 @excerptErrorMessage={{this.excerptErrorMessage}}
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}

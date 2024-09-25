@@ -69,6 +69,7 @@
                         @input={{this.onExcerptInput}}
                         @keyDown={{this.onExcerptKeydown}}
                         @didCreateTextarea={{this.registerExcerptElement}}
+                        {{on "blur" @onExcerptBlur}}
                         data-test-textarea="excerpt"
                     />
                     {{#if @excerptHasTk}}

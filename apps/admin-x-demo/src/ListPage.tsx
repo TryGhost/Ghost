@@ -27,7 +27,7 @@ const ListPage = () => {
                     label: 'Open Rate'
                 }
             ]}
-            position="left"
+            position="start"
             onDirectionChange={() => {}}
             onSortChange={() => {}}
         />,

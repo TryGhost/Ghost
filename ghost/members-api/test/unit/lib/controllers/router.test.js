@@ -388,5 +388,52 @@ describe('RouterController', function () {
                 await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to archived newsletters Newsletter 2`);
             });
         });
+
+        describe('honeypot', function () {
+            let req, res, sendEmailWithMagicLinkStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'signup'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves();
+            });
+
+            it('Sends emails when honeypot is not filled', async function () {
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
+            });
+
+            it('Does not send emails when honeypot is filled', async function () {
+                const controller = createRouterController();
+
+                req.body.honeypot = 'filled!';
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                sendEmailWithMagicLinkStub.notCalled.should.be.true();
+            });
+        });
     });
 });

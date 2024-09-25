@@ -1,5 +1,7 @@
+const sinon = require('sinon');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
+const labs = require('../../../../core/shared/labs');
 const assert = require('assert/strict');
 const configUtils = require('../../../utils/configUtils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
@@ -76,6 +78,7 @@ describe('Can send cards via email', function () {
             value: false
         }], {context: {internal: true}});
         mockManager.restore();
+        sinon.restore();
     });
 
     before(async function () {
@@ -143,7 +146,26 @@ describe('Can send cards via email', function () {
         await matchEmailSnapshot();
     });
 
-    it('renders the golden post correctly', async function () {
+    it('renders the golden post correctly (no labs flags)', async function () {
+        sinon.stub(labs, 'isSet').returns(false);
+
+        const data = await sendEmail(agent, {
+            lexical: JSON.stringify(goldenPost)
+        });
+
+        splitPreheader(data);
+
+        await matchEmailSnapshot();
+    });
+
+    it('renders the golden post correctly (labs flag: contentVisibility)', async function () {
+        sinon.stub(labs, 'isSet').callsFake((key) => {
+            if (key === 'contentVisibility') {
+                return true;
+            }
+            return false;
+        });
+
         const data = await sendEmail(agent, {
             lexical: JSON.stringify(goldenPost)
         });

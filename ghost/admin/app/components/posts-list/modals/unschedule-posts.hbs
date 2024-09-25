@@ -1,0 +1,27 @@
+<div class="modal-content" data-test-modal="unschedule-posts">
+    <header class="modal-header">
+        <h1>Are you sure you want to unschedule {{if @data.selectionList.isSingle (concat 'this ' @data.type) (concat 'these ' @data.type 's')}}?</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body mb9">
+        <p>
+            You're about to revert <strong>{{if @data.selectionList.isSingle (concat '"' @data.selectionList.first.title '"') (concat @data.selectionList.count ' ' @data.type 's')}}</strong> to a private draft.
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
+
+         <GhTaskButton
+            @buttonText="Unschedule"
+            @runningText="Unscheduling"
+            @showSuccess={{false}}
+            @task={{@data.confirm}}
+            @taskArgs={{@close}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="confirm"
+        />
+
+    </div>
+</div>

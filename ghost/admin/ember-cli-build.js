@@ -205,6 +205,9 @@ module.exports = function (defaults) {
         },
         autoImport: {
             publicAssetURL,
+            alias: {
+                'sentry-testkit/browser': 'sentry-testkit/dist/browser'
+            },
             webpack: {
                 devtool: 'source-map',
                 resolve: {
@@ -252,6 +255,12 @@ module.exports = function (defaults) {
     // that tests don't break when running via http://localhost:4200/tests
     if (app.env === 'development') {
         app.import('vendor/codemirror/lib/codemirror.js', {type: 'test'});
+    }
+
+    if (app.env === 'development' || app.env === 'test') {
+        // pull dynamic imports into the assets folder so that they can be lazy-loaded in tests
+        // also done in development env so http://localhost:4200/tests works
+        app.import('node_modules/@tryghost/koenig-lexical/dist/koenig-lexical.umd.js', {outputFile: 'ghost/assets/koenig-lexical/koenig-lexical.umd.js'});
     }
 
     return app.toTree();

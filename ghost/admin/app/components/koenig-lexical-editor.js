@@ -248,7 +248,7 @@ export default class KoenigLexicalEditor extends Component {
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
-    @task({restartable: true})
+    @task({restartable: false})
     *fetchOffersTask() {
         if (this.offers) {
             return this.offers;
@@ -257,7 +257,7 @@ export default class KoenigLexicalEditor extends Component {
         return this.offers;
     }
 
-    @task({restartable: true})
+    @task({restartable: false})
     *fetchLabelsTask() {
         if (this.labels) {
             return this.labels;
@@ -318,7 +318,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const donationLink = () => {
-                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                if (this.settings.donationsEnabled) {
                     return [{
                         label: 'Tips and donations',
                         value: '#/portal/support'
@@ -441,6 +441,16 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
+        const checkStripeEnabled = () => {
+            const hasDirectKeys = !!(this.settings.stripeSecretKey && this.settings.stripePublishableKey);
+            const hasConnectKeys = !!(this.settings.stripeConnectSecretKey && this.settings.stripeConnectPublishableKey);
+
+            if (this.config.stripeDirect) {
+                return hasDirectKeys;
+            }
+            return hasDirectKeys || hasConnectKeys;
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -452,8 +462,6 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 collectionsCard: this.feature.collectionsCard,
                 collections: this.feature.collections,
-                internalLinking: this.feature.internalLinking,
-                internalLinkingAtLinks: this.feature.internalLinking,
                 contentVisibility: this.feature.contentVisibility
             },
             deprecated: { // todo fix typo
@@ -463,7 +471,8 @@ export default class KoenigLexicalEditor extends Component {
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
-            siteUrl: this.config.getSiteUrl('/')
+            siteUrl: this.config.getSiteUrl('/'),
+            stripeEnabled: checkStripeEnabled() // returns a boolean
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
@@ -671,7 +680,7 @@ export default class KoenigLexicalEditor extends Component {
 
         const KGEditorComponent = ({isInitInstance}) => {
             return (
-                <div style={isInitInstance ? {visibility: 'hidden', position: 'absolute'} : {}}>
+                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
@@ -705,7 +714,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} /> 
+                        <KGEditorComponent isInitInstance={true} />
                     </Suspense>
                 </ErrorHandler>
             </div>

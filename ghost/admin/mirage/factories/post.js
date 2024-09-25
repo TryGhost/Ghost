@@ -1,4 +1,5 @@
 import {Factory} from 'miragejs';
+import {dasherize} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 
 export default Factory.extend({
@@ -27,6 +28,7 @@ export default Factory.extend({
         return statuses[i % statuses.length];
     },
     title(i) { return `Post ${i}`; },
+    slug: null,
     twitterDescription: null,
     twitterImage: null,
     twitterTitle: null,
@@ -48,6 +50,11 @@ export default Factory.extend({
             }
 
             post.authors = [user];
+            post.save();
+        }
+
+        if (isEmpty(post.slug)) {
+            post.slug = dasherize(post.title);
             post.save();
         }
     }

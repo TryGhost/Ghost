@@ -1,5 +1,5 @@
 import App from '../App.js';
-import {appRender, fireEvent, within} from '../utils/test-utils';
+import {appRender, fireEvent, within, waitFor} from '../utils/test-utils';
 import {newsletters as Newsletters, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 import userEvent from '@testing-library/user-event';
@@ -91,14 +91,17 @@ describe('Newsletter Subscriptions', () => {
 
         // unsure why fireEvent has no effect here
         await userEvent.click(manageSubscriptionsButton);
-
-        const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
-        const newsletter2 = within(popupIframeDocument).queryByText('Newsletter 2');
-        const emailPreferences = within(popupIframeDocument).queryByText('Email preferences');
-
-        expect(newsletter1).toBeInTheDocument();
-        expect(newsletter2).toBeInTheDocument();
-        expect(emailPreferences).toBeInTheDocument();
+        
+        await waitFor(() => {
+            const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
+            const newsletter2 = within(popupIframeDocument).queryByText('Newsletter 2');
+            const emailPreferences = within(popupIframeDocument).queryByText('Email preferences');
+            
+            // within(popupIframeDocument).getByText('dslkfjsdlk');
+            expect(newsletter1).toBeInTheDocument();
+            expect(newsletter2).toBeInTheDocument();
+            expect(emailPreferences).toBeInTheDocument();
+        });
     });
 
     test('toggle subscribing to a newsletter', async () => {
@@ -176,7 +179,7 @@ describe('Newsletter Subscriptions', () => {
         test('unsubscribe via email link while not logged in', async () => {
             // Mock window.location
             Object.defineProperty(window, 'location', {
-                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}`),
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}&key=hashedMemberUuid`),
                 writable: true
             });
 
@@ -186,10 +189,16 @@ describe('Newsletter Subscriptions', () => {
                 newsletters: Newsletters
             }, true);
 
+            // Verify the API was hit to collect subscribed newsletters
             expect(ghostApi.member.newsletters).toHaveBeenLastCalledWith(
-                {uuid: FixtureMember.subbedToNewsletter.uuid}
+                {
+                    uuid: FixtureMember.subbedToNewsletter.uuid,
+                    key: 'hashedMemberUuid'
+                }
             );
             expect(popupFrame).toBeInTheDocument();
+            
+            expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
             // Verify the local state shows the newsletter as unsubscribed
             let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
             let newsletter1Toggle = newsletterToggles[0];
@@ -204,7 +213,7 @@ describe('Newsletter Subscriptions', () => {
         test('unsubscribe via email link while logged in', async () => {
             // Mock window.location
             Object.defineProperty(window, 'location', {
-                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}`),
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}&key=hashedMemberUuid`),
                 writable: true
             });
 
@@ -216,12 +225,17 @@ describe('Newsletter Subscriptions', () => {
 
             // Verify the API was hit to collect subscribed newsletters
             expect(ghostApi.member.newsletters).toHaveBeenLastCalledWith(
-                {uuid: FixtureMember.subbedToNewsletter.uuid}
+                {
+                    uuid: FixtureMember.subbedToNewsletter.uuid,
+                    key: 'hashedMemberUuid'
+                }
             );
             // Verify the local state shows the newsletter as unsubscribed
             let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
             let newsletter1Toggle = newsletterToggles[0];
             let newsletter2Toggle = newsletterToggles[1];
+
+            expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
 
             expect(newsletter1Toggle).toBeInTheDocument();
             expect(newsletter2Toggle).toBeInTheDocument();
@@ -252,6 +266,27 @@ describe('Newsletter Subscriptions', () => {
             expect(newsletter2Toggle).toBeInTheDocument();
             expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
             expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
+        });
+
+        test('unsubscribe link without a key param', async () => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}`),
+                writable: true
+            });
+
+            const {ghostApi, popupFrame, popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.subbedToNewsletter,
+                newsletters: Newsletters
+            }, true);
+
+            // Verify the popup frame is not shown
+            expect(popupFrame).toBeInTheDocument();
+            // Verify the API was hit to collect subscribed newsletters
+            expect(ghostApi.member.newsletters).not.toHaveBeenCalled();
+            // expect sign in page
+            expect(within(popupIframeDocument).queryByText('Sign in')).toBeInTheDocument();
         });
     });
 });
