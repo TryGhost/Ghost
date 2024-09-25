@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # Remove our materialized views and their pipes
 tb datasource rm analytics_pages_mv  --yes
 tb datasource rm analytics_sessions_mv  --yes
@@ -17,4 +20,4 @@ tb pipe rm pipes/top_sources.pipe  --yes
 tb pipe rm pipes/trend.pipe  --yes
 
 # Push all the changes
-tb push --only-changes --force --populate
+tb push --force --populate
