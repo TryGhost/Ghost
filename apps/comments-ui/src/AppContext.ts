@@ -67,7 +67,7 @@ export type EditableAppContext = {
     commentCount: number,
     secundaryFormCount: number,
     popup: Page | null,
-    labs: LabsContextType | null
+    labs: LabsContextType
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
@@ -92,8 +92,8 @@ export const useAppContext = () => useContext(AppContext);
 export const useLabs = () => {
     try {
         const context = useAppContext();
-        return context.labs;
+        return context.labs || {};
     } catch (e) {
-        return null;
+        return {};
     }
 };
