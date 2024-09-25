@@ -351,10 +351,7 @@ describe('MemberRepository', function () {
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
-            DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
-            await repo.linkSubscription({
+            const result = await repo.linkSubscription({
                 subscription: subscriptionData
             }, {
                 transacting: {
@@ -363,8 +360,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.true();
-            offerRedemptionNotifySpy.called.should.be.false();
+            Object.keys(result).should.deepEqual(['SubscriptionCreated']);
         });
 
         it('dispatches the offer redemption event for a new member starting a subscription', async function (){

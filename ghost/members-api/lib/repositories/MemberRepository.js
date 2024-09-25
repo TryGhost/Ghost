@@ -896,6 +896,7 @@ module.exports = class MemberRepository {
      * @returns
      */
     async linkSubscription(data, options = {}) {
+        let dispatchedEvents = {};
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'})});
         }
@@ -1177,7 +1178,7 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
 
-            const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
+            const subscriptionCreatedPayload = {
                 source,
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
@@ -1185,9 +1186,12 @@ module.exports = class MemberRepository {
                 offerId: offerId,
                 attribution: data.attribution,
                 batchId: options.batch_id
-            });
+            };
+            const subscriptionCreatedEvent = SubscriptionCreatedEvent.create(subscriptionCreatedPayload);
 
             this.dispatchEvent(subscriptionCreatedEvent, options);
+
+            dispatchedEvents.SubscriptionCreated = subscriptionCreatedPayload;
 
             if (offerId) {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
@@ -1352,6 +1356,7 @@ module.exports = class MemberRepository {
                 ...eventData
             }, options);
         }
+        return dispatchedEvents;
     }
 
     getCancellationReason(subscription) {
