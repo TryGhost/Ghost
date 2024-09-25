@@ -101,7 +101,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                         className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-grey-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950 tablet:mr-0'
                         containerClassName='w-100'
                         inputRef={queryInputRef}
-                        placeholder='Search accounts'
+                        placeholder='Enter a username...'
                         title="Search"
                         type='text'
                         value={query}
