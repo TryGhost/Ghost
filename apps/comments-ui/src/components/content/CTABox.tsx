@@ -32,16 +32,16 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
 
     return (
         <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} ${!member && commentCount ? 'border-t' : 'border-none'} border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
-            <h1 className={`mb-[8px] text-center font-sans text-[24px] tracking-tight  text-black dark:text-[rgba(255,255,255,0.85)] ${isFirst ? 'font-semibold' : 'font-bold'}`}>
+            <h1 className={`mb-[8px] text-center font-sans text-2xl tracking-tight  text-black dark:text-[rgba(255,255,255,0.85)] ${isFirst ? 'font-semibold' : 'font-bold'}`}>
                 {titleText}
             </h1>
-            <p className="mb-[28px] w-full px-0 text-center font-sans text-[16px] leading-normal text-neutral-600 sm:max-w-screen-sm sm:px-8 dark:text-[rgba(255,255,255,0.85)]">
+            <p className="mb-[28px] w-full px-0 text-center font-sans text-lg leading-normal text-neutral-600 sm:max-w-screen-sm sm:px-8 dark:text-[rgba(255,255,255,0.85)]">
                 {text}
             </p>
-            <button className="font-san mb-[12px] inline-block rounded px-5 py-[14px] font-medium leading-none text-white transition-all hover:opacity-90" data-testid="signup-button" style={buttonStyle} type="button" onClick={handleSignUpClick}>
+            <button className="text-md mb-[12px] inline-block rounded px-5 py-[14px] font-sans font-medium leading-none text-white transition-all hover:opacity-90" data-testid="signup-button" style={buttonStyle} type="button" onClick={handleSignUpClick}>
                 {(isPaid && member) ? t('Upgrade now') : t('Sign up now')}
             </button>
-            {!member && (<p className="text-center font-sans text-sm text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.5)]">
+            {!member && (<p className="text-md text-center font-sans text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.5)]">
                 <span className='mr-1 inline-block text-[15px]'>{t('Already a member?')}</span>
                 <button className="rounded-md text-sm font-semibold transition-all hover:opacity-90" data-testid="signin-button" style={linkStyle} type="button" onClick={handleSignInClick}>{t('Sign in')}</button>
             </p>)}
