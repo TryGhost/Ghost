@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import {Button, NoValueLabel, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
