@@ -62,7 +62,6 @@ SQL >
                 )
             ) as date
     {% end %}
-    where date <= now()
 
 NODE pageviews
 DESCRIPTION >
