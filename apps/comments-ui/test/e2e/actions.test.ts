@@ -143,6 +143,11 @@ test.describe('Actions', async () => {
 
         await expect(profileModal).not.toBeVisible();
 
+        // playwright can lose focus on the editor which hides the member details,
+        // re-clicking here brings the member details back into view
+        await editor.click({force: true});
+        await waitEditorFocused(editor);
+
         await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
         await expect(frame.getByTestId('expertise-button')).toHaveText('·Software development');
     });
