@@ -354,7 +354,7 @@ describe('MemberRepository', function () {
             DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
             DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
 
-            const result = await repo.linkSubscription({
+            await repo.linkSubscription({
                 subscription: subscriptionData
             }, {
                 transacting: {
@@ -365,7 +365,6 @@ describe('MemberRepository', function () {
 
             subscriptionCreatedNotifySpy.calledOnce.should.be.true();
             offerRedemptionNotifySpy.called.should.be.false();
-            Object.keys(result).should.deepEqual(['SubscriptionCreated']);
         });
 
         it('dispatches the offer redemption event for a new member starting a subscription', async function (){
