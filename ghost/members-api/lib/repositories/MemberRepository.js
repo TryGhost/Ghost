@@ -1160,7 +1160,9 @@ module.exports = class MemberRepository {
                 }
             }
         } else {
-            const {subscriptionModel, source} = await this.createStripeSubscriptionThenFireSubscriptionCreated(eventData, subscription, subscriptionData, options, member, subscriptionPriceData, ghostProduct, offerId, data);
+            const context = options?.context || {};
+            const source = this._resolveContextSource(context);
+            const subscriptionModel = await this.createStripeSubscriptionThenFireSubscriptionCreated(eventData, subscription, subscriptionData, source, options, member, subscriptionPriceData, ghostProduct, offerId, data);
 
             if (offerId) {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
@@ -1327,7 +1329,7 @@ module.exports = class MemberRepository {
         }
     }
 
-    async createStripeSubscriptionThenFireSubscriptionCreated(eventData, subscription, subscriptionData, options, member, subscriptionPriceData, ghostProduct, offerId, data) {
+    async createStripeSubscriptionThenFireSubscriptionCreated(eventData, subscription, subscriptionData, subscriptionCreatedEventSource, options, member, subscriptionPriceData, ghostProduct, offerId, data) {
         eventData.created_at = new Date(subscription.start_date * 1000);
         const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
         await this._MemberPaidSubscriptionEvent.add({
@@ -1342,9 +1344,6 @@ module.exports = class MemberRepository {
             ...eventData
         }, options);
 
-        const context = options?.context || {};
-        const subscriptionCreatedEventSource = this._resolveContextSource(context);
-
         const subscriptionCreatedPayload = {
             source: subscriptionCreatedEventSource,
             tierId: ghostProduct?.get('id'),
@@ -1357,7 +1356,7 @@ module.exports = class MemberRepository {
         const subscriptionCreatedEvent = SubscriptionCreatedEvent.create(subscriptionCreatedPayload);
 
         this.dispatchEvent(subscriptionCreatedEvent, options);
-        return {subscriptionModel, source: subscriptionCreatedEventSource};
+        return subscriptionModel;
     }
 
     getCancellationReason(subscription) {
