@@ -17,29 +17,19 @@ describe('Acceptance: Feature Image', function () {
     it('can display feature image with caption', async function () {
         const post = this.server.create('post', {status: 'published', featureImage: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg', featureImageCaption: '<span style="white-space: pre-wrap;">Hello dogggos</span>'});
         await visit(`/editor/post/${post.id}`);
-        expect(find('.gh-editor-feature-image img').src).to.equal('https://static.ghost.org/v4.0.0/images/feature-image.jpg');
-        expect(find('.gh-editor-feature-image-caption').textContent).to.contain('Hello dogggos');
+        expect(await find('.gh-editor-feature-image img').src).to.equal('https://static.ghost.org/v4.0.0/images/feature-image.jpg');
+        expect(await find('.gh-editor-feature-image-caption').textContent).to.contain('Hello dogggos');
     });
 
-    it('can delete a post', async function () {
-        const post = this.server.create('post', {status: 'published'});
-        await visit(`/editor/post/${post.id}`);
-
-        await click('[data-test-psm-trigger]');
-        await click('[data-test-button="delete-post"]');
-
-        await click('[data-test-button="delete-post-confirm"]');
-
-        expect(currentURL()).to.equal('/posts');
-    });
-
-    it('does not attempt to save if already deleted', async function () {
+    it('does not attempt to save if already deleted and goes back to posts', async function () {
+        // avoids an infinite loop when the post is deleted and the save button is clicked, potential race condition
         const post = this.server.create('post', {status: 'published', featureImage: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg', featureImageCaption: '<span style="white-space: pre-wrap;">Hello dogggos</span>'});
         await visit(`/editor/post/${post.id}`);
+        const createdPost = this.server.schema.posts.find(post.id);
 
-        // destroy post
+        // delete created post
 
-        await post.destroy();
+        await createdPost.destroy();
 
         await click('[data-test-psm-trigger]');
         await click('[data-test-button="delete-post"]');
