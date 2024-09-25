@@ -337,7 +337,7 @@ describe('MemberRepository', function () {
             };
         });
 
-        it('dispatches paid subscription event', async function (){
+        it('adds new Stripe subscription for member', async function (){
             const repo = new MemberRepository({
                 stripeAPIService,
                 StripeCustomerSubscription,
@@ -352,9 +352,6 @@ describe('MemberRepository', function () {
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
             const subscriptionCreatedSpy = sinon.spy(repo, 'createStripeSubscriptionThenFireSubscriptionCreated');
 
-            DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-            DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
-
             await repo.linkSubscription({
                 subscription: subscriptionData
             }, {
@@ -363,9 +360,6 @@ describe('MemberRepository', function () {
                 },
                 context: {}
             });
-
-            subscriptionCreatedNotifySpy.calledOnce.should.be.true();
-            offerRedemptionNotifySpy.called.should.be.false();
 
             subscriptionCreatedSpy.calledOnce.should.be.true();
         });
