@@ -7,6 +7,8 @@ SCHEMA >
     `device` SimpleAggregateFunction(any, String),
     `browser` SimpleAggregateFunction(any, String),
     `location` SimpleAggregateFunction(any, String),
+    `source` SimpleAggregateFunction(any, String),
+    `pathname` SimpleAggregateFunction(any, String),
     `first_hit` SimpleAggregateFunction(min, DateTime),
     `latest_hit` SimpleAggregateFunction(max, DateTime),
     `hits` AggregateFunction(count)

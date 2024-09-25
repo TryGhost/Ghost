@@ -13,11 +13,12 @@
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
-    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && node generate-context.js",
+    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && yarn translate:search && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}'",
     "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
     "translate:signup-form": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
-    "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'"
+    "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'",
+    "translate:search": "NAMESPACE=search i18next '../../apps/sodo-search/src/**/*.{js,jsx,ts,tsx}'"
   },
   "files": [
     "index.js",

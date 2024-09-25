@@ -187,7 +187,7 @@
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
         "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
-        "version": "1.1"
+        "version": "1.2"
     },
     "announcementBar": {
         "url": "https://cdn.jsdelivr.net/ghost/announcement-bar@~{version}/umd/announcement-bar.min.js",
@@ -195,7 +195,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "0.17"
+        "version": "0.18"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",

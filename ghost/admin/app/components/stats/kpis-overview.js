@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
-import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {getStatsParams} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -48,24 +48,16 @@ export default class KpisOverview extends Component {
 
     @action
     fetchDataIfNeeded() {
-        this.fetchData.perform(this.args.chartRange, this.args.audience);
+        this.fetchData.perform(this.args);
     }
 
     @task
-    *fetchData(chartRange, audience) {
+    *fetchData(args) {
         try {
-            const endDate = moment().endOf('day');
-            const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-
-            const params = new URLSearchParams({
-                site_uuid: this.config.stats.id,
-                date_from: startDate.format('YYYY-MM-DD'),
-                date_to: endDate.format('YYYY-MM-DD')
-            });
-
-            if (audience.length > 0) {
-                params.append('member_status', audience.join(','));
-            }
+            const params = new URLSearchParams(getStatsParams(
+                this.config,
+                args
+            ));
 
             const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {
                 method: 'GET',
@@ -104,7 +96,7 @@ export default class KpisOverview extends Component {
             avg_session_sec: Math.floor(_ponderatedKPIsTotal('avg_session_sec') / 60),
             pageviews: formatNumber(_KPITotal('pageviews')),
             visits: formatNumber(totalVisits),
-            bounce_rate: _ponderatedKPIsTotal('bounce_rate').toFixed(2)
+            bounce_rate: (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0)
         };
     }
 

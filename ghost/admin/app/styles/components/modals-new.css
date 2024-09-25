@@ -169,7 +169,7 @@
     padding: 32px;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 3px;
+    border-radius: 8px;
     box-shadow:
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
         0 6.7px 5.3px rgba(0, 0, 0, 0.028),
@@ -218,6 +218,7 @@
     line-height: 1.15em;
     font-weight: 600;
     letter-spacing: -0.025em;
+    text-wrap: pretty;
 }
 
 .modal-header.icon-center {

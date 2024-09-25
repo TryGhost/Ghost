@@ -1,20 +1,19 @@
 'use client';
 
-import AllStatsModal from '../../modal-stats-all';
+import AllStatsModal from '../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
-import moment from 'moment-timezone';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {action} from '@ember/object';
-import {barListColor} from '../../../utils/stats';
-import {formatNumber} from '../../../helpers/format-number';
-import {getCountryFlag} from 'ghost-admin/utils/stats';
+import {barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class TopLocations extends Component {
     @inject config;
     @service modals;
+    @service router;
 
     @action
     openSeeAll() {
@@ -25,29 +24,24 @@ export default class TopLocations extends Component {
         });
     }
 
+    @action
+    navigateToFilter(location) {
+        this.updateQueryParams({location});
+    }
+
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
-
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-
-        /**
-         * @typedef {Object} Params
-         * @property {string} site_uuid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 7
-        };
+        const params = getStatsParams(
+            this.config,
+            props,
+            {limit: 7}
+        );
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_locations.json`,
@@ -63,16 +57,27 @@ export default class TopLocations extends Component {
                 loading={loading}
                 index="location"
                 indexConfig={{
-                    label: <span className="gh-stats-detail-header">Country</span>,
+                    label: <span className="gh-stats-data-header">Country</span>,
                     renderBarContent: ({label}) => (
-                        <span className="gh-stats-detail-label">{getCountryFlag(label)} {label || 'Unknown'}</span>
+                        <span className="gh-stats-data-label">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    this.navigateToFilter(label || 'Unknown');
+                                }}
+                                className="gh-stats-domain"
+                            >
+                                {getCountryFlag(label)} {label || 'Unknown'}
+                            </a>
+                        </span>
                     )
                 }}
                 categories={['hits']}
                 categoryConfig={{
                     hits: {
-                        label: <span className="gh-stats-detail-header">Visits</span>,
-                        renderValue: ({value}) => <span className="gh-stats-detail-value">{formatNumber(value)}</span>
+                        label: <span className="gh-stats-data-header">Visits</span>,
+                        renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
                 }}
                 colorPalette={[barListColor]}

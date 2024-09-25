@@ -1,7 +1,7 @@
 import {Activity} from '../components/activities/ActivityItem';
 import {ActivityPubAPI} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
 export function useSiteUrl() {
     const site = useBrowseSite();
@@ -187,13 +187,47 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useAllActivitiesForUser({handle, includeOwn = false}: {handle: string, includeOwn?: boolean}) {
+export function useAllActivitiesForUser({
+    handle,
+    includeOwn = false,
+    includeReplies = false,
+    filter = null
+}: {
+    handle: string;
+    includeOwn?: boolean;
+    includeReplies?: boolean;
+    filter?: {type?: string[]} | null;
+}) {
     const siteUrl = useSiteUrl();
     const api = createActivityPubAPI(handle, siteUrl);
     return useQuery({
-        queryKey: [`activities:${handle}:includeOwn=${includeOwn.toString()}`],
+        queryKey: [`activities:${JSON.stringify({handle, includeOwn, includeReplies, filter})}`],
         async queryFn() {
-            return api.getAllActivities(includeOwn);
+            return api.getAllActivities(includeOwn, includeReplies, filter);
+        }
+    });
+}
+
+export function useActivitiesForUser({
+    handle,
+    includeOwn = false,
+    includeReplies = false,
+    filter = null
+}: {
+    handle: string;
+    includeOwn?: boolean;
+    includeReplies?: boolean;
+    filter?: {type?: string[]} | null;
+}) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useInfiniteQuery({
+        queryKey: [`activities:${JSON.stringify({handle, includeOwn, includeReplies, filter})}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            return api.getActivities(includeOwn, includeReplies, filter, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.nextCursor;
         }
     });
 }
