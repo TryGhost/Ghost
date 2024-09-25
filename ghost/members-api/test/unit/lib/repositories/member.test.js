@@ -350,6 +350,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+            const subscriptionCreatedSpy = sinon.spy(repo, 'createStripeSubscriptionThenFireSubscriptionCreated');
 
             DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
             DomainEvents.subscribe(OfferRedemptionEvent, offerRedemptionNotifySpy);
@@ -365,6 +366,8 @@ describe('MemberRepository', function () {
 
             subscriptionCreatedNotifySpy.calledOnce.should.be.true();
             offerRedemptionNotifySpy.called.should.be.false();
+
+            subscriptionCreatedSpy.calledOnce.should.be.true();
         });
 
         it('dispatches the offer redemption event for a new member starting a subscription', async function (){
