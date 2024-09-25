@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-demo",
-  "version": "0.0.20",
+  "version": "0.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -14,10 +14,7 @@
   ],
   "main": "./dist/admin-x-demo.umd.cjs",
   "module": "./dist/admin-x-demo.js",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "private": true,
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",

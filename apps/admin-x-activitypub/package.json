@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-activitypub",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -14,10 +14,7 @@
   ],
   "main": "./dist/admin-x-activitypub.umd.cjs",
   "module": "./dist/admin-x-activitypub.js",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "private": true,
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",
