@@ -22652,6 +22652,11 @@ lru-memoizer@^2.2.0:
     lodash.clonedeep "^4.5.0"
     lru-cache "~4.0.0"
 
+lru.min@^1.0.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/lru.min/-/lru.min-1.1.1.tgz#146e01e3a183fa7ba51049175de04667d5701f0e"
+  integrity sha512-FbAj6lXil6t8z4z3j0E5mfRlPzxkySotzUHwRXjlpRh10vc6AI6WN62ehZj82VG7M20rqogJ0GLwar2Xa05a8Q==
+
 ltgt@^2.1.2:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/ltgt/-/ltgt-2.2.1.tgz#f35ca91c493f7b73da0e07495304f17b31f87ee5"
@@ -23801,17 +23806,17 @@ mv@~2:
     ncp "~2.0.0"
     rimraf "~2.4.0"
 
-mysql2@3.11.1:
-  version "3.11.1"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.11.1.tgz#edfb856e2176fcf43d2cc066dd4959e9fc76ea85"
-  integrity sha512-Oc8Zffd0gpIJnJ/NOMp6IiiJJDdWc7nmWpS+UE3K9feTpYia8XkbgL6EaOJYz52f6+2pAoC0eAQqUzal4lnNGQ==
+mysql2@3.11.2:
+  version "3.11.2"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.11.2.tgz#966eac667104697a85e05d177972c828672fa6a9"
+  integrity sha512-3jhjAk4NHs3rcKjOiFTqmU76kdib/KDOC+lshrYa76QWkcfF1GbYGK4d5PqPljVmIAc0ChozCRmeYIlNp5bz5w==
   dependencies:
     aws-ssl-profiles "^1.1.1"
     denque "^2.1.0"
     generate-function "^2.3.1"
     iconv-lite "^0.6.3"
     long "^5.2.1"
-    lru-cache "^8.0.0"
+    lru.min "^1.0.0"
     named-placeholders "^1.1.3"
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
