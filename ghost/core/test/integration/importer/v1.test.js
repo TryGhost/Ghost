@@ -2,16 +2,19 @@ const testUtils = require('../../utils');
 const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
 
 const models = require('../../../core/server/models');
-const importer = require('../../../core/server/data/importer');
-const dataImporter = importer.importers.find((instance) => {
-    return instance.type === 'data';
-});
 
 const importOptions = {
     returnImportedData: true
 };
 
 describe('Importer 1.0', function () {
+    let dataImporter;
+    before(function () {
+        const importer = require('../../../core/server/data/importer');
+        dataImporter = importer.importers.find((instance) => {
+            return instance.type === 'data';
+        });
+    });
     beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner'));
 
