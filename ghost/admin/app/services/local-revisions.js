@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
 import {task, timeout} from 'ember-concurrency';
@@ -13,6 +14,7 @@ export default class LocalRevisionsService extends Service {
         }
         this.MIN_REVISION_TIME = this.isTesting ? 50 : 60000; // 1 minute in ms
         this.performSave = this.performSave.bind(this);
+        this.storage = window.localStorage;
     }
 
     @service store;
@@ -42,15 +44,19 @@ export default class LocalRevisionsService extends Service {
      */
     @task({keepLatest: true})
     *saveTask(type, data) {
-        const currentTime = Date.now();
-        if (!this.lastRevisionTime || currentTime - this.lastRevisionTime > this.MIN_REVISION_TIME) {
-            yield this.performSave(type, data);
-            this.lastRevisionTime = currentTime;
-        } else {
-            const waitTime = this.MIN_REVISION_TIME - (currentTime - this.lastRevisionTime);
-            yield timeout(waitTime);
-            yield this.performSave(type, data);
-            this.lastRevisionTime = Date.now();
+        try {
+            const currentTime = Date.now();
+            if (!this.lastRevisionTime || currentTime - this.lastRevisionTime > this.MIN_REVISION_TIME) {
+                yield this.performSave(type, data);
+                this.lastRevisionTime = currentTime;
+            } else {
+                const waitTime = this.MIN_REVISION_TIME - (currentTime - this.lastRevisionTime);
+                yield timeout(waitTime);
+                yield this.performSave(type, data);
+                this.lastRevisionTime = Date.now();
+            }
+        } catch (err) {
+            Sentry.captureException(err, {tags: {localRevisions: 'saveTaskError'}});
         }
     }
 
@@ -70,8 +76,8 @@ export default class LocalRevisionsService extends Service {
         try {
             const allKeys = this.keys();
             allKeys.push(key);
-            localStorage.setItem(this._indexKey, JSON.stringify(allKeys));
-            localStorage.setItem(key, JSON.stringify(data));
+            this.storage.setItem(this._indexKey, JSON.stringify(allKeys));
+            this.storage.setItem(key, JSON.stringify(data));
             
             // Apply the filter after saving
             this.filterRevisions(data.id);
@@ -84,11 +90,17 @@ export default class LocalRevisionsService extends Service {
                 
                 // If there are any revisions, remove the oldest one and try to save again
                 if (this.keys().length) {
+                    Sentry.captureMessage('LocalStorage quota exceeded. Removing old revisions.', {tags: {localRevisions: 'quotaExceeded'}});
                     this.removeOldest();
                     return this.performSave(type, data);
                 }
                 // LocalStorage is full and there are no revisions to remove
                 // We can't save the revision
+                Sentry.captureMessage('LocalStorage quota exceeded. Unable to save revision.', {tags: {localRevisions: 'quotaExceededNoSpace'}});
+                return;
+            } else {
+                Sentry.captureException(err, {tags: {localRevisions: 'saveError'}});
+                return;
             }
         }
     }
@@ -99,7 +111,9 @@ export default class LocalRevisionsService extends Service {
      * @param {object} data - serialized post data
      */
     scheduleSave(type, data) {
-        this.saveTask.perform(type, data);
+        if (data && data.status && data.status === 'draft') {
+            this.saveTask.perform(type, data);
+        }
     }
 
     /**
@@ -108,7 +122,7 @@ export default class LocalRevisionsService extends Service {
      * @returns {string | null}
      */
     find(key) {
-        return JSON.parse(localStorage.getItem(key));
+        return JSON.parse(this.storage.getItem(key));
     }
 
     /**
@@ -119,7 +133,7 @@ export default class LocalRevisionsService extends Service {
     findAll(prefix = this._prefix) {
         const keys = this.keys(prefix);
         const revisions = keys.map((key) => {
-            const revision = JSON.parse(localStorage.getItem(key));
+            const revision = JSON.parse(this.storage.getItem(key));
             return {
                 key,
                 ...revision
@@ -137,13 +151,13 @@ export default class LocalRevisionsService extends Service {
      * @param {string} key 
      */
     remove(key) {
-        localStorage.removeItem(key);
+        this.storage.removeItem(key);
         const keys = this.keys();
         let index = keys.indexOf(key);
         if (index !== -1) {
             keys.splice(index, 1);
         }
-        localStorage.setItem(this._indexKey, JSON.stringify(keys));
+        this.storage.setItem(this._indexKey, JSON.stringify(keys));
     }
 
     /**
@@ -172,7 +186,7 @@ export default class LocalRevisionsService extends Service {
      * @returns {string[]}
      */
     keys(prefix = undefined) {
-        let keys = JSON.parse(localStorage.getItem(this._indexKey) || '[]');
+        let keys = JSON.parse(this.storage.getItem(this._indexKey) || '[]');
         if (prefix) {
             keys = keys.filter(key => key.startsWith(prefix));
         }
