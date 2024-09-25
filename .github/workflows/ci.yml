@@ -950,7 +950,7 @@ jobs:
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success'
+    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success' && needs.job_required_tests.result == 'success'
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
