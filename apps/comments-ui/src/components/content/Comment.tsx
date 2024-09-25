@@ -213,7 +213,7 @@ const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
 
     return (
-        <div className={`mb-2 mt-[-3px] flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
+        <div className={`mb-2 mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
             <AuthorName comment={comment} />
             <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-[rgba(0,0,0,0.5)] sm:text-sm dark:text-[rgba(255,255,255,0.5)]">
                 <span>
@@ -270,7 +270,7 @@ const RepliesLine: React.FC<{hasReplies: boolean}> = ({hasReplies}) => {
         return null;
     }
 
-    return (<div className="mb-2 h-full w-[3px] grow rounded bg-gradient-to-b from-[rgba(0,0,0,0.05)] via-[rgba(0,0,0,0.05)] to-transparent dark:from-[rgba(255,255,255,0.08)] dark:via-[rgba(255,255,255,0.08)]" />);
+    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-[rgba(0,0,0,0.08)] via-[rgba(0,0,0,0.08)] to-transparent dark:from-[rgba(255,255,255,0.08)] dark:via-[rgba(255,255,255,0.08)]" />);
 };
 
 type CommentLayoutProps = {
