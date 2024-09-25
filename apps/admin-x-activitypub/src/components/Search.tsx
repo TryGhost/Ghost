@@ -77,12 +77,12 @@ const Search: React.FC<SearchProps> = ({}) => {
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
-    const {data, isFetching} = useSearchForUser('index', debouncedQuery);
+    const {data, isFetching, isFetched} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
 
     const results = data?.profiles || [];
 
-    const showNoResults = results.length === 0 && query !== '' && !isFetching;
-    const showSuggestedResults = (query === '') || (results.length === 0 && query !== '' && !isFetching);
+    const showNoResults = isFetched && results.length === 0;
+    const showSuggestedResults = query === '' || (isFetched && results.length === 0);
 
     // Focus the query input on first render
     useEffect(() => {
