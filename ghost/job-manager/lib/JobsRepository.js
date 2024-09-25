@@ -98,14 +98,11 @@ class JobsRepository {
      */
     async addQueuedJob({name, metadata}) {
         let job;
-        console.log(`[JobsRepository] Adding queued job: ${name}`);
         await this._JobModel.transaction(async (transacting) => {
             // Check if a job with this name already exist
             const existingJob = await this._JobModel.findOne({name}, {transacting});
-            console.log(`[JobsRepository] Existing job: ${existingJob}`);
             if (!existingJob) {
                 // If no existing job, create a new one
-                console.log(`[JobsRepository] Creating new job: ${name}`);
                 job = await this._JobModel.add({
                     id: new ObjectID().toHexString(),
                     name: name,
@@ -114,7 +111,6 @@ class JobsRepository {
                     metadata: JSON.stringify(metadata),
                     queue_entry: 1
                 }, {transacting});
-                console.log(`[JobsRepository] New job created: ${job}`);
             }
             // If existingJob is found, do nothing (equivalent to IGNORE)
         });
