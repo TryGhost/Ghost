@@ -3,6 +3,7 @@ import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
+import UnschedulePostsModal from './modals/unschedule-posts';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
@@ -28,6 +29,10 @@ const messages = {
     unpublished: {
         single: '{Type} reverted to a draft',
         multiple: '{count} {type}s reverted to drafts'
+    },
+    unscheduled: {
+        single: '{Type} unscheduled',
+        multiple: '{count} {type}s unscheduled'
     },
     accessUpdated: {
         single: '{Type} access updated',
@@ -125,6 +130,15 @@ export default class PostsContextMenu extends Component {
             type: this.type,
             selectionList: this.selectionList,
             confirm: this.unpublishPostsTask
+        });
+    }
+
+    @action
+    async unschedulePosts() {
+        await this.menu.openModal(UnschedulePostsModal, {
+            type: this.type,
+            selectionList: this.selectionList,
+            confirm: this.unschedulePostsTask
         });
     }
 
@@ -240,7 +254,7 @@ export default class PostsContextMenu extends Component {
             // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
             this.infinity.replace(this.selectionList.infinityModel[key], remainingModels);
         }
-        
+
         this.selectionList.clearSelection({force: true});
         return true;
     }
@@ -261,6 +275,33 @@ export default class PostsContextMenu extends Component {
                         type: this.type,
                         attributes: {
                             status: 'draft'
+                        }
+                    }
+                });
+            }
+        }
+
+        this.updateFilteredPosts();
+        return true;
+    }
+
+    @task
+    *unschedulePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unschedule');
+        this.notifications.showNotification(this.#getToastMessage('unscheduled'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            if (post.status === 'scheduled') {
+                // We need to do it this way to prevent marking the model as dirty
+                this.store.push({
+                    data: {
+                        id: post.id,
+                        type: this.type,
+                        attributes: {
+                            status: 'draft',
+                            published_at: null
                         }
                     }
                 });
@@ -483,6 +524,15 @@ export default class PostsContextMenu extends Component {
     get canUnpublishSelection() {
         for (const m of this.selectionList.availableModels) {
             if (m.status === 'published') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    get canUnscheduleSelection() {
+        for (const m of this.selectionList.availableModels) {
+            if (m.status === 'scheduled') {
                 return true;
             }
         }

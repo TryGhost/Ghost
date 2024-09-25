@@ -11,10 +11,11 @@ Object {
         <title>A random test post</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -461,7 +462,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -692,10 +693,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -1142,7 +1144,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/email/post-uuid/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/email/post-uuid/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1349,10 +1351,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -1799,7 +1802,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-6/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-6/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -2006,10 +2009,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -2456,7 +2460,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-7/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-7/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -2663,10 +2667,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -3268,10 +3273,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -3718,7 +3724,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -3925,10 +3931,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -4375,7 +4382,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -4676,10 +4683,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -5126,7 +5134,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -6747,10 +6755,11 @@ Object {
         <title>This is the main post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -7197,7 +7206,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is the main post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is the main post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -7549,10 +7558,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -7999,7 +8009,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-12/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-12/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -8261,10 +8271,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -8711,7 +8722,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-9/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-9/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -8973,10 +8984,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -9423,7 +9435,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-8/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-8/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -9685,10 +9697,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -10135,7 +10148,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-11/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-11/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -10397,10 +10410,11 @@ Object {
         <title>This is a test post title</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -10847,7 +10861,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-10/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
+                                                    <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-10/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">This is a test post title</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -11109,10 +11123,11 @@ Object {
         <title>A random test post</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -11559,7 +11574,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -11768,10 +11783,11 @@ Object {
         <title>A random test post</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -12218,7 +12234,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">A random test post</a>
                                                 </td>
                                             </tr>
                                             <tr>

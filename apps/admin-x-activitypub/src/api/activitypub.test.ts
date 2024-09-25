@@ -443,4 +443,141 @@ describe('ActivityPubAPI', function () {
             await api.follow('@user@domain.com');
         });
     });
+
+    describe('getAllActivities', function () {
+        test('It fetches all activities navigating pagination', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50': {
+                    response: JSONResponse({
+                        items: [{type: 'Create', object: {type: 'Note'}}],
+                        nextCursor: 'next-cursor'
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&cursor=next-cursor': {
+                    response: JSONResponse({
+                        items: [{type: 'Announce', object: {type: 'Article'}}],
+                        nextCursor: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getAllActivities();
+            const expected: Activity[] = [
+                {type: 'Create', object: {type: 'Note'}},
+                {type: 'Announce', object: {type: 'Article'}}
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It fetches a user\'s own activities', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&includeOwn=true': {
+                    response: JSONResponse({
+                        items: [{type: 'Create', object: {type: 'Note'}}],
+                        nextCursor: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getAllActivities(true);
+            const expected: Activity[] = [
+                {type: 'Create', object: {type: 'Note'}}
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It fetches activities with replies', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&includeReplies=true': {
+                    response: JSONResponse({
+                        items: [{type: 'Create', object: {type: 'Note'}}],
+                        nextCursor: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getAllActivities(false, true);
+            const expected: Activity[] = [
+                {type: 'Create', object: {type: 'Note'}}
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It fetches filtered activities', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/activities/index?limit=50&filter=%7B%22type%22%3A%5B%22Create%3ANote%22%5D%7D`]: {
+                    response: JSONResponse({
+                        items: [{type: 'Create', object: {type: 'Note'}}],
+                        nextCursor: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getAllActivities(false, false, {type: ['Create:Note']});
+            const expected: Activity[] = [
+                {type: 'Create', object: {type: 'Note'}}
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+    });
 });

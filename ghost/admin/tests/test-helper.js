@@ -6,7 +6,9 @@ import {setApplication} from '@ember/test-helpers';
 
 import chai from 'chai';
 import chaiDom from 'chai-dom';
+import sinonChai from 'sinon-chai';
 chai.use(chaiDom);
+chai.use(sinonChai);
 
 setApplication(Application.create(config.APP));
 

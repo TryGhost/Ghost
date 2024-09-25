@@ -1,3 +1,13 @@
+.gh-stats-header header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+}
+
+.gh-stats-header header .view-actions {
+    justify-self: end;
+}
+
 .gh-stats .view-container {
     display: flex;
     flex-direction: column;
@@ -32,6 +42,10 @@
     border-radius: 8px;
     overflow: hidden;
     transition: all ease-in-out 0.3s;
+}
+
+.gh-stats-container.no-gap {
+    gap: 0;
 }
 
 .gh-stats-container > .gh-stats-metric-label,
@@ -71,12 +85,12 @@
 .gh-stats-tab {
     position: relative;
     margin: 0 0 1px 0;
-    color: var(--midlightgrey);
+    /* color: var(--darkgrey); */
 }
 
-.gh-stats-tab:not(.is-selected) .gh-stats-metric-label {
-    color: var(--midlightgrey);
-}
+/* .gh-stats-tab:not(.is-selected) .gh-stats-metric-label {
+    color: var(--darkgrey);
+} */
 
 .gh-stats-tab:hover {
     background-color: var(--whitegrey-l2);
@@ -111,6 +125,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--whitegrey);
+    margin: -4px -20px 12px;
+    padding: 0 20px 16px;
 }
 
 .gh-stats-metric-data {
@@ -141,7 +158,7 @@
 }
 
 .gh-stats-piechart-container table {
-    margin-top: 5px;
+    margin-top: -15px;
     width: 100%;
     margin-bottom: 0;
 }
@@ -191,9 +208,11 @@
     }
 }
 
-.gh-stats-detail-header {
-    font-size: 11px;
+.gh-stats-data-header {
+    font-size: 12px;
     font-weight: 500;
+    text-transform: none;
+    color: var(--midgrey);
 }
 
 .gh-stats-see-all-btn span {
@@ -207,7 +226,141 @@
     color: var(--green);
 }
 
-.gh-stats-detail-label,
-.gh-stats-detail-value {
-    font-size: 13.5px;
+.gh-stats-data-label,
+.gh-stats-data-value {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.gh-stats-data-label {
+    color: var(--black);
+}
+
+a.gh-stats-data-label:hover {
+    text-decoration: underline;
+}
+
+.gh-stats-data-value {
+    color: var(--middarkgrey);
+}
+
+.gh-stats-see-all-container {
+    position: relative;
+}
+
+.gh-stats-see-all-container::before {
+    pointer-events: none;
+    position: absolute;
+    display: block;
+    content: '';
+    left: 0;
+    right: 0;
+    top: -60px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.0) 0%, #FFF 100%);
+    height: 60px;
+    z-index: 9999;
+}
+
+.gh-stats-kpis-chart-container {
+    margin-top: -20px;
+}
+
+.gh-stats-domain {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--black);
+}
+
+.gh-stats-domain:hover {
+    text-decoration: underline;
+}
+
+.gh-stats-favicon {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-stats-tooltip-header {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.gh-stats-tooltip-data {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-stats-tooltip-label {
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--middarkgrey)
+}
+
+.gh-stats-tooltip-value {
+    font-family: var(--font-family-mono);
+    font-size: 12.5px;
+    margin-left: 10px;
+}
+
+.gh-stats-tooltip-marker {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 3px;
+}
+
+/* Filters */
+.gh-stats-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: -24px;
+}
+
+.gh-stats-filters {
+    grid-column: span 2;
+}
+
+.gh-stats-filter-pill {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--whitegrey);
+    border-radius: 999px;
+    padding: 4px 12px;
+}
+
+.gh-stats-filter-pill .value {
+    font-weight: 700;
+}
+
+.gh-btn-clear-filters {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 999px;
+    color: var(--black);
+    padding: 4px 12px;
+    border: 1px solid var(--whitegrey);
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-btn-clear-filters:hover {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-btn-clear-filters svg {
+    width: 10px;
+    height: 10px;
+    stroke: var(--red);
+}
+
+.gh-btn-clear-filters svg path {
+    stroke-width: 2px;
 }

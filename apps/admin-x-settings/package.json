@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
-  "version": "0.0.20",
+  "version": "0.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,10 +20,7 @@
       "require": "./dist/admin-x-settings.umd.cjs"
     }
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "private": true,
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",
@@ -39,9 +36,9 @@
   "dependencies": {
     "@codemirror/lang-html": "6.4.9",
     "@tryghost/color-utils": "0.2.2",
-    "@tryghost/kg-unsplash-selector": "0.2.4",
+    "@tryghost/kg-unsplash-selector": "0.2.5",
     "@tryghost/limit-service": "1.2.14",
-    "@tryghost/nql": "0.12.4",
+    "@tryghost/nql": "0.12.5",
     "@tryghost/timezone-data": "0.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",

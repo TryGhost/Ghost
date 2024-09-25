@@ -58,6 +58,14 @@ const COMMAND_ADMIN = {
     env: {}
 };
 
+const COMMAND_BROWSERTESTS = {
+    name: 'browser-tests',
+    command: 'nx run ghost:test:browser',
+    cwd: path.resolve(__dirname, '../../ghost/core'),
+    prefixColor: 'blue',
+    env: {}
+};
+
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
     command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
@@ -86,6 +94,8 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
+} else if (DASH_DASH_ARGS.includes('browser-tests')) {
+    commands = [COMMAND_BROWSERTESTS, COMMAND_TYPESCRIPT];
 } else {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
@@ -186,7 +196,7 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
 
 async function handleStripe() {
     if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
-        if (DASH_DASH_ARGS.includes('offline')) {
+        if (DASH_DASH_ARGS.includes('offline') || DASH_DASH_ARGS.includes('browser-tests')) {
             return;
         }
 
@@ -220,6 +230,10 @@ async function handleStripe() {
         console.log(`No commands provided`);
         process.exit(0);
     }
+
+    process.env.NX_DISABLE_DB = "true";
+    await exec("yarn nx reset --onlyDaemon");
+    await exec("yarn nx daemon --start");
 
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 

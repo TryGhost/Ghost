@@ -77,6 +77,7 @@ export default class FeatureService extends Service {
     @feature('ActivityPub') ActivityPub;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
+    @feature('commentImprovements') commentImprovements;
 
     _user = null;
 

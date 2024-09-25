@@ -13,6 +13,7 @@ const models = require('../../core/server/models');
 const {fixtureManager} = require('../utils/e2e-framework');
 const DataGenerator = require('../utils/fixtures/data-generator');
 const members = require('../../core/server/services/members');
+const membersEventsService = require('../../core/server/services/members-events');
 const crypto = require('crypto');
 
 function assertContentIsPresent(res) {
@@ -87,6 +88,11 @@ describe('Front-end members behavior', function () {
 
     after(function () {
         sinon.restore();
+    });
+
+    beforeEach(function () {
+        // Clear the lastSeenAtCache to avoid side effects from other tests
+        membersEventsService.clearLastSeenAtCache();
     });
 
     describe('Member routes', function () {

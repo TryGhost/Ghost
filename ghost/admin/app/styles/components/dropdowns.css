@@ -20,7 +20,7 @@
     left: 0;
     float: left;
     margin: 2px 0 0;
-    padding: 6px 0;
+    padding: 4px 0;
     min-width: 200px;
     background-color: #fff;
     background-clip: padding-box;
@@ -61,15 +61,17 @@
     display: flex;
     align-items: center;
     clear: both;
-    padding: 6px 14px;
-    width: 100%;
+    padding: 7px 10px;
+    margin: 0 4px;
+    width: calc(100% - 8px);
     color: var(--darkgrey);
     text-align: left;
     white-space: nowrap;
     font-size: 1.3rem;
+    font-weight: 500;
     line-height: 1.4em;
-    font-weight: normal;
     transition: none;
+    border-radius: 3px
 }
 
 .dropdown-menu li > button:disabled {
@@ -370,14 +372,9 @@ Post context menu
     transform: translate(-100%, -100%);
 }
 
-.gh-posts-context-menu li > button {
-    padding: 8px 16px;
-}
-
 .gh-posts-context-menu li > button span {
     display: flex;
     align-items: center;
-    font-size: 1.35rem;
 }
 
 .gh-posts-context-menu li > button span svg,
@@ -401,5 +398,5 @@ Post context menu
     margin: 5px 0;
     width: 100%;
     height: 1px;
-    background-color: var(--whitegrey-d1);
+    background-color: var(--whitegrey);
 }
