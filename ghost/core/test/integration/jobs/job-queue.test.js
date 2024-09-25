@@ -1,8 +1,8 @@
 const assert = require('assert/strict');
 const path = require('path');
 const configUtils = require('../../utils/configUtils');
-const dbUtils = require('../../utils/db-utils');
 const models = require('../../../core/server/models');
+const testUtils = require('../../utils/');
 
 // Helper function to wait for job completion
 async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkIntervalMs = 50) {
@@ -24,25 +24,20 @@ async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkInterval
 
 describe('Job Queue', function () {
     let jobService;
+    beforeEach(testUtils.initFixtures); // this generates the tables in the db
+    afterEach(async function () {
+        await testUtils.teardownDb();
+        await configUtils.restore();
+    });
 
-    describe.only('enabled by config', function () {
+    describe('enabled by config', function () {
         beforeEach(async function () {
-            models.init();
             configUtils.set('services:jobs:queue:enabled', true);
-            await new Promise((resolve) => {
-                setTimeout(resolve, 500);
-            });
             jobService = require('../../../core/server/services/jobs/job-service');
         });
 
-        afterEach(async function () {
-            await configUtils.restore();
-            await dbUtils.teardown();
-        });
-
         it('should add and execute a job in the queue', async function () {
-            this.timeout(10000); // Increase timeout if needed
-
+            this.timeout(10000);
             const job = {
                 name: `add-random-numbers-${Date.now()}`,
                 metadata: {
@@ -52,9 +47,7 @@ describe('Job Queue', function () {
             };
 
             // Add the job to the queue
-            console.log('Adding job to queue:', job.name);
             const result = await jobService.addQueuedJob(job);
-            console.log('Job added:', result);
             assert.ok(result);
 
             // Wait for the job to complete
@@ -62,7 +55,6 @@ describe('Job Queue', function () {
 
             // Check job status
             const jobEntry = await models.Job.findOne({name: job.name});
-            console.log('Job status:', jobEntry ? jobEntry.status : 'Not found');
 
             // Verify that the job no longer exists in the queue
             assert.equal(jobEntry, null);
@@ -71,14 +63,10 @@ describe('Job Queue', function () {
 
     describe('not enabled', function () {
         beforeEach(async function () {
-            models.init();
+            configUtils.set('services:jobs:queue:enabled', false);
             jobService = require('../../../core/server/services/jobs/job-service');
         });
-
-        afterEach(async function () {
-            await dbUtils.teardown();
-        });
-
+        
         it('should not add a job to the queue when disabled', async function () {
             const job = {
                 name: `add-random-numbers-${Date.now()}`,

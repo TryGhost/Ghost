@@ -41,6 +41,7 @@ class JobManager {
     #completionPromises = new Map();
     #jobQueueManager = null;
     #config;
+    #JobModel;
 
     /**
      * @param {Object} options
@@ -58,6 +59,7 @@ class JobManager {
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
         this.#domainEvents = domainEvents;
         this.#config = config;
+        this.#JobModel = JobModel;
 
         const combinedMessageHandler = workerMessageHandler
             ? ({name, message}) => {
@@ -90,15 +92,16 @@ class JobManager {
             this._jobsRepository = new JobsRepository({JobModel});
         }
 
-        console.log(`[JobManager] Config: ${this.#config}`);
-        console.log(`[JobManager] Config: ${this.#config?.get('services:jobs:queue:enabled')}`);
-        console.log(`[JobManager] JobQueueManager: ${this.#jobQueueManager}`);
         if (jobQueueManager) {
             this.#jobQueueManager = jobQueueManager;
-        } else if (!isDuplicate && this.#config?.get('services:jobs:queue:enabled') === true) {
-            console.log(`[JobManager] Creating JobQueueManager`);
-            this.#jobQueueManager = new JobQueueManager({JobModel, config});
-            console.log(`[JobManager] JobQueueManager initializing`);
+        } else if (!isDuplicate) {
+            this.#initializeJobQueueManager();
+        }
+    }
+
+    #initializeJobQueueManager() {
+        if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
+            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config});
             this.#jobQueueManager.init();
         }
     }
@@ -137,14 +140,14 @@ class JobManager {
      * @returns {Promise<Object>} The added job model.
      */
     async addQueuedJob({name, metadata}) {
-        console.log(`[JobManager] Trying to add queued job: ${name}`);
-        console.log(`[JobManager] Config: ${this.#config}`);
-        console.log(`[JobManager] Config: ${this.#config?.get('services:jobs:queue:enabled')}`);
-        console.log(`[JobManager] JobQueueManager: ${this.#jobQueueManager}`);
+
+        // Try to initialize JobQueueManager if it's missing
+        if (!this.#jobQueueManager) {
+            this.#initializeJobQueueManager();
+        }
+
         if (this.#config?.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
-            console.log(`[JobManager] Adding queued job: ${name}`);
             const model = await this.#jobQueueManager.addJob({name, metadata});
-            console.log(`[JobManager] Queued job added: ${name}`);
             return model;
         }
         return undefined;
