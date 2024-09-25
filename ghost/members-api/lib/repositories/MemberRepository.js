@@ -1343,10 +1343,10 @@ module.exports = class MemberRepository {
         }, options);
 
         const context = options?.context || {};
-        const source = this._resolveContextSource(context);
+        const subscriptionCreatedEventSource = this._resolveContextSource(context);
 
         const subscriptionCreatedPayload = {
-            source,
+            source: subscriptionCreatedEventSource,
             tierId: ghostProduct?.get('id'),
             memberId: member.id,
             subscriptionId: subscriptionModel.get('id'),
@@ -1357,7 +1357,7 @@ module.exports = class MemberRepository {
         const subscriptionCreatedEvent = SubscriptionCreatedEvent.create(subscriptionCreatedPayload);
 
         this.dispatchEvent(subscriptionCreatedEvent, options);
-        return {subscriptionModel, source};
+        return {subscriptionModel, source: subscriptionCreatedEventSource};
     }
 
     getCancellationReason(subscription) {
