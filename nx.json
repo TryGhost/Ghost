@@ -3,6 +3,7 @@
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
     },
+    "parallel": 4,
     "targetDefaults": {
         "build": {
             "dependsOn": ["^build"],
