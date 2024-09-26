@@ -109,12 +109,22 @@ const Search: React.FC<SearchProps> = ({}) => {
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
+    const [isQuerying, setIsQuerying] = useState(false);
     const {searchQuery, updateProfileSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
     const {data, isFetching, isFetched} = searchQuery;
 
     const results = data?.profiles || [];
+    const showLoading = (isFetching || isQuerying) && !isFetched;
     const showNoResults = isFetched && results.length === 0;
     const showSuggested = query === '' || (isFetched && results.length === 0);
+
+    useEffect(() => {
+        if (query !== '') {
+            setIsQuerying(true);
+        } else {
+            setIsQuerying(false);
+        }
+    }, [query]);
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -142,12 +152,22 @@ const Search: React.FC<SearchProps> = ({}) => {
                         unstyled
                         onChange={e => setQuery(e.target.value)}
                     />
-                    {query && <Button className='absolute top-3 p-1 sm:right-14 tablet:right-3' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
-                        setQuery('');
-                        queryInputRef.current?.focus();
-                    }} />}
+                    {query && (
+                        <Button
+                            className='absolute top-3 p-1 sm:right-14 tablet:right-3'
+                            icon='close'
+                            iconColorClass='text-grey-700 !w-[10px] !h-[10px]'
+                            size='sm'
+                            unstyled
+                            onClick={() => {
+                                setQuery('');
+
+                                queryInputRef.current?.focus();
+                            }}
+                        />
+                    )}
                 </div>
-                {isFetching && (
+                {showLoading && (
                     <LoadingIndicator size='lg'/>
                 )}
                 {showNoResults && (
