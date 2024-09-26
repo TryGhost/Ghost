@@ -7,6 +7,7 @@ const cleanUtil = require('../../../../../../../core/server/api/endpoints/utils/
 const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
 const memberAttribution = require('../../../../../../../core/server/services/member-attribution');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 function createJsonModel(data) {
     return Object.assign(data, {toJSON: sinon.stub().returns(data)});
@@ -606,6 +607,82 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     member: null,
                     post: null
                 }
+            });
+        });
+    });
+
+    describe('Comment mapper', function () {
+        it('includes in_reply_to_snippet for published replies-to-replies', function () {
+            const frame = {};
+
+            const model = {
+                id: 'comment3',
+                html: '<p>comment 3</p>',
+                member: {id: 'member1'},
+                parent: {
+                    id: 'comment1',
+                    html: '<p>comment 1</p>',
+                    member: {id: 'member1'}
+                },
+                in_reply_to_id: 'comment2',
+                inReplyTo: {
+                    id: 'comment2',
+                    parent_id: 'comment1',
+                    html: '<p>comment 2</p>',
+                    status: 'published',
+                    member: {id: 'member2'}
+                }
+            };
+
+            const mapped = mappers.comments(model, frame);
+
+            mapped.should.eql({
+                id: 'comment3',
+                html: '<p>comment 3</p>',
+                member: {id: 'member1'},
+                parent: {id: 'comment1', html: '<p>comment 1</p>', member: {id: 'member1'}},
+                in_reply_to_id: 'comment2',
+                in_reply_to_snippet: 'comment 2'
+            });
+        });
+
+        it('calls correct html-to-plaintext converter for in_reply_to_snippet', function () {
+            const converterSpy = sinon.spy(htmlToPlaintext, 'commentSnippet');
+
+            const frame = {};
+
+            const model = {
+                inReplyTo: {
+                    html: '<p>First paragraph <a href="https://example.com">with link</a>,<br> and new line.</p><p>Second paragraph</p>',
+                    status: 'published'
+                }
+            };
+
+            const mapped = mappers.comments(model, frame);
+
+            converterSpy.calledOnce.should.eql(true, 'htmlToPlaintext.commentSnippet was not called');
+
+            mapped.should.eql({
+                in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
+                member: null
+            });
+        });
+
+        it('does not include in_reply_to_snippet for top-level comments', function () {
+            const frame = {};
+
+            const model = {
+                id: 'comment1',
+                html: '<p>comment 1</p>',
+                inReplyTo: undefined
+            };
+
+            const mapped = mappers.comments(model, frame);
+
+            mapped.should.eql({
+                id: 'comment1',
+                html: '<p>comment 1</p>',
+                member: null
             });
         });
     });
