@@ -1,4 +1,4 @@
-import {MockedApi, getHeight, getModifierKey, initialize, selectText, setClipboard, waitEditorFocused} from '../utils/e2e';
+import {MockedApi, getModifierKey, initialize, selectText, setClipboard, waitEditorFocused} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Editor', async () => {
@@ -22,7 +22,6 @@ test.describe('Editor', async () => {
         await expect(frame.getByTestId('count')).toHaveText('1 comment');
 
         const editor = frame.getByTestId('form-editor');
-        const editorHeight = await getHeight(editor);
 
         await editor.click({force: true});
 
@@ -31,9 +30,6 @@ test.describe('Editor', async () => {
 
         // Wait for animation to finish
         await page.waitForTimeout(200);
-        const newEditorHeight = await getHeight(editor);
-
-        expect(newEditorHeight).toBeGreaterThan(editorHeight);
 
         // Type in the editor
         await editor.type('Newly added comment');
@@ -57,22 +53,10 @@ test.describe('Editor', async () => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
-
-        const editor = frame.getByTestId('form-editor');
-        const editorHeight = await getHeight(editor);
-
         await page.keyboard.press('c');
 
         // Wait for animation to finish
         await page.waitForTimeout(200);
-        const newEditorHeight = await getHeight(editor);
-
-        expect(newEditorHeight).toBeGreaterThan(editorHeight);
     });
 
     test('Can use CMD+ENTER to submmit', async ({page}) => {
@@ -95,7 +79,6 @@ test.describe('Editor', async () => {
         await expect(frame.getByTestId('count')).toHaveText('1 comment');
 
         const editor = frame.getByTestId('form-editor');
-        const editorHeight = await getHeight(editor);
 
         await editor.click({force: true});
         // Wait for focused
@@ -103,9 +86,6 @@ test.describe('Editor', async () => {
 
         // Wait for animation to finish
         await page.waitForTimeout(200);
-        const newEditorHeight = await getHeight(editor);
-
-        expect(newEditorHeight).toBeGreaterThan(editorHeight);
 
         // Type in the editor
         await editor.type('Newly added comment');

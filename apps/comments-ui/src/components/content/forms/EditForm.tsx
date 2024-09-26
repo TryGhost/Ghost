@@ -68,7 +68,9 @@ const EditForm: React.FC<Props> = ({comment, parent, close}) => {
     }, [editor, close, comment.html]);
 
     return (
-        <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+        <div className='px-3 pb-2 pt-3'>
+            <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+        </div>
     );
 };
 

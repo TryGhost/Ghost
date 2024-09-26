@@ -103,9 +103,9 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     }, [editor, close, submitForm]);
 
     return (
-        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[56px] sm:pl-[44px] sm:pt-[52px]'}`}>
+        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]'}`}>
             <div
-                className={`text-md w-full rounded-md border border-[rgba(0,0,0,0.1)] bg-[rgba(255,255,255,0.9)] px-2 font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-[rgba(255,255,255,0.14)] dark:text-neutral-300 ${isOpen ? 'min-h-[144px] cursor-text py-2 pb-[68px]' : 'min-h-[48px] cursor-pointer overflow-hidden py-3 sm:py-4'}
+                className={`text-md min-h-[120px] w-full rounded-md border border-[rgba(0,0,0,0.1)] bg-[rgba(255,255,255,0.9)] p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-[rgba(255,255,255,0.14)] dark:text-neutral-300${isOpen ? 'cursor-text' : 'cursor-pointer'}
             `}
                 data-testid="form-editor">
                 <EditorContent
@@ -150,9 +150,9 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
             leaveTo="opacity-0"
             show={show}
         >
-            <div className="flex">
+            <div className="flex flex-wrap">
                 <div
-                    className="font-sans text-base font-bold leading-snug text-[rgb(23,23,23)] sm:text-sm dark:text-[rgba(255,255,255,0.85)]"
+                    className="w-full font-sans text-base font-bold leading-snug text-[rgb(23,23,23)] sm:w-auto sm:text-sm dark:text-[rgba(255,255,255,0.85)]"
                     data-testid="member-name"
                     onClick={editName}
                 >
@@ -165,7 +165,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
                         type="button"
                         onClick={editExpertise}
                     >
-                        <span><span className="mx-[0.3em]">·</span>{expertise ? expertise : 'Add your expertise'}</span>
+                        <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : 'Add your expertise'}</span>
                         {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
                     </button>
                 </div>
@@ -265,16 +265,16 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
+        <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
                     <FormEditor close={close} editor={editor} isOpen={isOpen} progress={progress} reduced={reduced} setProgress={setProgress} submit={submit} submitSize={submitSize} submitText={submitText} />
                 </div>
-                <div className='absolute left-0 top-1 flex h-11 w-full items-center justify-start sm:h-12'>
+                <div className='absolute left-0 top-1 flex h-11 w-full items-start justify-start sm:h-12'>
                     <div className="pointer-events-none mr-2 grow-0 sm:mr-3">
                         <Avatar comment={comment} />
                     </div>
-                    <div className="grow-1 w-full">
+                    <div className="grow-1 mt-0.5 w-full">
                         <FormHeader editExpertise={editExpertise} editName={editName} expertise={memberExpertise} name={memberName} show={isOpen} />
                     </div>
                 </div>
