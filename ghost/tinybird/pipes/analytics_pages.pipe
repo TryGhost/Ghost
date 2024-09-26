@@ -1,6 +1,6 @@
 NODE analytics_pages_1
 DESCRIPTION >
-    Aggregate by pathname and calculate session and hits
+    Aggregate by pathname and calculate session and views
 
 SQL >
     SELECT
@@ -17,7 +17,7 @@ SQL >
             member_status IN ('paid', 'free', 'undefined')
         ) AS member_status,
         uniqState(session_id) AS visits,
-        countState() AS hits
+        countState() AS pageviews
     FROM analytics_hits
         GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
 

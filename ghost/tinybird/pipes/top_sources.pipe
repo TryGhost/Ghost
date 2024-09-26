@@ -9,11 +9,11 @@ TOKEN "stats page" READ
 
 NODE endpoint
 DESCRIPTION >
-    Group by source and calculate hits and visits
+    Group by source and calculate views and visits
 
 SQL >
     %
-    select source, uniqMerge(visits) as visits, countMerge(hits) as hits
+    select source, uniqMerge(visits) as visits, countMerge(pageviews) as pageviews
     from analytics_sources_mv
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}

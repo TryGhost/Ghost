@@ -8,14 +8,14 @@ TOKEN "stats page" READ
 
 NODE endpoint
 DESCRIPTION >
-    Group by pagepath and calculate hits and visits
+    Group by pathname and calculate views and visits
 
 SQL >
     %
     select
         pathname,
         uniqMerge(visits) as visits,
-        countMerge(hits) as hits
+        countMerge(pageviews) as pageviews
     from analytics_pages_mv
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}

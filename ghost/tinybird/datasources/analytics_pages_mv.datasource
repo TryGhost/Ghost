@@ -9,7 +9,7 @@ SCHEMA >
     `pathname` String,
     `member_status` SimpleAggregateFunction(any, String),
     `visits` AggregateFunction(uniq, String),
-    `hits` AggregateFunction(count)
+    `pageviews` AggregateFunction(count)
 
 ENGINE AggregatingMergeTree
 ENGINE_PARTITION_KEY toYYYYMM(date)
