@@ -58,12 +58,6 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@opentelemetry/api": "1.9.0",
-    "@opentelemetry/exporter-prometheus": "0.52.1",
-    "@opentelemetry/instrumentation-runtime-node": "0.6.0",
-    "@opentelemetry/sdk-metrics": "1.25.1",
-    "@opentelemetry/sdk-node": "0.52.1",
-    "@opentelemetry/sdk-trace-node": "1.25.1",
     "@sentry/node": "7.119.0",
     "@slack/webhook": "7.0.3",
     "@tryghost/adapter-base-cache": "0.1.12",
