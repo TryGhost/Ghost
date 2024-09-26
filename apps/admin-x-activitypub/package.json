@@ -14,7 +14,7 @@
   ],
   "main": "./dist/admin-x-activitypub.umd.cjs",
   "module": "./dist/admin-x-activitypub.js",
-  "private": true,
+  "private": false,
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",
