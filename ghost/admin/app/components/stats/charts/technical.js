@@ -60,7 +60,7 @@ export default class TechnicalComponent extends Component {
 
         const transformedData = (data ?? []).map((item, index) => ({
             name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
-            value: item.hits,
+            value: item.visits,
             color: colorPalette[index]
         }));
 
@@ -101,7 +101,7 @@ export default class TechnicalComponent extends Component {
                         loading={loading}
                         error={error}
                         index={indexBy}
-                        categories={['hits']}
+                        categories={['visits']}
                         colorPalette={colorPalette}
                         backgroundColor="transparent"
                         fontSize="13px"
