@@ -230,6 +230,7 @@ export default class KoenigImageEditor extends Component {
 
             editor.on('process', (result) => {
                 // save edited image
+                result.dest.edited = true;
                 try {
                     if (this.args.saveImage) {
                         this.args.saveImage(result.dest);
