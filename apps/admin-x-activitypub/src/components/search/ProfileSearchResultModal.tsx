@@ -1,7 +1,7 @@
 import React from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Modal} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
@@ -12,6 +12,7 @@ interface ProfileSearchResultModalProps {
         actor: ActorProperties;
         handle: string;
         isFollowing: boolean;
+        posts: Activity[];
     };
 }
 
@@ -19,6 +20,7 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({prof
     const modal = useModal();
     const attachments = (profile.actor.attachment || [])
         .filter(attachment => attachment.type === 'PropertyValue');
+    const posts = profile.posts; // @TODO: Do any filtering / manipulation here
 
     return (
         <Modal
@@ -68,6 +70,15 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({prof
                                 <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
                             </span>
                         ))}
+                        {posts.map((post) => {
+                            return (
+                                <div
+                                    dangerouslySetInnerHTML={{__html: post.object.content}}
+                                    key={post.id}
+                                    className='mt-4 bg-grey-300 p-3'
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             </div>

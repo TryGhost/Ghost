@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {useDebounce} from 'use-debounce';
 
@@ -19,6 +19,7 @@ interface SearchResultItem {
     handle: string;
     followerCount: number;
     isFollowing: boolean;
+    posts: Activity[];
 }
 
 interface SearchResultProps {
@@ -35,7 +36,8 @@ const SUGGESTED_RESULTS: SearchResultItem[] = [
         } as ActorProperties,
         handle: '@foo@bar.baz',
         followerCount: 123,
-        isFollowing: true
+        isFollowing: true,
+        posts: []
     },
     {
         actor: {
@@ -44,7 +46,8 @@ const SUGGESTED_RESULTS: SearchResultItem[] = [
         } as ActorProperties,
         handle: '@baz@bar.foo',
         followerCount: 456,
-        isFollowing: false
+        isFollowing: false,
+        posts: []
     }
 ];
 
