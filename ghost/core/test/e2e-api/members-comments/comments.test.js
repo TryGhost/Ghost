@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
+const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
@@ -20,13 +20,17 @@ const dbFns = {
      * @property {string} [post_id=postId]
      * @property {string} member_id
      * @property {string} [parent_id]
+     * @property {string} [in_reply_to_id]
      * @property {string} [html='This is a comment']
+     * @property {string} [status]
+     * @property {Date} [created_at]
      */
     /**
      * @typedef {Object} AddCommentReplyData
      * @property {string} member_id
      * @property {string} [html='This is a reply']
-     * @property {date} [created_at]
+     * @property {Date} [created_at]
+     * @property {string} [status]
      */
     /**
      * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
@@ -42,7 +46,9 @@ const dbFns = {
             member_id: data.member_id,
             parent_id: data.parent_id,
             html: data.html || '<p>This is a comment</p>',
-            created_at: data.created_at
+            created_at: data.created_at,
+            in_reply_to_id: data.in_reply_to_id,
+            status: data.status || 'published'
         });
     },
     /**
@@ -60,7 +66,8 @@ const dbFns = {
                 post_id: parent.get('post_id'),
                 member_id: reply.member_id,
                 parent_id: parent.get('id'),
-                html: reply.html || '<p>This is a reply</p>'
+                html: reply.html || '<p>This is a reply</p>',
+                status: reply.status
             });
             createdReplies.push(createdReply);
         }
@@ -95,6 +102,7 @@ const dbFns = {
 
 const commentMatcher = {
     id: anyObjectId,
+    in_reply_to_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
         id: anyObjectId,
@@ -184,24 +192,32 @@ function testGetComments(url, commentsMatcher) {
  * @param {string} data.post_id
  * @param {string} data.html
  * @param {string} [data.parent_id]
+ * @param {string} [data.in_reply_to_id]
  * @param {Object} [options]
  * @param {number} [options.status = 201]
  * @param {Object} [options.matchHeaderSnapshot]
  * @param {Object} [options.matchBodySnapshot]
  * @returns {any} ExpectRequest
  */
-function testPostComment({post_id, html, parent_id}, {status = 201, matchHeaderSnapshot = {}, matchBodySnapshot} = {}) {
+function testPostComment({post_id, html, parent_id, in_reply_to_id}, {status = 201, matchHeaderSnapshot = {}, matchBodySnapshot} = {}) {
     return membersAgent
         .post(`/api/comments/`)
         .body({comments: [{
             post_id,
             parent_id,
+            in_reply_to_id,
             html
         }]})
         .expectStatus(status)
         .matchHeaderSnapshot({
             etag: anyEtag,
             location: anyLocationFor('comments'),
+            'x-cache-invalidate': matchers.stringMatching(
+                parent_id
+                    ? new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
+                    : new RegExp('/api/members/comments/post/[0-9a-f]{24}/')
+
+            ),
             ...matchHeaderSnapshot
         })
         .matchBodySnapshot({
@@ -256,12 +272,6 @@ async function testCanReply(member, emailMatchers = {}) {
         post_id: postId,
         parent_id: parentComment.get('id'),
         html: 'This is a reply'
-    }, {
-        matchHeaderSnapshot: {
-            'x-cache-invalidate': matchers.stringMatching(
-                new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
-            )
-        }
     });
 
     mockManager.assert.sentEmailCount(2);
@@ -587,12 +597,6 @@ describe('Comments API', function () {
                     post_id: postId,
                     parent_id: parentComment.id,
                     html: 'This is a reply'
-                }, {
-                    matchHeaderSnapshot: {
-                        'x-cache-invalidate': matchers.stringMatching(
-                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
-                        )
-                    }
                 });
 
                 // Check only the author got an email (because we are the author of this parent comment)
@@ -1019,6 +1023,160 @@ describe('Comments API', function () {
                     }]});
 
                 assert(!deletedComment.html);
+            });
+
+            describe('replies to replies', function () {
+                it('can set in_reply_to_id when creating a reply', async function () {
+                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 2).id
+                        }]
+                    });
+
+                    const {body: {comments: [newComment]}} = await testPostComment({
+                        post_id: postId,
+                        parent_id: reply.get('parent_id'),
+                        in_reply_to_id: reply.get('id'),
+                        html: '<p>This is a reply to a reply</p>'
+                    });
+
+                    // in_reply_to is set
+                    newComment.in_reply_to_id.should.eql(reply.get('id'));
+                    newComment.in_reply_to_snippet.should.eql('This is a reply');
+
+                    // replied-to comment author is notified
+                    // parent comment author is notified
+                    mockManager.assert.sentEmailCount(3);
+                    assertAuthorEmailSent(postAuthorEmail, postTitle);
+                    mockManager.assert.sentEmail({
+                        subject: '↪️ New reply to your comment on Ghost',
+                        to: fixtureManager.get('members', 1).email
+                    });
+                    mockManager.assert.sentEmail({
+                        subject: '↪️ New reply to your comment on Ghost',
+                        to: fixtureManager.get('members', 2).email
+                    });
+                });
+
+                ['deleted', 'hidden'].forEach((status) => {
+                    it(`cannot set in_reply_to_id to a ${status} comment`, async function () {
+                        const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                            member_id: fixtureManager.get('members', 1).id,
+                            replies: [{
+                                member_id: fixtureManager.get('members', 2).id,
+                                status
+                            }]
+                        });
+
+                        const {body: {comments: [newComment]}} = await testPostComment({
+                            post_id: postId,
+                            parent_id: reply.get('parent_id'),
+                            in_reply_to_id: reply.get('id'),
+                            html: '<p>This is a reply to a reply</p>'
+                        });
+
+                        // in_reply_to is not set
+                        should.not.exist(newComment.in_reply_to_id);
+                        should.not.exist(newComment.in_reply_to_snippet);
+
+                        // only author and parent email sent
+                        mockManager.assert.sentEmailCount(2);
+                    });
+                });
+
+                it('in_reply_to_id is ignored when no parent specified', async function () {
+                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 2).id
+                        }]
+                    });
+
+                    const {body: {comments: [newComment]}} = await testPostComment({
+                        post_id: postId,
+                        in_reply_to_id: reply.get('id'),
+                        html: '<p>This is a reply to a reply</p>'
+                    });
+
+                    // in_reply_to is not set
+                    should.not.exist(newComment.in_reply_to_id);
+                    should.not.exist(newComment.in_reply_to_snippet);
+
+                    should.not.exist(newComment.parent_id);
+
+                    // only author email sent
+                    mockManager.assert.sentEmailCount(1);
+                });
+
+                it('in_reply_to_id is ignored id in_reply_to_id has a different parent', async function () {
+                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 2).id
+                        }]
+                    });
+
+                    const diffParentComment = await dbFns.addComment({
+                        member_id: fixtureManager.get('members', 1).id
+                    });
+
+                    const {body: {comments: [newComment]}} = await testPostComment({
+                        post_id: postId,
+                        parent_id: diffParentComment.get('id'),
+                        in_reply_to_id: reply.get('id'),
+                        html: '<p>This is a reply to a reply</p>'
+                    });
+
+                    // in_reply_to is not set
+                    should.not.exist(newComment.in_reply_to_id);
+                    should.not.exist(newComment.in_reply_to_snippet);
+                });
+
+                it('includes in_reply_to_snippet in response', async function () {
+                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 2).id,
+                            html: '<p><b>This is what was replied to</b></p>'
+                        }]
+                    });
+
+                    const {body: {comments: [newComment]}} = await testPostComment({
+                        post_id: postId,
+                        parent_id: reply.get('parent_id'),
+                        in_reply_to_id: reply.get('id'),
+                        html: '<p>This is a reply to a reply</p>'
+                    });
+
+                    const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [commentMatcher]);
+
+                    // in_reply_to_snippet is included
+                    comment.in_reply_to_snippet.should.eql('This is what was replied to');
+                });
+
+                ['deleted', 'hidden'].forEach((status) => {
+                    it(`does not include in_reply_to_snippet for ${status} comments`, async function () {
+                        const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                            member_id: fixtureManager.get('members', 1).id,
+                            replies: [{
+                                member_id: fixtureManager.get('members', 2).id,
+                                html: `<p>This is a ${status} reply</p>`,
+                                status
+                            }]
+                        });
+
+                        const newComment = await dbFns.addComment({
+                            member_id: loggedInMember.id,
+                            parent_id: reply.get('parent_id'),
+                            in_reply_to_id: reply.get('id')
+                        });
+
+                        const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [commentMatcher]);
+
+                        should.not.exist(comment.in_reply_to_snippet);
+                    });
+                });
             });
         });
     });

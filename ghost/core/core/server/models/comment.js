@@ -46,6 +46,10 @@ const Comment = ghostBookshelf.Model.extend({
         return this.belongsTo('Comment', 'parent_id');
     },
 
+    inReplyTo() {
+        return this.belongsTo('Comment', 'in_reply_to_id');
+    },
+
     likes() {
         return this.hasMany('CommentLike', 'comment_id');
     },
@@ -181,25 +185,26 @@ const Comment = ghostBookshelf.Model.extend({
     /**
      * We have to ensure consistency. If you listen on model events (e.g. `member.added`), you can expect that you always
      * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
-     * that event listeners have to re-fetch a resource. This function is used in the context of inserting
-     * and updating resources. We won't return the relations by default for now.
+     * that event listeners have to re-fetch a resource.
      */
     defaultRelations: function defaultRelations(methodName, options) {
-        // @todo: the default relations are not working for 'add' when we add it below
+        // @TODO: the default relations are not working for 'add' when we add it below
+        // this is because bookshelf does not automatically call `fetch` after adding so
+        // our bookshelf eager-load plugin doesn't use the `withRelated` options
         if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
                 if (options.parentId) {
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'member', 'count.likes', 'count.liked'
+                        'inReplyTo', 'member', 'count.likes', 'count.liked'
                     ];
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'count.replies', 'count.likes', 'count.liked',
+                        'member', 'inReplyTo', 'count.replies', 'count.likes', 'count.liked',
                         // Replies (limited to 3)
-                        'replies', 'replies.member' , 'replies.count.likes', 'replies.count.liked'
+                        'replies', 'replies.member', 'replies.inReplyTo', 'replies.count.likes', 'replies.count.liked'
                     ];
                 }
             }

@@ -115,6 +115,7 @@ module.exports = class CommentsController {
         if (data.parent_id) {
             result = await this.service.replyToComment(
                 data.parent_id,
+                data.in_reply_to_id,
                 frame.options.context.member.id,
                 data.html,
                 frame.options

@@ -87,4 +87,28 @@ describe('Html to Plaintext', function () {
             assert.equal(excerpt, expected);
         });
     });
+
+    describe('commentSnippet converter', function () {
+        function testConverter({input, expected}) {
+            return () => {
+                const output = htmlToPlaintext.commentSnippet(input);
+                assert.equal(output, expected);
+            };
+        }
+
+        it('skips href urls', testConverter({
+            input: '<a href="https://mysite.com">A snippet from a post template</a>',
+            expected: 'A snippet from a post template'
+        }));
+
+        it('skips blockquotes', testConverter({
+            input: '<blockquote>Previous comment quote</blockquote><p>And the new comment text</p>',
+            expected: 'And the new comment text'
+        }));
+
+        it('returns a single line', testConverter({
+            input: '<p>First paragraph.</p><p>Second paragraph.</p>',
+            expected: 'First paragraph. Second paragraph.'
+        }));
+    });
 });
