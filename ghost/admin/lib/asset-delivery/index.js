@@ -43,6 +43,8 @@ module.exports = {
                 for (const [key, value] of Object.entries(this.packageConfig)) {
                     console.log(`Asset-Delivery: ${key} = ${value}`);
                 }
+
+                this.packageConfig[`adminXActivitypubCustomUrl`] = 'https://cdn.jsdelivr.net/npm/@tryghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
             }
 
             return this.packageConfig;
