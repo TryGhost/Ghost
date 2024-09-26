@@ -448,14 +448,6 @@ async function initBackgroundServices({config}) {
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 
-    // Ideally OpenTelemetry should be configured as early as possible
-    // However, it can take a long time to initialize, so we load it here
-    // This prevents open telemetry from impacting boot time at the cost of not being able to trace the boot process
-    debug('Begin: Load OpenTelemetry');
-    const opentelemetryInstrumentation = require('./shared/instrumentation');
-    opentelemetryInstrumentation.initOpenTelemetry({config});
-    debug('End: Load OpenTelemetry');
-
     debug('End: initBackgroundServices');
 }
 
