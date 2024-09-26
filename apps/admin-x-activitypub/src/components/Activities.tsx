@@ -175,8 +175,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                     </div>
                                     <FollowButton
                                         className='ml-auto'
-                                        isFollowing={isFollower(activity.actor.id)}
-                                        toFollow={getUsername(activity.actor)}
+                                        following={isFollower(activity.actor.id)}
+                                        handle={getUsername(activity.actor)}
                                         type='link'
                                     />
                                 </ActivityItem>

@@ -65,8 +65,8 @@ const SearchResult: React.FC<SearchResultProps> = ({result}) => {
             </div>
             <FollowButton
                 className='ml-auto'
-                isFollowing={result.isFollowing}
-                toFollow={result.handle}
+                following={result.isFollowing}
+                handle={result.handle}
                 type='link'
             />
         </ActivityItem>

@@ -54,9 +54,7 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({prof
                                     size='lg'
                                 />
                             </div>
-                            {/* {profile.isFollowing === false && ( */}
-                            <FollowButton isFollowing={profile.isFollowing} toFollow={profile.handle} />
-                            {/* )} */}
+                            <FollowButton following={profile.isFollowing} handle={profile.handle} />
                         </div>
                         <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
                         <span className='mt-2 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>

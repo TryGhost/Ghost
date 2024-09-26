@@ -1,63 +1,49 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 
-import {Button, showToast} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 
 import {useFollow} from '../../hooks/useActivityPubQueries';
 
 interface FollowButtonProps {
     className?: string;
-    isFollowing: boolean;
-    toFollow: string;
+    following: boolean;
+    handle: string;
     type?: 'button' | 'link';
 }
 
-const FollowButton: React.FC<FollowButtonProps> = ({className, isFollowing, toFollow, type = 'button'}) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [following, setFollowing] = useState(isFollowing); // Add state for following
+const FollowButton: React.FC<FollowButtonProps> = ({className, following, handle, type = 'button'}) => {
+    const [isFollowing, setIsFollowing] = useState(following);
 
     const mutation = useFollow('index',
+        () => {},
         () => {
-            setIsLoading(false);
-            setFollowing(true); // Update following state on success
-
-            showToast({
-                message: `${toFollow} followed`,
-                type: 'success'
-            });
-        },
-        () => {
-            setIsLoading(false);
-
-            showToast({
-                message: `Failed to follow ${toFollow}`,
-                type: 'error'
-            });
+            setIsFollowing(false);
         }
     );
 
-    // Update following state based on prop change
-    useEffect(() => {
-        setFollowing(isFollowing);
-    }, [isFollowing]);
+    const handleOnClick = async () => {
+        if (isFollowing) {
+            setIsFollowing(false);
 
-    const follow = async () => {
-        setIsLoading(true);
-        mutation.mutate(toFollow);
+            // @TODO: Implement unfollow
+        } else {
+            setIsFollowing(true);
+
+            mutation.mutate(handle);
+        }
     };
 
     return (
         <Button
             className={className}
             color='black'
-            disabled={isLoading}
-            label={following ? 'Following' : 'Follow'} // Use following state for label
+            label={isFollowing ? 'Following' : 'Follow'}
             link={type === 'link'}
-            loading={isLoading}
             onClick={(event) => {
                 event?.preventDefault();
                 event?.stopPropagation();
 
-                follow();
+                handleOnClick();
             }}
         />
     );
