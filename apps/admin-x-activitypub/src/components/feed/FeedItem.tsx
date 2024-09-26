@@ -11,6 +11,7 @@ import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useA
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
+
     if (object.image) {
         attachment = object.image;
     }
@@ -80,6 +81,9 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
             <audio className='w-full' src={attachment.url} controls/>
         </div>;
     default:
+        if (object.image) {
+            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10' src={object.image} />;
+        }
         return null;
     }
 }
@@ -110,7 +114,7 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/gif':
         return (
             <div className='min-w-[160px]'>
-                <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />
+                <img className={`h-[100px] w-[160px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment.url} />
             </div>
         );
     case 'video/mp4':
@@ -133,6 +137,11 @@ function renderInboxAttachment(object: ObjectProperties) {
             </div>
         );
     default:
+        if (object.image) {
+            return <div className='min-w-[160px]'>
+                <img className={`h-[100px] w-[160px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
+            </div>;
+        }
         return null;
     }
 }
@@ -307,9 +316,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
                                     <div className='mt-[-24px]'>
-                                        {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                                        {renderFeedAttachment(object, layout)}
+                                        {(object.type === 'Article') && renderFeedAttachment(object, layout)}
+                                        {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                        {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                                        {(object.type === 'Note') && renderFeedAttachment(object, layout)}
+                                        {(object.type === 'Article') && <Button
+                                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                                            color='grey'
+                                            fullWidth={true}
+                                            id='read-more'
+                                            label='Read more'
+                                            size='md'
+                                        />}
                                     </div>
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
@@ -325,7 +343,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                             {/* </div> */}
                         </div>
-                        <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors ${(layout === 'feed') ? 'group-hover/article:bg-grey-75' : ''} `}></div>
+                        {/* <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors ${(layout === 'feed') ? 'group-hover/article:bg-grey-75' : ''} `}></div> */}
                     </div>
                 )}
             </>
