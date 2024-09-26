@@ -1055,6 +1055,7 @@ jobs:
         run: npm publish --access public
 
       - name: Purge jsdelivr cache
+        if: env.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: |
