@@ -44,15 +44,15 @@
                         @class="gh-btn gh-btn-icon refresh"
                         @successClass="gh-btn gh-btn-icon refresh" />
                     {{#unless this.post.emailOnly}}
-                        <button type="button" class="gh-post-list-cta share" {{on "click" this.togglePublishFlowModal}}>
-                            {{svg-jar "share" title="Share post"}}<span>Share</span>
+                        <button type="button" class="gh-btn gh-btn-icon share" {{on "click" this.togglePublishFlowModal}}>
+                            <span>{{svg-jar "share" title="Share post"}} Share</span>
                         </button>
                     {{/unless}}
 
                     <span class="dropdown">
                         <GhDropdownButton
                             @dropdownName="analytics-actions-menu"
-                            @classNames="gh-post-list-cta gh-btn-icon icon-only gh-btn-action-icon"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
                             @title="Analytics Actions"
                             data-test-button="analytics-actions"
                         >

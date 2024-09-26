@@ -1,5 +1,5 @@
 
-<div class="gh-stats-tabs-header" {{did-update this.fetchDataIfNeeded @chartRange @audience}}>
+<div class="gh-stats-tabs-header" {{did-update this.fetchDataIfNeeded @chartRange @audience @device @browser @location @source @pathname}}>
     <div class="gh-stats-tabs">
         <button type="button" class="gh-stats-tab min-width {{if this.uniqueVisitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToUniqueVisits}}>
             <Stats::Parts::Metric
@@ -25,7 +25,7 @@
                 @value="{{this.totals.avg_session_sec}}m" />
         </button>
     </div>
-    <div class="gh-stats-kpi-granularity">
+    {{!-- <div class="gh-stats-kpi-granularity">
         {{#if this.showGranularity}}
             <PowerSelect
                 @selected={{this.granularity}}
@@ -42,8 +42,17 @@
             {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
             </PowerSelect>
         {{/if}}
-    </div>
+    </div> --}}
 </div>
 <div class="gh-stats-kpis-chart-container">
-    <Stats::Charts::Kpis @chartRange={{@chartRange}} @audience={{@audience}} @selected={{this.selected}} />
+    <Stats::Charts::Kpis
+        @chartRange={{@chartRange}}
+        @audience={{@audience}}
+        @device={{@device}}
+        @browser={{@browser}}
+        @location={{@location}}
+        @source={{@source}}
+        @pathname={{@pathname}}
+        @selected={{this.selected}}
+    />
 </div>

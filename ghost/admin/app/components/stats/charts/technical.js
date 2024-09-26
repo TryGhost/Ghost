@@ -2,48 +2,54 @@
 
 import Component from '@glimmer/component';
 import React from 'react';
-import moment from 'moment-timezone';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
+import {action} from '@ember/object';
 import {formatNumber} from '../../../helpers/format-number';
+import {getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from 'ghost-admin/utils/stats';
+import {inject as service} from '@ember/service';
 
-export default class KpisComponent extends Component {
+export default class TechnicalComponent extends Component {
+    @service router;
     @inject config;
 
+    @action
+    navigateToFilter(type, value) {
+        this.updateQueryParams({[type]: value});
+    }
+
+    @action
+    updateQueryParams(params) {
+        const currentRoute = this.router.currentRoute;
+        const newQueryParams = {...currentRoute.queryParams, ...params};
+
+        this.router.transitionTo({queryParams: newQueryParams});
+    }
+
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+        const {selected} = props;
 
         const colorPalette = statsStaticColors.slice(1, 5);
 
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(','),
-            limit: 5
-        };
+        const params = getStatsParams(
+            this.config,
+            props,
+            {limit: 5}
+        );
 
         let endpoint;
-
-        switch (props.selected) {
+        let indexBy;
+        let tableHead;
+        switch (selected) {
         case 'browsers':
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`;
+            indexBy = 'browser';
+            tableHead = 'Browser';
             break;
         default:
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices.json`;
+            indexBy = 'device';
+            tableHead = 'Device';
         }
 
         const {data, meta, error, loading} = useQuery({
@@ -52,47 +58,38 @@ export default class KpisComponent extends Component {
             params
         });
 
-        let transformedData;
-        let indexBy;
-        let tableHead;
-
-        switch (props.selected) {
-        case 'browsers':
-            transformedData = (data ?? []).map((item, index) => ({
-                name: item.browser.charAt(0).toUpperCase() + item.browser.slice(1),
-                value: item.hits,
-                color: colorPalette[index]
-            }));
-            indexBy = 'browser';
-            tableHead = 'Browser';
-            break;
-        default:
-            transformedData = (data ?? []).map((item, index) => ({
-                name: item.device.charAt(0).toUpperCase() + item.device.slice(1),
-                value: item.hits,
-                color: colorPalette[index]
-            }));
-            indexBy = 'device';
-            tableHead = 'Device';
-        }
+        const transformedData = (data ?? []).map((item, index) => ({
+            name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
+            value: item.hits,
+            color: colorPalette[index]
+        }));
 
         return (
             <div className="gh-stats-piechart-container">
                 <table>
                     <thead>
                         <tr>
-                            <th><span className="gh-stats-detail-header">{tableHead}</span></th>
-                            <th><span className="gh-stats-detail-header">Visits</span></th>
+                            <th><span className="gh-stats-data-header">{tableHead}</span></th>
+                            <th><span className="gh-stats-data-header">Visits</span></th>
                         </tr>
                     </thead>
                     <tbody>
                         {transformedData.map((item, index) => (
                             <tr key={index}>
                                 <td>
-                                    <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
-                                    {item.name}
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
+                                        }}
+                                        className="gh-stats-data-label"
+                                    >
+                                        <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
+                                        {item.name}
+                                    </a>
                                 </td>
-                                <td>{formatNumber(item.value)}</td>
+                                <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>
                             </tr>
                         ))}
                     </tbody>
@@ -137,7 +134,7 @@ export default class KpisComponent extends Component {
                             series: [
                                 {
                                     animation: true,
-                                    name: 'Browser',
+                                    name: tableHead,
                                     type: 'pie',
                                     radius: ['60%', '90%'],
                                     center: ['50%', '50%'], // Adjusted to align the chart to the top

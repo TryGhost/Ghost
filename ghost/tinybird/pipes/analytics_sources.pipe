@@ -10,7 +10,8 @@ SQL >
         device,
         browser,
         location,
-        referrer,
+        source,
+        pathname,
         maxIf(
             member_status,
             member_status IN ('paid', 'free', 'undefined')
@@ -18,8 +19,8 @@ SQL >
         uniqState(session_id) AS visits,
         countState() AS hits
     FROM analytics_hits
-    WHERE domainWithoutWWW(referrer) != current_domain
-    GROUP BY date, device, browser, location, referrer, site_uuid
+    WHERE source != current_domain
+    GROUP BY date, device, browser, location, source, pathname, site_uuid
 
 TYPE MATERIALIZED
 DATASOURCE analytics_sources_mv

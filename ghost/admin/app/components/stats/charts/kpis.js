@@ -5,40 +5,20 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
 import {formatNumber} from '../../../helpers/format-number';
+import {getDateRange, getStatsParams, statsStaticColors} from '../../../utils/stats';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
-import {statsStaticColors} from '../../../utils/stats';
 
 export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartRange = props.chartRange;
-        let audience = props.audience;
+        const {chartRange, selected} = props;
 
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
-
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
-        };
-
-        const LINE_COLOR = statsStaticColors[0];
-        const INDEX = 'date';
-        const CATEGORY = props.selected === 'unique_visits' ? 'visits' : props.selected;
+        const params = getStatsParams(
+            this.config,
+            props
+        );
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
@@ -46,45 +26,16 @@ export default class KpisComponent extends Component {
             params
         });
 
-        // Create an array with every second date value
-        const dateLabels = [
-            startDate.format('YYYY-MM-DD'),
-            endDate.format('YYYY-MM-DD')
-        ];
-        // let currentDate = startDate.clone();
-        // let skipDays;
-        // switch (chartRange) {
-        // case 1:
-        //     skipDays = 0; // Show all hours for 1 day
-        //     break;
-        // case 7:
-        //     skipDays = 0; // Skip every other day for 7 days
-        //     break;
-        // case (30 + 1):
-        //     skipDays = 2; // Skip every 3rd day for 30 and 90 days
-        //     break;
-        // case (90 + 1):
-        //     skipDays = 5; // Skip every 3rd day for 30 and 90 days
-        //     break;
-        // case (365 + 1):
-        // case (12 * (30 + 1)):
-        //     skipDays = 30; // Skip every 7th day for 1 year
-        //     break;
-        // case 1000:
-        //     skipDays = 29; // Skip every 30th day for all time
-        //     break;
-        // default:
-        //     skipDays = 1; // Default to skipping every other day
-        // }
+        const LINE_COLOR = statsStaticColors[0];
+        const INDEX = 'date';
+        const CATEGORY = selected === 'unique_visits' ? 'visits' : selected;
 
-        // let dayCounter = 0;
-        // while (currentDate.isSameOrBefore(endDate)) {
-        //     if (dayCounter % (skipDays + 1) === 0) {
-        //         dateLabels.push(currentDate.format('YYYY-MM-DD'));
-        //     }
-        //     currentDate.add(1, 'days');
-        //     dayCounter = dayCounter + 1;
-        // }
+        const dateLabels = [
+            params.date_from,
+            params.date_to
+        ];
+
+        const {endDate, startDate} = getDateRange(chartRange);
 
         return (
             <AreaChart
@@ -161,7 +112,7 @@ export default class KpisComponent extends Component {
                             type: 'line',
                             z: 1
                         },
-                        extraCssText: 'box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);',
+                        extraCssText: 'box-shadow: 0 0 0 1px rgba(0,0,0,0.03), 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02); padding: 6px 8px;',
                         formatter: function (fparams) {
                             let displayValue;
                             let tooltipTitle;
@@ -182,7 +133,7 @@ export default class KpisComponent extends Component {
                             if (!displayValue) {
                                 displayValue = 'N/A';
                             }
-                            return `<div><div>${moment(fparams[0].value[0]).format('D MMM, YYYY')}</div><div><span style="display: inline-block; margin-right: 16px; font-weight: 600;">${tooltipTitle}</span> ${displayValue}</div></div>`;
+                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format('D MMM YYYY')}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
                         }
                     },
                     series: [

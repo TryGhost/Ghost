@@ -4,6 +4,14 @@ import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class StatsController extends Controller {
+    queryParams = ['device', 'browser', 'location', 'source', 'pathname'];
+
+    @tracked device = null;
+    @tracked browser = null;
+    @tracked location = null;
+    @tracked source = null;
+    @tracked pathname = null;
+
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
     /**
@@ -30,11 +38,19 @@ export default class StatsController extends Controller {
             this.audience = this.audienceOptions
                 .filter(a => !this.excludedAudiences.includes(a.value))
                 .map(a => a.value);
-            // this.audience = this.audienceOptions.filter(a => !this.excludedAudiences.includes(a.value));
         } else {
             this.excludedAudiences = '';
             this.audience = this.audienceOptions.map(a => a.value);
         }
+    }
+
+    @action
+    clearFilters() {
+        this.device = null;
+        this.browser = null;
+        this.location = null;
+        this.source = null;
+        this.pathname = null;
     }
 
     get selectedRangeOption() {

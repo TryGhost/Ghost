@@ -48,8 +48,10 @@ typings/
 # Optional npm cache directory
 .npm
 
-# Nx cache
+# Nx
 .nxcache
+.nx/cache
+.nx/workspace-data
 
 # Optional eslint cache
 .eslintcache

@@ -539,6 +539,46 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(postFourContainer.querySelector('.gh-content-entry-status').textContent, 'postThree status').to.contain('Draft');
                     });
 
+                    it('can unschedule', async function () {
+                        await visit('/posts');
+
+                        // get all posts
+                        const posts = findAll('[data-test-post-id]');
+                        expect(posts.length, 'all posts count').to.equal(4);
+
+                        const postOneContainer = posts[0].parentElement; // scheduled post
+
+                        await click(postOneContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+
+                        expect(postOneContainer.getAttribute('data-selected'), 'postOne selected').to.exist;
+
+                        // NOTE: right clicks don't seem to work in these tests
+                        //  contextmenu is the event triggered - https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
+                        await triggerEvent(postOneContainer, 'contextmenu');
+
+                        let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
+                        expect(contextMenu, 'context menu').to.exist;
+
+                        // unschedule the post
+                        let buttons = contextMenu.querySelectorAll('button');
+                        let unscheduleButton = findButton('Unschedule', buttons);
+                        expect(unscheduleButton, 'unschedule button').to.exist;
+                        await click(unscheduleButton);
+
+                        // handle modal
+                        const modal = find('[data-test-modal="unschedule-posts"]');
+                        expect(modal, 'unschedule modal').to.exist;
+                        await click('[data-test-button="confirm"]');
+
+                        // API request is correct - note, we don't mock the actual model updates
+                        let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        expect(lastRequest.queryParams.filter, 'unschedule request id').to.equal(`id:['${scheduledPost.id}']`);
+                        expect(JSON.parse(lastRequest.requestBody).bulk.action, 'unschedule request action').to.equal('unschedule');
+
+                        // ensure ui shows these are now unpublished
+                        expect(postOneContainer.querySelector('.gh-content-entry-status').textContent, 'postOne status').to.contain('Draft');
+                    });
+
                     it('can delete', async function () {
                         await visit('/posts');
 
