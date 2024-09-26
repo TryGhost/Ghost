@@ -1,49 +1,124 @@
 <section class="gh-stats gh-canvas gh-canvas-sticky">
-    <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
+    <GhCanvasHeader class="gh-canvas-header gh-stats-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
-            <div class="view-actions">
-                <Stats::Parts::AudienceFilter
-                    @excludedAudiences={{this.excludedAudiences}}
-                    @onChange={{this.onAudienceChange}}
-                />
+        <div class="view-actions">
+            <Stats::Parts::AudienceFilter
+                @excludedAudiences={{this.excludedAudiences}}
+                @onChange={{this.onAudienceChange}}
+            />
 
-                <PowerSelect
-                    @selected={{this.selectedRangeOption}}
-                    @options={{this.rangeOptions}}
-                    @searchEnabled={{false}}
-                    @onChange={{this.onRangeChange}}
-                    @triggerComponent={{component "gh-power-select/trigger"}}
-                    @triggerClass="gh-btn"
-                    @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-                    @matchTriggerWidth={{false}}
-                    @horizontalPosition="right"
-                    as |option|
-                >
-                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                </PowerSelect>
-            </div>
+            <PowerSelect
+                @selected={{this.selectedRangeOption}}
+                @options={{this.rangeOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onRangeChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+        </div>
+
+        {{#if (or this.device this.browser this.location this.source this.pathname)}}
+        <div class="gh-stats-filters">
+            {{#if this.pathname}}
+                <div class="gh-stats-filter-pill">
+                    <div>Page is <span class="value">{{this.pathname}}</span></div>
+                </div>
+            {{/if}}
+
+            {{#if this.source}}
+                <div class="gh-stats-filter-pill">
+                    <div>Source is <span class="value">{{this.source}}</span></div>
+                </div>
+            {{/if}}
+
+            {{#if this.location}}
+                <div class="gh-stats-filter-pill">
+                    <div>Location is <span class="value">{{this.location}}</span></div>
+                </div>
+            {{/if}}
+
+            {{#if this.device}}
+                <div class="gh-stats-filter-pill">
+                    <div>Device is <span class="value">{{this.device}}</span></div>
+                </div>
+            {{/if}}
+
+            {{#if this.browser}}
+                <div class="gh-stats-filter-pill">
+                    <div>Browser is <span class="value">{{this.browser}}</span></div>
+                </div>
+            {{/if}}
+
+            <a href="#/stats" class="gh-btn-clear-filters" {{on "click" this.clearFilters}}>{{svg-jar "close"}} <span>Clear</span></a>
+        </div>
+        {{/if}}
     </GhCanvasHeader>
 
     <section class="view-container">
         <section class="gh-stats-container no-gap">
-            <Stats::KpisOverview @chartRange={{this.chartRange}} @audience={{this.audience}} />
+            <Stats::KpisOverview
+                @chartRange={{this.chartRange}}
+                @audience={{this.audience}}
+                @device={{this.device}}
+                @browser={{this.browser}}
+                @location={{this.location}}
+                @source={{this.source}}
+                @pathname={{this.pathname}}/>
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
-                <Stats::Charts::TopPages @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                <Stats::Charts::TopPages
+                    @chartRange={{this.chartRange}}
+                    @audience={{this.audience}}
+                    @device={{this.device}}
+                    @browser={{this.browser}}
+                    @location={{this.location}}
+                    @source={{this.source}}
+                    @pathname={{this.pathname}}
+                />
             </div>
             <div class="gh-stats-container">
-                <Stats::Charts::TopSources @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                <Stats::Charts::TopSources
+                    @chartRange={{this.chartRange}}
+                    @audience={{this.audience}}
+                    @device={{this.device}}
+                    @browser={{this.browser}}
+                    @location={{this.location}}
+                    @source={{this.source}}
+                    @pathname={{this.pathname}}
+                />
             </div>
         </section>
 
         <section class="gh-stats-grid cols-2">
             <div class="gh-stats-container">
-                <Stats::Charts::TopLocations @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                    <Stats::Charts::TopLocations
+                    @chartRange={{this.chartRange}}
+                    @audience={{this.audience}}
+                    @device={{this.device}}
+                    @browser={{this.browser}}
+                    @location={{this.location}}
+                    @source={{this.source}}
+                    @pathname={{this.pathname}}
+                />
             </div>
             <div class="gh-stats-container">
-                <Stats::TechnicalOverview @chartRange={{this.chartRange}} @audience={{this.audience}} />
+                    <Stats::TechnicalOverview
+                        @chartRange={{this.chartRange}}
+                        @audience={{this.audience}}
+                        @device={{this.device}}
+                        @browser={{this.browser}}
+                        @location={{this.location}}
+                        @source={{this.source}}
+                        @pathname={{this.pathname}}
+                    />
             </div>
         </section>
 

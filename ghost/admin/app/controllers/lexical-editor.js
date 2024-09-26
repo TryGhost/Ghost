@@ -316,14 +316,10 @@ export default class LexicalEditorController extends Controller {
     updateScratch(lexical) {
         const lexicalString = JSON.stringify(lexical);
         this.set('post.lexicalScratch', lexicalString);
-
         try {
-            // schedule a local revision save
-            if (this.post.status === 'draft') {
-                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
-            }
-        } catch (err) {
-            // ignore errors
+            this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
+        } catch (e) {
+            // ignore revision save errors
         }
 
         // save 3 seconds after last edit
@@ -341,12 +337,9 @@ export default class LexicalEditorController extends Controller {
     updateTitleScratch(title) {
         this.set('post.titleScratch', title);
         try {
-            // schedule a local revision save
-            if (this.post.status === 'draft') {
-                this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
-            }
-        } catch (err) {
-            // ignore errors
+            this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
+        } catch (e) {
+            // ignore revision save errors
         }
     }
 
@@ -505,7 +498,9 @@ export default class LexicalEditorController extends Controller {
 
     @action
     setFeatureImageCaption(html) {
-        this.post.set('featureImageCaption', html);
+        if (!this.post.isDestroyed || !this.post.isDestroying) {
+            this.post.set('featureImageCaption', html);
+        }
     }
 
     @action
@@ -1167,6 +1162,11 @@ export default class LexicalEditorController extends Controller {
 
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+
+        if (state.isDeleted) {
+            // if the post is deleted, we don't need to save it
+            hasDirtyAttributes = false;
+        }
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();

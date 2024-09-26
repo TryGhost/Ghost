@@ -103,9 +103,9 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     }, [editor, close, submitForm]);
 
     return (
-        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[56px] sm:pl-[52px] sm:pt-[64px]'}`}>
+        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[56px] sm:pl-[44px] sm:pt-[52px]'}`}>
             <div
-                className={`shadow-form hover:shadow-formxl text-md w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-2 font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text py-2 pb-[68px]' : 'min-h-[48px] cursor-pointer overflow-hidden py-3 hover:border-slate-300 sm:py-4'}
+                className={`text-md w-full rounded-md border border-[rgba(0,0,0,0.1)] bg-[rgba(255,255,255,0.9)] px-2 font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-[rgba(255,255,255,0.14)] dark:text-neutral-300 ${isOpen ? 'min-h-[144px] cursor-text py-2 pb-[68px]' : 'min-h-[48px] cursor-pointer overflow-hidden py-3 sm:py-4'}
             `}
                 data-testid="form-editor">
                 <EditorContent
@@ -265,7 +265,7 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md px-3 pb-2 pt-3 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
+        <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
                     <FormEditor close={close} editor={editor} isOpen={isOpen} progress={progress} reduced={reduced} setProgress={setProgress} submit={submit} submitSize={submitSize} submitText={submitText} />
