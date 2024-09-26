@@ -7357,66 +7357,66 @@
     echarts "^5.5.0"
     swr "^2.2.5"
 
-"@tiptap/core@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/core/-/core-2.7.2.tgz#1e653394cd40a42e9e5ff5ba732202e4a78aec97"
-  integrity sha512-rGAH90LPMR5OIG7vuTDRw8WxDYxPXSxuGtu++mxPF+Bv7V2ijPOy3P1oyV1G3KGoS0pPiNugLh+tVLsElcx/9Q==
+"@tiptap/core@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/core/-/core-2.7.3.tgz#a9ab35ce4bcef1157997ef0098ebf5db0333b74e"
+  integrity sha512-6b62isitaWRX6cR6V5x4O9+1lgCpoTNRrSegWwBrE1OGDHcGwdTZuzdNIbjLZ9k3qs4tXl49WKXHIXK44RDOIw==
 
-"@tiptap/extension-blockquote@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-blockquote/-/extension-blockquote-2.7.2.tgz#e0e0fd64447742bff6d6528f24a3c3c6d99931a9"
-  integrity sha512-EUBYiEE9lL49YUZC9rv5UjiS04byB0HhsWoCerc1nBO6wjqv+TK/3rCFHzqRQ0LpVuLDwzBMaoD08+kHe43y+A==
+"@tiptap/extension-blockquote@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-blockquote/-/extension-blockquote-2.7.3.tgz#a8b79c8a57ade51ed56ae255394987271c08bd91"
+  integrity sha512-onUThBo5XoNB7bFPI41WYNVbhX51TQDdymqEEJ0yS+0kqYMLOGxK5rylj1p+8SfpV+AIsrl5BSccijy1N7afKA==
 
-"@tiptap/extension-bubble-menu@^2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-bubble-menu/-/extension-bubble-menu-2.7.2.tgz#726a9974521926fbbb08a9408f581859ebbb0d34"
-  integrity sha512-U4LjkVDrJZEfWeZai8AYT7GaI6d7gzLm7Z7bSzZ0sH5fOry2qkwLycRDI9YZlM95yaVIVB5GE93lrgDS5mOP3A==
+"@tiptap/extension-bubble-menu@^2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-bubble-menu/-/extension-bubble-menu-2.7.3.tgz#6782ffd45b2f56709c905867bb800d9c93b2a92f"
+  integrity sha512-gzhiNFwbR7oWxw1DTF6MTa6bd6toLY5mFSFLn4IdrqkkY5enxJXEak/uYvJ/q2gNvtZbrgBZVZn2UABPl2e9dg==
   dependencies:
     tippy.js "^6.3.7"
 
-"@tiptap/extension-document@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-document/-/extension-document-2.7.2.tgz#885f4078ec82ced287fc18b67ddb944ace295d92"
-  integrity sha512-WyMGytHhb3MbNhJ8kUXTx/jHZ9XPaaPRJu1TYdVZNQ4pg7K47qLJ2KMOyLEFy7e5HcJUkYfhRHpyQGHkiu3brg==
+"@tiptap/extension-document@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-document/-/extension-document-2.7.3.tgz#730f096e5aa23469770d70e4b2b083e42b005536"
+  integrity sha512-gL+NhS3r5T5B3DAnENis8VliFooOcpnp5diqmpiNPeQaO04GRQZCsFGmk/b/xRyEI8j80m+YtGYbpJodlvsTPw==
 
-"@tiptap/extension-floating-menu@^2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-floating-menu/-/extension-floating-menu-2.7.2.tgz#a3d3a8b0c185ff4ac99b8c57cb0aa4a7d592d7cd"
-  integrity sha512-1z/kluQUQP3JmWb7vrC/ERi79lNuQegU6WRptRgSSQhFxeDPQX9CBK3I7HYy9bvSxnIa1/3GrKzL6gfaKU8WDA==
+"@tiptap/extension-floating-menu@^2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-floating-menu/-/extension-floating-menu-2.7.3.tgz#44e6c5c64a703488f30bc124a2462b798745c869"
+  integrity sha512-ch8kiFJJAuF5gTddM5VNLvOzvuquYELeM4SmUQcQ5O9X7dn1L1sTwrJgpj+oLOp5K+MF2YLCYC8dAEIWIj2rlg==
   dependencies:
     tippy.js "^6.3.7"
 
-"@tiptap/extension-hard-break@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-hard-break/-/extension-hard-break-2.7.2.tgz#2010e1769fdfb809c220f91d0e8bbf58c9018a18"
-  integrity sha512-44dZMi0N1fNhQ8i7bFnj4JYfhn4B6+vHuEueJPZS1iOsJc715m3e8ZSfDBk7VXCGKrksCxPMJ7guO0Y1PVryow==
+"@tiptap/extension-hard-break@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-hard-break/-/extension-hard-break-2.7.3.tgz#28830335dc7ac34713ccd5ed854d590243fb1d29"
+  integrity sha512-HtnjmQfbjTDsrPzfRDmzH4fZvm5xZ0qmYQyRkfV4tFrD1vx6Wb2hmpfcuiBYuNVEP6OmOzG9pQV98zhfSHEcjg==
 
-"@tiptap/extension-link@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-link/-/extension-link-2.7.2.tgz#da47761f8a3ba227dfdc30cffecdf88056f9a272"
-  integrity sha512-9RDhkp+naG53Ffmhqt6kRLkLT0Iun6WF++/If+os6w0w9t6BQUL4+A2ngZob65eu/xkN4NZXnjWcLg9gSrxGIQ==
+"@tiptap/extension-link@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-link/-/extension-link-2.7.3.tgz#bc3ce189c0639d5a8939cf54d084266b25830126"
+  integrity sha512-fAAt/50Adh4VlFk4yLc75p3kAYP0qCcYx1vrUd7MNZXJGvBixddsFfNNBB9GNy+SyE7TZRhX4Eg4n8pApoiPQA==
   dependencies:
     linkifyjs "^4.1.0"
 
-"@tiptap/extension-paragraph@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-paragraph/-/extension-paragraph-2.7.2.tgz#55ecb28fcfa5c8eaef49668a09ad79776cca0da6"
-  integrity sha512-yMzUGNojNv0lLEE+38GOpgRI327EyEZK/uEHlyzbjAWRvqE6aZ+oEB4JUuoJXX2Ad9gwN16dGHnxL//ieTxrkQ==
+"@tiptap/extension-paragraph@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-paragraph/-/extension-paragraph-2.7.3.tgz#e542f9f0e15de3ff43419e111b535efd5768d106"
+  integrity sha512-jcvcsN1JEYxPYQ3IgeJ7sUr3gDlIoVm9GXIV83fiF8KWw30M1jWfYJ6zgef8e5wB7d/NLhc3yhVrRk4R6P4ApQ==
 
-"@tiptap/extension-placeholder@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-placeholder/-/extension-placeholder-2.7.2.tgz#c5d9d69f1c78bed778f86a00d9143549f3b9c7c2"
-  integrity sha512-2o1qJI1juloltlZkuiABgivY8deyrdaUH/3e6EZbi/ucXlByBaDWcJPsvXB0VHpW65EeHf3NLMbjsNl7SKRoFQ==
+"@tiptap/extension-placeholder@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-placeholder/-/extension-placeholder-2.7.3.tgz#f8e7c874ffcf1706c10108e639233e068c4fed1b"
+  integrity sha512-ZcqOyOlqzKVFXK5LMkDUGV+pA5UqL+P6k8XWsPR1J0YFTYe5t6kupPDyZ4ndir4HvY0Ix9xQlagvXRmn6wlVUA==
 
-"@tiptap/extension-text@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-text/-/extension-text-2.7.2.tgz#9fd34f4300be883a883856ee2618cbac6e66bffb"
-  integrity sha512-VjzG7W53Lx2q8XV0rUHetVTQWDK28XTCTW3IzxYxHp2joB/k9q3xgE/5Vs+7DOLSHIKq2BmwQNyaE+XjUF5iYQ==
+"@tiptap/extension-text@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-text/-/extension-text-2.7.3.tgz#6f77bdef7505e71756b7878f910427bb57fd8e97"
+  integrity sha512-p1ic3rxbY8Z+1W2e/W4qXxT9zh0x2DjY2bUq+bNTvAbjOw2D9XhE4B03vhRVvNOgQdVXqJX638fK8P34ndrV1A==
 
-"@tiptap/pm@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/pm/-/pm-2.7.2.tgz#1a2464cf466fdf8f86de8bce8bf8b99ba99f976f"
-  integrity sha512-RiRPlwpuE6IHDJytE0tglbFlWELOaqeyGRGv25wBTjzV1plnqC5B3U65XY/8kKuuLjdd3NpRfR68DXBafusSBg==
+"@tiptap/pm@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/pm/-/pm-2.7.3.tgz#adf69716f613773b2f723cc79fe5b4f06d0a09f4"
+  integrity sha512-qMUMypHjxq7n37u4iBTbAfoWf38eDi5I13l2U3a3UKt/mJBABusf2aYq4NfkY5vQQn48HbZ3Hj+TygrdPklQwQ==
   dependencies:
     prosemirror-changeset "^2.2.1"
     prosemirror-collab "^1.3.1"
@@ -7437,13 +7437,13 @@
     prosemirror-transform "^1.10.0"
     prosemirror-view "^1.33.10"
 
-"@tiptap/react@2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@tiptap/react/-/react-2.7.2.tgz#63df356b127c016471561e17ff826eb22e0715be"
-  integrity sha512-4d1TQMRHtqagCarty1iQIJMLYZ2YzBHBgAt4HlPeoDUI4MHZutOIdkl1UXmxZwh/d5p6a+tZGTVOV4aKXMW2Iw==
+"@tiptap/react@2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@tiptap/react/-/react-2.7.3.tgz#9bf394eb3984178c793a2275a1846f1ffe20ab52"
+  integrity sha512-zPOWRG+4ApEXhUWE6h61ykqHjw7xcOKUjQGrXnD+Bji/sdr1ezgMnsewsRY8eHzxgXnCZoCydSsVwNqjZw+KZw==
   dependencies:
-    "@tiptap/extension-bubble-menu" "^2.7.2"
-    "@tiptap/extension-floating-menu" "^2.7.2"
+    "@tiptap/extension-bubble-menu" "^2.7.3"
+    "@tiptap/extension-floating-menu" "^2.7.3"
     "@types/use-sync-external-store" "^0.0.6"
     fast-deep-equal "^3"
     use-sync-external-store "^1.2.2"
