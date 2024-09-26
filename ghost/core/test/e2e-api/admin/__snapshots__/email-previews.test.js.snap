@@ -118,10 +118,11 @@ Object {
         <title>Post with email-only card</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -561,7 +562,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -605,7 +606,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -749,7 +750,7 @@ Another email card with a similar replacement, Jamie
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -778,7 +779,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24595",
+  "content-length": "24776",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -810,10 +811,11 @@ Object {
         <title>HTML Ipsum</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -1253,7 +1255,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-with-excerpt\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 8px;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/html-ipsum/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">HTML Ipsum</a>
+                                                    <a href=\\"http://127.0.0.1:2369/html-ipsum/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">HTML Ipsum</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1302,7 +1304,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1463,7 +1465,7 @@ Header Level 3
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -1492,7 +1494,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "29375",
+  "content-length": "29556",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1555,10 +1557,11 @@ Object {
         <title>Post with email-only card</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -1998,7 +2001,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -2042,7 +2045,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -2180,7 +2183,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -2222,7 +2225,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24349",
+  "content-length": "24530",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2614,10 +2617,11 @@ Object {
         <title>Post with email-only card</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -3064,7 +3068,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -3108,7 +3112,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3253,7 +3257,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -3295,7 +3299,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25132",
+  "content-length": "25313",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3713,10 +3717,11 @@ Object {
         <title>Post with email-only card</title>
         <style>
 .post-title-link {
-  color: #15212A;
   display: block;
-  text-align: center;
   margin-top: 32px;
+  color: #15212A;
+  text-align: center;
+  line-height: 1.1em;
 }
 .post-title-link-left {
   text-align: left;
@@ -4163,7 +4168,7 @@ table.body h2 span {
 
                                             <tr>
                                                 <td class=\\"post-title post-title-no-excerpt post-title-serif\\" style=\\"vertical-align: top; color: #15212A; font-size: 36px; line-height: 1.1em; font-weight: 700; text-align: center; padding-bottom: 16px; font-family: Georgia, serif; letter-spacing: -0.01em;\\" valign=\\"top\\" align=\\"center\\">
-                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; color: #15212A; display: block; text-align: center; margin-top: 32px; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
+                                                    <a href=\\"http://127.0.0.1:2369/p/d52c42ae-2755-455c-80ec-70b2ec55c904/\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; color: #15212A; text-align: center; line-height: 1.1em; overflow-wrap: anywhere;\\" target=\\"_blank\\">Post with email-only card</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -4207,7 +4212,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -4352,7 +4357,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&key=803e513e2d8b88e759d8f433779659af335d7308b4cbac809600d563f6b49a76&newsletter=requested-newsletter-uuid]
 
 
 
@@ -4394,7 +4399,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25132",
+  "content-length": "25313",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

@@ -58,6 +58,67 @@ describe('MailgunClient', function () {
         assert(typeof mailgunClient.getBatchSize() === 'number');
     });
 
+    it('exports a number for configurable target delivery window', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000,
+            targetDeliveryWindow: 300
+        });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        assert.equal(mailgunClient.getTargetDeliveryWindow(), 300);
+    });
+
+    it('exports a number — 0 — for configurable target delivery window if not set', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000
+        });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        assert.equal(mailgunClient.getTargetDeliveryWindow(), 0);
+    });
+
+    it('exports a number - 0 - for configurable target delivery window if an invalid value is set', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000,
+            targetDeliveryWindow: 'invalid'
+        });
+        const mailgunClient = new MailgunClient({config, settings});
+        assert.equal(mailgunClient.getTargetDeliveryWindow(), 0);
+    });
+
+    it('exports a number - 0 - for configurable target delivery window if a negative value is set', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000,
+            targetDeliveryWindow: -3000
+        });
+        const mailgunClient = new MailgunClient({config, settings});
+        assert.equal(mailgunClient.getTargetDeliveryWindow(), 0);
+    });
+
     it('can connect via config', function () {
         const configStub = sinon.stub(config, 'get');
         configStub.withArgs('bulkEmail').returns({
@@ -164,6 +225,450 @@ describe('MailgunClient', function () {
             const response = await mailgunClient.send({}, {}, []);
 
             assert.equal(response, null);
+        });
+
+        it('sends a basic email', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="subject"[^]*Test Subject/m,
+                        /form-data; name="from"[^]*from@example.com/m,
+                        /form-data; name="h:Reply-To"[^]*replyTo@example.com/m,
+                        /form-data; name="html"[^]*<p>Test Content<\/p>/m,
+                        /form-data; name="text"[^]*Test Content/m,
+                        /form-data; name="to"[^]*test@example.com/m,
+                        /form-data; name="recipient-variables"[^]*\{"test@example.com":\{"name":"Test User"\}\}/m,
+                        /form-data; name="o:tag"[^]*bulk-email/m,
+                        /form-data; name="o:tag"[^]*ghost-email/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('throws an error if sending to more than the batch size', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 2
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User'
+                },
+                'test+1@example.com': {
+                    name: 'Test User'
+                },
+                'test+2@example.com': {
+                    name: 'Test User'
+                }
+            };
+
+            const mailgunClient = new MailgunClient({config, settings});
+
+            await assert.rejects(mailgunClient.send(message, recipientData, []));
+        });
+
+        it('sends an email with list unsubscribe headers', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="h:List-Unsubscribe"[^]*<%recipient.list_unsubscribe%>, <%tag_unsubscribe_email%>/m,
+                        /form-data; name="h:List-Unsubscribe-Post"[^]*List-Unsubscribe=One-Click/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('sends an email with email id', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content',
+                id: 'email-id'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="v:email-id"[^]*email-id/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('sends an email in test mode', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    testmode: true
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="o:testmode"[^]*yes/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('sends an email with a custom tag', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    tag: 'custom-tag'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="o:tag"[^]*custom-tag/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('sends an email with tracking opens enabled', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content',
+                track_opens: true
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="o:tracking-opens"[^]*yes/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('sends an email with delivery time', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content',
+                deliveryTime: new Date('2021-01-01T00:00:00Z')
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="o:deliverytime"[^]*Fri, 01 Jan 2021 00:00:00 GMT/m
+                    ];
+                    return regexList.every(regex => regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('omits the deliverytime if it is not provided', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    testmode: true
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="o:deliverytime"[^]*/m
+                    ];
+                    return regexList.every(regex => !regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
+        });
+
+        it('omits the deliverytime if it is not a valid date', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            const message = {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                replyTo: 'replyTo@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content',
+                deliveryTime: 'not a date'
+            };
+            const recipientData = {
+                'test@example.com': {
+                    name: 'Test User',
+                    unsubscribe_url: 'https://example.com/unsubscribe',
+                    list_unsubscribe: 'https://example.com/unsubscribe'
+                }
+            };
+            // Request body is multipart/form-data, so we need to check the body manually with some regex
+            // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+            const sendMock = nock('https://api.mailgun.net')
+                // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
+                .post('/v3/domain.com/messages', function (body) {
+                    const regexList = [
+                        /form-data; name="o:deliverytime"[^]*/m
+                    ];
+                    return regexList.every(regex => !regex.test(body));
+                })
+                .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send(message, recipientData, []);
+            assert(response.id === 'message-id');
+            assert(sendMock.isDone());
         });
     });
 

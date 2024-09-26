@@ -27,6 +27,8 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
+            
+            const deliveryTime = new Date();
 
             const response = await mailgunEmailProvider.send({
                 subject: 'Hi',
@@ -56,7 +58,8 @@ describe('Mailgun Email Provider', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             should(response.id).eql('provider-123');
             should(sendStub.calledOnce).be.true();
@@ -68,6 +71,7 @@ describe('Mailgun Email Provider', function () {
                     from: 'ghost@example.com',
                     replyTo: 'ghost@example.com',
                     id: '123',
+                    deliveryTime,
                     track_opens: true,
                     track_clicks: true
                 },
@@ -240,6 +244,25 @@ describe('Mailgun Email Provider', function () {
                 errorHandler: () => {}
             });
             assert.equal(provider.getMaximumRecipients(), 1000);
+        });
+    });
+
+    describe('getTargetDeliveryWindow', function () {
+        let mailgunClient;
+        let getTargetDeliveryWindowStub;
+
+        it('returns the configured target delivery window', function () {
+            getTargetDeliveryWindowStub = sinon.stub().returns(0);
+
+            mailgunClient = {
+                getTargetDeliveryWindow: getTargetDeliveryWindowStub
+            };
+            
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            assert.equal(provider.getTargetDeliveryWindow(), 0);
         });
     });
 });

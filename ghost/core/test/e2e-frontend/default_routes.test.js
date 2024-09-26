@@ -271,7 +271,7 @@ describe('Default Frontend routing', function () {
             await request.get('/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -283,7 +283,7 @@ describe('Default Frontend routing', function () {
             await request.get('/author/ghost/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -295,7 +295,7 @@ describe('Default Frontend routing', function () {
             await request.get('/tag/getting-started/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -461,7 +461,7 @@ describe('Default Frontend routing', function () {
             await request.get(`/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -472,7 +472,7 @@ describe('Default Frontend routing', function () {
             await request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);

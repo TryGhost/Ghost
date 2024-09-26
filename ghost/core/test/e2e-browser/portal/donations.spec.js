@@ -8,18 +8,24 @@ test.describe('Portal', () => {
             // go to website and open portal
             await sharedPage.goto('/#/portal/support');
 
+            const totalAmount = sharedPage.getByTestId('product-summary-total-amount');
+            await expect(totalAmount).toHaveText('$5.00');
+            await sharedPage.getByText('Change amount').click();
             await sharedPage.locator('#customUnitAmount').fill('12.50');
             await sharedPage.locator('#email').fill('member-donation-test-1@ghost.org');
             await completeStripeSubscription(sharedPage);
 
             await sharedPage.pause();
-            // Check success message
+            // Check success modal
             await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            expect(sharedPage.url()).toMatch(/[^\/]\/#\/portal\/support\/success/); // Ensure correct URL and no double-slash
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-            await expect(portalFrame.getByText('Thank you!')).toBeVisible();
+            await expect(portalFrame.getByText('Thank you for your support')).toBeVisible();
+            // Modal has working subscribe action
+            await portalFrame.getByText('Sign up').click();
+            await expect(portalFrame.locator('.gh-portal-signup')).toBeVisible();
         });
 
-        // This test is broken because the impersonate is not working!
         test('Can donate as a logged in free member', async ({sharedPage}) => {
             // create a new free member
             await createMember(sharedPage, {
@@ -34,13 +40,14 @@ test.describe('Portal', () => {
             await sharedPage.goto('#/portal/support');
 
             // Don't need to fill email as it's already filled
+            await sharedPage.getByText('Change amount').click();
             await sharedPage.locator('#customUnitAmount').fill('12.50');
             await completeStripeSubscription(sharedPage);
 
-            // Check success message
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
-            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-            await expect(portalFrame.getByText('Thank you!')).toBeVisible();
+            // Check success notification
+            const notificationFrame = sharedPage.frameLocator('[data-testid="portal-notification-frame"]');
+            // todo: replace class locator on data-attr locator
+            await expect(notificationFrame.locator('.gh-portal-notification.success')).toHaveCount(1);
         });
 
         test('Can donate with a fixed amount set and different currency', async ({sharedPage}) => {
@@ -69,7 +76,7 @@ test.describe('Portal', () => {
             // Check success message
             await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-            await expect(portalFrame.getByText('Thank you!')).toBeVisible();
+            await expect(portalFrame.getByText('Thank you for your support')).toBeVisible();
         });
     });
 });

@@ -30,42 +30,50 @@ export interface IconProps {
 const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = '', className = ''}) => {
     const {ReactComponent: SvgComponent} = icons[`../assets/icons/${name}.svg`];
 
-    let styles = '';
+    let classes = '';
+    let styles = {};
 
-    if (!styles) {
+    if (typeof size === 'number') {
+        styles = {
+            width: `${size}px`,
+            height: `${size}px`
+        };
+    }
+
+    if (!classes) {
         switch (size) {
         case 'custom':
             break;
         case '2xs':
-            styles = 'w-2 h-2';
+            classes = 'w-2 h-2';
             break;
         case 'xs':
-            styles = 'w-3 h-3';
+            classes = 'w-3 h-3';
             break;
         case 'sm':
-            styles = 'w-4 h-4';
+            classes = 'w-4 h-4';
             break;
         case 'lg':
-            styles = 'w-8 h-8';
+            classes = 'w-8 h-8';
             break;
         case 'xl':
-            styles = 'w-10 h-10';
+            classes = 'w-10 h-10';
             break;
 
         default:
-            styles = 'w-5 h-5';
+            classes = 'w-5 h-5';
             break;
         }
     }
 
-    styles = clsx(
-        styles,
+    classes = clsx(
+        classes,
         colorClass
     );
 
     if (SvgComponent) {
         return (
-            <SvgComponent className={`pointer-events-none ${styles} ${className}`} />
+            <SvgComponent className={`pointer-events-none ${classes} ${className}`} style={styles} />
         );
     }
     return null;

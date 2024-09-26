@@ -26,13 +26,31 @@ animation: bump 0.3s ease-in-out;
 
 .ap-note-content a {
   color: rgb(236 72 153) !important;
+  word-break: break-all;
 }
 
 .ap-note-content a:hover {
-  color: rgb(219 39 119) !important;
+  color: rgb(190, 25, 99) !important;
+  text-decoration: underline !important;
 }
 
 .ap-note-content p + p {
   margin-top: 1.5rem !important;
 }
 
+.ap-likes .ellipsis::after {
+  content: "…";
+}
+
+.ap-likes .invisible {
+  display: inline-block;
+  font-size: 0;
+  height: 0;
+  line-height: 0;
+  position: absolute;
+  width: 0;
+}
+
+.ap-textarea {
+  field-sizing: content;
+}

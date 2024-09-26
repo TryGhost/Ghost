@@ -766,7 +766,8 @@ module.exports = {
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        donation_message: {type: 'string', maxlength: 255, nullable: true} // https://docs.stripe.com/payments/checkout/custom-fields
     },
     stripe_products: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -780,7 +781,7 @@ module.exports = {
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_products.stripe_product_id'},
         active: {type: 'boolean', nullable: false},
-        nickname: {type: 'string', maxlength: 50, nullable: true},
+        nickname: {type: 'string', maxlength: 255, nullable: true},
         // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
         // so we should decide whether we should reduce it down in the future
         currency: {type: 'string', maxlength: 191, nullable: false},

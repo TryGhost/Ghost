@@ -3,6 +3,9 @@ import {hasMode} from '../../utils/check-mode';
 import {isCookiesDisabled} from '../../utils/helpers';
 
 export const InputFieldStyles = `
+    .gh-portal-input-section.hidden {
+        display: none;
+    }
     .gh-portal-input {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -81,6 +84,7 @@ function InputError({message, style}) {
 function InputField({
     name,
     id,
+    hidden,
     label,
     hideLabel,
     type,
@@ -97,6 +101,7 @@ function InputField({
 }) {
     const fieldNode = useRef(null);
     id = id || `input-${name}`;
+    const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
     if (isCookiesDisabled()) {
@@ -130,7 +135,7 @@ function InputField({
         }
     }, [autoFocus]);
     return (
-        <section className='gh-portal-input-section'>
+        <section className={sectionClasses}>
             <div className='gh-portal-input-labelcontainer'>
                 <label htmlFor={id} className={labelClasses}> {label} </label>
                 <InputError message={errorMessage} name={name} />
