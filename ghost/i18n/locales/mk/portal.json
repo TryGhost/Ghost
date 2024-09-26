@@ -173,5 +173,5 @@
     "Your input helps shape what gets published.": "Вашиот прилог помага да се оформи она кое ќе биде објавувано.",
     "Your subscription will expire on {{expiryDate}}": "Вашата претплата ќе истече на {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Вашата претплата ќе биде обновена на {{renewalDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Вашата претплата ќе започне на {subscriptionStart}}"
+    "Your subscription will start on {{subscriptionStart}}": "Вашата претплата ќе започне на {{subscriptionStart}}"
 }
