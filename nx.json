@@ -1,33 +1,16 @@
 {
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": [
-                    "build",
-                    "build:ts",
-                    "lint",
-                    "test",
-                    "test:unit"
-                ],
-                "useDaemonProcess": false,
-                "cacheDirectory": ".nxcache"
-            }
-        }
-    },
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "namedInputs": {
-        "default": [
-            "{projectRoot}/**/*",
-            "{workspaceRoot}/ghost/tsconfig.json"
-        ]
+        "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
     },
+    "parallel": 4,
     "targetDefaults": {
         "build": {
-            "dependsOn": [
-                "^build"
-            ],
+            "dependsOn": ["^build"],
             "inputs": [
-                { "env": "GHOST_CDN_URL" },
+                {
+                    "env": "GHOST_CDN_URL"
+                },
                 "default",
                 "^default"
             ],
@@ -36,20 +19,24 @@
                 "{projectRoot}/es",
                 "{projectRoot}/types",
                 "{projectRoot}/umd"
-            ]
+            ],
+            "cache": true
         },
         "build:ts": {
-            "dependsOn": [
-                "^build:ts"
-            ],
-            "inputs": [
-                "default",
-                "^default"
-            ],
-            "outputs": [
-                "{projectRoot}/build"
-            ]
+            "dependsOn": ["^build:ts"],
+            "inputs": ["default", "^default"],
+            "outputs": ["{projectRoot}/build"],
+            "cache": true
+        },
+        "lint": {
+            "cache": true
+        },
+        "test": {
+            "cache": true
+        },
+        "test:unit": {
+            "cache": true
         }
     },
-    "$schema": "./node_modules/nx/schemas/nx-schema.json"
+    "cacheDirectory": ".nxcache"
 }

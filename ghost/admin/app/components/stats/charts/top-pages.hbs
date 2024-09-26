@@ -1,7 +1,7 @@
 <div>
     <div class="gh-stats-metric-header">
         <h5 class="gh-stats-metric-label">Content</h5>
-        <div>
+        {{!-- <div>
             <PowerSelect
                 @selected={{this.contentOption}}
                 @options={{this.contentOptions}}
@@ -16,13 +16,13 @@
             >
                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
             </PowerSelect>
-        </div>
+        </div> --}}
     </div>
-    <div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience)}}></div>
+    <div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience device=@device browser=@browser location=@location source=@source pathname=@pathname)}}></div>
 </div>
 
 <div class="gh-stats-see-all-container">
-    <button type="button" class="gh-btn gh-btn-link gh-stats-see-all-btn" {{on "click" (fn this.openSeeAll @chartRange @audience)}}>
+    <button type="button" class="gh-btn gh-btn-link gh-stats-see-all-btn" {{on "click" (fn this.openSeeAll @chartRange @audience @device @browser @location @source @pathname)}}>
         <span>See all &rarr;</span>
     </button>
 </div>

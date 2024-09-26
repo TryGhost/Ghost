@@ -2,10 +2,14 @@ import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Actions', async () => {
-    test('Can like and unlike a comment', async ({page}) => {
-        const mockedApi = new MockedApi({});
-        mockedApi.setMember({});
+    let mockedApi: MockedApi;
 
+    test.beforeEach(async () => {
+        mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+    });
+
+    test('Can like and unlike a comment', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });
@@ -58,9 +62,6 @@ test.describe('Actions', async () => {
     });
 
     test('Can reply to a comment', async ({page}) => {
-        const mockedApi = new MockedApi({});
-        mockedApi.setMember({});
-
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });
@@ -106,8 +107,67 @@ test.describe('Actions', async () => {
         await expect(frame.getByText('This is a reply 123')).toHaveCount(1);
     });
 
+    test('Reply-to-reply action not shown without labs flag', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        const replyComment = parentComment.getByTestId('comment-component').nth(0);
+
+        expect(replyComment.getByTestId('reply-button')).not.toBeVisible();
+    });
+
+    test('Can reply to a reply', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            labs: {
+                commentImprovements: true
+            }
+        });
+
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        const replyComment = parentComment.getByTestId('comment-component').nth(0);
+
+        const replyReplyButton = replyComment.getByTestId('reply-button');
+        await replyReplyButton.click();
+
+        const editor = frame.getByTestId('form-editor');
+        await expect(editor).toBeVisible();
+        await waitEditorFocused(editor);
+
+        await page.keyboard.type('This is a reply to a reply');
+
+        const submitButton = parentComment.getByTestId('submit-form-button');
+        await submitButton.click();
+
+        await expect(frame.getByTestId('comment-component')).toHaveCount(3);
+        await expect(frame.getByText('This is a reply to a reply')).toHaveCount(1);
+    });
+
     test('Can add expertise', async ({page}) => {
-        const mockedApi = new MockedApi({});
         mockedApi.setMember({name: 'John Doe', expertise: null});
 
         mockedApi.addComment({
@@ -142,6 +202,11 @@ test.describe('Actions', async () => {
         await detailsFrame.getByTestId('save-button').click();
 
         await expect(profileModal).not.toBeVisible();
+
+        // playwright can lose focus on the editor which hides the member details,
+        // re-clicking here brings the member details back into view
+        await editor.click({force: true});
+        await waitEditorFocused(editor);
 
         await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
         await expect(frame.getByTestId('expertise-button')).toHaveText('·Software development');
