@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
-import {Button, NoValueLabel} from '@tryghost/admin-x-design-system';
+import React, {useEffect, useRef} from 'react';
+import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
@@ -8,7 +8,7 @@ import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
 
 import getUsername from '../utils/get-username';
-import {useAllActivitiesForUser, useSiteUrl} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser, useSiteUrl} from '../hooks/useActivityPubQueries';
 import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
@@ -86,7 +86,12 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
     const siteUrl = useSiteUrl();
 
-    const {data: activities = []} = useAllActivitiesForUser({
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useActivitiesForUser({
         handle: user,
         includeOwn: true,
         includeReplies: true,
@@ -94,6 +99,33 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             type: ['Follow', 'Like', `Create:Note:isReplyToOwn,${new URL(siteUrl).hostname}`]
         }
     });
+
+    const activities = (data?.pages.flatMap(page => page.data) ?? []);
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     // Retrieve followers for the user
     const {data: followers = []} = useFollowersForUser(user);
@@ -114,40 +146,48 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     </div>
                 )}
                 {activities.length > 0 && (
-                    <div className='mt-8 flex w-full max-w-[560px] flex-col'>
-                        {activities?.map(activity => (
-                            <ActivityItem
-                                key={activity.id}
-                                url={getActivityUrl(activity) || getActorUrl(activity)}
-                                onClick={
-                                    activity.type === ACTVITY_TYPE.CREATE ? () => {
-                                        NiceModal.show(ArticleModal, {
-                                            object: activity.object,
-                                            actor: activity.actor,
-                                            comments: activity.object.replies
-                                        });
-                                    } : undefined
-                                }
-                            >
-                                <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                <div className='pt-[2px]'>
-                                    <div className='text-grey-600'>
-                                        <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
-                                        {getUsername(activity.actor)}
+                    <>
+                        <div className='mt-8 flex w-full max-w-[560px] flex-col'>
+                            {activities?.map(activity => (
+                                <ActivityItem
+                                    key={activity.id}
+                                    url={getActivityUrl(activity) || getActorUrl(activity)}
+                                    onClick={
+                                        activity.type === ACTVITY_TYPE.CREATE ? () => {
+                                            NiceModal.show(ArticleModal, {
+                                                object: activity.object,
+                                                actor: activity.actor,
+                                                comments: activity.object.replies
+                                            });
+                                        } : undefined
+                                    }
+                                >
+                                    <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
+                                    <div className='pt-[2px]'>
+                                        <div className='text-grey-600'>
+                                            <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
+                                            {getUsername(activity.actor)}
+                                        </div>
+                                        <div className=''>{getActivityDescription(activity)}</div>
+                                        {getExtendedDescription(activity)}
                                     </div>
-                                    <div className=''>{getActivityDescription(activity)}</div>
-                                    {getExtendedDescription(activity)}
-                                </div>
-                                {isFollower(activity.actor.id) === false && (
-                                    <Button className='ml-auto' label='Follow' link onClick={(e) => {
-                                        e?.preventDefault();
+                                    {isFollower(activity.actor.id) === false && (
+                                        <Button className='ml-auto' label='Follow' link onClick={(e) => {
+                                            e?.preventDefault();
 
-                                        alert('Implement me!');
-                                    }} />
-                                )}
-                            </ActivityItem>
-                        ))}
-                    </div>
+                                            alert('Implement me!');
+                                        }} />
+                                    )}
+                                </ActivityItem>
+                            ))}
+                        </div>
+                        <div ref={loadMoreRef} className='h-1'></div>
+                        {isFetchingNextPage && (
+                            <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                <LoadingIndicator size='md' />
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </>
