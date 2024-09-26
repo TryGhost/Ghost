@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 import {Button} from '@tryghost/admin-x-design-system';
 
@@ -9,29 +9,47 @@ interface FollowButtonProps {
     following: boolean;
     handle: string;
     type?: 'button' | 'link';
+    onFollow?: () => void;
+    onUnfollow?: () => void;
 }
 
-const FollowButton: React.FC<FollowButtonProps> = ({className, following, handle, type = 'button'}) => {
+const noop = () => {};
+
+const FollowButton: React.FC<FollowButtonProps> = ({
+    className,
+    following,
+    handle,
+    type = 'button',
+    onFollow = noop,
+    onUnfollow = noop
+}) => {
     const [isFollowing, setIsFollowing] = useState(following);
 
     const mutation = useFollow('index',
-        () => {},
+        noop,
         () => {
             setIsFollowing(false);
+            onUnfollow();
         }
     );
 
-    const handleOnClick = async () => {
+    const handleClick = async () => {
         if (isFollowing) {
             setIsFollowing(false);
+            onUnfollow();
 
-            // @TODO: Implement unfollow
+            // @TODO: Implement unfollow mutation
         } else {
             setIsFollowing(true);
+            onFollow();
 
             mutation.mutate(handle);
         }
     };
+
+    useEffect(() => {
+        setIsFollowing(following);
+    }, [following]);
 
     return (
         <Button
@@ -43,7 +61,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({className, following, handle
                 event?.preventDefault();
                 event?.stopPropagation();
 
-                handleOnClick();
+                handleClick();
             }}
         />
     );

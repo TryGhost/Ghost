@@ -24,39 +24,31 @@ interface SearchResultItem {
 
 interface SearchResultProps {
     result: SearchResultItem;
+    update: (id: string, updated: Partial<SearchResultItem>) => void;
 }
 
 interface SearchProps {}
 
-const SUGGESTED_RESULTS: SearchResultItem[] = [
-    {
-        actor: {
-            id: 'https://example.com/users/foobarbaz',
-            name: 'Foo bar baz'
-        } as ActorProperties,
-        handle: '@foo@bar.baz',
-        followerCount: 123,
-        isFollowing: true,
-        posts: []
-    },
-    {
-        actor: {
-            id: 'https://example.com/users/bazbarfoo',
-            name: 'Baz bar foo'
-        } as ActorProperties,
-        handle: '@baz@bar.foo',
-        followerCount: 456,
-        isFollowing: false,
-        posts: []
-    }
-];
+const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
+    const onFollow = () => {
+        update(result.actor.id!, {
+            isFollowing: true,
+            followerCount: result.followerCount + 1
+        });
+    };
 
-const SearchResult: React.FC<SearchResultProps> = ({result}) => {
+    const onUnfollow = () => {
+        update(result.actor.id!, {
+            isFollowing: false,
+            followerCount: result.followerCount - 1
+        });
+    };
+
     return (
         <ActivityItem
             key={result.actor.id}
             onClick={() => {
-                NiceModal.show(ProfileSearchResultModal, {profile: result});
+                NiceModal.show(ProfileSearchResultModal, {profile: result, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={result.actor}/>
@@ -71,23 +63,60 @@ const SearchResult: React.FC<SearchResultProps> = ({result}) => {
                 following={result.isFollowing}
                 handle={result.handle}
                 type='link'
+                onFollow={onFollow}
+                onUnfollow={onUnfollow}
             />
         </ActivityItem>
     );
 };
 
 const Search: React.FC<SearchProps> = ({}) => {
+    // Initialise suggested profiles
+    const [suggested, setSuggested] = useState<SearchResultItem[]>([
+        {
+            actor: {
+                id: 'https://example.com/users/foobarbaz',
+                name: 'Foo bar baz'
+            } as ActorProperties,
+            handle: '@foo@bar.baz',
+            followerCount: 123,
+            isFollowing: true,
+            posts: []
+        },
+        {
+            actor: {
+                id: 'https://example.com/users/bazbarfoo',
+                name: 'Baz bar foo'
+            } as ActorProperties,
+            handle: '@baz@bar.foo',
+            followerCount: 456,
+            isFollowing: false,
+            posts: []
+        }
+    ]);
+
+    const updateSuggested = (id: string, updated: Partial<SearchResultItem>) => {
+        const index = suggested.findIndex(result => result.actor.id === id);
+
+        setSuggested((current) => {
+            const newSuggested = [...current];
+            newSuggested[index] = {...newSuggested[index], ...updated};
+            return newSuggested;
+        });
+    };
+
+    // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
-    const {data, isFetching, isFetched} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
+    const {searchQuery, updateProfileSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
+    const {data, isFetching, isFetched} = searchQuery;
 
     const results = data?.profiles || [];
-
     const showNoResults = isFetched && results.length === 0;
-    const showSuggestedResults = query === '' || (isFetched && results.length === 0);
+    const showSuggested = query === '' || (isFetched && results.length === 0);
 
-    // Focus the query input on first render
+    // Focus the query input on initial render
     useEffect(() => {
         if (queryInputRef.current) {
             queryInputRef.current.focus();
@@ -127,13 +156,21 @@ const Search: React.FC<SearchProps> = ({}) => {
                     </NoValueLabel>
                 )}
                 {results.map(result => (
-                    <SearchResult key={(result as SearchResultItem).actor.id} result={result as SearchResultItem} />
+                    <SearchResult
+                        key={(result as SearchResultItem).actor.id}
+                        result={result as SearchResultItem}
+                        update={updateResult}
+                    />
                 ))}
-                {showSuggestedResults && (
+                {showSuggested && (
                     <>
                         <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
-                        {SUGGESTED_RESULTS.map(profile => (
-                            <SearchResult key={profile.actor.id} result={profile} />
+                        {suggested.map(profile => (
+                            <SearchResult
+                                key={profile.actor.id}
+                                result={profile}
+                                update={updateSuggested}
+                            />
                         ))}
                     </>
                 )}

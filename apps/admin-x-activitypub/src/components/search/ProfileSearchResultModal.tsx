@@ -14,9 +14,17 @@ interface ProfileSearchResultModalProps {
         isFollowing: boolean;
         posts: Activity[];
     };
+    onFollow: () => void;
+    onUnfollow: () => void;
 }
 
-const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({profile}) => {
+const noop = () => {};
+
+const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
+    profile,
+    onFollow = noop,
+    onUnfollow = noop
+}) => {
     const modal = useModal();
     const attachments = (profile.actor.attachment || [])
         .filter(attachment => attachment.type === 'PropertyValue');
@@ -56,7 +64,12 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({prof
                                     size='lg'
                                 />
                             </div>
-                            <FollowButton following={profile.isFollowing} handle={profile.handle} />
+                            <FollowButton
+                                following={profile.isFollowing}
+                                handle={profile.handle}
+                                onFollow={onFollow}
+                                onUnfollow={onUnfollow}
+                            />
                         </div>
                         <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
                         <span className='mt-2 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>

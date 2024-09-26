@@ -3,8 +3,16 @@ export type Actor = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
-interface SearchResults {
-    profiles: object[];
+export interface ProfileSearchResult {
+    actor: Actor;
+    handle: string;
+    followerCount: number;
+    isFollowing: boolean;
+    posts: Activity[];
+}
+
+export interface SearchResults {
+    profiles: ProfileSearchResult[];
 }
 
 export class ActivityPubAPI {
