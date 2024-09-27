@@ -118,7 +118,7 @@
     "Sign up": "Registreeru",
     "Signup error: Invalid link": "Registreerimise viga: Vigane link",
     "Something went wrong, please try again later.": "Midagi läks valesti, palun proovige hiljem uuesti.",
-    "Sorry, that didn't work.": "Vabandust, see ei töötanud.",
+    "Sorry, that didn’t work.": "",
     "Spam complaints": "Rämpsposti kaebused",
     "Start {{amount}}-day free trial": "Alusta {{amount}}-päevast tasuta prooviversiooni",
     "Starting {{startDate}}": "Algab {{startDate}}",
