@@ -2,7 +2,7 @@ import Flexsearch from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
-    constructor({adminUrl, apiKey}) {
+    constructor({adminUrl, apiKey, locale}) {
         this.api = new GhostContentAPI({
             url: adminUrl,
             key: apiKey,
@@ -15,7 +15,8 @@ export default class SearchIndex {
                 id: 'id',
                 index: ['title', 'excerpt'],
                 store: true
-            }
+            },
+            ...this.getCjkFlexsearchDocumentPatchOptions(locale)
         });
         this.authorsIndex = new Flexsearch.Document({
             tokenize: 'forward',
@@ -23,7 +24,8 @@ export default class SearchIndex {
                 id: 'id',
                 index: ['name'],
                 store: true
-            }
+            },
+            ...this.getCjkFlexsearchDocumentPatchOptions(locale)
         });
         this.tagsIndex = new Flexsearch.Document({
             tokenize: 'forward',
@@ -31,7 +33,8 @@ export default class SearchIndex {
                 id: 'id',
                 index: ['name'],
                 store: true
-            }
+            },
+            ...this.getCjkFlexsearchDocumentPatchOptions(locale)
         });
 
         this.init = this.init.bind(this);
@@ -131,6 +134,57 @@ export default class SearchIndex {
             posts: this.#normalizeSearchResult(posts),
             authors: this.#normalizeSearchResult(authors),
             tags: this.#normalizeSearchResult(tags)
+        };
+    }
+
+    checkLocaleCjk(locale) {
+        if (!locale) {
+            return false;
+        }
+        // Chinese
+        if (locale === 'zh' || locale === 'zh-Hans' || locale === 'zh-Hant') {
+            return true;
+        }
+        // Japanese
+        if (locale === 'ja') {
+            return true;
+        }
+        // Korean
+        if (locale === 'ko') {
+            return true;
+        }
+        return false;
+    }
+
+    getCjkFlexsearchDocumentPatchOptions(locale) {
+        // https://github.com/nextapps-de/flexsearch?tab=readme-ov-file#cjk-word-break-chinese-japanese-korean
+
+        const isLocaleCjk = (() => {
+            if (!locale) {
+                return false;
+            }
+            // Chinese
+            if (locale === 'zh' || locale === 'zh-Hans' || locale === 'zh-Hant') {
+                return true;
+            }
+            // Japanese
+            if (locale === 'ja') {
+                return true;
+            }
+            // Korean
+            if (locale === 'ko') {
+                return true;
+            }
+            return false;
+        })();
+
+        if (!isLocaleCjk) {
+            return {};
+        }
+
+        return {
+            // eslint-disable-next-line no-control-regex
+            encode: str => str.replace(/[\x00-\x7F]/g, '').split('')
         };
     }
 }
