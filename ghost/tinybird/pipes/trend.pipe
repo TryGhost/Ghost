@@ -15,7 +15,7 @@ SQL >
     select addMinutes(toStartOfMinute(start), number) as t
     from (select arrayJoin(range(1, 31)) as number)
 
-NODE hits
+NODE visits
 DESCRIPTION >
     Get last 30 minutes metrics gropued by minute
 
@@ -37,4 +37,4 @@ DESCRIPTION >
     Join and generate timeseries with metrics for the last 30 minutes
 
 SQL >
-    select a.t, b.visits from timeseries a left join hits b on a.t = b.t order by a.t
+    select a.t, b.visits from timeseries a left join visits b on a.t = b.t order by a.t
