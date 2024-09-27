@@ -61,6 +61,22 @@ jobs:
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
+      - name: Check user org membership
+        id: check_user_org_membership
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Looking up: ${{ github.event.pull_request.user.login }}"
+
+          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location 'https://api.github.com/orgs/tryghost/members/${{ github.event.pull_request.user.login }}' --header 'Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}')
+
+          if [ "$LOOKUP_USER" == "204" ]; then
+            echo "User is in the org"
+            echo "is_member=true" >> $GITHUB_OUTPUT
+          else
+            echo "User is not in the org"
+            echo "is_member=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Determine added packages
         uses: dorny/paths-filter@v2.12.0
         id: added
@@ -179,9 +195,8 @@ jobs:
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
-      branch_name: ${{ github.ref_name }}
-      is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ env.IS_MAIN }}
+      member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
 
@@ -950,10 +965,29 @@ jobs:
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.outputs.is_canary_branch == 'true' && needs.job_setup.result == 'success' && needs.job_required_tests.result == 'success'
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_required_tests.result == 'success'
+      && (
+        needs.job_setup.outputs.is_main == 'true'
+        || (
+          github.event_name == 'pull_request'
+          && needs.job_setup.outputs.member_is_in_org == 'true'
+          && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
+        )
+      )
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
+
+      - name: Compute branch name (push)
+        if: github.event_name == 'push'
+        run: echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Compute branch name (pull_request)
+        if: github.event_name == 'pull_request'
+        run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
@@ -962,6 +996,67 @@ jobs:
           workflow: .github/workflows/deploy.yml
           ref: 'refs/heads/main'
           repo: TryGhost/Ghost-Moya
-          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ needs.job_setup.outputs.branch_name }}"}'
+          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
+  publish_admin_x_activitypub:
+    needs: [
+      job_setup,
+      job_lint,
+      job_unit-tests
+    ]
+    name: Publish @tryghost/admin-x-activitypub
+    runs-on: ubuntu-latest
+    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.12.1'
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build the package
+        run: yarn run nx build @tryghost/admin-x-activitypub
+
+      - name: Check if version changed
+        id: version_check
+        working-directory: apps/admin-x-activitypub
+        run: |
+          CURRENT_VERSION=$(cat package.json | jq -r .version)
+          PUBLISHED_VERSION=$(npm show @tryghost/admin-x-activitypub version || echo "0.0.0")
+          echo "Current version: $CURRENT_VERSION"
+          echo "Published version: $PUBLISHED_VERSION"
+          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version is unchanged."
+            echo "version_changed=false" >> $GITHUB_ENV
+          else
+            echo "Version has changed."
+            echo "version_changed=true" >> $GITHUB_ENV
+          fi
+
+      - name: Configure .npmrc
+        run: |
+          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      - name: Publish to npm
+        if: env.version_changed == 'true'
+        working-directory: apps/admin-x-activitypub
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Purge jsdelivr cache
+        if: env.version_changed == 'true'
+        uses: gacts/purge-jsdelivr-cache@v1
+        with:
+          url: |
+            https://cdn.jsdelivr.net/npm/@tryghost/admin-x-activitypub@0/dist/admin-x-activitypub.js

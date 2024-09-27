@@ -73,9 +73,9 @@ export default class TopLocations extends Component {
                         </span>
                     )
                 }}
-                categories={['hits']}
+                categories={['visits']}
                 categoryConfig={{
-                    hits: {
+                    visits: {
                         label: <span className="gh-stats-data-header">Visits</span>,
                         renderValue: ({value}) => <span className="gh-stats-data-value">{formatNumber(value)}</span>
                     }
