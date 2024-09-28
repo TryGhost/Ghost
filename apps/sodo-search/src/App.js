@@ -17,14 +17,13 @@ export default class App extends React.Component {
         const i18nLanguage = this.props.locale || 'en';
         const i18n = i18nLib(i18nLanguage, 'search');
         const dir = i18n.dir() || 'ltr';
-        console.log('dir', dir);
         this.state = {
             searchIndex,
             showPopup: false,
             indexStarted: false,
             indexComplete: false,
             t: i18n.t,
-            dir: dir,
+            dir: dir
         };
 
         this.inputRef = React.createRef();
