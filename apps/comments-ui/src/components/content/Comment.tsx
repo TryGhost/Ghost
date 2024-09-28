@@ -186,7 +186,7 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, isInReplyMode, clos
     }
 
     return (
-        <div className="my-10">
+        <div className="my-8 sm:my-10">
             <ReplyForm close={closeReplyMode} parent={comment} />
         </div>
     );

@@ -2,15 +2,19 @@ const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
+    'ar', // Arabic
     'bg', // Bulgarian
     'bs', // Bosnian
     'ca', // Catalan
     'cs', // Czech
     'da', // Danish
     'de', // German
+    'de-CH', // Swiss German
+    'el', // Greek
     'en', // English
     'eo', // Esperanto
     'es', // Spanish
+    'et', // Estonian
     'fa', // Persian/Farsi
     'fi', // Finnish
     'fr', // French
@@ -23,6 +27,7 @@ const SUPPORTED_LOCALES = [
     'ja', // Japanese
     'ko', // Korean
     'lt', // Lithuanian
+    'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
     'nl', // Dutch
@@ -38,7 +43,9 @@ const SUPPORTED_LOCALES = [
     'sl', // Slovenian
     'sq', // Albanian
     'sr', // Serbian
+    'sr-Cyrl', // Serbian (Cyrillic)
     'sv', // Swedish
+    'th', // Thai
     'tr', // Turkish
     'uk', // Ukrainian
     'uz', // Uzbek

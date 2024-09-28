@@ -9,12 +9,12 @@ TOKEN "stats page" READ
 
 NODE endpoint
 DESCRIPTION >
-    Group by device and calculate hits and visits
+    Group by device and calculate views and visits
 
 SQL >
     %
-    select device, uniqMerge(visits) as visits, countMerge(hits) as hits
-    from analytics_sources_mv
+    select device, uniq(session_id) as visits, countMerge(pageviews) as pageviews
+    from analytics_sessions_mv
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
 
