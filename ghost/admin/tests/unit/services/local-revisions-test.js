@@ -30,8 +30,7 @@ describe('Unit: Service: local-revisions', function () {
         // Mock localStorage
         sinon.restore();
         localStore = {};
-        getItemStub = sinon.stub().callsFake(key => localStore[key] || null
-        );
+        getItemStub = sinon.stub().callsFake(key => localStore[key] || null);
         setItemStub = sinon.stub().callsFake((key, value) => localStore[key] = value + '');
         removeItemStub = sinon.stub().callsFake(key => delete localStore[key]);
         clearStub = sinon.stub().callsFake(() => localStore = {});
@@ -41,6 +40,16 @@ describe('Unit: Service: local-revisions', function () {
             removeItem: removeItemStub,
             clear: clearStub
         };
+        Object.defineProperty(localStorageMock, 'length', {
+            get: function () {
+                return Object.keys(localStore).length;
+            }
+        });
+        Object.defineProperty(localStorageMock, 'key', {
+            value: function (n) {
+                return Object.keys(localStore)[n];
+            }
+        });
 
         // Create the service
         this.service = this.owner.lookup('service:local-revisions');
@@ -116,9 +125,7 @@ describe('Unit: Service: local-revisions', function () {
             quotaError.name = 'QuotaExceededError';
 
             setItemStub.onCall(setItemStub.callCount).throws(quotaError);
-            // remove calls setItem() to remove the key from the index
-            // it's called twice for each quota error, hence the + 3
-            setItemStub.onCall(setItemStub.callCount + 3).throws(quotaError);
+            setItemStub.onCall(setItemStub.callCount + 1).throws(quotaError);
             const keyToAdd = this.service.performSave('post', {id: 'test-id-3', lexical: 'data-3', status: 'draft'});
 
             // Ensure the oldest revision was removed
@@ -319,11 +326,13 @@ describe('Unit: Service: local-revisions', function () {
             expect(result).to.deep.equal([]);
         });
 
-        it('returns the keys for all revisions if not prefix is provided', function () {
+        it('returns the keys for all revisions if no prefix is provided', async function () {
             // save revision
             this.service.performSave('post', {id: 'test-id', lexical: 'data', status: 'draft'});
+            await sleep(1);
+            this.service.performSave('post', {id: 'draft', lexical: 'data', status: 'draft'});
             const result = this.service.keys();
-            expect(Object.keys(result)).to.have.lengthOf(1);
+            expect(result).to.have.lengthOf(2);
             expect(result[0]).to.match(/post-revision-test-id-\d+/);
         });
 
@@ -332,7 +341,7 @@ describe('Unit: Service: local-revisions', function () {
             this.service.performSave('post', {id: 'test-id', lexical: 'data', status: 'draft'});
             this.service.performSave('post', {id: 'draft', lexical: 'data', status: 'draft'});
             const result = this.service.keys('post-revision-test-id');
-            expect(Object.keys(result)).to.have.lengthOf(1);
+            expect(result).to.have.lengthOf(1);
             expect(result[0]).to.match(/post-revision-test-id-\d+/);
         });
     });
