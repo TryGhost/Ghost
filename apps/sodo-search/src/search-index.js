@@ -8,9 +8,8 @@ export default class SearchIndex {
             key: apiKey,
             version: 'v5.0'
         });
-        const rtl = (dir === 'rtl') ;
+        const rtl = (dir === 'rtl');
         const tokenize = (dir === 'rtl') ? 'reverse' : 'forward';
-        console.log('rtt', rtl, 'tokenize', tokenize);
         this.postsIndex = new Flexsearch.Document({
             tokenize: tokenize,
             rtl: rtl,

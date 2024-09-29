@@ -19,7 +19,6 @@ export default class App extends React.Component {
             dir: dir
         });
 
-
         this.state = {
             searchIndex,
             showPopup: false,
