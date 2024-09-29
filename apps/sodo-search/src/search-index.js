@@ -2,15 +2,18 @@ import Flexsearch from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
-    constructor({adminUrl, apiKey}) {
+    constructor({adminUrl, apiKey, dir}) {
         this.api = new GhostContentAPI({
             url: adminUrl,
             key: apiKey,
             version: 'v5.0'
         });
-
+        const rtl = (dir === 'rtl') ;
+        const tokenize = (dir === 'rtl') ? 'reverse' : 'forward';
+        console.log('rtt', rtl, 'tokenize', tokenize);
         this.postsIndex = new Flexsearch.Document({
-            tokenize: 'forward',
+            tokenize: tokenize,
+            rtl: rtl,
             document: {
                 id: 'id',
                 index: ['title', 'excerpt'],
@@ -18,7 +21,8 @@ export default class SearchIndex {
             }
         });
         this.authorsIndex = new Flexsearch.Document({
-            tokenize: 'forward',
+            tokenize: tokenize,
+            rtl: rtl,
             document: {
                 id: 'id',
                 index: ['name'],
@@ -26,7 +30,8 @@ export default class SearchIndex {
             }
         });
         this.tagsIndex = new Flexsearch.Document({
-            tokenize: 'forward',
+            tokenize: tokenize,
+            rtl: rtl,
             document: {
                 id: 'id',
                 index: ['name'],
