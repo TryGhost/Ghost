@@ -17,9 +17,9 @@ SQL >
         anySimpleState(location) AS location,
         anySimpleState(source) AS source,
         anySimpleState(pathname) AS pathname,
-        minSimpleState(timestamp) AS first_hit,
-        maxSimpleState(timestamp) AS latest_hit,
-        countState() AS hits
+        minSimpleState(timestamp) AS first_view,
+        maxSimpleState(timestamp) AS latest_view,
+        countState() AS pageviews
     FROM analytics_hits
     GROUP BY date, session_id, site_uuid
 
