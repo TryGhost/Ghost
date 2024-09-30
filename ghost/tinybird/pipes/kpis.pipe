@@ -62,9 +62,8 @@ SQL >
                 )
             ) as date
     {% end %}
-    where date <= now()
 
-NODE hits
+NODE pageviews
 DESCRIPTION >
     Group by sessions and calculate metrics at that level
 
@@ -84,8 +83,8 @@ SQL >
             uniq(session_id) as visits,
             count() as pageviews,
             case when min(timestamp) = max(timestamp) then 1 else 0 end as is_bounce,
-            max(timestamp) as latest_hit_aux,
-            min(timestamp) as first_hit_aux
+            max(timestamp) as latest_view_aux,
+            min(timestamp) as first_view_aux
         from analytics_hits
         where toDate(timestamp) = {{ Date(date_from) }}
         group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname
@@ -101,10 +100,10 @@ SQL >
             pathname,
             session_id,
             uniq(session_id) as visits,
-            countMerge(hits) as pageviews,
-            case when min(first_hit) = max(latest_hit) then 1 else 0 end as is_bounce,
-            max(latest_hit) as latest_hit_aux,
-            min(first_hit) as first_hit_aux
+            countMerge(pageviews) as pageviews,
+            case when min(first_view) = max(latest_view) then 1 else 0 end as is_bounce,
+            max(latest_view) as latest_view_aux,
+            min(first_view) as first_view_aux
         from analytics_sessions_mv
         where
             {% if defined(date_from) %} date >= {{ Date(date_from) }}
@@ -132,9 +131,9 @@ SQL >
         pathname,
         uniq(session_id) as visits,
         sum(pageviews) as pageviews,
-        sum(case when latest_hit_aux = first_hit_aux then 1 else 0 end) / visits as bounce_rate,
-        avg(latest_hit_aux - first_hit_aux) as avg_session_sec
-    from hits
+        sum(case when latest_view_aux = first_view_aux then 1 else 0 end) / visits as bounce_rate,
+        avg(latest_view_aux - first_view_aux) as avg_session_sec
+    from pageviews
     group by date, site_uuid, member_status, device, browser, location, source, pathname
 
 NODE endpoint
