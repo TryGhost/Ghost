@@ -1162,7 +1162,7 @@ module.exports = class MemberRepository {
         } else {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const subscriptionModel = await this.createStripeSubscriptionThenFireSubscriptionCreated(eventData, subscription, subscriptionData, source, options, member, subscriptionPriceData, ghostProduct, offerId, data);
+            const subscriptionModel = await this.createStripeCustomerSubscription(eventData, subscription, subscriptionData, source, options, member, subscriptionPriceData, ghostProduct, offerId, data);
 
             if (offerId) {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
@@ -1329,7 +1329,7 @@ module.exports = class MemberRepository {
         }
     }
 
-    async createStripeSubscriptionThenFireSubscriptionCreated(eventData, subscription, subscriptionData, subscriptionCreatedEventSource, options, member, subscriptionPriceData, ghostProduct, offerId, data) {
+    async createStripeCustomerSubscription(eventData, subscription, subscriptionData, subscriptionCreatedEventSource, options, member, subscriptionPriceData, ghostProduct, offerId, data) {
         eventData.created_at = new Date(subscription.start_date * 1000);
         const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
         await this._MemberPaidSubscriptionEvent.add({

@@ -350,7 +350,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-            const subscriptionCreatedSpy = sinon.spy(repo, 'createStripeSubscriptionThenFireSubscriptionCreated');
+            const subscriptionCreatedSpy = sinon.spy(repo, 'createStripeCustomerSubscription');
 
             await repo.linkSubscription({
                 subscription: subscriptionData
