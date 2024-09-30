@@ -5,10 +5,7 @@ on:
   push:
     branches:
       - main
-      - arch
       - 'v5.*'
-      - 3.x
-      - 2.x
 
 env:
   FORCE_COLOR: 1
