@@ -36,6 +36,9 @@ export type ActorProperties = {
     image: {
         url: string;
     };
+    icon: {
+        url: string;
+    };
     inbox: string;
     manuallyApprovesFollowers: boolean;
     name: string;
