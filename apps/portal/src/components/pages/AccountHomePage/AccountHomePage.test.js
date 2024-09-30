@@ -21,11 +21,10 @@ const setup = (overrides) => {
 };
 
 describe('Account Home Page', () => {
-    test('renders', () => {
-        const siteData = getSiteData({commentsEnabled: 'off'});
+    test('renders default with 1 newsletter', () => {
+        const siteData = getSiteData({commentsEnabled: 'off', editorDefaultEmailRecipients: 'visibility', newsletters: [site.newsletters[0]]});
         const {logoutBtn, utils} = setup({site: siteData});
         expect(logoutBtn).toBeInTheDocument();
-        expect(utils.queryByText('You\'re currently not receiving emails')).not.toBeInTheDocument();
         expect(utils.queryByText('Email newsletter')).toBeInTheDocument();
     });
 
@@ -49,10 +48,18 @@ describe('Account Home Page', () => {
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'accountEmail'});
     });
 
-    test('hides Newsletter toggle if newsletters are disabled', () => {
-        const siteData = getSiteData({editorDefaultEmailRecipients: 'disabled'});
+    test('hides Newsletter toggle if newsletters and comments are disabled', () => {
+        const siteData = getSiteData({editorDefaultEmailRecipients: 'disabled', newsletters: [], commentsEnabled: 'off'});
         const {logoutBtn, utils} = setup({site: siteData});
         expect(logoutBtn).toBeInTheDocument();
         expect(utils.queryByText('Email newsletter')).not.toBeInTheDocument();
+        expect(utils.queryByText('Update your preferences')).not.toBeInTheDocument();
+    });
+
+    test('shows Email preferences option if comments are enabled but no newsletters', () => {
+        const siteData = getSiteData({editorDefaultEmailRecipients: 'disabled', newsletters: [], commentsEnabled: 'all'});
+        const {logoutBtn, utils} = setup({site: siteData});
+        expect(logoutBtn).toBeInTheDocument();
+        expect(utils.queryByText('Update your preferences')).toBeInTheDocument();
     });
 });
