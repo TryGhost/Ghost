@@ -30,7 +30,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         badgeColor = ' bg-purple-500';
         break;
     }
-    
+
     switch (size) {
     case 'xs':
         iconSize = 12;
@@ -55,7 +55,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
                 <img
                     className={imageClass}
                     src={iconUrl}
-                    onError={() => setIconUrl(null)}
+                    onError={() => setIconUrl(undefined)}
                 />
                 {badge && (
                     <div className={`${badgeClass} ${badgeColor}`}>
