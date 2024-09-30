@@ -580,4 +580,47 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
     });
+
+    describe('search', function () {
+        test('It returns the results of the search', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/actions/search?query=%40foo%40bar.baz': {
+                    response: JSONResponse({
+                        profiles: [
+                            {
+                                handle: '@foo@bar.baz',
+                                name: 'Foo Bar'
+                            }
+                        ]
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.search('@foo@bar.baz');
+            const expected = {
+                profiles: [
+                    {
+                        handle: '@foo@bar.baz',
+                        name: 'Foo Bar'
+                    }
+                ]
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
 });
