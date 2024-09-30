@@ -64,5 +64,15 @@ describe('Metrics Server', function () {
             await metricsServer.shutdown();
             assert.ok(server);
         });
+
+        it('should not shutdown the server if it is already shutting down', async function () {
+            metricsServer = new MetricsServer();
+            const stopSpy = sinon.spy(metricsServer, 'stop');
+            await metricsServer.start();
+            // Call shutdown multiple times simultaneously
+            Promise.all([metricsServer.shutdown(), metricsServer.shutdown()]);
+            // It should only call stop() once
+            sinon.assert.calledOnce(stopSpy);
+        });
     });
 });

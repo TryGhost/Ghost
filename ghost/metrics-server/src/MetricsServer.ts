@@ -24,6 +24,7 @@ export class MetricsServer {
     private app: express.Application | null;
     private httpServer: stoppable.StoppableServer | null;
     private handler: express.Handler;
+    private isShuttingDown: boolean;
 
     constructor({serverConfig, handler}: {serverConfig: ServerConfig, handler: express.Handler} = {serverConfig: defaultServerConfig, handler: defaultHandler}) {
         // initialize some local variables
@@ -31,6 +32,7 @@ export class MetricsServer {
         this.handler = handler;
         this.app = null;
         this.httpServer = null;
+        this.isShuttingDown = false;
     }
 
     async start() {
@@ -51,14 +53,17 @@ export class MetricsServer {
     async stop() {
         // stop the server
         debug('Stopping metrics server');
-        if (this.httpServer) {
-            this.httpServer.stop();
+        if (this.httpServer && this.httpServer.listening) {
+            await this.httpServer.stop();
         }
     }
 
     async shutdown() {
-        // shutdown the server
-        debug('Shutting down metrics server');
+        if (this.isShuttingDown) {
+            return;
+        }
+        this.isShuttingDown = true;
         await this.stop();
+        this.isShuttingDown = false;
     }
 }
