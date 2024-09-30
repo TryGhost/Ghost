@@ -21,11 +21,15 @@
     "build"
   ],
   "devDependencies": {
+    "@types/express": "4.17.21",
     "c8": "10.1.2",
     "mocha": "10.7.3",
     "sinon": "19.0.2",
+    "supertest": "^7.0.0",
     "ts-node": "10.9.2",
     "typescript": "5.6.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "express": "4.21.0"
+  }
 }
