@@ -1,1 +1,1 @@
-export * from './metrics-server';
+export * from './MetricsServer';
