@@ -23,7 +23,7 @@
     "c8": "7.14.0",
     "mocha": "10.2.0",
     "sinon": "15.2.0",
-    "@tryghost/nql": "0.12.4"
+    "@tryghost/nql": "0.12.5"
   },
   "dependencies": {
     "@tryghost/mongo-utils": "0.6.2",

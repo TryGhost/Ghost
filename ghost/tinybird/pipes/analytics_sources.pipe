@@ -1,6 +1,6 @@
 NODE analytics_sources_1
 DESCRIPTION >
-    Aggregate by referral and calculate session and hits
+    Aggregate by referral and calculate session and views
 
 SQL >
     WITH (SELECT domainWithoutWWW(href) FROM analytics_hits LIMIT 1) AS current_domain
@@ -10,16 +10,17 @@ SQL >
         device,
         browser,
         location,
-        referrer,
+        source,
+        pathname,
         maxIf(
             member_status,
             member_status IN ('paid', 'free', 'undefined')
         ) AS member_status,
         uniqState(session_id) AS visits,
-        countState() AS hits
+        countState() AS pageviews
     FROM analytics_hits
-    WHERE domainWithoutWWW(referrer) != current_domain
-    GROUP BY date, device, browser, location, referrer, site_uuid
+    WHERE source != current_domain
+    GROUP BY date, device, browser, location, source, pathname, site_uuid
 
 TYPE MATERIALIZED
 DATASOURCE analytics_sources_mv

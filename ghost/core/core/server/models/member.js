@@ -1,5 +1,5 @@
 const ghostBookshelf = require('./base');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const _ = require('lodash');
 const config = require('../../shared/config');
 const {gravatar} = require('../lib/image');
@@ -10,8 +10,8 @@ const Member = ghostBookshelf.Model.extend({
     defaults() {
         return {
             status: 'free',
-            uuid: uuid.v4(),
-            transient_id: uuid.v4(),
+            uuid: crypto.randomUUID(),
+            transient_id: crypto.randomUUID(),
             email_count: 0,
             email_opened_count: 0,
             enable_comment_notifications: true

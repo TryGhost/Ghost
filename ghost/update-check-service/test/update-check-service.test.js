@@ -2,7 +2,7 @@ require('./utils');
 
 const sinon = require('sinon');
 const moment = require('moment');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const assert = require('assert/strict');
 
 const logging = require('@tryghost/logging');
@@ -196,7 +196,7 @@ describe('Update Check', function () {
                 id: 1,
                 custom: 0,
                 messages: [{
-                    id: uuid.v4(),
+                    id: crypto.randomUUID(),
                     version: '999.9.x',
                     content: '<p>Hey there! This is for 999.9.0 version</p>',
                     dismissible: true,
@@ -268,7 +268,7 @@ describe('Update Check', function () {
             const notification = {
                 id: 1,
                 messages: [{
-                    id: uuid.v4(),
+                    id: crypto.randomUUID(),
                     version: 'custom1',
                     content: '<p>Critical message. Upgrade your site!</p>',
                     dismissible: false,
