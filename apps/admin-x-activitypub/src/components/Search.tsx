@@ -18,6 +18,7 @@ interface SearchResultItem {
     actor: ActorProperties;
     handle: string;
     followerCount: number;
+    followingCount: number;
     isFollowing: boolean;
     posts: Activity[];
 }
@@ -84,10 +85,10 @@ const Search: React.FC<SearchProps> = ({}) => {
                 icon: {
                     url: 'https://anujahooja.com/assets/images/image12.jpg?v=601ebe30'
                 }
-                
             } as ActorProperties,
             handle: '@quillmatiq@mastodon.social',
             followerCount: 436,
+            followingCount: 634,
             isFollowing: false,
             posts: []
         },
@@ -105,6 +106,7 @@ const Search: React.FC<SearchProps> = ({}) => {
             } as ActorProperties,
             handle: '@miaq@flipboard.social',
             followerCount: 533,
+            followingCount: 335,
             isFollowing: false,
             posts: []
         },
@@ -122,6 +124,7 @@ const Search: React.FC<SearchProps> = ({}) => {
             } as ActorProperties,
             handle: '@mallory@techpolicy.social',
             followerCount: 1100,
+            followingCount: 11,
             isFollowing: false,
             posts: []
         }
