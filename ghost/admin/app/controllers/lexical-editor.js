@@ -1112,13 +1112,12 @@ export default class LexicalEditorController extends Controller {
 
         // triggered any time the admin tab is closed, we need to use a native
         // dialog here instead of our custom modal
-        window.onbeforeunload = () => {
+        window.onbeforeunload = (event) => {
             if (this.hasDirtyAttributes) {
-                return '==============================\n\n'
-                     + 'Hey there! It looks like you\'re in the middle of writing'
-                     + ' something and you haven\'t saved all of your content.'
-                     + '\n\nSave before you go!\n\n'
-                     + '==============================';
+                console.log('Preventing unload due to hasDirtyAttributes'); // eslint-disable-line
+                event.preventDefault();
+                // Included for legacy support, e.g. Chrome/Edge < 119
+                event.returnValue = true;
             }
         };
     }
