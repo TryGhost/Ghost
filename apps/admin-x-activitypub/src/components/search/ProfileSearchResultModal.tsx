@@ -5,6 +5,7 @@ import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activit
 import {Button, Heading, Modal} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
+import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
 
 interface ProfileSearchResultModalProps {
@@ -72,25 +73,35 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                             />
                         </div>
                         <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                        <span className='mt-2 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>
+                        <span className='mt-1 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>
                         <div
                             dangerouslySetInnerHTML={{__html: profile.actor.summary}}
                             className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                         />
                         {attachments.map(attachment => (
                             <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
-                                <span className={`mr-1 text-xs font-semibold after:content-[":"]`}>{attachment.name}</span>
+                                <span className={`text-xs font-semibold`}>{attachment.name}</span>
                                 <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
                             </span>
                         ))}
+
+                        <Heading className='mt-8' level={5}>Posts</Heading>
+                        
                         {posts.map((post) => {
-                            return (
-                                <div
-                                    dangerouslySetInnerHTML={{__html: post.object.content}}
-                                    key={post.id}
-                                    className='mt-4 bg-grey-300 p-3'
-                                />
-                            );
+                            if (post.type === 'Announce') {
+                                return null;
+                            } else {
+                                return (
+                                    <FeedItem
+                                        actor={profile.actor}
+                                        comments={post.object.replies}
+                                        layout='feed'
+                                        object={post.object}
+                                        type={post.type}
+                                        onCommentClick={() => {}}
+                                    />
+                                );
+                            }
                         })}
                     </div>
                 </div>
