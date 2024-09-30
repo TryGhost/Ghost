@@ -15,7 +15,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     let iconSize = 18;
     let containerClass = '';
     let imageClass = 'z-10 rounded w-10 h-10 object-cover';
-    const badgeClass = `w-6 h-6 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
+    const badgeClass = `w-6 h-6 z-20 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
     let badgeColor = '';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
 
@@ -30,31 +30,32 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         badgeColor = ' bg-purple-500';
         break;
     }
-    
+
     switch (size) {
     case 'xs':
         iconSize = 12;
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[3px] w-6 h-6';
+        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-6 h-6';
         imageClass = 'z-10 rounded w-6 h-6 object-cover';
         break;
     case 'sm':
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-10 h-10';
+        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-10 h-10';
         break;
     case 'lg':
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-22 h-22';
+        containerClass = 'z-10 relative rounded-xl bg-grey-100 shrink-0 flex items-center justify-center w-22 h-22';
+        imageClass = 'z-10 rounded-xl w-22 h-22 object-cover';
         break;
     default:
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-10 h-10';
+        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-10 h-10';
         break;
     }
 
     if (iconUrl) {
         return (
-            <a className='relative z-10 h-10 w-10 shrink-0 pt-[3px] transition-opacity hover:opacity-80' href={author?.url} rel='noopener noreferrer' target='_blank'>
+            <a className={containerClass} href={author?.url} rel='noopener noreferrer' target='_blank'>
                 <img
                     className={imageClass}
                     src={iconUrl}
-                    onError={() => setIconUrl(null)}
+                    onError={() => setIconUrl(undefined)}
                 />
                 {badge && (
                     <div className={`${badgeClass} ${badgeColor}`}>

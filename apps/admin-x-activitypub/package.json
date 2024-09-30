@@ -31,15 +31,10 @@
   "devDependencies": {
     "@playwright/test": "1.46.1",
     "@testing-library/react": "14.3.1",
-    "@tryghost/admin-x-design-system": "0.0.0",
-    "@tryghost/admin-x-framework": "0.0.0",
     "@types/jest": "29.5.12",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
-    "@radix-ui/react-form": "0.0.3",
     "jest": "29.7.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
     "ts-jest": "29.1.5"
   },
   "nx": {
@@ -67,5 +62,13 @@
         ]
       }
     }
+  },
+  "dependencies": {
+    "@radix-ui/react-form": "0.0.3",
+    "use-debounce": "10.0.3",
+    "@tryghost/admin-x-design-system": "0.0.0",
+    "@tryghost/admin-x-framework": "0.0.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }
