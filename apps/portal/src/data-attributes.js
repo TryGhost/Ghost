@@ -3,6 +3,7 @@ import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/he
 import {HumanReadableError} from './utils/errors';
 
 export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
+    const {t} = this.context;
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -84,7 +85,7 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     }).catch((err) => {
         if (errorEl) {
             // This theme supports a custom error element
-            errorEl.innerText = HumanReadableError.getMessageFromError(err, 'There was an error sending the email, please try again');
+            errorEl.innerText = HumanReadableError.getMessageFromError(err, 'There was an error sending the email, please try again', t);
         }
         form.classList.add('error');
     });

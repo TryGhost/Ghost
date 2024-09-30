@@ -90,7 +90,7 @@ async function signin({data, api, state}) {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: HumanReadableError.getMessageFromError(e, 'Failed to log in, please try again')
+                message: HumanReadableError.getMessageFromError(e, 'Failed to log in, please try again', state.t)
             })
         };
     }
