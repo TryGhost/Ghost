@@ -167,7 +167,8 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
-        attribution: serializeAttribution(json.attribution)
+        attribution: serializeAttribution(json.attribution),
+        unsubscribe_key: json.unsubscribe_key
     };
 
     if (json.products) {
@@ -203,6 +204,7 @@ function serializeMember(member, options) {
         serialized.subscribed = true;
     }
 
+    console.log(`serialized`, serialized);
     return serialized;
 }
 
