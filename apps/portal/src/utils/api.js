@@ -1,4 +1,4 @@
-import {HumanReadableError} from './errors';
+import {getErrorFromApiResponse} from './errors';
 import {transformApiSiteData, transformApiTiersData, getUrlHistory} from './helpers';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
@@ -159,7 +159,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (res.ok) {
                 return res.json();
             } else {
-                throw (await HumanReadableError.fromApiResponse(res)) ?? new Error('Failed to save feedback');
+                throw (await getErrorFromApiResponse(res)) ?? new Error('Failed to save feedback');
             }
         }
     };
@@ -291,7 +291,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 return 'Success';
             } else {
                 // Try to read body error message that is human readable and should be shown to the user
-                const humanError = await HumanReadableError.fromApiResponse(res);
+                const humanError = await getErrorFromApiResponse(res);
                 if (humanError) {
                     throw humanError;
                 }
