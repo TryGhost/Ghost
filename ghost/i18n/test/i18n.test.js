@@ -89,6 +89,5 @@ describe('i18n', function () {
                 assert(stats.isDirectory(), `The locale ${locale} does not have a directory`);
             }
         });
-    })
-
+    });
 });
