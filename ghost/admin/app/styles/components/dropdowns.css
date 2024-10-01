@@ -71,7 +71,7 @@
     font-weight: 500;
     line-height: 1.4em;
     transition: none;
-    border-radius: 3px
+    border-radius: var(--border-radius);
 }
 
 .dropdown-menu li > button:disabled {

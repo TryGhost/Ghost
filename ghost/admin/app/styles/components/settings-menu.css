@@ -319,7 +319,7 @@ li.nav-list-item .switch {
     padding: 2rem 2.4rem;
 }
 
-li.nav-list-item .for-switch.x-small label {
+li.nav-list-item .for-switch.xs label {
     width: initial;
     height: initial !important;
 }

@@ -11,6 +11,9 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
+const LIMIT = 7;
+const DEFAULT_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
+
 export default class TopSources extends Component {
     @inject config;
     @service modals;
@@ -18,6 +21,7 @@ export default class TopSources extends Component {
 
     @tracked campaignOption = CAMPAIGN_OPTIONS[0];
     @tracked campaignOptions = CAMPAIGN_OPTIONS;
+    @tracked showSeeAll = true;
 
     @action
     onCampaignOptionChange(selected) {
@@ -45,6 +49,10 @@ export default class TopSources extends Component {
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
+    updateSeeAllVisibility(data) {
+        this.showSeeAll = data && data.length > LIMIT;
+    }
+
     ReactComponent = (props) => {
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
@@ -56,9 +64,11 @@ export default class TopSources extends Component {
             )
         });
 
+        this.updateSeeAllVisibility(data);
+
         return (
             <BarList
-                data={data}
+                data={data ? data.slice(0, LIMIT) : []}
                 meta={meta}
                 error={error}
                 loading={loading}
@@ -75,8 +85,13 @@ export default class TopSources extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                <img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />
-                                {label || 'Direct'}
+                                <img
+                                    src={`https://www.faviconextractor.com/favicon/${label || 'direct'}?larger=true`}
+                                    className="gh-stats-favicon"
+                                    onError={(e) => {
+                                        e.target.src = DEFAULT_ICON_URL;
+                                    }} />
+                                <span title={label || 'Direct'}>{label || 'Direct'}</span>
                             </a>
                         </span>
                     )

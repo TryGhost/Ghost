@@ -11,6 +11,8 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
+const LIMIT = 7;
+
 export default class TopPages extends Component {
     @inject config;
     @service modals;
@@ -18,6 +20,7 @@ export default class TopPages extends Component {
 
     @tracked contentOption = CONTENT_OPTIONS[0];
     @tracked contentOptions = CONTENT_OPTIONS;
+    @tracked showSeeAll = true;
 
     @action
     openSeeAll(chartRange, audience) {
@@ -45,11 +48,15 @@ export default class TopPages extends Component {
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
+    updateSeeAllVisibility(data) {
+        this.showSeeAll = data && data.length > LIMIT;
+    }
+
     ReactComponent = (props) => {
         const params = getStatsParams(
             this.config,
             props,
-            {limit: 7}
+            {limit: LIMIT + 1}
         );
 
         const {data, meta, error, loading} = useQuery({
@@ -58,9 +65,11 @@ export default class TopPages extends Component {
             params
         });
 
+        this.updateSeeAllVisibility(data);
+
         return (
             <BarList
-                data={data}
+                data={data ? data.slice(0, LIMIT) : []}
                 meta={meta}
                 error={error}
                 loading={loading}
@@ -77,7 +86,7 @@ export default class TopPages extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                {label}
+                                <span title={label}>{label}</span>
                             </a>
                         </span>
                     )

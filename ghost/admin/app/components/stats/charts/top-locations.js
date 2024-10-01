@@ -9,11 +9,16 @@ import {barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/st
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
+
+const LIMIT = 5;
 
 export default class TopLocations extends Component {
     @inject config;
     @service modals;
     @service router;
+
+    @tracked showSeeAll = true;
 
     @action
     openSeeAll() {
@@ -36,6 +41,10 @@ export default class TopLocations extends Component {
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
+    updateSeeAllVisibility(data) {
+        this.showSeeAll = data && data.length > LIMIT;
+    }
+
     ReactComponent = (props) => {
         const params = getStatsParams(
             this.config,
@@ -49,9 +58,11 @@ export default class TopLocations extends Component {
             params
         });
 
+        this.updateSeeAllVisibility(data);
+
         return (
             <BarList
-                data={data}
+                data={data ? data.slice(0, LIMIT) : []}
                 meta={meta}
                 error={error}
                 loading={loading}
@@ -68,7 +79,7 @@ export default class TopLocations extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                {getCountryFlag(label)} {label || 'Unknown'}
+                                <span title={label || 'Unknown'}>{getCountryFlag(label)} {label || 'Unknown'}</span>
                             </a>
                         </span>
                     )

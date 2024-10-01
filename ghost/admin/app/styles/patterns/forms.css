@@ -540,15 +540,10 @@ textarea {
     display: inline-block;
 }
 
-.for-switch label:not(.x-small .switch),
+.for-switch label:not(.xs .switch):not(.xxs .switch),
 .for-switch .container {
     width: 50px !important;
     height: 28px !important;
-}
-
-.for-switch.x-small label {
-    width: 34px !important;
-    height: 20px !important;
 }
 
 .for-switch label p,
@@ -576,7 +571,7 @@ textarea {
     width: 48px !important;
     height: 26px !important;
     border-radius: 999px;
-    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    transition: all 0.15s ease-in-out;
 }
 
 .for-switch label:hover input:not(:checked) + .input-toggle-component,
@@ -595,6 +590,7 @@ textarea {
     transition: .3s;
     box-shadow: 0 1px 3px rgba(0,0,0,.15);
     border-radius: 999px;
+    transition: all 0.15s ease-in-out;
 }
 
 .for-switch input:checked + .input-toggle-component {
@@ -625,20 +621,45 @@ textarea {
 
 .for-switch.small input:checked + .input-toggle-component:before {
     transform: translateX(16px);
+    transition: all 0.15s ease-in-out;
 }
 
-.for-switch.x-small .input-toggle-component {
+.for-switch.xs label {
     width: 34px !important;
     height: 20px !important;
 }
 
-.for-switch.x-small .input-toggle-component:before {
+.for-switch.xs .input-toggle-component {
+    width: 34px !important;
+    height: 20px !important;
+}
+
+.for-switch.xs .input-toggle-component:before {
     height: 16px !important;
     width: 16px !important;
 }
 
-.for-switch.x-small input:checked + .input-toggle-component:before {
+.for-switch.xs input:checked + .input-toggle-component:before {
     transform: translateX(14px);
+}
+
+.for-switch.xxs label {
+    width: 28px !important;
+    height: 16px !important;
+}
+
+.for-switch.xxs .input-toggle-component {
+    width: 28px !important;
+    height: 16px !important;
+}
+
+.for-switch.xxs .input-toggle-component:before {
+    height: 12px !important;
+    width: 12px !important;
+}
+
+.for-switch.xxs input:checked + .input-toggle-component:before {
+    transform: translateX(12px);
 }
 
 .for-switch.disabled {

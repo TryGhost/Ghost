@@ -377,6 +377,13 @@ svg.gh-btn-icon-right {
     width: 100%;
 }
 
+.gh-btn-dropdown-arrow {
+    margin-left: 5px !important;
+    margin-right: -4px !important;
+    height: 6px !important;
+    width: auto !important;
+}
+
 
 /*
 /* Button Variations

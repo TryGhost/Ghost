@@ -126,7 +126,7 @@
                     <ul class="nav-list">
                         {{#if (and this.post.isPage this.post.lexical)}}
                             <li class="nav-list-item">
-                                <div class="for-switch x-small">
+                                <div class="for-switch xs">
                                     <label class="switch">
                                         <span>
                                             <Icons::EyeOpenClose class="feature" @closed={{not this.post.showTitleAndFeatureImage}} />
@@ -154,7 +154,7 @@
                         {{/if}}
                         {{#unless this.session.user.isAuthorOrContributor}}
                             <li class="nav-list-item">
-                                <div class="for-switch x-small">
+                                <div class="for-switch xs">
                                     <label class="switch" for="featured" {{action "toggleFeatured" bubbles="false"}}>
                                         <span>
                                             {{#if this.post.featured}}
