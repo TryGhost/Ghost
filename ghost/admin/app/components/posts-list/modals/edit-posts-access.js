@@ -8,7 +8,10 @@ import {tracked} from '@glimmer/tracking';
 
 const PostValidatorProxy = EmberObject.extend(ValidationEngine, {
     validationType: 'post',
-    isNew: false // required for our visibility and tiers validations to work
+    isNew: false, // required for our visibility and tiers validations to work
+
+    visibility: tracked(),
+    tiers: tracked()
 });
 
 export default class EditPostsAccessModal extends Component {
@@ -27,7 +30,7 @@ export default class EditPostsAccessModal extends Component {
     setup() {
         if (this.selectionList.first && this.selectionList.isSingle) {
             this.post.visibility = this.selectionList.first.visibility;
-            this.post.tiers = this.selectionList.first.tiers;
+            this.post.tiers = this.selectionList.first.tiers || [];
         } else {
             // Use default
             this.post.visibility = this.settings.defaultContentVisibility;
