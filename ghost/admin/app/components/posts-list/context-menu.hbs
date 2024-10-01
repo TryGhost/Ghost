@@ -1,29 +1,29 @@
-<ul class="gh-posts-context-menu dropdown-menu dropdown-triangle-top-left">
+<ul class="gh-posts-context-menu dropdown-menu dropdown-triangle-top-left" data-test-post-context-menu>
 
     {{#if this.canUnpublishSelection}}
         {{#if this.canCopySelection}}
             <li>
-                <button class="mr2" type="button" {{on "click" this.copyPostLink}}>
+                <button class="mr2" type="button" {{on "click" this.copyPostLink}} data-test-button="copy-link">
                     <span>{{svg-jar "link"}}Copy link to post</span>
                 </button>
             </li>
         {{/if}}
         <li>
-            <button class="mr2" type="button" {{on "click" this.unpublishPosts}}>
+            <button class="mr2" type="button" {{on "click" this.unpublishPosts}} data-test-button="unpublish">
                 <span>{{svg-jar "undo"}}Unpublish</span>
             </button>
         </li>
     {{else}}
         {{#if this.canCopySelection}}
             <li>
-                <button class="mr2" type="button" {{on "click" this.copyPreviewLink}}>
+                <button class="mr2" type="button" {{on "click" this.copyPreviewLink}} data-test-button="copy-preview">
                     <span>{{svg-jar "link"}}Copy preview link</span>
                 </button>
             </li>
         {{/if}}
         {{#if this.canUnscheduleSelection}}
             <li>
-                <button class="mr2" type="button" {{on "click" this.unschedulePosts}}>
+                <button class="mr2" type="button" {{on "click" this.unschedulePosts}} data-test-button="unschedule">
                     <span>{{svg-jar "undo"}}Unschedule</span>
                 </button>
             </li>
@@ -32,26 +32,26 @@
     {{#if this.canFeatureSelection}}
         {{#if this.shouldFeatureSelection }}
             <li>
-                <button class="mr2" type="button" {{on "click" this.featurePosts}}>
+                <button class="mr2" type="button" {{on "click" this.featurePosts}} data-test-button="feature">
                     <span>{{svg-jar "star" class="mb1 star"}}Feature</span>
                 </button>
             </li>
         {{else}}
                 <li>
-                <button class="mr2" type="button" {{on "click" this.unfeaturePosts}}>
+                <button class="mr2" type="button" {{on "click" this.unfeaturePosts}} data-test-button="unfeature">
                     <span>{{svg-jar "star" class="mb1"}}Unfeature</span>
                 </button>
             </li>
         {{/if}}
     {{/if}}
     <li>
-        <button class="mr2" type="button" {{on "click" this.addTagToPosts}}>
+        <button class="mr2" type="button" {{on "click" this.addTagToPosts}} data-test-button="add-tag">
             <span>{{svg-jar "tag"}}Add a tag</span>
         </button>
     </li>
     {{#if this.membersUtils.isMembersEnabled}}
         <li>
-            <button class="mr2" type="button" {{on "click" this.editPostsAccess}}>
+            <button class="mr2" type="button" {{on "click" this.editPostsAccess}} data-test-button="change-access">
                 <span>{{svg-jar "lock"}}Change access</span>
             </button>
         </li>
@@ -59,13 +59,13 @@
     {{#if this.session.user.isAdmin}}
         {{#if this.canCopySelection}}
         <li>
-            <button class="mr2" type="button" {{on "click" this.copyPosts}}>
+            <button class="mr2" type="button" {{on "click" this.copyPosts}} data-test-button="duplicate">
                 <span>{{svg-jar "duplicate"}}Duplicate</span>
             </button>
         </li>
         {{/if}}
         <li>
-            <button class="mr2" type="button" {{on "click" this.deletePosts}}>
+            <button class="mr2" type="button" {{on "click" this.deletePosts}} data-test-button="delete">
                 <span class="red">{{svg-jar "trash"}}Delete</span>
             </button>
         </li>
