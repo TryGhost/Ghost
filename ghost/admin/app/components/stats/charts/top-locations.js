@@ -68,7 +68,7 @@ export default class TopLocations extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                {getCountryFlag(label)} {label || 'Unknown'}
+                                <span title={label || 'Unknown'}>{getCountryFlag(label)} {label || 'Unknown'}</span>
                             </a>
                         </span>
                     )

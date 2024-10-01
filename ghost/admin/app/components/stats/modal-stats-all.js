@@ -121,7 +121,7 @@ export default class AllStatsModal extends Component {
                                         className="gh-stats-favicon"
                                     />
                                 )}
-                                {label || unknownOption}
+                                <span title={label || unknownOption}>{label || unknownOption}</span>
                             </a>
                         </span>
                     )

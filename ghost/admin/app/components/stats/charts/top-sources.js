@@ -76,7 +76,7 @@ export default class TopSources extends Component {
                                 className="gh-stats-domain"
                             >
                                 <img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />
-                                {label || 'Direct'}
+                                <span title={label || 'Direct'}>{label || 'Direct'}</span>
                             </a>
                         </span>
                     )

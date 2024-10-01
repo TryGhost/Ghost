@@ -77,7 +77,7 @@ export default class TopPages extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                {label}
+                                <span title={label}>{label}</span>
                             </a>
                         </span>
                     )

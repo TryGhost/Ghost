@@ -282,10 +282,6 @@ a.gh-stats-data-label:hover {
     gap: 6px;
     color: var(--black);
     line-height: 1.3em;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
 }
 
 .gh-stats-domain:hover {
@@ -295,6 +291,13 @@ a.gh-stats-data-label:hover {
 .gh-stats-favicon {
     width: 16px;
     height: 16px;
+}
+
+.gh-stats-domain span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .gh-stats-tooltip-header {
