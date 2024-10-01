@@ -261,6 +261,17 @@ a.gh-stats-data-label:hover {
     z-index: 9999;
 }
 
+.gh-stats-all-container {
+    max-height: calc(100vh - 12vw - 172px);
+    overflow: auto;
+    margin: -4px -32px;
+    padding: 4px 32px;
+}
+
+.gh-stats-all-container > div > div {
+    overflow-y: unset !important;
+}
+
 .gh-stats-kpis-chart-container {
     margin-top: -20px;
 }
@@ -270,6 +281,11 @@ a.gh-stats-data-label:hover {
     align-items: center;
     gap: 6px;
     color: var(--black);
+    line-height: 1.3em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .gh-stats-domain:hover {
