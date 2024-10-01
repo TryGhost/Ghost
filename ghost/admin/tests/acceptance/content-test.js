@@ -1,5 +1,6 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import sinon from 'sinon';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
@@ -447,8 +448,7 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
                     });
 
-                    // TODO: Skip for now. This causes the member creation test to fail ('New member' text doesn't show... ???).
-                    it.skip('can change access', async function () {
+                    it('can change access', async function () {
                         await visit('/posts');
 
                         // get all posts
@@ -493,6 +493,15 @@ describe('Acceptance: Posts / Pages', function () {
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.queryParams.filter, 'change access request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'change access request action').to.equal('access');
+
+                        // ensure creating new posts still works
+                        // (we had a bug where newly created records in the store had `isNew: false` set meaning any saves failed
+                        // because Ember Data attempted a PUT with no id)
+                        sinon.stub(windowProxy, 'reload'); // we had a force-reload in place to workaround the bug
+                        await visit('/editor/post');
+                        await fillIn('[data-test-editor-title-input]', 'New post');
+                        await blur('[data-test-editor-title-input]');
+                        expect(this.server.db.posts.length, 'posts count after new post save').to.equal(5);
                     });
 
                     it('can unpublish', async function () {
