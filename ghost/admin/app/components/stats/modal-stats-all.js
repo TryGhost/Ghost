@@ -12,6 +12,7 @@ import {inject as service} from '@ember/service';
 export default class AllStatsModal extends Component {
     @inject config;
     @service router;
+    @service modals;
 
     get type() {
         return this.args.data.type;
@@ -47,6 +48,7 @@ export default class AllStatsModal extends Component {
             params.pathname = label;
         }
 
+        this.args.close();
         this.updateQueryParams(params);
     }
 
@@ -121,7 +123,7 @@ export default class AllStatsModal extends Component {
                                         className="gh-stats-favicon"
                                     />
                                 )}
-                                {label || unknownOption}
+                                <span title={label || unknownOption}>{label || unknownOption}</span>
                             </a>
                         </span>
                     )

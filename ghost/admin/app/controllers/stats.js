@@ -25,6 +25,7 @@ export default class StatsController extends Controller {
      */
     @tracked audience = [];
     @tracked excludedAudiences = '';
+    @tracked showStats = true;
 
     @action
     onRangeChange(selected) {
@@ -42,6 +43,16 @@ export default class StatsController extends Controller {
             this.excludedAudiences = '';
             this.audience = this.audienceOptions.map(a => a.value);
         }
+
+        const excludedArray = this.excludedAudiences.split(',');
+        this.showStats = this.audienceOptions.length !== excludedArray.length;
+    }
+
+    @action
+    clearAudienceFilter() {
+        this.excludedAudiences = '';
+        this.audience = this.audienceOptions.map(a => a.value);
+        this.showStats = true;
     }
 
     @action

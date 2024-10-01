@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
-import {HumanReadableError} from './utils/errors';
+import {getErrorFromApiResponse, getMessageFromError} from './utils/errors';
 
 export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
     form.removeEventListener('submit', submitHandler);
@@ -77,14 +77,14 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         if (res.ok) {
             form.classList.add('success');
         } else {
-            return HumanReadableError.fromApiResponse(res).then((e) => {
+            return getErrorFromApiResponse(res).then((e) => {
                 throw e;
             });
         }
     }).catch((err) => {
         if (errorEl) {
             // This theme supports a custom error element
-            errorEl.innerText = HumanReadableError.getMessageFromError(err, 'There was an error sending the email, please try again');
+            errorEl.innerText = getMessageFromError(err, 'There was an error sending the email, please try again');
         }
         form.classList.add('error');
     });
