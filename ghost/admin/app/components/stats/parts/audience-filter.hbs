@@ -1,8 +1,9 @@
 <GhBasicDropdown @verticalPosition="below" as |dd|>
-    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon" data-test-id="filter-events-button">
+    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon gh-stats-btn-audience-filter" data-test-id="filter-events-button">
         <span class={{if @excludedAudiences "gh-btn-label-green"}}>
             {{svg-jar "members"}}
-            Audience
+            <span class="gh-stats-audience-filter-btn-label">Audience</span>
+            {{svg-jar "arrow-down-small" class="gh-btn-dropdown-arrow"}}
         </span>
     </dd.Trigger>
 

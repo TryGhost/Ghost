@@ -409,3 +409,45 @@ a.gh-stats-data-label:hover {
     flex-direction: row;
     align-items: center;
 }
+
+.gh-stats-audience-filter-btn-label {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 1440px) {
+    .gh-stats-filters {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 1140px) {
+    .gh-stats-grid.cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .gh-stats-tab.is-selected:before {
+        display: none;
+    }
+
+    .gh-stats-tab.is-selected {
+        border-bottom: 2px solid var(--black);
+    }
+}
+
+@media (max-width: 990px) {
+    .gh-stats-tabs {
+        max-width: 100%;
+        overflow: auto;
+    }
+}
+
+@media (max-width: 390px) {
+    .gh-stats-audience-filter-btn-label {
+        display: none !important;
+    }
+
+    .gh-stats-btn-audience-filter svg {
+        margin-right: 0 !important;
+    }
+}
