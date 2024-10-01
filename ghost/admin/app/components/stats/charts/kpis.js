@@ -54,7 +54,7 @@ export default class KpisComponent extends Component {
                 options={{
                     grid: {
                         left: '10px',
-                        right: '10px',
+                        right: '20px',
                         top: '10%',
                         bottom: 0,
                         containLabel: true
