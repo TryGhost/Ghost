@@ -388,3 +388,9 @@ a.gh-stats-data-label:hover {
     max-width: 240px;
     min-width: 220px;
 }
+
+.gh-stats-placeholder {
+    width: 60px;
+    color: var(--lightgrey);
+    margin-bottom: -8px;
+}
