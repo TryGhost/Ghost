@@ -67,11 +67,12 @@ async function signout({api, state}) {
             action: 'signout:success'
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'signout:failed',
             popupNotification: createPopupNotification({
                 type: 'signout:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to log out, please try again'
+                message: t('Failed to log out, please try again')
             })
         };
     }
@@ -119,12 +120,13 @@ async function signup({data, state, api}) {
             lastPage: 'signup'
         };
     } catch (e) {
+        const {t} = state;
         const message = e?.message || 'Failed to sign up, please try again';
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
                 type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
-                message
+                message: t(message)
             })
         };
     }
@@ -146,17 +148,19 @@ async function checkoutPlan({data, state, api}) {
             }
         });
     } catch (e) {
+        const {t} = state;
         return {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
                 type: 'checkoutPlan:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to process checkout, please try again'
+                message: t('Failed to process checkout, please try again')
             })
         };
     }
 }
 
 async function updateSubscription({data, state, api}) {
+    const {t} = state;
     try {
         const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
         const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: planId});
@@ -175,7 +179,7 @@ async function updateSubscription({data, state, api}) {
             action,
             popupNotification: createPopupNotification({
                 type: action, autoHide: true, closeable: true, state, status: 'success',
-                message: 'Subscription plan updated successfully'
+                message: t('Subscription plan updated successfully')
             }),
             page: 'accountHome',
             member: member
@@ -185,7 +189,7 @@ async function updateSubscription({data, state, api}) {
             action: 'updateSubscription:failed',
             popupNotification: createPopupNotification({
                 type: 'updateSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to update subscription, please try again'
+                message: t('Failed to update subscription, please try again')
             })
         };
     }
@@ -205,11 +209,12 @@ async function cancelSubscription({data, state, api}) {
             member: member
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'cancelSubscription:failed',
             popupNotification: createPopupNotification({
                 type: 'cancelSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to cancel subscription, please try again'
+                message: t('Failed to cancel subscription, please try again')
             })
         };
     }
@@ -229,11 +234,12 @@ async function continueSubscription({data, state, api}) {
             member: member
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'continueSubscription:failed',
             popupNotification: createPopupNotification({
                 type: 'continueSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to cancel subscription, please try again'
+                message: t('Failed to cancel subscription, please try again')
             })
         };
     }
@@ -243,11 +249,12 @@ async function editBilling({data, state, api}) {
     try {
         await api.member.editBilling(data);
     } catch (e) {
+        const {t} = state;
         return {
             action: 'editBilling:failed',
             popupNotification: createPopupNotification({
                 type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to update billing information, please try again'
+                message: t('Failed to update billing information, please try again')
             })
         };
     }
@@ -294,18 +301,20 @@ async function updateNewsletterPreference({data, state, api}) {
             member
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'updateNewsletterPref:failed',
             popupNotification: createPopupNotification({
                 type: 'updateNewsletter:failed',
                 autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to update newsletter settings'
+                message: t('Failed to update newsletter settings')
             })
         };
     }
 }
 
 async function removeEmailFromSuppressionList({state, api}) {
+    const {t} = state;
     try {
         await api.member.deleteSuppression();
         const action = 'removeEmailFromSuppressionList:success';
@@ -313,7 +322,7 @@ async function removeEmailFromSuppressionList({state, api}) {
             action,
             popupNotification: createPopupNotification({
                 type: 'removeEmailFromSuppressionList:success', autoHide: true, closeable: true, state, status: 'success',
-                message: 'You have been successfully resubscribed'
+                message: t('You have been successfully resubscribed')
             })
         };
     } catch (e) {
@@ -322,13 +331,14 @@ async function removeEmailFromSuppressionList({state, api}) {
             popupNotification: createPopupNotification({
                 type: 'removeEmailFromSuppressionList:failed',
                 autoHide: true, closeable: true, state, status: 'error',
-                message: 'Your email has failed to resubscribe, please try again'
+                message: t('Your email has failed to resubscribe, please try again')
             })
         };
     }
 }
 
 async function updateNewsletter({data, state, api}) {
+    const {t} = state;
     try {
         const {subscribed} = data;
         const member = await api.member.update({subscribed});
@@ -341,7 +351,7 @@ async function updateNewsletter({data, state, api}) {
             member: member,
             popupNotification: createPopupNotification({
                 type: action, autoHide: true, closeable: true, state, status: 'success',
-                message: 'Email newsletter settings updated'
+                message: t('Email newsletter settings updated')
             })
         };
     } catch (e) {
@@ -349,7 +359,7 @@ async function updateNewsletter({data, state, api}) {
             action: 'updateNewsletter:failed',
             popupNotification: createPopupNotification({
                 type: 'updateNewsletter:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to update newsletter settings'
+                message: t('Failed to update newsletter settings')
             })
         };
     }
@@ -421,6 +431,7 @@ async function refreshMemberData({state, api}) {
 }
 
 async function updateProfile({data, state, api}) {
+    const {t} = state;
     const [dataUpdate, emailUpdate] = await Promise.all([updateMemberData({data, state, api}), updateMemberEmail({data, state, api})]);
     if (dataUpdate && emailUpdate) {
         if (emailUpdate.success) {
@@ -430,11 +441,11 @@ async function updateProfile({data, state, api}) {
                 page: 'accountHome',
                 popupNotification: createPopupNotification({
                     type: 'updateProfile:success', autoHide: true, closeable: true, status: 'success', state,
-                    message: 'Check your inbox to verify email update'
+                    message: t('Check your inbox to verify email update')
                 })
             };
         }
-        const message = !dataUpdate.success ? 'Failed to update account data' : 'Failed to send verification email';
+        const message = !dataUpdate.success ? t('Failed to update account data') : t('Failed to send verification email');
 
         return {
             action: 'updateProfile:failed',
@@ -446,7 +457,7 @@ async function updateProfile({data, state, api}) {
     } else if (dataUpdate) {
         const action = dataUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
         const status = dataUpdate.success ? 'success' : 'error';
-        const message = !dataUpdate.success ? 'Failed to update account details' : 'Account details updated successfully';
+        const message = !dataUpdate.success ? t('Failed to update account details') : t('Account details updated successfully');
         return {
             action,
             ...(dataUpdate.success ? {member: dataUpdate.member} : {}),
@@ -458,7 +469,7 @@ async function updateProfile({data, state, api}) {
     } else if (emailUpdate) {
         const action = emailUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
         const status = emailUpdate.success ? 'success' : 'error';
-        const message = !emailUpdate.success ? 'Failed to send verification email' : 'Check your inbox to verify email update';
+        const message = !emailUpdate.success ? t('Failed to send verification email') : t('Check your inbox to verify email update');
         return {
             action,
             ...(emailUpdate.success ? {page: 'accountHome'} : {}),
@@ -472,7 +483,7 @@ async function updateProfile({data, state, api}) {
         page: 'accountHome',
         popupNotification: createPopupNotification({
             type: 'updateProfile:success', autoHide: true, closeable: true, status: 'success', state,
-            message: 'Account details updated successfully'
+            message: t('Account details updated successfully')
         })
     };
 }

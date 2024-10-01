@@ -1,6 +1,10 @@
 // a list of error messages that need to be translated, based on API responses
 // This file exists solely to cause the translation generation script to pick up these strings
 
+function t(string) {
+    return string;
+}
+
 t('Too many different sign-in attempts, try again in {{number}} minutes', {number: 2});
 t('Too many different sign-in attempts, try again in {{number}} hours', {number: 2});
 t('Too many different sign-in attempts, try again in {{number}} days', {number: 2});

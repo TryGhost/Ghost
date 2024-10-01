@@ -24,29 +24,25 @@ export class HumanReadableError extends Error {
      * Otherwise it returns a default generic message.
      */
     static getMessageFromError(error, defaultMessage, t) {
-
-        function parseForTranslation(string, t = () => {return string}) {
+        function parseForTranslation(string) {
             // create a regex that replaces any numbers with {number}
             const numberRegex = /\d+/;
             const match = string.match(numberRegex);
             if (match) {
                 const matchedNumber = match[0];
                 const subbedString = string.replace(numberRegex, '{{number}}');
-                console.log('will call t with', subbedString, matchedNumber);
+                // console.log('will call t with', subbedString, matchedNumber);
                 return t(subbedString, {number: matchedNumber});
             } else {
                 return t(string);
-            }
-            
+            }   
         }
-        console.log('message is',  error?.message)
-        console.log('default is', defaultMessage);
-        console.log('t is', t);
+        //console.log('message is', error?.message);
+        //console.log('default is', defaultMessage);
+        //console.log('t is', t);
         if (error instanceof HumanReadableError) {
             return parseForTranslation(error.message, t);
         }
         return t(defaultMessage);
     }
-
-
 }
