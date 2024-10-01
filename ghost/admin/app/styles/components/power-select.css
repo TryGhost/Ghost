@@ -69,15 +69,20 @@
     border-top: none;
 }
 
+.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded="true"] {
+    border-radius: var(--border-radius);
+}
+
 .ember-power-select-dropdown.ember-basic-dropdown-content--above {
     border-top: 1px solid var(--input-border-color);
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border-radius: var(--border-radius);
 }
 
 .ember-power-select-option {
     margin: 0;
     padding: 6px 14px;
     color: var(--darkgrey);
+    height: 32px;
 }
 
 .ember-power-select-option[aria-current="true"] {
