@@ -203,8 +203,7 @@ describe('search index', function () {
                     title: '毅力和运气',
                     excerpt: '凭借运气和毅力，Cathy 将通过所有测试。',
                     url: 'http://localhost/ghost/a-post-in-chinese/'
-                }
-            ]
+                }]
             })
             .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
             .reply(200, {
@@ -253,6 +252,5 @@ describe('search index', function () {
         // out of order English:
         searchResults = searchIndex.search('glenish');
         expect(searchResults.posts.length).toEqual(0);
-
     });
 });
