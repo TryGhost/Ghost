@@ -3,6 +3,18 @@ export type Actor = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
+export interface ProfileSearchResult {
+    actor: Actor;
+    handle: string;
+    followerCount: number;
+    isFollowing: boolean;
+    posts: Activity[];
+}
+
+export interface SearchResults {
+    profiles: ProfileSearchResult[];
+}
+
 export class ActivityPubAPI {
     constructor(
         private readonly apiUrl: URL,
@@ -279,5 +291,25 @@ export class ActivityPubAPI {
     async getUser() {
         const json = await this.fetchJSON(this.userApiUrl);
         return json;
+    }
+
+    get searchApiUrl() {
+        return new URL('.ghost/activitypub/actions/search', this.apiUrl);
+    }
+
+    async search(query: string): Promise<SearchResults> {
+        const url = this.searchApiUrl;
+
+        url.searchParams.set('query', query);
+
+        const json = await this.fetchJSON(url, 'GET');
+
+        if (json && 'profiles' in json) {
+            return json as SearchResults;
+        }
+
+        return {
+            profiles: []
+        };
     }
 }
