@@ -5,10 +5,7 @@ on:
   push:
     branches:
       - main
-      - arch
       - 'v5.*'
-      - 3.x
-      - 2.x
 
 env:
   FORCE_COLOR: 1
@@ -66,8 +63,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           echo "Looking up: ${{ github.event.pull_request.user.login }}"
+          ENCODED_USERNAME=$(printf '%s' '${{ github.event.pull_request.user.login }}' | jq -sRr @uri)
 
-          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location 'https://api.github.com/orgs/tryghost/members/${{ github.event.pull_request.user.login }}' --header 'Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}')
+          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
 
           if [ "$LOOKUP_USER" == "204" ]; then
             echo "User is in the org"
@@ -208,7 +206,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -434,7 +432,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
