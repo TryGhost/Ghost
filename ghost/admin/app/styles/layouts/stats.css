@@ -383,3 +383,8 @@ a.gh-stats-data-label:hover {
 .gh-btn-clear-filters svg path {
     stroke-width: 2px;
 }
+
+.gh-stats-audience-filter-menu {
+    max-width: 240px;
+    min-width: 220px;
+}
