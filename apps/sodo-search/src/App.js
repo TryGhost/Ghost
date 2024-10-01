@@ -9,20 +9,23 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        const searchIndex = new SearchIndex({
-            adminUrl: props.adminUrl,
-            apiKey: props.apiKey
-        });
-
         const i18nLanguage = this.props.locale || 'en';
         const i18n = i18nLib(i18nLanguage, 'search');
+        const dir = i18n.dir() || 'ltr';
+
+        const searchIndex = new SearchIndex({
+            adminUrl: props.adminUrl,
+            apiKey: props.apiKey,
+            dir: dir
+        });
 
         this.state = {
             searchIndex,
             showPopup: false,
             indexStarted: false,
             indexComplete: false,
-            t: i18n.t
+            t: i18n.t,
+            dir: dir
         };
 
         this.inputRef = React.createRef();
@@ -169,7 +172,8 @@ export default class App extends React.Component {
                         });
                     }
                 },
-                t: this.state.t
+                t: this.state.t,
+                dir: this.state.dir
             }}>
                 <PopupModal />
             </AppContext.Provider>

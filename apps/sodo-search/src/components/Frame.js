@@ -17,6 +17,8 @@ export default class Frame extends Component {
     setupFrameBaseStyle() {
         if (this.node.contentDocument) {
             this.iframeHtml = this.node.contentDocument.documentElement;
+            // set the iframeHtml dir attribute
+            this.iframeHtml.setAttribute('dir', this.props.searchdir);
             this.iframeHead = this.node.contentDocument.head;
             this.iframeRoot = this.node.contentDocument.body;
             this.forceUpdate();

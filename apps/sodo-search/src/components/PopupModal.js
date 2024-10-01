@@ -100,7 +100,7 @@ function SearchBox() {
 
     return (
         <div className={className} ref={containerRef}>
-            <div className='flex items-center justify-center w-4 h-4 mr-3'>
+            <div className='flex items-center justify-center w-4 h-4 me-3'>
                 <SearchClearIcon />
             </div>
             <input
@@ -116,7 +116,7 @@ function SearchBox() {
                         e.preventDefault();
                     }
                 }}
-                className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
+                className='grow -my-5 py-5 -ms-3 ps-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
                 placeholder={t('Search posts, tags and authors')}
             />
             <Loading />
@@ -158,7 +158,7 @@ function CancelButton() {
 
     return (
         <button
-            className='ml-3 text-sm text-neutral-500 sm:hidden' alt='Cancel'
+            className='ms-3 text-sm text-neutral-500 sm:hidden' alt='Cancel'
             onClick={() => {
                 dispatch('update', {
                     showPopup: false
@@ -188,7 +188,7 @@ function TagListItem({tag, selectedResult, setSelectedResult}) {
                 setSelectedResult(id);
             }}
         >
-            <p className='mr-2 text-sm font-bold text-neutral-400'>#</p>
+            <p className='me-2 text-sm font-bold text-neutral-400'>#</p>
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900 truncate'>{name}</h2>
         </div>
     );
@@ -433,11 +433,11 @@ function AuthorAvatar({name, avatar}) {
     const Character = name.charAt(0);
     if (Avatar) {
         return (
-            <img className='rounded-full bg-neutral-300 w-7 h-7 mr-2 object-cover' src={avatar} alt={name}/>
+            <img className='rounded-full bg-neutral-300 w-7 h-7 me-2 object-cover' src={avatar} alt={name}/>
         );
     }
     return (
-        <div className='rounded-full bg-neutral-200 w-7 h-7 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div>
+        <div className='rounded-full bg-neutral-200 w-7 h-7 me-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div>
     );
 }
 
@@ -672,7 +672,7 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer} className='gh-root-frame'>
-                <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()}>
+                <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()} searchdir={this.context.dir}>
                     <div
                         onClick = {e => this.handlePopupClose(e)}
                         className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]' />
