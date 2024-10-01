@@ -11,6 +11,7 @@ export default BaseSerializer.extend({
         // embedded records that are included by default in the API
         includes.add('tags');
         includes.add('authors');
+        includes.add('tiers');
 
         // clean up some things that mirage doesn't understand
         includes.delete('authorsRoles');
