@@ -206,7 +206,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -432,7 +432,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
