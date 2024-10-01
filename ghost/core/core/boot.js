@@ -7,9 +7,6 @@
 //
 // IMPORTANT:
 // ----------
-
-const config = require('./shared/config');
-
 // The only global requires here should be overrides + debug so we can monitor timings with DEBUG = ghost: boot * node ghost
 require('./server/overrides');
 const debug = require('@tryghost/debug')('boot');
@@ -256,7 +253,12 @@ async function initExpressApps({frontend, backend, config}) {
     return parentApp;
 }
 
-async function initMetricsServer() {
+/**
+ * Starts the standalone metrics server and registers a cleanup task to stop it when the ghost server shuts down
+ * @param {object} ghostServer 
+ */
+
+async function initMetricsServer({ghostServer, config}) {
     debug('Begin: initMetricsServer');
     const {MetricsServer} = require('@tryghost/metrics-server');
     const serverConfig = {
@@ -267,7 +269,11 @@ async function initMetricsServer() {
         res.send('Some metrics here');
     };
     const metricsServer = new MetricsServer({serverConfig, handler});
-    return await metricsServer.start();
+    await metricsServer.start();
+    // Ensure the metrics server is cleaned up when the ghost server is shut down
+    ghostServer.registerCleanupTask(async () => {
+        await metricsServer.shutdown();
+    });
 }
 
 /**
@@ -601,7 +607,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         initBackgroundServices({config});
 
         // Step 8 - Init our metrics server
-        initMetricsServer();
+        if (ghostServer) {
+            await initMetricsServer({ghostServer, config});
+        }
 
         // If we pass the env var, kill Ghost
         if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
