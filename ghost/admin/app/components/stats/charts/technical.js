@@ -29,7 +29,7 @@ export default class TechnicalComponent extends Component {
     ReactComponent = (props) => {
         const {selected} = props;
 
-        const colorPalette = statsStaticColors.slice(1, 5);
+        const colorPalette = statsStaticColors.slice(0, 5);
 
         const params = getStatsParams(
             this.config,
@@ -66,34 +66,6 @@ export default class TechnicalComponent extends Component {
 
         return (
             <div className="gh-stats-piechart-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th><span className="gh-stats-data-header">{tableHead}</span></th>
-                            <th><span className="gh-stats-data-header">Visits</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {transformedData.map((item, index) => (
-                            <tr key={index}>
-                                <td>
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
-                                        }}
-                                        className="gh-stats-data-label"
-                                    >
-                                        <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
-                                        {item.name}
-                                    </a>
-                                </td>
-                                <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
                 <div className="gh-stats-piechart">
                     <DonutChart
                         data={data}
@@ -135,8 +107,9 @@ export default class TechnicalComponent extends Component {
                                 {
                                     animation: true,
                                     name: tableHead,
+                                    padAngle: 1.5,
                                     type: 'pie',
-                                    radius: ['60%', '90%'],
+                                    radius: ['65%', '90%'],
                                     center: ['50%', '50%'], // Adjusted to align the chart to the top
                                     data: transformedData,
                                     label: {
@@ -157,6 +130,34 @@ export default class TechnicalComponent extends Component {
                         }}
                     />
                 </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th><span className="gh-stats-data-header">{tableHead}</span></th>
+                            <th><span className="gh-stats-data-header">Visits</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {transformedData.map((item, index) => (
+                            <tr key={index}>
+                                <td>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
+                                        }}
+                                        className="gh-stats-data-label"
+                                    >
+                                        <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
+                                        {item.name}
+                                    </a>
+                                </td>
+                                <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         );
     };
