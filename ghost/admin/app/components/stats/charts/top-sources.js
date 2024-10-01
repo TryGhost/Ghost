@@ -12,6 +12,7 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 const LIMIT = 7;
+const DEFAULT_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 export default class TopSources extends Component {
     @inject config;
@@ -84,7 +85,12 @@ export default class TopSources extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                <img src={`https://www.google.com/s2/favicons?domain=${label || 'direct'}&sz=32`} className="gh-stats-favicon" />
+                                <img
+                                    src={`https://www.faviconextractor.com/favicon/${label || 'direct'}?larger=true`}
+                                    className="gh-stats-favicon"
+                                    onError={(e) => {
+                                        e.target.src = DEFAULT_ICON_URL;
+                                    }} />
                                 <span title={label || 'Direct'}>{label || 'Direct'}</span>
                             </a>
                         </span>
