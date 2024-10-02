@@ -99,9 +99,9 @@ function renderInboxAttachment(object: ObjectProperties) {
         const attachmentCount = attachment.length;
 
         return (
-            <div className='min-w-[160px]'>
+            <div className='min-w-[120px]'>
                 <div className='relative'>
-                    <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment[0].url} />
+                    <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment[0].url} />
                     <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
                 </div>
             </div>
@@ -113,16 +113,16 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/png':
     case 'image/gif':
         return (
-            <div className='min-w-[160px]'>
-                <img className={`h-[100px] w-[160px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment.url} />
+            <div className='min-w-[120px]'>
+                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment.url} />
             </div>
         );
     case 'video/mp4':
     case 'video/webm':
         return (
-            <div className='min-w-[160px]'>
+            <div className='min-w-[120px]'>
                 <div className='relative mb-4 mt-2'>
-                    <video className='h-[300px] w-full rounded object-cover' src={attachment.url} controls/>
+                    <video className='h-[80px] w-full rounded object-cover' src={attachment.url} controls/>
                 </div>
             </div>
         );
@@ -449,34 +449,36 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
-                        <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
-                            <APAvatar author={author} size='xs'/>
-                            <div className='z-10 w-full'>
-                                <div className='mb-1'>
-                                    <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
-                                    <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
-                                    <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
-                                </div>
-                                <div className='flex w-full items-start justify-between gap-5'>
-                                    <div className='grow'>
-                                        {object.name && <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content mt-1 line-clamp-3 text-pretty text-[1.5rem] text-grey-900'></div>
+                    <div className='group/article relative -mx-4 -mt-px flex cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' onClick={onClick}>
+                        <div>
+                            <div className='z-10 flex items-start justify-between gap-2 group-hover/article:border-transparent'>
+                                <APAvatar author={author} size='xs'/>
+                                <div className='z-10 w-full text-sm'>
+                                    <div className='mb-1'>
+                                        <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
+                                        <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
+                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                                     </div>
-                                    {renderInboxAttachment(object)}
                                 </div>
-                                <div className='space-between mt-5 flex'>
-                                    <FeedItemStats
-                                        commentCount={comments.length}
-                                        likeCount={1}
-                                        object={object}
-                                        onCommentClick={onCommentClick}
-                                        onLikeClick={onLikeClick}
-                                    />
-                                    <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            </div>
+                            <div className='flex w-full items-start justify-between gap-5'>
+                                <div className='grow'>
+                                    {object.name && <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                    <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content mt-1 line-clamp-1 text-pretty text-[1.5rem] text-grey-700'></div>
                                 </div>
                             </div>
                         </div>
+                        {renderInboxAttachment(object)}
+                        {/* <div className='space-between mt-5 flex'>
+                            <FeedItemStats
+                                commentCount={comments.length}
+                                likeCount={1}
+                                object={object}
+                                onCommentClick={onCommentClick}
+                                onLikeClick={onLikeClick}
+                            />
+                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                        </div> */}
                     </div>
                 )}
             </>
