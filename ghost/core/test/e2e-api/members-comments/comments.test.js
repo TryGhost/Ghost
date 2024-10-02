@@ -365,6 +365,36 @@ describe('Comments API', function () {
                     });
             });
 
+            it('Can sort comments by oldest', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=oldest`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
+            it('Can sort comments by newest', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=newest`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
             it('Can reply to your own comment', async function () {
                 // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
                 const timezone = settingsCache.get('timezone');

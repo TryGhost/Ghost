@@ -166,10 +166,20 @@ class CommentsService {
     /**
      * @param {any} options
      */
+    /**
+ * @param {any} options
+ */
     async getComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: null});
 
+        const order = options.order || 'newest'; // Default to 'newest'
+        if (order === 'newest') {
+            options.order = 'created_at desc'; // Newest first
+        } else if (order === 'oldest') {
+            options.order = 'created_at asc'; // Oldest first
+        }
+        // Ensure other necessary options (like parentId)
+        const page = await this.models.Comment.findPage({...options, parentId: null});
         return page;
     }
 
