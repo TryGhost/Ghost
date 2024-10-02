@@ -258,10 +258,9 @@ async function initExpressApps({frontend, backend, config}) {
  * @param {object} ghostServer 
  */
 
-async function initMetricsServer({ghostServer, config}) {
+async function initMetricsServer({prometheusClient,ghostServer, config}) {
     debug('Begin: initMetricsServer');
     const {MetricsServer} = require('@tryghost/metrics-server');
-    const prometheusClient = require('./shared/prometheus-client');
     const serverConfig = {
         host: config.get('server:host'),
         port: 9416
@@ -537,6 +536,12 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const sentry = require('./shared/sentry');
         debug('End: Load sentry');
 
+        // Initialize prometheus client early to enable metrics collection during boot
+        // Note: this does not start the metrics server yet to avoid increasing boot time
+        debug('Begin: Load prometheusClient');
+        const prometheusClient = require('./shared/prometheus-client');
+        debug('End: Load prometheusClient');
+
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app')();
@@ -605,9 +610,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
 
-        // Step 8 - Init our metrics server
+        // Step 8 - Init our metrics server, we don't wait for this to finish
         if (ghostServer) {
-            await initMetricsServer({ghostServer, config});
+            initMetricsServer({prometheusClient, ghostServer, config});
         }
 
         // If we pass the env var, kill Ghost
