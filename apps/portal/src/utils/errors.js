@@ -23,6 +23,8 @@ export class HumanReadableError extends Error {
     }
 }
 
+export const specialMessages = [];
+
 /**
  * Attempt to return the best available message to the user, after translating it.
  * We detect special messages coming from the API for which we want to serve a specific translation.
@@ -38,24 +40,30 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             return t(message);
         }
     };
-
+    const setupSpecialMessages = () => {
+        // eslint-disable-next-line no-shadow
+        const t = message => specialMessages.push(message);
+        if (specialMessages.length === 0) {
+            // This formatting is intentionally weird. It causes the i18n-parser to pick these strings up.
+            // Do not redefine this t. It's a local function and needs to stay that way.
+            t('No member exists with this e-mail address. Please sign up first.');
+            t('No member exists with this e-mail address.');
+            t('This site is invite-only, contact the owner for access.');
+            t('Unable to initiate checkout session');
+            t('This site is not accepting payments at the moment.');
+            t('Too many attempts try again in {{number}} minutes.');
+            t('Too many attempts try again in {{number}} hours.');
+            t('Too many attempts try again in {{number}} days.');
+            t('Too many different sign-in attempts, try again in {{number}} minutes');
+            t('Too many different sign-in attempts, try again in {{number}} hours');
+            t('Too many different sign-in attempts, try again in {{number}} days');
+            t('Failed to send magic link email');
+        }
+    };
     const isSpecialMessage = (message) => {
-        // IMPORTANT: If you add to this list, also add to myfakeFunction below so that the parser will pick it up.
-
-        const specialMessages = [
-            'No member exists with this e-mail address. Please sign up first.',
-            'No member exists with this e-mail address.',
-            'This site is invite-only, contact the owner for access.',
-            'Unable to initiate checkout session',
-            'This site is not accepting payments at the moment.',
-            'Too many attempts try again in {{number}} minutes.',
-            'Too many attempts try again in {{number}} hours.',
-            'Too many attempts try again in {{number}} days.',
-            'Too many different sign-in attempts, try again in {{number}} minutes',
-            'Too many different sign-in attempts, try again in {{number}} hours',
-            'Too many different sign-in attempts, try again in {{number}} days',
-            'Failed to send magic link email'
-        ];
+        if (specialMessages.length === 0) {
+            setupSpecialMessages();
+        }
         if (specialMessages.includes(message)) {
             return true;
         }
@@ -92,24 +100,3 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
         return alreadyTranslatedDefaultMessage || t('An error occurred') + ': ' + error.toString();
     }
 }
-
-/* This fails linting, because it's only here so that these strings can get picked up for translation */
-// eslint-disable-next-line no-unused-vars
-const myfakeFunction = () => {
-    const t = (message) => {
-        return message;
-    };
-    t('No member exists with this e-mail address. Please sign up first.');
-    t('No member exists with this e-mail address.');
-    t('This site is invite-only, contact the owner for access.');
-    t('Unable to initiate checkout session');
-    t('This site is not accepting payments at the moment.');
-    t('Too many attempts try again in {{number}} minutes.');
-    t('Too many attempts try again in {{number}} hours.');
-    t('Too many attempts try again in {{number}} days.');
-    t('Too many different sign-in attempts, try again in {{number}} minutes');
-    t('Too many different sign-in attempts, try again in {{number}} hours');
-    t('Too many different sign-in attempts, try again in {{number}} days');
-    t('Failed to send magic link email');
-};
-
