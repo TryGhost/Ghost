@@ -3,10 +3,12 @@ const testUtils = require('../../utils');
 const request = require('supertest');
 
 describe('Metrics Server', function () {
+    after(async function () {
+        await testUtils.stopGhost();
+    });
     it('should start up when Ghost boots', async function () {
         await testUtils.startGhost({forceStart: true});
         request('http://127.0.0.1:9416').get('/metrics').expect(200);
-        await testUtils.stopGhost();
     });
 
     it('should stop when Ghost stops', async function () {
@@ -23,7 +25,5 @@ describe('Metrics Server', function () {
         assert.ok(error);
         // This would throw an error if the metrics server were still running on port 9416
         await testUtils.startGhost({forceStart: true});
-
-        await testUtils.stopGhost();
     });
 });
