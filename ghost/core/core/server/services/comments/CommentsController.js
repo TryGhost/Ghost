@@ -35,6 +35,7 @@ module.exports = class CommentsController {
      * @param {Frame} frame
      */
     async browse(frame) {
+        // our order options are best, newest, oldest
         if (frame.options.post_id) {
             if (frame.options.filter) {
                 frame.options.mongoTransformer = function (query) {
@@ -51,7 +52,8 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
-        return this.service.getComments(frame.options);
+        const result = await this.service.getComments(frame.options);
+        return result;
     }
 
     /**

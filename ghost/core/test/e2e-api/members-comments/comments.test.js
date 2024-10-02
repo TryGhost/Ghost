@@ -644,6 +644,20 @@ describe('Comments API', function () {
                     });
             });
 
+            it('can show most liked comment first', async function () {
+                const parentId = fixtureManager.get('comments', 0).id;
+
+                await membersAgent
+                    .post(`/api/comments/${parentId}/like/`)
+                    .expectStatus(204);
+
+                const data = await membersAgent
+                    .get(`/api/comments/${parentId}/replies/?order=best`);
+
+                // check that the most liked comment is first
+                should(data.body.comments[0].count.likes).eql(1);
+            });
+
             it('Can remove a like (unlike)', async function () {
                 // Unlike
                 await membersAgent

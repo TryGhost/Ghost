@@ -218,7 +218,35 @@ const Comment = ghostBookshelf.Model.extend({
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
         }
 
+        // if options.order === 'best', we findMostLikedComment
+        // then we remove it from the result set and add it as the first element
+        if (options.order === 'best') {
+            const mostLikedComment = await this.findMostLikedComment(options);
+            if (mostLikedComment) {
+                result.data = result.data.filter(comment => comment.id !== mostLikedComment.id);
+                result.data.unshift(mostLikedComment);
+            }
+        }
+
         return result;
+    },
+
+    async findMostLikedComment(options = {}) {
+        // Build the query to find the comment with the most likes
+        let query = ghostBookshelf.knex('comments')
+            .select('comments.*')
+            .count('comment_likes.id as count__likes') // Counting likes for sorting
+            .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
+            .groupBy('comments.id') // Group by comment ID to aggregate likes count
+            .orderBy('count__likes', 'desc') // Order by likes in descending order (most likes first)
+            .limit(1); // Limit to just 1 result
+        // Execute the query and get the result
+        const result = await query.first(); // Fetch the single top comment
+
+        const id = result && result.id;
+        // Fetch the comment model by ID
+
+        return this.findOne({id}, options);
     },
 
     countRelations() {
