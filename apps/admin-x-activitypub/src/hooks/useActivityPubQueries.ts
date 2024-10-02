@@ -1,5 +1,5 @@
 import {Activity} from '../components/activities/ActivityItem';
-import {ActivityPubAPI} from '../api/activitypub';
+import {ActivityPubAPI, type ProfileSearchResult, type SearchResults} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
@@ -228,6 +228,81 @@ export function useActivitiesForUser({
         },
         getNextPageParam(prevPage) {
             return prevPage.nextCursor;
+        }
+    });
+}
+
+export function useSearchForUser(handle: string, query: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    const queryClient = useQueryClient();
+    const queryKey = ['search', {handle, query}];
+
+    const searchQuery = useQuery({
+        enabled: query !== '',
+        queryKey,
+        async queryFn() {
+            return api.search(query);
+        }
+    });
+
+    const updateProfileSearchResult = (id: string, updated: Partial<ProfileSearchResult>) => {
+        queryClient.setQueryData(queryKey, (current: SearchResults | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                profiles: current.profiles.map((item: ProfileSearchResult) => {
+                    if (item.actor.id === id) {
+                        return {...item, ...updated};
+                    }
+                    return item;
+                })
+            };
+        });
+    };
+
+    return {searchQuery, updateProfileSearchResult};
+}
+
+export function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useMutation({
+        async mutationFn(username: string) {
+            return api.follow(username);
+        },
+        onSuccess,
+        onError
+    });
+}
+
+export function useFollowersForProfile(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useInfiniteQuery({
+        queryKey: [`followers:${handle}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            return api.getFollowersForProfile(handle, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function useFollowingForProfile(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useInfiniteQuery({
+        queryKey: [`following:${handle}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            return api.getFollowingForProfile(handle, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
