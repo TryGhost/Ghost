@@ -4,9 +4,6 @@ const request = require('supertest');
 const parsePrometheusTextFormat = require('parse-prometheus-text-format');
 
 describe('Metrics Server', function () {
-    afterEach(async function () {
-        await testUtils.stopGhost();
-    });
     it('should start up when Ghost boots and stop when Ghost stops', async function () {
         // Ensure the metrics server is running after Ghost boots
         await testUtils.startGhost({forceStart: true});
@@ -25,11 +22,20 @@ describe('Metrics Server', function () {
         assert.ok(error);
     });
 
-    it('should export the metrics in the right format', async function () {
-        await testUtils.startGhost({forceStart: true});
-        const response = await request('http://127.0.0.1:9416').get('/metrics');
-        const metricsText = response.text;
-        const metrics = parsePrometheusTextFormat(metricsText);
-        assert.ok(metrics);
+    describe('metrics and format', function () {
+        before(async function () {
+            await testUtils.startGhost({forceStart: true});
+        });
+
+        after(async function () {
+            await testUtils.stopGhost();
+        });
+
+        it('should export the metrics in the right format', async function () {
+            const response = await request('http://127.0.0.1:9416').get('/metrics');
+            const metricsText = response.text;
+            const metrics = parsePrometheusTextFormat(metricsText);
+            assert.ok(metrics);
+        });
     });
 });
