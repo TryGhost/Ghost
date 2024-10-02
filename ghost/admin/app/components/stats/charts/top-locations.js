@@ -13,7 +13,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-const LIMIT = 5;
+const LIMIT = 6;
 
 countries.registerLocale(enLocale);
 
