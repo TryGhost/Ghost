@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
 const request = require('supertest');
+const parsePrometheusTextFormat = require('parse-prometheus-text-format');
 
 describe('Metrics Server', function () {
     after(async function () {
@@ -25,5 +26,13 @@ describe('Metrics Server', function () {
         assert.ok(error);
         // This would throw an error if the metrics server were still running on port 9416
         await testUtils.startGhost({forceStart: true});
+    });
+
+    it('should export the metrics in the right format', async function () {
+        await testUtils.startGhost({forceStart: true});
+        const response = await request('http://127.0.0.1:9416').get('/metrics');
+        const metricsText = response.text;
+        const metrics = parsePrometheusTextFormat(metricsText);
+        assert.ok(metrics);
     });
 });
