@@ -10,6 +10,16 @@ const {
 const EventProcessingResult = require('../lib/EventProcessingResult');
 
 describe('EmailAnalyticsService', function () {
+    let clock;
+    
+    beforeEach(function () {
+        clock = sinon.useFakeTimers(new Date(2024, 0, 1));
+    });
+
+    afterEach(function () {
+        clock.restore();
+    });
+
     describe('getStatus', function () {
         it('returns status object', function () {
             // these are null because we're not running them before calling this
