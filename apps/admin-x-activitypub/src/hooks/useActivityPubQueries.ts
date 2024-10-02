@@ -279,3 +279,30 @@ export function useFollow(handle: string, onSuccess: () => void, onError: () => 
     });
 }
 
+export function useFollowersForProfile(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useInfiniteQuery({
+        queryKey: [`followers:${handle}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            return api.getFollowersForProfile(handle, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function useFollowingForProfile(handle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useInfiniteQuery({
+        queryKey: [`following:${handle}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            return api.getFollowingForProfile(handle, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}

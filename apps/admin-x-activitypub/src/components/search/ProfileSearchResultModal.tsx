@@ -1,17 +1,146 @@
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Heading, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+import {UseInfiniteQueryResult} from '@tanstack/react-query';
+
+import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
+import {useFollowersForProfile, useFollowingForProfile} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
+import ActivityItem from '../activities/ActivityItem';
 import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
+import getUsername from '../../utils/get-username';
+
+const noop = () => {};
+
+type QueryPageData = GetFollowersForProfileResponse | GetFollowingForProfileResponse;
+
+type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData, unknown>;
+
+type ActorListProps = {
+    handle: string,
+    noResultsMessage: string,
+    queryFn: QueryFn,
+    resolveDataFn: (data: QueryPageData) => GetFollowersForProfileResponse['followers'] | GetFollowingForProfileResponse['following'];
+};
+
+const ActorList: React.FC<ActorListProps> = ({
+    handle,
+    noResultsMessage,
+    queryFn,
+    resolveDataFn
+}) => {
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = queryFn(handle);
+
+    const actorData = (data?.pages.flatMap(resolveDataFn) ?? []);
+
+    // Intersection observer to fetch more data when the user scrolls
+    // to the bottom of the list
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    return (
+        <div>
+            {
+                actorData.length === 0 && !isLoading ? (
+                    <NoValueLabel icon='user-add'>
+                        {noResultsMessage}
+                    </NoValueLabel>
+                ) : (
+                    <List>
+                        {actorData.map(({actor, isFollowing}) => {
+                            return (
+                                <ActivityItem key={actor.id} url={actor.url}>
+                                    <APAvatar author={actor} />
+                                    <div>
+                                        <div className='text-grey-600'>
+                                            <span className='mr-1 font-bold text-black'>{actor.name || actor.preferredUsername || 'Unknown'}</span>
+                                            <div className='text-sm'>{getUsername(actor)}</div>
+                                        </div>
+                                    </div>
+                                    <FollowButton
+                                        className='ml-auto'
+                                        following={isFollowing}
+                                        handle={getUsername(actor)}
+                                        type='link'
+                                    />
+                                </ActivityItem>
+                            );
+                        })}
+                    </List>
+                )
+            }
+            <div ref={loadMoreRef} className='h-1'></div>
+            {
+                (isFetchingNextPage || isLoading) && (
+                    <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </div>
+                )
+            }
+        </div>
+    );
+};
+
+const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+    return (
+        <ActorList
+            handle={handle}
+            noResultsMessage={`${handle} has no followers yet`}
+            queryFn={useFollowersForProfile}
+            resolveDataFn={page => ('followers' in page ? page.followers : [])}
+        />
+    );
+};
+
+const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
+    return (
+        <ActorList
+            handle={handle}
+            noResultsMessage={`${handle} is not following anyone yet`}
+            queryFn={useFollowingForProfile}
+            resolveDataFn={page => ('following' in page ? page.following : [])}
+        />
+    );
+};
 
 interface ProfileSearchResultModalProps {
     profile: {
         actor: ActorProperties;
         handle: string;
+        followerCount: number;
+        followingCount: number;
         isFollowing: boolean;
         posts: Activity[];
     };
@@ -19,7 +148,7 @@ interface ProfileSearchResultModalProps {
     onUnfollow: () => void;
 }
 
-const noop = () => {};
+type ProfileTab = 'posts' | 'following' | 'followers';
 
 const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
     profile,
@@ -27,9 +156,47 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
     onUnfollow = noop
 }) => {
     const modal = useModal();
-    const attachments = (profile.actor.attachment || [])
-        .filter(attachment => attachment.type === 'PropertyValue');
-    const posts = profile.posts; // @TODO: Do any filtering / manipulation here
+    const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+
+    const attachments = (profile.actor.attachment || []);
+    const posts = (profile.posts || []).filter(post => post.type !== 'Announce');
+
+    const tabs = [
+        {
+            id: 'posts',
+            title: 'Posts',
+            contents: (
+                <div>
+                    {posts.map(post => (
+                        <FeedItem
+                            actor={profile.actor}
+                            comments={post.object.replies}
+                            layout='feed'
+                            object={post.object}
+                            type={post.type}
+                            onCommentClick={() => {}}
+                        />
+                    ))}
+                </div>
+            )
+        },
+        {
+            id: 'following',
+            title: 'Following',
+            contents: (
+                <FollowingTab handle={profile.handle} />
+            ),
+            counter: profile.followingCount
+        },
+        {
+            id: 'followers',
+            title: 'Followers',
+            contents: (
+                <FollowersTab handle={profile.handle} />
+            ),
+            counter: profile.followerCount
+        }
+    ].filter(Boolean) as Tab<ProfileTab>[];
 
     return (
         <Modal
@@ -84,25 +251,12 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                                 <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
                             </span>
                         ))}
-
-                        <Heading className='mt-8' level={5}>Posts</Heading>
-                        
-                        {posts.map((post) => {
-                            if (post.type === 'Announce') {
-                                return null;
-                            } else {
-                                return (
-                                    <FeedItem
-                                        actor={profile.actor}
-                                        comments={post.object.replies}
-                                        layout='feed'
-                                        object={post.object}
-                                        type={post.type}
-                                        onCommentClick={() => {}}
-                                    />
-                                );
-                            }
-                        })}
+                        <TabView<ProfileTab>
+                            containerClassName='mt-6'
+                            selectedTab={selectedTab}
+                            tabs={tabs}
+                            onTabChange={setSelectedTab}
+                        />
                     </div>
                 </div>
             </div>
