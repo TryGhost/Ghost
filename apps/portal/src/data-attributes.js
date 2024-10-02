@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
-import {HumanReadableError} from './utils/errors';
+import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 
 export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
-    const {t} = this.context;
+    //const {t} = this.context;
+    function t (message) { console.log('formSubmitHandler does not understand t'); return message; }
+
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -85,13 +87,14 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     }).catch((err) => {
         if (errorEl) {
             // This theme supports a custom error element
-            errorEl.innerText = HumanReadableError.getMessageFromError(err, 'There was an error sending the email, please try again', t);
+            errorEl.innerText = chooseBestErrorMessage(err, t('There was an error sending the email, please try again'), t);
         }
         form.classList.add('error');
     });
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
+    console.log('site is', site);
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -324,7 +327,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                     el.classList.add('error');
 
                     if (errorEl) {
-                        errorEl.innerText = 'There was an error cancelling your subscription, please try again.';
+                        errorEl.innerText = t('There was an error cancelling your subscription, please try again.');
                     }
                 }
             });
@@ -374,7 +377,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                     el.classList.add('error');
 
                     if (errorEl) {
-                        errorEl.innerText = 'There was an error continuing your subscription, please try again.';
+                        errorEl.innerText = t('There was an error continuing your subscription, please try again.');
                     }
                 }
             });

@@ -1,5 +1,5 @@
 import setupGhostApi from './utils/api';
-import {HumanReadableError} from './utils/errors';
+import {chooseBestErrorMessage} from './utils/errors';
 import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 
 function switchPage({data, state}) {
@@ -79,6 +79,7 @@ async function signout({api, state}) {
 }
 
 async function signin({data, api, state}) {
+    const {t} = state;
     try {
         const integrityToken = await api.member.getIntegrityToken();
         await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken});
@@ -91,13 +92,14 @@ async function signin({data, api, state}) {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: HumanReadableError.getMessageFromError(e, 'Failed to log in, please try again', state.t)
+                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'), t)
             })
         };
     }
 }
 
 async function signup({data, state, api}) {
+    const {t} = state;
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
 
@@ -121,12 +123,12 @@ async function signup({data, state, api}) {
         };
     } catch (e) {
         const {t} = state;
-        const message = e?.message || 'Failed to sign up, please try again';
+        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'), t);
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
                 type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: t(message)
+                message: message
             })
         };
     }

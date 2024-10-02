@@ -551,9 +551,9 @@ export default class App extends React.Component {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
 
         try {
-            this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
+            this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey}, this.state.t);
             const {site, member} = await this.GhostApi.init();
-
+            console.log('site is', site); // this actually does contain locale, which could be used to set up i18n, but ugh!
             const colorOverride = this.getColorOverride();
             if (colorOverride) {
                 site.accent_color = colorOverride;

@@ -1,7 +1,7 @@
 import {HumanReadableError} from './errors';
 import {transformApiSiteData, transformApiTiersData, getUrlHistory} from './helpers';
 
-function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
+function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}, t = (str) => str) {
     const apiPath = 'members/api';
 
     function endpointFor({type, resource}) {
