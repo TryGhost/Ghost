@@ -76,8 +76,8 @@ run_test() {
         rm "$tmpfile"
         return 0
     elif [ $retries -eq $TOTAL_RETRIES ]; then
-        echo "🚨 ERROR: Test $t failed, diff:"
-        diff -B "${t}.result" "$tmpfile"
+        echo "🚨 ERROR: Test $t failed, showing differences:"
+        diff -B -u --color -U3 "${t}.result" "$tmpfile"  # Use unified diff format with 3 lines of context
         rm "$tmpfile"
         return 1
     else
@@ -111,6 +111,6 @@ else
 fi
 
 if [ $fail == 1 ]; then
-  echo "🚨 ERROR: Some tests failed"
-  exit 1
+    echo "🚨 ERROR: Some tests failed"
+    exit 1
 fi
