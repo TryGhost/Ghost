@@ -9,15 +9,6 @@ type ServerConfig = {
     port: number;
 };
 
-const defaultServerConfig: ServerConfig = {
-    host: '0.0.0.0',
-    port: 3000
-};
-
-const defaultHandler: express.Handler = (req, res) => {
-    res.status(501).send('Not Implemented');
-};
-
 export class MetricsServer {
     private serverConfig: ServerConfig;
     private app: express.Application | null;
@@ -25,7 +16,7 @@ export class MetricsServer {
     private handler: express.Handler;
     private isShuttingDown: boolean;
 
-    constructor({serverConfig, handler}: {serverConfig: ServerConfig, handler: express.Handler} = {serverConfig: defaultServerConfig, handler: defaultHandler}) {
+    constructor({serverConfig, handler}: {serverConfig: ServerConfig, handler: express.Handler}) {
         // initialize some local variables
         this.serverConfig = serverConfig;
         this.handler = handler;
