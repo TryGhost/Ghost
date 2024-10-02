@@ -390,6 +390,25 @@ describe('Posts API', function () {
                 });
         });
 
+        it('Errors if feature_image_alt is too long', async function () {
+            const post = {
+                title: 'Feature image alt too long',
+                feature_image_alt: 'a'.repeat(201)
+            };
+
+            await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
+                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/)
+                    }]
+                });
+        });
+
         it('Clears all page html fields when creating published post', async function () {
             const totalPageCount = await models.Post.where({type: 'page'}).count();
             should.exist(totalPageCount, 'total page count');
@@ -877,7 +896,7 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
-                
+
             const convertedPost = conversionResponse.body.posts[0];
             const expectedConvertedLexical = convertedPost.lexical;
             await agent

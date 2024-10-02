@@ -1457,6 +1457,24 @@ Object {
 }
 `;
 
+exports[`Posts API Create Errors if feature_image_alt is too long 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": StringMatching /\\.\\*post_revisions\\\\\\.feature_image_alt\\] exceeds maximum length of 191 characters\\.\\*/,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save post.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
 exports[`Posts API Create Errors with an invalid lexical state object 1: [body] 1`] = `
 Object {
   "errors": Array [
