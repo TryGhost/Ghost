@@ -24,9 +24,11 @@ describe('Metrics Server', function () {
 
     describe('metrics and format', function () {
         let metricsResponse;
+        let metricsText;
         before(async function () {
             await testUtils.startGhost({forceStart: true});
             metricsResponse = await request('http://127.0.0.1:9416').get('/metrics');
+            metricsText = metricsResponse.text;
         });
 
         after(async function () {
@@ -34,13 +36,11 @@ describe('Metrics Server', function () {
         });
 
         it('should export the metrics in the right format', async function () {
-            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             assert.ok(metricsJson);
         });
 
         it('should use the right prefix for all metrics', async function () {
-            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             const metricNames = metricsJson.map(metric => metric.name);
             metricNames.forEach((metricName) => {
@@ -49,7 +49,6 @@ describe('Metrics Server', function () {
         });
 
         it('should have help text for all metrics', async function () {
-            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             metricsJson.forEach((metric) => {
                 assert.ok(metric.help);
@@ -57,7 +56,6 @@ describe('Metrics Server', function () {
         });
 
         it('should have type for all metrics', async function () {
-            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             metricsJson.forEach((metric) => {
                 assert.ok(metric.type);
@@ -97,7 +95,6 @@ describe('Metrics Server', function () {
                 'ghost_nodejs_version_info',
                 'ghost_nodejs_gc_duration_seconds'
             ];
-            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             const metricNames = metricsJson.map(metric => metric.name);
             assert.deepEqual(metricNames, expectedMetrics);
