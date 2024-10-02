@@ -11,7 +11,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-const LIMIT = 7;
+const LIMIT = 6;
 const DEFAULT_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 
 export default class TopSources extends Component {
