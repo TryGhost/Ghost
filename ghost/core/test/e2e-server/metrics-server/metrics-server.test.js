@@ -29,12 +29,8 @@ describe('Metrics Server', function () {
             await testUtils.startGhost({forceStart: true});
             metricsResponse = await request('http://127.0.0.1:9416').get('/metrics');
             metricsText = metricsResponse.text;
-        });
-
-        after(async function () {
             await testUtils.stopGhost();
         });
-
         it('should export the metrics in the right format', async function () {
             const metricsJson = parsePrometheusTextFormat(metricsText);
             assert.ok(metricsJson);
