@@ -261,13 +261,12 @@ async function initExpressApps({frontend, backend, config}) {
 async function initMetricsServer({ghostServer, config}) {
     debug('Begin: initMetricsServer');
     const {MetricsServer} = require('@tryghost/metrics-server');
+    const prometheusClient = require('./shared/prometheus-client');
     const serverConfig = {
         host: config.get('server:host'),
         port: 9416
     };
-    const handler = (req, res) => {
-        res.send('Some metrics here');
-    };
+    const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
     const metricsServer = new MetricsServer({serverConfig, handler});
     await metricsServer.start();
     // Ensure the metrics server is cleaned up when the ghost server is shut down
