@@ -71,9 +71,9 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
         if (!message) { return {preparedMessage: 'An error occurred', number: null}; }
         const number = message.match(/\d+/);
         if (number) {
-            message = message.replace(number[ 0 ], '{{number}}');
+            message = message.replace(number[0], '{{number}}');
         }
-        return {preparedMessage: message, number: number ? number[ 0 ] : null};
+        return {preparedMessage: message, number: number ? number[0] : null};
     };
 
     // main function

@@ -127,42 +127,6 @@
             "email-latest-posts-image-mobile": {"width": 1200, "height": 960},
             "social-image": {"width": 1200}
         }
-    },
-    "spam": {
-    "user_login": {
-        "minWait": 1,
-        "maxWait": 1,
-        "freeRetries": 4
-    },
-    "user_reset": {
-        "minWait": 1,
-        "maxWait": 1,
-        "lifetime": 1,
-        "freeRetries": 4
-    },
-    "global_reset": {
-        "minWait": 1,
-        "maxWait": 1,
-        "lifetime": 1,
-        "freeRetries":4
-    },
-    "global_block": {
-        "minWait": 1,
-        "maxWait": 1,
-        "lifetime": 1,
-        "freeRetries": 99
-    },
-    "private_block": {
-        "minWait": 1,
-        "maxWait": 1,
-        "lifetime": 1,
-        "freeRetries": 99
-    },
-    "content_api_key": {
-        "minWait": 1,
-        "maxWait": 1,
-        "lifetime": 1,
-        "freeRetries": 99
     }
 }
-}
+
