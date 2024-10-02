@@ -1,6 +1,5 @@
 import debugModule from '@tryghost/debug';
 import express from 'express';
-import http from 'http';
 import stoppable from 'stoppable';
 
 const debug = debugModule('metrics-server');
