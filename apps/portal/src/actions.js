@@ -99,7 +99,6 @@ async function signin({data, api, state}) {
 }
 
 async function signup({data, state, api}) {
-    const {t} = state;
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
 

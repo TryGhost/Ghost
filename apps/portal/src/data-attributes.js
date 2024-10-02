@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
+import i18nLib from '@tryghost/i18n';
 
-export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
-    //const {t} = this.context;
-    function t (message) { console.log('formSubmitHandler does not understand t'); return message; }
-
+export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}, t = (str) => {return str;}) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -94,7 +92,9 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    console.log('site is', site);
+    const i18nLanguage = site.locale | 'en';
+    const i18n = i18nLib(i18nLanguage, 'portal');
+    const t = i18n.t;
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -147,7 +147,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
             })
         }).then(function (res) {
             if (!res.ok) {
-                throw new Error('Could not create stripe checkout session');
+                throw new Error(t('Could not create stripe checkout session'));
             }
             return res.json();
         });
@@ -175,6 +175,9 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
 }
 
 export function handleDataAttributes({siteUrl, site, member}) {
+    const i18nLanguage = site.locale | 'en';
+    const i18n = i18nLib(i18nLanguage, 'portal');
+    const t = i18n.t;
     if (!siteUrl) {
         return;
     }
@@ -182,7 +185,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler});
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
         }
         form.addEventListener('submit', submitHandler);
     });
@@ -238,7 +241,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                     })
                 }).then(function (res) {
                     if (!res.ok) {
-                        throw new Error('Could not create stripe checkout session');
+                        throw new Error(t('Could not create stripe checkout session'));
                     }
                     return res.json();
                 });
@@ -249,7 +252,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                 });
             }).then(function (result) {
                 if (result.error) {
-                    throw new Error(result.error.message);
+                    throw new Error(t(result.error.message));
                 }
             }).catch(function (err) {
                 console.error(err);
