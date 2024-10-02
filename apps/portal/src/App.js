@@ -553,7 +553,7 @@ export default class App extends React.Component {
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {site, member} = await this.GhostApi.init();
-            
+
             const colorOverride = this.getColorOverride();
             if (colorOverride) {
                 site.accent_color = colorOverride;

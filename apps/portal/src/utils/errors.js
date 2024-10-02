@@ -9,8 +9,8 @@ export class HumanReadableError extends Error {
         if (res.status === 400 || res.status === 429) {
             try {
                 const json = await res.json();
-                if (json.errors && Array.isArray(json.errors) && json.errors.length > 0 && json.errors[ 0 ].message) {
-                    return new HumanReadableError(json.errors[ 0 ].message);
+                if (json.errors && Array.isArray(json.errors) && json.errors.length > 0 && json.errors[0].message) {
+                    return new HumanReadableError(json.errors[0].message);
                 }
             } catch (e) {
                 // Failed to decode: ignore
@@ -23,13 +23,11 @@ export class HumanReadableError extends Error {
     }
 }
 
-// changing this - will export this helper.  It's not helping me to have it stuck to HumanReadableError... 
-
 /**
- * Only output the message of an error if it is a human readable error and should be exposed to the user.
- * Otherwise it returns a default generic message.
- * alreadyTranslatedDefaultMessage is already translated, because otherwise the 
- * generation of translation strings breaks. 
+ * Attempt to return the best available message to the user, after translating it.
+ * We detect special messages coming from the API for which we want to serve a specific translation.
+ * Many "alreadyTranslatedDefaultMessages" are pretty vague, so we want to replace them with a more specific message
+ * whenever one is available.
  */
 export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t) {
     // helper functions
@@ -43,9 +41,8 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
 
     const isSpecialMessage = (message) => {
         // IMPORTANT: If you add to this list, also add to myfakeFunction below so that the parser will pick it up.
-        // Yes, there's got to be a better way to do this.
 
-        let specialMessages = [
+        const specialMessages = [
             'No member exists with this e-mail address. Please sign up first.',
             'No member exists with this e-mail address.',
             'This site is invite-only, contact the owner for access.',
@@ -92,7 +89,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
     } else {
         // use the default message if there's no error message
         // if we don't have a default message either, fall back to a generic message plus the actual error.
-        return alreadyTranslatedDefaultMessage || t('An error occurred:') + ' ' + error.toString();
+        return alreadyTranslatedDefaultMessage || t('An error occurred') + ': ' + error.toString();
     }
 }
 
