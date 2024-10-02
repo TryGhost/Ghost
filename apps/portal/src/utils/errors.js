@@ -68,7 +68,9 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
     const prepareErrorMessage = (message = null) => {
         // Check for a number in message, if found, replace the number with {{number}} and return the number.
         // Assumes there's only one number in the message. 
-        if (!message) { return {preparedMessage: 'An error occurred', number: null}; }
+        if (!message) { 
+            return {preparedMessage: 'An error occurred', number: null}; 
+        }
         const number = message.match(/\d+/);
         if (number) {
             message = message.replace(number[0], '{{number}}');
