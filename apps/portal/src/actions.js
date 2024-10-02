@@ -1,5 +1,5 @@
 import setupGhostApi from './utils/api';
-import {getMessageFromError} from './utils/errors';
+import {HumanReadableError} from './utils/errors';
 import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 
 function switchPage({data, state}) {
@@ -90,7 +90,7 @@ async function signin({data, api, state}) {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: getMessageFromError(e, 'Failed to log in, please try again')
+                message: HumanReadableError.getMessageFromError(e, 'Failed to log in, please try again')
             })
         };
     }
