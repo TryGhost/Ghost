@@ -34,8 +34,18 @@ describe('Metrics Server', function () {
         it('should export the metrics in the right format', async function () {
             const response = await request('http://127.0.0.1:9416').get('/metrics');
             const metricsText = response.text;
-            const metrics = parsePrometheusTextFormat(metricsText);
-            assert.ok(metrics);
+            const metricsJson = parsePrometheusTextFormat(metricsText);
+            assert.ok(metricsJson);
+        });
+
+        it('should use the right prefix for all metrics', async function () {
+            const response = await request('http://127.0.0.1:9416').get('/metrics');
+            const metricsText = response.text;
+            const metricsJson = parsePrometheusTextFormat(metricsText);
+            const metricNames = metricsJson.map(metric => metric.name);
+            metricNames.forEach((metricName) => {
+                assert.match(metricName, /^ghost_/);
+            });
         });
     });
 });
