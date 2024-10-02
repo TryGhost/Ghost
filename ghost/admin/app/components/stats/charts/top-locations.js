@@ -3,17 +3,26 @@
 import AllStatsModal from '../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {action} from '@ember/object';
 import {barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
+
+const LIMIT = 6;
+
+countries.registerLocale(enLocale);
 
 export default class TopLocations extends Component {
     @inject config;
     @service modals;
     @service router;
+
+    @tracked showSeeAll = true;
 
     @action
     openSeeAll() {
@@ -36,6 +45,14 @@ export default class TopLocations extends Component {
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
+    updateSeeAllVisibility(data) {
+        this.showSeeAll = data && data.length > LIMIT;
+    }
+
+    getCountryName = (label) => {
+        return countries.getName(label, 'en') || 'Unknown';
+    };
+
     ReactComponent = (props) => {
         const params = getStatsParams(
             this.config,
@@ -49,9 +66,11 @@ export default class TopLocations extends Component {
             params
         });
 
+        this.updateSeeAllVisibility(data);
+
         return (
             <BarList
-                data={data}
+                data={data ? data.slice(0, LIMIT) : []}
                 meta={meta}
                 error={error}
                 loading={loading}
@@ -68,7 +87,7 @@ export default class TopLocations extends Component {
                                 }}
                                 className="gh-stats-domain"
                             >
-                                {getCountryFlag(label)} {label || 'Unknown'}
+                                <span title={this.getCountryName(label) || 'Unknown'}>{getCountryFlag(label)} {this.getCountryName(label) || 'Unknown' || 'Unknown'}</span>
                             </a>
                         </span>
                     )
