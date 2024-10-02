@@ -4,7 +4,7 @@ import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.sv
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
 import {ReactComponent as ThumbErrorIcon} from '../../images/icons/thumbs-error.svg';
 import setupGhostApi from '../../utils/api';
-import {getMessageFromError} from '../../utils/errors';
+import {HumanReadableError} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import LoadingPage from './LoadingPage';
@@ -317,7 +317,7 @@ export default function FeedbackPage() {
             await sendFeedback({siteUrl: site.url, uuid, key, postId, score: selectedScore}, api);
             setScore(selectedScore);
         } catch (e) {
-            const text = getMessageFromError(e, t('There was a problem submitting your feedback. Please try again a little later.'));
+            const text = HumanReadableError.getMessageFromError(e, t('There was a problem submitting your feedback. Please try again a little later.'));
             setError(text);
         }
         setLoading(false);
