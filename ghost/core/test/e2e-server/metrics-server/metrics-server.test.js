@@ -23,8 +23,10 @@ describe('Metrics Server', function () {
     });
 
     describe('metrics and format', function () {
+        let metricsResponse;
         before(async function () {
             await testUtils.startGhost({forceStart: true});
+            metricsResponse = await request('http://127.0.0.1:9416').get('/metrics');
         });
 
         after(async function () {
@@ -32,15 +34,13 @@ describe('Metrics Server', function () {
         });
 
         it('should export the metrics in the right format', async function () {
-            const response = await request('http://127.0.0.1:9416').get('/metrics');
-            const metricsText = response.text;
+            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             assert.ok(metricsJson);
         });
 
         it('should use the right prefix for all metrics', async function () {
-            const response = await request('http://127.0.0.1:9416').get('/metrics');
-            const metricsText = response.text;
+            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             const metricNames = metricsJson.map(metric => metric.name);
             metricNames.forEach((metricName) => {
@@ -49,8 +49,7 @@ describe('Metrics Server', function () {
         });
 
         it('should have help text for all metrics', async function () {
-            const response = await request('http://127.0.0.1:9416').get('/metrics');
-            const metricsText = response.text;
+            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             metricsJson.forEach((metric) => {
                 assert.ok(metric.help);
@@ -58,8 +57,7 @@ describe('Metrics Server', function () {
         });
 
         it('should have type for all metrics', async function () {
-            const response = await request('http://127.0.0.1:9416').get('/metrics');
-            const metricsText = response.text;
+            const metricsText = metricsResponse.text;
             const metricsJson = parsePrometheusTextFormat(metricsText);
             metricsJson.forEach((metric) => {
                 assert.ok(metric.type);
@@ -67,11 +65,8 @@ describe('Metrics Server', function () {
         });
 
         it('should have all the right metrics', async function () {
+            // Ensures we have all the metrics we expect exported
             // This could be a snapshot test in the future, but for now just check the names of the metrics
-            const response = await request('http://127.0.0.1:9416').get('/metrics');
-            const metricsText = response.text;
-            const metricsJson = parsePrometheusTextFormat(metricsText);
-            const metricNames = metricsJson.map(metric => metric.name);
             // Add new metrics to this list as they are added
             const expectedMetrics = [
                 'ghost_process_cpu_user_seconds_total',
@@ -102,6 +97,9 @@ describe('Metrics Server', function () {
                 'ghost_nodejs_version_info',
                 'ghost_nodejs_gc_duration_seconds'
             ];
+            const metricsText = metricsResponse.text;
+            const metricsJson = parsePrometheusTextFormat(metricsText);
+            const metricNames = metricsJson.map(metric => metric.name);
             assert.deepEqual(metricNames, expectedMetrics);
         });
     });
