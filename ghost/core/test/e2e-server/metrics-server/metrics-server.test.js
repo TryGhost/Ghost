@@ -47,5 +47,62 @@ describe('Metrics Server', function () {
                 assert.match(metricName, /^ghost_/);
             });
         });
+
+        it('should have help text for all metrics', async function () {
+            const response = await request('http://127.0.0.1:9416').get('/metrics');
+            const metricsText = response.text;
+            const metricsJson = parsePrometheusTextFormat(metricsText);
+            metricsJson.forEach((metric) => {
+                assert.ok(metric.help);
+            });
+        });
+
+        it('should have type for all metrics', async function () {
+            const response = await request('http://127.0.0.1:9416').get('/metrics');
+            const metricsText = response.text;
+            const metricsJson = parsePrometheusTextFormat(metricsText);
+            metricsJson.forEach((metric) => {
+                assert.ok(metric.type);
+            });
+        });
+
+        it('should have all the right metrics', async function () {
+            // This could be a snapshot test in the future, but for now just check the names of the metrics
+            const response = await request('http://127.0.0.1:9416').get('/metrics');
+            const metricsText = response.text;
+            const metricsJson = parsePrometheusTextFormat(metricsText);
+            const metricNames = metricsJson.map(metric => metric.name);
+            // Add new metrics to this list as they are added
+            const expectedMetrics = [
+                'ghost_process_cpu_user_seconds_total',
+                'ghost_process_cpu_system_seconds_total',
+                'ghost_process_cpu_seconds_total',
+                'ghost_process_start_time_seconds',
+                'ghost_process_resident_memory_bytes',
+                'ghost_nodejs_eventloop_lag_seconds',
+                'ghost_nodejs_eventloop_lag_min_seconds',
+                'ghost_nodejs_eventloop_lag_max_seconds',
+                'ghost_nodejs_eventloop_lag_mean_seconds',
+                'ghost_nodejs_eventloop_lag_stddev_seconds',
+                'ghost_nodejs_eventloop_lag_p50_seconds',
+                'ghost_nodejs_eventloop_lag_p90_seconds',
+                'ghost_nodejs_eventloop_lag_p99_seconds',
+                'ghost_nodejs_active_resources',
+                'ghost_nodejs_active_resources_total',
+                'ghost_nodejs_active_handles',
+                'ghost_nodejs_active_handles_total',
+                'ghost_nodejs_active_requests',
+                'ghost_nodejs_active_requests_total',
+                'ghost_nodejs_heap_size_total_bytes',
+                'ghost_nodejs_heap_size_used_bytes',
+                'ghost_nodejs_external_memory_bytes',
+                'ghost_nodejs_heap_space_size_total_bytes',
+                'ghost_nodejs_heap_space_size_used_bytes',
+                'ghost_nodejs_heap_space_size_available_bytes',
+                'ghost_nodejs_version_info',
+                'ghost_nodejs_gc_duration_seconds'
+            ];
+            assert.deepEqual(metricNames, expectedMetrics);
+        });
     });
 });
