@@ -24,12 +24,12 @@ animation: bump 0.3s ease-in-out;
     fill: #F50B23;
 }
 
-.ap-note-content a {
+.ap-note-content a, .ap-profile-content a {
   color: rgb(236 72 153) !important;
   word-break: break-all;
 }
 
-.ap-note-content a:hover {
+.ap-note-content a:hover, .ap-profile-content a:hover {
   color: rgb(190, 25, 99) !important;
   text-decoration: underline !important;
 }

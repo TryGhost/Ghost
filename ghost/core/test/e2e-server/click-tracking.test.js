@@ -8,11 +8,11 @@ const membersEventsService = require('../../core/server/services/members-events'
 
 describe('Click Tracking', function () {
     let agent;
+    let ghostServer;
     let webhookMockReceiver;
 
     before(async function () {
-        const {adminAgent} = await agentProvider.getAgentsWithFrontend();
-        agent = adminAgent;
+        ({adminAgent: agent, ghostServer} = await agentProvider.getAgentsWithFrontend());
         await fixtureManager.init('newsletters', 'members:newsletters', 'integrations');
         await agent.loginAsOwner();
     });
@@ -26,6 +26,10 @@ describe('Click Tracking', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    after(async function () {
+        await ghostServer.stop();
     });
 
     it('Full test', async function () {

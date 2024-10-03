@@ -27,6 +27,7 @@ const SUPPORTED_LOCALES = [
     'it', // Italian
     'ja', // Japanese
     'ko', // Korean
+    'kz', // Kazach
     'lt', // Lithuanian
     'mk', // Macedonian
     'mn', // Mongolian
