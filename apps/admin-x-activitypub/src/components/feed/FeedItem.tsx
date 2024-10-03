@@ -61,34 +61,7 @@ function getAttachment(object: ObjectProperties) {
     return attachment;
 }
 
-export function renderFeedAttachment(object: ObjectProperties, layout: string) {
-    const attachment = getAttachment(object);
-
-    if (!attachment) {
-        return null;
-    }
-
-    if (Array.isArray(attachment)) {
-        const attachmentCount = attachment.length;
-
-        let gridClass = '';
-        if (layout === 'modal') {
-            gridClass = 'grid-cols-1'; // Single image, full width
-        } else if (attachmentCount === 2) {
-            gridClass = 'grid-cols-2 auto-rows-[150px]'; // Two images, side by side
-        } else if (attachmentCount === 3 || attachmentCount === 4) {
-            gridClass = 'grid-cols-2 auto-rows-[150px]'; // Three or four images, two per row
-        }
-
-        return (
-            <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
-                {attachment.map((item, index) => (
-                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
-                ))}
-            </div>
-        );
-    }
-
+function SingleAttachment({attachment, object}) {
     switch (attachment.mediaType) {
     case 'image/jpeg':
     case 'image/png':
@@ -111,6 +84,41 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         }
         return null;
     }
+}
+
+function MultipleAttachment({attachments, layout}) {
+    const attachmentCount = attachments.length;
+
+    let gridClass = '';
+    if (layout === 'modal') {
+        gridClass = 'grid-cols-1'; // Single image, full width
+    } else if (attachmentCount === 2) {
+        gridClass = 'grid-cols-2 auto-rows-[150px]'; // Two images, side by side
+    } else if (attachmentCount === 3 || attachmentCount === 4) {
+        gridClass = 'grid-cols-2 auto-rows-[150px]'; // Three or four images, two per row
+    }
+
+    return (
+        <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
+            {attachments.map((item, index) => (
+                <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+            ))}
+        </div>
+    );
+}
+
+function FeedAttachment({object, layout}: {object: ObjectProperties, layout: 'modal' | null}) {
+    const attachment = getAttachment(object);
+
+    if (!attachment) {
+        return null;
+    }
+
+    if (Array.isArray(attachment)) {
+        return <MultipleAttachment attachments={attachment} layout={layout} />
+    }
+
+    return <SingleAttachment attachment={attachment} object={object} />
 }
 
 function renderInboxAttachment(object: ObjectProperties) {
@@ -352,10 +360,10 @@ const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCo
                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                     <div className='flex flex-col'>
                         <div className='mt-[-24px]'>
-                            {(object.type === 'Article') && renderFeedAttachment(object, layout)}
+                            {(object.type === 'Article') && <FeedAttachment object={object} layout={null} />}
                             {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
                             {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
-                            {(object.type === 'Note') && renderFeedAttachment(object, layout)}
+                            {(object.type === 'Note') && <FeedAttachment object={object} layout={null} />}
                             {(object.type === 'Article') && <Button
                                 className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
                                 color='grey'
@@ -408,7 +416,7 @@ const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                         <div className='flex flex-col'>
                             {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                             <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
-                            {renderFeedAttachment(object, layout)}
+                            <FeedAttachment object={object} layout="modal"/>
                             <div className='space-between mt-5 flex'>
                                 <FeedItemStats
                                     commentCount={comments.length}
@@ -454,7 +462,7 @@ const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                     <div className='flex flex-col'>
                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                        {renderFeedAttachment(object, layout)}
+                        <FeedAttachment object={object} layout={null}/>
                         <div className='space-between mt-5 flex'>
                             <FeedItemStats
                                 commentCount={comments.length}
