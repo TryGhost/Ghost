@@ -2,8 +2,13 @@ const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
 const request = require('supertest');
 const parsePrometheusTextFormat = require('parse-prometheus-text-format');
+const configUtils = require('../../utils/configUtils');
 
 describe('Metrics Server', function () {
+    before(function () {
+        configUtils.set('metrics_server:enabled', true);
+    });
+
     it('should start up when Ghost boots and stop when Ghost stops', async function () {
         // Ensure the metrics server is running after Ghost boots
         await testUtils.startGhost({forceStart: true});
@@ -22,10 +27,25 @@ describe('Metrics Server', function () {
         assert.ok(error);
     });
 
+    it('should not start if enabled is false', async function () {
+        configUtils.set('metrics_server:enabled', false);
+        await testUtils.startGhost({forceStart: true});
+        // Requesting the metrics endpoint should throw an error
+        let error;
+        try {
+            await request('http://127.0.0.1:9417').get('/metrics');
+        } catch (err) {
+            error = err;
+        }
+        assert.ok(error);
+        await testUtils.stopGhost();
+    });
+
     describe('metrics and format', function () {
         let metricsResponse;
         let metricsText;
         before(async function () {
+            configUtils.set('metrics_server:enabled', true);
             await testUtils.startGhost({forceStart: true});
             metricsResponse = await request('http://127.0.0.1:9417').get('/metrics');
             metricsText = metricsResponse.text;
