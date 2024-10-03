@@ -22,10 +22,6 @@
     "lint": "yarn run lint:code && yarn run lint:test",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
-    "test:unit": "vitest run",
-    "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
-    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
-    "test:acceptance:full": "ALL_BROWSERS=1 yarn test:acceptance",
     "preview": "vite preview"
   },
   "devDependencies": {

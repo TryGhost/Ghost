@@ -39,7 +39,7 @@ Object {
     "mailgunIsConfigured": false,
     "signupForm": Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
-      "version": "0.1",
+      "version": "0.2",
     },
     "stripeDirect": false,
     "tenor": Object {
