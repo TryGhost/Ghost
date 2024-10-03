@@ -187,7 +187,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                                         onClick={() => {
                                             navigateForward(comment.object, comment.actor, nestedComments);
                                         }}
-                                        onCommentClick={() => {}}
                                     />
                                     {hasNestedComments && <FeedItemDivider />}
                                     {nestedComments.map((nestedComment, nestedCommentIndex) => {
@@ -204,7 +203,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                                                 onClick={() => {
                                                     navigateForward(nestedComment.object, nestedComment.actor, nestedNestedComments);
                                                 }}
-                                                onCommentClick={() => {}}
                                             />
                                         );
                                     })}

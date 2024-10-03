@@ -174,7 +174,6 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                             layout='feed'
                             object={post.object}
                             type={post.type}
-                            onCommentClick={() => {}}
                         />
                     ))}
                 </div>

@@ -309,7 +309,7 @@ interface FeedItemProps {
     comments?: Activity[];
     last?: boolean;
     onClick?: () => void;
-    onCommentClick: () => void;
+    onCommentClick?: () => void;
 }
 
 const noop = () => {};
@@ -600,7 +600,7 @@ const InboxLayout = ({object, comments = [], onClick = noop, onCommentClick, aut
     );
 }
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick = noop}) => {
     if (!object) {
         return null;
     }
