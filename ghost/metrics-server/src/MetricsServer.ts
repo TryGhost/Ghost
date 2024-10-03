@@ -11,13 +11,13 @@ type ServerConfig = {
 
 export class MetricsServer {
     private serverConfig: ServerConfig;
+    private handler: express.Handler;
     private app: express.Application | null;
     private httpServer: stoppable.StoppableServer | null;
-    private handler: express.Handler;
     private isShuttingDown: boolean;
 
     constructor({serverConfig, handler}: {serverConfig: ServerConfig, handler: express.Handler}) {
-        // initialize some local variables
+        // initialize local variables
         this.serverConfig = serverConfig;
         this.handler = handler;
         this.app = null;
