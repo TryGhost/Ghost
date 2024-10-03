@@ -10,10 +10,11 @@ import {type Activity} from '../activities/ActivityItem';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 type Attachment = {
-    url: URL;
+    url: string;
     mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'video/mp4' | 'video/webm' | 'audio/mpeg' | 'audio/ogg' | null;
 };
 
+/*
 type Post = {
     id: URL;
     url: URL;
@@ -33,16 +34,45 @@ type Post = {
     };
     attachment: null | Attachment | Attachment[];
 };
+ */
 
-function getAttachment(object: ObjectProperties) {
-    let attachment;
+type AttachmentResult = null | Attachment | [Attachment, Attachment, ...Attachment[]]
+
+function toAttachment(value: unknown): Attachment | null {
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    if (typeof value === 'string') {
+        return {
+            url: value,
+            mediaType: null
+        };
+    }
+
+    if (typeof value !== 'object') {
+        return null;
+    }
+
+    if ('url' in value && typeof value.url === 'string') {
+        return {
+            url: value.url,
+            mediaType: null
+        };
+    }
+
+    return null;
+}
+
+function getAttachment(object: ObjectProperties): AttachmentResult {
+    let attachment: AttachmentResult = null;
 
     if (object.image) {
-        attachment = object.image;
+        attachment = toAttachment(object.image);
     }
 
     if (object.type === 'Note' && !attachment) {
-        attachment = object.attachment;
+        attachment = toAttachment(object.attachment);
     }
 
     if (!attachment) {
@@ -54,14 +84,16 @@ function getAttachment(object: ObjectProperties) {
             return null;
         }
         if (attachment.length === 1) {
-            return attachment[0];
+            return toAttachment(attachment[0]);
         }
+
+        return attachment.map(toAttachment).filter(item => item !== null) as AttachmentResult;
     }
 
-    return attachment;
+    return toAttachment(attachment);
 }
 
-function SingleAttachment({attachment, object}) {
+function SingleAttachment({attachment, object}: {attachment: Attachment, object: ObjectProperties}) {
     switch (attachment.mediaType) {
     case 'image/jpeg':
     case 'image/png':
@@ -86,7 +118,7 @@ function SingleAttachment({attachment, object}) {
     }
 }
 
-function MultipleAttachment({attachments, layout}) {
+function MultipleAttachment({attachments, layout}: {attachments: Attachment[], layout: 'modal' | null}) {
     const attachmentCount = attachments.length;
 
     let gridClass = '';
@@ -121,7 +153,7 @@ function FeedAttachment({object, layout}: {object: ObjectProperties, layout: 'mo
     return <SingleAttachment attachment={attachment} object={object} />
 }
 
-function SingleInboxAttachment({attachment, object}) {
+function SingleInboxAttachment({attachment, object}: {attachment: Attachment, object: ObjectProperties}) {
     switch (attachment.mediaType) {
     case 'image/jpeg':
     case 'image/png':
@@ -207,16 +239,6 @@ function ItemTimestamp({object}: {object: ObjectProperties}) {
     );
 }
 
-function renderTimestampForPost(post: Post) {
-    const date = post.published.toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'});
-    const time = post.published.toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
-
-    const timestamp = `${date}, ${time}`;
-    const relativeTimestamp = getRelativeTimestamp(post.published);
-
-    return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={post.url.href} title={`${timestamp}`}>{relativeTimestamp}</a>);
-}
-
 const FeedItemStats: React.FC<{
     object: ObjectProperties;
     likeCount: number;
@@ -292,7 +314,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const ItemMenu = (object: ObjectProperties) => {
+const ItemMenu = ({object}: {object: ObjectProperties}) => {
     const [isCopied, setIsCopied] = useState(false);
 
     const handleCopyLink = async () => {
@@ -391,7 +413,18 @@ function FeedLayoutContent({object}: {object: ObjectProperties}) {
     }
 }
 
-const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
+interface LayoutProps {
+    author: ActorProperties;
+    actor: ActorProperties;
+    object: ObjectProperties;
+    type: string;
+    comments?: Activity[];
+    last?: boolean;
+    onClick?: () => void;
+    onCommentClick: () => void;
+}
+
+const FeedLayout = ({actor, object, type, comments = [], onClick = noop, onCommentClick, author}: LayoutProps) => {
     const onLikeClick = () => {};
     return (
         <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
@@ -434,7 +467,7 @@ const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCo
     );
 }
 
-const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
+const ModalLayout = ({actor, object, type, comments = [], onClick = noop, onCommentClick, author}: LayoutProps) => {
     const onLikeClick = () => {};
     return (
         <div>
@@ -481,7 +514,7 @@ const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onC
     );
 };
 
-const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, last}) => {
+const ReplyLayout = ({actor, object, type, comments = [], onClick = noop, onCommentClick, author, last}: LayoutProps) => {
     const onLikeClick = () => {};
     return (
         <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
@@ -526,7 +559,7 @@ const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onC
     );
 };
 
-const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
+const InboxLayout = ({object, comments = [], onClick = noop, onCommentClick, author}: LayoutProps) => {
     const onLikeClick = () => {};
 
     const date = new Date(object?.published ?? new Date());
@@ -582,7 +615,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return <FeedLayout
                    actor={actor}
                    object={object}
-                   layout={layout}
                    type={type}
                    comments={comments}
                    onClick={onClick}
@@ -593,7 +625,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return <ModalLayout
                    actor={actor}
                    object={object}
-                   layout={layout}
                    type={type}
                    comments={comments}
                    onClick={onClick}
@@ -604,7 +635,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return <ReplyLayout
                    actor={actor}
                    object={object}
-                   layout={layout}
                    type={type}
                    comments={comments}
                    onClick={onClick}
@@ -616,7 +646,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return <InboxLayout
                    actor={actor}
                    object={object}
-                   layout={layout}
                    type={type}
                    comments={comments}
                    onClick={onClick}
