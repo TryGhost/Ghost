@@ -47,7 +47,7 @@ jobs:
 
       - name: Validate input
         run: |
-          [[ "${{ secrets.GITHUB_TOKEN }}" ]] || { echo "Missing github token"; }
+          [[ "${{ secrets.NPM_TOKEN }}" ]] || { echo "Missing NPM token"; }
           [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
 
       - name: Get metadata (push)
