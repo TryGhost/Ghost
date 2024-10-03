@@ -62,10 +62,21 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
+      - name: Check Secret
+        run: |
+          if [[ "x${{ secrets.TEST_SECRET }}" == "xhello" ]]; then
+            echo "Access to secrets"
+          else
+            echo "No access to secrets"
+            exit 1
+          fi
+
+
       - name: Validate input
         run: |
+          [[ "${{ secrets.TEST_SECRET }}" ]] || { echo "Missing Test token"; }
           [[ "${{ secrets.NPM_TOKEN }}" ]] || { echo "Missing NPM token"; }
-            [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
+          [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
