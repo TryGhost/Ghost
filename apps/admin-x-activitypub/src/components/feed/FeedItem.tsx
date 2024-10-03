@@ -474,15 +474,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const [isCopied, setIsCopied] = useState(false);
 
-    const onLikeClick = () => {
-        // Do API req or smth
-        // Don't need to know about setting timeouts or anything like that
-    };
-
-    const handleDelete = () => {
-        // Handle delete action
-    };
-
     const handleCopyLink = async () => {
         if (object?.url) { // Check if url is defined
             await navigator.clipboard.writeText(object.url);
@@ -513,7 +504,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         id: 'delete',
         label: 'Delete',
         destructive: true,
-        onClick: handleDelete
+        onClick: noop
     });
 
     const UserMenuTrigger = (
