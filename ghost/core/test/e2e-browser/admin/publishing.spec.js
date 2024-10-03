@@ -312,6 +312,7 @@ test.describe('Publishing', () => {
             const date = DateTime.now();
 
             await createPostDraft(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
+            const editorUrl = await adminPage.url();
             await publishPost(adminPage);
             const frontendPage = await openPublishedPostBookmark(adminPage);
             await closePublishFlow(adminPage);
@@ -323,7 +324,7 @@ test.describe('Publishing', () => {
             await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
-            await adminPage.locator('li[data-test-post-id]').first().click();
+            await adminPage.goto(editorUrl);
             await adminPage.locator('[data-kg="editor"]').first().click();
             await adminPage.waitForTimeout(500);
             await adminPage.keyboard.type(' This is some updated text.');
@@ -455,6 +456,8 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
+            const editorUrl = await sharedPage.url();
+
             // Schedule far in the future
             await publishPost(sharedPage, {date: '2050-01-01', time: '10:09'});
             await closePublishFlow(sharedPage);
@@ -469,7 +472,7 @@ test.describe('Publishing', () => {
             await checkPostNotPublished(testsharedPage, postData);
 
             // Now unschedule this post
-            await sharedPage.locator('li[data-test-post-id]').first().click();
+            await sharedPage.goto(editorUrl);
             await sharedPage.locator('[data-test-button="update-flow"]').first().click();
             await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
 
