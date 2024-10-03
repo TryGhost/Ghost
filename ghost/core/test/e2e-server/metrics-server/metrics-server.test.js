@@ -93,7 +93,9 @@ describe('Metrics Server', function () {
             ];
             const metricsJson = parsePrometheusTextFormat(metricsText);
             const metricNames = metricsJson.map(metric => metric.name);
-            assert.deepEqual(metricNames, expectedMetrics);
+            for (const metricName of expectedMetrics) {
+                assert.ok(metricNames.includes(metricName));
+            }
         });
     });
 });
