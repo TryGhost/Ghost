@@ -9,6 +9,31 @@ import getUsername from '../../utils/get-username';
 import {type Activity} from '../activities/ActivityItem';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
+type Attachment = {
+    url: URL;
+    mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'video/mp4' | 'video/webm' | 'audio/mpeg' | 'audio/ogg' | null;
+};
+
+type Post = {
+    id: URL;
+    url: URL;
+
+    type: 'Note' | 'Article';
+
+    name: string;
+    content: string;
+    preview: { content: string } | null;
+    liked: boolean;
+    published: Date;
+    author: {
+        name: string;
+        username: string;
+        url: URL;
+        avatar: URL;
+    };
+    attachment: null | Attachment | Attachment[];
+};
+
 function getAttachment(object: ObjectProperties) {
     let attachment;
 
