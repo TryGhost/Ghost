@@ -250,11 +250,8 @@ module.exports = class MemberBREADService {
             info: suppressionData.info
         };
 
-        const membersKey = await this.settingsHelpers.getMembersValidationKey(member.id);
-        if (membersKey) {
-            const unsubscribeKey = await crypto.createHmac('sha256', membersKey).update(member.uuid).digest('hex');
-            member.unsubscribe_key = unsubscribeKey;
-        }
+        const unsubscribeUrl = await this.settingsHelpers.createUnsubscribeUrl(member.id);
+        member.unsubscribe_url = unsubscribeUrl;
 
         return member;
     }
