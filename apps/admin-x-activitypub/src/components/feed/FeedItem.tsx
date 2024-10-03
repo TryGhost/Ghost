@@ -280,7 +280,55 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger}) => {
+const ItemMenu = (object: ObjectProperties) => {
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopyLink = async () => {
+        if (object?.url) { // Check if url is defined
+            await navigator.clipboard.writeText(object.url);
+            setIsCopied(true);
+            showToast({
+                title: 'Link copied',
+                type: 'success'
+            });
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    };
+
+    const menuItems: MenuItem[] = [];
+
+    menuItems.push({
+        id: 'copy-link',
+        label: 'Copy link to post',
+        onClick: handleCopyLink
+    });
+
+    // TODO: If this is your own Note/Article, you should be able to delete it
+    menuItems.push({
+        id: 'delete',
+        label: 'Delete',
+        destructive: true,
+        onClick: noop
+    });
+
+    const menuButton = (
+        <Button
+            className={`relative z-10 ml-auto h-5 w-5 self-start ${isCopied ? 'bump' : ''}`}
+            hideLabel={true}
+            icon='dotdotdot'
+            iconColorClass='text-grey-600'
+            id='more'
+            size='sm'
+            unstyled={true}
+        />
+    );
+
+    return (
+        <Menu items={menuItems} position='end' trigger={menuButton}/>
+    );
+};
+
+const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
     const onLikeClick = () => {};
     return (
         <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
@@ -325,7 +373,7 @@ const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCo
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
-                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            <ItemMenu object={object}/>
                         </div>
                     </div>
                 </div>
@@ -334,7 +382,7 @@ const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCo
     );
 }
 
-const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger}) => {
+const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
     const onLikeClick = () => {};
     return (
         <div>
@@ -369,7 +417,7 @@ const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                                     onCommentClick={onCommentClick}
                                     onLikeClick={onLikeClick}
                                 />
-                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                <ItemMenu object={object}/>
                             </div>
                         </div>
                     </div>
@@ -381,7 +429,7 @@ const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onC
     );
 };
 
-const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger, last}) => {
+const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, last}) => {
     const onLikeClick = () => {};
     return (
         <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
@@ -415,7 +463,7 @@ const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
-                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            <ItemMenu object={object}/>
                         </div>
                     </div>
                 </div>
@@ -426,7 +474,7 @@ const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onC
     );
 };
 
-const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger}) => {
+const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
     const onLikeClick = () => {};
 
     const date = new Date(object?.published ?? new Date());
@@ -459,7 +507,7 @@ const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                             onCommentClick={onCommentClick}
                             onLikeClick={onLikeClick}
                         />
-                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                        <ItemMenu object={object}/>
                     </div>
                 </div>
             </div>
@@ -472,52 +520,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return null;
     }
 
-    const [isCopied, setIsCopied] = useState(false);
-
-    const handleCopyLink = async () => {
-        if (object?.url) { // Check if url is defined
-            await navigator.clipboard.writeText(object.url);
-            setIsCopied(true);
-            showToast({
-                title: 'Link copied',
-                type: 'success'
-            });
-            setTimeout(() => setIsCopied(false), 2000);
-        }
-    };
 
     let author = actor;
     if (type === 'Announce' && object.type === 'Note') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
-
-    const menuItems: MenuItem[] = [];
-
-    menuItems.push({
-        id: 'copy-link',
-        label: 'Copy link to post',
-        onClick: handleCopyLink
-    });
-
-    // TODO: If this is your own Note/Article, you should be able to delete it
-    menuItems.push({
-        id: 'delete',
-        label: 'Delete',
-        destructive: true,
-        onClick: noop
-    });
-
-    const UserMenuTrigger = (
-        <Button
-            className={`relative z-10 ml-auto h-5 w-5 self-start ${isCopied ? 'bump' : ''}`}
-            hideLabel={true}
-            icon='dotdotdot'
-            iconColorClass='text-grey-600'
-            id='more'
-            size='sm'
-            unstyled={true}
-        />
-    );
 
     if (layout === 'feed') {
         return <FeedLayout
@@ -529,8 +536,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                    onClick={onClick}
                    onCommentClick={onCommentClick}
                    author={author}
-                   menuItems={menuItems}
-                   UserMenuTrigger={UserMenuTrigger}
         />
     } else if (layout === 'modal') {
         return <ModalLayout
@@ -542,8 +547,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                    onClick={onClick}
                    onCommentClick={onCommentClick}
                    author={author}
-                   menuItems={menuItems}
-                   UserMenuTrigger={UserMenuTrigger}
         />
     } else if (layout === 'reply') {
         return <ReplyLayout
@@ -555,8 +558,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                    onClick={onClick}
                    onCommentClick={onCommentClick}
                    author={author}
-                   menuItems={menuItems}
-                   UserMenuTrigger={UserMenuTrigger}
                    last={last}
         />
     } else if (layout === 'inbox') {
@@ -569,8 +570,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                    onClick={onClick}
                    onCommentClick={onCommentClick}
                    author={author}
-                   menuItems={menuItems}
-                   UserMenuTrigger={UserMenuTrigger}
         />
     }
 
