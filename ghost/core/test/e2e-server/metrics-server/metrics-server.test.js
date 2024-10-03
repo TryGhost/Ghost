@@ -7,7 +7,7 @@ describe('Metrics Server', function () {
     it('should start up when Ghost boots and stop when Ghost stops', async function () {
         // Ensure the metrics server is running after Ghost boots
         await testUtils.startGhost({forceStart: true});
-        await request('http://127.0.0.1:9416').get('/metrics').expect(200);
+        await request('http://127.0.0.1:9417').get('/metrics').expect(200);
 
         // Stop Ghost and ensure the metrics server is no longer running
         await testUtils.stopGhost();
@@ -15,7 +15,7 @@ describe('Metrics Server', function () {
         // Requesting the metrics endpoint should throw an error
         let error;
         try {
-            await request('http://127.0.0.1:9416').get('/metrics');
+            await request('http://127.0.0.1:9417').get('/metrics');
         } catch (err) {
             error = err;
         }
@@ -27,7 +27,7 @@ describe('Metrics Server', function () {
         let metricsText;
         before(async function () {
             await testUtils.startGhost({forceStart: true});
-            metricsResponse = await request('http://127.0.0.1:9416').get('/metrics');
+            metricsResponse = await request('http://127.0.0.1:9417').get('/metrics');
             metricsText = metricsResponse.text;
             await testUtils.stopGhost();
         });
