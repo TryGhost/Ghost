@@ -184,7 +184,7 @@ function getTimestamp(published: Date) {
     };
 }
 
-function renderTimestamp(object: ObjectProperties) {
+function ItemTimestamp({object}: {object: ObjectProperties}) {
     const date = new Date(object?.published ?? new Date());
     const {
         timestamp,
@@ -345,7 +345,7 @@ const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCo
                                 <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
                                 <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
                             </div>
-                            {renderTimestamp(object)}
+                            <ItemTimestamp object={object}/>
                         </div>
                     </div>
                 </div>
@@ -398,7 +398,7 @@ const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                     <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
                         <div className='flex'>
                             <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                            {renderTimestamp(object)}
+                            <ItemTimestamp object={object}/>
                         </div>
                         <div className='flex'>
                             <span className='truncate text-grey-700'>{getUsername(author)}</span>
@@ -444,7 +444,7 @@ const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                 <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
                     <div className='flex'>
                         <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                        {renderTimestamp(object)}
+                        <ItemTimestamp object={object}/>
                     </div>
                     <div className='flex'>
                         <span className='truncate text-grey-700'>{getUsername(author)}</span>
