@@ -1,5 +1,5 @@
 DESCRIPTION >
-    Analytics events landing data source
+    Analytics events landing data source - this is our raw data from the tracker
 
 TOKEN "tracker" APPEND
 

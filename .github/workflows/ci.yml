@@ -120,6 +120,7 @@ jobs:
             any-code:
               - '!**/*.md'
             tinybird:
+              - *shared
               - 'ghost/tinybird/**/*.datasource'
               - 'ghost/tinybird/**/*.pipe'
 
@@ -940,7 +941,7 @@ jobs:
     ]
     defaults:
       run:
-        working-directory: ${{ inputs.data_project_dir }}/ghost/tinybird
+        working-directory: ghost/tinybird
     if: needs.job_setup.outputs.changed_tinybird == 'true'
 
     steps:
@@ -1083,7 +1084,6 @@ jobs:
           else
             echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
           fi
-
 
   job_required_tests:
     name: All required tests passed or skipped
