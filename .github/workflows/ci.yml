@@ -239,6 +239,7 @@ jobs:
     if: |
         needs.job_setup.outputs.changed_comments_ui == 'true'
         || needs.job_setup.outputs.changed_signup_form == 'true'
+        || needs.job_setup.outputs.changed_sodo_search == 'true'
         || needs.job_setup.outputs.changed_portal == 'true'
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
