@@ -34,7 +34,7 @@ const errorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasErro
      <br ><p>${tpl(messages.whilstTryingToRender)}</p>
      ${err.statusCode} <pre>${escapeExpression(err.message || err)}</pre>`;
 
-const themeErrorRenderer = (err, req, res, next) => {
+const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
     // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
     // Skip trying to render an HTML error, and move on to the basic error renderer
     // We do this because customised 404 templates could reference the image that's missing

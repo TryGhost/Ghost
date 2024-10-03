@@ -428,8 +428,10 @@ describe('Email Service', function () {
             await service.sendTestEmail(post, post.get('newsletter'), null, ['example@example.com']);
             sinon.assert.calledOnce(sendingService.send);
             const members = sendingService.send.firstCall.args[0].members;
+            const options = sendingService.send.firstCall.args[1];
             assert.equal(members.length, 1);
             assert.equal(members[0].email, 'example@example.com');
+            assert.equal(options.isTestEmail, true);
         });
     });
 });

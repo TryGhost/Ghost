@@ -18,6 +18,7 @@ export interface ModalProps {
     size?: ModalSize;
     width?: 'full' | number;
     height?: 'full' | number;
+    align?: 'center' | 'left' | 'right';
 
     testId?: string;
     title?: string;
@@ -27,6 +28,7 @@ export interface ModalProps {
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
+    okDisabled?: boolean;
     footer?: boolean | React.ReactNode;
     header?: boolean;
     padding?: boolean;
@@ -51,6 +53,7 @@ export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
+    align = 'center',
     width,
     height,
     testId,
@@ -62,6 +65,7 @@ const Modal: React.FC<ModalProps> = ({
     header,
     leftButtonProps,
     buttonsDisabled,
+    okDisabled,
     padding = true,
     onOk,
     okColor = 'black',
@@ -107,6 +111,9 @@ const Modal: React.FC<ModalProps> = ({
                         });
                     }
                 });
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
             }
         };
 
@@ -176,17 +183,21 @@ const Modal: React.FC<ModalProps> = ({
                 color: okColor,
                 className: 'min-w-[80px]',
                 onClick: onOk,
-                disabled: buttonsDisabled,
+                disabled: buttonsDisabled || okDisabled,
                 loading: okLoading
             });
         }
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        'relative z-50 flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        align === 'center' && 'mx-auto',
+        align === 'left' && 'mr-auto',
+        align === 'right' && 'ml-auto',
         size !== 'bleed' && 'rounded',
         formSheet ? 'shadow-md' : 'shadow-xl',
-        (animate && !formSheet && !animationFinished) && 'animate-modal-in',
+        (animate && !formSheet && !animationFinished && align === 'center') && 'animate-modal-in',
+        (animate && !formSheet && !animationFinished && align === 'right') && 'animate-modal-in-from-right',
         (formSheet && !animationFinished) && 'animate-modal-in-reverse',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
@@ -203,7 +214,7 @@ const Modal: React.FC<ModalProps> = ({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[200] -mb-4 bg-white !pb-4 dark:bg-black'
+            'sticky top-0 z-[300] -mb-4 bg-white !pb-4 dark:bg-black'
         );
     }
 
@@ -416,7 +427,7 @@ const Modal: React.FC<ModalProps> = ({
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
                         <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
-                            <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' unstyled onClick={removeModal} />
+                            <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
                         </div>
                     </header>)
                     :

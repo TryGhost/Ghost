@@ -4,17 +4,17 @@
             <h4>{{svg-jar "gift" alt="Gift" class="v-mid"}}What's new</h4>
         </div>
         <div class="gh-dashboard-resource-body">
-             <div class="gh-dashboard-list {{if this.whatsNew.hasNew "has-new"}}">
+            <div class="gh-dashboard-list {{if this.whatsNew.hasNew "has-new"}}">
                 {{#if (not (or this.loading this.error))}}
                     <div class="gh-dashboard-list-body">
                         {{#each this.entries as |entry|}}
                             <div class="gh-dashboard-list-item">
-                                <LinkTo class="gh-dashboard-list-post" @route="whatsnew" @query={{hash entry=entry.slug}}>
+                                <a href={{entry.url}} class="gh-dashboard-list-post" target="_blank" rel="noopener noreferrer">
                                     <span class="gh-dashboard-list-link">
                                         <span>{{entry.title}}</span>
                                     </span>
                                     <div class="gh-dashboard-resource-secondary">{{moment-format entry.published_at "D MMM YYYY"}}</div>
-                                </LinkTo>
+                                </a>
                             </div>
                         {{else}}
                             <div class="gh-dashboard-list-empty">
@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="gh-dashboard-resource-footer">
-            <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">View more features &rarr;</LinkTo>
+            <a href="https://ghost.org/changelog" class="green" target="_blank" rel="noopener noreferrer">View more features &rarr;</a>
         </div>
     </article>
 </section>

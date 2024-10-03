@@ -10,7 +10,8 @@ describe('audienceFeedbackService', function () {
         uuid: '7b11de3c-dff9-4563-82ae-a281122d201d',
         postId: '634fc3901e0a291855d8b135',
         postTitle: 'somepost',
-        score: 1
+        score: 1,
+        key: 'somekey'
     };
 
     describe('build link', function () {
@@ -23,8 +24,8 @@ describe('audienceFeedbackService', function () {
                     baseURL: new URL('https://localhost:2368')
                 }
             });
-            const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score);
-            const expectedLink = `https://localhost:2368/${mockData.postTitle}/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}`;
+            const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score, mockData.key);
+            const expectedLink = `https://localhost:2368/${mockData.postTitle}/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}&key=somekey`;
             assert.equal(link.href, expectedLink);
         });
 
@@ -37,8 +38,8 @@ describe('audienceFeedbackService', function () {
                     baseURL: new URL('https://localhost:2368')
                 }
             });
-            const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score);
-            const expectedLink = `https://localhost:2368/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}`;
+            const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score, mockData.key);
+            const expectedLink = `https://localhost:2368/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}&key=somekey`;
             assert.equal(link.href, expectedLink);
         });
     });

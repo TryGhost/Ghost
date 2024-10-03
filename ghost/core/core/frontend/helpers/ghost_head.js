@@ -46,7 +46,7 @@ function finaliseStructuredData(meta) {
 
 function getMembersHelper(data, frontendKey) {
     // Do not load Portal if both Memberships and Tips & Donations are disabled
-    if (!settingsCache.get('members_enabled') && !(settingsCache.get('donations_enabled') && labs.isSet('tipsAndDonations'))) {
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
 
@@ -86,7 +86,8 @@ function getSearchHelper(frontendKey) {
     const attrs = {
         key: frontendKey,
         styles: stylesUrl,
-        'sodo-search': adminUrl
+        'sodo-search': adminUrl,
+        locale: settingsCache.get('locale') || 'en'
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -139,6 +140,21 @@ function getWebmentionDiscoveryLink() {
         logging.warn(err);
         return '';
     }
+}
+
+function getTinybirdTrackerScript(dataRoot) {
+    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
+    const endpoint = config.get('tinybird:tracker:endpoint');
+    const token = config.get('tinybird:tracker:token');
+
+    const tbParams = _.map({
+        site_uuid: config.get('tinybird:tracker:id'),
+        post_uuid: dataRoot.post?.uuid,
+        member_uuid: dataRoot.member?.uuid,
+        member_status: dataRoot.member?.status
+    }, (value, key) => `tb_${key}="${value}"`).join(' ');
+
+    return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 /**
@@ -296,6 +312,18 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
             }
 
+            if (options.data.site.accent_color) {
+                const accentColor = escapeExpression(options.data.site.accent_color);
+                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+
+                if (existingScriptIndex !== -1) {
+                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+                } else {
+                    head.push(styleTag);
+                }
+            }
+
             if (!_.isEmpty(globalCodeinjection)) {
                 head.push(globalCodeinjection);
             }
@@ -307,18 +335,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-        }
 
-        // AMP template has style injected directly because there can only be one <style amp-custom> tag
-        if (options.data.site.accent_color && !_.includes(context, 'amp')) {
-            const accentColor = escapeExpression(options.data.site.accent_color);
-            const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
-
-            if (existingScriptIndex !== -1) {
-                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
-            } else {
-                head.push(styleTag);
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+                head.push(getTinybirdTrackerScript(dataRoot));
             }
         }
 

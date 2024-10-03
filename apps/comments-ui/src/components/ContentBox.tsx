@@ -54,7 +54,7 @@ const ContentBox: React.FC<Props> = ({done}) => {
     };
 
     return (
-        <section className={'ghost-display ' + containerClass} data-testid="content-box" style={style}>
+        <section className={'ghost-display ' + containerClass} data-loaded={done} data-testid="content-box" style={style}>
             {done ? <Content /> : <Loading />}
         </section>
     );

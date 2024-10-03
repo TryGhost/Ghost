@@ -1,0 +1,74 @@
+{
+  "name": "@tryghost/admin-x-activitypub",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-activitypub"
+  },
+  "author": "Ghost Foundation",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
+  "main": "./dist/admin-x-activitypub.umd.cjs",
+  "module": "./dist/admin-x-activitypub.js",
+  "private": false,
+  "scripts": {
+    "dev": "vite build --watch",
+    "dev:start": "vite",
+    "build": "tsc && vite build",
+    "lint": "yarn run lint:code && yarn run lint:test",
+    "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+    "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+    "test:unit": "tsc --noEmit && vitest run",
+    "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+    "test:acceptance:full": "ALL_BROWSERS=1 yarn test:acceptance",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.46.1",
+    "@testing-library/react": "14.3.1",
+    "@types/jest": "29.5.12",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "jest": "29.7.0",
+    "ts-jest": "29.1.5"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "^build",
+          "test:unit"
+        ]
+      },
+      "test:acceptance": {
+        "dependsOn": [
+          "^build",
+          "test:acceptance"
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "@radix-ui/react-form": "0.0.3",
+    "use-debounce": "10.0.3",
+    "@tryghost/admin-x-design-system": "0.0.0",
+    "@tryghost/admin-x-framework": "0.0.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

@@ -77,7 +77,7 @@ const HistoryFilter: React.FC<{
 
     return (
         <div className='flex items-center gap-4'>
-            <Popover position='right' trigger={<Button color='outline' label='Filter' size='sm' />}>
+            <Popover position='end' trigger={<Button color='outline' label='Filter' size='sm' />}>
                 <div className='flex w-[220px] flex-col gap-8 p-5'>
                     <ToggleGroup>
                         <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
@@ -127,16 +127,16 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
             {group.slice(0, 1).toUpperCase()}{group.slice(1)}
             {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
         </>;
-    } else if (action.resource?.title || action.resource?.name || action.context.primary_name) {
+    } else if (action.resource?.title || action.resource?.name || action.context?.primary_name) {
         const linkTarget = getLinkTarget(action);
 
         if (linkTarget) {
-            return <a className='font-bold' href='#' onClick={(e) => {
+            return <a className='cursor-pointer font-bold' onClick={(e) => {
                 e.preventDefault();
                 updateRoute(linkTarget);
             }}>{action.resource?.title || action.resource?.name}</a>;
         } else {
-            return <>{action.resource?.title || action.resource?.name || action.context.primary_name}</>;
+            return <>{action.resource?.title || action.resource?.name || action.context?.primary_name}</>;
         }
     } else {
         return <span className='text-grey-500'>(unknown)</span>;

@@ -9,6 +9,7 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import {interceptAnchorClicks} from '../../utils/links';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -109,6 +110,7 @@ export const SignupPageStyles = `
     font-size: 1.4rem;
     font-weight: 600;
     margin-left: 4px !important;
+    margin-bottom: -1px;
 }
 
 .gh-portal-signup-message button span {
@@ -151,7 +153,7 @@ footer.gh-portal-signin-footer {
 
 .gh-portal-content.signup.single-field .gh-portal-input,
 .gh-portal-content.signin .gh-portal-input {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .gh-portal-content.signup.single-field + .gh-portal-signup-footer,
@@ -202,15 +204,27 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 .gh-portal-signup-terms-wrapper {
     width: 100%;
     max-width: 420px;
-    margin: -16px auto 36px;
-}
-
-.gh-portal-signup-terms-wrapper.free-only {
     margin: 0 auto;
 }
 
-.gh-portal-products + .gh-portal-signup-terms-wrapper.free-only {
-    margin: 20px auto 0;
+.signup.single-field .gh-portal-signup-terms-wrapper {
+    margin-top: 12px;
+}
+
+.signup.single-field .gh-portal-products:not(:has(.gh-portal-product-card)) {
+    margin-top: -16px;
+}
+
+.gh-portal-signup-terms {
+    margin: -16px 0 36px;
+}
+
+.gh-portal-signup-terms-wrapper.free-only .gh-portal-signup-terms {
+    margin: -16px 0 24px;
+}
+
+.gh-portal-products:has(.gh-portal-product-card) + .gh-portal-signup-terms-wrapper.free-only {
+    margin: 20px auto 0 !important;
 }
 
 .gh-portal-signup-terms label {
@@ -371,7 +385,7 @@ class SignupPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -383,20 +397,20 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, errors} = this.state;
+            const {name, email, plan, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan},
+                        pageData: {name, email, plan, phonenumber},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, plan});
+                    onAction('signup', {name, email, phonenumber, plan});
                 }
             }
         });
@@ -464,12 +478,24 @@ class SignupPage extends React.Component {
             {
                 type: 'email',
                 value: state.email,
-                placeholder: 'jamie@example.com',
+                placeholder: t('jamie@example.com'),
                 label: t('Email'),
                 name: 'email',
                 required: true,
                 tabindex: 2,
                 errorMessage: errors.email || ''
+            },
+            {
+                type: 'text',
+                value: state.phonenumber,
+                placeholder: t('+1 (123) 456-7890'),
+                // Doesn't need translation, hidden field
+                label: t('Phone number'),
+                name: 'phonenumber',
+                required: false,
+                tabindex: -1,
+                autocomplete: 'off',
+                hidden: true
             }
         ];
 
@@ -478,7 +504,7 @@ class SignupPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 required: true,
@@ -497,6 +523,7 @@ class SignupPage extends React.Component {
 
     renderSignupTerms() {
         const {site} = this.context;
+
         if (site.portal_signup_terms_html === null || site.portal_signup_terms_html === '') {
             return null;
         }
@@ -529,13 +556,6 @@ class SignupPage extends React.Component {
         const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
         const className = `gh-portal-signup-terms ${errorClassName}`;
-
-        const interceptAnchorClicks = (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                window.open(e.target.href, '_blank');
-            }
-        };
 
         return (
             <div className={className} onClick={interceptAnchorClicks}>
@@ -695,6 +715,8 @@ class SignupPage extends React.Component {
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
         const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
+        const signupTerms = this.renderSignupTerms();
+
         return (
             <section className="gh-portal-signup">
                 <div className='gh-portal-section'>
@@ -709,14 +731,18 @@ class SignupPage extends React.Component {
                         {(hasOnlyFree ?
                             <>
                                 {this.renderProducts()}
+                                {signupTerms &&
                                 <div className='gh-portal-signup-terms-wrapper free-only'>
-                                    {this.renderSignupTerms()}
+                                    {signupTerms}
                                 </div>
+                                }
                             </> :
                             <>
+                                {signupTerms &&
                                 <div className='gh-portal-signup-terms-wrapper'>
-                                    {this.renderSignupTerms()}
+                                    {signupTerms}
                                 </div>
+                                }
                                 {this.renderProducts()}
                             </>)}
 

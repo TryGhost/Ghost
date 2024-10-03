@@ -5,6 +5,9 @@ const sentry = require('../../../shared/sentry');
 const errorHandler = require('@tryghost/mw-error-handler');
 const APIVersionCompatibilityService = require('../../services/api-version-compatibility');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
     const apiApp = express('api');

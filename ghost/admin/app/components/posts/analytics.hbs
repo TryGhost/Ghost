@@ -34,9 +34,58 @@
                         {{moment-format publishedAt "HH:mm"}}
                     {{/let}}
                 </div>
-                <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                    {{svg-jar "pen" title=""}}<span>Edit post</span>
-                </LinkTo>
+                <div style="display: flex; gap: 8px;">
+                    <GhTaskButton
+                        @buttonText="Refresh"
+                        @task={{this.fetchPostTask}}
+                        @showIcon={{true}}
+                        @idleIcon="reload"
+                        @successText="Refreshed"
+                        @class="gh-btn gh-btn-icon refresh"
+                        @successClass="gh-btn gh-btn-icon refresh" />
+                    {{#unless this.post.emailOnly}}
+                        <button type="button" class="gh-btn gh-btn-icon share" {{on "click" this.togglePublishFlowModal}}>
+                            <span>{{svg-jar "share" title="Share post"}} Share</span>
+                        </button>
+                    {{/unless}}
+
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="analytics-actions-menu"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Analytics Actions"
+                            data-test-button="analytics-actions"
+                        >
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="analytics-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-analytics-actions-menu dropdown-menu dropdown-triangle-top-right"
+                            @closeOnClick={{true}}
+                        >
+                            <li>
+                                <LinkTo class="edit-post" @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}}>Edit post</LinkTo>
+                            </li>
+                            <li>
+                                <a class="view-browser" href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="delete-post mr2"
+                                    {{on "click" this.confirmDeleteMember}}
+                                    data-test-button="delete-post"
+                                >
+                                    <span class="red">Delete post</span>
+                                </button>
+                            </li>
+                        </GhDropdown>
+                    </span>
+                </div>
             </div>
         </div>
     </GhCanvasHeader>
@@ -44,7 +93,10 @@
     <Tabs::Tabs class="gh-tabs-analytics {{if (eq this.post.hasBeenEmailed null) "no-tabs"}}" @forceRender={{true}} as |tabs|>
         {{#if this.post.hasBeenEmailed}}
             <tabs.tab>
-                <h3>{{svg-jar "analytics-tab-sent-large"}}{{format-number this.post.email.emailCount}}</h3>
+                <h3>
+                    {{svg-jar "analytics-tab-sent-large"}}
+                    <span class="animated-number sent" {{did-update this.applyClasses this.post.email.emailCount}}>{{split-number this.post.email.emailCount this.previousSentCount}}</span>
+                </h3>
                 <p>{{svg-jar "analytics-tab-sent"}}<span class="analytics-tab-label">Sent</span></p>
             </tabs.tab>
 
@@ -58,7 +110,10 @@
 
             {{#if this.post.showEmailOpenAnalytics }}
                 <tabs.tab>
-                    <h3>{{svg-jar "analytics-tab-opened-large"}}{{format-number this.post.email.openedCount}}</h3>
+                    <h3>
+                        {{svg-jar "analytics-tab-opened-large"}}
+                        <span class="animated-number opened" {{did-update this.applyClasses this.post.email.openedCount}}>{{split-number this.post.email.openedCount this.previousOpenedCount}}</span>
+                    </h3>
                     <p>{{svg-jar "analytics-tab-opened"}}<span class="analytics-tab-label">Opened<span class="analytics-tab-percentage">&nbsp;— {{this.post.email.openRate}}%</span></span></p>
                 </tabs.tab>
 
@@ -73,7 +128,10 @@
 
             {{#if this.post.showEmailClickAnalytics }}
                 <tabs.tab>
-                    <h3>{{svg-jar "analytics-tab-clicked-large"}}{{format-number this.post.count.clicks}}</h3>
+                    <h3>
+                        {{svg-jar "analytics-tab-clicked-large"}}
+                        <span class="animated-number clicked" {{did-update this.applyClasses this.post.count.clicks}}>{{split-number this.post.count.clicks this.previousClickedCount}}</span>
+                    </h3>
                     <p>{{svg-jar "analytics-tab-clicked"}}<span class="analytics-tab-label">Clicked<span class="analytics-tab-percentage">&nbsp;— {{this.post.clickRate}}%</span></span></p>
                 </tabs.tab>
 
@@ -88,7 +146,10 @@
 
             {{#if this.post.isFeedbackEnabledForEmail }}
                 <tabs.tab>
-                    <h3>{{svg-jar "analytics-tab-feedback-large"}}{{format-number this.totalFeedback}}</h3>
+                    <h3>
+                        {{svg-jar "analytics-tab-feedback-large"}}
+                        <span class="animated-number feedback" {{did-update this.applyClasses this.totalFeedback}}>{{split-number this.totalFeedback this.previousFeedbackCount}}</span>
+                    </h3>
                     <p>{{svg-jar "analytics-tab-feedback"}}<span class="analytics-tab-label">Feedback<span class="analytics-tab-percentage">&nbsp;— {{this.post.sentiment}}%</span></span></p>
                 </tabs.tab>
 
@@ -107,7 +168,7 @@
                 <h3>
                     {{svg-jar "analytics-tab-conversions-large"}}
                     {{#if this.post.hasBeenEmailed}}
-                        {{format-number this.post.count.conversions}}
+                        <span class="animated-number conversions" {{did-update this.applyClasses this.post.count.conversions}}>{{split-number this.post.count.conversions this.previousConversionsCount}}</span>
                     {{else}}
                         Conversions
                     {{/if}}

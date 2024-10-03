@@ -67,7 +67,7 @@ class GhostServer {
      * Starts the ghost server listening on the configured port.
      * Requires an express app to be passed in
      *
-     * @param  {Object} rootApp - Required express app instance.
+     * @param  {import('express').Application} rootApp - Required express app instance.
      * @return {Promise} Resolves once Ghost has started
      */
     start(rootApp) {
@@ -127,8 +127,8 @@ class GhostServer {
 
             // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
             process
-                .removeAllListeners('SIGINT').on('SIGINT', self.shutdown.bind(self))
-                .removeAllListeners('SIGTERM').on('SIGTERM', self.shutdown.bind(self));
+                .removeAllListeners('SIGINT').on('SIGINT', () => self.shutdown())
+                .removeAllListeners('SIGTERM').on('SIGTERM', () => self.shutdown());
         });
     }
 

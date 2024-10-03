@@ -357,6 +357,162 @@ Object {
 }
 `;
 
+exports[`Comments API when caching members content is enabled can get member data 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "email": "member@example.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
+  "enable_comment_notifications": true,
+  "expertise": null,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Weekly newsletter",
+      "sort_order": 2,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when caching members content is enabled can get member data 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "621",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-access=free:/,
+    StringMatching /\\^ghost-access-hmac=/,
+  ],
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when caching members content is enabled sets ghost-access and ghost-access-hmac cookies 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "email": "member@example.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
+  "enable_comment_notifications": true,
+  "expertise": null,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Weekly newsletter",
+      "sort_order": 2,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when caching members content is enabled sets ghost-access and ghost-access-hmac cookies 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "621",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-access=\\[0-9a-fA-F\\]\\{24\\}:\\\\d\\{10\\}/,
+    StringMatching /\\^ghost-access-hmac=\\[a-fA-F0-9\\]\\{64\\}/,
+  ],
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when caching members content is enabled sets ghost-access and ghost-access-hmac cookies to null when not authenticated but a cookie is sent 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "email": "member@example.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
+  "enable_comment_notifications": true,
+  "expertise": null,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Weekly newsletter",
+      "sort_order": 2,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when caching members content is enabled sets ghost-access and ghost-access-hmac cookies to null when not authenticated but a cookie is sent 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "621",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-access=\\[0-9a-fA-F\\]\\{24\\}:\\\\d\\{10\\}/,
+    StringMatching /\\^ghost-access-hmac=\\[a-fA-F0-9\\]\\{64\\}/,
+  ],
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Comments API when not authenticated but enabled can update comment notifications 1: [body] 1`] = `
 Object {
   "email": "member1@test.com",

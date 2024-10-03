@@ -71,31 +71,40 @@ describe('Integration: Component: gh-members-import-table', function () {
     });
 
     it('cannot navigate through data when only one data item is present', async function () {
-        it('renders members data with all the properties', async function () {
-            this.set('importData', [{
-                name: 'Egg',
-                email: 'egg@example.com'
-            }]);
+        this.set('importData', [{
+            name: 'Egg',
+            email: 'egg@example.com'
+        }]);
+        this.set('setMapping', () => {});
 
-            await render(hbs`
-                <GhMembersImportTable @importData={{this.importData}} />
-            `);
+        await render(hbs`
+            <GhMembersImportTable @data={{this.importData}} @setMapping={{this.setMapping}} />
+        `);
 
-            await click('[data-test-import-prev]');
+        expect(findAll('table tbody tr').length).to.equal(2);
+        expect(findAll('table tbody tr td')[0].textContent).to.equal('name');
+        expect(findAll('table tbody tr td')[1].textContent).to.equal('Egg');
+        expect(findAll('table tbody tr td')[2].textContent).to.match(/Not imported/);
+        expect(findAll('table tbody tr td')[3].textContent).to.equal('email');
+        expect(findAll('table tbody tr td')[4].textContent).to.equal('egg@example.com');
+        expect(findAll('table tbody tr td')[5].textContent).to.match(/Not imported/);
 
-            expect(findAll('table tbody tr').length).to.equal(2);
-            expect(findAll('table tbody tr td')[0].textContent).to.equal('name');
-            expect(findAll('table tbody tr td')[1].textContent).to.equal('Egg');
-            expect(findAll('table tbody tr td')[2].textContent).to.equal('email');
-            expect(findAll('table tbody tr td')[3].textContent).to.equal('egg@example.com');
+        await click('[data-test-import-next]');
 
-            await click('[data-test-import-next]');
+        expect(findAll('table tbody tr td')[0].textContent).to.equal('name');
+        expect(findAll('table tbody tr td')[1].textContent).to.equal('Egg');
+        expect(findAll('table tbody tr td')[2].textContent).to.match(/Not imported/);
+        expect(findAll('table tbody tr td')[3].textContent).to.equal('email');
+        expect(findAll('table tbody tr td')[4].textContent).to.equal('egg@example.com');
+        expect(findAll('table tbody tr td')[5].textContent).to.match(/Not imported/);
 
-            expect(findAll('table tbody tr').length).to.equal(2);
-            expect(findAll('table tbody tr td')[0].textContent).to.equal('name');
-            expect(findAll('table tbody tr td')[1].textContent).to.equal('Egg');
-            expect(findAll('table tbody tr td')[2].textContent).to.equal('email');
-            expect(findAll('table tbody tr td')[3].textContent).to.equal('egg@example.com');
-        });
+        await click('[data-test-import-prev]');
+
+        expect(findAll('table tbody tr td')[0].textContent).to.equal('name');
+        expect(findAll('table tbody tr td')[1].textContent).to.equal('Egg');
+        expect(findAll('table tbody tr td')[2].textContent).to.match(/Not imported/);
+        expect(findAll('table tbody tr td')[3].textContent).to.equal('email');
+        expect(findAll('table tbody tr td')[4].textContent).to.equal('egg@example.com');
+        expect(findAll('table tbody tr td')[5].textContent).to.match(/Not imported/);
     });
 });

@@ -226,9 +226,6 @@ class PostsExporter {
             for (const subfilter of filter.$or) {
                 strings.push(...this.filterToString(subfilter, allLabels, allTiers));
             }
-        } else if (filter.yg) {
-            // Single filter grouped in brackets
-            strings.push(...this.filterToString(filter.yg, allLabels, allTiers));
         } else {
             for (const key of Object.keys(filter)) {
                 if (key === 'label') {

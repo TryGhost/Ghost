@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const camelCase = require('lodash/camelCase');
 
-const adminXApps = ['admin-x-demo', 'admin-x-settings'];
+const adminXApps = ['admin-x-demo', 'admin-x-settings', 'admin-x-activitypub'];
 
 function generateHash(filePath) {
     const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -43,6 +43,8 @@ module.exports = {
                 for (const [key, value] of Object.entries(this.packageConfig)) {
                     console.log(`Asset-Delivery: ${key} = ${value}`);
                 }
+
+                this.packageConfig[`adminXActivitypubCustomUrl`] = 'https://cdn.jsdelivr.net/npm/@tryghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
             }
 
             return this.packageConfig;

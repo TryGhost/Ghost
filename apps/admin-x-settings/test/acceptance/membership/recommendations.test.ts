@@ -1,12 +1,8 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Recommendations', async () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('recommendations', true);
-    });
-
     test('can view recommendations', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -47,7 +43,7 @@ test.describe('Recommendations', async () => {
         // Validate errors
         url.fill('not a real url');
         await modal.getByRole('button', {name: 'Next'}).click();
-        await expect(modal).toContainText('Please enter a valid URL.');
+        await expect(modal).toContainText('Enter a valid URL');
 
         // Validate success
         modal.getByRole('textbox').fill('https://example.com/a-cool-website');
@@ -59,8 +55,6 @@ test.describe('Recommendations', async () => {
 
         // Validate errors
         await title.fill('');
-        await title.blur();
-        await expect(modal).toContainText('Title is required');
 
         await description.fill('This is a long description with more than 200 characters: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl.');
         await expect(modal).toContainText('Max: 200 characters. You’ve used 510');
@@ -127,8 +121,6 @@ test.describe('Recommendations', async () => {
 
         // Validate errors
         await title.fill('');
-        await title.blur();
-        await expect(modal).toContainText('Title is required');
 
         await description.fill('This is a long description with more than 200 characters: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl.');
         await expect(modal).toContainText('Max: 200 characters. You’ve used 510');
@@ -175,7 +167,6 @@ test.describe('Recommendations', async () => {
         expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
 
         await confirmation.getByRole('button', {name: 'Delete'}).click();
-        await expect(page.getByTestId('toast-success')).toContainText('deleted the recommendation');
 
         expect(lastApiRequests.deleteRecommendation).toBeTruthy();
     });

@@ -76,7 +76,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <TextField
                 error={!!errors.twitter}
                 hint={errors.twitter}
-                placeholder="https://twitter.com/ghost"
+                placeholder="https://x.com/ghost"
                 title="URL of your X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {

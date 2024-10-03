@@ -69,10 +69,10 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': previewData,
-                Accept: 'text/plain',
-                mode: 'cors',
-                credentials: 'include'
-            }
+                Accept: 'text/plain'
+            },
+            mode: 'cors',
+            credentials: 'include'
         })
             .then(response => response.text())
             .then((data) => {
@@ -105,7 +105,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
     return (
         <IframeBuffering
             addDelay={false}
-            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
+            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] bg-white max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
             generateContent={injectContentIntoIframe}
             height='100%'
             parentClassName="relative h-full w-full"

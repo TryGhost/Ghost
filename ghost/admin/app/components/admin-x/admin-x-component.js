@@ -58,7 +58,12 @@ export const importComponent = async (packageName) => {
     }
 
     const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
-    const url = new URL(`${baseUrl}${relativePath}/${config[`${configKey}Filename`]}?v=${config[`${configKey}Hash`]}`);
+    let url = new URL(`${baseUrl}${relativePath}/${config[`${configKey}Filename`]}?v=${config[`${configKey}Hash`]}`);
+
+    const customUrl = config[`${configKey}CustomUrl`];
+    if (customUrl) {
+        url = new URL(customUrl);
+    }
 
     if (url.protocol === 'http:') {
         window[packageName] = await import(`http://${url.host}${url.pathname}${url.search}`);
@@ -179,7 +184,12 @@ export default class AdminXComponent extends Component {
             const activated = response.themes.find(theme => theme.active);
 
             if (activated) {
-                this.themeManagement.activeTheme = this.store.peekAll('theme').filterBy('name', activated.name).firstObject;
+                const previouslyActive = this.store.peekAll('theme').find(theme => theme.active && theme.name !== activated.name);
+                previouslyActive?.set('active', false);
+
+                const newlyActive = this.store.peekAll('theme').filterBy('name', activated.name).firstObject;
+                newlyActive?.set('active', true);
+                this.themeManagement.activeTheme = newlyActive;
             }
         }
     };
@@ -220,6 +230,9 @@ export default class AdminXComponent extends Component {
     };
 
     externalNavigate = ({route, models = []}) => {
+        if (!route.startsWith('/')) {
+            route = `/${route}`;
+        }
         this.router.transitionTo(route, ...models);
     };
 

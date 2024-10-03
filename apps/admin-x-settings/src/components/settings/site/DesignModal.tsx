@@ -2,6 +2,7 @@ import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettin
 import React, {useEffect, useState} from 'react';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
+import useQueryParams from '../../../hooks/useQueryParams';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -30,6 +31,7 @@ const Sidebar: React.FC<{
     const {updateRoute} = useRouting();
     const [selectedTab, setSelectedTab] = useState('brand');
     const {data: {themes} = {}} = useBrowseThemes();
+    const refParam = useQueryParams().getParam('ref');
 
     const activeTheme = themes?.find(theme => theme.active);
 
@@ -60,7 +62,11 @@ const Sidebar: React.FC<{
                 <div className='w-full px-7'>
                     <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
                         await handleSave();
-                        updateRoute('design/change-theme');
+                        if (refParam) {
+                            updateRoute(`design/change-theme?ref=${refParam}`);
+                        } else {
+                            updateRoute('design/change-theme');
+                        }
                     }}>
                         <div className='text-left'>
                             <div className='font-semibold'>Change theme</div>
@@ -90,6 +96,8 @@ const DesignModal: React.FC = () => {
     const handleError = useHandleError();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const {updateRoute} = useRouting();
+
+    const refParam = useQueryParams().getParam('ref');
 
     const {
         formState,
@@ -209,7 +217,11 @@ const DesignModal: React.FC = () => {
 
     return <PreviewModalContent
         afterClose={() => {
-            updateRoute('design');
+            if (refParam === 'setup') {
+                window.location.hash = '/dashboard/';
+            } else {
+                updateRoute('design');
+            }
         }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'

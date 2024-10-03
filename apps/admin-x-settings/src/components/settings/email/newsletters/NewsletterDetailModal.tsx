@@ -1,5 +1,5 @@
 import NewsletterPreview from './NewsletterPreview';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -22,7 +22,7 @@ const ReplyToEmailField: React.FC<{
     errors: ErrorMessages;
     validate: () => void;
     clearError: (field: string) => void;
-}> = ({newsletter, updateNewsletter, errors, clearError, validate}) => {
+}> = ({newsletter, updateNewsletter, errors, clearError}) => {
     const {settings, config} = useGlobalData();
     const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
     const newEmailAddressesFlag = useFeatureFlag('newEmailAddresses');
@@ -66,25 +66,18 @@ const ReplyToEmailField: React.FC<{
     }
 
     const onBlur = () => {
-        validate();
-
         // Update the senderReplyTo to the rendered value again
         const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '';
         setSenderReplyTo(rendered);
     };
 
-    const hint = (
-        <>
-            If left empty, replies go to {newsletterAddress}
-        </>
-    );
-
     // Pro users without custom sending domains
     return (
         <TextField
             error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to || hint}
-            placeholder={''}
+            hint={errors.sender_reply_to}
+            maxLength={191}
+            placeholder={newsletterAddress || ''}
             title="Reply-to email"
             value={senderReplyTo}
             onBlur={onBlur}
@@ -102,6 +95,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
@@ -112,8 +106,15 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+    const activeNewsletters = newsletters.filter(n => n.status === 'active');
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -135,8 +136,8 @@ const Sidebar: React.FC<{
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
-                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
-                    <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
+                    <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
+                    <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
                 okColor: 'red',
@@ -146,7 +147,7 @@ const Sidebar: React.FC<{
                         modal?.remove();
                         showToast({
                             type: 'success',
-                            message: 'Newsletter archived successfully'
+                            message: 'Newsletter archived'
                         });
                     } catch (e) {
                         handleError(e);
@@ -159,7 +160,8 @@ const Sidebar: React.FC<{
             } catch (error) {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
-                        prompt: error.message || `Your current plan doesn't support more newsletters.`
+                        prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     return;
                 } else {
@@ -178,7 +180,7 @@ const Sidebar: React.FC<{
                     modal?.remove();
                     showToast({
                         type: 'success',
-                        message: 'Newsletter reactivated successfully'
+                        message: 'Newsletter reactivated'
                     });
                 }
             });
@@ -195,7 +197,6 @@ const Sidebar: React.FC<{
                     placeholder={newsletterAddress || ''}
                     title="Sender email address"
                     value={newsletter.sender_email || ''}
-                    onBlur={validate}
                     onChange={e => updateNewsletter({sender_email: e.target.value})}
                     onKeyDown={() => clearError('sender_email')}
                 />
@@ -204,28 +205,16 @@ const Sidebar: React.FC<{
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
-            let sendingEmail = newsletter.sender_email || ''; // Do not use the rendered address here, because this field is editable and we otherwise can't have an empty field
-
-            // It is possible we have an invalid saved email address, in that case it won't get used
-            // so we should display as if we are using the default = an empty address
-            if (sendingEmail && sendingEmail !== newsletterAddress) {
-                sendingEmail = '';
-            }
-
-            const sendingEmailUsername = sendingEmail?.split('@')[0] || '';
-
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email || `If left empty, ${defaultEmailAddress} will be used`}
-                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    hint={errors.sender_email}
+                    maxLength={191}
+                    placeholder={defaultEmailAddress}
                     title="Sender email address"
-                    value={sendingEmailUsername || ''}
-                    onBlur={validate}
+                    value={newsletter.sender_email || ''}
                     onChange={(e) => {
-                        const username = e.target.value?.split('@')[0];
-                        const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
-                        updateNewsletter({sender_email: newEmail});
+                        updateNewsletter({sender_email: e.target.value});
                     }}
                     onKeyDown={() => clearError('sender_email')}
                 />
@@ -246,17 +235,17 @@ const Sidebar: React.FC<{
                     <TextField
                         error={Boolean(errors.name)}
                         hint={errors.name}
+                        maxLength={191}
                         placeholder="Weekly Roundup"
                         title="Name"
                         value={newsletter.name || ''}
-                        onBlur={validate}
                         onChange={e => updateNewsletter({name: e.target.value})}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                    <TextArea maxLength={2000} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
-                    <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
+                    <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                 </Form>
@@ -269,29 +258,8 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                     />
                 </Form>
-                <Separator />
-                <div className='my-5 flex w-full items-start'>
-                    <span>
-                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
-                    </span>
-                    <Form marginBottom={false}>
-                        <Toggle
-                            checked={newsletter.show_badge}
-                            direction='rtl'
-                            label={
-                                <div className='flex flex-col gap-0.5'>
-                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
-                                </div>
-                            }
-                            labelStyle='value'
-                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
-                        />
-                    </Form>
-                </div>
-                <Separator />
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -455,18 +423,28 @@ const Sidebar: React.FC<{
                         value={newsletter.title_color}
                         onChange={color => updateNewsletter({title_color: color})}
                     />}
+                    <ToggleGroup gap='lg'>
+                        {newsletter.show_post_title_section &&
+                            <Toggle
+                                checked={newsletter.show_excerpt}
+                                direction="rtl"
+                                label="Post excerpt"
+                                onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
+                            />
+                        }
+                        <Toggle
+                            checked={newsletter.show_feature_image}
+                            direction="rtl"
+                            label='Feature image'
+                            onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
+                        />
+                    </ToggleGroup>
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         testId='body-font-select'
                         title='Body style'
                         onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                    />
-                    <Toggle
-                        checked={newsletter.show_feature_image}
-                        direction="rtl"
-                        label='Feature image'
-                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
@@ -506,6 +484,26 @@ const Sidebar: React.FC<{
                         onChange={html => updateNewsletter({footer_content: html})}
                     />
                 </Form>
+                <Separator />
+                <div className='my-5 flex w-full items-start'>
+                    <span>
+                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
+                    </span>
+                    <Form marginBottom={false}>
+                        <Toggle
+                            checked={newsletter.show_badge}
+                            direction='rtl'
+                            label={
+                                <div className='flex flex-col gap-0.5'>
+                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                </div>
+                            }
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
+                        />
+                    </Form>
+                </div>
             </>
         }
     ];
@@ -524,41 +522,29 @@ const Sidebar: React.FC<{
 };
 
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
-    const modal = useModal();
-    const {settings, config} = useGlobalData();
+    const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
-    const [supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['support_email_address', 'default_email_address']);
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: newsletter,
         savingDelay: 500,
         onSave: async () => {
-            const {newsletters: [updatedNewsletter], meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
-            let title;
-            let prompt;
+            const {meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
+            let toastMessage;
 
             if (emailToVerify && emailToVerify === 'sender_email') {
-                const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
-                title = 'Confirm newsletter email address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>. Until the address has been verified, newsletters will be sent from the {updatedNewsletter.sender_email ? ' previous' : ' default'} email address{previousFrom ? ` (${previousFrom})` : ''}.</>;
+                toastMessage = <div>We&lsquo;ve sent a confirmation email to the new address.</div>;
             } else if (emailToVerify && emailToVerify === 'sender_reply_to') {
-                const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress);
-                title = 'Confirm reply-to address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, newsletters will use the previous reply-to address{previousReplyTo ? ` (${previousReplyTo})` : ''}.</>;
+                toastMessage = <div>We&lsquo;ve sent a confirmation email to the new address.</div>;
             }
 
-            if (title && prompt) {
-                NiceModal.show(ConfirmationModal, {
-                    title: title,
-                    prompt: prompt,
-                    cancelLabel: '',
-                    onOk: (confirmModal) => {
-                        confirmModal?.remove();
-                        modal.remove();
-                        updateRoute('newsletters');
-                    }
+            if (toastMessage) {
+                showToast({
+                    icon: 'email',
+                    message: toastMessage,
+                    type: 'info'
                 });
             }
         },
@@ -567,15 +553,17 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
-                newErrors.sender_email = 'Invalid email.';
+                newErrors.sender_email = 'Enter a valid email address';
+            } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {
+                newErrors.sender_email = `Email address must end with @${sendingDomain(config)}`;
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
-                newErrors.sender_reply_to = 'Invalid email.';
+                newErrors.sender_reply_to = 'Enter a valid email address';
             }
 
             return newErrors;
@@ -609,12 +597,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };

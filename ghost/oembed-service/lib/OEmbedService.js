@@ -1,15 +1,19 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const cheerio = require('cheerio');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
+const path = require('path');
+
+// Some sites block non-standard user agents so we need to mimic a typical browser
+const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
     unknownProvider: 'No provider found for supplied URL.',
+    unableToFetchOembed: 'Unable to fetch requested embed.',
     unauthorized: 'URL contains a private resource.'
 };
 
@@ -26,10 +30,10 @@ const findUrlWithProvider = (url) => {
     // providers list is not always up to date with scheme or www vs non-www
     let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
     let testUrls = [
-        `http://${baseUrl}`,
         `https://${baseUrl}`,
-        `http://www.${baseUrl}`,
-        `https://www.${baseUrl}`
+        `https://www.${baseUrl}`,
+        `http://${baseUrl}`,
+        `http://www.${baseUrl}`
     ];
 
     for (let testUrl of testUrls) {
@@ -46,6 +50,12 @@ const findUrlWithProvider = (url) => {
 /**
  * @typedef {Object} IConfig
  * @prop {(key: string) => string} get
+ * @prop {(key: string) => string} getContentPath
+ */
+
+/**
+ * @typedef {Object} IStorage
+ * @prop {(feature: string) => Object} getStorage
  */
 
 /**
@@ -63,10 +73,12 @@ class OEmbedService {
      *
      * @param {Object} dependencies
      * @param {IConfig} dependencies.config
+     * @param {IStorage} dependencies.storage
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest}) {
+    constructor({config, externalRequest, storage}) {
         this.config = config;
+        this.storage = storage;
 
         /** @type {IExternalRequest} */
         this.externalRequest = externalRequest;
@@ -101,16 +113,67 @@ class OEmbedService {
         try {
             return await extract(url);
         } catch (err) {
-            if (err.message === 'Request failed with error code 401') {
-                throw new errors.UnauthorizedError({
-                    message: messages.unauthorized
-                });
-            } else {
-                throw new errors.InternalServerError({
-                    message: err.message
+            if (err.message === 'Request failed with error code 401' || err.message === 'Request failed with error code 403') {
+                throw new errors.ValidationError({
+                    message: tpl(messages.unableToFetchOembed),
+                    context: messages.unauthorized
                 });
             }
+
+            throw new errors.ValidationError({
+                message: tpl(messages.unableToFetchOembed),
+                context: err.message
+            });
         }
+    }
+
+    /**
+     * Fetches the image buffer from a URL using fetch
+     * @param {String} imageUrl - URL of the image to fetch
+     * @returns {Promise<Buffer>} - Promise resolving to the image buffer
+     */
+    async fetchImageBuffer(imageUrl) {
+        const response = await fetch(imageUrl);
+        
+        if (!response.ok) {
+            throw Error(`Failed to fetch image: ${response.statusText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        
+        const buffer = Buffer.from(arrayBuffer);
+        return buffer;
+    }
+
+    /**
+     * Process and store image from a URL
+     * @param {String} imageUrl - URL of the image to process
+     * @param {String} imageType - What is the image used for. Example - icon, thumbnail
+     * @returns {Promise<String>} - URL where the image is stored
+     */
+    async processImageFromUrl(imageUrl, imageType) {
+        // Fetch image buffer from the URL
+        const imageBuffer = await this.fetchImageBuffer(imageUrl);
+        const store = this.storage.getStorage('images');
+
+        // Extract file name from URL
+        const fileName = path.basename(new URL(imageUrl).pathname);
+        let ext = path.extname(fileName);
+        let name;
+
+        if (ext) {
+            name = store.getSanitizedFileName(path.basename(fileName, ext));
+        } else {
+            name = store.getSanitizedFileName(path.basename(fileName));
+        }
+
+        let targetDir = path.join(this.config.getContentPath('images'), imageType);
+        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
+        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
+
+        const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
+
+        return imageStoredUrl;
     }
 
     /**
@@ -123,6 +186,9 @@ class OEmbedService {
         return this.externalRequest(
             url,
             {
+                headers: {
+                    'user-agent': USER_AGENT
+                },
                 timeout: 2000,
                 followRedirect: true,
                 ...options
@@ -202,7 +268,11 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
-        const gotOpts = {};
+        const gotOpts = {
+            headers: {
+                'User-Agent': USER_AGENT
+            }
+        };
 
         if (process.env.NODE_ENV?.startsWith('test')) {
             gotOpts.retry = 0;
@@ -235,11 +305,11 @@ class OEmbedService {
             scraperResponse = await metascraper({
                 html,
                 url,
-                // In development, allow non-standard tlds
+                // In development, allow non-standard TLDs
                 validateUrl: this.config.get('env') !== 'development'
             });
         } catch (err) {
-            // Log to avoid being blind to errors happenning in metascraper
+            // Log to avoid being blind to errors happening in metascraper
             logging.error(err);
             return this.unknownProvider(url);
         }
@@ -259,6 +329,21 @@ class OEmbedService {
             });
         }
 
+        await this.processImageFromUrl(metadata.icon, 'icon')
+            .then((processedImageUrl) => {
+                metadata.icon = processedImageUrl;
+            }).catch((err) => {
+                metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+                logging.error(err);
+            });
+
+        await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
+            .then((processedImageUrl) => {
+                metadata.thumbnail = processedImageUrl;
+            }).catch((err) => {
+                logging.error(err);
+            });
+
         return {
             version: '1.0',
             type: 'bookmark',
@@ -275,6 +360,9 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedData(url, html, cardType) {
+        // Lazy require the library to keep boot quick
+        const cheerio = require('cheerio');
+
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
@@ -318,11 +406,16 @@ class OEmbedService {
                 ];
                 const oembed = _.pick(body, knownFields);
 
+                // Fallback to bookmark if it's a link type
+                if (oembed.type === 'link') {
+                    return;
+                }
+
                 // ensure we have required data for certain types
                 if (oembed.type === 'photo' && !oembed.url) {
                     return;
                 }
-                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width || !oembed.height)) {
+                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width)) {
                     return;
                 }
 
@@ -343,6 +436,18 @@ class OEmbedService {
     async fetchOembedDataFromUrl(url, type, options = {}) {
         try {
             const urlObject = new URL(url);
+
+            // YouTube has started not returning oembed <link>tags for some live URLs
+            // when fetched from an IP address that's in a non-EN region.
+            // We convert live URLs to watch URLs so we can go straight to the
+            // oembed request via a known provider rather than going through the page fetch routine.
+            const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
+            if (urlObject.hostname.match(/(?:www\.)?youtube\.com/) && ytLiveRegex.test(urlObject.pathname)) {
+                const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
+                urlObject.pathname = '/watch';
+                urlObject.searchParams.set('v', videoId);
+                url = urlObject.toString();
+            }
 
             // Trimming solves the difference of url validation between `new URL(url)`
             // and metascraper.

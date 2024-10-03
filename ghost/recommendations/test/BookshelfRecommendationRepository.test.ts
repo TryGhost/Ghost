@@ -114,7 +114,35 @@ describe('BookshelfRecommendationRepository', function () {
         sinon.assert.calledOnce(stub);
     });
 
-    it('getByUrl returns if matching hostname', async function () {
+    it('getByUrl returns null if not matching path', async function () {
+        const repository = new BookshelfRecommendationRepository({} as any, {
+            sentry: undefined
+        });
+        const recommendation = Recommendation.create({
+            id: 'id',
+            title: 'title',
+            description: 'description',
+            excerpt: 'excerpt',
+            featuredImage: new URL('https://example.com'),
+            favicon: new URL('https://example.com'),
+            url: new URL('https://example.com/other-path'),
+            oneClickSubscribe: true,
+            createdAt: new Date('2021-01-01'),
+            updatedAt: new Date('2021-01-02')
+        });
+        const stub = sinon.stub(repository, 'getAll').returns(Promise.resolve([
+            recommendation
+        ]));
+        const entity = await repository.getByUrl(new URL('https://www.example.com/path'));
+
+        assert.equal(
+            entity,
+            null
+        );
+        sinon.assert.calledOnce(stub);
+    });
+
+    it('getByUrl returns if matching hostname and pathname', async function () {
         const repository = new BookshelfRecommendationRepository({} as any, {
             sentry: undefined
         });
@@ -142,7 +170,7 @@ describe('BookshelfRecommendationRepository', function () {
         sinon.assert.calledOnce(stub);
     });
 
-    it('getByUrl returns null if not matching path', async function () {
+    it('getByUrl returns if matching hostname and pathname, but not query params', async function () {
         const repository = new BookshelfRecommendationRepository({} as any, {
             sentry: undefined
         });
@@ -153,7 +181,35 @@ describe('BookshelfRecommendationRepository', function () {
             excerpt: 'excerpt',
             featuredImage: new URL('https://example.com'),
             favicon: new URL('https://example.com'),
-            url: new URL('https://example.com/other-path'),
+            url: new URL('https://example.com/path'),
+            oneClickSubscribe: true,
+            createdAt: new Date('2021-01-01'),
+            updatedAt: new Date('2021-01-02')
+        });
+        const stub = sinon.stub(repository, 'getAll').returns(Promise.resolve([
+            recommendation
+        ]));
+        const entity = await repository.getByUrl(new URL('https://www.example.com/path/?query=param'));
+
+        assert.equal(
+            entity,
+            recommendation
+        );
+        sinon.assert.calledOnce(stub);
+    });
+
+    it('getByUrl returns if matching hostname and pathname, but not hash fragments', async function () {
+        const repository = new BookshelfRecommendationRepository({} as any, {
+            sentry: undefined
+        });
+        const recommendation = Recommendation.create({
+            id: 'id',
+            title: 'title',
+            description: 'description',
+            excerpt: 'excerpt',
+            featuredImage: new URL('https://example.com'),
+            favicon: new URL('https://example.com'),
+            url: new URL('https://example.com/path/#section1'),
             oneClickSubscribe: true,
             createdAt: new Date('2021-01-01'),
             updatedAt: new Date('2021-01-02')
@@ -165,7 +221,7 @@ describe('BookshelfRecommendationRepository', function () {
 
         assert.equal(
             entity,
-            null
+            recommendation
         );
         sinon.assert.calledOnce(stub);
     });

@@ -19,7 +19,8 @@ describe('SlackNotificationsService', function () {
 
         const config = {
             isEnabled: true,
-            webhookUrl: 'https://slack-webhook.example'
+            webhookUrl: 'https://slack-webhook.example',
+            minThreshold: 1000
         };
 
         beforeEach(function () {
@@ -75,13 +76,13 @@ describe('SlackNotificationsService', function () {
                     milestone: {
                         id: new ObjectId().toHexString(),
                         type: 'arr',
-                        value: 1000,
+                        value: 10000,
                         currency: 'usd',
                         createdAt: new Date(),
                         emailSentAt: new Date()
                     },
                     meta: {
-                        currentValue: 1398
+                        currentValue: 13980
                     }
                 }));
 
@@ -111,6 +112,45 @@ describe('SlackNotificationsService', function () {
                 service.subscribeEvents();
 
                 DomainEvents.dispatch(MilestoneCreatedEvent.create({milestone: {}}));
+
+                await DomainEvents.allSettled();
+
+                assert(loggingSpy.callCount === 0);
+                assert(slackNotificationStub.callCount === 0);
+            });
+
+            it('does not send notification when milestone value below notification threshold', async function () {
+                service = new SlackNotificationsService({
+                    logging: {
+                        warn: () => {},
+                        error: loggingSpy
+                    },
+                    DomainEvents,
+                    siteUrl: 'https://ghost.example',
+                    config: {
+                        isEnabled: false,
+                        webhookUrl: 'https://slack-webhook.example'
+                    },
+                    slackNotifications: {
+                        notifyMilestoneReceived: slackNotificationStub
+                    }
+                });
+
+                service.subscribeEvents();
+
+                DomainEvents.dispatch(MilestoneCreatedEvent.create({
+                    milestone: {
+                        id: new ObjectId().toHexString(),
+                        type: 'arr',
+                        value: 1000,
+                        currency: 'usd',
+                        createdAt: new Date(),
+                        emailSentAt: new Date()
+                    },
+                    meta: {
+                        currentValue: 1398
+                    }
+                }));
 
                 await DomainEvents.allSettled();
 
@@ -166,8 +206,8 @@ describe('SlackNotificationsService', function () {
                 DomainEvents.dispatch(MilestoneCreatedEvent.create({
                     milestone: {
                         type: 'members',
-                        name: 'members-100',
-                        value: 100,
+                        name: 'members-10000',
+                        value: 10000,
                         createdAt: new Date()
                     }
                 }));

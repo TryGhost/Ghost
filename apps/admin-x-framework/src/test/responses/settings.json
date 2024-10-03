@@ -177,6 +177,10 @@
             "value": "[\"monthly\",\"yearly\",\"free\"]"
         },
         {
+            "key": "portal_default_plan",
+            "value": "yearly"
+        },
+        {
             "key": "portal_products",
             "value": "[]"
         },

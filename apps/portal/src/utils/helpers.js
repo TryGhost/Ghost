@@ -86,6 +86,10 @@ export function getNewsletterFromUuid({site, uuid}) {
     });
 }
 
+export function hasNewsletterSendingEnabled({site}) {
+    return site?.editor_default_email_recipients === 'visibility';
+}
+
 export function allowCompMemberUpgrade({member}) {
     return member?.subscriptions?.[0]?.tier?.expiry_at !== undefined;
 }
@@ -431,7 +435,8 @@ export function getSiteProducts({site, pageQuery}) {
     }
     if (hasFreeProductPrice({site})) {
         products.unshift({
-            id: 'free'
+            id: 'free',
+            type: 'free'
         });
     }
     return products;
@@ -450,11 +455,8 @@ export function getFreeProductBenefits({site}) {
 }
 
 export function getFreeTierTitle({site}) {
-    if (hasOnlyFreeProduct({site})) {
-        return 'Free membership';
-    } else {
-        return 'Free';
-    }
+    const freeProduct = getFreeProduct({site});
+    return freeProduct?.name || 'Free';
 }
 
 export function getFreeTierDescription({site}) {

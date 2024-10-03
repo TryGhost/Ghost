@@ -2,7 +2,7 @@ import {defineConfig, devices, PlaywrightTestConfig} from '@playwright/test';
 
 export const E2E_PORT = 5173;
 
-export default function adminXPlaywrightConfig(overrides: Partial<PlaywrightTestConfig> = {}) {
+export function adminXPlaywrightConfig(overrides: Partial<PlaywrightTestConfig> = {}) {
     /**
      * See https://playwright.dev/docs/test-configuration.
      */

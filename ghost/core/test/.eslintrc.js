@@ -31,8 +31,6 @@ module.exports = {
         'ghost/mocha/no-skipped-tests': 'error',
 
         // TODO: remove these custom rules and fix problems in test files
-        'ghost/mocha/max-top-level-suites': 'off',
-        'ghost/mocha/no-identical-title': 'off',
         'ghost/mocha/no-setup-in-describe': 'off',
         'ghost/mocha/no-sibling-hooks': 'off'
     }

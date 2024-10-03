@@ -9,13 +9,13 @@ import clsx from 'clsx';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
@@ -24,7 +24,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         let error = '';
 
         if (!name) {
-            error = 'Please enter a name';
+            error = 'Name is required';
         }
 
         if (name && name.length > 191) {
@@ -35,11 +35,11 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     email: ({email}) => {
         const valid = validator.isEmail(email || '');
-        return valid ? '' : 'Please enter a valid email address';
+        return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
         const valid = !url || validator.isURL(url);
-        return valid ? '' : 'Please enter a valid URL';
+        return valid ? '' : 'Enter a valid URL';
     },
     bio: ({bio}) => {
         const valid = !bio || bio.length <= 200;
@@ -51,7 +51,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     website: ({website}) => {
         const valid = !website || (validator.isURL(website) && website.length <= 2000);
-        return valid ? '' : 'Website is not a valid url';
+        return valid ? '' : 'Enter a valid URL';
     },
     facebook: ({facebook}) => {
         try {
@@ -85,7 +85,7 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserMenuTrigger = () => (
+const UserMenuTrigger = (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <span className='sr-only'>Actions</span>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -112,10 +112,6 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         },
         onSave: async (values) => {
             await updateUser?.(values);
-        },
-        onSavedStateReset: () => {
-            mainModal.remove();
-            navigateOnClose();
         },
         onSaveError: handleError
     });
@@ -157,7 +153,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
                         formSheet: true,
-                        prompt: error.message || `Your current plan doesn't support more users.`
+                        prompt: error.message || `Your current plan doesn't support more users.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     return;
                 } else {
@@ -190,7 +187,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     setFormState(() => updatedUserData);
                     modal?.remove();
                     showToast({
-                        message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                        title: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
                         type: 'success'
                     });
                 } catch (e) {
@@ -218,7 +215,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     mainModal?.remove();
                     navigateOnClose();
                     showToast({
-                        message: 'User deleted',
+                        title: 'User deleted',
                         type: 'success'
                     });
                 } catch (e) {
@@ -239,7 +236,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await makeOwner(user.id);
                     modal?.remove();
                     showToast({
-                        message: 'Ownership transferred',
+                        title: 'Ownership transferred',
                         type: 'success'
                     });
                 } catch (e) {
@@ -266,7 +263,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 break;
             }
         } catch (e) {
-            handleError(e);
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
         }
     };
 
@@ -348,21 +349,15 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
             buttonsDisabled={okProps.disabled}
+            cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
-            okLabel={okProps.label || 'Save & close'}
+            okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
-                toast.remove();
-
-                if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                    showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save user, please double check that you\'ve filled all mandatory fields.'
-                    });
-                }
+                await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>
@@ -373,7 +368,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
                                 <ImageUpload
-                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
+                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
                                     deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                     editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                                     fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
@@ -440,7 +435,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 }}
                             >Upload cover image</ImageUpload>
                             {showMenu && <div className="z-10">
-                                <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
+                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger} />
                             </div>}
                         </div>
                     </div>

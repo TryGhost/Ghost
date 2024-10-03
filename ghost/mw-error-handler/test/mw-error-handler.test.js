@@ -1,9 +1,7 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
 const path = require('path');
-const should = require('should');
 const assert = require('assert/strict');
+const sinon = require('sinon');
+
 const {InternalServerError, NotFoundError} = require('@tryghost/errors');
 const {cacheControlValues} = require('@tryghost/http-cache-utils');
 const {
@@ -22,12 +20,12 @@ describe('Prepare Error', function () {
         prepareError(new Error('test!'), {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(500);
-            err.name.should.eql('InternalServerError');
-            err.message.should.eql('An unexpected error occurred, please try again.');
-            err.context.should.eql('test!');
-            err.code.should.eql('UNEXPECTED_ERROR');
-            err.stack.should.startWith('Error: test!');
+            assert.equal(err.statusCode, 500);
+            assert.equal(err.name, 'InternalServerError');
+            assert.equal(err.message, 'An unexpected error occurred, please try again.');
+            assert.equal(err.context, 'test!');
+            assert.equal(err.code, 'UNEXPECTED_ERROR');
+            assert.ok(err.stack.startsWith('Error: test!'));
             done();
         });
     });
@@ -36,11 +34,11 @@ describe('Prepare Error', function () {
         prepareError(new InternalServerError({message: 'Handled Error', context: 'Details'}), {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(500);
-            err.name.should.eql('InternalServerError');
-            err.message.should.eql('Handled Error');
-            err.context.should.eql('Details');
-            err.stack.should.startWith('InternalServerError: Handled Error');
+            assert.equal(err.statusCode, 500);
+            assert.equal(err.name, 'InternalServerError');
+            assert.equal(err.message, 'Handled Error');
+            assert.equal(err.context, 'Details');
+            assert.ok(err.stack.startsWith('InternalServerError: Handled Error'));
             done();
         });
     });
@@ -51,10 +49,10 @@ describe('Prepare Error', function () {
         prepareError(error, {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(404);
-            err.name.should.eql('NotFoundError');
-            err.stack.should.startWith('NotFoundError: Resource could not be found');
-            err.hideStack.should.eql(true);
+            assert.equal(err.statusCode, 404);
+            assert.equal(err.name, 'NotFoundError');
+            assert.ok(err.stack.startsWith('NotFoundError: Resource could not be found'));
+            assert.equal(err.hideStack, true);
             done();
         });
     });
@@ -63,9 +61,9 @@ describe('Prepare Error', function () {
         prepareError([new Error('test!')], {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(500);
-            err.name.should.eql('InternalServerError');
-            err.stack.should.startWith('Error: test!');
+            assert.equal(err.statusCode, 500);
+            assert.equal(err.name, 'InternalServerError');
+            assert.ok(err.stack.startsWith('Error: test!'));
             done();
         });
     });
@@ -79,11 +77,11 @@ describe('Prepare Error', function () {
         prepareError(error, {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(400);
-            err.name.should.eql('IncorrectUsageError');
+            assert.equal(err.statusCode, 400);
+            assert.equal(err.name, 'IncorrectUsageError');
             // TODO: consider if the message should be trusted here
-            err.message.should.eql('obscure handlebars message!');
-            err.stack.should.startWith('Error: obscure handlebars message!');
+            assert.equal(err.message, 'obscure handlebars message!');
+            assert.ok(err.stack.startsWith('Error: obscure handlebars message!'));
             done();
         });
     });
@@ -97,15 +95,15 @@ describe('Prepare Error', function () {
         prepareError(error, {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(400);
-            err.name.should.eql('IncorrectUsageError');
-            err.message.should.eql('obscure express-hbs message!');
-            err.stack.should.startWith('Error: obscure express-hbs message!');
+            assert.equal(err.statusCode, 400);
+            assert.equal(err.name, 'IncorrectUsageError');
+            assert.equal(err.message, 'obscure express-hbs message!');
+            assert.ok(err.stack.startsWith('Error: obscure express-hbs message!'));
             done();
         });
     });
 
-    it('Correctly prepares a mysql2 error', function (done) {
+    it('Correctly prepares a known ER_WRONG_VALUE mysql2 error', function (done) {
         let error = new Error('select anything from anywhere where something = anything;');
 
         error.stack += '\n';
@@ -117,13 +115,36 @@ describe('Prepare Error', function () {
         prepareError(error, {}, {
             set: () => {}
         }, (err) => {
-            err.statusCode.should.eql(500);
-            err.name.should.eql('InternalServerError');
-            err.message.should.eql('An unexpected error occurred, please try again.');
-            err.code.should.eql('UNEXPECTED_ERROR');
-            err.sqlErrorCode.should.eql('ER_WRONG_VALUE');
-            err.sql.should.eql('select anything from anywhere where something = anything;');
-            err.sqlMessage.should.eql('Incorrect DATETIME value: 3234234234');
+            assert.equal(err.statusCode, 422);
+            assert.equal(err.name, 'ValidationError');
+            assert.equal(err.message, 'Invalid value');
+            assert.equal(err.code, 'ER_WRONG_VALUE');
+            assert.equal(err.sqlErrorCode, 'ER_WRONG_VALUE');
+            assert.equal(err.sql, 'select anything from anywhere where something = anything;');
+            assert.equal(err.sqlMessage, 'Incorrect DATETIME value: 3234234234');
+            done();
+        });
+    });
+
+    it('Correctly prepares an unknown mysql2 error', function (done) {
+        let error = new Error('select anything from anywhere where something = anything;');
+
+        error.stack += '\n';
+        error.stack += path.join('node_modules', 'mysql2', 'lib');
+        error.code = 'ER_BAD_FIELD_ERROR';
+        error.sql = 'select anything from anywhere where something = anything;';
+        error.sqlMessage = 'Incorrect value: erororoor';
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
+            assert.equal(err.statusCode, 500);
+            assert.equal(err.name, 'InternalServerError');
+            assert.equal(err.message, 'An unexpected error occurred, please try again.');
+            assert.equal(err.code, 'UNEXPECTED_ERROR');
+            assert.equal(err.sqlErrorCode, 'ER_BAD_FIELD_ERROR');
+            assert.equal(err.sql, 'select anything from anywhere where something = anything;');
+            assert.equal(err.sqlMessage, 'Incorrect value: erororoor');
             done();
         });
     });
@@ -133,7 +154,7 @@ describe('Prepare Stack', function () {
     it('Correctly prepares the stack for an error', function (done) {
         prepareStack(new Error('test!'), {}, {}, (err) => {
             // Includes "Stack Trace" text prepending human readable trace
-            err.stack.should.startWith('Error: test!\nStack Trace:');
+            assert.ok(err.stack.startsWith('Error: test!\nStack Trace:'));
             done();
         });
     });
@@ -201,8 +222,8 @@ describe('Error renderers', function () {
     it('Renders JSON', function (done) {
         jsonErrorRenderer(new Error('test!'), {}, {
             json: (data) => {
-                data.errors.length.should.eql(1);
-                data.errors[0].message.should.eql('test!');
+                assert.equal(data.errors.length, 1);
+                assert.equal(data.errors[0].message, 'test!');
                 done();
             }
         }, () => {});
@@ -216,9 +237,9 @@ describe('Error renderers', function () {
             }
         }, {
             json: (data) => {
-                data.errors.length.should.eql(1);
-                data.errors[0].message.should.eql('Unknown error - RangeError, cannot read oembed.');
-                data.errors[0].context.should.eql('test!');
+                assert.equal(data.errors.length, 1);
+                assert.equal(data.errors[0].message, 'Unknown error - RangeError, cannot read oembed.');
+                assert.equal(data.errors[0].context, 'test!');
                 done();
             }
         }, () => {});
@@ -234,9 +255,9 @@ describe('Error renderers', function () {
             }
         }, {
             json: (data) => {
-                data.errors.length.should.eql(1);
-                data.errors[0].message.should.eql('Internal server error, cannot list blog.');
-                data.errors[0].context.should.eql('test!');
+                assert.equal(data.errors.length, 1);
+                assert.equal(data.errors[0].message, 'Internal server error, cannot list blog.');
+                assert.equal(data.errors[0].context, 'test!');
                 done();
             }
         }, () => {});
@@ -253,9 +274,9 @@ describe('Error renderers', function () {
             }
         }, {
             json: (data) => {
-                data.errors.length.should.eql(1);
-                data.errors[0].message.should.eql('Internal server error, cannot upload image.');
-                data.errors[0].context.should.eql('test! Image was too large.');
+                assert.equal(data.errors.length, 1);
+                assert.equal(data.errors[0].message, 'Internal server error, cannot upload image.');
+                assert.equal(data.errors[0].context, 'test! Image was too large.');
                 done();
             }
         }, () => {});
@@ -266,7 +287,7 @@ describe('Error renderers', function () {
             errorHandler: () => {}
         });
 
-        renderer.length.should.eql(4);
+        assert.equal(renderer.length, 4);
     });
 
     it('Exports the JSON renderer', function () {
@@ -274,15 +295,35 @@ describe('Error renderers', function () {
             errorHandler: () => {}
         });
 
-        renderer.length.should.eql(5);
+        assert.equal(renderer.length, 5);
     });
 });
 
 describe('Resource Not Found', function () {
     it('Returns 404 Not Found Error for a generic case', function (done) {
         resourceNotFound({}, {}, (error) => {
-            should.equal(error.statusCode, 404);
-            should.equal(error.message, 'Resource not found');
+            assert.equal(error.statusCode, 404);
+            assert.equal(error.message, 'Resource not found');
+            done();
+        });
+    });
+
+    it('Returns 406 Request Not Acceptable Error for invalid version', function (done) {
+        const req = {
+            headers: {
+                'accept-version': 'foo'
+            }
+        };
+
+        const res = {
+            locals: {
+                safeVersion: '4.3'
+            }
+        };
+
+        resourceNotFound(req, res, (error) => {
+            assert.equal(error.statusCode, 400);
+            assert.equal(error.message, 'Requested version is not supported.');
             done();
         });
     });
@@ -301,10 +342,10 @@ describe('Resource Not Found', function () {
         };
 
         resourceNotFound(req, res, (error) => {
-            should.equal(error.statusCode, 406);
-            should.equal(error.message, 'Request could not be served, the endpoint was not found.');
-            should.equal(error.context, 'Provided client accept-version v3.9 is behind current Ghost version v4.3.');
-            should.equal(error.help, 'Try upgrading your Ghost API client.');
+            assert.equal(error.statusCode, 406);
+            assert.equal(error.message, 'Request could not be served, the endpoint was not found.');
+            assert.equal(error.context, 'Provided client accept-version v3.9 is behind current Ghost version v4.3.');
+            assert.equal(error.help, 'Try upgrading your Ghost API client.');
             done();
         });
     });
@@ -323,10 +364,10 @@ describe('Resource Not Found', function () {
         };
 
         resourceNotFound(req, res, (error) => {
-            should.equal(error.statusCode, 406);
-            should.equal(error.message, 'Request could not be served, the endpoint was not found.');
-            should.equal(error.context, 'Provided client accept-version v4.8 is ahead of current Ghost version v4.3.');
-            should.equal(error.help, 'Try upgrading your Ghost install.');
+            assert.equal(error.statusCode, 406);
+            assert.equal(error.message, 'Request could not be served, the endpoint was not found.');
+            assert.equal(error.context, 'Provided client accept-version v4.8 is ahead of current Ghost version v4.3.');
+            assert.equal(error.help, 'Try upgrading your Ghost install.');
             done();
         });
     });
@@ -345,8 +386,8 @@ describe('Resource Not Found', function () {
         };
 
         resourceNotFound(req, res, (error) => {
-            should.equal(error.statusCode, 404);
-            should.equal(error.message, 'Resource not found');
+            assert.equal(error.statusCode, 404);
+            assert.equal(error.message, 'Resource not found');
             done();
         });
     });
@@ -354,16 +395,16 @@ describe('Resource Not Found', function () {
     describe('pageNotFound', function () {
         it('returns 404 with special message when message not set', function (done) {
             pageNotFound({}, {}, (error) => {
-                should.equal(error.statusCode, 404);
-                should.equal(error.message, 'Page not found');
+                assert.equal(error.statusCode, 404);
+                assert.equal(error.message, 'Page not found');
                 done();
             });
         });
 
         it('returns 404 with special message even if message is set', function (done) {
             pageNotFound({message: 'uh oh'}, {}, (error) => {
-                should.equal(error.statusCode, 404);
-                should.equal(error.message, 'Page not found');
+                assert.equal(error.statusCode, 404);
+                assert.equal(error.message, 'Page not found');
                 done();
             });
         });

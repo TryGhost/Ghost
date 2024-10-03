@@ -11,7 +11,7 @@ const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' label='Embed' link onClick={openPreviewModal}/>}
+            customButtons={<Button className='mt-[-5px]' color='clear' label='Embed' size='sm' onClick={openPreviewModal}/>}
             description="Grow your audience from anywhere on the web"
             keywords={keywords}
             navid='embed-signup-form'

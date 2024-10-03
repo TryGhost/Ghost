@@ -69,4 +69,25 @@ describe('i18n', function () {
             });
         });
     });
+    describe('directories and locales in i18n.js will match', function () {
+        it('should have a key for each directory in the locales directory', async function () {
+            const locales = await fs.readdir(path.join(__dirname, '../locales'));
+            const supportedLocales = i18n.SUPPORTED_LOCALES;
+
+            for (const locale of locales) {
+                if (locale !== 'context.json') {
+                    assert(supportedLocales.includes(locale), `The locale ${locale} is not in the list of supported locales`);
+                }
+            }
+        });
+        it('should have a directory for each key in lib/i18n.js', async function () {
+            const supportedLocales = i18n.SUPPORTED_LOCALES;
+
+            for (const locale of supportedLocales) {
+                const localeDir = path.join(__dirname, `../locales/${locale}`);
+                const stats = await fs.stat(localeDir);
+                assert(stats.isDirectory(), `The locale ${locale} does not have a directory`);
+            }
+        });
+    });
 });

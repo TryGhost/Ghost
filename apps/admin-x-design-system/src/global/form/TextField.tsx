@@ -3,6 +3,7 @@ import Hint from '../Hint';
 import React, {FocusEventHandler, useId} from 'react';
 import clsx from 'clsx';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
+import * as FormPrimitive from '@radix-ui/react-form';
 
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
@@ -69,15 +70,15 @@ const TextField: React.FC<TextFieldProps> = ({
     );
 
     const bgClasses = !unstyled && clsx(
-        'absolute inset-0 rounded-md border text-grey-300 transition-all peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:peer-hover:bg-grey-925 dark:peer-focus:bg-grey-925',
+        'absolute inset-0 rounded-lg border text-grey-300 transition-colors peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:peer-hover:bg-grey-925 dark:peer-focus:bg-grey-950',
         error ? `border-red bg-white dark:bg-grey-925` : 'border-transparent bg-grey-150 dark:bg-grey-900',
-        disabled && 'bg-grey-100 dark:bg-grey-925'
+        disabled && 'bg-grey-50 peer-hover:bg-grey-50 dark:bg-grey-950 dark:peer-hover:bg-grey-950'
     );
 
     const textFieldClasses = !unstyled && clsx(
-        'peer z-[1] order-2 h-8 w-full bg-transparent px-3 py-1 text-sm placeholder:text-grey-500 dark:placeholder:text-grey-700 md:h-9 md:py-2 md:text-md',
-        disabled ? 'text-grey-700 opacity-60 dark:text-grey-700' : 'dark:text-white',
-        rightPlaceholder ? 'w-0 grow rounded-l-md' : 'rounded-md',
+        'peer z-[1] order-2 h-9 w-full bg-transparent px-3 py-1.5 text-sm placeholder:text-grey-500 dark:placeholder:text-grey-700 md:h-[38px] md:py-2 md:text-md',
+        disabled ? 'cursor-not-allowed text-grey-600 opacity-60 dark:text-grey-800' : 'dark:text-white',
+        rightPlaceholder ? 'w-0 grow rounded-l-lg' : 'rounded-lg',
         className
     );
 
@@ -105,11 +106,15 @@ const TextField: React.FC<TextFieldProps> = ({
         {...props} />;
 
     field = (
-        <div className={fieldContainerClasses}>
-            {inputField}
-            {!unstyled && !clearBg && <div className={bgClasses ? bgClasses : ''}></div>}
-            {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
-        </div>
+        <FormPrimitive.Field name={id} asChild>
+            <div className={fieldContainerClasses}>
+                <FormPrimitive.Control asChild>
+                    {inputField}
+                </FormPrimitive.Control>
+                {!unstyled && !clearBg && <div className={bgClasses ? bgClasses : ''}></div>}
+                {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
+            </div>
+        </FormPrimitive.Field>
     );
 
     hintClassName = clsx(
@@ -124,14 +129,20 @@ const TextField: React.FC<TextFieldProps> = ({
 
     if (title || hint) {
         return (
-            <div className={containerClassName}>
-                {field}
-                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-                {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
-            </div>
+            <FormPrimitive.Root asChild>
+                <div className={containerClassName}>
+                    {field}
+                    {title && <Heading className={hideTitle ? 'sr-only' : 'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                    {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
+                </div>
+            </FormPrimitive.Root>
         );
     } else {
-        return (field);
+        return (
+            <FormPrimitive.Root asChild>
+                {field}
+            </FormPrimitive.Root>
+        );
     }
 };
 

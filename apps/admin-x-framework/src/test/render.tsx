@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {TopLevelFrameworkProps} from '../providers/FrameworkProvider';
 
-export default function renderStandaloneApp<Props extends Record<string, never>>(
+export default function renderStandaloneApp<Props extends object>(
     App: React.ComponentType<Props & {
         framework: TopLevelFrameworkProps;
         designSystem: DesignSystemAppProps;
@@ -38,7 +38,10 @@ export default function renderStandaloneApp<Props extends Record<string, never>>
             <App
                 designSystem={{darkMode: false, fetchKoenigLexical: async () => {}}}
                 framework={{
-                    externalNavigate: () => {},
+                    externalNavigate: (link) => {
+                        // Use the expectExternalNavigate helper to test this dummy external linking
+                        window.location.href = `/external/${encodeURIComponent(JSON.stringify(link))}`;
+                    },
                     ghostVersion: '5.x',
                     sentryDSN: null,
                     unsplashConfig: {

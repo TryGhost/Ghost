@@ -88,14 +88,13 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve site files using the storage adapter
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
-    // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersService.middleware.loadMemberSession);
-
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
         '/members/.well-known',
         shared.middleware.cacheControl('public', {maxAge: config.get('caching:wellKnown:maxAge')}),
-        (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
+        function lazyWellKnownMw(req, res, next) {
+            return membersService.api.middleware.wellKnown(req, res, next);
+        }
     );
 
     // Recommendations well-known
@@ -113,18 +112,23 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
+
+    // Serve robots.txt if not found in theme
+    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
+
     debug('Static content done');
+
+    // site map - this should probably be refactored to be an internal app
+    sitemapHandler(siteApp);
+
+    // Global handling for member session, ensures a member is logged in to the frontend
+    siteApp.use(membersService.middleware.loadMemberSession);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     siteApp.use(themeMiddleware);
     debug('Themes done');
 
-    // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
-
-    // site map - this should probably be refactored to be an internal app
-    sitemapHandler(siteApp);
     debug('Internal apps done');
 
     // Add in all trailing slashes & remove uppercase
@@ -132,12 +136,12 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function frontendCaching(req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
-        if (req.member || res.isPrivateBlog) {
-            return shared.middleware.cacheControl('private')(req, res, next);
-        } else {
-            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+    siteApp.use(async function frontendCaching(req, res, next) {
+        try {
+            const middleware = await mw.frontendCaching.getMiddleware();
+            return middleware(req, res, next);
+        } catch {
+            return next();
         }
     });
 

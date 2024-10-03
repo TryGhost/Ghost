@@ -16,6 +16,8 @@ import siteFixture from './responses/site.json';
 import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
+import activitypubInboxFixture from './responses/activitypub/inbox.json';
+import activitypubFollowingFixture from './responses/activitypub/following.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
@@ -30,12 +32,14 @@ import {SettingsResponseType} from '../api/settings';
 import {ThemesResponseType} from '../api/themes';
 import {TiersResponseType} from '../api/tiers';
 import {UsersResponseType} from '../api/users';
+import {ExternalLink} from '../routing';
 
 interface MockRequestConfig {
     method: string;
     path: string | RegExp;
     response: unknown;
     responseStatus?: number;
+    responseHeaders?: {[key: string]: string};
 }
 
 interface RequestRecord {
@@ -61,7 +65,9 @@ export const responseFixtures = {
     themes: themesFixture as ThemesResponseType,
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
-    latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
+    latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
+    activitypubInbox: activitypubInboxFixture,
+    activitypubFollowing: activitypubFollowingFixture
 };
 
 const defaultLabFlags = {
@@ -70,9 +76,7 @@ const defaultLabFlags = {
     themeErrorsNotification: false,
     outboundLinkTagging: false,
     announcementBar: false,
-    signupForm: false,
-    members: false,
-    adminXOffers: false
+    members: false
 };
 
 // Inject defaultLabFlags into responseFixtures.settings and config
@@ -144,7 +148,7 @@ export const limitRequests = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {
+export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
 
     const namedRequests = Object.entries(requests).reduce(
@@ -152,8 +156,11 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
         [] as Array<MockRequestConfig & {name: keyof Requests}>
     );
 
-    await page.route(/\/ghost\/api\/admin\//, async (route) => {
-        const apiPath = route.request().url().replace(/^.*\/ghost\/api\/admin/, '');
+    const routeRegex = options?.useActivityPub ? /\/activitypub\// : /\/ghost\/api\/admin\//;
+    const routeReplaceRegex = options.useActivityPub ? /^.*\/activitypub/ : /^.*\/ghost\/api\/admin/;
+
+    await page.route(routeRegex, async (route) => {
+        const apiPath = route.request().url().replace(routeReplaceRegex, '');
 
         const matchingMock = namedRequests.find((request) => {
             if (request.method !== route.request().method()) {
@@ -179,7 +186,14 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
             });
         }
 
-        const requestBody = JSON.parse(route.request().postData() || 'null');
+        let requestBody = null;
+        try {
+            // Try to parse the post data as JSON
+            requestBody = JSON.parse(route.request().postData() || 'null');
+        } catch {
+            // Post data isn't JSON (e.g. file upload) — use the raw post data
+            requestBody = route.request().postData();
+        }
 
         lastApiRequests[matchingMock.name] = {
             body: requestBody,
@@ -189,7 +203,8 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
 
         await route.fulfill({
             status: matchingMock.responseStatus || 200,
-            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response)
+            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response),
+            headers: matchingMock.responseHeaders || {}
         });
     });
 
@@ -256,4 +271,8 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     if (expectedError) {
         await expect(input.locator('xpath=../..')).toContainText(expectedError);
     }
+};
+
+export async function expectExternalNavigate(page: Page, link: Partial<ExternalLink>) {
+    await page.waitForURL(`/external/${encodeURIComponent(JSON.stringify({isExternal: true, ...link}))}`);
 };

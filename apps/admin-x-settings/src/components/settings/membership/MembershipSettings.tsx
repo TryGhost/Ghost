@@ -6,7 +6,7 @@ import SearchableSection from '../../SearchableSection';
 import Tiers from './Tiers';
 
 export const searchKeywords = {
-    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
+    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     analytics: ['membership', 'analytics', 'tracking', 'privacy', 'membership']

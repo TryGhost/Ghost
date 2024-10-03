@@ -18,6 +18,7 @@ module.exports = {
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
+            accent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
             grey: {
@@ -27,6 +28,7 @@ module.exports = {
                 100: '#F4F5F6',
                 150: '#F1F3F4',
                 200: '#EBEEF0',
+                250: '#E5E9ED',
                 300: '#DDE1E5',
                 400: '#CED4D9',
                 500: '#AEB7C1',
@@ -35,7 +37,8 @@ module.exports = {
                 800: '#626D79',
                 900: '#394047',
                 925: '#2E3338',
-                950: '#222427'
+                950: '#222427',
+                975: '#191B1E'
             },
             green: {
                 DEFAULT: '#30CF43',
@@ -92,8 +95,10 @@ module.exports = {
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
-            sm: '0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1)',
-            md: '0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12)',
+            xs: '0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1)',
+            sm: '0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1)',
+            md: '0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0, 0, 0, 0.05)',
+            'md-heavy': '0 0 1px rgba(0,0,0,0.22), 0 1px 6px rgba(0,0,0,0.15), 0 8px 10px -8px rgba(0,0,0,0.16), 0px 24px 37px -21px rgba(0, 0, 0, 0.46)',
             lg: '0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011), 0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02), 0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029), 0 76px 80px -5px rgba(0, 0, 0, 0.04)',
             xl: '0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07)',
             inner: 'inset 0 0 4px 0 rgb(0 0 0 / 0.08)',
@@ -103,32 +108,26 @@ module.exports = {
             keyframes: {
                 toasterIn: {
                     '0.00%': {
-                        opacity: '0',
-                        transform: 'translateX(-232.05px)'
+                        transform: 'translateY(100%)'
                     },
                     '26.52%': {
-                        opacity: '0.5',
-                        transform: 'translateX(5.90px)'
+                        transform: 'translateY(-3.90px)'
                     },
                     '63.26%': {
-                        opacity: '1',
-                        transform: 'translateX(-1.77px)'
+                        transform: 'translateY(1.2px)'
                     },
                     '100.00%': {
-                        transform: 'translateX(0px)'
+                        transform: 'translateY(0px)'
                     }
                 },
                 toasterTopIn: {
                     '0.00%': {
-                        opacity: '0',
                         transform: 'translateY(-82px)'
                     },
                     '26.52%': {
-                        opacity: '0.5',
                         transform: 'translateY(5.90px)'
                     },
                     '63.26%': {
-                        opacity: '1',
                         transform: 'translateY(-1.77px)'
                     },
                     '100.00%': {
@@ -167,6 +166,16 @@ module.exports = {
                         transform: 'translateY(0px)'
                     }
                 },
+                modalInFromRight: {
+                    '0%': {
+                        transform: 'translateX(32px)',
+                        opacity: '0'
+                    },
+                    '100%': {
+                        transform: 'translateX(0px)',
+                        opacity: '1'
+                    }
+                },
                 modalInReverse: {
                     '0%': {
                         transform: 'translateY(-32px)'
@@ -193,6 +202,7 @@ module.exports = {
                 'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
                 'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
                 'modal-in': 'modalIn 0.25s ease forwards',
+                'modal-in-from-right': 'modalInFromRight 0.25s ease forwards',
                 'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
                 spin: 'spin 1s linear infinite'
             },
@@ -269,14 +279,14 @@ module.exports = {
             },
             fontSize: {
                 '2xs': '1.0rem',
-                base: '1.45rem',
+                base: '1.4rem',
                 xs: '1.2rem',
-                sm: '1.35rem',
-                md: '1.45rem',
-                lg: '1.75rem',
+                sm: '1.3rem',
+                md: '1.4rem',
+                lg: '1.65rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
-                '3xl': '3rem',
+                '3xl': '3.2rem',
                 '4xl': '3.6rem',
                 '5xl': ['4.2rem', '1.15'],
                 '6xl': ['6rem', '1'],

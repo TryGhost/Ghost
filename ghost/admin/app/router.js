@@ -23,6 +23,7 @@ Router.map(function () {
     this.route('site');
     this.route('dashboard');
     this.route('launch');
+    this.route('stats');
 
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
@@ -32,6 +33,8 @@ Router.map(function () {
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
+    
+    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 
@@ -56,8 +59,9 @@ Router.map(function () {
         this.route('settings-x', {path: '/*sub'});
     });
 
-    // testing websockets
-    this.route('websockets');
+    this.route('activitypub-x',{path: '/activitypub'}, function () {
+        this.route('activitypub-x', {path: '/*sub'});
+    });
 
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
@@ -71,7 +75,9 @@ Router.map(function () {
         });
     });
 
-    this.route('migrate');
+    this.route('migrate', function () {
+        this.route('migrate', {path: '/*platform'});
+    });
 
     this.route('members', function () {
         this.route('import');
@@ -80,10 +86,10 @@ Router.map(function () {
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
 
-    this.route('offers');
+    // this.route('offers');
 
-    this.route('offer.new', {path: '/offers/new'});
-    this.route('offer', {path: '/offers/:offer_id'});
+    // this.route('offer.new', {path: '/offers/new'});
+    // this.route('offer', {path: '/offers/:offer_id'});
 
     this.route('error404', {path: '/*path'});
 

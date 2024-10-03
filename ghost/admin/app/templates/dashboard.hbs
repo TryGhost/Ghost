@@ -1,6 +1,7 @@
 <section class="gh-canvas" {{scroll-top}}>
     <div class="gh-dashboard">
-        <GhCanvasHeader class="gh-canvas-header sticky">
+        {{#unless this.onboarding.isChecklistShown}}
+        <GhCanvasHeader class="gh-canvas-header sticky" data-test-dashboard="header">
             <h2 class="gh-canvas-title" data-test-screen-title>
                 Dashboard
             </h2>
@@ -67,7 +68,7 @@
                         @searchEnabled={{false}}
                         @onChange={{this.onDaysChange}}
                         @triggerComponent={{component "gh-power-select/trigger"}}
-                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger bordered"
                         @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                         @matchTriggerWidth={{false}}
                         @horizontalPosition="right"
@@ -78,16 +79,20 @@
                 </div>
             {{/unless}}
         </GhCanvasHeader>
+        {{/unless}}
+
         <section class="gh-dashboard-layout">
             {{#if this.isLoading }}
                 <GhLoadingSpinner />
             {{else}}
-                {{#if this.areMembersEnabled}}
+                {{#if this.onboarding.isChecklistShown}}
+                    <Dashboard::OnboardingChecklist />
+                {{/if}}
+                {{#if (and this.areMembersEnabled (not this.onboarding.isChecklistShown))}}
                     {{#if this.hasPaidTiers}}
                         <Dashboard::Charts::Overview />
                     {{/if}}
-
-                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
+                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}" data-test-dashboard="attribution">
                         <Dashboard::Charts::AnchorAttribution />
                         {{#if this.hasPaidTiers}}
                             <section class="gh-dashboard-section">
@@ -110,21 +115,23 @@
                     </div>
                 {{/if}}
 
-                <div class="gh-dashboard-recents-mentions">
-                    <Dashboard::Charts::Recents />
-                </div>
+                {{#unless this.onboarding.isChecklistShown}}
+                    <div class="gh-dashboard-recents-mentions">
+                        <Dashboard::Charts::Recents />
+                    </div>
 
-                <div class="gh-dashboard-split gh-dashboard-box is-secondary">
-                    <Dashboard::Resources::Resources />
-                    <Dashboard::Resources::Newsletter />
-                </div>
+                    <div class="gh-dashboard-split gh-dashboard-box is-secondary">
+                        <Dashboard::Resources::Resources />
+                        <Dashboard::Resources::Newsletter />
+                    </div>
 
-                <Dashboard::Resources::ExploreFeed />
+                    <Dashboard::Resources::ExploreFeed />
 
-                <div class="gh-dashboard-split gh-dashboard-box no-boarder">
-                    <Dashboard::Resources::Community />
-                    <Dashboard::Resources::WhatsNew />
-                </div>
+                    <div class="gh-dashboard-split gh-dashboard-box no-boarder">
+                        <Dashboard::Resources::Community />
+                        <Dashboard::Resources::WhatsNew />
+                    </div>
+                {{/unless}}
             {{/if}}
         </section>
 

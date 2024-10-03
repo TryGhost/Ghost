@@ -66,7 +66,7 @@
 }
 
 
-@media (max-width: 860px) {
+@media (max-width: 800px) {
     .admin-x-base {
         height: calc(100vh - 55px);
     }
@@ -97,3 +97,4 @@
 .gh-prose-links a {
     color: #30CF43;
 }
+

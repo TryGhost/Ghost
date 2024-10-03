@@ -6,6 +6,7 @@ import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
 import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
+import {interceptAnchorClicks} from '../../utils/links';
 import NewsletterSelectionPage from './NewsletterSelectionPage';
 
 export const OfferPageStyles = () => {
@@ -37,6 +38,7 @@ export const OfferPageStyles = () => {
     margin-bottom: 24px;
     /*border: 1px dashed var(--brandcolor);*/
     background-image: url("data:image/svg+xml,%3csvg width='100%25' height='99.9%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23C3C3C3' stroke-width='3' stroke-dasharray='3%2c 9' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-color: var(--white);
     border-radius: 6px;
 }
 
@@ -164,7 +166,7 @@ export default class OfferPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -199,7 +201,7 @@ export default class OfferPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: member?.name || state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 disabled: !!member,
@@ -252,13 +254,6 @@ export default class OfferPage extends React.Component {
 
         const className = `gh-portal-signup-terms ${errorClassName}`;
 
-        const interceptAnchorClicks = (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                window.open(e.target.href, '_blank');
-            }
-        };
-
         return (
             <div className={className} onClick={interceptAnchorClicks}>
                 {signupTerms}
@@ -287,12 +282,15 @@ export default class OfferPage extends React.Component {
             };
         }, () => {
             const {onAction} = this.context;
-            const {name, email, errors} = this.state;
+            const {name, email, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 const signupData = {
-                    name, email, plan: price?.id,
-                    offerId: offer?.id
+                    name,
+                    email,
+                    plan: price?.id,
+                    offerId: offer?.id,
+                    phonenumber
                 };
                 if (hasMultipleNewsletters({site})) {
                     this.setState({

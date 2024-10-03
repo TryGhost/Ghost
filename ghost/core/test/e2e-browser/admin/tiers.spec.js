@@ -23,19 +23,16 @@ test.describe('Admin', () => {
                 monthlyPrice: 5,
                 yearlyPrice: 50
             });
-            const offerName = await createOffer(sharedPage, {
+            const {offerName} = await createOffer(sharedPage, {
                 name: 'Get 5% Off!',
                 tierName,
-                offerType: 'discount',
-                amount: 5
+                offerType: 'freeTrial',
+                amount: 14
             });
 
-            await test.step('Check that offers and tiers are available on Offers page', async () => {
-                await sharedPage.locator('[data-test-nav="offers"]').click();
-                await sharedPage.waitForSelector('[data-test-offers-list]');
-                await expect(sharedPage.locator('[data-test-offers-list]')).toContainText(tierName);
-                await expect(sharedPage.locator('[data-test-offers-list]')).toContainText(offerName);
-            });
+            await sharedPage.goto('/ghost/');
+            await sharedPage.goto('/ghost/#/settings/offers');
+            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
         });
 
         test('Can create additional Tier', async ({sharedPage}) => {
@@ -83,7 +80,8 @@ test.describe('Admin', () => {
                 await tierModal.getByLabel('Description').fill(updatedDescription);
                 await tierModal.getByLabel('Monthly price').fill(updatedMonthlyPrice);
                 await tierModal.getByLabel('Yearly price').fill(updatedYearlyPrice);
-                await tierModal.getByRole('button', {name: 'Save & close'}).click();
+                await tierModal.getByRole('button', {name: 'Save'}).click();
+                await tierModal.getByRole('button', {name: 'Close'}).click();
             });
 
             const portalFrame = await test.step('Go to website and open portal', async () => {
@@ -131,7 +129,8 @@ test.describe('Admin', () => {
                 const tierModal = await openTierModal(sharedPage, {slug});
                 await tierModal.getByRole('button', {name: 'Archive tier'}).click();
                 await sharedPage.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
-                await tierModal.getByRole('button', {name: 'Save & close'}).click();
+                await tierModal.getByRole('button', {name: 'Save'}).click();
+                await tierModal.getByRole('button', {name: 'Close'}).click();
             });
 
             await test.step('Archived tier should not be available in active tiers', async () => {
@@ -148,7 +147,7 @@ test.describe('Admin', () => {
 
                 const portalSettings = sharedPage.getByTestId('portal-modal');
 
-                await portalSettings.locator('input[type=checkbox]').first().waitFor();
+                await portalSettings.locator('button[role="checkbox"]').first().waitFor();
 
                 await expect(portalSettings.getByLabel(tierName).first()).toBeHidden();
 
@@ -159,7 +158,8 @@ test.describe('Admin', () => {
                 const tierModal = await openTierModal(sharedPage, {slug});
                 await tierModal.getByRole('button', {name: 'Reactivate tier'}).click();
                 await sharedPage.getByTestId('confirmation-modal').getByRole('button', {name: 'Reactivate'}).click();
-                await tierModal.getByRole('button', {name: 'Save & close'}).click();
+                await tierModal.getByRole('button', {name: 'Save'}).click();
+                await tierModal.getByRole('button', {name: 'Close'}).click();
             });
 
             await test.step('Unarchived tier should be available in active tiers', async () => {
@@ -172,7 +172,7 @@ test.describe('Admin', () => {
 
                 const portalSettings = sharedPage.getByTestId('portal-modal');
 
-                await portalSettings.locator('input[type=checkbox]').first().waitFor();
+                await portalSettings.locator('button[role="checkbox"]').first().waitFor();
 
                 await expect(portalSettings.getByLabel(tierName).first()).toBeVisible();
 
