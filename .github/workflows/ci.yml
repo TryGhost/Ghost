@@ -45,6 +45,11 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
+      - name: Validate input
+        run: |
+          [[ "${{ secrets.GITHUB_TOKEN }}" ]] || { echo "Missing github token"; }
+          [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
+
       - name: Get metadata (push)
         if: github.event_name == 'push'
         run: |
