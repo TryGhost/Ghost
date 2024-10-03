@@ -229,6 +229,187 @@ interface FeedItemProps {
 
 const noop = () => {};
 
+const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger}) => {
+    const onLikeClick = () => {};
+    return (
+        <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
+            {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
+                <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
+                <span className='z-10'>{actor.name} reposted</span>
+            </div>}
+            <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-6`} data-test-activity>
+                <APAvatar author={author}/>
+                <div className='flex justify-between'>
+                    <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                        <div className='flex justify-between'>
+                            <div className='flex'>
+                                <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
+                            </div>
+                            {renderTimestamp(object)}
+                        </div>
+                    </div>
+                </div>
+                <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
+                    <div className='flex flex-col'>
+                        <div className='mt-[-24px]'>
+                            {(object.type === 'Article') && renderFeedAttachment(object, layout)}
+                            {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                            {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                            {(object.type === 'Note') && renderFeedAttachment(object, layout)}
+                            {(object.type === 'Article') && <Button
+                                className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                                color='grey'
+                                fullWidth={true}
+                                id='read-more'
+                                label='Read more'
+                                size='md'
+                            />}
+                        </div>
+                        <div className='space-between mt-5 flex'>
+                            <FeedItemStats
+                                commentCount={comments.length}
+                                likeCount={1}
+                                object={object}
+                                onCommentClick={onCommentClick}
+                                onLikeClick={onLikeClick}
+                            />
+                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+const ModalLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger}) => {
+    const onLikeClick = () => {};
+    return (
+        <div>
+            <div className={`group/article relative cursor-pointer`} onClick={onClick}>
+                {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
+                    <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
+                    <span className='z-10'>{actor.name} reposted</span>
+                </div>}
+                <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-4`} data-test-activity>
+                    <div className='relative z-10 pt-[3px]'>
+                        <APAvatar author={author}/>
+                    </div>
+                    <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                        <div className='flex'>
+                            <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                            {renderTimestamp(object)}
+                        </div>
+                        <div className='flex'>
+                            <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                        </div>
+                    </div>
+                    <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
+                        <div className='flex flex-col'>
+                            {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
+                            <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
+                            {renderFeedAttachment(object, layout)}
+                            <div className='space-between mt-5 flex'>
+                                <FeedItemStats
+                                    commentCount={comments.length}
+                                    likeCount={1}
+                                    object={object}
+                                    onCommentClick={onCommentClick}
+                                    onLikeClick={onLikeClick}
+                                />
+                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
+            </div>
+            <div className="mt-3 h-px bg-grey-200"></div>
+        </div>
+    );
+};
+
+const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger, last}) => {
+    const onLikeClick = () => {};
+    return (
+        <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
+            {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
+                <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
+                <span className='z-10'>{actor.name} reposted</span>
+            </div>}
+            <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
+                <div className='relative z-10 pt-[3px]'>
+                    <APAvatar author={author}/>
+                </div>
+                <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                    <div className='flex'>
+                        <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                        {renderTimestamp(object)}
+                    </div>
+                    <div className='flex'>
+                        <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                    </div>
+                </div>
+                <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
+                    <div className='flex flex-col'>
+                        {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
+                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
+                        {renderFeedAttachment(object, layout)}
+                        <div className='space-between mt-5 flex'>
+                            <FeedItemStats
+                                commentCount={comments.length}
+                                likeCount={1}
+                                object={object}
+                                onCommentClick={onCommentClick}
+                                onLikeClick={onLikeClick}
+                            />
+                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
+            {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-grey-200"></div>}
+        </div>
+    );
+};
+
+const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger, timestamp, date}) => {
+    const onLikeClick = () => {};
+    return (
+        <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
+            <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
+                <APAvatar author={author} size='xs'/>
+                <div className='z-10 w-full'>
+                    <div className='mb-1'>
+                        <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
+                        <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
+                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                    </div>
+                    <div className='flex w-full items-start justify-between gap-5'>
+                        <div className='grow'>
+                            {object.name && <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                            <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content mt-1 line-clamp-3 text-pretty text-[1.5rem] text-grey-900'></div>
+                        </div>
+                        {renderInboxAttachment(object)}
+                    </div>
+                    <div className='space-between mt-5 flex'>
+                        <FeedItemStats
+                            commentCount={comments.length}
+                            likeCount={1}
+                            object={object}
+                            onCommentClick={onCommentClick}
+                            onLikeClick={onLikeClick}
+                        />
+                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick}) => {
     if (!object) {
         return null;
@@ -296,176 +477,60 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     );
 
     if (layout === 'feed') {
-        return (
-            <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
-                {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
-                    <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                    <span className='z-10'>{actor.name} reposted</span>
-                </div>}
-                <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-6`} data-test-activity>
-                    <APAvatar author={author}/>
-                    <div className='flex justify-between'>
-                        <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                            <div className='flex justify-between'>
-                                <div className='flex'>
-                                    <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
-                                    <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
-                                </div>
-                                {renderTimestamp(object)}
-                            </div>
-                        </div>
-                    </div>
-                    <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
-                        <div className='flex flex-col'>
-                            <div className='mt-[-24px]'>
-                                {(object.type === 'Article') && renderFeedAttachment(object, layout)}
-                                {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
-                                {(object.type === 'Note') && renderFeedAttachment(object, layout)}
-                                {(object.type === 'Article') && <Button
-                                    className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
-                                    color='grey'
-                                    fullWidth={true}
-                                    id='read-more'
-                                    label='Read more'
-                                    size='md'
-                                />}
-                            </div>
-                            <div className='space-between mt-5 flex'>
-                                <FeedItemStats
-                                    commentCount={comments.length}
-                                    likeCount={1}
-                                    object={object}
-                                    onCommentClick={onCommentClick}
-                                    onLikeClick={onLikeClick}
-                                />
-                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <FeedLayout
+                   actor={actor}
+                   object={object}
+                   layout={layout}
+                   type={type}
+                   comments={comments}
+                   onClick={onClick}
+                   onCommentClick={onCommentClick}
+                   author={author}
+                   menuItems={menuItems}
+                   UserMenuTrigger={UserMenuTrigger}
+        />
     } else if (layout === 'modal') {
-        return (
-            <div>
-                <div className={`group/article relative cursor-pointer`} onClick={onClick}>
-                    {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
-                        <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                        <span className='z-10'>{actor.name} reposted</span>
-                    </div>}
-                    <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-4`} data-test-activity>
-                        <div className='relative z-10 pt-[3px]'>
-                            <APAvatar author={author}/>
-                        </div>
-                        {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
-                        <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                            <div className='flex'>
-                                <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                {renderTimestamp(object)}
-                            </div>
-                            <div className='flex'>
-                                <span className='truncate text-grey-700'>{getUsername(author)}</span>
-                            </div>
-                        </div>
-                        <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
-                            <div className='flex flex-col'>
-                                {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
-                                {renderFeedAttachment(object, layout)}
-                                <div className='space-between mt-5 flex'>
-                                    <FeedItemStats
-                                        commentCount={comments.length}
-                                        likeCount={1}
-                                        object={object}
-                                        onCommentClick={onCommentClick}
-                                        onLikeClick={onLikeClick}
-                                    />
-                                    <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-                                </div>
-                            </div>
-                        </div>
-                        {/* </div> */}
-                    </div>
-                    <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                </div>
-                <div className="mt-3 h-px bg-grey-200"></div>
-            </div>
-        );
+        return <ModalLayout
+                   actor={actor}
+                   object={object}
+                   layout={layout}
+                   type={type}
+                   comments={comments}
+                   onClick={onClick}
+                   onCommentClick={onCommentClick}
+                   author={author}
+                   menuItems={menuItems}
+                   UserMenuTrigger={UserMenuTrigger}
+        />
     } else if (layout === 'reply') {
-        return (
-            <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
-                {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
-                    <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                    <span className='z-10'>{actor.name} reposted</span>
-                </div>}
-                <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
-                    <div className='relative z-10 pt-[3px]'>
-                        <APAvatar author={author}/>
-                    </div>
-                    <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                        <div className='flex'>
-                            <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                            {renderTimestamp(object)}
-                        </div>
-                        <div className='flex'>
-                            <span className='truncate text-grey-700'>{getUsername(author)}</span>
-                        </div>
-                    </div>
-                    <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
-                        <div className='flex flex-col'>
-                            {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                            <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                            {renderFeedAttachment(object, layout)}
-                            <div className='space-between mt-5 flex'>
-                                <FeedItemStats
-                                    commentCount={comments.length}
-                                    likeCount={1}
-                                    object={object}
-                                    onCommentClick={onCommentClick}
-                                    onLikeClick={onLikeClick}
-                                />
-                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-grey-200"></div>}
-            </div>
-        );
+        return <ReplyLayout
+                   actor={actor}
+                   object={object}
+                   layout={layout}
+                   type={type}
+                   comments={comments}
+                   onClick={onClick}
+                   onCommentClick={onCommentClick}
+                   author={author}
+                   menuItems={menuItems}
+                   UserMenuTrigger={UserMenuTrigger}
+                   last={last}
+        />
     } else if (layout === 'inbox') {
-        return (
-            <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
-                <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
-                    <APAvatar author={author} size='xs'/>
-                    <div className='z-10 w-full'>
-                        <div className='mb-1'>
-                            <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
-                            <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
-                            <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
-                        </div>
-                        <div className='flex w-full items-start justify-between gap-5'>
-                            <div className='grow'>
-                                {object.name && <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content mt-1 line-clamp-3 text-pretty text-[1.5rem] text-grey-900'></div>
-                            </div>
-                            {renderInboxAttachment(object)}
-                        </div>
-                        <div className='space-between mt-5 flex'>
-                            <FeedItemStats
-                                commentCount={comments.length}
-                                likeCount={1}
-                                object={object}
-                                onCommentClick={onCommentClick}
-                                onLikeClick={onLikeClick}
-                            />
-                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <InboxLayout
+                   actor={actor}
+                   object={object}
+                   layout={layout}
+                   type={type}
+                   comments={comments}
+                   onClick={onClick}
+                   onCommentClick={onCommentClick}
+                   author={author}
+                   menuItems={menuItems}
+                   UserMenuTrigger={UserMenuTrigger}
+                   timestamp={timestamp}
+                   date={date}
+        />
     }
 
     return (<></>);
