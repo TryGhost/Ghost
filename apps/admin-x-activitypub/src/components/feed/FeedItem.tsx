@@ -120,9 +120,11 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'video/mp4':
     case 'video/webm':
         return (
-            <div className='min-w-[120px]'>
-                <div className='relative mb-4 mt-2'>
-                    <video className='h-[80px] w-full rounded object-cover' src={attachment.url} controls/>
+            <div className='relative h-[80px]'>
+                <video className='h-[80px] w-full rounded object-cover' src={attachment.url} />
+                <div className='absolute inset-0 rounded bg-grey-900 opacity-50'></div>
+                <div className='absolute inset-0 flex items-center justify-center'>
+                    <Icon className='text-white' name='play-fill' size='lg' />
                 </div>
             </div>
         );
@@ -154,13 +156,25 @@ function renderTimestamp(object: ObjectProperties) {
     return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
 }
 
+const truncateHTML = (html: string, maxLength: number) => {
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = html;
+  
+    const textContent = tempElement.textContent || tempElement.innerText || '';
+  
+    const truncatedText = textContent.substring(0, maxLength);
+  
+    return `“${truncatedText}&hellip;”`;
+};
+
 const FeedItemStats: React.FC<{
     object: ObjectProperties;
     likeCount: number;
     commentCount: number;
+    layout: string;
     onLikeClick: () => void;
     onCommentClick: () => void;
-}> = ({object, likeCount, commentCount, onLikeClick, onCommentClick}) => {
+}> = ({object, likeCount, commentCount, layout, onLikeClick, onCommentClick}) => {
     const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(object.liked);
     const likeMutation = useLikeMutationForUser('index');
@@ -180,10 +194,10 @@ const FeedItemStats: React.FC<{
         setTimeout(() => setIsClicked(false), 300);
     };
 
-    return (<div className='flex gap-5'>
+    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-5'}`}>
         <div className='flex gap-1'>
             <Button
-                className={`self-start text-grey-900 transition-all hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
+                className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
                 hideLabel={true}
                 icon='heart'
                 id='like'
@@ -194,7 +208,7 @@ const FeedItemStats: React.FC<{
                     handleLikeClick();
                 }}
             />
-            {isLiked && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
+            {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
         </div>
         <div className='flex gap-1'>
             <Button
@@ -209,7 +223,7 @@ const FeedItemStats: React.FC<{
                     onCommentClick();
                 }}
             />
-            {commentCount > 0 && (
+            {commentCount > 0 && (layout !== 'inbox') && (
                 <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
             )}
         </div>
@@ -281,10 +295,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const UserMenuTrigger = (
         <Button
-            className={`relative z-10 ml-auto h-5 w-5 self-start ${isCopied ? 'bump' : ''}`}
+            className={`relative z-10 ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
-            iconColorClass='text-grey-600'
+            iconColorClass={`(${layout === 'inbox' ? 'text-grey-900' : 'text-grey-600'}`}
             id='more'
             size='sm'
             unstyled={true}
@@ -300,7 +314,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-6`} data-test-activity>
+                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
                             <APAvatar author={author}/>
                             <div className='flex justify-between'>
                                 <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
@@ -332,6 +346,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
                                             commentCount={comments.length}
+                                            layout={layout}
                                             likeCount={1}
                                             object={object}
                                             onCommentClick={onCommentClick}
@@ -380,6 +395,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         <div className='space-between mt-5 flex'>
                                             <FeedItemStats
                                                 commentCount={comments.length}
+                                                layout={layout}
                                                 likeCount={1}
                                                 object={object}
                                                 onCommentClick={onCommentClick}
@@ -429,6 +445,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
                                             commentCount={comments.length}
+                                            layout={layout}
                                             likeCount={1}
                                             object={object}
                                             onCommentClick={onCommentClick}
@@ -450,35 +467,32 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div className='group/article relative -mx-4 -mt-px flex cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' onClick={onClick}>
-                        <div>
+                        <div className='flex w-full flex-col items-start justify-between gap-1 pr-4'>
                             <div className='z-10 flex items-start justify-between gap-2 group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='xs'/>
                                 <div className='z-10 w-full text-sm'>
-                                    <div className='mb-1'>
+                                    <div>
                                         <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
                                         <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
                                         <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className='flex w-full items-start justify-between gap-5'>
-                                <div className='grow'>
-                                    {object.name && <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                    <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content mt-1 line-clamp-1 text-pretty text-[1.5rem] text-grey-700'></div>
-                                </div>
-                            </div>
+                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>{object.name ? object.name : <span>{author.name}: <span dangerouslySetInnerHTML={({__html: truncateHTML(object.content, 30)})}></span></span>}</Heading>
+                            <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content line-clamp-1 text-pretty text-[1.5rem] text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
-                        {/* <div className='space-between mt-5 flex'>
+                        <div className='invisible absolute right-2 top-[9px] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
                                 commentCount={comments.length}
+                                layout={layout}
                                 likeCount={1}
                                 object={object}
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
                             <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
-                        </div> */}
+                        </div>
                     </div>
                 )}
             </>
