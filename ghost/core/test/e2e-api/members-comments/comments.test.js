@@ -130,6 +130,41 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * @param {string} method
+ * @param {string} url
+ * @param {number} status
+ * @param {Array} [errors]
+ * @returns {any} ExpectRequest
+ */
+function testBasicErrorResponse(method, url, status, errors) {
+    if (!errors) {
+        errors = [{id: anyUuid}];
+    }
+
+    return membersAgent[method](url)
+        .expectStatus(status)
+        .matchHeaderSnapshot({etag: anyEtag})
+        .matchBodySnapshot({errors});
+}
+
+/**
+ * @param {string} method
+ * @param {string} url
+ * @param {number} status
+ * @returns {any} ExpectRequest
+ */
+function testBasicEmptyResponse(method, url, status) {
+    return membersAgent[method](url)
+        .expectStatus(status)
+        .matchHeaderSnapshot({etag: anyEtag})
+        .expectEmptyBody();
+}
+
+/**
+ * @param {string} url
+ * @param {Object} commentsMatcher
+ */
 function testGetComments(url, commentsMatcher) {
     return membersAgent
         .get(url)
@@ -385,17 +420,7 @@ describe('Comments API', function () {
                     member_id: fixtureManager.get('members', 2).id
                 });
 
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/like/`)
-                    .expectStatus(401)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
+                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 401);
             });
 
             it('cannot unlike a comment', async function () {
@@ -407,18 +432,7 @@ describe('Comments API', function () {
                     member_id: fixtureManager.get('members', 0).id
                 });
 
-                // Create a temporary comment
-                await membersAgent
-                    .delete(`/api/comments/${comment.get('id')}/like/`)
-                    .expectStatus(401)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
+                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 401);
             });
         });
 
@@ -595,17 +609,7 @@ describe('Comments API', function () {
                 });
 
                 // Comment was already liked above
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/like/`)
-                    .expectStatus(400)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
+                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 400);
             });
 
             it('Can like a reply', async function () {
@@ -688,13 +692,7 @@ describe('Comments API', function () {
                 });
 
                 // Unlike
-                await membersAgent
-                    .delete(`/api/comments/${comment.get('id')}/like/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .expectEmptyBody();
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204);
 
                 // Check not liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
@@ -709,18 +707,7 @@ describe('Comments API', function () {
                     member_id: loggedInMember.id
                 });
 
-                // Remove like
-                await membersAgent
-                    .delete(`/api/comments/${comment.get('id')}/like/`)
-                    //.expectStatus(404)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyErrorId
-                        }]
-                    });
+                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 404);
             });
 
             it('Can report a comment', async function () {
@@ -729,13 +716,7 @@ describe('Comments API', function () {
                     html: '<p>This is a message</p><p></p><p>New line</p>'
                 });
 
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/report/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .expectEmptyBody();
+                await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
 
                 // Check report
                 const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
@@ -761,13 +742,7 @@ describe('Comments API', function () {
                     member_id: loggedInMember.id
                 });
 
-                await membersAgent
-                    .post(`/api/comments/${comment.get('id')}/report/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .expectEmptyBody();
+                await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
 
                 // Check report should be the same (no extra created)
                 const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
