@@ -121,26 +121,7 @@ function FeedAttachment({object, layout}: {object: ObjectProperties, layout: 'mo
     return <SingleAttachment attachment={attachment} object={object} />
 }
 
-function renderInboxAttachment(object: ObjectProperties) {
-    const attachment = getAttachment(object);
-
-    if (!attachment) {
-        return null;
-    }
-
-    if (Array.isArray(attachment)) {
-        const attachmentCount = attachment.length;
-
-        return (
-            <div className='min-w-[160px]'>
-                <div className='relative'>
-                    <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment[0].url} />
-                    <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
-                </div>
-            </div>
-        );
-    }
-
+function SingleInboxAttachment({attachment, object}) {
     switch (attachment.mediaType) {
     case 'image/jpeg':
     case 'image/png':
@@ -177,6 +158,29 @@ function renderInboxAttachment(object: ObjectProperties) {
         }
         return null;
     }
+}
+
+function InboxAttachment({object}: {object: ObjectProperties}) {
+    const attachment = getAttachment(object);
+
+    if (!attachment) {
+        return null;
+    }
+
+    if (Array.isArray(attachment)) {
+        const attachmentCount = attachment.length;
+
+        return (
+            <div className='min-w-[160px]'>
+                <div className='relative'>
+                    <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment[0].url} />
+                    <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
+                </div>
+            </div>
+        );
+    }
+
+    return <SingleInboxAttachment attachment={attachment} object={object}/>
 }
 
 function getTimestamp(published: Date) {
@@ -545,7 +549,7 @@ const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                             {object.name && <Heading className='leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
                             <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content mt-1 line-clamp-3 text-pretty text-[1.5rem] text-grey-900'></div>
                         </div>
-                        {renderInboxAttachment(object)}
+                        <InboxAttachment object={object}/>
                     </div>
                     <div className='space-between mt-5 flex'>
                         <FeedItemStats
