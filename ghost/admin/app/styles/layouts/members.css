@@ -101,9 +101,10 @@
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 32px;
-    border: none;
-    background: var(--white);
+    height: 34px;
+    background: var(--whitegrey-l1);
     border: var(--input-border);
+    border-color: transparent;
 }
 
 .members-header.grey .view-actions .gh-btn,
@@ -121,7 +122,7 @@
     height: 16px;
     top: 9px;
     left: 9px;
-    fill: var(--middarkgrey);
+    fill: var(--midlightgrey);
 }
 
 .members-header.black .view-actions input.gh-members-list-searchfield {

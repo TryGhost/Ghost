@@ -1,86 +1,132 @@
 import APAvatar from './global/APAvatar';
+import ActivityItem from './activities/ActivityItem';
+import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import React, {useState} from 'react';
-import {ActivityPubAPI} from '../api/activitypub';
-import {Heading, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useQuery} from '@tanstack/react-query';
+import getUsername from '../utils/get-username';
+import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {useFollowersCountForUser, useFollowersForUser, useFollowingCountForUser, useFollowingForUser, useLikedForUser} from '../hooks/useActivityPubQueries';
 
 interface ProfileProps {}
-
-function useFollowersCountForUser(handle: string) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useQuery({
-        queryKey: [`followersCount:${handle}`],
-        async queryFn() {
-            return api.getFollowersCount();
-        }
-    });
-}
-
-function useFollowingCountForUser(handle: string) {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
-    const siteUrl = siteData?.url ?? window.location.origin;
-    const api = new ActivityPubAPI(
-        new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
-        handle
-    );
-    return useQuery({
-        queryKey: [`followingCount:${handle}`],
-        async queryFn() {
-            return api.getFollowingCount();
-        }
-    });
-}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
     const {data: followersCount = 0} = useFollowersCountForUser('index');
     const {data: followingCount = 0} = useFollowingCountForUser('index');
+    const {data: following = []} = useFollowingForUser('index');
+    const {data: followers = []} = useFollowersForUser('index');
+    const {data: liked = []} = useLikedForUser('index');
 
     type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+
+    const layout = 'feed';
 
     const tabs = [
         {
             id: 'posts',
             title: 'Posts',
             contents: (<div><NoValueLabel icon='pen'>
-                You haven’t posted anything yet.
+                You haven&apos;t posted anything yet.
             </NoValueLabel></div>),
             counter: 240
         },
         {
             id: 'likes',
             title: 'Likes',
-            contents: (<div><NoValueLabel icon='heart'>
-                You haven’t liked anything yet.
-            </NoValueLabel></div>),
-            counter: 27
+            contents: (
+                <div className='ap-likes'>
+                    {liked.length === 0 ? (
+                        <NoValueLabel icon='heart'>
+                            You haven&apos;t liked anything yet.
+                        </NoValueLabel>
+                    ) : (
+                        <ul className='mx-auto flex max-w-[640px] flex-col'>
+                            {liked.map((activity, index) => (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.actor}
+                                        layout={layout}
+                                        object={Object.assign({}, activity.object, {liked: true})}
+                                        type={activity.type}
+                                        onCommentClick={() => {}}
+                                    />
+                                    {index < liked.length - 1 && (
+                                        <div className="h-px w-full bg-grey-200"></div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            ),
+            counter: liked.length
         },
         {
             id: 'following',
             title: 'Following',
-            contents: (<div><NoValueLabel icon='user-add'>
-                You haven’t followed anyone yet.
-            </NoValueLabel></div>),
+            contents: (
+                <div>
+                    {following.length === 0 ? (
+                        <NoValueLabel icon='user-add'>
+                            You haven&apos;t followed anyone yet.
+                        </NoValueLabel>
+                    ) : (
+                        <List>
+                            {following.map((item) => {
+                                return (
+                                    <ActivityItem key={item.id} url={item.url}>
+                                        <APAvatar author={item} />
+                                        <div>
+                                            <div className='text-grey-600'>
+                                                <span className='mr-1 font-bold text-black'>{item.name || item.preferredUsername || 'Unknown'}</span>
+                                                <div className='text-sm'>{getUsername(item)}</div>
+                                            </div>
+                                        </div>
+                                        <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
+                                            e?.preventDefault();
+                                            alert('Implement me!');
+                                        }} />
+                                    </ActivityItem>
+                                );
+                            })}
+                        </List>
+                    )}
+                </div>
+            ),
             counter: followingCount
         },
         {
             id: 'followers',
             title: 'Followers',
-            contents: (<div><NoValueLabel icon='user-add'>
-                Nobody’s following you yet. Their loss!
-            </NoValueLabel></div>),
+            contents: (
+                <div>
+                    {followers.length === 0 ? (
+                        <NoValueLabel icon='user-add'>
+                            Nobody&apos;s following you yet. Their loss!
+                        </NoValueLabel>
+                    ) : (
+                        <List>
+                            {followers.map((item) => {
+                                return (
+                                    <ActivityItem key={item.id} url={item.url}>
+                                        <APAvatar author={item} />
+                                        <div>
+                                            <div className='text-grey-600'>
+                                                <span className='mr-1 font-bold text-black'>{item.name || item.preferredUsername || 'Unknown'}</span>
+                                                <div className='text-sm'>{getUsername(item)}</div>
+                                            </div>
+                                        </div>
+                                    </ActivityItem>
+                                );
+                            })}
+                        </List>
+                    )}
+                </div>
+            ),
             counter: followersCount
         }
     ].filter(Boolean) as Tab<ProfileTab>[];
@@ -96,23 +142,15 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         <div className='inline-flex rounded-lg border-4 border-white'>
                             <APAvatar size='lg' />
                         </div>
-                        <Heading className='mt-4' level={3}>John Doe</Heading>
-                        <span className='mt-1 text-[1.5rem] text-grey-800'>@index@site.com</span>
-                        <p className='mt-3 text-[1.5rem]'>This is a summary/bio/etc which could be kinda long in certain cases but not always, so...</p>
-                        <a className='mt-3 block text-[1.5rem] underline' href='#'>www.coolsite.com</a>
+                        <Heading className='mt-4' level={3}>Building ActivityPub</Heading>
+                        <span className='mt-1 text-[1.5rem] text-grey-800'>@index@activitypub.ghost.org</span>
+                        <p className='mt-3 text-[1.5rem]'>Ghost is federating over ActivityPub to become part of the world&apos;s largest publishing network</p>
+                        <span className='mt-3 line-clamp-1 flex'>
+                            <span className={`mr-1 after:content-[":"]`}>Website</span>
+                            <a className='truncate text-[1.5rem] underline' href='https://activitypub.ghost.org'>activitypub.ghost.org</a>
+                        </span>
                         <TabView<'posts' | 'likes' | 'following' | 'followers'> containerClassName='mt-6' selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                     </div>
-
-                    {/* <div className='grid grid-cols-2 gap-4'>
-                        <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/profile/following')}>
-                            <span className='text-3xl font-bold leading-none' data-test-following-count>{followingCount}</span>
-                            <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-following-modal>Following<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                        </div>
-                        <div className='group/stat flex cursor-pointer flex-col gap-1' onClick={() => updateRoute('/profile/followers')}>
-                            <span className='text-3xl font-bold leading-none' data-test-following-count>{followersCount}</span>
-                            <span className='text-base leading-none text-grey-800 group-hover/stat:text-grey-900' data-test-followers-modal>Followers<span className='ml-1 opacity-0 transition-opacity group-hover/stat:opacity-100'>&rarr;</span></span>
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </>

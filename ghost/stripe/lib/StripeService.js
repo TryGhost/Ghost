@@ -4,6 +4,9 @@ const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
 const DomainEvents = require('@tryghost/domain-events');
 const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
+const SubscriptionEventService = require('./services/webhook/SubscriptionEventService');
+const InvoiceEventService = require('./services/webhook/InvoiceEventService');
+const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
 module.exports = class StripeService {
     constructor({
@@ -15,30 +18,50 @@ module.exports = class StripeService {
         models
     }) {
         const api = new StripeAPI({labs});
-        const webhookManager = new WebhookManager({
-            StripeWebhook,
-            api
-        });
         const migrations = new StripeMigrations({
             models,
             api
         });
-        const webhookController = new WebhookController({
-            webhookManager,
+
+        const webhookManager = new WebhookManager({
+            StripeWebhook,
+            api
+        });
+
+        const subscriptionEventService = new SubscriptionEventService({
+            get memberRepository(){
+                return membersService.api.members;
+            }
+        });
+
+        const invoiceEventService = new InvoiceEventService({
             api,
             get memberRepository(){
                 return membersService.api.members;
             },
-            get productRepository() {
-                return membersService.api.productRepository;
-            },
-            get eventRepository() {
+            get eventRepository(){
                 return membersService.api.events;
             },
-            get donationRepository() {
+            get productRepository(){
+                return membersService.api.productRepository;
+            }
+        });
+
+        const checkoutSessionEventService = new CheckoutSessionEventService({
+            api,
+            get memberRepository(){
+                return membersService.api.members;
+            },
+            get productRepository(){
+                return membersService.api.productRepository;
+            },
+            get eventRepository(){
+                return membersService.api.events;
+            },
+            get donationRepository(){
                 return donationService.repository;
             },
-            get staffServiceEmails() {
+            get staffServiceEmails(){
                 return staffService.api.emails;
             },
             sendSignupEmail(email){
@@ -51,6 +74,13 @@ module.exports = class StripeService {
                     tokenData: {}
                 });
             }
+        });
+
+        const webhookController = new WebhookController({
+            webhookManager,
+            subscriptionEventService,
+            invoiceEventService,
+            checkoutSessionEventService
         });
 
         this.models = models;

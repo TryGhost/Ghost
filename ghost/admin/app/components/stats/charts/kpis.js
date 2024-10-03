@@ -4,46 +4,38 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
+import {formatNumber} from '../../../helpers/format-number';
+import {getDateRange, getStatsParams, statsStaticColors} from '../../../utils/stats';
+import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 
 export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        let chartDays = props.chartDays;
-        let audience = props.audience;
+        const {chartRange, selected} = props;
 
-        // @TODO: ATM there's a two day worth gap (padding) on the right side
-        // of the chart. endDate needs to be adjusted to get rid of it
-        const endDate = moment().endOf('day');
-        const startDate = moment().subtract(chartDays - 1, 'days').startOf('day');
-
-        /**
-         * @typedef {Object} Params
-         * @property {string} cid
-         * @property {string} [date_from]
-         * @property {string} [date_to]
-         * @property {string} [member_status]
-         * @property {number} [limit]
-         * @property {number} [skip]
-         */
-
-        const params = {
-            site_uuid: this.config.stats.id,
-            date_from: startDate.format('YYYY-MM-DD'),
-            date_to: endDate.format('YYYY-MM-DD'),
-            member_status: audience.length === 0 ? null : audience.join(',')
-        };
-
-        const LINE_COLOR = '#8E42FF';
-        const INDEX = 'date';
-        const CATEGORY = props.selected;
+        const params = getStatsParams(
+            this.config,
+            props
+        );
 
         const {data, meta, error, loading} = useQuery({
             endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
             token: this.config.stats.token,
             params
         });
+
+        const LINE_COLOR = statsStaticColors[0];
+        const INDEX = 'date';
+        const CATEGORY = selected === 'unique_visits' ? 'visits' : selected;
+
+        const dateLabels = [
+            params.date_from,
+            params.date_to
+        ];
+
+        const {endDate, startDate} = getDateRange(chartRange);
 
         return (
             <AreaChart
@@ -53,7 +45,7 @@ export default class KpisComponent extends Component {
                 error={error}
                 index={INDEX}
                 categories={[CATEGORY]}
-                colorPalette={[LINE_COLOR, '#008060', '#0EB1B9', '#9263AF', '#5A6FC0']}
+                colorPalette={[LINE_COLOR]}
                 backgroundColor="transparent"
                 fontSize="13px"
                 textColor="#AEB7C1"
@@ -61,27 +53,30 @@ export default class KpisComponent extends Component {
                 params={params}
                 options={{
                     grid: {
-                        left: '0%',
-                        right: '0%',
+                        left: '10px',
+                        right: '20px',
                         top: '10%',
                         bottom: 0,
                         containLabel: true
                     },
                     xAxis: {
                         type: 'time',
-                        // min: startDate.toISOString(),
-                        // max: endDate.toISOString(),
-                        boundaryGap: ['0%', '0.5%'],
+                        min: startDate.toISOString(),
+                        max: endDate.subtract(1, 'day').toISOString(),
+                        boundaryGap: ['0%', '0%'],
                         axisLabel: {
-                            formatter: chartDays <= 7 ? '{ee}' : '{dd} {MMM}'
+                            formatter: chartRange <= 7 ? '{ee}' : '{d} {MMM}',
+                            customValues: dateLabels
                         },
                         axisTick: {
-                            alignWithLabel: true
+                            show: false,
+                            alignWithLabel: true,
+                            interval: 0
                         },
                         axisPointer: {
                             snap: true
                         },
-                        splitNumber: chartDays <= 7 ? 7 : 5,
+                        splitNumber: dateLabels.length,
                         splitLine: {
                             show: false
                         },
@@ -92,12 +87,19 @@ export default class KpisComponent extends Component {
                         }
                     },
                     yAxis: {
+                        type: 'value',
                         splitLine: {
-                            show: true,
+                            show: false,
                             lineStyle: {
                                 type: 'dashed',
                                 color: '#DDE1E5' // Adjust color as needed
                             }
+                        },
+                        axisLabel: {
+                            show: true
+                        },
+                        axisTick: {
+                            show: false
                         }
                     },
                     tooltip: {
@@ -110,9 +112,28 @@ export default class KpisComponent extends Component {
                             type: 'line',
                             z: 1
                         },
-                        extraCssText: 'box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);',
+                        extraCssText: 'box-shadow: 0 0 0 1px rgba(0,0,0,0.03), 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02); padding: 6px 8px;',
                         formatter: function (fparams) {
-                            return `<div><div>${moment(fparams[0].value[0]).format('DD MMM, YYYY')}</div><div><span style="display: inline-block; margin-right: 16px; font-weight: 600;">Pageviews</span> ${fparams[0].value[1]}</div></div>`;
+                            let displayValue;
+                            let tooltipTitle;
+                            switch (CATEGORY) {
+                            case 'avg_session_sec':
+                                tooltipTitle = 'Visit duration';
+                                displayValue = fparams[0].value[1] !== null && (fparams[0].value[1] / 60).toFixed(0) + ' min';
+                                break;
+                            case 'bounce_rate':
+                                tooltipTitle = 'Bounce rate';
+                                displayValue = fparams[0].value[1] !== null && fparams[0].value[1].toFixed(2) + '%';
+                                break;
+                            default:
+                                tooltipTitle = 'Unique visits';
+                                displayValue = fparams[0].value[1] !== null && formatNumber(fparams[0].value[1]);
+                                break;
+                            }
+                            if (!displayValue) {
+                                displayValue = 'N/A';
+                            }
+                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format('D MMM YYYY')}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
                         }
                     },
                     series: [
@@ -123,7 +144,6 @@ export default class KpisComponent extends Component {
                             type: 'line',
                             areaStyle: {
                                 opacity: 0.6,
-                                // color: 'rgba(198, 220, 255, 1)'
                                 color: {
                                     type: 'linear',
                                     x: 0,
@@ -131,11 +151,11 @@ export default class KpisComponent extends Component {
                                     x2: 0,
                                     y2: 1,
                                     colorStops: [{
-                                        offset: 0, color: 'rgba(142, 66, 255, 0.3)' // color at 0%
+                                        offset: 0, color: hexToRgba(LINE_COLOR, 0.15)
                                     }, {
-                                        offset: 1, color: 'rgba(142, 66, 255, 0.0)' // color at 100%
+                                        offset: 1, color: hexToRgba(LINE_COLOR, 0.0)
                                     }],
-                                    global: false // default is false
+                                    global: false
                                 }
                             },
                             lineStyle: {
@@ -153,10 +173,11 @@ export default class KpisComponent extends Component {
                             symbolSize: 10,
                             z: 8,
                             smooth: false,
-                            name: props.selected,
+                            smoothMonotone: 'x',
+                            name: CATEGORY,
                             data: (data ?? []).map(row => [
                                 String(row[INDEX]),
-                                row[props.selected]
+                                row[CATEGORY]
                             ])
                         }
                     ]

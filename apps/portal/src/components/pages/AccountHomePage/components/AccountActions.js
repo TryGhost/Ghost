@@ -26,7 +26,7 @@ const AccountActions = () => {
             <div className='gh-portal-list'>
                 <section>
                     <div className='gh-portal-list-detail'>
-                        <h3>{(name ? name : 'Account')}</h3>
+                        <h3>{(name ? name : t('Account'))}</h3>
                         <p>{email}</p>
                     </div>
                     <button

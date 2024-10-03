@@ -20,7 +20,7 @@ const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const uuid = require('uuid');
+const crypto = require('crypto');
 
 const fixtureUtils = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
@@ -64,7 +64,7 @@ const startGhost = async (options = {}) => {
      * We never use the root content folder for testing!
      * We use a tmp folder.
      */
-    const contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
+    const contentFolder = path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test');
     await prepareContentFolder({contentFolder});
 
     // NOTE: need to pass this config to the server instance
