@@ -34,21 +34,6 @@ jobs:
     permissions:
       pull-requests: read
     steps:
-      - name: Checkout current commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.HEAD_COMMIT }}
-          fetch-depth: 2
-
-      - name: Output GitHub context
-        run: echo "$GITHUB_CONTEXT"
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-
-      - name: Validate input
-        run: |
-          [[ "${{ secrets.NPM_TOKEN }}" ]] || { echo "Missing NPM token"; }
-          [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
 
       - name: Get User Permission
         id: checkAccess
@@ -66,6 +51,21 @@ jobs:
           echo "Job originally triggered by ${{ github.actor }}"
           exit 1
 
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{  github.event.pull_request.head.sha }}
+          fetch-depth: 2
+
+      - name: Output GitHub context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      - name: Validate input
+        run: |
+          [[ "${{ secrets.NPM_TOKEN }}" ]] || { echo "Missing NPM token"; }
+            [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
