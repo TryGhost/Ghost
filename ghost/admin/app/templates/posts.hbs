@@ -30,7 +30,7 @@
 
     <section class="view-container content-list">
         <PostsList::List
-            @model={{this.postsInfinityModel}}
+            @model={{@model}}
             @list={{this.selectionList}}
         >
             <li class="no-posts-box" data-test-no-posts-box>
@@ -43,7 +43,7 @@
                         </LinkTo>
                     {{else}}
                         <h4>No posts match the current filter</h4>
-                        <LinkTo @route="posts" @query={{hash type=null author=null tag=null}} class="gh-btn" data-test-link="show-all">
+                        <LinkTo @route="posts" @query={{hash type=null author=null tag=null visibility=null}} class="gh-btn" data-test-link="show-all">
                             <span>Show all posts</span>
                         </LinkTo>
                     {{/if}}
@@ -51,11 +51,26 @@
             </li>
         </PostsList::List>
 
+    {{!-- only show one infinity loader wheel at a time - always order as scheduled, draft, remainder --}}
+    {{#if @model.scheduledInfinityModel}}
         <GhInfinityLoader
-            @infinityModel={{this.postsInfinityModel}}
+            @infinityModel={{@model.scheduledInfinityModel}}
             @scrollable=".gh-main"
             @triggerOffset={{1000}} />
-    </section>
+    {{/if}}
+    {{#if (and @model.draftInfinityModel (or (not @model.scheduledInfinityModel) (and @model.scheduledInfinityModel @model.scheduledInfinityModel.reachedInfinity)))}}
+        <GhInfinityLoader
+            @infinityModel={{@model.draftInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
+    {{#if (and @model.publishedAndSentInfinityModel (and (or (not @model.scheduledInfinityModel) @model.scheduledInfinityModel.reachedInfinity) (or (not @model.draftInfinityModel) @model.draftInfinityModel.reachedInfinity)))}}
+        <GhInfinityLoader
+            @infinityModel={{@model.publishedAndSentInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
 
+    </section>
     {{outlet}}
 </section>

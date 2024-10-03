@@ -342,7 +342,7 @@ describe('Images API', function () {
         const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
 
         // eslint-disable-next-line no-undef
-        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, blob.size / 2)], {
+        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
             type: 'multipart/form-data; boundary=boundary'
         })).text();
 
@@ -367,7 +367,7 @@ describe('Images API', function () {
         const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
 
         // eslint-disable-next-line no-undef
-        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, blob.size / 2)], {
+        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
             type: 'multipart/form-data; boundary=boundary'
         })).text();
 

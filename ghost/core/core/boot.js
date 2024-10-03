@@ -509,11 +509,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
     try {
         // Step 1 - require more fundamental components
-        // OpenTelemetry should be configured as early as possible
-        debug('Begin: Load OpenTelemetry');
-        const opentelemetryInstrumentation = require('./shared/instrumentation');
-        opentelemetryInstrumentation.initOpenTelemetry({config});
-        debug('End: Load OpenTelemetry');
 
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
@@ -565,7 +560,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         }
 
         await initServices({config});
-        await initNestDependencies();
+
+        // Gate the NestJS framework behind an env var to prevent it from being loaded (and slowing down boot)
+        // If we ever ship the new framework, we can remove this
+        // Using an env var because you can't use labs flags here
+        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK) {
+            await initNestDependencies();
+        }
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

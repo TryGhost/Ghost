@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const mingo = require('mingo');
-const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys} = require('@tryghost/mongo-utils');
+const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys, rejectStatements} = require('@tryghost/mongo-utils');
 
 /**
  * This mongo transformer ignores the provided filter option and replaces the filter with a custom filter that was provided to the transformer. Allowing us to set a mongo filter instead of a string based NQL filter.
@@ -151,6 +151,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'newsletter'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -193,6 +194,7 @@ module.exports = class EventRepository {
                 'stripeSubscription.stripePrice.stripeProduct.product'
             ],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -245,6 +247,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -277,6 +280,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -314,6 +318,7 @@ module.exports = class EventRepository {
                 'tagAttribution'
             ],
             filter: 'subscriptionCreatedEvent.id:null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -368,6 +373,7 @@ module.exports = class EventRepository {
                 'tagAttribution'
             ],
             filter: 'member_id:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -416,6 +422,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'post', 'parent'],
             filter: 'member_id:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -449,6 +456,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'link', 'link.post'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -481,24 +489,68 @@ module.exports = class EventRepository {
      * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
      */
     async getAggregatedClickEvents(options = {}, filter) {
-        // This counts all clicks for a member for the same post
-        const postClickQuery = `SELECT count(distinct A.redirect_id)
-            FROM members_click_events A
-            LEFT JOIN redirects A_r on A_r.id = A.redirect_id
-            LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
-            WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id`;
+        let postId = '';
 
-        // Counts all clicks for the same member, for the same post, but only preceding events. This should be zero to include the event (so we only include the first events)
-        const postClickQueryPreceding = `SELECT count(distinct A.redirect_id)
-            FROM members_click_events A
-            LEFT JOIN redirects A_r on A_r.id = A.redirect_id
-            LEFT JOIN redirects B_r on B_r.id = members_click_events.redirect_id
-            WHERE A.member_id = members_click_events.member_id AND A_r.post_id = B_r.post_id AND (A.created_at < members_click_events.created_at OR (A.created_at = members_click_events.created_at AND A.id < members_click_events.id))`;
+        if (filter && filter.$and) {
+            // Case when there is an $and condition
+            postId = filter.$and.find(condition => condition['data.post_id'])?.['data.post_id'];
+        } else {
+            // Case when there's no $and condition, directly look for data.post_id
+            postId = filter ? filter['data.post_id'] : '';
+        }
 
+        //Remove type filter as we don't need it in the query 
+        const [typeFilter, otherFilter] = this.getNQLSubset(options.filter); // eslint-disable-line
+
+        filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
+
+        let postClicksQuery = postId && postId !== '' ? `SELECT
+                    mce.id,
+                    mce.member_id,
+                    mce.redirect_id,
+                    mce.created_at
+                FROM
+                    members_click_events mce
+                INNER JOIN
+                    redirects r ON mce.redirect_id = r.id
+                WHERE
+                    r.post_id = '${postId}'
+        `
+            : `SELECT
+                        mce.id,
+                        mce.member_id,
+                        mce.redirect_id,
+                        mce.created_at
+                    FROM
+                        members_click_events mce
+                    INNER JOIN
+                        redirects r ON mce.redirect_id = r.id
+            `;
+
+        const firstClicksQuery = `
+            SELECT
+                id,
+                member_id,
+                redirect_id,
+                created_at,
+                ROW_NUMBER() OVER (PARTITION BY member_id ORDER BY created_at, id) AS rn
+            FROM
+                PostClicks
+        `;
+
+        const mainQuery = `SELECT COUNT(DISTINCT redirect_id)
+                    FROM PostClicks AS inner_mce
+                    WHERE inner_mce.member_id = FirstClicks.member_id
+                    AND inner_mce.redirect_id IN (
+                        SELECT redirect_id
+                        FROM PostClicks
+                    )`;
         options = {
             ...options,
             withRelated: ['member'],
+            filterRelations: false,
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -510,11 +562,22 @@ module.exports = class EventRepository {
                     'data.post_id': 'post_id'
                 })
             ),
+            useCTE: true,
             // We need to use MIN to make pagination work correctly
             // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
             // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
-            selectRaw: `id, member_id, created_at, (${postClickQuery}) as count__clicks`,
-            whereRaw: `(${postClickQueryPreceding}) = 0`
+            selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
+            whereRaw: `rn = 1 ORDER BY created_at DESC, id DESC`,
+            cte: [{
+                name: `PostClicks`,
+                query: postClicksQuery
+            },
+            {
+                name: `FirstClicks`,
+                query: firstClicksQuery
+            }],
+            from: 'FirstClicks',
+            order: ''
         };
 
         const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
@@ -537,6 +600,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'post'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -571,6 +635,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: filterStr,
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -613,6 +678,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'delivered_at:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -655,6 +721,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'opened_at:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -697,6 +764,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -730,6 +798,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member', 'email'],
             filter: 'failed_at:-null+custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -772,6 +841,7 @@ module.exports = class EventRepository {
             ...options,
             withRelated: ['member'],
             filter: 'custom:true',
+            useBasicCount: true,
             mongoTransformer: chainTransformers(
                 // First set the filter manually
                 replaceCustomFilterTransformer(filter),
@@ -833,6 +903,20 @@ module.exports = class EventRepository {
 
         try {
             return splitFilter(parsed, ['type']);
+        } catch (e) {
+            throw new errors.IncorrectUsageError({
+                message: e.message
+            });
+        }
+    }
+
+    removePostIdFilter(filter) {
+        if (!filter) {
+            return filter;
+        }
+    
+        try {
+            return rejectStatements(filter, key => key === 'data.post_id');
         } catch (e) {
             throw new errors.IncorrectUsageError({
                 message: e.message

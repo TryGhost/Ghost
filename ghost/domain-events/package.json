@@ -19,7 +19,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@tryghost/logging": "2.4.15",
+    "@tryghost/logging": "2.4.18",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3"

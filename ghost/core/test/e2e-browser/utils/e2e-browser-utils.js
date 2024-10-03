@@ -125,7 +125,6 @@ const enableLabs = async (page) => {
 
     await section.getByRole('tab', {name: 'Alpha features'}).click();
     await section.getByLabel('Webmentions').click();
-    await section.getByLabel('Tips & donations').click();
 
     await page.getByTestId('exit-settings').click();
 };
@@ -334,7 +333,7 @@ const fillInputIfExists = async (page, selector, value) => {
     }
 };
 
-const completeStripeSubscription = async (page) => {
+const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) => {
     await page.locator('#cardNumber').fill('4242 4242 4242 4242');
     await page.locator('#cardExpiry').fill('04 / 26');
     await page.locator('#cardCvc').fill('424');
@@ -359,7 +358,9 @@ const completeStripeSubscription = async (page) => {
 
     await page.getByTestId('hosted-payment-submit-button').click();
 
-    await page.waitForLoadState('networkidle');
+    if (awaitNetworkIdle) {
+        await page.waitForLoadState('networkidle');
+    }
 };
 
 /**
@@ -423,7 +424,7 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     await page.locator('[data-test-editor-title-input]').fill(title);
 
     // wait for editor to be ready
-    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
+    await expect(page.locator('[data-lexical-editor="true"]').first()).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');

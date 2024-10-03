@@ -3,6 +3,7 @@ const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
 const logging = require('@tryghost/logging');
+const LastSeenAtCache = require('./LastSeenAtCache');
 
 /**
  * Listen for `MemberViewEvent` to update the `member.last_seen_at` timestamp
@@ -16,6 +17,7 @@ class LastSeenAtUpdater {
      * @param {() => object} deps.getMembersApi - A function which returns an instance of members-api
      * @param {any} deps.db Database connection
      * @param {any} deps.events The event emitter
+     * @param {any} deps.lastSeenAtCache An instance of the last seen at cache
      */
     constructor({
         services: {
@@ -23,7 +25,8 @@ class LastSeenAtUpdater {
         },
         getMembersApi,
         db,
-        events
+        events,
+        lastSeenAtCache
     }) {
         if (!getMembersApi) {
             throw new IncorrectUsageError({message: 'Missing option getMembersApi'});
@@ -33,6 +36,7 @@ class LastSeenAtUpdater {
         this._settingsCacheService = settingsCache;
         this._db = db;
         this._events = events;
+        this._lastSeenAtCache = lastSeenAtCache || new LastSeenAtCache({services: {settingsCache}});
     }
     /**
      * Subscribe to events of this domainEvents service
@@ -41,7 +45,7 @@ class LastSeenAtUpdater {
     subscribe(domainEvents) {
         domainEvents.subscribe(MemberPageViewEvent, async (event) => {
             try {
-                await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+                await this.cachedUpdateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
             } catch (err) {
                 logging.error(`Error in LastSeenAtUpdater.MemberPageViewEvent listener for member ${event.data.memberId}`);
                 logging.error(err);
@@ -50,7 +54,7 @@ class LastSeenAtUpdater {
 
         domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
             try {
-                await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+                await this.cachedUpdateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
             } catch (err) {
                 logging.error(`Error in LastSeenAtUpdater.MemberLinkClickEvent listener for member ${event.data.memberId}`);
                 logging.error(err);
@@ -103,6 +107,15 @@ class LastSeenAtUpdater {
 
     /**
      * Updates the member.last_seen_at field if it wasn't updated in the current day yet (in the publication timezone)
+     */
+    async cachedUpdateLastSeenAt(memberId, memberLastSeenAt, timestamp) {
+        if (this._lastSeenAtCache.shouldUpdateMember(memberId)) {
+            await this.updateLastSeenAt(memberId, memberLastSeenAt, timestamp);
+        }
+    }
+
+    /**
+     * Updates the member.last_seen_at field if it wasn't updated in the current day yet (in the publication timezone)
      * Example: current time is 2022-02-28 18:00:00
      * - memberLastSeenAt is 2022-02-27 23:00:00, timestamp is current time, then `last_seen_at` is set to the current time
      * - memberLastSeenAt is 2022-02-28 01:00:00, timestamp is current time, then `last_seen_at` isn't changed
@@ -115,20 +128,30 @@ class LastSeenAtUpdater {
         // This isn't strictly necessary since we will fetch the member row for update and double check this
         // This is an optimization to avoid unnecessary database queries if last_seen_at is already after the beginning of the current day
         if (memberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(memberLastSeenAt)) {
-            const membersApi = this._getMembersApi();
-            await this._db.knex.transaction(async (trx) => {
-                // To avoid a race condition, we lock the member row for update, then the last_seen_at field again to prevent simultaneous updates
-                const currentMember = await membersApi.members.get({id: memberId}, {require: true, transacting: trx, forUpdate: true});
-                const currentMemberLastSeenAt = currentMember.get('last_seen_at');
-                if (currentMemberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(currentMemberLastSeenAt)) {
-                    const memberToUpdate = await currentMember.refresh({transacting: trx, forUpdate: false, withRelated: ['labels', 'newsletters']});
-                    const updatedMember = await memberToUpdate.save({last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')}, {transacting: trx, patch: true, method: 'update'});
-                    // The standard event doesn't get emitted inside the transaction, so we do it manually
-                    this._events.emit('member.edited', updatedMember);
-                    return Promise.resolve(updatedMember);
-                }
-                return Promise.resolve(undefined);
-            });
+            try {
+                // Pre-emptively update local cache so we don't update the same member again in the same day
+                this._lastSeenAtCache.add(memberId);
+                const membersApi = this._getMembersApi();
+                await this._db.knex.transaction(async (trx) => {
+                    // To avoid a race condition, we lock the member row for update, then the last_seen_at field again to prevent simultaneous updates
+                    const currentMember = await membersApi.members.get({id: memberId}, {require: true, transacting: trx, forUpdate: true});
+                    const currentMemberLastSeenAt = currentMember.get('last_seen_at');
+                    if (currentMemberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(currentMemberLastSeenAt)) {
+                        const memberToUpdate = await currentMember.refresh({transacting: trx, forUpdate: false, withRelated: ['labels', 'newsletters']});
+                        const updatedMember = await memberToUpdate.save({last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')}, {transacting: trx, patch: true, method: 'update'});
+                        // The standard event doesn't get emitted inside the transaction, so we do it manually
+                        this._events.emit('member.edited', updatedMember);
+                        return Promise.resolve(updatedMember);
+                    }
+                    return Promise.resolve(undefined);
+                });
+            } catch (err) {
+                // Remove the member from the cache if an error occurs
+                // This is to ensure that the member is updated on the next event if this one fails
+                this._lastSeenAtCache.remove(memberId);
+                // Bubble up the error to the event listener
+                throw err;
+            }
         }
     }
 

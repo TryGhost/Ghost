@@ -3,7 +3,7 @@ import {Comment, useAppContext} from '../../AppContext';
 import {getInitials} from '../../utils/helpers';
 
 function getDimensionClasses() {
-    return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
+    return 'w-8 h-8';
 }
 
 export const BlankAvatar = () => {
@@ -88,7 +88,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         <>
             {memberName ?
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} data-testid="avatar-background" style={avatarStyle}>
-                    <p className="font-sans text-lg font-semibold text-white">{ commentGetInitials() }</p>
+                    <p className="font-sans text-base font-semibold text-white">{ commentGetInitials() }</p>
                 </div>) :
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`} data-testid="avatar-background" >
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />

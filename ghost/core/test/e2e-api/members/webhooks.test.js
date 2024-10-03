@@ -289,7 +289,7 @@ describe('Members API', function () {
             // Set the subscription to cancel at the end of the period
             set(subscription, {
                 ...subscription,
-                status: 'active',
+                canceled_at: Date.now() / 1000,
                 cancel_at_period_end: true,
                 metadata: {
                     cancellation_reason: 'I want to break free'
@@ -353,7 +353,18 @@ describe('Members API', function () {
                 ]
             });
 
-            canceledPaidMember = updatedMember;
+            // Check that the staff notifications has been sent
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: /Paid subscription started: Cancel me at the end of the billing cycle/,
+                to: 'jbloggs@example.com'
+            });
+
+            mockManager.assert.sentEmail({
+                subject: /Cancellation: Cancel me at the end of the billing cycle/,
+                to: 'jbloggs@example.com'
+            });
         });
 
         it('Handles immediate cancellation of paid subscriptions', async function () {
@@ -425,6 +436,7 @@ describe('Members API', function () {
             set(subscription, {
                 ...subscription,
                 status: 'canceled',
+                canceled_at: Date.now() / 1000,
                 cancellation_details: {
                     reason: 'payment_failed'
                 }
@@ -505,6 +517,19 @@ describe('Members API', function () {
                         mrr_delta: -500
                     }
                 ]
+            });
+
+            // Check that the staff notifications has been sent
+            await DomainEvents.allSettled();
+
+            mockManager.assert.sentEmail({
+                subject: /Paid subscription started: Cancel me now/,
+                to: 'jbloggs@example.com'
+            });
+
+            mockManager.assert.sentEmail({
+                subject: /Cancellation: Cancel me now/,
+                to: 'jbloggs@example.com'
             });
 
             canceledPaidMember = updatedMember;

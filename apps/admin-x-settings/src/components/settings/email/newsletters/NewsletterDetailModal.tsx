@@ -106,8 +106,15 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+    const activeNewsletters = newsletters.filter(n => n.status === 'active');
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -252,7 +259,7 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },

@@ -9,11 +9,11 @@ export type FollowItem = {
 
 export type ObjectProperties = {
     '@context': string | (string | object)[];
-    type: 'Article' | 'Link';
+    type: 'Article' | 'Link' | 'Note';
     name: string;
     content: string;
     url?: string | undefined;
-    attributedTo?: string | object[] | undefined;
+    attributedTo?: object | string | object[] | undefined;
     image?: string;
     published?: string;
     preview?: {type: string, content: string};
@@ -23,13 +23,22 @@ export type ObjectProperties = {
 
 export type ActorProperties = {
     '@context': string | (string | object)[];
-    attachment: object[];
+    attachment?: {
+        type: string;
+        name: string;
+        value: string;
+    }[];
     discoverable: boolean;
     featured: string;
     followers: string;
     following: string;
     id: string | null;
-    image: string;
+    image: {
+        url: string;
+    };
+    icon: {
+        url: string;
+    };
     inbox: string;
     manuallyApprovesFollowers: boolean;
     name: string;

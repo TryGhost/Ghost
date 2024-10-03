@@ -1,17 +1,19 @@
 import nql from '@tryghost/nql';
-import {buildComment, buildMember, buildReply} from './fixtures';
+import {buildComment, buildMember, buildReply, buildSettings} from './fixtures';
 
 export class MockedApi {
     comments: any[];
     postId: string;
     member: any;
+    settings: any;
 
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
 
-    constructor({postId = 'ABC', comments = [], member = undefined}: {postId?: string, comments?: any[], member?: any}) {
+    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}}: {postId?: string, comments?: any[], member?: any, settings?: any}) {
         this.postId = postId;
         this.comments = comments;
         this.member = member;
+        this.settings = settings;
     }
 
     addComment(overrides: any = {}) {
@@ -47,6 +49,10 @@ export class MockedApi {
 
     setMember(overrides) {
         this.member = buildMember(overrides);
+    }
+
+    setSettings(overrides) {
+        this.settings = buildSettings(overrides);
     }
 
     commentsCounts() {
@@ -279,6 +285,15 @@ export class MockedApi {
                 body: JSON.stringify(
                     this.commentsCounts()
                 )
+            });
+        });
+
+        // get settings from content api
+
+        await page.route(`${path}/settings/*`, async (route) => {
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.settings)
             });
         });
     }

@@ -148,7 +148,7 @@ test.describe('Announcement Bar', async () => {
 
         // get checkbox input with value of free_members
 
-        const checkbox = await page.$('input[value="free_members"]');
+        const checkbox = await page.$('button[value="free_members"]');
 
         expect(checkbox).not.toBeNull();
 
