@@ -3,6 +3,9 @@
     "server": {
         "port": 2369
     },
+    "metrics_server": {
+        "port": 9417
+    },
     "database": {
         "client": "mysql",
         "connection": {

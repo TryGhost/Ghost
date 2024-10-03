@@ -50,6 +50,7 @@ const SUPPORTED_LOCALES = [
     'th', // Thai
     'tr', // Turkish
     'uk', // Ukrainian
+    'ur', // Urdu
     'uz', // Uzbek
     'vi', // Vietnamese
     'zh', // Chinese
