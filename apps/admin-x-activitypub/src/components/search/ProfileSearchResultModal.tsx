@@ -1,8 +1,8 @@
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, Modal} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 import FeedItem from '../feed/FeedItem';
@@ -30,6 +30,21 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
     const attachments = (profile.actor.attachment || [])
         .filter(attachment => attachment.type === 'PropertyValue');
     const posts = profile.posts; // @TODO: Do any filtering / manipulation here
+
+    const [expanded, setExpanded] = useState(false);
+
+    const toggleExpand = () => {
+        setExpanded(!expanded);
+    };
+
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+
+    useEffect(() => {
+        if (contentRef.current) {
+            setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
+        }
+    }, [profile.actor.summary, attachments, expanded]);
 
     return (
         <Modal
@@ -73,18 +88,28 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                             />
                         </div>
                         <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                        <span className='mt-1 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>
-                        <div
-                            dangerouslySetInnerHTML={{__html: profile.actor.summary}}
-                            className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
-                        />
-                        {attachments.map(attachment => (
-                            <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
-                                <span className={`text-xs font-semibold`}>{attachment.name}</span>
-                                <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
-                            </span>
-                        ))}
-
+                        <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-grey-800 hover:text-grey-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                        {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${expanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                            <div
+                                dangerouslySetInnerHTML={{__html: profile.actor.summary}}
+                                className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
+                            />
+                            {attachments.map(attachment => (
+                                <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
+                                    <span className={`text-xs font-semibold`}>{attachment.name}</span>
+                                    <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
+                                </span>
+                            ))}
+                            {!expanded && isOverflowing && (
+                                <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
+                            )}
+                            {isOverflowing && <Button
+                                className='absolute bottom-0 text-pink'
+                                label={expanded ? 'Show less' : 'Show all'}
+                                link={true}
+                                onClick={toggleExpand}
+                            />}
+                        </div>)}
                         <Heading className='mt-8' level={5}>Posts</Heading>
                         
                         {posts.map((post) => {
