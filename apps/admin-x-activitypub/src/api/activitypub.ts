@@ -3,7 +3,7 @@ export type Actor = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
-export interface ProfileSearchResult {
+export interface Profile {
     actor: Actor;
     handle: string;
     followerCount: number;
@@ -12,7 +12,7 @@ export interface ProfileSearchResult {
 }
 
 export interface SearchResults {
-    profiles: ProfileSearchResult[];
+    profiles: Profile[];
 }
 
 export interface GetFollowersForProfileResponse {
@@ -389,5 +389,11 @@ export class ActivityPubAPI {
         return {
             profiles: []
         };
+    }
+
+    async getProfile(handle: string): Promise<Profile> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as Profile;
     }
 }

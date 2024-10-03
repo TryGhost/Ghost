@@ -12,7 +12,7 @@ import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import ProfileSearchResultModal from './search/ProfileSearchResultModal';
 
-import {useSearchForUser} from '../hooks/useActivityPubQueries';
+import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
 interface SearchResultItem {
     actor: ActorProperties;
@@ -73,72 +73,8 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const [suggested, setSuggested] = useState<SearchResultItem[]>([
-        {
-            actor: {
-                id: 'https://mastodon.social/@quillmatiq',
-                name: 'Anuj Ahooja',
-                preferredUsername: '@quillmatiq@mastodon.social',
-                image: {
-                    url: 'https://anujahooja.com/assets/images/image12.jpg?v=601ebe30'
-                },
-                icon: {
-                    url: 'https://anujahooja.com/assets/images/image12.jpg?v=601ebe30'
-                }
-            } as ActorProperties,
-            handle: '@quillmatiq@mastodon.social',
-            followerCount: 436,
-            followingCount: 634,
-            isFollowing: false,
-            posts: []
-        },
-        {
-            actor: {
-                id: 'https://flipboard.social/@miaq',
-                name: 'Mia Quagliarello',
-                preferredUsername: '@miaq@flipboard.social',
-                image: {
-                    url: 'https://m-cdn.flipboard.social/accounts/avatars/109/824/428/955/351/328/original/383f288b81ab280c.png'
-                },
-                icon: {
-                    url: 'https://m-cdn.flipboard.social/accounts/avatars/109/824/428/955/351/328/original/383f288b81ab280c.png'
-                }
-            } as ActorProperties,
-            handle: '@miaq@flipboard.social',
-            followerCount: 533,
-            followingCount: 335,
-            isFollowing: false,
-            posts: []
-        },
-        {
-            actor: {
-                id: 'https://techpolicy.social/@mallory',
-                name: 'Mallory',
-                preferredUsername: '@mallory@techpolicy.social',
-                image: {
-                    url: 'https://techpolicy.social/system/accounts/avatars/109/378/338/180/403/396/original/20b043b0265cac73.jpeg'
-                },
-                icon: {
-                    url: 'https://techpolicy.social/system/accounts/avatars/109/378/338/180/403/396/original/20b043b0265cac73.jpeg'
-                }
-            } as ActorProperties,
-            handle: '@mallory@techpolicy.social',
-            followerCount: 1100,
-            followingCount: 11,
-            isFollowing: false,
-            posts: []
-        }
-    ]);
-
-    const updateSuggested = (id: string, updated: Partial<SearchResultItem>) => {
-        const index = suggested.findIndex(result => result.actor.id === id);
-
-        setSuggested((current) => {
-            const newSuggested = [...current];
-            newSuggested[index] = {...newSuggested[index], ...updated};
-            return newSuggested;
-        });
-    };
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@quillmatiq@mastodon.social', '@miaq@flipboard.social', '@mallory@techpolicy.social']);
+    const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
@@ -220,11 +156,14 @@ const Search: React.FC<SearchProps> = ({}) => {
                 {showSuggested && (
                     <>
                         <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
+                        {isLoadingSuggested && (
+                            <LoadingIndicator size='sm'/>
+                        )}
                         {suggested.map(profile => (
                             <SearchResult
-                                key={profile.actor.id}
-                                result={profile}
-                                update={updateSuggested}
+                                key={(profile as SearchResultItem).actor.id}
+                                result={profile as SearchResultItem}
+                                update={updateSuggestedProfile}
                             />
                         ))}
                     </>

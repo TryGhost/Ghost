@@ -1,5 +1,5 @@
 import {Activity} from '../components/activities/ActivityItem';
-import {ActivityPubAPI, type ProfileSearchResult, type SearchResults} from '../api/activitypub';
+import {ActivityPubAPI, type Profile, type SearchResults} from '../api/activitypub';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
@@ -246,7 +246,7 @@ export function useSearchForUser(handle: string, query: string) {
         }
     });
 
-    const updateProfileSearchResult = (id: string, updated: Partial<ProfileSearchResult>) => {
+    const updateProfileSearchResult = (id: string, updated: Partial<Profile>) => {
         queryClient.setQueryData(queryKey, (current: SearchResults | undefined) => {
             if (!current) {
                 return current;
@@ -254,7 +254,7 @@ export function useSearchForUser(handle: string, query: string) {
 
             return {
                 ...current,
-                profiles: current.profiles.map((item: ProfileSearchResult) => {
+                profiles: current.profiles.map((item: Profile) => {
                     if (item.actor.id === id) {
                         return {...item, ...updated};
                     }
@@ -303,6 +303,50 @@ export function useFollowingForProfile(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
+        }
+    });
+}
+
+export function useSuggestedProfiles(handle: string, handles: string[]) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    const queryClient = useQueryClient();
+    const queryKey = ['profiles', {handles}];
+
+    const suggestedProfilesQuery = useQuery({
+        queryKey,
+        async queryFn() {
+            return Promise.all(
+                handles.map(h => api.getProfile(h))
+            );
+        }
+    });
+
+    const updateSuggestedProfile = (id: string, updated: Partial<Profile>) => {
+        queryClient.setQueryData(queryKey, (current: Profile[] | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return current.map((item: Profile) => {
+                if (item.actor.id === id) {
+                    return {...item, ...updated};
+                }
+                return item;
+            });
+        });
+    };
+
+    return {suggestedProfilesQuery, updateSuggestedProfile};
+}
+
+export function useProfileForUser(handle: string, fullHandle: string) {
+    const siteUrl = useSiteUrl();
+    const api = createActivityPubAPI(handle, siteUrl);
+    return useQuery({
+        queryKey: [`profile:${fullHandle}`],
+        async queryFn() {
+            return api.getProfile(fullHandle);
         }
     });
 }
