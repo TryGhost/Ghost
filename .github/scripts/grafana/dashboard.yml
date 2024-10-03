@@ -1,0 +1,15 @@
+## This file is used to point to the folder where the dashboards are stored
+## To edit or create a dashboard, add a .json file to the ./dashboards folder
+
+apiVersion: 1
+
+providers:
+  - name: "Dashboard provider"
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true
