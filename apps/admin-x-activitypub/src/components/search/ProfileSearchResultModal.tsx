@@ -3,7 +3,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
-import {Button, Heading, List, Icon, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
@@ -199,10 +199,10 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
         }
     ].filter(Boolean) as Tab<ProfileTab>[];
 
-    const [expanded, setExpanded] = useState(false);
+    const [isExpanded, setisExpanded] = useState(false);
 
     const toggleExpand = () => {
-        setExpanded(!expanded);
+        setisExpanded(!isExpanded);
     };
 
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -212,7 +212,7 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
         if (contentRef.current) {
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
-    }, [profile.actor.summary, attachments, expanded]);
+    }, [isExpanded]);
 
     return (
         <Modal
@@ -257,7 +257,7 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                         </div>
                         <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
                         <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-grey-800 hover:text-grey-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
-                        {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${expanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                        {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                             <div
                                 dangerouslySetInnerHTML={{__html: profile.actor.summary}}
                                 className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
@@ -268,12 +268,12 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                                     <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
                                 </span>
                             ))}
-                            {!expanded && isOverflowing && (
+                            {!isExpanded && isOverflowing && (
                                 <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                             )}
                             {isOverflowing && <Button
                                 className='absolute bottom-0 text-pink'
-                                label={expanded ? 'Show less' : 'Show all'}
+                                label={isExpanded ? 'Show less' : 'Show all'}
                                 link={true}
                                 onClick={toggleExpand}
                             />}
