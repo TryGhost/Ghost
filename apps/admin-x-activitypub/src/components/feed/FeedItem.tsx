@@ -336,6 +336,57 @@ const ItemMenu = (object: ObjectProperties) => {
     );
 };
 
+function ItemHeading({children}: {children?: string }) {
+    if (!children || !children.length) {
+        return null;
+    }
+    return (
+        <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{children[0]}</Heading>
+    )
+}
+
+function FeedLayoutArticleContent({object}: {object: ObjectProperties}) {
+    const content = object.preview ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
+    return (
+        <>
+            <FeedAttachment object={object} layout={null} />
+            <ItemHeading>
+                {object.name}
+            </ItemHeading>
+            {content}
+            <Button
+                className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                color='grey'
+                fullWidth={true}
+                id='read-more'
+                label='Read more'
+                size='md'
+            />
+        </>
+    );
+}
+
+function FeedLayoutNoteContent({object}: {object: ObjectProperties}) {
+    return (
+        <>
+            <ItemHeading>
+                {object.name}
+            </ItemHeading>
+            <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
+            <FeedAttachment object={object} layout={null} />
+        </>
+    );
+}
+
+function FeedLayoutContent({object}: {object: ObjectProperties}) {
+    if (object.type === 'Article') {
+        return <FeedLayoutArticleContent object={object} />
+    }
+    if (object.type === 'Note') {
+        return <FeedLayoutNoteContent object={object} />
+    }
+}
+
 const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author}) => {
     const onLikeClick = () => {};
     return (
@@ -360,18 +411,7 @@ const FeedLayout = ({actor, object, layout, type, comments, onClick = noop, onCo
                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                     <div className='flex flex-col'>
                         <div className='mt-[-24px]'>
-                            {(object.type === 'Article') && <FeedAttachment object={object} layout={null} />}
-                            {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                            {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
-                            {(object.type === 'Note') && <FeedAttachment object={object} layout={null} />}
-                            {(object.type === 'Article') && <Button
-                                className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
-                                color='grey'
-                                fullWidth={true}
-                                id='read-more'
-                                label='Read more'
-                                size='md'
-                            />}
+                            <FeedLayoutContent object={object}/>
                         </div>
                         <div className='space-between mt-5 flex'>
                             <FeedItemStats
