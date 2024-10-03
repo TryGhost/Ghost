@@ -154,6 +154,16 @@ function renderTimestamp(object: ObjectProperties) {
     return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
 }
 
+function renderTimestampForPost(post: Post) {
+    const date = post.published.toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'});
+    const time = post.published.toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
+
+    const timestamp = `${date}, ${time}`;
+    const relativeTimestamp = getRelativeTimestamp(post.published);
+
+    return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={post.url.href} title={`${timestamp}`}>{relativeTimestamp}</a>);
+}
+
 const FeedItemStats: React.FC<{
     object: ObjectProperties;
     likeCount: number;
