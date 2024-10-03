@@ -1,9 +1,9 @@
 {
-    "Authors": "",
-    "Cancel": "",
-    "No matches found": "",
-    "Posts": "",
-    "Search posts, tags and authors": "",
-    "Show more results": "",
-    "Tags": ""
+    "Authors": "ผู้เขียน",
+    "Cancel": "ยกเลิก",
+    "No matches found": "ไม่พบผลลัพธ์",
+    "Posts": "โพสต์",
+    "Search posts, tags and authors": "ค้นหาโพสต์ แท็ก และผู้เขียน",
+    "Show more results": "แสดงผลเพิ่มเติม",
+    "Tags": "แท็ก"
 }
