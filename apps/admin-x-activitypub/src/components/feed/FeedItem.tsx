@@ -171,12 +171,28 @@ function renderInboxAttachment(object: ObjectProperties) {
     }
 }
 
-function renderTimestamp(object: ObjectProperties) {
-    const timestamp =
-        new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
+function getTimestamp(published: Date) {
+    const date = published.toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'});
+    const time = published.toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
+    const timestamp = `${date}, ${time}`;
+    const relativeTimestamp = getRelativeTimestamp(published);
+
+    return {
+        timestamp,
+        relativeTimestamp
+    };
+}
+
+function renderTimestamp(object: ObjectProperties) {
     const date = new Date(object?.published ?? new Date());
-    return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
+    const {
+        timestamp,
+        relativeTimestamp
+    } = getTimestamp(date);
+    return (
+        <a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={timestamp}>{relativeTimestamp}</a>
+    );
 }
 
 function renderTimestampForPost(post: Post) {
@@ -410,8 +426,14 @@ const ReplyLayout = ({actor, object, layout, type, comments, onClick = noop, onC
     );
 };
 
-const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger, timestamp, date}) => {
+const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onCommentClick, author, menuItems, UserMenuTrigger}) => {
     const onLikeClick = () => {};
+
+    const date = new Date(object?.published ?? new Date());
+    const {
+        timestamp,
+        relativeTimestamp
+    } = getTimestamp(date);
     return (
         <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
             <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
@@ -420,7 +442,7 @@ const InboxLayout = ({actor, object, layout, type, comments, onClick = noop, onC
                     <div className='mb-1'>
                         <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
                         <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
-                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={timestamp}>{relativeTimestamp}</span>
                     </div>
                     <div className='flex w-full items-start justify-between gap-5'>
                         <div className='grow'>
@@ -449,11 +471,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     if (!object) {
         return null;
     }
-
-    const timestamp =
-        new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
-
-    const date = new Date(object?.published ?? new Date());
 
     const [isCopied, setIsCopied] = useState(false);
 
@@ -563,8 +580,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                    author={author}
                    menuItems={menuItems}
                    UserMenuTrigger={UserMenuTrigger}
-                   timestamp={timestamp}
-                   date={date}
         />
     }
 
