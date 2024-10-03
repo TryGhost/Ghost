@@ -168,15 +168,20 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
             title: 'Posts',
             contents: (
                 <div>
-                    {posts.map(post => (
-                        <FeedItem
-                            actor={profile.actor}
-                            comments={post.object.replies}
-                            layout='feed'
-                            object={post.object}
-                            type={post.type}
-                            onCommentClick={() => {}}
-                        />
+                    {posts.map((post, index) => (
+                        <div>
+                            <FeedItem
+                                actor={profile.actor}
+                                comments={post.object.replies}
+                                layout='feed'
+                                object={post.object}
+                                type={post.type}
+                                onCommentClick={() => {}}
+                            />
+                            {index < posts.length - 1 && (
+                                <div className="h-px w-full bg-grey-200"></div>
+                            )}
+                        </div>
                     ))}
                 </div>
             )
@@ -278,24 +283,6 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                                 onClick={toggleExpand}
                             />}
                         </div>)}
-                        <Heading className='mt-8' level={5}>Posts</Heading>
-                        
-                        {posts.map((post) => {
-                            if (post.type === 'Announce') {
-                                return null;
-                            } else {
-                                return (
-                                    <FeedItem
-                                        actor={profile.actor}
-                                        comments={post.object.replies}
-                                        layout='feed'
-                                        object={post.object}
-                                        type={post.type}
-                                        onCommentClick={() => {}}
-                                    />
-                                );
-                            }
-                        })}
                         <TabView<ProfileTab>
                             containerClassName='mt-6'
                             selectedTab={selectedTab}
