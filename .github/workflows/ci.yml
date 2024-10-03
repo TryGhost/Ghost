@@ -50,6 +50,23 @@ jobs:
           [[ "${{ secrets.NPM_TOKEN }}" ]] || { echo "Missing NPM token"; }
           [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing admin token";  }
 
+      - name: Get User Permission
+        id: checkAccess
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        if: steps.checkAccess.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+
+
       - name: Get metadata (push)
         if: github.event_name == 'push'
         run: |
@@ -980,27 +997,10 @@ jobs:
           architecture: "x64"
           cache: 'pip'
 
-      - name: Get User Permission
-        id: checkAccess
-        uses: actions-cool/check-user-permission@v2
-        with:
-          require: write
-          username: ${{ github.triggering_actor }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check User Permission
-        if: steps.checkAccess.outputs.require-result == 'false'
-        run: |
-          echo "${{ github.triggering_actor }} does not have permissions on this repo."
-          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
-          echo "Job originally triggered by ${{ github.actor }}"
-          exit 1
-
-
       - name: Validate input
         run: |
-          [[ "$TB_ADMIN_TOKEN" ]] || { echo "Missing TB_ADMIN_TOKEN"; exit 1; }
-          [[ "$TB_HOST" ]] || { echo "Missing TB_HOST"; exit 1; }
+          [[ "${{ secrets.TB_ADMIN_TOKEN }}" ]] || { echo "Missing TB_ADMIN_TOKEN"; exit 1; }
+          [[ "${{ secrets.TB_HOST }}" ]] || { echo "Missing TB_HOST"; exit 1; }
 
       - name: Set environment variables
         run: |
