@@ -1,5 +1,9 @@
 # Datasource fixtures
 
+## NDJSON files
+These files are fixtures used for running tests
+
+## Schema JSON files
 The file mockingbird-schema.json is a schema for generating fake data using the Mockingbird CLI.
 
 The CLI is installed via npm:

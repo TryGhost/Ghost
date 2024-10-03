@@ -2,36 +2,43 @@ import Flexsearch from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
-    constructor({adminUrl, apiKey}) {
+    constructor({adminUrl, apiKey, dir}) {
         this.api = new GhostContentAPI({
             url: adminUrl,
             key: apiKey,
             version: 'v5.0'
         });
-
+        const rtl = (dir === 'rtl');
+        const tokenize = (dir === 'rtl') ? 'reverse' : 'forward';
         this.postsIndex = new Flexsearch.Document({
-            tokenize: 'forward',
+            tokenize: tokenize,
+            rtl: rtl,
             document: {
                 id: 'id',
                 index: ['title', 'excerpt'],
                 store: true
-            }
+            },
+            ...this.#getEncodeOptions()
         });
         this.authorsIndex = new Flexsearch.Document({
-            tokenize: 'forward',
+            tokenize: tokenize,
+            rtl: rtl,
             document: {
                 id: 'id',
                 index: ['name'],
                 store: true
-            }
+            },
+            ...this.#getEncodeOptions()
         });
         this.tagsIndex = new Flexsearch.Document({
-            tokenize: 'forward',
+            tokenize: tokenize,
+            rtl: rtl,
             document: {
                 id: 'id',
                 index: ['name'],
                 store: true
-            }
+            },
+            ...this.#getEncodeOptions()
         });
 
         this.init = this.init.bind(this);
@@ -131,6 +138,19 @@ export default class SearchIndex {
             posts: this.#normalizeSearchResult(posts),
             authors: this.#normalizeSearchResult(authors),
             tags: this.#normalizeSearchResult(tags)
+        };
+    }
+
+    #getEncodeOptions() {
+        const regex = new RegExp(
+            `[\u{4E00}-\u{9FFF}\u{3040}-\u{309F}\u{30A0}-\u{30FF}\u{AC00}-\u{D7A3}\u{3400}-\u{4DBF}\u{20000}-\u{2A6DF}\u{2A700}-\u{2B73F}\u{2B740}-\u{2B81F}\u{2B820}-\u{2CEAF}\u{2CEB0}-\u{2EBEF}\u{30000}-\u{3134F}\u{31350}-\u{323AF}\u{2EBF0}-\u{2EE5F}\u{F900}-\u{FAFF}\u{2F800}-\u{2FA1F}]|[0-9A-Za-zа-я\u00C0-\u017F\u0400-\u04FF\u0600-\u06FF\u0980-\u09FF\u1E00-\u1EFF]+`,
+            'mug'
+        );
+
+        return {
+            encode: (str) => {
+                return ('' + str).toLowerCase().match(regex) ?? [];
+            }
         };
     }
 }

@@ -29,7 +29,7 @@ export default class TechnicalComponent extends Component {
     ReactComponent = (props) => {
         const {selected} = props;
 
-        const colorPalette = statsStaticColors.slice(1, 5);
+        const colorPalette = statsStaticColors.slice(0, 5);
 
         const params = getStatsParams(
             this.config,
@@ -60,12 +60,76 @@ export default class TechnicalComponent extends Component {
 
         const transformedData = (data ?? []).map((item, index) => ({
             name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
-            value: item.hits,
+            value: item.visits,
             color: colorPalette[index]
         }));
 
         return (
             <div className="gh-stats-piechart-container">
+                <div className="gh-stats-piechart">
+                    <DonutChart
+                        data={data}
+                        meta={meta}
+                        loading={loading}
+                        error={error}
+                        index={indexBy}
+                        categories={['visits']}
+                        colorPalette={colorPalette}
+                        backgroundColor="transparent"
+                        fontSize="13px"
+                        textColor="#AEB7C1"
+                        showLegend={true}
+                        params={params}
+                        height="230px"
+                        options={{
+                            color: colorPalette,
+                            tooltip: {
+                                show: true,
+                                trigger: 'item',
+                                backgroundColor: '#fff',
+                                textStyle: {
+                                    color: '#15171A'
+                                },
+                                extraCssText: 'border: none !important; box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02); padding: 6px 10px;',
+                                formatter: function (fparams) {
+                                    return `<span style="background-color: ${fparams.color}; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px;"></span> <span class="gh-stats-tooltip-label">${fparams.name}</span> <span class="gh-stats-tooltip-value">${formatNumber(fparams.value)}</span>`;
+                                }
+                            },
+                            legend: {
+                                show: false,
+                                orient: 'vertical',
+                                left: 'left',
+                                textStyle: {
+                                    color: '#AEB7C1'
+                                }
+                            },
+                            series: [
+                                {
+                                    animation: true,
+                                    name: tableHead,
+                                    padAngle: 1.5,
+                                    type: 'pie',
+                                    radius: ['67%', '90%'],
+                                    center: ['50%', '50%'], // Adjusted to align the chart to the top
+                                    data: transformedData,
+                                    label: {
+                                        show: false,
+                                        formatter: '{b}: {c}'
+                                    },
+                                    labelLine: {
+                                        lineStyle: {
+                                            color: '#DDE1E5'
+                                        },
+                                        smooth: 0.2,
+                                        length: 10,
+                                        length2: 20
+                                    },
+                                    padding: 0
+                                }
+                            ]
+                        }}
+                    />
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -94,69 +158,6 @@ export default class TechnicalComponent extends Component {
                         ))}
                     </tbody>
                 </table>
-                <div className="gh-stats-piechart">
-                    <DonutChart
-                        data={data}
-                        meta={meta}
-                        loading={loading}
-                        error={error}
-                        index={indexBy}
-                        categories={['hits']}
-                        colorPalette={colorPalette}
-                        backgroundColor="transparent"
-                        fontSize="13px"
-                        textColor="#AEB7C1"
-                        showLegend={true}
-                        params={params}
-                        height="210px"
-                        options={{
-                            color: colorPalette,
-                            tooltip: {
-                                show: true,
-                                trigger: 'item',
-                                backgroundColor: '#fff',
-                                textStyle: {
-                                    color: '#15171A'
-                                },
-                                extraCssText: 'border: none !important; box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);',
-                                formatter: function (fparams) {
-                                    return `<span style="background-color: ${fparams.color}; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px;"></span> ${fparams.name}: ${formatNumber(fparams.value)}`;
-                                }
-                            },
-                            legend: {
-                                show: false,
-                                orient: 'vertical',
-                                left: 'left',
-                                textStyle: {
-                                    color: '#AEB7C1'
-                                }
-                            },
-                            series: [
-                                {
-                                    animation: true,
-                                    name: tableHead,
-                                    type: 'pie',
-                                    radius: ['60%', '90%'],
-                                    center: ['50%', '50%'], // Adjusted to align the chart to the top
-                                    data: transformedData,
-                                    label: {
-                                        show: false,
-                                        formatter: '{b}: {c}'
-                                    },
-                                    labelLine: {
-                                        lineStyle: {
-                                            color: '#DDE1E5'
-                                        },
-                                        smooth: 0.2,
-                                        length: 10,
-                                        length2: 20
-                                    },
-                                    padding: 0
-                                }
-                            ]
-                        }}
-                    />
-                </div>
             </div>
         );
     };

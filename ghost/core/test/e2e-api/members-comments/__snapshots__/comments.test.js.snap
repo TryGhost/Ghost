@@ -147,7 +147,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
@@ -1678,7 +1678,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>First.</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -1695,7 +1695,7 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "<p>Really original</p>",
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -1717,14 +1717,14 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p></p><p>New line</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": null,
+        "name": "Egon Spengler",
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
@@ -1766,7 +1766,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>First.</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -1783,7 +1783,7 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "<p>Really original</p>",
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -1805,14 +1805,14 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p></p><p>New line</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": null,
+        "name": "Egon Spengler",
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
@@ -1854,14 +1854,14 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p></p><p>New line</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": null,
+        "name": "Egon Spengler",
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
@@ -1874,7 +1874,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>First.</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -1891,7 +1891,7 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "<p>Really original</p>",
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -1979,7 +1979,7 @@ Object {
     Object {
       "count": Object {
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1993,26 +1993,7 @@ Object {
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": Any<Number>,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "This is a reply",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "liked": Any<Boolean>,
-          "member": Object {
-            "avatar_image": null,
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": null,
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "status": "published",
-        },
-      ],
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -2023,7 +2004,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can edi
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "678",
+  "content-length": "370",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2034,9 +2015,9 @@ Object {
 
 exports[`Comments API when commenting enabled for all when authenticated Can fetch counts 1: [body] 1`] = `
 Object {
-  "618ba1ffbe2896088840a6df": 15,
-  "618ba1ffbe2896088840a6e1": 0,
-  "618ba1ffbe2896088840a6e3": 0,
+  "618ba1ffbe2896088840a6df": 1,
+  "618ba1ffbe2896088840a6e1": 2,
+  "618ba1ffbe2896088840a6e3": 3,
 }
 `;
 
@@ -2044,7 +2025,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can fet
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "89",
+  "content-length": "88",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2064,6 +2045,7 @@ Object {
       "edited_at": null,
       "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
@@ -2081,6 +2063,7 @@ Object {
           "edited_at": null,
           "html": "This is a reply",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
           "liked": Any<Boolean>,
           "member": Object {
             "avatar_image": null,
@@ -2098,11 +2081,48 @@ Object {
 }
 `;
 
+exports[`Comments API when commenting enabled for all when authenticated Can like a comment 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated Can like a comment 2: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Egon Spengler",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+}
+`;
+
 exports[`Comments API when commenting enabled for all when authenticated Can like a comment 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "687",
+  "content-length": "731",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2114,8 +2134,10 @@ exports[`Comments API when commenting enabled for all when authenticated Can lik
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "367",
+  "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2132,6 +2154,7 @@ Object {
       "edited_at": null,
       "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
@@ -2149,6 +2172,7 @@ Object {
           "edited_at": null,
           "html": "This is a reply",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
           "liked": Any<Boolean>,
           "member": Object {
             "avatar_image": null,
@@ -2170,7 +2194,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can lik
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "686",
+  "content-length": "730",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2183,7 +2207,7 @@ Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
@@ -2194,11 +2218,11 @@ Object {
     Object {
       "count": Object {
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply 0",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2219,7 +2243,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can lik
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "349",
+  "content-length": "356",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2233,7 +2257,7 @@ Object {
     Object {
       "count": Object {
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2247,26 +2271,7 @@ Object {
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": Any<Number>,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "This is a reply",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "liked": Any<Boolean>,
-          "member": Object {
-            "avatar_image": null,
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": null,
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "status": "published",
-        },
-      ],
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -2277,7 +2282,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can not
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "685",
+  "content-length": "377",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2361,11 +2366,11 @@ Object {
     Object {
       "count": Object {
         "likes": Any<Number>,
-        "replies": Any<Number>,
+        "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p></p><p>New line</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2375,26 +2380,7 @@ Object {
         "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": Any<Number>,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "This is a reply",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "liked": Any<Boolean>,
-          "member": Object {
-            "avatar_image": null,
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": null,
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "status": "published",
-        },
-      ],
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -2405,7 +2391,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can rem
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "687",
+  "content-length": "357",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2449,7 +2435,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
@@ -2490,7 +2476,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
@@ -2531,7 +2517,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
@@ -2595,7 +2581,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2625,7 +2611,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can req
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "407",
+  "content-length": "414",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2707,7 +2693,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>Really original</p>",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2725,7 +2711,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2743,7 +2729,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply 0",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2761,7 +2747,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply 1",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2779,7 +2765,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply 2",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2797,7 +2783,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2815,7 +2801,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "This is a reply",
+      "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2845,7 +2831,7 @@ exports[`Comments API when commenting enabled for all when authenticated Can ret
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2277",
+  "content-length": "2313",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2932,7 +2918,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>First.</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -2949,7 +2935,7 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "<p>Really original</p>",
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -2967,7 +2953,25 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "This is a reply",
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "status": "published",
+        },
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -2990,7 +2994,7 @@ exports[`Comments API when commenting enabled for all when authenticated Limits 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "974",
+  "content-length": "1308",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -3010,6 +3014,7 @@ Object {
       "edited_at": null,
       "html": "This is a reply 0",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
@@ -3029,7 +3034,7 @@ exports[`Comments API when commenting enabled for all when authenticated Limits 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "350",
+  "content-length": "372",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3051,6 +3056,7 @@ Object {
       "edited_at": null,
       "html": "This is a reply 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
@@ -3070,7 +3076,7 @@ exports[`Comments API when commenting enabled for all when authenticated Limits 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "350",
+  "content-length": "372",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3092,6 +3098,7 @@ Object {
       "edited_at": null,
       "html": "This is a reply 2",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
@@ -3111,7 +3118,7 @@ exports[`Comments API when commenting enabled for all when authenticated Limits 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "350",
+  "content-length": "372",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3133,6 +3140,7 @@ Object {
       "edited_at": null,
       "html": "<p>First.</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
@@ -3150,6 +3158,7 @@ Object {
           "edited_at": null,
           "html": "<p>Really original</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
           "liked": Any<Boolean>,
           "member": Object {
             "avatar_image": null,
@@ -3168,6 +3177,7 @@ Object {
           "edited_at": null,
           "html": "This is a reply",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
           "liked": Any<Boolean>,
           "member": Object {
             "avatar_image": null,
@@ -3186,6 +3196,7 @@ Object {
           "edited_at": null,
           "html": "This is a reply 0",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
           "liked": Any<Boolean>,
           "member": Object {
             "avatar_image": null,
@@ -3207,7 +3218,7 @@ exports[`Comments API when commenting enabled for all when authenticated Limits 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1285",
+  "content-length": "1373",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -3225,7 +3236,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>First.</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -3242,7 +3253,7 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "<p>Really original</p>",
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -3275,7 +3286,7 @@ exports[`Comments API when commenting enabled for all when not authenticated Can
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "753",
+  "content-length": "764",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -3293,7 +3304,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>First.</p>",
+      "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "member": Object {
@@ -3310,7 +3321,7 @@ Object {
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "edited_at": null,
-          "html": "<p>Really original</p>",
+          "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "liked": Any<Boolean>,
           "member": Object {
@@ -3343,7 +3354,7 @@ exports[`Comments API when commenting enabled for all when not authenticated Can
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "753",
+  "content-length": "764",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -3834,7 +3845,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
