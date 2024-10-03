@@ -289,6 +289,17 @@ async function editComment({state, api, data: {comment, parent}}: {state: Editab
     };
 }
 
+async function setOrder({data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
+    const data = await api.comments.browse({page: 1, postId: options.postId, order: order});
+
+    // replace comments in state with new ones
+    return {
+        comments: data.comments,
+        pagination: data.meta.pagination,
+        order
+    };
+}
+
 async function updateMember({data, state, api}: {data: {name: string, expertise: string}, state: EditableAppContext, api: GhostApi}) {
     const {name, expertise} = data;
     const patchData: {name?: string, expertise?: string} = {};
@@ -372,7 +383,8 @@ export const Actions = {
     addReply,
     loadMoreComments,
     loadMoreReplies,
-    updateMember
+    updateMember,
+    setOrder
 };
 
 export type ActionType = keyof typeof Actions;

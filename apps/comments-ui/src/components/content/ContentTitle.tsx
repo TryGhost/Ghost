@@ -1,3 +1,4 @@
+import {SortingForm} from './forms/SortingForm';
 import {formatNumber} from '../../utils/helpers';
 import {useAppContext} from '../../AppContext';
 
@@ -52,6 +53,9 @@ const ContentTitle: React.FC<ContentTitleProps> = ({title, showCount, count}) =>
                 <Title title={title}/>
             </h2>
             <Count count={count} showCount={showCount} />
+
+            <SortingForm/>
+
         </div>
     );
 };

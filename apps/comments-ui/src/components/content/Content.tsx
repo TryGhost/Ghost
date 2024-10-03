@@ -9,7 +9,7 @@ import {useEffect} from 'react';
 
 const Content = () => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
-    const commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
+    const commentsElements = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
     const labs = useLabs();
 
     const paidOnly = commentsEnabled === 'paid';

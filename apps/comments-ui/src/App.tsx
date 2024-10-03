@@ -27,7 +27,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         commentCount: 0,
         secundaryFormCount: 0,
         popup: null,
-        labs: null
+        labs: null,
+        order: 'best'
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -120,7 +121,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
 
     /** Fetch first few comments  */
     const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId});
+        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
