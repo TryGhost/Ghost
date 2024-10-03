@@ -14,28 +14,6 @@ type Attachment = {
     mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'video/mp4' | 'video/webm' | 'audio/mpeg' | 'audio/ogg' | null;
 };
 
-/*
-type Post = {
-    id: URL;
-    url: URL;
-
-    type: 'Note' | 'Article';
-
-    name: string;
-    content: string;
-    preview: { content: string } | null;
-    liked: boolean;
-    published: Date;
-    author: {
-        name: string;
-        username: string;
-        url: URL;
-        avatar: URL;
-    };
-    attachment: null | Attachment | Attachment[];
-};
- */
-
 type AttachmentResult = null | Attachment | [Attachment, Attachment, ...Attachment[]]
 
 function toAttachment(value: unknown): Attachment | null {
@@ -147,10 +125,10 @@ function FeedAttachment({object, layout}: {object: ObjectProperties, layout: 'mo
     }
 
     if (Array.isArray(attachment)) {
-        return <MultipleAttachment attachments={attachment} layout={layout} />
+        return <MultipleAttachment attachments={attachment} layout={layout} />;
     }
 
-    return <SingleAttachment attachment={attachment} object={object} />
+    return <SingleAttachment attachment={attachment} object={object} />;
 }
 
 function SingleInboxAttachment({attachment, object}: {attachment: Attachment, object: ObjectProperties}) {
@@ -212,7 +190,7 @@ function InboxAttachment({object}: {object: ObjectProperties}) {
         );
     }
 
-    return <SingleInboxAttachment attachment={attachment} object={object}/>
+    return <SingleInboxAttachment attachment={attachment} object={object}/>;
 }
 
 function getTimestamp(published: Date) {
@@ -368,14 +346,14 @@ function ItemHeading({children}: {children?: string }) {
     }
     return (
         <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{children[0]}</Heading>
-    )
+    );
 }
 
 function FeedLayoutArticleContent({object}: {object: ObjectProperties}) {
-    const content = object.preview ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
+    const content = object.preview ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>;
     return (
         <>
-            <FeedAttachment object={object} layout={null} />
+            <FeedAttachment layout={null} object={object} />
             <ItemHeading>
                 {object.name}
             </ItemHeading>
@@ -399,17 +377,17 @@ function FeedLayoutNoteContent({object}: {object: ObjectProperties}) {
                 {object.name}
             </ItemHeading>
             <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-            <FeedAttachment object={object} layout={null} />
+            <FeedAttachment layout={null} object={object} />
         </>
     );
 }
 
 function FeedLayoutContent({object}: {object: ObjectProperties}) {
     if (object.type === 'Article') {
-        return <FeedLayoutArticleContent object={object} />
+        return <FeedLayoutArticleContent object={object} />;
     }
     if (object.type === 'Note') {
-        return <FeedLayoutNoteContent object={object} />
+        return <FeedLayoutNoteContent object={object} />;
     }
 }
 
@@ -465,7 +443,7 @@ const FeedLayout = ({actor, object, type, comments = [], onClick = noop, onComme
             </div>
         </div>
     );
-}
+};
 
 const ModalLayout = ({actor, object, type, comments = [], onClick = noop, onCommentClick, author}: LayoutProps) => {
     const onLikeClick = () => {};
@@ -493,7 +471,7 @@ const ModalLayout = ({actor, object, type, comments = [], onClick = noop, onComm
                         <div className='flex flex-col'>
                             {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                             <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
-                            <FeedAttachment object={object} layout="modal"/>
+                            <FeedAttachment layout="modal" object={object}/>
                             <div className='space-between mt-5 flex'>
                                 <FeedItemStats
                                     commentCount={comments.length}
@@ -539,7 +517,7 @@ const ReplyLayout = ({actor, object, type, comments = [], onClick = noop, onComm
                     <div className='flex flex-col'>
                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                         <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                        <FeedAttachment object={object} layout={null}/>
+                        <FeedAttachment layout={null} object={object}/>
                         <div className='space-between mt-5 flex'>
                             <FeedItemStats
                                 commentCount={comments.length}
@@ -598,13 +576,12 @@ const InboxLayout = ({object, comments = [], onClick = noop, onCommentClick, aut
             </div>
         </div>
     );
-}
+};
 
 const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick = noop}) => {
     if (!object) {
         return null;
     }
-
 
     let author = actor;
     if (type === 'Announce' && object.type === 'Note') {
@@ -613,45 +590,45 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     if (layout === 'feed') {
         return <FeedLayout
-                   actor={actor}
-                   object={object}
-                   type={type}
-                   comments={comments}
-                   onClick={onClick}
-                   onCommentClick={onCommentClick}
-                   author={author}
-        />
+            actor={actor}
+            author={author}
+            comments={comments}
+            object={object}
+            type={type}
+            onClick={onClick}
+            onCommentClick={onCommentClick}
+        />;
     } else if (layout === 'modal') {
         return <ModalLayout
-                   actor={actor}
-                   object={object}
-                   type={type}
-                   comments={comments}
-                   onClick={onClick}
-                   onCommentClick={onCommentClick}
-                   author={author}
-        />
+            actor={actor}
+            author={author}
+            comments={comments}
+            object={object}
+            type={type}
+            onClick={onClick}
+            onCommentClick={onCommentClick}
+        />;
     } else if (layout === 'reply') {
         return <ReplyLayout
-                   actor={actor}
-                   object={object}
-                   type={type}
-                   comments={comments}
-                   onClick={onClick}
-                   onCommentClick={onCommentClick}
-                   author={author}
-                   last={last}
-        />
+            actor={actor}
+            author={author}
+            comments={comments}
+            last={last}
+            object={object}
+            type={type}
+            onClick={onClick}
+            onCommentClick={onCommentClick}
+        />;
     } else if (layout === 'inbox') {
         return <InboxLayout
-                   actor={actor}
-                   object={object}
-                   type={type}
-                   comments={comments}
-                   onClick={onClick}
-                   onCommentClick={onCommentClick}
-                   author={author}
-        />
+            actor={actor}
+            author={author}
+            comments={comments}
+            object={object}
+            type={type}
+            onClick={onClick}
+            onCommentClick={onCommentClick}
+        />;
     }
 
     return (<></>);
