@@ -2,12 +2,16 @@
 
 import Component from '@glimmer/component';
 import React from 'react';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {action} from '@ember/object';
 import {barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+
+countries.registerLocale(enLocale);
 
 export default class AllStatsModal extends Component {
     @inject config;
@@ -58,6 +62,10 @@ export default class AllStatsModal extends Component {
 
         this.router.transitionTo({queryParams: newQueryParams});
     }
+
+    getCountryName = (label) => {
+        return countries.getName(label, 'en') || 'Unknown';
+    };
 
     ReactComponent = (props) => {
         const {type} = props;
@@ -123,7 +131,9 @@ export default class AllStatsModal extends Component {
                                         className="gh-stats-favicon"
                                     />
                                 )}
-                                <span title={label || unknownOption}>{label || unknownOption}</span>
+                                {type === 'top-sources' && <span title={label || unknownOption}>{label || unknownOption}</span>}
+                                {type === 'top-locations' && <span title={this.getCountryName(label) || unknownOption}>{this.getCountryName(label) || unknownOption}</span>}
+                                {type === 'top-pages' && <span title={label}>{label}</span>}
                             </a>
                         </span>
                     )

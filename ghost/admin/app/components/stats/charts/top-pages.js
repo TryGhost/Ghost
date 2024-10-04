@@ -11,7 +11,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-const LIMIT = 7;
+const LIMIT = 6;
 
 export default class TopPages extends Component {
     @inject config;

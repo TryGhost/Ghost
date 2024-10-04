@@ -28,5 +28,27 @@ services:
     ports:
       - "6379:6379"
     restart: always
+  prometheus:
+    profiles: [monitoring]
+    image: prom/prometheus:v2.30.3
+    container_name: ghost-prometheus
+    ports:
+      - "9090:9090"
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  grafana:
+    profiles: [monitoring]
+    image: grafana/grafana:8.2.3
+    container_name: ghost-grafana
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
 volumes:
   mysql-data:

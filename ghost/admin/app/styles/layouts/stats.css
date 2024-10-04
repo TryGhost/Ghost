@@ -284,7 +284,7 @@ a.gh-stats-data-label:hover {
     line-height: 1.3em;
 }
 
-.gh-stats-domain:hover {
+.gh-stats-domain:hover span {
     text-decoration: underline;
 }
 

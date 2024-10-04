@@ -19,6 +19,7 @@ const SUPPORTED_LOCALES = [
     'fi', // Finnish
     'fr', // French
     'gd', // Gaelic (Scottish)
+    'hi', // Hindi
     'hr', // Croatian
     'hu', // Hungarian
     'id', // Indonesian
@@ -49,6 +50,7 @@ const SUPPORTED_LOCALES = [
     'th', // Thai
     'tr', // Turkish
     'uk', // Ukrainian
+    'ur', // Urdu
     'uz', // Uzbek
     'vi', // Vietnamese
     'zh', // Chinese
