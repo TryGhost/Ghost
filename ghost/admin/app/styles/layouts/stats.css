@@ -1,0 +1,453 @@
+.gh-stats-header header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+}
+
+.gh-stats-header header .view-actions {
+    justify-self: end;
+}
+
+.gh-stats .view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-bottom: 32px !important;
+}
+
+.gh-stats .view-actions {
+    flex-direction: row !important;
+}
+
+.gh-stats .gh-canvas-header-content {
+    min-height: unset !important;
+}
+
+.gh-stats-grid {
+    display: grid;
+    gap: 32px;
+}
+
+.gh-stats-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.gh-stats-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-stats-container.no-gap {
+    gap: 0;
+}
+
+.gh-stats-container > .gh-stats-metric-label,
+.gh-stats-metric-header {
+    margin-bottom: 12px;
+}
+
+.gh-stats-container:hover {
+    box-shadow: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,.03), 0 8px 10px -8px rgba(0,0,0,.1);
+}
+
+.gh-stats-tabs-header {
+    position: relative;
+    display: flex;
+    margin: -20px -20px 20px;
+    padding: 0;
+    overflow: hidden;
+    justify-content: space-between;
+}
+
+.gh-stats-tabs-header:before {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--whitegrey);
+}
+
+.gh-stats-tabs {
+    display: flex;
+}
+
+.gh-stats-tab {
+    position: relative;
+    margin: 0 0 1px 0;
+    /* color: var(--darkgrey); */
+}
+
+/* .gh-stats-tab:not(.is-selected) .gh-stats-metric-label {
+    color: var(--darkgrey);
+} */
+
+.gh-stats-tab:hover {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-stats-tab.is-selected {
+    color: var(--black);
+}
+
+.gh-stats-tab.is-selected:before {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    background: var(--black);
+}
+
+.gh-stats-metric {
+    width: 100%;
+    padding: 16px 20px;
+}
+
+.gh-stats-tab.min-width .gh-stats-metric {
+    min-width: 180px;
+}
+
+.gh-stats-metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--whitegrey);
+    margin: -4px -20px 12px;
+    padding: 0 20px 16px;
+}
+
+.gh-stats-metric-data {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+
+.gh-stats-metric-label {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+.gh-stats-metric-value {
+    font-size: 26px;
+    letter-spacing: -0.05em;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.gh-stats-piechart-container {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+}
+
+.gh-stats-piechart-container table {
+    margin-top: -15px;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.gh-stats-piechart-container .table td,
+.gh-stats-piechart-container.table th,
+.gh-stats-piechart-container table td,
+.gh-stats-piechart-container table th {
+    padding: 6px 6px 6px 0px;
+}
+
+.gh-stats-piechart {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    margin-left: -20px;
+}
+
+.gh-stats-section-dropdown {
+    padding: 0 8px 0 0 !important;
+    height: 28px;
+    border: none !important;
+    cursor: pointer;
+    overflow: hidden;
+    margin-right: -8px;
+}
+
+.gh-stats-section-dropdown.ember-power-select-trigger.gh-btn span {
+    padding-right: 4px;
+}
+
+.gh-stats-section-dropdown.ember-power-select-trigger:not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
+    margin-top: 0;
+}
+
+.gh-stats-kpi-granularity {
+    padding: 12px 20px;
+}
+
+@media (max-width: 1440px) {
+    .gh-stats-tab.min-width .gh-stats-metric {
+        min-width: 150px;
+    }
+
+    .gh-stats-metric-label {
+        font-size: 14px;
+    }
+}
+
+.gh-stats-data-header {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: none;
+    color: var(--midgrey);
+}
+
+.gh-stats-see-all-btn span {
+    height: unset;
+    padding: 0;
+    line-height: 1;
+    color: var(--black);
+}
+
+.gh-stats-see-all-btn:hover span {
+    color: var(--green);
+}
+
+.gh-stats-data-label,
+.gh-stats-data-value {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.gh-stats-data-label {
+    color: var(--black);
+}
+
+a.gh-stats-data-label:hover {
+    text-decoration: underline;
+}
+
+.gh-stats-data-value {
+    color: var(--middarkgrey);
+}
+
+.gh-stats-see-all-container {
+    position: relative;
+}
+
+.gh-stats-see-all-container::before {
+    pointer-events: none;
+    position: absolute;
+    display: block;
+    content: '';
+    left: 0;
+    right: 0;
+    top: -60px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.0) 0%, #FFF 100%);
+    height: 60px;
+    z-index: 9999;
+}
+
+.gh-stats-all-container {
+    max-height: calc(100vh - 12vw - 172px);
+    overflow: auto;
+    margin: -4px -32px;
+    padding: 4px 32px;
+}
+
+.gh-stats-all-container > div > div {
+    overflow-y: unset !important;
+}
+
+.gh-stats-kpis-chart-container {
+    margin-top: -20px;
+}
+
+.gh-stats-domain {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--black);
+    line-height: 1.3em;
+}
+
+.gh-stats-domain:hover span {
+    text-decoration: underline;
+}
+
+.gh-stats-favicon {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-stats-domain span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.gh-stats-tooltip-header {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.gh-stats-tooltip-data {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-stats-tooltip-label {
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--middarkgrey)
+}
+
+.gh-stats-tooltip-value {
+    font-family: var(--font-family-mono);
+    font-size: 12.5px;
+    margin-left: 10px;
+}
+
+.gh-stats-tooltip-marker {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 3px;
+}
+
+/* Filters */
+.gh-stats-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: -24px;
+}
+
+.gh-stats-filters {
+    grid-column: span 2;
+}
+
+.gh-stats-filter-pill {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    /* border: 1px solid var(--purple); */
+    border: 1px solid rgba(142,68,254,0.75);
+    border-radius: 999px;
+    padding: 4px 12px;
+    background-color: rgba(142,68,254,0.06);
+}
+
+.gh-stats-filter-pill .value {
+    font-weight: 700;
+}
+
+.gh-btn-clear-filters {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 999px;
+    color: var(--black);
+    padding: 4px 12px;
+    border: 1px solid var(--whitegrey);
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-btn-clear-filters:hover {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-btn-clear-filters svg {
+    width: 10px;
+    height: 10px;
+    stroke: var(--red);
+}
+
+.gh-btn-clear-filters svg path {
+    stroke-width: 2px;
+}
+
+.gh-stats-audience-filter-menu {
+    max-width: 240px;
+    min-width: 220px;
+}
+
+.gh-stats-placeholder {
+    width: 60px;
+    color: var(--lightgrey);
+    margin-bottom: -8px;
+}
+
+.gh-stats-technical-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-stats-technical-data {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.gh-stats-audience-filter-btn-label {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 1440px) {
+    .gh-stats-filters {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 1140px) {
+    .gh-stats-grid.cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .gh-stats-tab.is-selected:before {
+        display: none;
+    }
+
+    .gh-stats-tab.is-selected {
+        border-bottom: 2px solid var(--black);
+    }
+}
+
+@media (max-width: 990px) {
+    .gh-stats-tabs {
+        max-width: 100%;
+        overflow: auto;
+    }
+}
+
+@media (max-width: 390px) {
+    .gh-stats-audience-filter-btn-label {
+        display: none !important;
+    }
+
+    .gh-stats-btn-audience-filter svg {
+        margin-right: 0 !important;
+    }
+}

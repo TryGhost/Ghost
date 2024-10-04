@@ -14,6 +14,7 @@ function isString(str) {
 export default class PublishFlowOptions extends Component {
     @service settings;
     @service feature;
+    @service router;
 
     @tracked errorMessage;
 
@@ -92,13 +93,38 @@ export default class PublishFlowOptions extends Component {
 
         try {
             yield this.args.saveTask.perform();
-            if (this.feature.publishFlowEndScreen) {
-                if (this.args.publishOptions.isScheduled) {
-                    localStorage.setItem('ghost-last-scheduled-post', this.args.publishOptions.post.id);
-                    window.location.href = '/ghost/#/posts?type=scheduled';
+
+            if (this.args.publishOptions.isScheduled) {
+                try {
+                    localStorage.setItem('ghost-last-scheduled-post', JSON.stringify({
+                        id: this.args.publishOptions.post.id,
+                        type: this.args.publishOptions.post.displayName
+                    }));
+                } catch (e) {
+                    // ignore localStorage errors
+                }
+                if (this.args.publishOptions.post.displayName !== 'page') {
+                    this.router.transitionTo('posts');
                 } else {
-                    localStorage.setItem('ghost-last-published-post', this.args.publishOptions.post.id);
-                    window.location.href = `/ghost/#/posts/analytics/${this.args.publishOptions.post.id}`;
+                    this.router.transitionTo('pages');
+                }
+            } else {
+                try {
+                    localStorage.setItem('ghost-last-published-post', JSON.stringify({
+                        id: this.args.publishOptions.post.id,
+                        type: this.args.publishOptions.post.displayName
+                    }));
+                } catch (e) {
+                    // ignore localStorage errors
+                }
+                if (this.args.publishOptions.post.displayName !== 'page') {
+                    if (this.args.publishOptions.post.hasEmail) {
+                        this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
+                    } else {
+                        this.router.transitionTo('posts');
+                    }
+                } else {
+                    this.router.transitionTo('pages');
                 }
             }
         } catch (e) {

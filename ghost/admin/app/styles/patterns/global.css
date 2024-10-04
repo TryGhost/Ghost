@@ -169,7 +169,7 @@
     --main-layout-section-vpadding: 3vw;
 
     /* Style values */
-    --border-radius: 3px;
+    --border-radius: 5px;
     --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 
@@ -199,7 +199,7 @@
 
     /* Inputs */
     --input-bg-color: var(--white);
-    --input-border-color: var(--whitegrey-d2);
+    --input-border-color: var(--whitegrey-d1);
     --input-border: var(--input-border-color) 1px solid;
 }
 

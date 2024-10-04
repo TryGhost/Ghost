@@ -41,6 +41,7 @@ export function getSiteData({
     membersSupportAddress: members_support_address = 'support@example.com',
     editorDefaultEmailRecipients: editor_default_email_recipients = 'visibility',
     newsletters = [],
+    posts = getPostsData(),
     commentsEnabled,
     recommendations = [],
     recommendationsEnabled
@@ -71,7 +72,8 @@ export function getSiteData({
         newsletters,
         recommendations,
         recommendations_enabled: !!recommendationsEnabled,
-        editor_default_email_recipients
+        editor_default_email_recipients,
+        posts
     };
 }
 
@@ -173,6 +175,33 @@ export function getNewslettersData({numOfNewsletters = 3} = {}) {
         }));
     }
     return newsletters.slice(0, numOfNewsletters);
+}
+
+export function getPostsData({numOfPosts = 3} = {}) {
+    const posts = [];
+    for (let i = 0; i < numOfPosts; i++) {
+        posts.push(getPostData({
+            title: `Post ${i + 1}`,
+            slug: `post-${i + 1}`
+        }));
+    }
+    return posts.slice(0, numOfPosts);
+}
+
+export function getPostData({
+    id = `post_${objectId()}`,
+    title = 'Post',
+    excerpt = 'Post excerpt',
+    slug = 'post',
+    featured = false
+} = {}) {
+    return {
+        id,
+        title,
+        excerpt,
+        slug,
+        featured
+    };
 }
 
 export function getProductsData({numOfProducts = 3} = {}) {

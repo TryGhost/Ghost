@@ -67,6 +67,10 @@ export default function mockPosts(server) {
             attrs.slug = dasherize(attrs.title);
         }
 
+        if (attrs.title) {
+            attrs.title = attrs.title.trim();
+        }
+
         return posts.create(attrs);
     });
 
@@ -90,6 +94,10 @@ export default function mockPosts(server) {
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
+
+        if (attrs.title) {
+            attrs.title = attrs.title.trim();
+        }
 
         attrs.updatedAt = moment.utc().toDate();
 
@@ -117,15 +125,15 @@ export default function mockPosts(server) {
         return posts.create(attrs);
     });
 
-    server.put('/posts/bulk/', function ({tags}, {requestBody}) {
+    server.put('/posts/bulk/', function ({posts, tags}, {queryParams, requestBody}) {
         const bulk = JSON.parse(requestBody).bulk;
         const action = bulk.action;
-        // const ids = extractFilterParam('id', queryParams.filter);
+        const ids = extractFilterParam('id', queryParams.filter);
 
         if (action === 'addTag') {
             // create tag so we have an id from the server
             const newTags = bulk.meta.tags;
-            
+
             // check applied tags to see if any new ones should be created
             newTags.forEach((tag) => {
                 if (!tag.id) {
@@ -136,5 +144,27 @@ export default function mockPosts(server) {
             // const postsToUpdate = posts.find(ids);
             // getting the posts is fine, but within this we CANNOT manipulate them (???) not even iterate with .forEach
         }
+
+        if (action === 'access') {
+            const postsToUpdate = posts.find(ids);
+            postsToUpdate.models.forEach((post) => {
+                post.visibility = bulk.meta.visibility;
+                post.tierIds = bulk.meta.tiers.map(tier => tier.id);
+                post.save();
+            });
+        }
+
+        return {
+            bulk: {
+                meta: {
+                    errors: [],
+                    stats: {
+                        successful: ids.length,
+                        unsuccessful: 0
+                    },
+                    unsuccessfulData: []
+                }
+            }
+        };
     });
 }

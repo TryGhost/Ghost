@@ -19,6 +19,7 @@ const tiersService = require('../tiers');
 const VerificationTrigger = require('@tryghost/verification-trigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
+const RequestIntegrityTokenProvider = require('./RequestIntegrityTokenProvider');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -192,6 +193,11 @@ module.exports = {
 
     ssr: null,
     verificationTrigger: null,
+
+    requestIntegrityTokenProvider: new RequestIntegrityTokenProvider({
+        themeSecret: settingsCache.get('theme_session_secret'),
+        tokenDuration: 1000 * 60 * 5
+    }),
 
     stripeConnect: require('./stripe-connect'),
 

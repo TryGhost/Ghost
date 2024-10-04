@@ -296,7 +296,8 @@ class StaffServiceEmails {
                 donation: {
                     name: donationPaymentEvent.name ?? donationPaymentEvent.email,
                     email: donationPaymentEvent.email,
-                    amount: formattedAmount
+                    amount: formattedAmount,
+                    donationMessage: donationPaymentEvent.donationMessage
                 },
                 memberData,
                 accentColor: this.settingsCache.get('accent_color')
@@ -494,10 +495,14 @@ class StaffServiceEmails {
             sharedData = await this.getSharedData(data.recipient);
         }
 
-        return htmlTemplate({
+        const html = htmlTemplate({
             ...data,
             ...sharedData
         });
+
+        const juice = require('juice');
+
+        return juice(html, {inlinePseudoElements: true, removeStyleTags: true});
     }
 
     async renderText(templateName, data) {

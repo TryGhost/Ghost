@@ -5,5 +5,6 @@ export default Model.extend({
     authors: hasMany('user'),
     email: belongsTo(),
     newsletter: belongsTo(),
-    postRevisions: hasMany()
+    postRevisions: hasMany(),
+    tiers: hasMany()
 });

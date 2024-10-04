@@ -31,6 +31,7 @@ export default class ModalPostHistory extends Component {
         super(...arguments);
         this.post = this.args.model.post;
         this.editorAPI = this.args.model.editorAPI;
+        this.secondaryEditorAPI = this.args.model.secondaryEditorAPI;
         this.toggleSettingsMenu = this.args.model.toggleSettingsMenu;
     }
 
@@ -102,6 +103,11 @@ export default class ModalPostHistory extends Component {
     }
 
     @action
+    registerSecondarySelectedEditorApi(api) {
+        this.secondarySelectedEditor = api;
+    }
+
+    @action
     registerComparisonEditorApi(api) {
         this.comparisonEditor = api;
     }
@@ -130,6 +136,7 @@ export default class ModalPostHistory extends Component {
             updateEditor: () => {
                 const state = this.editorAPI.editorInstance.parseEditorState(revision.lexical);
                 this.editorAPI.editorInstance.setEditorState(state);
+                this.secondaryEditorAPI.editorInstance.setEditorState(state);
             },
             closePostHistoryModal: () => {
                 this.closeModal();

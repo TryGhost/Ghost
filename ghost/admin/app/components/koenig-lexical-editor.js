@@ -248,7 +248,7 @@ export default class KoenigLexicalEditor extends Component {
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
-    @task({restartable: true})
+    @task({restartable: false})
     *fetchOffersTask() {
         if (this.offers) {
             return this.offers;
@@ -257,7 +257,7 @@ export default class KoenigLexicalEditor extends Component {
         return this.offers;
     }
 
-    @task({restartable: true})
+    @task({restartable: false})
     *fetchLabelsTask() {
         if (this.labels) {
             return this.labels;
@@ -318,7 +318,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const donationLink = () => {
-                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                if (this.settings.donationsEnabled) {
                     return [{
                         label: 'Tips and donations',
                         value: '#/portal/support'
@@ -678,34 +678,43 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerDocId = cardConfig.post.id;
         const multiplayerUsername = this.session.user.name;
 
+        const KGEditorComponent = ({isInitInstance}) => {
+            return (
+                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
+                    <KoenigComposer
+                        editorResource={this.editorResource}
+                        cardConfig={cardConfig}
+                        enableMultiplayer={enableMultiplayer}
+                        fileUploader={{useFileUpload, fileTypes}}
+                        initialEditorState={this.args.lexical}
+                        multiplayerUsername={multiplayerUsername}
+                        multiplayerDocId={multiplayerDocId}
+                        multiplayerEndpoint={multiplayerEndpoint}
+                        onError={this.onError}
+                        darkMode={this.feature.nightShift}
+                        isTKEnabled={true}
+                    >
+                        <KoenigEditor
+                            editorResource={this.editorResource}
+                            cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
+                            placeholderText={isInitInstance ? null : this.args.placeholderText}
+                            darkMode={isInitInstance ? null : this.feature.nightShift}
+                            onChange={isInitInstance ? this.args.updateSecondaryInstanceModel : this.args.onChange}
+                            registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
+                        />
+                        <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
+                        <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
+                    </KoenigComposer>
+                </div>
+            );
+        };
+
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer
-                            editorResource={this.editorResource}
-                            cardConfig={cardConfig}
-                            enableMultiplayer={enableMultiplayer}
-                            fileUploader={{useFileUpload, fileTypes}}
-                            initialEditorState={this.args.lexical}
-                            multiplayerUsername={multiplayerUsername}
-                            multiplayerDocId={multiplayerDocId}
-                            multiplayerEndpoint={multiplayerEndpoint}
-                            onError={this.onError}
-                            darkMode={this.feature.nightShift}
-                            isTKEnabled={true}
-                        >
-                            <KoenigEditor
-                                editorResource={this.editorResource}
-                                cursorDidExitAtTop={this.args.cursorDidExitAtTop}
-                                placeholderText={this.args.placeholder}
-                                darkMode={this.feature.nightShift}
-                                onChange={this.args.onChange}
-                                registerAPI={this.args.registerAPI}
-                            />
-                            <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                            <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />
-                        </KoenigComposer>
+                        <KGEditorComponent />
+                        <KGEditorComponent isInitInstance={true} />
                     </Suspense>
                 </ErrorHandler>
             </div>

@@ -1,6 +1,6 @@
 <div class="flex flex-column h-100 items-center overflow-auto" data-test-modal="publish-flow">
     <header class="gh-publish-header">
-        <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}} data-test-button="close-publish-flow">
+        <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
             <span>{{svg-jar "arrow-left"}} Editor</span>
         </button>
 
@@ -45,14 +45,6 @@
                 @close={{@close}}
             />
         {{else if this.isComplete}}
-            {{#unless (feature "publishFlowEndScreen")}}
-                <Editor::Modals::PublishFlow::Complete
-                    @publishOptions={{@data.publishOptions}}
-                    @recipientType={{this.recipientType}}
-                    @postCount={{this.postCount}}
-                    @close={{@close}}
-                />
-            {{/unless}}
         {{else}}
             <Editor::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}

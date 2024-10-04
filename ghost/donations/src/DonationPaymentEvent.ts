@@ -5,6 +5,7 @@ export class DonationPaymentEvent {
     memberId: string | null;
     amount: number;
     currency: string;
+    donationMessage: string | null;
 
     attributionId: string | null;
     attributionUrl: string | null;
@@ -21,6 +22,7 @@ export class DonationPaymentEvent {
         this.memberId = data.memberId;
         this.amount = data.amount;
         this.currency = data.currency;
+        this.donationMessage = data.donationMessage;
 
         this.attributionId = data.attributionId;
         this.attributionUrl = data.attributionUrl;
