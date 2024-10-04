@@ -502,6 +502,7 @@ describe('Comments API', function () {
             });
 
             it('Can sort comments by oldest', async function () {
+                await setupBrowseCommentsData();
                 await membersAgent
                     .get(`/api/comments/post/${postId}/?order=oldest`)
                     .expectStatus(200)
@@ -517,6 +518,7 @@ describe('Comments API', function () {
             });
 
             it('Can sort comments by newest', async function () {
+                await setupBrowseCommentsData();
                 await membersAgent
                     .get(`/api/comments/post/${postId}/?order=newest`)
                     .expectStatus(200)
@@ -712,18 +714,23 @@ describe('Comments API', function () {
                     });
             });
 
-            it('can show most liked comment first', async function () {
-                const parentId = fixtureManager.get('comments', 0).id;
-
-                await membersAgent
-                    .post(`/api/comments/${parentId}/like/`)
-                    .expectStatus(204);
-
+            it('can show most liked comment first when order param = best', async function () {
+                await setupBrowseCommentsData();
                 const data = await membersAgent
-                    .get(`/api/comments/${parentId}/replies/?order=best`);
+                    .get(`/api/comments/post/${postId}`);
 
-                // check that the most liked comment is first
-                should(data.body.comments[0].count.likes).eql(1);
+                await dbFns.addLike({
+                    comment_id: data.body.comments[1].id,
+                    member_id: loggedInMember.id
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=best`)
+                    .expectStatus(200);
+
+                should(data2.body.comments[0].id).eql(data.body.comments[1].id);
+
+                // the second comment from data should now be the first comment in data2
             });
 
             it('Can remove a like (unlike)', async function () {
