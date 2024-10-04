@@ -27,7 +27,7 @@ echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
 
 # If no modified submodules, exit with status code 0, else remove them and continue
 if [[ -n "$MOD_SUBMODULES" ]]; then
-    echo "${grey}Removing submodules from commit...${no_color}"
+    echo -e "${grey}Removing submodules from commit...${no_color}"
     for SUB in $MOD_SUBMODULES
     do
         git reset --quiet HEAD "$SUB"
