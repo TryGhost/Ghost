@@ -2,7 +2,8 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+
+import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
@@ -167,15 +168,20 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
             title: 'Posts',
             contents: (
                 <div>
-                    {posts.map(post => (
-                        <FeedItem
-                            actor={profile.actor}
-                            comments={post.object.replies}
-                            layout='feed'
-                            object={post.object}
-                            type={post.type}
-                            onCommentClick={() => {}}
-                        />
+                    {posts.map((post, index) => (
+                        <div>
+                            <FeedItem
+                                actor={profile.actor}
+                                comments={post.object.replies}
+                                layout='feed'
+                                object={post.object}
+                                type={post.type}
+                                onCommentClick={() => {}}
+                            />
+                            {index < posts.length - 1 && (
+                                <div className="h-px w-full bg-grey-200"></div>
+                            )}
+                        </div>
                     ))}
                 </div>
             )
@@ -197,6 +203,21 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
             counter: profile.followerCount
         }
     ].filter(Boolean) as Tab<ProfileTab>[];
+
+    const [isExpanded, setisExpanded] = useState(false);
+
+    const toggleExpand = () => {
+        setisExpanded(!isExpanded);
+    };
+
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+
+    useEffect(() => {
+        if (contentRef.current) {
+            setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
+        }
+    }, [isExpanded]);
 
     return (
         <Modal
@@ -240,17 +261,28 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
                             />
                         </div>
                         <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                        <span className='mt-1 inline-block text-[1.5rem] text-grey-800'>{profile.handle}</span>
-                        <div
-                            dangerouslySetInnerHTML={{__html: profile.actor.summary}}
-                            className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
-                        />
-                        {attachments.map(attachment => (
-                            <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
-                                <span className={`text-xs font-semibold`}>{attachment.name}</span>
-                                <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
-                            </span>
-                        ))}
+                        <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-grey-800 hover:text-grey-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                        {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                            <div
+                                dangerouslySetInnerHTML={{__html: profile.actor.summary}}
+                                className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
+                            />
+                            {attachments.map(attachment => (
+                                <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
+                                    <span className={`text-xs font-semibold`}>{attachment.name}</span>
+                                    <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
+                                </span>
+                            ))}
+                            {!isExpanded && isOverflowing && (
+                                <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
+                            )}
+                            {isOverflowing && <Button
+                                className='absolute bottom-0 text-pink'
+                                label={isExpanded ? 'Show less' : 'Show all'}
+                                link={true}
+                                onClick={toggleExpand}
+                            />}
+                        </div>)}
                         <TabView<ProfileTab>
                             containerClassName='mt-6'
                             selectedTab={selectedTab}
