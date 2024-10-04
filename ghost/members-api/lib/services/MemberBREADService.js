@@ -381,6 +381,10 @@ module.exports = class MemberBREADService {
             'newsletters'
         ];
 
+        if (options.limit === 'all' || options.limit > 100) {
+            options.limit = 100;
+        }
+
         const originalWithRelated = options.withRelated || [];
 
         const withRelated = new Set((originalWithRelated).concat(defaultWithRelated));

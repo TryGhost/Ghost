@@ -40,6 +40,7 @@ module.exports = class RouterController {
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
      * @param {any} deps.newslettersService
+     * @param {any} deps.sentry
      */
     constructor({
         offersAPI,
@@ -54,7 +55,8 @@ module.exports = class RouterController {
         memberAttributionService,
         sendEmailWithMagicLink,
         labsService,
-        newslettersService
+        newslettersService,
+        sentry
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -69,6 +71,7 @@ module.exports = class RouterController {
         this._memberAttributionService = memberAttributionService;
         this.labsService = labsService;
         this._newslettersService = newslettersService;
+        this._sentry = sentry || undefined;
     }
 
     async ensureStripe(_req, res, next) {
@@ -80,6 +83,7 @@ module.exports = class RouterController {
             await this._stripeAPIService.ready();
             next();
         } catch (err) {
+            logging.error(err);
             res.writeHead(500);
             return res.end('There was an error configuring stripe');
         }
@@ -102,6 +106,7 @@ module.exports = class RouterController {
                 email = claims && claims.sub;
             }
         } catch (err) {
+            logging.error(err);
             res.writeHead(401);
             return res.end('Unauthorized');
         }
@@ -270,6 +275,8 @@ module.exports = class RouterController {
                     throw undefined;
                 }
             } catch (err) {
+                logging.error(err);
+                this._sentry?.captureException?.(err);
                 throw new BadRequestError({
                     message: tpl(messages.tierNotFound),
                     context: 'Tier with id "' + tierId + '" not found'
@@ -351,6 +358,8 @@ module.exports = class RouterController {
 
             return {url: paymentLink};
         } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
             throw new BadRequestError({
                 err,
                 message: tpl(messages.unableToCheckout)
@@ -381,6 +390,8 @@ module.exports = class RouterController {
 
             return {url: paymentLink};
         } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
             throw new BadRequestError({
                 err,
                 message: tpl(messages.unableToCheckout)
@@ -418,6 +429,8 @@ module.exports = class RouterController {
                         isAuthenticated = true;
                     }
                 } catch (err) {
+                    logging.error(err);
+                    this._sentry?.captureException?.(err);
                     throw new UnauthorizedError({err});
                 }
             } else if (req.body.customerEmail) {
@@ -592,6 +605,7 @@ module.exports = class RouterController {
                 res.writeHead(400);
                 return res.end('Bad Request.');
             }
+            logging.error(err);
 
             // Let the normal error middleware handle this error
             throw err;

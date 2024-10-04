@@ -1,3 +1,5 @@
+import moment from 'moment-timezone';
+
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
     {name: 'Last 7 days', value: 7},
@@ -106,6 +108,60 @@ export function generateMonochromePalette(baseColor, count = 10) {
     return palette;
 }
 
+export const barListColor = '#F1F3F4';
+
 export const statsStaticColors = [
-    '#8E42FF', '#B07BFF', '#C7A0FF', '#DDC6FF', '#EBDDFF', '#F7EDFF'
+    '#A568FF', '#7B7BFF', '#B3CEFF', '#D4ECF7', '#EFFDFD', '#F7F7F7'
 ];
+
+export const getCountryFlag = (countryCode) => {
+    if (!countryCode) {
+        return '🏳️';
+    }
+    return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
+    );
+};
+
+export function getDateRange(chartRange) {
+    const endDate = moment().endOf('day');
+    const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
+    return {startDate, endDate};
+}
+
+export function getStatsParams(config, props, additionalParams = {}) {
+    const {chartRange, audience, device, browser, location, source, pathname} = props;
+    const {startDate, endDate} = getDateRange(chartRange);
+
+    const params = {
+        site_uuid: config.stats.id,
+        date_from: startDate.format('YYYY-MM-DD'),
+        date_to: endDate.format('YYYY-MM-DD'),
+        ...additionalParams
+    };
+
+    if (audience.length > 0) {
+        params.member_status = audience.join(',');
+    }
+
+    if (device) {
+        params.device = device;
+    }
+
+    if (browser) {
+        params.browser = browser;
+    }
+
+    if (location) {
+        params.location = location;
+    }
+
+    if (source) {
+        params.source = source === 'direct' ? '' : source;
+    }
+
+    if (pathname) {
+        params.pathname = pathname;
+    }
+
+    return params;
+}

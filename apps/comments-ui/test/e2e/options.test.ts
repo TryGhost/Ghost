@@ -355,7 +355,6 @@ test.describe('Options', async () => {
             });
             expect(titleColor).toBe('rgb(0, 0, 0)');
         });
-
     });
 });
 

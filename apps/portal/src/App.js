@@ -861,7 +861,22 @@ export default class App extends React.Component {
                     signup: false
                 }
             };
+        } else if (path === 'account/newsletters/help') {
+            return {
+                page: 'emailReceivingFAQ',
+                pageData: {
+                    direct: true
+                }
+            };
+        } else if (path === 'account/newsletters/disabled') {
+            return {
+                page: 'emailSuppressionFAQ',
+                pageData: {
+                    direct: true
+                }
+            };
         }
+
         return {
             page: 'default'
         };
