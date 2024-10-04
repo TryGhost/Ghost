@@ -121,7 +121,13 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
 
     /** Fetch first few comments  */
     const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+        let dataPromise;
+        if (state.labs && state.labs.commentImprovements) {
+            dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+        } else {
+            dataPromise = api.comments.browse({page: 1, postId: options.postId});
+        }
+
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
