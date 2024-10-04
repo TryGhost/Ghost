@@ -38,7 +38,7 @@ if [[ -n "$MOD_SUBMODULES" ]]; then
 
     # If there are no changes to commit after removing submodules, abort to avoid an empty commit
     if output=$(git status --porcelain) && [ -z "$output" ]; then
-        echo -e "${red}No changes to commit, aborting...${no_color}"
+        echo -e "nothing to commit, working tree clean"
         exit 1
     fi
     exit 0
