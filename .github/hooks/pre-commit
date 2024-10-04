@@ -36,6 +36,12 @@ if [[ -n "$MOD_SUBMODULES" ]]; then
     done
     echo
     echo -e "Submodules removed from commit, continuing..."
+
+    if output=$(git status --porcelain) && [ -z "$output" ]; then
+        # Working directory clean
+        echo -e "${grey}No changes to commit, aborting...${no_color}"
+        exit 1
+    fi
     exit 0
 else
     echo "No submodules in commit, continuing..."
