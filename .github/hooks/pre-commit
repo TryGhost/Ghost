@@ -28,17 +28,15 @@ echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
 # If no modified submodules, exit with status code 0, else prompt the
 # user and exit accordingly
 if [[ -n "$MOD_SUBMODULES" ]]; then
-    echo "Submodules to be committed:"
-    echo "  (use \"git reset HEAD <file>...\" to unstage)"
-    echo
-
+    echo "${grey}Removing submodules from commit...${no_color}"
     for SUB in $MOD_SUBMODULES
     do
-        echo -e "\t${green}modified:\t$SUB${no_color}"
+        git reset HEAD "$SUB"
+        echo -e "\t${grey}removed:\t$SUB${no_color}"
     done
     echo
-    echo -e "${red}Aborting commit due to submodule update. Please unstage the submodule(s) and commit again.${no_color}"
-    exit 1
+    echo -e "Submodules removed from commit, continuing..."
+    exit 0
 else
     echo "No submodules in commit, continuing..."
     exit 0
