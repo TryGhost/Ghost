@@ -25,13 +25,12 @@ MOD_SUBMODULES=$(git diff --cached --name-only --ignore-submodules=none | grep -
 
 echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
 
-# If no modified submodules, exit with status code 0, else prompt the
-# user and exit accordingly
+# If no modified submodules, exit with status code 0, else remove them and continue
 if [[ -n "$MOD_SUBMODULES" ]]; then
     echo "${grey}Removing submodules from commit...${no_color}"
     for SUB in $MOD_SUBMODULES
     do
-        git reset HEAD "$SUB"
+        git reset --quiet HEAD "$SUB"
         echo -e "\t${grey}removed:\t$SUB${no_color}"
     done
     echo
