@@ -45,11 +45,11 @@ describe('Integration: Component: gh-alert', function () {
 
         this.message.type = 'warn';
         await settled();
-        expect(alert, 'warn class is yellow').to.have.class('gh-alert-blue');
+        expect(alert, 'warn class is black').to.have.class('gh-alert-black');
 
         this.message.type = 'info';
         await settled();
-        expect(alert, 'info class is blue').to.have.class('gh-alert-blue');
+        expect(alert, 'info class is black').to.have.class('gh-alert-black');
     });
 
     it('closes notification through notifications service', async function () {

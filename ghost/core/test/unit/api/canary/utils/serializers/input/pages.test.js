@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
 const mobiledocLib = require('@tryghost/html-to-mobiledoc');
 
@@ -66,6 +67,65 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.options.formats.should.not.containEql('lexical');
             frame.options.formats.should.containEql('html');
             frame.options.formats.should.containEql('plaintext');
+        });
+
+        describe('Content API', function () {
+            it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {}
+                    }
+                };
+
+                serializers.input.pages.browse(apiConfig, frame);
+                const columns = Object.keys(postsSchema);
+                const parsedSelectRaw = frame.options.selectRaw.split(',').map(column => column.trim());
+                parsedSelectRaw.should.eql(columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@','@@INDEXES@@'].includes(column)));
+            });
+
+            it('strips mobiledoc and lexical columns from a specified columns option', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        columns: ['id', 'mobiledoc', 'lexical', 'visibility']
+                    }
+                };
+
+                serializers.input.pages.browse(apiConfig, frame);
+                frame.options.columns.should.eql(['id', 'visibility']);
+            });
+
+            it('forces visibility column if columns are specified', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        columns: ['id']
+                    }
+                };
+                
+                serializers.input.pages.browse(apiConfig, frame);
+                frame.options.columns.should.eql(['id', 'visibility']);
+            });
+                
+            it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        selectRaw: 'id, mobiledoc, lexical'
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                frame.options.selectRaw.should.eql('id');
+            });
         });
     });
 

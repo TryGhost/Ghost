@@ -23,14 +23,15 @@ test.describe('Slack integration', async () => {
         // Failing validation
 
         await slackModal.getByLabel('Webhook URL').fill('badurl');
-        await slackModal.getByRole('button', {name: 'Save & close'}).click();
+        await slackModal.getByRole('button', {name: 'Save'}).click();
         await expect(slackModal).toContainText('The URL must be in a format like https://hooks.slack.com/services/<your personal key>');
 
         // Successful save
 
         await slackModal.getByLabel('Webhook URL').fill('https://hooks.slack.com/services/123456789/123456789/123456789');
         await slackModal.getByLabel('Username').fill('My site');
-        await slackModal.getByRole('button', {name: 'Save & close'}).click();
+        await slackModal.getByRole('button', {name: 'Save'}).click();
+        await slackModal.getByRole('button', {name: 'Close'}).click();
 
         await expect(slackModal).toHaveCount(0);
 
@@ -59,7 +60,7 @@ test.describe('Slack integration', async () => {
 
         await slackModal.getByLabel('Webhook URL').fill('https://hooks.slack.com/services/123456789/123456789/123456789');
 
-        await slackModal.getByRole('button', {name: 'Cancel'}).click();
+        await slackModal.getByRole('button', {name: 'Close'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -90,7 +91,7 @@ test.describe('Slack integration', async () => {
         // Doesn't send the request when validation fails
 
         await slackModal.getByLabel('Webhook URL').fill('badurl');
-        await slackModal.getByRole('button', {name: 'Save & close'}).click();
+        await slackModal.getByRole('button', {name: 'Save'}).click();
         await expect(slackModal).toContainText('The URL must be in a format like https://hooks.slack.com/services/<your personal key>');
         expect(lastApiRequests.testSlack).toBeUndefined();
 

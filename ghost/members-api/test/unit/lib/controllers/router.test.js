@@ -162,7 +162,7 @@ describe('RouterController', function () {
                 }
             });
 
-            it('returns a BadRequestError if offer is not found', async function () {
+            it('returns a BadRequestError if offer is not found by offerId', async function () {
                 offersAPI = {
                     getOffer: sinon.stub().resolves(null)
                 };
@@ -182,6 +182,56 @@ describe('RouterController', function () {
                 } catch (error) {
                     assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
                     assert.equal(error.context, 'Offer with id "invalid" not found');
+                }
+            });
+
+            it('returns a BadRequestError if tier is not found by tierId', async function () {
+                tiersService = {
+                    api: {
+                        read: sinon.stub().resolves(null)
+                    }
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'invalid', cadence: 'year'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Tier with id "invalid" not found');
+                }
+            });
+
+            it('returns a BadRequestError if fetching tier by tierId throws', async function () {
+                tiersService = {
+                    api: {
+                        read: sinon.stub().rejects(new Error('Fail to fetch tier'))
+                    }
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'invalid', cadence: 'year'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Tier with id "invalid" not found');
                 }
             });
         });
@@ -336,6 +386,53 @@ describe('RouterController', function () {
                 });
 
                 await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to archived newsletters Newsletter 2`);
+            });
+        });
+
+        describe('honeypot', function () {
+            let req, res, sendEmailWithMagicLinkStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'signup'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves();
+            });
+
+            it('Sends emails when honeypot is not filled', async function () {
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
+            });
+
+            it('Does not send emails when honeypot is filled', async function () {
+                const controller = createRouterController();
+
+                req.body.honeypot = 'filled!';
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                sendEmailWithMagicLinkStub.notCalled.should.be.true();
             });
         });
     });

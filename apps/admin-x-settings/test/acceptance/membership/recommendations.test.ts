@@ -1,12 +1,8 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Recommendations', async () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('recommendations', true);
-    });
-
     test('can view recommendations', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

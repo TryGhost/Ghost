@@ -5,18 +5,21 @@ import CloseButton from '../../components/common/CloseButton';
 import {getSupportAddress} from '../../utils/helpers';
 
 export default function EmailSuppressedPage() {
-    const {brandColor, onAction, site, t} = useContext(AppContext);
+    const {brandColor, onAction, site, t, pageData} = useContext(AppContext);
 
     const supportAddress = `mailto:${getSupportAddress({site})}`;
+    const directAccess = (pageData && pageData.direct) || false;
 
     return (
         <div className="gh-email-suppression-faq">
-            <header className='gh-portal-detail-header'>
-                <BackButton brandColor={brandColor} onClick={() => {
-                    onAction('switchPage', {page: 'emailSuppressed', lastPage: 'accountHome'});
-                }} />
-                <CloseButton />
-            </header>
+            {!directAccess &&
+                <header className='gh-portal-detail-header'>
+                    <BackButton brandColor={brandColor} onClick={() => {
+                        onAction('switchPage', {page: 'emailSuppressed', lastPage: 'accountHome'});
+                    }} />
+                    <CloseButton />
+                </header>
+            }
 
             <div className="gh-longform">
                 <h3>{t('Why has my email been disabled?')}</h3>
@@ -29,7 +32,7 @@ export default function EmailSuppressedPage() {
                 <p>{t('When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.')}</p>
                 <p>{t('In the event a permanent failure is received when attempting to send a newsletter, emails will be disabled on the account.')}</p>
                 <p>{t('If you would like to start receiving emails again, the best next steps are to check your email address on file for any issues and then click resubscribe on the previous screen.')}</p>
-                <p><a className='gh-portal-btn gh-portal-btn-branded' href={supportAddress} onClick={() => {
+                <p><a className='gh-portal-btn gh-portal-btn-branded no-margin-right' href={supportAddress} onClick={() => {
                     supportAddress && window.open(supportAddress);
                 }}>{t('Need more help? Contact support')}</a></p>
             </div>

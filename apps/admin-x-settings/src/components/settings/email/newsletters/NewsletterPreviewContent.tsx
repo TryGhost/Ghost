@@ -77,7 +77,6 @@ const NewsletterPreviewContent: React.FC<{
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
     const hasNewEmailAddresses = useFeatureFlag('newEmailAddresses');
-    const hasNewsletterExcerpt = useFeatureFlag('newsletterExcerpt');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -154,7 +153,7 @@ const NewsletterPreviewContent: React.FC<{
                                     )} style={{color: titleColor}}>
                                         Your email newsletter
                                     </h2>
-                                    {(hasNewsletterExcerpt && showExcerpt) && (
+                                    {showExcerpt && (
                                         <p className={excerptClasses}>A subtitle to highlight key points and engage your readers</p>
                                     )}
                                     <div className={clsx(

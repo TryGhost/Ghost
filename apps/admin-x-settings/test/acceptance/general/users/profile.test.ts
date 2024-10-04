@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
@@ -35,23 +35,23 @@ test.describe('User profile', async () => {
         // Validation failures
 
         await modal.getByLabel('Full name').fill('');
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Name is required');
 
         await modal.getByLabel('Email').fill('test');
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Enter a valid email address');
 
         await modal.getByLabel('Location').fill(new Array(195).join('a'));
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Location is too long');
 
         await modal.getByLabel('Bio').fill(new Array(210).join('a'));
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Bio is too long');
 
         await modal.getByLabel('Website').fill('not-a-website');
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Enter a valid URL');
 
         const facebookInput = modal.getByLabel('Facebook profile');
@@ -151,6 +151,7 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Full name').fill('New Admin');
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
+        await expect(modal.getByText('https://example.com/author/newadmin')).toBeVisible();
         await modal.getByLabel('Location').fill('some location');
         await modal.getByLabel('Website').fill('https://example.com');
         await modal.getByLabel('Facebook profile').fill('fb');
@@ -165,9 +166,10 @@ test.describe('User profile', async () => {
         await modal.getByLabel(/Paid member cancellations/).check();
         await modal.getByLabel(/Milestones/).uncheck();
 
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(listItem.getByText('New Admin')).toBeVisible();
         await expect(listItem.getByText('newadmin@test.com')).toBeVisible();
@@ -289,6 +291,71 @@ test.describe('User profile', async () => {
         await expect(modal.getByLabel(/Milestones/)).toBeHidden();
     });
 
+    test('Shows donation notification option when Stripe enabled', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(modal.getByLabel(/Tips & donations/)).toBeVisible();
+        await expect(modal.getByLabel(/Tips & donations/)).toHaveAttribute('aria-checked', 'true');
+
+        await modal.getByLabel(/Tips & donations/).uncheck();
+
+        await expect(modal.getByLabel(/Tips & donations/)).toHaveAttribute('aria-checked', 'false');
+
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editUser?.body).toMatchObject({
+            users: [{
+                donation_notifications: false
+            }]
+        });
+    });
+
+    test('Hides donation notification option when Stripe disabled', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(modal.getByLabel(/Tips & donations/)).not.toBeVisible();
+    });
+
     test('Warns when leaving without saving', async ({page}) => {
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
 
@@ -313,7 +380,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Full name').fill('Updated');
 
-        await modal.getByRole('button', {name: 'Cancel'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -373,7 +440,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await expect(modal.getByTestId('api-keys')).toBeHidden();
-        await modal.getByRole('button', {name: 'Cancel'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         // Can see and regenerate your own staff token
 

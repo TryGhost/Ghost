@@ -2,18 +2,18 @@ import {createMutation, createQueryWithId} from '../utils/api/hooks';
 
 export type FollowItem = {
     id: string;
-    username: string,
+    preferredUsername: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [x: string]: any
 };
 
 export type ObjectProperties = {
     '@context': string | (string | object)[];
-    type: 'Article' | 'Link';
+    type: 'Article' | 'Link' | 'Note';
     name: string;
     content: string;
     url?: string | undefined;
-    attributedTo?: string | object[] | undefined;
+    attributedTo?: object | string | object[] | undefined;
     image?: string;
     published?: string;
     preview?: {type: string, content: string};
@@ -23,13 +23,22 @@ export type ObjectProperties = {
 
 export type ActorProperties = {
     '@context': string | (string | object)[];
-    attachment: object[];
+    attachment?: {
+        type: string;
+        name: string;
+        value: string;
+    }[];
     discoverable: boolean;
     featured: string;
     followers: string;
     following: string;
     id: string | null;
-    image: string;
+    image: {
+        url: string;
+    };
+    icon: {
+        url: string;
+    };
     inbox: string;
     manuallyApprovesFollowers: boolean;
     name: string;
@@ -63,7 +72,7 @@ export type InboxResponseData = {
     summary: string;
     type: 'OrderedCollection';
     totalItems: number;
-    orderedItems: Activity[];
+    items: Activity[];
 }
 
 export type FollowingResponseData = {
@@ -72,7 +81,7 @@ export type FollowingResponseData = {
     summary: string;
     type: string;
     totalItems: number;
-    orderedItems: FollowItem[];
+    items: FollowItem[];
 }
 
 type FollowRequestProps = {
@@ -82,19 +91,22 @@ type FollowRequestProps = {
 export const useFollow = createMutation<object, FollowRequestProps>({
     method: 'POST',
     useActivityPub: true,
-    path: data => `/follow/${data.username}`
+    path: data => `/actions/follow/${data.username}`
 });
 
 export const useUnfollow = createMutation<object, FollowRequestProps>({
     method: 'POST',
     useActivityPub: true,
-    path: data => `/unfollow/${data.username}`
+    path: data => `/actions/unfollow/${data.username}`
 });
 
 // This is a frontend root, not using the Ghost admin API
 export const useBrowseInboxForUser = createQueryWithId<InboxResponseData>({
     dataType: 'InboxResponseData',
     useActivityPub: true,
+    headers: {
+        Accept: 'application/activity+json'
+    },
     path: id => `/inbox/${id}`
 });
 
@@ -102,6 +114,9 @@ export const useBrowseInboxForUser = createQueryWithId<InboxResponseData>({
 export const useBrowseFollowingForUser = createQueryWithId<FollowingResponseData>({
     dataType: 'FollowingResponseData',
     useActivityPub: true,
+    headers: {
+        Accept: 'application/activity+json'
+    },
     path: id => `/following/${id}`
 });
 
@@ -109,5 +124,8 @@ export const useBrowseFollowingForUser = createQueryWithId<FollowingResponseData
 export const useBrowseFollowersForUser = createQueryWithId<FollowingResponseData>({
     dataType: 'FollowingResponseData',
     useActivityPub: true,
+    headers: {
+        Accept: 'application/activity+json'
+    },
     path: id => `/followers/${id}`
 });

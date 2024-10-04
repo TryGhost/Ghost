@@ -15,6 +15,7 @@ export default class GhKoenigEditorLexical extends Component {
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
     editorAPI = null;
+    secondaryEditorAPI = null;
     skipFocusEditor = false;
 
     @tracked titleIsHovered = false;
@@ -232,11 +233,17 @@ export default class GhKoenigEditorLexical extends Component {
         this.args.registerAPI(API);
     }
 
+    @action
+    registerSecondaryEditorAPI(API) {
+        this.secondaryEditorAPI = API;
+        this.args.registerSecondaryAPI(API);
+    }
+
     // focus the editor when the editor canvas is clicked below the editor content,
     // otherwise the browser will defocus the editor and the cursor will disappear
     @action
     focusEditor(event) {
-        if (!this.skipFocusEditor && event.target.classList.contains('gh-koenig-editor-pane')) {
+        if (!this.skipFocusEditor && event.target.classList.contains('gh-koenig-editor-pane') && this.editorAPI) {
             let editorCanvas = this.editorAPI.editorInstance.getRootElement();
             let {bottom} = editorCanvas.getBoundingClientRect();
 

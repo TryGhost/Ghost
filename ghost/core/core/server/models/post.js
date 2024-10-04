@@ -1,6 +1,6 @@
 // # Post Model
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const moment = require('moment');
 const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
@@ -89,7 +89,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return {
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             status: 'draft',
             featured: false,
             type: 'post',

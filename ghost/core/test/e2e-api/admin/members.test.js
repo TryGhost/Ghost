@@ -524,6 +524,67 @@ describe('Members API', function () {
             });
     });
 
+    it('Can browse with limit', async function () {
+        await agent
+            .get('/members/?limit=3')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
+    it('Can browse with more than maximum allowed limit', async function () {
+        await agent
+            .get('/members/?limit=300')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
+    it('Can browse with limit=all', async function () {
+        await agent
+            .get('/members/?limit=all')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
     it('Can browse with filter', async function () {
         await agent
             .get('/members/?filter=label:label-1')
@@ -904,6 +965,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         await configUtils.restore();
+        settingsCache.set('email_verification_required', false);
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -1015,6 +1077,85 @@ describe('Members API', function () {
                 ]
             })
             .expectStatus(200);
+    });
+
+    it('Does not send a signup email when email verification is required', async function () {
+        mockManager.mockSetting('email_verification_required', true);
+
+        const member = {
+            name: 'Do not Send Me Confirmation',
+            email: 'member_not_getting_confirmation@test.com',
+            newsletters: [
+                newsletters[0],
+                newsletters[1]
+            ]
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        emailMockReceiver
+            .assertSentEmailCount(0);
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                },
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id
+                }
+            ]
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {
@@ -2129,6 +2270,83 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    it('can change the email address', async function () {
+        const memberToChange = {
+            name: 'Jon Snow',
+            email: 'jon.snow@test.com',
+            newsletters: []
+        };
+
+        const memberChanged = {
+            email: 'aegon.targaryen@test.com'
+        };
+
+        // Create member
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [memberToChange]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        // Update email address
+        const newMember = body.members[0];
+        await agent
+            .put(`/members/${newMember.id}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Check member events
+        await assertMemberEvents({
+            eventType: 'MemberEmailChangeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            ]
+        });
+
+        // Check activity feed
+        const {body: eventsBody} = await agent
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const events = eventsBody.events;
+
+        matchArrayWithoutOrder(events, [
+            {
+                type: 'email_change_event',
+                data: {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            },
+            {
+                type: 'signup_event'
+            }
+        ]);
     });
 
     describe('email_disabled', function () {
