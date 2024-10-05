@@ -281,7 +281,7 @@ const NewsletterPreviewContent: React.FC<{
                                 <div dangerouslySetInnerHTML={{__html: footerContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-700" style={{color: secondaryTextColor}} />
 
                                 <div className="px-8 pb-14 pt-3 text-center text-[1.3rem] text-grey-700">
-                                    <span style={{color: secondaryTextColor}}>{siteTitle} © {currentYear} &mdash; </span>
+                                    <span style={{color: secondaryTextColor}}>{siteTitle} {currentYear} &mdash; </span>
                                     <span className="pointer-events-none cursor-auto underline" style={{color: secondaryTextColor}}>Unsubscribe</span>
                                 </div>
 

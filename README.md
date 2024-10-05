@@ -1,4 +1,5 @@
 &nbsp;
+
 <p align="center">
   <a href="https://ghost.org/#gh-light-mode-only" target="_blank">
     <img src="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png" alt="Ghost" width="200px">
@@ -30,7 +31,6 @@
     </a>
 </p>
 
-
 &nbsp;
 
 <a href="https://ghost.org/"><img src="https://user-images.githubusercontent.com/353959/169805900-66be5b89-0859-4816-8da9-528ed7534704.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
@@ -42,7 +42,7 @@
 
 The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
 
-For most people this ends up being the best value option because of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software *and* getting a great service!
+For most people this ends up being the best value option because of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software _and_ getting a great service!
 
 &nbsp;
 
@@ -96,7 +96,6 @@ To stay up to date with all the latest news and product updates, make sure you [
 
 &nbsp;
 
-# Copyright & license
+# Public domain
 
-Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE). 
-Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
+Ghost source code is in the public-domain and is free to everyone to use for any purpose.

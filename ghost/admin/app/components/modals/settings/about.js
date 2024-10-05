@@ -16,7 +16,7 @@ export default class AboutModal extends Component {
         }
     }
 
-    get copyrightYear() {
+    get publicDomainYear() {
         const date = new Date();
         return date.getFullYear();
     }
