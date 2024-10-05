@@ -5,7 +5,6 @@
   "private": true,
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
-  "license": "MIT",
   "workspaces": [
     "ghost/*",
     "apps/*"
