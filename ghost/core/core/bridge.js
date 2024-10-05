@@ -67,6 +67,10 @@ class Bridge {
             debug('reload card assets config', cardAssetConfig);
             await cardAssetService.load(cardAssetConfig);
 
+            const headExcludes = this.getHeadExcludes();
+            debug('got these head excludes', headExcludes);
+
+
             // TODO: is this in the right place?
             // rebuild asset files
             await commentCountsAssetService.load();
@@ -85,6 +89,14 @@ class Bridge {
             return this.getActiveTheme().config('card_assets');
         } else {
             return true;
+        }
+    }
+
+    getHeadExcludes() {
+        if (this.getActiveTheme()) {
+            return this.getActiveTheme().config('head_excludes');
+        } else {
+            return [];
         }
     }
 

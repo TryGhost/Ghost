@@ -28,7 +28,8 @@ async function updateGlobalTemplateOptions(req, res, next) {
 
     const themeData = {
         posts_per_page: activeTheme.get().config('posts_per_page'),
-        image_sizes: activeTheme.get().config('image_sizes')
+        image_sizes: activeTheme.get().config('image_sizes'),
+        head_excludes: activeTheme.get().config('head_excludes')
     };
     const themeSettingsData = customThemeSettingsCache.getAll();
 
