@@ -34,8 +34,8 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     switch (size) {
     case 'xs':
         iconSize = 12;
-        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-6 h-6';
-        imageClass = 'z-10 rounded w-6 h-6 object-cover';
+        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-5 h-5';
+        imageClass = 'z-10 rounded w-5 h-5 object-cover';
         break;
     case 'sm':
         containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-10 h-10';
