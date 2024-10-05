@@ -15,7 +15,7 @@ const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
-const isUnwanted = {}
+const isUnwanted = {};
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
@@ -47,13 +47,12 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-    console.log('portal/members called');
     // Do not load Portal if both Memberships and Tips & Donations are disabled
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
     let membersHelper = '';
-    if (!isUnwanted['portal']) {
+    if (!isUnwanted.portal) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
@@ -69,10 +68,10 @@ function getMembersHelper(data, frontendKey) {
         const dataAttributes = getDataAttributes(attributes);   
         membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
-    if (!isUnwanted['ctastyles']) {
+    if (!isUnwanted.ctastyles) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
-    if (!isUnwanted['stripe'] && settingsCache.get('paid_members_enabled')) {
+    if (!isUnwanted.stripe && settingsCache.get('paid_members_enabled')) {
         // disable fraud detection for e2e tests to reduce waiting time
         const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
 
@@ -138,7 +137,6 @@ function getAnnouncementBarHelper(data) {
 }
 
 function getWebmentionDiscoveryLink() {
-    console.log('call webmention');
     try {
         const siteUrl = urlUtils.getSiteUrl();
         const webmentionUrl = new URL('webmentions/receive/', siteUrl);
@@ -163,7 +161,6 @@ function getTinybirdTrackerScript(dataRoot) {
 
     return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
-
 
 /**
  * **NOTE**
@@ -208,8 +205,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         return;
     }
     // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
-    if (isUnwanted['all']) {
-        return ''
+    if (isUnwanted.all) {
+        return '';
     }
     const head = [];
     const dataRoot = options.data.root;
@@ -227,11 +224,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     if (options.data.config?.head_excludes) {
         options.data.config.head_excludes.forEach((item) => {
             isUnwanted[item] = true;
-        })
+        });
     }
 
-
-    console.log("isUnwanted is: " , isUnwanted);
     /* Reads the head_excludes settings from the them's package.json.  Possible values:
         - all - opt entirely out of ghost_head (probably a bad idea)
         - search - required for sodo-search, including adding the click event listener on buttons
@@ -240,15 +235,18 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         - webmention
         - generator - reveals that your site is a Ghost site and what version
         - metadata (the html tags) - important for SEO
+        - rss - your rss feed link
         - schema - important for SEO
-        - card assets - required to make cards work and style them (needed on any page with a post body, unless your theme replaces)
-        - comment counts
-        - member attribution (required for tracking new sign-ups)
-        - tinybird tracker (new feature! TODO: write something about this)
-        - prev-next - required for prev/next links
+        - cardassets - required to make cards work and style them (needed on any page with a post body, unless your theme replaces)
+        - commentcounts
+        - memberattribution (required for tracking new sign-ups)
+        - tinybirdtracker (new feature! TODO: write something about this)
+        - prevnext - required for prev/next links
         - socialdata - produces the og: and twitter: attributes for social media sharing and previews (aka structuredData)
         - stripe - removes the stripe script loading - used for fraud prevention
         - ctastyles - removes the call to action (CTA) styles - used for member signup
+        - codeinjectionhead - removes all codeinjection from the head.  (All sources, not just global.)
+        - amp - the amp link 
 
         TODO: relocate somewhere else?
     */
@@ -271,32 +269,33 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         debug('end fetch');
 
         if (context) {
-            // head is our main array that holds our meta data
-            if (meta.metaDescription && meta.metaDescription.length > 0) {
-                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
+            if (!isUnwanted.metadata) {
+                // head is our main array that holds our meta data
+                if (meta.metaDescription && meta.metaDescription.length > 0) {
+                    head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
+                }
+
+                // no output in head if a publication icon is not set
+                if (settingsCache.get('icon')) {
+                    head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
+                }
+
+                head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
+
+                if (_.includes(context, 'preview')) {
+                    head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
+                    head.push(writeMetaTag('referrer', 'same-origin', 'name'));
+                } else {
+                    head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
+                }
             }
-
-            // no output in head if a publication icon is not set
-            if (settingsCache.get('icon')) {
-                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
-            }
-
-            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
-
-            if (_.includes(context, 'preview')) {
-                head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
-                head.push(writeMetaTag('referrer', 'same-origin', 'name'));
-            } else {
-                head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
-            }
-
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-            if (!isUnwanted['amp'] && _.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
+            if (!isUnwanted.amp && _.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
                     escapeExpression(meta.ampUrl) + '">');
             }
 
-            if (!isUnwanted['prev-next']) {
+            if (!isUnwanted.prevnext) {
                 if (meta.previousUrl) {
                     head.push('<link rel="prev" href="' +
                         escapeExpression(meta.previousUrl) + '">');
@@ -308,15 +307,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
             }
 
-            
             if (!_.includes(context, 'paged') && useStructuredData) {
-                if (!isUnwanted['socialdata']) {
+                if (!isUnwanted.socialdata) {
                     head.push('');
                     head.push.apply(head, finaliseStructuredData(meta));
                     head.push('');
                 }
               
-                if (!isUnwanted['schema'] && meta.schema) {
+                if (!isUnwanted.schema && meta.schema) {
                     head.push('<script type="application/ld+json">\n' +
                         JSON.stringify(meta.schema, null, '    ') +
                         '\n    </script>\n');
@@ -324,11 +322,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
         }
         
-        if (!isUnwanted['generator']) {
+        if (!isUnwanted.generator) {
             head.push('<meta name="generator" content="Ghost ' +
                 escapeExpression(safeVersion) + '">');
         }
-        if (!isUnwanted['rss']) {
+        if (!isUnwanted.rss) {
             head.push('<link rel="alternate" type="application/rss+xml" title="' +
                 escapeExpression(meta.site.title) + '" href="' +
                 escapeExpression(meta.rssUrl) + '">');
@@ -336,14 +334,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey)); // controlling for excludes within the function
-            if (!isUnwanted['search']) {
+            if (!isUnwanted.search) {
                 head.push(getSearchHelper(frontendKey));
             }
-            if (!isUnwanted['announcement']) {
+            if (!isUnwanted.announcement) {
                 head.push(getAnnouncementBarHelper(options.data));
             }
             try {
-                if (!isUnwanted['webmention']) {
+                if (!isUnwanted.webmention) {
                     head.push(getWebmentionDiscoveryLink());
                 }
             } catch (err) {
@@ -351,18 +349,20 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
             
             // @TODO do this in a more "frameworky" way
-            if (cardAssetService.hasFile('js')) {
-                head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
-            }
-            if (cardAssetService.hasFile('css')) {
-                head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+            if (!isUnwanted.cardassets) {
+                if (cardAssetService.hasFile('js')) {
+                    head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
+                }
+                if (cardAssetService.hasFile('css')) {
+                    head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+                }
             }
 
-            if (settingsCache.get('comments_enabled') !== 'off') {
+            if (!isUnwanted.commentcounts && settingsCache.get('comments_enabled') !== 'off') {
                 head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
             }
 
-            if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
+            if (!isUnwanted.memberattribution && settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
             }
 
@@ -377,21 +377,21 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(styleTag);
                 }
             }
+            if (!isUnwanted.codeinjectionhead) {
+                if (!_.isEmpty(globalCodeinjection)) {
+                    head.push(globalCodeinjection);
+                }
 
-            if (!_.isEmpty(globalCodeinjection)) {
-                head.push(globalCodeinjection);
+                if (!_.isEmpty(postCodeInjection)) {
+                    head.push(postCodeInjection);
+                }
+
+                if (!_.isEmpty(tagCodeInjection)) {
+                    head.push(tagCodeInjection);
+                }
             }
-
-            if (!_.isEmpty(postCodeInjection)) {
-                head.push(postCodeInjection);
-            }
-
-            if (!_.isEmpty(tagCodeInjection)) {
-                head.push(tagCodeInjection);
-            }
-
-            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
-                head.push(getTinybirdTrackerScript(dataRoot, options.data));
+            if (!isUnwanted.tinybirdtracker && config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+                head.push(getTinybirdTrackerScript(dataRoot));
             }
         }
 
