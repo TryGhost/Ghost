@@ -1,5 +1,4 @@
 {
     "posts_per_page": 5,
-    "card_assets": true,
-    "head_excludes": ["portal"]
+    "card_assets": true
 }

@@ -47,7 +47,7 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-
+    console.log('portal/members called');
     // Do not load Portal if both Memberships and Tips & Donations are disabled
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
@@ -102,9 +102,6 @@ function getSearchHelper(frontendKey) {
 }
 
 function getAnnouncementBarHelper(data) {
-    if (data.config.head_excludes.includes('announcement') || data.config.head_excludes.includes('all')) {
-        return '';
-    }
     const preview = data?.site?._preview;
     const isFilled = settingsCache.get('announcement_content') && settingsCache.get('announcement_visibility').length;
 
@@ -140,10 +137,8 @@ function getAnnouncementBarHelper(data) {
     return helper;
 }
 
-function getWebmentionDiscoveryLink(data) {
-    if (data.config.head_excludes.includes('webmention') || data.config.head_excludes.includes('all')) {
-        return '';
-    }
+function getWebmentionDiscoveryLink() {
+    console.log('call webmention');
     try {
         const siteUrl = urlUtils.getSiteUrl();
         const webmentionUrl = new URL('webmentions/receive/', siteUrl);
@@ -154,10 +149,7 @@ function getWebmentionDiscoveryLink(data) {
     }
 }
 
-function getTinybirdTrackerScript(dataRoot, data) {
-    if (data.config.head_excludes.includes('webmention') || data.config.head_excludes.includes('all')) {
-        return '';
-    }
+function getTinybirdTrackerScript(dataRoot) {
     const scriptUrl = config.get('tinybird:tracker:scriptUrl');
     const endpoint = config.get('tinybird:tracker:endpoint');
     const token = config.get('tinybird:tracker:token');
@@ -216,7 +208,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         return;
     }
     // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
-    if (options.data.config.head_excludes.includes('all')) {
+    if (isUnwanted['all']) {
         return ''
     }
     const head = [];
@@ -232,9 +224,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     const iconType = blogIcon.getIconType(favicon);
 
     // loop over the head_excludes array and set the isUnwanted object to true for each item
-    options.data.config.head_excludes.forEach((item) => {
-        isUnwanted[item] = true;
-    });
+    if (options.data.config?.head_excludes) {
+        options.data.config.head_excludes.forEach((item) => {
+            isUnwanted[item] = true;
+        })
+    }
 
 
     console.log("isUnwanted is: " , isUnwanted);
@@ -348,13 +342,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!isUnwanted['announcement']) {
                 head.push(getAnnouncementBarHelper(options.data));
             }
-            if (!isUnwanted['webmention']) {
-                try {
+            try {
+                if (!isUnwanted['webmention']) {
                     head.push(getWebmentionDiscoveryLink());
-                } catch (err) {
-                    logging.warn(err);
                 }
+            } catch (err) {
+                logging.warn(err);
             }
+            
             // @TODO do this in a more "frameworky" way
             if (cardAssetService.hasFile('js')) {
                 head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
