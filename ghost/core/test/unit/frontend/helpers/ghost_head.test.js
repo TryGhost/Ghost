@@ -1275,17 +1275,7 @@ describe('{{ghost_head}} helper', function () {
         });
     });
     describe('respects values from head_excludes', function () {
-        let templateOptions = {
-            config: {
-                head_excludes: []
-            }
-        }
-        beforeEach(function () {
-            configUtils.set({head_excludes: []});
-        });
-        afterEach(function() {
-            sinon.reset();
-        })
+
         it('when head_excludes contains portal', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);

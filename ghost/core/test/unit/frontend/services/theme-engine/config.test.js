@@ -13,7 +13,8 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: true
+                card_assets: true,
+                head_excludes: []
             });
         });
 
@@ -22,7 +23,8 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: true
+                card_assets: true,
+                head_excludes: []
             });
         });
 
@@ -31,7 +33,8 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 3,
-                card_assets: true
+                card_assets: true,
+                head_excludes: []
             });
         });
 
@@ -40,7 +43,8 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: true
+                card_assets: true,
+                head_excludes: []
             });
         });
     });

@@ -8,14 +8,12 @@ const {escapeExpression, SafeString} = require('../services/handlebars');
 // BAD REQUIRE
 // @TODO fix this require
 const cardAssetService = require('../services/card-assets');
-
+const excludeList = new Set();
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
-
-const isUnwanted = {};
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
@@ -52,7 +50,7 @@ function getMembersHelper(data, frontendKey) {
         return '';
     }
     let membersHelper = '';
-    if (!isUnwanted.portal) {
+    if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
@@ -68,10 +66,10 @@ function getMembersHelper(data, frontendKey) {
         const dataAttributes = getDataAttributes(attributes);   
         membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
-    if (!isUnwanted.ctastyles) {
+    if (!excludeList.has('ctastyles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
-    if (!isUnwanted.stripe && settingsCache.get('paid_members_enabled')) {
+    if (!excludeList.has('stripe') && settingsCache.get('paid_members_enabled')) {
         // disable fraud detection for e2e tests to reduce waiting time
         const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
 
@@ -205,7 +203,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         return;
     }
     // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
-    if (isUnwanted.all) {
+    const excludeList = new Set(options.data.config?.head_excludes ?? [])
+
+    if (excludeList.has('all')) {
         return '';
     }
     const head = [];
@@ -221,12 +221,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     const iconType = blogIcon.getIconType(favicon);
 
     // loop over the head_excludes array and set the isUnwanted object to true for each item
-    if (options.data.config?.head_excludes) {
+    /*if (options.data.config?.head_excludes) {
         options.data.config.head_excludes.forEach((item) => {
             isUnwanted[item] = true;
         });
-    }
-
+    }*/
     /* Reads the head_excludes settings from the them's package.json.  Possible values:
         - all - opt entirely out of ghost_head (probably a bad idea)
         - search - required for sodo-search, including adding the click event listener on buttons
@@ -269,7 +268,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         debug('end fetch');
 
         if (context) {
-            if (!isUnwanted.metadata) {
+            if (!excludeList.has('metadata')) {
                 // head is our main array that holds our meta data
                 if (meta.metaDescription && meta.metaDescription.length > 0) {
                     head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
@@ -290,12 +289,12 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
             }
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-            if (!isUnwanted.amp && _.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
+            if (!excludeList.has('amp') && _.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
                     escapeExpression(meta.ampUrl) + '">');
             }
 
-            if (!isUnwanted.prevnext) {
+            if (!excludeList.has('prevnext')) {
                 if (meta.previousUrl) {
                     head.push('<link rel="prev" href="' +
                         escapeExpression(meta.previousUrl) + '">');
@@ -308,13 +307,13 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             if (!_.includes(context, 'paged') && useStructuredData) {
-                if (!isUnwanted.socialdata) {
+                if (!excludeList.has('socialdata')) {
                     head.push('');
                     head.push.apply(head, finaliseStructuredData(meta));
                     head.push('');
                 }
               
-                if (!isUnwanted.schema && meta.schema) {
+                if (!excludeList.has('schema') && meta.schema) {
                     head.push('<script type="application/ld+json">\n' +
                         JSON.stringify(meta.schema, null, '    ') +
                         '\n    </script>\n');
@@ -322,11 +321,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
         }
         
-        if (!isUnwanted.generator) {
+        if (!excludeList.has('generator')) {
             head.push('<meta name="generator" content="Ghost ' +
                 escapeExpression(safeVersion) + '">');
         }
-        if (!isUnwanted.rss) {
+        if (!excludeList.has('rss')) {
             head.push('<link rel="alternate" type="application/rss+xml" title="' +
                 escapeExpression(meta.site.title) + '" href="' +
                 escapeExpression(meta.rssUrl) + '">');
@@ -334,14 +333,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey)); // controlling for excludes within the function
-            if (!isUnwanted.search) {
+            if (!excludeList.has('search')) {
                 head.push(getSearchHelper(frontendKey));
             }
-            if (!isUnwanted.announcement) {
+            if (!excludeList.has('announcement')) {
                 head.push(getAnnouncementBarHelper(options.data));
             }
             try {
-                if (!isUnwanted.webmention) {
+                if (!excludeList.has('webmention')) {
                     head.push(getWebmentionDiscoveryLink());
                 }
             } catch (err) {
@@ -349,7 +348,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
             
             // @TODO do this in a more "frameworky" way
-            if (!isUnwanted.cardassets) {
+            if (!excludeList.has('cardassets')) {
                 if (cardAssetService.hasFile('js')) {
                     head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
                 }
@@ -358,11 +357,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
             }
 
-            if (!isUnwanted.commentcounts && settingsCache.get('comments_enabled') !== 'off') {
+            if (!excludeList.has('commentcounts') && settingsCache.get('comments_enabled') !== 'off') {
                 head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
             }
 
-            if (!isUnwanted.memberattribution && settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
+            if (!excludeList.has('memberattribution') && settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
             }
 
@@ -377,7 +376,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(styleTag);
                 }
             }
-            if (!isUnwanted.codeinjectionhead) {
+            if (!excludeList.has('codeinjectionhead')) {
                 if (!_.isEmpty(globalCodeinjection)) {
                     head.push(globalCodeinjection);
                 }
@@ -390,7 +389,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(tagCodeInjection);
                 }
             }
-            if (!isUnwanted.tinybirdtracker && config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+            if (!excludeList.has('tinybirdtracker') && config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
         }
