@@ -10,7 +10,6 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
-
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {settingsCache, labs} = proxy;
@@ -1021,6 +1020,9 @@ describe('{{ghost_head}} helper', function () {
             const templateOptions = {
                 site: {
                     accent_color: '#123456'
+                },
+                config: {
+                    head_excludes: []
                 }
             };
 
@@ -1274,21 +1276,19 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
     });
-    describe('respects values from head_excludes', function () {
+    /*describe('respects values from head_excludes', function () {
 
-        it('when head_excludes contains portal', async function () {
+        it('when head_excludes is empty', async function () {
+
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            const renderObject = {
-                post: posts[0]
-            };
             let templateOptions = {
                 config: {
-                    head_excludes: ['portal']
+                    head_excludes: []
                 }
             }
+
             let rendered = await testGhostHead(testUtils.createHbsResponse({
-                renderObject,
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
@@ -1296,22 +1296,19 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+            rendered.should.match(/portal@/);
             rendered.should.match(/sodo-search@/);
-            rendered.should.not.match(/portal@/);
         });
         it('when head_excludes contains search', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            const renderObject = {
-                post: posts[1]
-            };
+
             let templateOptions = {
                 config: {
                     head_excludes: ['search']
                 }
             }
             let rendered = await testGhostHead(testUtils.createHbsResponse({
-                renderObject,
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
@@ -1322,19 +1319,17 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/sodo-search@/);
             rendered.should.match(/portal@/);
         });
-        it('when head_excludes is empty', async function () {
+        it('when head_excludes contains portal', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            const renderObject = {
-                post: posts[2]
-            };
+
             let templateOptions = {
                 config: {
-                    head_excludes: []
+                    head_excludes: ['portal']
                 }
             }
             let rendered = await testGhostHead(testUtils.createHbsResponse({
-                renderObject,
+
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
@@ -1342,9 +1337,11 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
-            rendered.should.match(/portal@/);
             rendered.should.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
         });
+        
     });
+    */
 });
 

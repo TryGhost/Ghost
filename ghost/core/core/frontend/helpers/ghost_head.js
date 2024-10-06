@@ -44,7 +44,7 @@ function finaliseStructuredData(meta) {
     return head;
 }
 
-function getMembersHelper(data, frontendKey) {
+function getMembersHelper(data, frontendKey, excludeList) {
     // Do not load Portal if both Memberships and Tips & Donations are disabled
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
@@ -202,8 +202,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     if (options.data.root.statusCode >= 500) {
         return;
     }
-    // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
+
     const excludeList = new Set(options.data.config?.head_excludes ?? [])
+
+    // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
 
     if (excludeList.has('all')) {
         return '';
