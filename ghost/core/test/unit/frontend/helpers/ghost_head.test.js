@@ -10,6 +10,7 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {settingsCache, labs} = proxy;
@@ -1020,9 +1021,6 @@ describe('{{ghost_head}} helper', function () {
             const templateOptions = {
                 site: {
                     accent_color: '#123456'
-                },
-                config: {
-                    head_excludes: []
                 }
             };
 
@@ -1277,16 +1275,14 @@ describe('{{ghost_head}} helper', function () {
         });
     });
     describe('respects values from head_excludes', function () {
-
         it('when head_excludes is empty', async function () {
-
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
             let templateOptions = {
                 config: {
                     head_excludes: []
                 }
-            }
+            };
 
             let rendered = await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
@@ -1307,7 +1303,7 @@ describe('{{ghost_head}} helper', function () {
                 config: {
                     head_excludes: ['search']
                 }
-            }
+            };
             let rendered = await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
@@ -1327,7 +1323,7 @@ describe('{{ghost_head}} helper', function () {
                 config: {
                     head_excludes: ['portal']
                 }
-            }
+            };
             let rendered = await testGhostHead(testUtils.createHbsResponse({
 
                 templateOptions,
@@ -1348,7 +1344,7 @@ describe('{{ghost_head}} helper', function () {
                 config: {
                     head_excludes: ['portal', 'search']
                 }
-            }
+            };
             let rendered = await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
@@ -1368,7 +1364,7 @@ describe('{{ghost_head}} helper', function () {
                 config: {
                     head_excludes: ['all']
                 }
-            }
+            };
             let rendered = await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
@@ -1382,6 +1378,5 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/stripe@/);
         });
     });
-    
 });
 

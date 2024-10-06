@@ -8,7 +8,6 @@ const {escapeExpression, SafeString} = require('../services/handlebars');
 // BAD REQUIRE
 // @TODO fix this require
 const cardAssetService = require('../services/card-assets');
-const excludeList = new Set();
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
@@ -203,13 +202,35 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         return;
     }
 
-    const excludeList = new Set(options.data.config?.head_excludes ?? [])
-    console.log('excludeList is', excludeList);
-    // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
+    /* Read the head_excludes settings from the them's package.json.  Possible values:
+        - all - opt entirely out of ghost_head (probably a bad idea)
+        - search - required for sodo-search, including adding the click event listener on buttons
+        - portal - required for member management, including logging in via magic link. 
+        - announcement - the announcement bar javascript
+        - webmention
+        - generator - reveals that your site is a Ghost site and what version
+        - metadata (the html tags) - important for SEO
+        - rss - your rss feed link
+        - schema - important for SEO
+        - cardassets - required to make cards work and style them (needed on any page with a post body, unless your theme replaces)
+        - commentcounts - no need to load if you aren't going to use it on that page!
+        - memberattribution (required for tracking new sign-ups)
+        - tinybirdtracker (new feature! TODO: write something about this)
+        - prevnext - required for prev/next links
+        - socialdata - produces the og: and twitter: attributes for social media sharing and previews (aka structuredData)
+        - stripe - removes the stripe script loading - used for fraud prevention
+        - ctastyles - removes the call to action (CTA) styles - used for member signup
+        - codeinjectionhead - removes all codeinjection from the head.  (All sources, not just global.)
+        - amp - the amp link 
+    */
+
+    const excludeList = new Set(options.data.config?.head_excludes ?? []);
 
     if (excludeList.has('all')) {
+        // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
         return '';
     }
+
     const head = [];
     const dataRoot = options.data.root;
     const context = dataRoot._locals.context ? dataRoot._locals.context : null;
@@ -221,36 +242,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     const referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade';
     const favicon = blogIcon.getIconUrl();
     const iconType = blogIcon.getIconType(favicon);
-
-    // loop over the head_excludes array and set the isUnwanted object to true for each item
-    /*if (options.data.config?.head_excludes) {
-        options.data.config.head_excludes.forEach((item) => {
-            isUnwanted[item] = true;
-        });
-    }*/
-    /* Reads the head_excludes settings from the them's package.json.  Possible values:
-        - all - opt entirely out of ghost_head (probably a bad idea)
-        - search - required for sodo-search, including adding the click event listener on buttons
-        - portal - required for member management, including logging in via magic link. 
-        - announcement - the announcement bar javascript
-        - webmention
-        - generator - reveals that your site is a Ghost site and what version
-        - metadata (the html tags) - important for SEO
-        - rss - your rss feed link
-        - schema - important for SEO
-        - cardassets - required to make cards work and style them (needed on any page with a post body, unless your theme replaces)
-        - commentcounts
-        - memberattribution (required for tracking new sign-ups)
-        - tinybirdtracker (new feature! TODO: write something about this)
-        - prevnext - required for prev/next links
-        - socialdata - produces the og: and twitter: attributes for social media sharing and previews (aka structuredData)
-        - stripe - removes the stripe script loading - used for fraud prevention
-        - ctastyles - removes the call to action (CTA) styles - used for member signup
-        - codeinjectionhead - removes all codeinjection from the head.  (All sources, not just global.)
-        - amp - the amp link 
-
-        TODO: relocate somewhere else?
-    */
 
     debug('preparation complete, begin fetch');
 
