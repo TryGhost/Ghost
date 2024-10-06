@@ -1,70 +1,70 @@
-const i18next = require("i18next");
+const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
-    "af", // Afrikaans
-    "ar", // Arabic
-    "bg", // Bulgarian
-    "bn", // Bengali
-    "bs", // Bosnian
-    "ca", // Catalan
-    "cs", // Czech
-    "da", // Danish
-    "de", // German
-    "de-CH", // Swiss German
-    "el", // Greek
-    "en", // English
-    "eo", // Esperanto
-    "es", // Spanish
-    "et", // Estonian
-    "fa", // Persian/Farsi
-    "fi", // Finnish
-    "fr", // French
-    "gd", // Gaelic (Scottish)
-    "hi", // Hindi
-    "hr", // Croatian
-    "hu", // Hungarian
-    "id", // Indonesian
-    "is", // Icelandic
-    "it", // Italian
-    "ja", // Japanese
-    "ko", // Korean
-    "kz", // Kazach
-    "lt", // Lithuanian
-    "mk", // Macedonian
-    "mn", // Mongolian
-    "ms", // Malay
-    "nl", // Dutch
-    "nn", // Norwegian Nynorsk
-    "no", // Norwegian
-    "pl", // Polish
-    "pt", // Portuguese
-    "pt-BR", // Portuguese (Brazil)
-    "ro", // Romanian
-    "ru", // Russian
-    "si", // Sinhala
-    "sk", // Slovak
-    "sl", // Slovenian
-    "sq", // Albanian
-    "sr", // Serbian
-    "sr-Cyrl", // Serbian (Cyrillic)
-    "sv", // Swedish
-    "th", // Thai
-    "tr", // Turkish
-    "uk", // Ukrainian
-    "ur", // Urdu
-    "uz", // Uzbek
-    "vi", // Vietnamese
-    "zh", // Chinese
-    "zh-Hant", // Traditional Chinese
-    "sw", // Swahili
-    "ta", // Tamil
+    'af', // Afrikaans
+    'ar', // Arabic
+    'bg', // Bulgarian
+    'bn', // Bengali
+    'bs', // Bosnian
+    'ca', // Catalan
+    'cs', // Czech
+    'da', // Danish
+    'de', // German
+    'de-CH', // Swiss German
+    'el', // Greek
+    'en', // English
+    'eo', // Esperanto
+    'es', // Spanish
+    'et', // Estonian
+    'fa', // Persian/Farsi
+    'fi', // Finnish
+    'fr', // French
+    'gd', // Gaelic (Scottish)
+    'hi', // Hindi
+    'hr', // Croatian
+    'hu', // Hungarian
+    'id', // Indonesian
+    'is', // Icelandic
+    'it', // Italian
+    'ja', // Japanese
+    'ko', // Korean
+    'kz', // Kazach
+    'lt', // Lithuanian
+    'mk', // Macedonian
+    'mn', // Mongolian
+    'ms', // Malay
+    'nl', // Dutch
+    'nn', // Norwegian Nynorsk
+    'no', // Norwegian
+    'pl', // Polish
+    'pt', // Portuguese
+    'pt-BR', // Portuguese (Brazil)
+    'ro', // Romanian
+    'ru', // Russian
+    'si', // Sinhala
+    'sk', // Slovak
+    'sl', // Slovenian
+    'sq', // Albanian
+    'sr', // Serbian
+    'sr-Cyrl', // Serbian (Cyrillic)
+    'sv', // Swedish
+    'th', // Thai
+    'tr', // Turkish
+    'uk', // Ukrainian
+    'ur', // Urdu
+    'uz', // Uzbek
+    'vi', // Vietnamese
+    'zh', // Chinese
+    'zh-Hant', // Traditional Chinese
+    'sw', // Swahili
+    'ta', // Tamil
 ];
 
 /**
  * @param {string} [lng]
  * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
  */
-module.exports = (lng = "en", ns = "portal") => {
+module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
     i18nextInstance.init({
         lng,
@@ -88,15 +88,11 @@ module.exports = (lng = "en", ns = "portal") => {
             // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
             // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
             acc[locale] = {
-                [ns]: {
-                    ...res,
-                    ...(res.default && typeof res.default === "object"
-                        ? res.default
-                        : {}),
+                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {}),
                 },
             };
             return acc;
-        }, {}),
+        }, {})
     });
 
     return i18nextInstance;
