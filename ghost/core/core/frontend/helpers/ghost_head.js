@@ -204,7 +204,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     }
 
     const excludeList = new Set(options.data.config?.head_excludes ?? [])
-
+    console.log('excludeList is', excludeList);
     // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
 
     if (excludeList.has('all')) {
@@ -334,7 +334,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
-            head.push(getMembersHelper(options.data, frontendKey)); // controlling for excludes within the function
+            head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
             if (!excludeList.has('search')) {
                 head.push(getSearchHelper(frontendKey));
             }

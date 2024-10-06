@@ -1276,7 +1276,7 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
     });
-    /*describe('respects values from head_excludes', function () {
+    describe('respects values from head_excludes', function () {
 
         it('when head_excludes is empty', async function () {
 
@@ -1340,8 +1340,48 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/sodo-search@/);
             rendered.should.not.match(/portal@/);
         });
-        
+        it('can handle multiple head_excludes', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let templateOptions = {
+                config: {
+                    head_excludes: ['portal', 'search']
+                }
+            }
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.not.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
+        });
+        it('can exclude all', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let templateOptions = {
+                config: {
+                    head_excludes: ['all']
+                }
+            }
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.not.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
+            rendered.should.not.match(/stripe@/);
+        });
     });
-    */
+    
 });
 
