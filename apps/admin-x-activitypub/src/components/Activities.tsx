@@ -10,7 +10,7 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import getUsername from '../utils/get-username';
-import {useActivitiesForUser, useSiteUrl} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
@@ -86,7 +86,6 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
-    const siteUrl = useSiteUrl();
 
     const {
         data,
@@ -98,7 +97,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeOwn: true,
         includeReplies: true,
         filter: {
-            type: ['Follow', 'Like', `Create:Note:isReplyToOwn,${new URL(siteUrl).hostname}`]
+            type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
         }
     });
 
