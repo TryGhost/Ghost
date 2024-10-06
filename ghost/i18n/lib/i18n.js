@@ -4,6 +4,7 @@ const SUPPORTED_LOCALES = [
     'af', // Afrikaans
     'ar', // Arabic
     'bg', // Bulgarian
+    'bn', // Bengali
     'bs', // Bosnian
     'ca', // Catalan
     'cs', // Czech
@@ -54,7 +55,8 @@ const SUPPORTED_LOCALES = [
     'uz', // Uzbek
     'vi', // Vietnamese
     'zh', // Chinese
-    'zh-Hant' // Traditional Chinese
+    'zh-Hant', // Traditional Chinese
+    'sw' // Swahili
 ];
 
 /**
