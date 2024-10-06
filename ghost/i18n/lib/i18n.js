@@ -88,8 +88,7 @@ module.exports = (lng = 'en', ns = 'portal') => {
             // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
             // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
             acc[locale] = {
-                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {}),
-                },
+                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
             };
             return acc;
         }, {})
