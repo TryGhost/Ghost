@@ -25,12 +25,16 @@
 }
 
 .gh-portal-action-footer .gh-email-faq-page-button {
-    margin-left: 4px;
+    margin-inline-start: 4px;
 }
 
 .emailReceivingFAQ .gh-portal-btn-back, 
 .emailReceivingFAQ .gh-portal-btn-back:hover {
     left: calc(6vmin - 14px);
+}
+html[dir="rtl"] .emailReceivingFAQ .gh-portal-btn-back, html[dir="rtl"] .emailReceivingFAQ .gh-portal-btn-back:hover {
+    right: calc(6vmin - 14px);
+    left: unset;
 }
 
 .emailReceivingFAQ .gh-portal-closeicon-container {

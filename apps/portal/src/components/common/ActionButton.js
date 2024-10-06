@@ -40,7 +40,7 @@ export const ActionButtonStyles = `
         position: absolute;
         left: 50%;
         display: inline-block;
-        margin-left: -19px;
+        margin-inline-start: -19px;
         height: 31px;
     }
 
