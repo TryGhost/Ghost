@@ -8,6 +8,7 @@ const {escapeExpression, SafeString} = require('../services/handlebars');
 // BAD REQUIRE
 // @TODO fix this require
 const cardAssetService = require('../services/card-assets');
+
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
