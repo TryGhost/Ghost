@@ -36,7 +36,6 @@ export default class Frame extends Component {
                 dir={dataDir}
                 {...rest}
             >
-
                 {this.iframeHead && createPortal(head, this.iframeHead)}
                 {this.iframeRoot && createPortal(children, this.iframeRoot)}
             </iframe>

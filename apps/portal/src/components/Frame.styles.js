@@ -183,7 +183,7 @@ const FrameStyles = `
 .gh-portal-btn-logout {
     position: absolute;
     top: 22px;
-    right: 24px;
+    left: 24px;
     background: none;
     border: none;
     height: unset;
@@ -192,6 +192,11 @@ const FrameStyles = `
     margin: 0;
     z-index: 999;
     box-shadow: none;
+}
+
+html[dir="rtl"] .gh-portal-btn-logout {
+    left: unset;
+    right: 24px;
 }
 
 .gh-portal-btn-logout .label {
@@ -780,7 +785,7 @@ html[dir="rtl"] .gh-portal-list-toggle-wrapper .gh-portal-list-detail {
 .mt10 { margin-top: 40px; }
 
 .mr1 { margin-inline-end: 4px; }
-.mr2 { margin-inline-endt: 8px; }
+.mr2 { margin-inline-end: 8px; }
 .mr3 { margin-inline-end: 12px; }
 .mr4 { margin-inline-end: 16px; }
 .mr5 { margin-inline-end: 20px; }
