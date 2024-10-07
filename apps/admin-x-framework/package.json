@@ -55,12 +55,12 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.declaration.json && vite build",
-    "prepare": "yarn build",
-    "test": "yarn test:types && yarn test:unit",
+    "prepare": "pnpm build",
+    "test": "pnpm test:types && pnpm test:unit",
     "test:types": "tsc --noEmit",
     "test:unit": "vitest run --coverage",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
-    "lint": "yarn lint:code && yarn lint:test",
+    "lint": "pnpm lint:code && pnpm lint:test",
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
   },
   "files": [

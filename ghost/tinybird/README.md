@@ -9,7 +9,7 @@ We sync this configuration with Tinybird via the Tinybird CLI.
 The Tinybird CLI is used via Docker.
 
 ```bash
-yarn tb
+pnpm tb
 ```
 
 Documentation for the Tinybird CLI: https://docs.tinybird.co/v/0.22.0/cli/overview

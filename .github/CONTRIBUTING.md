@@ -60,7 +60,7 @@ There is no need to include what modules have changed in the commit message, as 
 
 ### Submitting Pull Requests
 
-We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `yarn test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
+We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `pnpm test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
 
 Please provide plenty of context and reasoning around your changes, to help us merge quickly. Closing an already open issue is our preferred workflow. If your PR gets out of date, we may ask you to rebase as you are more familiar with your changes than we will be.
 

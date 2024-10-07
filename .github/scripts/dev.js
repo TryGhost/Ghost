@@ -9,7 +9,7 @@ const concurrently = require('concurrently');
 // check we're running on Node 18 and above
 const nodeVersion = parseInt(process.versions.node.split('.')[0]);
 if (nodeVersion < 18) {
-    console.error('`yarn dev` requires Node v18 or above. Please upgrade your version of Node.');
+    console.error('`pnpm dev` requires Node v18 or above. Please upgrade your version of Node.');
     process.exit(1);
 }
 
@@ -232,8 +232,8 @@ async function handleStripe() {
     }
 
     process.env.NX_DISABLE_DB = "true";
-    await exec("yarn nx reset --onlyDaemon");
-    await exec("yarn nx daemon --start");
+    await exec("pnpm nx reset --onlyDaemon");
+    await exec("pnpm nx daemon --start");
 
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 
@@ -247,7 +247,7 @@ async function handleStripe() {
     } catch (err) {
         console.error();
         console.error(chalk.red(`Executing dev command failed:`) + `\n`);
-        console.error(chalk.red(`If you've recently done a \`yarn main\`, dependencies might be out of sync. Try running \`${chalk.green('yarn fix')}\` to fix this.`));
+        console.error(chalk.red(`If you've recently done a \`pnpm main\`, dependencies might be out of sync. Try running \`${chalk.green('pnpm fix')}\` to fix this.`));
         console.error(chalk.red(`If not, something else went wrong. Please report this to the Ghost team.`));
         console.error();
     }

@@ -4,12 +4,12 @@
 
 ### Pre-requisites
 
-- Run `yarn` in Ghost monorepo root
-- Run `yarn` in this directory
+- Run `pnpm` in Ghost monorepo root
+- Run `pnpm` in this directory
 
-### Running via Ghost `yarn dev` in root folder
+### Running via Ghost `pnpm dev` in root folder
 
-You can automatically start the announcement-bar dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --announcementbar`.
+You can automatically start the announcement-bar dev server when developing Ghost by running Ghost (in root folder) via `pnpm dev --announcementbar`.
 
 # Copyright & License 
 

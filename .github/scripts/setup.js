@@ -52,7 +52,7 @@ async function runAndStream(command, args, options) {
         let mysqlSetup = false;
         console.log(chalk.blue(`Attempting to setup MySQL via Docker`));
         try {
-            await runAndStream('yarn', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
+            await runAndStream('pnpm', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
             mysqlSetup = true;
         } catch (err) {
             console.error(chalk.red('Failed to run MySQL Docker container'), err);
@@ -105,7 +105,7 @@ async function runAndStream(command, args, options) {
                 console.log(chalk.yellow(`Resetting Docker container`));
 
                 try {
-                    await runAndStream('yarn', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
+                    await runAndStream('pnpm', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
                     resetData = true;
                 } catch (err) {
                     console.error(chalk.red('Failed to run MySQL Docker container'), err);
@@ -118,7 +118,7 @@ async function runAndStream(command, args, options) {
     }
 
     console.log(chalk.blue(`Running knex-migrator init`));
-    await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
+    await runAndStream('pnpm', ['knex-migrator', 'init'], {cwd: coreFolder});
     if (process.argv.includes('--no-seed')) {
         console.log(chalk.yellow(`Skipping seed data`));
         console.log(chalk.yellow(`Done`));
@@ -129,10 +129,10 @@ async function runAndStream(command, args, options) {
 
         if (xxl) {
             console.log(chalk.blue(`Resetting all data (with xxl)`));
-            await runAndStream('yarn', ['reset:data:xxl'], {cwd: rootFolder});
+            await runAndStream('pnpm', ['reset:data:xxl'], {cwd: rootFolder});
         } else {
             console.log(chalk.blue(`Resetting all data`));
-            await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
+            await runAndStream('pnpm', ['reset:data'], {cwd: rootFolder});
         }
     }
 })();

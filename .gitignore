@@ -4,8 +4,8 @@
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+pnpm-debug.log*
+pnpm-error.log*
 
 # Runtime data
 pids
@@ -62,8 +62,8 @@ typings/
 # Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
+# pnpm Integrity file
+.pnpm-integrity
 
 # dotenv environment variables file
 .env
@@ -111,7 +111,7 @@ typings/
 /ghost/core/LICENSE
 /ghost/core/PRIVACY.md
 /ghost/core/README.md
-/ghost/core/yarn.lock
+/ghost/core/pnpm.lock
 
 # Test generated files
 test/functional/*.png

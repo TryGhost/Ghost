@@ -91,7 +91,7 @@ jobs:
             shared: &shared
               - '.github/**'
               - 'package.json'
-              - 'yarn.lock'
+              - 'pnpm.lock'
             core:
               - *shared
               - 'ghost/**'
@@ -126,10 +126,10 @@ jobs:
           ref: ${{ env.HEAD_COMMIT }}
 
       - name: Compute lockfile hash
-        run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
+        run: echo "hash=lockfile-${{ hashFiles('pnpm.lock') }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache key
-        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+        run: echo "cachekey=dep-cache-${{ hashFiles('pnpm.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache restore key
         run: |
@@ -172,14 +172,14 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: '18.12.1'
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --prefer-offline --frozen-lockfile
+        run: pnpm install --prefer-offline --frozen-lockfile
 
       - name: Build packages
         if: steps.cache_built_packages.outputs.cache-hit != 'true'
-        run: yarn nx run-many -t build:ts
+        run: pnpm nx run-many -t build:ts
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
@@ -223,7 +223,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: pnpm nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -254,7 +254,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Run i18n tests
-        run: yarn nx run @tryghost/i18n:test
+        run: pnpm nx run @tryghost/i18n:test
 
   job_admin-tests:
     runs-on: ubuntu-latest
@@ -277,13 +277,13 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - run: yarn nx run ghost-admin:test
+      - run: pnpm nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
       # Merge coverage reports and upload
       - name: Merge Admin test coverage
-        run: yarn ember coverage-merge
+        run: pnpm ember coverage-merge
         working-directory: ghost/admin
       - uses: actions/upload-artifact@v4
         with:
@@ -315,7 +315,7 @@ jobs:
         FORCE_COLOR: 0
       with:
         node-version: '18.x'
-        cache: yarn
+        cache: pnpm
 
     - name: Install Stripe-CLI
       run: |
@@ -332,7 +332,7 @@ jobs:
 
     - name: Run migrations
       working-directory: ghost/core
-      run: yarn knex-migrator init
+      run: pnpm knex-migrator init
 
     - name: Get Playwright version
       id: playwright-version
@@ -351,10 +351,10 @@ jobs:
       run: npx playwright install-deps
 
     - name: Build Admin
-      run: yarn nx run ghost-admin:build:dev
+      run: pnpm nx run ghost-admin:build:dev
 
     - name: Run Playwright tests locally
-      run: yarn test:browser
+      run: pnpm test:browser
       env:
         CI: true
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
@@ -445,7 +445,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: pnpm nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v4
         if: startsWith(matrix.node, '18')
@@ -517,11 +517,11 @@ jobs:
 
       - name: E2E tests
         working-directory: ghost/core
-        run: yarn test:ci:e2e
+        run: pnpm test:ci:e2e
 
       - name: Integration tests
         working-directory: ghost/core
-        run: yarn test:ci:integration
+        run: pnpm test:ci:integration
 
       # Get runtime in seconds for test suite
       - name: Record test duration
@@ -637,7 +637,7 @@ jobs:
 
       - name: Regression tests
         working-directory: ghost/core
-        run: yarn test:ci:regression
+        run: pnpm test:ci:regression
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -682,7 +682,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
+      - run: pnpm nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
         if: always()
@@ -735,7 +735,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/comments-ui:test
+      - run: pnpm nx run @tryghost/comments-ui:test
 
       - name: Upload test results
         if: always()
@@ -788,7 +788,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/signup-form:test:e2e
+      - run: pnpm nx run @tryghost/signup-form:test:e2e
 
       - name: Upload test results
         if: always()
@@ -1023,7 +1023,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Build the package
-        run: yarn run nx build @tryghost/admin-x-activitypub
+        run: pnpm run nx build @tryghost/admin-x-activitypub
 
       - name: Check if version changed
         id: version_check

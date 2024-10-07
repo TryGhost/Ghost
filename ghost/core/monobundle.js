@@ -165,7 +165,7 @@ function getWorkspaces(from) {
         'README.md',
         'LICENSE',
         'PRIVACY.md',
-        'yarn.lock'
+        'pnpm.lock'
     ];
 
     for (const file of filesToCopy) {

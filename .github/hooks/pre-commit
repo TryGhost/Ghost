@@ -5,7 +5,7 @@
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [ "$GIT_BRANCH" = "main" ]; then
-    yarn lint-staged --relative
+    pnpm lint-staged --relative
     lintStatus=$?
 
     if [ $lintStatus -ne 0 ]; then

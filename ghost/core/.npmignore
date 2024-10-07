@@ -31,9 +31,9 @@ content/settings/**
 !content/settings/README.md
 content/themes/**
 !content/themes/casper/**
-content/themes/casper/yarn.lock
+content/themes/casper/pnpm.lock
 !content/themes/source/**
-content/themes/source/yarn.lock
+content/themes/source/pnpm.lock
 node_modules/**
 core/server/lib/members/static/auth/node_modules/**
 **/*.db

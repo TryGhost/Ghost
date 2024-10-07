@@ -10,12 +10,12 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.declaration.json && vite build",
-    "prepare": "yarn build",
-    "test": "yarn test:unit",
-    "test:unit": "yarn test:types && yarn nx build && vitest run",
+    "prepare": "pnpm build",
+    "test": "pnpm test:unit",
+    "test:unit": "pnpm test:types && pnpm nx build && vitest run",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
-    "lint": "yarn lint:code && yarn lint:test",
+    "lint": "pnpm lint:code && pnpm lint:test",
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

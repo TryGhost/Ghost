@@ -49,7 +49,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `yarn dev:test`,
+        command: `pnpm dev:test`,
         url: `http://localhost:${E2E_PORT}/signup-form.min.js`,
         reuseExistingServer: !process.env.CI,
         timeout: 10000

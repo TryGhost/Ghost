@@ -8,13 +8,13 @@
   "types": "build/index.d.ts",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "yarn build:ts",
+    "build": "pnpm build:ts",
     "build:ts": "tsc",
     "test:unit": "NODE_ENV=testing c8 --src src --all --reporter text --reporter cobertura mocha -r ts-node/register/transpile-only './**/*.test.ts'",
-    "test": "yarn test:types && yarn test:unit",
+    "test": "pnpm test:types && pnpm test:unit",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
-    "lint": "yarn lint:code"
+    "lint": "pnpm lint:code"
   },
   "files": [
     "build"

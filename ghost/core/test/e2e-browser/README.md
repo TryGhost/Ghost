@@ -10,11 +10,11 @@ npx playwright install
 
 #### Running tests
 
-Run the browser test suite with `yarn test:browser`.
+Run the browser test suite with `pnpm test:browser`.
 
 #### Record test instructions
 
-After installing PlayWright, start to record tests using `yarn test:browser:record`.
+After installing PlayWright, start to record tests using `pnpm test:browser:record`.
 
 Available flags:
 * `--admin` - Runs a test starting in Ghost Admin

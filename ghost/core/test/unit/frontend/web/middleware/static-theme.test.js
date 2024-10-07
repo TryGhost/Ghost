@@ -60,7 +60,7 @@ describe('staticTheme', function () {
     });
 
     it('should skip for .lock file', function (done) {
-        req.path = 'yarn.lock';
+        req.path = 'pnpm.lock';
 
         staticTheme()(req, res, function next() {
             activeThemeStub.called.should.be.false();

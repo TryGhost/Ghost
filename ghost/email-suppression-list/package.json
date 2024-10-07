@@ -8,9 +8,9 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
-    "test:unit": "yarn test",
+    "test:unit": "pnpm test",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint": "yarn lint:code && yarn lint:test",
+    "lint": "pnpm lint:code && pnpm lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
   },
   "files": [
