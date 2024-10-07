@@ -41,10 +41,17 @@ export const ProductsSectionStyles = () => {
             border-radius: 999px;
             transition: all 0.15s ease-in-out;
         }
+        html[dir="rtl"] .gh-portal-products-pricetoggle:before {
+            left: 4px;
+            right: unset;
+    }
 
         .gh-portal-products-pricetoggle.left:before {
             transform: translateX(calc(-100% + 8px));
         }
+        html[dir="rtl"] .gh-portal-products-pricetoggle.left:before {
+            transform: translateX(calc(100% - 8px));
+    }
 
         .gh-portal-products-pricetoggle .gh-portal-btn {
             border: 0;

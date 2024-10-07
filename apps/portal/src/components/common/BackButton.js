@@ -46,6 +46,9 @@ export const BackButtonStyles = `
         margin-top: 1px;
         margin-inline-end: 2px;
     }
+    html[dir="rtl"] .gh-portal-btn-back svg {
+        transform: scaleX(-1);
+    }
 `;
 
 function ActionButton({label = null, hidden = false, onClick}) {

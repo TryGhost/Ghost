@@ -77,6 +77,10 @@ export const PopupNotificationStyles = `
         transition: all 0.15s ease-in-out forwards;
         opacity: 0.8;
     }
+    html[dir="rtl"] .gh-portal-popupnotification .closeicon {
+        right: unset;
+        left: 3px;
+    }
 
     .gh-portal-popupnotification .closeicon:hover {
         opacity: 1.0;

@@ -59,3 +59,8 @@ html[dir="rtl"] .emailReceivingFAQ .gh-portal-btn-back, html[dir="rtl"] .emailRe
     transition: color linear 100ms;
     font-size: 1.45rem;
 }
+html[dir="rtl"] .gh-email-faq-page-button span {
+    transform: scaleX(-1);
+    display: inline-flex;
+
+}
