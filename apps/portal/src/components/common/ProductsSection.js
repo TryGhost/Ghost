@@ -20,7 +20,7 @@ export const ProductsSectionStyles = () => {
         .gh-portal-products-pricetoggle {
             position: relative;
             display: flex;
-            background: #F3F3F3;
+            background: var(--grey125);
             width: 100%;
             border-radius: 999px;
             padding: 4px;

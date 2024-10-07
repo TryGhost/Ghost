@@ -1,7 +1,7 @@
 export const GlobalStyles = `
     /* Colors
     /* ----------------------------------------------------- */
-    :root {
+    :root {/*
         --black: #000;
         --blackrgb: 0,0,0;
         --grey0: #1d1d1d;
@@ -19,6 +19,7 @@ export const GlobalStyles = `
         --grey11: #e1e1e1;
         --grey12: #eaeaea;
         --grey13: #f9f9f9;
+        --grey12.5: #f3f3f3;
         --grey13rgb: 249,249,249;
         --grey14: #fbfbfb;
         --white: #fff;
@@ -27,6 +28,33 @@ export const GlobalStyles = `
         --darkerRed: #C50202;
         --yellow: #FFDC15;
         --green: #7FC724;
+        */
+               --black: #fff; /* inverted */
+        --blackrgb: 255, 255, 255; /* inverted */
+        --grey0: #f9f9f9; /* inverted */
+        --grey1: #e1e1e1; /* inverted */
+        --grey1rgb: 221, 221, 221; /* inverted */
+        --grey2: #dcdcdc; /* inverted */
+        --grey3: #c5c5c5; /* inverted */
+        --grey4: #aeaeae; /* inverted */
+        --grey5: #979797; /* inverted */
+        --grey6: #7f7f7f; /* inverted */
+        --grey7: #686868; /* inverted */
+        --grey8: #515151; /* inverted */
+        --grey9: #474747; /* inverted */
+        --grey10: #3d3d3d; /* inverted */
+        --grey11: #333; /* inverted */
+        --grey12: #1d1d1d; /* inverted */
+        --grey125: #0c0c0c; /* inverted */
+        --grey13: #000; /* inverted */
+        --grey13rgb: 0, 0, 0; /* inverted */
+        --grey14: #000; /* inverted */
+        --white: #000; /* inverted */
+        --whitergb: 0, 0, 0; /* inverted */
+        --red: #f02525; /* unchanged */
+        --darkerRed: #C50202; /* unchanged */
+        --yellow: #FFDC15; /* unchanged */
+        --green: #7FC724; /* unchanged */
     }
 
     /* Globals
