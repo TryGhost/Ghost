@@ -24,9 +24,7 @@ async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkInterval
 
 describe('Job Queue', function () {
     let jobService;
-    beforeEach(async function () {
-        await testUtils.setup('default'); // this generates the tables in the db
-    });
+    before(testUtils.setup('default')); // this generates the tables in the db
     afterEach(async function () {
         await configUtils.restore();
     });
