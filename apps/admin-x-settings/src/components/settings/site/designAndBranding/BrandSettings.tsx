@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
@@ -15,6 +15,7 @@ export interface BrandSettingValues {
     icon: string | null
     logo: string | null
     coverImage: string | null
+    paragraphFont: string
 }
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
@@ -34,6 +35,30 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
 
     const editor = usePinturaEditor();
 
+    const [blah, setBlah] = useState(values.paragraphFont);
+
+    const customFonts = [
+        'Inter',
+        'Lora',
+        'Mulish',
+        'PT Serif',
+        'Raleway',
+        'Mona Sans',
+        'Open Sans',
+        'JetBrains Mono',
+        'Libre Baskerville',
+        'Manrope',
+        'Poppins',
+        'EB Garamond'
+    ].map(x => {
+        return {
+            label: x,
+            value: x
+        };
+    });
+
+    const selectedCustomFont = {label: blah, value: blah};
+
     return (
         <div className='mt-7'>
             <SettingGroupContent>
@@ -48,6 +73,17 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         setSiteDescription(event.target.value);
                         // Debounce the updateSetting call
                         updateDescriptionDebouncedRef.current(event.target.value);
+                    }}
+                />
+                <Select
+                    hint={'Blah blah balh'}
+                    options={customFonts}
+                    selectedOption={selectedCustomFont}
+                    title={'Paragraph Font'}
+                    onSelect={(option) => {
+                        console.log('updateSetting', option?.value);
+                        setBlah(option?.value);
+                        updateSetting('paragraph_font', option?.value || null)
                     }}
                 />
                 <ColorPickerField
