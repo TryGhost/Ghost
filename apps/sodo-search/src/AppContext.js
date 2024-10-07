@@ -14,7 +14,8 @@ const AppContext = React.createContext({
     searchIndex: null,
     indexComplete: false,
     searchValue: '',
-    t: () => {}
+    t: () => {}, 
+    dir: 'ltr'
 });
 
 export default AppContext;

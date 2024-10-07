@@ -3,7 +3,7 @@ export type Actor = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
-export interface ProfileSearchResult {
+export interface Profile {
     actor: Actor;
     handle: string;
     followerCount: number;
@@ -12,7 +12,23 @@ export interface ProfileSearchResult {
 }
 
 export interface SearchResults {
-    profiles: ProfileSearchResult[];
+    profiles: Profile[];
+}
+
+export interface GetFollowersForProfileResponse {
+    followers: {
+        actor: Actor;
+        isFollowing: boolean;
+    }[];
+    next: string | null;
+}
+
+export interface GetFollowingForProfileResponse {
+    following: {
+        actor: Actor;
+        isFollowing: boolean;
+    }[];
+    next: string | null;
 }
 
 export class ActivityPubAPI {
@@ -123,6 +139,68 @@ export class ActivityPubAPI {
             return json.totalItems;
         }
         return 0;
+    }
+
+    async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                followers: [],
+                next: null
+            };
+        }
+
+        if (!('followers' in json)) {
+            return {
+                followers: [],
+                next: null
+            };
+        }
+
+        const followers = Array.isArray(json.followers) ? json.followers : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            followers,
+            next: nextPage
+        };
+    }
+
+    async getFollowingForProfile(handle: string, next?: string): Promise<GetFollowingForProfileResponse> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}/following`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                following: [],
+                next: null
+            };
+        }
+
+        if (!('following' in json)) {
+            return {
+                following: [],
+                next: null
+            };
+        }
+
+        const following = Array.isArray(json.following) ? json.following : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            following,
+            next: nextPage
+        };
     }
 
     async follow(username: string): Promise<void> {
@@ -311,5 +389,11 @@ export class ActivityPubAPI {
         return {
             profiles: []
         };
+    }
+
+    async getProfile(handle: string): Promise<Profile> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as Profile;
     }
 }
