@@ -1,6 +1,5 @@
 const {
-    BadRequestError,
-    InternalServerError
+    BadRequestError
 } = require('@tryghost/errors');
 
 /**
@@ -15,6 +14,7 @@ const {
  * @prop {string} origin
  * @prop {string} user_agent
  * @prop {string} ip
+ * @prop {boolean} verified
  */
 
 /**
@@ -25,8 +25,9 @@ const {
 /**
  * @typedef {object} SessionService
  * @prop {(req: Req, res: Res) => Promise<User | null>} getUserForSession
- * @prop {(req: Req, res: Res) => Promise<void>} destroyCurrentSession
+ * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
+ * @prop {(req: Req, res: Res) => Promise<void>} verifySession
  */
 
 /**
@@ -86,22 +87,26 @@ module.exports = function createSessionService({getSession, findUserById, getOri
     }
 
     /**
-     * destroyCurrentSession
+     * verifySession
+     *
+     * @param {Req} req
+     * @param {Res} res
+     */
+    async function verifySession(req, res) {
+        const session = await getSession(req, res);
+        session.verified = true;
+    }
+
+    /**
+     * removeUserForSession
      *
      * @param {Req} req
      * @param {Res} res
      * @returns {Promise<void>}
      */
-    async function destroyCurrentSession(req, res) {
+    async function removeUserForSession(req, res) {
         const session = await getSession(req, res);
-        return new Promise((resolve, reject) => {
-            session.destroy((err) => {
-                if (err) {
-                    return reject(new InternalServerError({err}));
-                }
-                resolve();
-            });
-        });
+        session.user_id = undefined;
     }
 
     /**
@@ -139,7 +144,7 @@ module.exports = function createSessionService({getSession, findUserById, getOri
     return {
         getUserForSession,
         createSessionForUser,
-        destroyCurrentSession
+        removeUserForSession,
+        verifySession
     };
 };
-
