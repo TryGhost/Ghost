@@ -25,7 +25,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         handle: 'index',
         includeReplies: true,
         filter: {
-            type: ['Create:Article', 'Create:Note', 'Announce:Note']
+            type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
         }
     });
 
