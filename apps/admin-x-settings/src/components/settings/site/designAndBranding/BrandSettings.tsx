@@ -9,6 +9,15 @@ import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/image
 import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import type {Font} from '@tryghost/custom-fonts';
+
+// TODO: create custom types for heading and body fonts in @tryghost/custom-fonts, so we can extend
+// them separately
+type BodyFontOption = {
+    value: Font | 'Theme default',
+    label: Font | 'Theme default'
+};
+type HeadingFontOption = BodyFontOption;
 
 export interface BrandSettingValues {
     description: string
@@ -40,12 +49,13 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [headingFont, setHeadingFont] = useState(values.headingFont);
     const [bodyFont, setBodyFont] = useState(values.bodyFont);
 
-    const customFonts = CUSTOM_FONTS.map((x) => {
-        return {
-            label: x,
-            value: x
-        };
-    });
+    // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
+    // between heading and body fonts
+    const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.map(x => ({label: x, value: x}));
+    customHeadingFonts.push({label: 'Theme default', value: 'Theme default'});
+
+    const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.map(x => ({label: x, value: x}));
+    customBodyFonts.push({label: 'Theme default', value: 'Theme default'});
 
     const selectedHeadingFont = {label: headingFont, value: headingFont};
     const selectedBodyFont = {label: bodyFont, value: bodyFont};
@@ -68,22 +78,32 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                 />
                 <Select
                     hint={''}
-                    options={customFonts}
+                    options={customHeadingFonts}
                     selectedOption={selectedHeadingFont}
                     title={'Heading font'}
                     onSelect={(option) => {
-                        setHeadingFont(option?.value || '');
-                        updateSetting('heading_font', option?.value || null);
+                        if (option?.value === 'Theme default') {
+                            setHeadingFont('');
+                            updateSetting('heading_font', '');
+                        } else {
+                            setHeadingFont(option?.value || '');
+                            updateSetting('heading_font', option?.value || '');
+                        }
                     }}
                 />
                 <Select
                     hint={''}
-                    options={customFonts}
+                    options={customBodyFonts}
                     selectedOption={selectedBodyFont}
                     title={'Body font'}
                     onSelect={(option) => {
-                        setBodyFont(option?.value || '');
-                        updateSetting('body_font', option?.value || null);
+                        if (option?.value === 'Theme default') {
+                            setBodyFont('');
+                            updateSetting('body_font', '');
+                        } else {
+                            setBodyFont(option?.value || '');
+                            updateSetting('body_font', option?.value || '');
+                        }
                     }}
                 />
                 <ColorPickerField
