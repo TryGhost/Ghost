@@ -4,11 +4,10 @@ import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useQueryParams from '../../../hooks/useQueryParams';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
-import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -25,15 +24,9 @@ const Sidebar: React.FC<{
     themeSettingSections,
     updateBrandSetting,
     updateThemeSetting,
-    onTabChange,
-    handleSave
+    onTabChange
 }) => {
-    const {updateRoute} = useRouting();
     const [selectedTab, setSelectedTab] = useState('brand');
-    const {data: {themes} = {}} = useBrowseThemes();
-    const refParam = useQueryParams().getParam('ref');
-
-    const activeTheme = themes?.find(theme => theme.active);
 
     const tabs: Tab[] = [
         {
@@ -55,27 +48,9 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex h-full flex-col justify-between'>
-            <div className='p-7' data-testid="design-setting-tabs">
+            <div className='p-7 pt-2' data-testid="design-setting-tabs">
                 <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
             </div>
-            <StickyFooter height={74}>
-                <div className='w-full px-7'>
-                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
-                        await handleSave();
-                        if (refParam) {
-                            updateRoute(`design/change-theme?ref=${refParam}`);
-                        } else {
-                            updateRoute('design/change-theme');
-                        }
-                    }}>
-                        <div className='text-left'>
-                            <div className='font-semibold'>Change theme</div>
-                            <div className='font-sm text-grey-700'>Current theme: {activeTheme?.name} - v{activeTheme?.package.version}</div>
-                        </div>
-                        <Icon className='mr-2 transition-all group-hover:translate-x-2 dark:text-white' name='chevron-right' size='sm' />
-                    </button>
-                </div>
-            </StickyFooter>
         </div>
     );
 };
