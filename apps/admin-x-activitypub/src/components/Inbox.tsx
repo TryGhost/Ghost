@@ -29,7 +29,9 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         }
     });
 
-    const activities = (data?.pages.flatMap(page => page.data) ?? []);
+    const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
+        return !activity.object.inReplyTo;
+    });
 
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
         setArticleContent(object);
