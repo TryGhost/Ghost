@@ -13,7 +13,7 @@ const SupportPage = () => {
     useEffect(() => {
         async function checkoutDonation() {
             const siteUrl = site.url;
-            const currentUrl = window.location.href.split('#')[0];
+            const currentUrl = window.location.origin + window.location.pathname;
             const successUrl = member ? `${currentUrl}?action=support&success=true` : `${currentUrl}#/portal/support/success`;
             const cancelUrl = currentUrl;
             const api = setupGhostApi({siteUrl});
