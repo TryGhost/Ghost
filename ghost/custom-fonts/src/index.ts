@@ -53,10 +53,10 @@ export function generateCustomFontCss(font: Font, element: Element) {
     let selector;
     switch (element) {
     case 'heading':
-        selector = 'h1, h2, h3';
+        selector = '.is-title, .gh-content [id]';
         break;
     case 'body':
-        selector = 'p';
+        selector = '.is-body';
         break;
     default:
         break;
