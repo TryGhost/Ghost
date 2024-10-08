@@ -72,7 +72,9 @@ const EDITABLE_SETTINGS = [
     'pintura_css_url',
     'donations_currency',
     'donations_suggested_amount',
-    'recommendations_enabled'
+    'recommendations_enabled',
+    'body_font',
+    'heading_font'
 ];
 
 module.exports = {
