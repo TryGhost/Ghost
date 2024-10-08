@@ -31,10 +31,20 @@ function SessionMiddleware({sessionService}) {
         }
     }
 
+    async function sendAuthCode(req, res, next) {
+        try {
+            await sessionService.sendAuthCodeToUser(req, res);
+            res.sendStatus(201);
+        } catch (err) {
+            next(err);
+        }
+    }
+
     return {
         createSession: createSession,
         logout: logout,
-        authenticate: authenticate
+        authenticate: authenticate,
+        sendAuthCode: sendAuthCode
     };
 }
 
