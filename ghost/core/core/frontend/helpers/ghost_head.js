@@ -4,7 +4,7 @@
 // Outputs scripts and other assets at the top of a Ghost theme
 const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
-
+const {generateCustomFontCss, isValidCustomFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
 // @TODO fix this require
 const {cardAssets} = require('../services/assets-minification');
@@ -341,8 +341,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             const paragraphFont = settingsCache.get('paragraph_font');
-            if (paragraphFont) {
-                head.push(customFontCss(paragraphFont));
+            if (typeof paragraphFont === 'string' && isValidCustomFont(paragraphFont)) {
+                head.push(generateCustomFontCss(paragraphFont));
             }
         }
 
@@ -355,33 +355,5 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         return new SafeString(head.join('\n    ').trim());
     }
 };
-
-function customFontCss(font) {
-    if (!font) {
-        return;
-    }
-    const importStrings = {
-        'EB Garamond': '@import url(https://fonts.bunny.net/css?family=eb-garamond:400);',
-        'Inter': '@import url(https://fonts.bunny.net/css?family=inter:400);',
-        'JetBrains Mono': '@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400);',
-        'Libre Baskerville': '@import url(https://fonts.bunny.net/css?family=libre-baskerville:400);',
-        'Lora': '@import url(https://fonts.bunny.net/css?family=lora:400);',
-        'Mulish': '@import url(https://fonts.bunny.net/css?family=mulish:400);',
-        'Open Sans': '@import url(https://fonts.bunny.net/css?family=open-sans:400);',
-        'Poppins': '@import url(https://fonts.bunny.net/css?family=poppins:400);',
-        'PT Serif': '@import url(https://fonts.bunny.net/css?family=pt-serif:400);',
-        'Raleway': '@import url(https://fonts.bunny.net/css?family=raleway:400);',
-    };
-
-    return `
-        <style>
-            ${importStrings[font]}
-
-            p {
-                font-family: ${font};
-            }
-        </style>
-    `;
-}
 
 module.exports.async = true;

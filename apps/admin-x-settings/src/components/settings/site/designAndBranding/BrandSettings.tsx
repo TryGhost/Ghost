@@ -43,14 +43,12 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         'Mulish',
         'PT Serif',
         'Raleway',
-        'Mona Sans',
         'Open Sans',
         'JetBrains Mono',
         'Libre Baskerville',
-        'Manrope',
         'Poppins',
         'EB Garamond'
-    ].map(x => {
+    ].map((x) => {
         return {
             label: x,
             value: x
@@ -81,9 +79,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     selectedOption={selectedCustomFont}
                     title={'Paragraph Font'}
                     onSelect={(option) => {
-                        console.log('updateSetting', option?.value);
-                        setBlah(option?.value);
-                        updateSetting('paragraph_font', option?.value || null)
+                        setBlah(option?.value || '');
+                        updateSetting('paragraph_font', option?.value || null);
                     }}
                 />
                 <ColorPickerField
