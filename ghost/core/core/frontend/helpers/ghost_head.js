@@ -340,9 +340,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            const paragraphFont = settingsCache.get('paragraph_font');
-            if (typeof paragraphFont === 'string' && isValidCustomFont(paragraphFont)) {
-                head.push(generateCustomFontCss(paragraphFont));
+            const headingFont = settingsCache.get('heading_font');
+            if (typeof headingFont === 'string' && isValidCustomFont(headingFont)) {
+                head.push(generateCustomFontCss(headingFont));
+            }
+
+            const bodyFont = settingsCache.get('body_font');
+            if (typeof bodyFont === 'string' && isValidCustomFont(bodyFont)) {
+                head.push(generateCustomFontCss(bodyFont));
             }
         }
 

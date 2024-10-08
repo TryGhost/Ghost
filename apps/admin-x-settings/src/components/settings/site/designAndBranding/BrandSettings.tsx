@@ -15,7 +15,8 @@ export interface BrandSettingValues {
     icon: string | null
     logo: string | null
     coverImage: string | null
-    paragraphFont: string
+    headingFont: string
+    bodyFont: string
 }
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
@@ -35,19 +36,26 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
 
     const editor = usePinturaEditor();
 
-    const [blah, setBlah] = useState(values.paragraphFont);
+    const [headingFont, setHeadingFont] = useState(values.headingFont);
+    const [bodyFont, setBodyFont] = useState(values.bodyFont);
 
     const customFonts = [
-        'Inter',
-        'Lora',
-        'Mulish',
-        'PT Serif',
-        'Raleway',
-        'Open Sans',
-        'JetBrains Mono',
-        'Libre Baskerville',
+        'Theme default',
+        'Space Grotesk',
+        'Bebas Neue',
+        'Playfair Display',
+        'Chakra Petch',
+        'Noto Sans',
         'Poppins',
-        'EB Garamond'
+        'Fira Sans',
+        'Inter',
+        'Noto Serif',
+        'Lora',
+        'IBM Plex Serif',
+        'EB Garamond',
+        'Space Mono',
+        'Fira Mono',
+        'JetBrains Mono'
     ].map((x) => {
         return {
             label: x,
@@ -55,7 +63,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         };
     });
 
-    const selectedCustomFont = {label: blah, value: blah};
+    const selectedHeadingFont = {label: headingFont, value: headingFont};
+    const selectedBodyFont = {label: bodyFont, value: bodyFont};
 
     return (
         <div className='mt-7'>
@@ -74,13 +83,23 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     }}
                 />
                 <Select
-                    hint={'Blah blah balh'}
+                    hint={''}
                     options={customFonts}
-                    selectedOption={selectedCustomFont}
-                    title={'Paragraph Font'}
+                    selectedOption={selectedHeadingFont}
+                    title={'Heading font'}
                     onSelect={(option) => {
-                        setBlah(option?.value || '');
-                        updateSetting('paragraph_font', option?.value || null);
+                        setHeadingFont(option?.value || '');
+                        updateSetting('heading_font', option?.value || null);
+                    }}
+                />
+                <Select
+                    hint={''}
+                    options={customFonts}
+                    selectedOption={selectedBodyFont}
+                    title={'Body font'}
+                    onSelect={(option) => {
+                        setBodyFont(option?.value || '');
+                        updateSetting('body_font', option?.value || null);
                     }}
                 />
                 <ColorPickerField

@@ -144,7 +144,7 @@ const DesignModal: React.FC = () => {
         ))}));
     };
 
-    const [description, accentColor, icon, logo, coverImage, paragraphFont] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image', 'paragraph_font']) as string[];
+    const [description, accentColor, icon, logo, coverImage, headingFont, bodyFont] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image', 'heading_font', 'body_font']) as string[];
 
     const themeSettingGroups = (formState.themeSettings || []).reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
@@ -207,7 +207,7 @@ const DesignModal: React.FC = () => {
         />;
     const sidebarContent =
         <Sidebar
-            brandSettings={{description, accentColor, icon, logo, coverImage, paragraphFont}}
+            brandSettings={{description, accentColor, icon, logo, coverImage, headingFont, bodyFont}}
             handleSave={handleSave}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
