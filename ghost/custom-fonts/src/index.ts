@@ -1,4 +1,4 @@
-type Font = 'EB Garamond' | 'Inter' | 'JetBrains Mono' | 'Libre Baskerville' | 'Lora' | 'Mulish' | 'Open Sans' | 'Poppins' | 'PT Serif' | 'Raleway';
+export type Font = 'EB Garamond' | 'Inter' | 'JetBrains Mono' | 'Libre Baskerville' | 'Lora' | 'Mulish' | 'Open Sans' | 'Poppins' | 'PT Serif' | 'Raleway';
 
 export function generateCustomFontCss(font: Font) {
     const importStrings = {
@@ -27,16 +27,21 @@ export function generateCustomFontCss(font: Font) {
 
 // Main module file
 export const CUSTOM_FONTS: Font[] = [
-    'Inter',
-    'Lora',
-    'Mulish',
-    'PT Serif',
-    'Raleway',
-    'Open Sans',
-    'JetBrains Mono',
-    'Libre Baskerville',
+    'Space Grotesk',
+    'Bebas Neue',
+    'Playfair Display',
+    'Chakra Petch',
+    'Noto Sans',
     'Poppins',
-    'EB Garamond'
+    'Fira Sans',
+    'Inter',
+    'Noto Serif',
+    'Lora',
+    'IBM Plex Serif',
+    'EB Garamond',
+    'Space Mono',
+    'Fira Mono',
+    'JetBrains Mono'
 ];
 
 export function getCustomFonts(): Font[] {

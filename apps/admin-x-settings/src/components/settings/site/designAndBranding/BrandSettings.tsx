@@ -2,6 +2,7 @@ import React, {useRef, useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
+import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
 import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -39,24 +40,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [headingFont, setHeadingFont] = useState(values.headingFont);
     const [bodyFont, setBodyFont] = useState(values.bodyFont);
 
-    const customFonts = [
-        'Theme default',
-        'Space Grotesk',
-        'Bebas Neue',
-        'Playfair Display',
-        'Chakra Petch',
-        'Noto Sans',
-        'Poppins',
-        'Fira Sans',
-        'Inter',
-        'Noto Serif',
-        'Lora',
-        'IBM Plex Serif',
-        'EB Garamond',
-        'Space Mono',
-        'Fira Mono',
-        'JetBrains Mono'
-    ].map((x) => {
+    const customFonts = CUSTOM_FONTS.map((x) => {
         return {
             label: x,
             value: x
