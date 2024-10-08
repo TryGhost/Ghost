@@ -3,7 +3,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -116,6 +116,33 @@ describe('Acceptance: Authentication', function () {
             expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
             expect(currentRouteName(), 'path after invalid url').to.equal('error404');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(1);
+        });
+
+        it('has 2fa code happy path', async function () {
+            this.server.post('/session', function () {
+                return new Response(403, {}, {
+                    errors: {
+                        code: '2FA_TOKEN_REQUIRED'
+                    }
+                });
+            });
+
+            this.server.put('/session/verify', function () {
+                return new Response(201);
+            });
+
+            await invalidateSession();
+            await visit('/signin');
+            await fillIn('[data-test-input="email"]', 'my@email.com');
+            await fillIn('[data-test-input="password"]', 'password');
+            await click('[data-test-button="sign-in"]');
+
+            expect(currentURL(), 'url after u+p submit').to.equal('/signin/verify');
+
+            await fillIn('[data-test-input="token"]', 123456);
+            await click('[data-test-button="verify"]');
+
+            expect(currentURL()).to.equal('/dashboard');
         });
     });
 
