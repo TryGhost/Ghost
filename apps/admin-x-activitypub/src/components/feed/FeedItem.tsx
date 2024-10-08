@@ -156,17 +156,6 @@ function renderTimestamp(object: ObjectProperties) {
     return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
 }
 
-const truncateHTML = (html: string, maxLength: number) => {
-    const tempElement = document.createElement('div');
-    tempElement.innerHTML = html;
-  
-    const textContent = tempElement.textContent || tempElement.innerText || '';
-  
-    const truncatedText = textContent.substring(0, maxLength);
-  
-    return `“${truncatedText}&hellip;”`;
-};
-
 const FeedItemStats: React.FC<{
     object: ObjectProperties;
     likeCount: number;
@@ -478,7 +467,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                 </div>
                             </div>
-                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>{object.name ? object.name : <span>{author.name}: <span dangerouslySetInnerHTML={({__html: truncateHTML(object.content, 30)})}></span></span>}</Heading>
+                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>{object.name ? object.name : <span dangerouslySetInnerHTML={({__html: object.content})}></span>}</Heading>
                             <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content line-clamp-1 text-pretty text-[1.5rem] text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
