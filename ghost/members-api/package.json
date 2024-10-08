@@ -42,7 +42,7 @@
     "@types/jsonwebtoken": "9.0.6",
     "body-parser": "1.20.3",
     "bson-objectid": "2.0.4",
-    "express": "4.21.0",
+    "express": "4.21.1",
     "got": "11.8.6",
     "jsonwebtoken": "8.5.1",
     "lodash": "4.17.21",
