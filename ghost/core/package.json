@@ -198,7 +198,7 @@
     "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
     "keypair": "1.0.4",
-    "knex": "2.4.2",
+    "knex": "2.5.1",
     "knex-migrator": "5.2.1",
     "lib0": "0.2.94",
     "lodash": "4.17.21",
