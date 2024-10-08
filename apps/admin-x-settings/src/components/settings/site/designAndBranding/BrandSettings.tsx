@@ -29,6 +29,8 @@ export interface BrandSettingValues {
     bodyFont: string
 }
 
+const DEFAULT_FONT = 'Theme default';
+
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
     const [siteDescription, setSiteDescription] = useState(values.description);
@@ -46,16 +48,16 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
 
     const editor = usePinturaEditor();
 
-    const [headingFont, setHeadingFont] = useState(values.headingFont);
-    const [bodyFont, setBodyFont] = useState(values.bodyFont);
+    const [headingFont, setHeadingFont] = useState(values.headingFont || DEFAULT_FONT);
+    const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
     // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
     // between heading and body fonts
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.map(x => ({label: x, value: x}));
-    customHeadingFonts.push({label: 'Theme default', value: 'Theme default'});
+    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
     const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.map(x => ({label: x, value: x}));
-    customBodyFonts.push({label: 'Theme default', value: 'Theme default'});
+    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
     const selectedHeadingFont = {label: headingFont, value: headingFont};
     const selectedBodyFont = {label: bodyFont, value: bodyFont};
@@ -82,8 +84,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     selectedOption={selectedHeadingFont}
                     title={'Heading font'}
                     onSelect={(option) => {
-                        if (option?.value === 'Theme default') {
-                            setHeadingFont('');
+                        if (option?.value === DEFAULT_FONT) {
+                            setHeadingFont(DEFAULT_FONT);
                             updateSetting('heading_font', '');
                         } else {
                             setHeadingFont(option?.value || '');
@@ -97,8 +99,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     selectedOption={selectedBodyFont}
                     title={'Body font'}
                     onSelect={(option) => {
-                        if (option?.value === 'Theme default') {
-                            setBodyFont('');
+                        if (option?.value === DEFAULT_FONT) {
+                            setBodyFont(DEFAULT_FONT);
                             updateSetting('body_font', '');
                         } else {
                             setBodyFont(option?.value || '');
