@@ -111,7 +111,7 @@ export function generateMonochromePalette(baseColor, count = 10) {
 export const barListColor = '#F1F3F4';
 
 export const statsStaticColors = [
-    '#8E42FF', '#B07BFF', '#C7A0FF', '#DDC6FF', '#EBDDFF', '#F7EDFF'
+    '#A568FF', '#7B7BFF', '#B3CEFF', '#D4ECF7', '#EFFDFD', '#F7F7F7'
 ];
 
 export const getCountryFlag = (countryCode) => {

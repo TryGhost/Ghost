@@ -39,7 +39,7 @@
 
             {{#if this.location}}
                 <div class="gh-stats-filter-pill">
-                    <div>Location is <span class="value">{{this.location}}</span></div>
+                    <div>Location is <span class="value">{{this.humanReadableLocation}}</span></div>
                 </div>
             {{/if}}
 
@@ -61,6 +61,8 @@
     </GhCanvasHeader>
 
     <section class="view-container">
+
+        {{#if this.showStats}}
         <section class="gh-stats-container no-gap">
             <Stats::KpisOverview
                 @chartRange={{this.chartRange}}
@@ -121,6 +123,18 @@
                     />
             </div>
         </section>
+        {{else}}
+        <div class="no-posts-box">
+            <div class="no-posts">
+                {{svg-jar "stats-placeholder" class="gh-stats-placeholder"}}
+                <h4>No stats available for the current filter</h4>
+                <button type="button" class="gh-btn" {{on "click" this.clearAudienceFilter}}>
+                    <span>See all stats</span>
+                </button>
+            </div>
+        </div>
+        No audience selected
+        {{/if}}
 
     </section>
 

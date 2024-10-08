@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
@@ -8,11 +8,88 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 
-let membersAgent, membersAgent2, postId, postTitle, commentId;
+let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 
 async function getPaidProduct() {
     return await models.Product.findOne({type: 'paid'});
 }
+
+const dbFns = {
+    /**
+     * @typedef {Object} AddCommentData
+     * @property {string} [post_id=postId]
+     * @property {string} member_id
+     * @property {string} [parent_id]
+     * @property {string} [html='This is a comment']
+     */
+    /**
+     * @typedef {Object} AddCommentReplyData
+     * @property {string} member_id
+     * @property {string} [html='This is a reply']
+     */
+    /**
+     * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
+     */
+
+    /**
+     * @param {AddCommentData} data
+     * @returns {Promise<any>}
+     */
+    addComment: async (data) => {
+        return await models.Comment.add({
+            post_id: data.post_id || postId,
+            member_id: data.member_id,
+            parent_id: data.parent_id,
+            html: data.html || '<p>This is a comment</p>'
+        });
+    },
+    /**
+     * @param {AddCommentWithRepliesData}  data
+     * @returns {Promise<any>}
+     */
+    addCommentWithReplies: async (data) => {
+        const {replies, ...commentData} = data;
+
+        const parent = await dbFns.addComment(commentData);
+        const createdReplies = [];
+
+        for (const reply of replies) {
+            const createdReply = await dbFns.addComment({
+                post_id: parent.get('post_id'),
+                member_id: reply.member_id,
+                parent_id: parent.get('id'),
+                html: reply.html || '<p>This is a reply</p>'
+            });
+            createdReplies.push(createdReply);
+        }
+
+        return {parent, replies: createdReplies};
+    },
+    /**
+     * @param {Object} data
+     * @param {string} data.comment_id
+     * @param {string} data.member_id
+     * @returns {Promise<any>}
+     */
+    addLike: async (data) => {
+        return await models.CommentLike.add({
+            comment_id: data.comment_id,
+            member_id: data.member_id
+        });
+    },
+    /**
+     * @param {Object} data
+     * @param {string} data.comment_id
+     * @param {string} data.member_id
+     * @returns {Promise<any>}
+     */
+    addReport: async (data) => {
+        return await models.CommentReport.add({
+            comment_id: data.comment_id,
+            member_id: data.member_id
+        });
+    }
+};
 
 const commentMatcher = {
     id: anyObjectId,
@@ -53,31 +130,103 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * @param {string} method
+ * @param {string} url
+ * @param {number} status
+ * @param {Array} [errors]
+ * @returns {any} ExpectRequest
+ */
+function testBasicErrorResponse(method, url, status, errors) {
+    if (!errors) {
+        errors = [{id: anyUuid}];
+    }
+
+    return membersAgent[method](url)
+        .expectStatus(status)
+        .matchHeaderSnapshot({etag: anyEtag})
+        .matchBodySnapshot({errors});
+}
+
+/**
+ * @param {string} method
+ * @param {string} url
+ * @param {number} status
+ * @returns {any} ExpectRequest
+ */
+function testBasicEmptyResponse(method, url, status) {
+    return membersAgent[method](url)
+        .expectStatus(status)
+        .matchHeaderSnapshot({etag: anyEtag})
+        .expectEmptyBody();
+}
+
+/**
+ * @param {string} url
+ * @param {Object} commentsMatcher
+ */
+function testGetComments(url, commentsMatcher) {
+    return membersAgent
+        .get(url)
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+            etag: anyEtag
+        })
+        .matchBodySnapshot({
+            comments: commentsMatcher
+        });
+}
+
+/**
+ * @param {Object} data
+ * @param {string} data.post_id
+ * @param {string} data.html
+ * @param {string} [data.parent_id]
+ * @param {Object} [options]
+ * @param {number} [options.status = 201]
+ * @param {Object} [options.matchHeaderSnapshot]
+ * @param {Object} [options.matchBodySnapshot]
+ * @returns {any} ExpectRequest
+ */
+function testPostComment({post_id, html, parent_id}, {status = 201, matchHeaderSnapshot = {}, matchBodySnapshot} = {}) {
+    return membersAgent
+        .post(`/api/comments/`)
+        .body({comments: [{
+            post_id,
+            parent_id,
+            html
+        }]})
+        .expectStatus(status)
+        .matchHeaderSnapshot({
+            etag: anyEtag,
+            location: anyLocationFor('comments'),
+            ...matchHeaderSnapshot
+        })
+        .matchBodySnapshot({
+            comments: [commentMatcher],
+            ...matchBodySnapshot
+        });
+}
+
+function assertAuthorEmailSent(email, title, extraAssertions = {}) {
+    mockManager.assert.sentEmail({
+        subject: '💬 New comment on your post: ' + title,
+        to: email,
+        ...extraAssertions
+    });
+}
+
 async function testCanCommentOnPost(member) {
     await models.Member.edit({last_seen_at: null, last_commented_at: null}, {id: member.get('id')});
 
-    const {body} = await membersAgent
-        .post(`/api/comments/`)
-        .body({comments: [{
-            post_id: postId,
-            html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>'
-        }]})
-        .expectStatus(201)
-        .matchHeaderSnapshot({
-            etag: anyEtag,
-            location: anyLocationFor('comments')
-        })
-        .matchBodySnapshot({
-            comments: [commentMatcher]
-        });
-    // Save for other tests
-    commentId = body.comments[0].id;
+    await testPostComment({
+        post_id: postId,
+        html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>'
+    });
 
     // Check if author got an email
     mockManager.assert.sentEmailCount(1);
-    mockManager.assert.sentEmail({
-        subject: '💬 New comment on your post: ' + postTitle,
-        to: fixtureManager.get('users', 0).email,
+    assertAuthorEmailSent(postAuthorEmail, postTitle, {
         // Note that the <strong> tag is removed by the sanitizer
         html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>'))
     });
@@ -94,35 +243,32 @@ async function testCanCommentOnPost(member) {
 }
 
 async function testCanReply(member, emailMatchers = {}) {
+    const parentComment = await dbFns.addComment({
+        member_id: fixtureManager.get('members', 2).id
+    });
+
     const date = new Date(0);
     await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
 
-    await membersAgent
-        .post(`/api/comments/`)
-        .body({comments: [{
-            post_id: postId,
-            parent_id: fixtureManager.get('comments', 0).id,
-            html: 'This is a reply'
-        }]})
-        .expectStatus(201)
-        .matchHeaderSnapshot({
-            etag: anyEtag,
-            location: anyLocationFor('comments')
-        })
-        .matchBodySnapshot({
-            comments: [commentMatcher]
-        });
+    await testPostComment({
+        post_id: postId,
+        parent_id: parentComment.get('id'),
+        html: 'This is a reply'
+    }, {
+        matchHeaderSnapshot: {
+            'x-cache-invalidate': matchers.stringMatching(
+                new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
+            )
+        }
+    });
 
     mockManager.assert.sentEmailCount(2);
-    mockManager.assert.sentEmail({
-        subject: '💬 New comment on your post: ' + postTitle,
-        to: fixtureManager.get('users', 0).email
-    });
+    assertAuthorEmailSent(postAuthorEmail, postTitle);
 
     mockManager.assert.sentEmail({
         ...emailMatchers,
         subject: '↪️ New reply to your comment on Ghost',
-        to: fixtureManager.get('members', 0).email
+        to: fixtureManager.get('members', 2).email
     });
 
     // Wait for the dispatched events (because this happens async)
@@ -154,12 +300,12 @@ async function testCannotCommentOnPost(status = 403) {
         });
 }
 
-async function testCannotReply(status = 403) {
+async function testCannotReply(parentId, status = 403) {
     await membersAgent
         .post(`/api/comments/`)
         .body({comments: [{
             post_id: postId,
-            parent_id: fixtureManager.get('comments', 0).id,
+            parent_id: parentId,
             html: 'This is a reply'
         }]})
         .expectStatus(status)
@@ -174,20 +320,26 @@ async function testCannotReply(status = 403) {
 }
 
 describe('Comments API', function () {
-    let member;
+    let loggedInMember;
 
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         membersAgent2 = membersAgent.duplicate();
 
-        await fixtureManager.init('posts', 'members', 'comments');
+        await fixtureManager.init('posts', 'members');
 
         postId = fixtureManager.get('posts', 0).id;
         postTitle = fixtureManager.get('posts', 0).title;
+        postAuthorEmail = fixtureManager.get('users', 0).email;
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         mockManager.mockMail();
+
+        // ensure we don't have data dependencies across tests
+        await dbUtils.truncate('comments');
+        await dbUtils.truncate('comment_likes');
+        await dbUtils.truncate('comment_reports');
     });
 
     afterEach(async function () {
@@ -211,28 +363,27 @@ describe('Comments API', function () {
                 sinon.restore();
             });
 
+            async function setupBrowseCommentsData() {
+                await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: [{
+                        member_id: fixtureManager.get('members', 1).id
+                    }]
+                });
+            }
+
             it('Can browse all comments of a post (legacy)', async function () {
-                await membersAgent
-                    .get(`/api/comments/?filter=post_id:'${postId}'`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1})]
-                    });
+                await setupBrowseCommentsData();
+                await testGetComments(`/api/comments/?filter=post_id:'${postId}'`, [
+                    commentMatcherWithReplies({replies: 1})
+                ]);
             });
 
             it('Can browse all comments of a post', async function () {
-                await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1})]
-                    });
+                await setupBrowseCommentsData();
+                await testGetComments(`/api/comments/post/${postId}/`, [
+                    commentMatcherWithReplies({replies: 1})
+                ]);
             });
 
             it('cannot comment on a post', async function () {
@@ -240,15 +391,19 @@ describe('Comments API', function () {
             });
 
             it('cannot reply on a post', async function () {
-                await testCannotReply(401);
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id
+                });
+                await testCannotReply(comment.get('id'), 401);
             });
 
             it('cannot report a comment', async function () {
-                commentId = fixtureManager.get('comments', 0).id;
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
 
-                // Create a temporary comment
                 await membersAgent
-                    .post(`/api/comments/${commentId}/report/`)
+                    .post(`/api/comments/${comment.get('id')}/report/`)
                     .expectStatus(401)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -261,33 +416,23 @@ describe('Comments API', function () {
             });
 
             it('cannot like a comment', async function () {
-                // Create a temporary comment
-                await membersAgent
-                    .post(`/api/comments/${commentId}/like/`)
-                    .expectStatus(401)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 401);
             });
 
             it('cannot unlike a comment', async function () {
-                // Create a temporary comment
-                await membersAgent
-                    .delete(`/api/comments/${commentId}/like/`)
-                    .expectStatus(401)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+                await dbFns.addLike({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+
+                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 401);
             });
         });
 
@@ -296,7 +441,7 @@ describe('Comments API', function () {
 
             before(async function () {
                 await membersAgent.loginAs('member@example.com');
-                member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
+                loggedInMember = await models.Member.findOne({email: 'member@example.com'}, {require: true});
                 await membersAgent2.loginAs('member2@example.com');
             });
 
@@ -315,153 +460,98 @@ describe('Comments API', function () {
             });
 
             it('Can comment on a post', async function () {
-                await testCanCommentOnPost(member);
+                await testCanCommentOnPost(loggedInMember);
             });
 
+            async function setupBrowseCommentsData() {
+                await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: [{
+                        member_id: fixtureManager.get('members', 1).id
+                    }]
+                });
+                await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+            }
+
             it('Can browse all comments of a post (legacy)', async function () {
+                await setupBrowseCommentsData();
                 // uses explicit order to match db ordering
-                await membersAgent
-                    .get(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [
-                            commentMatcherWithReplies({replies: 1}),
-                            commentMatcher
-                        ]
-                    });
+                await testGetComments(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`, [
+                    commentMatcherWithReplies({replies: 1}),
+                    commentMatcher
+                ]);
             });
 
             it('Can browse all comments of a post', async function () {
+                await setupBrowseCommentsData();
                 // uses explicit order to match db ordering
-                await membersAgent
-                    .get(`/api/comments/post/${postId}/?order=id%20ASC`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [
-                            commentMatcherWithReplies({replies: 1}),
-                            commentMatcher
-                        ]
-                    });
+                await testGetComments(`/api/comments/post/${postId}/?order=id%20ASC`, [
+                    commentMatcherWithReplies({replies: 1}),
+                    commentMatcher
+                ]);
             });
 
             it('Can browse all comments of a post with default order', async function () {
-                await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [
-                            commentMatcher,
-                            commentMatcherWithReplies({replies: 1})
-                        ]
-                    });
+                await setupBrowseCommentsData();
+                await testGetComments(`/api/comments/post/${postId}/`, [
+                    commentMatcher,
+                    commentMatcherWithReplies({replies: 1})
+                ]);
             });
 
             it('Can reply to your own comment', async function () {
                 // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
                 const timezone = settingsCache.get('timezone');
                 const date = moment.utc(new Date()).tz(timezone).startOf('day').toDate();
-                await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
+                await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: loggedInMember.get('id')});
 
-                await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        parent_id: commentId,
-                        html: 'This is a reply'
-                    }]})
-                    .expectStatus(201)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag,
-                        location: anyLocationFor('comments'),
+                const parentComment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
+
+                await testPostComment({
+                    post_id: postId,
+                    parent_id: parentComment.id,
+                    html: 'This is a reply'
+                }, {
+                    matchHeaderSnapshot: {
                         'x-cache-invalidate': matchers.stringMatching(
                             new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
                         )
-                    })
-                    .matchBodySnapshot({
-                        comments: [commentMatcher]
-                    });
+                    }
+                });
 
                 // Check only the author got an email (because we are the author of this parent comment)
                 mockManager.assert.sentEmailCount(1);
-                mockManager.assert.sentEmail({
-                    subject: '💬 New comment on your post: ' + postTitle,
-                    to: fixtureManager.get('users', 0).email
-                });
+                assertAuthorEmailSent(postAuthorEmail, postTitle);
 
                 // Wait for the dispatched events (because this happens async)
                 await DomainEvents.allSettled();
 
                 // Check last updated_at is not changed?
-                member = await models.Member.findOne({id: member.id});
-                should.equal(member.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
+                loggedInMember = await models.Member.findOne({id: loggedInMember.id});
+                should.equal(loggedInMember.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
 
                 // Check last_commented_at changed?
-                should.equal(member.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
+                should.equal(loggedInMember.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
             });
 
             it('Can reply to a comment', async function () {
-                await testCanReply(member);
+                await testCanReply(loggedInMember);
             });
 
-            let testReplyId;
             it('Limits returned replies to 3', async function () {
-                const parentId = fixtureManager.get('comments', 0).id;
-
-                // Check initial status: two replies before test
-                await membersAgent
-                    .get(`/api/comments/${parentId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
+                const {parent} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id
                     })
-                    .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 2})]
-                    })
-                    .expect(({body}) => {
-                        body.comments[0].count.replies.should.eql(2);
-                    });
-
-                // Add some replies
-                for (let index = 0; index < 3; index++) {
-                    const {body: reply} = await membersAgent
-                        .post(`/api/comments/`)
-                        .body({comments: [{
-                            post_id: postId,
-                            parent_id: parentId,
-                            html: 'This is a reply ' + index
-                        }]})
-                        .expectStatus(201)
-                        .matchHeaderSnapshot({
-                            etag: anyEtag,
-                            location: anyLocationFor('comments')
-                        })
-                        .matchBodySnapshot({
-                            comments: [commentMatcher]
-                        });
-                    if (index === 0) {
-                        testReplyId = reply.comments[0].id;
-                    }
-                }
+                });
 
                 // Check if we have count.replies = 4, and replies.length == 3
-                await membersAgent
-                    .get(`/api/comments/${parentId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 3})]
-                    })
+                await testGetComments(`/api/comments/${parent.get('id')}/`, [commentMatcherWithReplies({replies: 3})])
                     .expect(({body}) => {
                         body.comments[0].count.replies.should.eql(5);
                     });
@@ -470,7 +560,7 @@ describe('Comments API', function () {
             it('Can reply to a comment with www domain', async function () {
                 // Test that the www. is stripped from the default
                 configUtils.set('url', 'http://www.domain.example/');
-                await testCanReply(member, {from: '"Ghost" <noreply@domain.example>'});
+                await testCanReply(loggedInMember, {from: '"Ghost" <noreply@domain.example>'});
             });
 
             it('Can reply to a comment with custom support email', async function () {
@@ -484,28 +574,17 @@ describe('Comments API', function () {
                     }
                     return getStub.wrappedMethod.call(settingsCache, key, options);
                 });
-                await testCanReply(member, {from: '"Ghost" <support@example.com>'});
+                await testCanReply(loggedInMember, {from: '"Ghost" <support@example.com>'});
             });
 
             it('Can like a comment', async function () {
-                // Check not liked
-                await membersAgent
-                    .get(`/api/comments/${commentId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: new Array(1).fill(commentMatcherWithReplies({replies: 1}))
-                    })
-                    .expect(({body}) => {
-                        body.comments[0].liked.should.eql(false);
-                        body.comments[0].count.likes.should.eql(0);
-                    });
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
 
-                // Create a temporary comment
+                // Like the comment
                 await membersAgent
-                    .post(`/api/comments/${commentId}/like/`)
+                    .post(`/api/comments/${comment.get('id')}/like/`)
                     .expectStatus(204)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -513,15 +592,7 @@ describe('Comments API', function () {
                     .expectEmptyBody();
 
                 // Check liked
-                await membersAgent
-                    .get(`/api/comments/${commentId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: new Array(1).fill(commentMatcherWithReplies({replies: 1}))
-                    })
+                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
                         body.comments[0].liked.should.eql(true);
                         body.comments[0].count.likes.should.eql(1);
@@ -529,40 +600,41 @@ describe('Comments API', function () {
             });
 
             it('Cannot like a comment multiple times', async function () {
-                // Create a temporary comment
-                await membersAgent
-                    .post(`/api/comments/${commentId}/like/`)
-                    .expectStatus(400)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyUuid
-                        }]
-                    });
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+                await dbFns.addLike({
+                    comment_id: comment.get('id'),
+                    member_id: loggedInMember.id
+                });
+
+                // Comment was already liked above
+                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/like/`, 400);
             });
 
             it('Can like a reply', async function () {
-                // Check initial status: two replies before test
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+                const reply = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    parent_id: comment.get('id')
+                });
+
+                // Like the reply
                 await membersAgent
-                    .post(`/api/comments/${testReplyId}/like/`)
+                    .post(`/api/comments/${reply.get('id')}/like/`)
                     .expectStatus(204)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': matchers.stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
+                        )
                     })
                     .expectEmptyBody();
 
                 // Check liked
-                await membersAgent
-                    .get(`/api/comments/${testReplyId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: new Array(1).fill(commentMatcherWithReplies({replies: 0}))
-                    })
+                await testGetComments(`/api/comments/${reply.id}/`, [commentMatcher])
                     .expect(({body}) => {
                         body.comments[0].liked.should.eql(true);
                         body.comments[0].count.likes.should.eql(1);
@@ -570,43 +642,39 @@ describe('Comments API', function () {
             });
 
             it('Can return replies', async function () {
-                const parentId = fixtureManager.get('comments', 0).id;
+                const {parent, replies} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(7).fill({
+                        member_id: fixtureManager.get('members', 1).id
+                    })
+                });
+                await dbFns.addLike({
+                    comment_id: replies[2].get('id'),
+                    member_id: loggedInMember.id
+                });
 
-                // Check initial status: two replies before test
-                await membersAgent
-                    .get(`/api/comments/${parentId}/replies/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: new Array(7).fill(commentMatcher)
-                    })
+                await testGetComments(`/api/comments/${parent.get('id')}/replies/`, new Array(7).fill(commentMatcher))
                     .expect(({body}) => {
                         should(body.comments[0].count.replies).be.undefined();
                         should(body.meta.pagination.total).eql(7);
                         should(body.meta.pagination.next).eql(null);
 
                         // Check liked + likes working for replies too
-                        should(body.comments[2].id).eql(testReplyId);
+                        should(body.comments[2].id).eql(replies[2].get('id'));
                         should(body.comments[2].count.likes).eql(1);
                         should(body.comments[2].liked).eql(true);
                     });
             });
 
             it('Can request last page of replies', async function () {
-                const parentId = fixtureManager.get('comments', 0).id;
+                const {parent} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(7).fill({
+                        member_id: fixtureManager.get('members', 1).id
+                    })
+                });
 
-                // Check initial status: two replies before test
-                await membersAgent
-                    .get(`/api/comments/${parentId}/replies/?page=3&limit=3`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: new Array(1).fill(commentMatcher)
-                    })
+                await testGetComments(`/api/comments/${parent.get('id')}/replies/?page=3&limit=3`, [commentMatcher])
                     .expect(({body}) => {
                         should(body.comments[0].count.replies).be.undefined();
                         should(body.meta.pagination.total).eql(7);
@@ -615,25 +683,19 @@ describe('Comments API', function () {
             });
 
             it('Can remove a like (unlike)', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
+                await dbFns.addLike({
+                    comment_id: comment.get('id'),
+                    member_id: loggedInMember.id
+                });
+
                 // Unlike
-                await membersAgent
-                    .delete(`/api/comments/${commentId}/like/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .expectEmptyBody();
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204);
 
                 // Check not liked
-                await membersAgent
-                    .get(`/api/comments/${commentId}/`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: new Array(1).fill(commentMatcherWithReplies({replies: 1}))
-                    })
+                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
                         body.comments[0].liked.should.eql(false);
                         body.comments[0].count.likes.should.eql(0);
@@ -641,68 +703,64 @@ describe('Comments API', function () {
             });
 
             it('Cannot unlike a comment if it has not been liked', async function () {
-                // Remove like
-                await membersAgent
-                    .delete(`/api/comments/${commentId}/like/`)
-                    //.expectStatus(404)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyErrorId
-                        }]
-                    });
+                const comment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
+
+                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 404);
             });
 
             it('Can report a comment', async function () {
-                // Create a temporary comment
-                await membersAgent
-                    .post(`/api/comments/${commentId}/report/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .expectEmptyBody();
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: '<p>This is a message</p><p></p><p>New line</p>'
+                });
+
+                await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
 
                 // Check report
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + commentId + '\''});
+                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
                 reports.models.length.should.eql(1);
 
                 const report = reports.models[0];
-                report.get('member_id').should.eql(member.id);
+                report.get('member_id').should.eql(loggedInMember.id);
 
                 mockManager.assert.sentEmail({
                     subject: '🚩 A comment has been reported on your post',
-                    to: fixtureManager.get('users', 0).email,
+                    to: postAuthorEmail,
                     html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>')),
                     text: new RegExp(escapeRegExp('This is a message\n\nNew line'))
                 });
             });
 
             it('Cannot report a comment twice', async function () {
-                // Create a temporary comment
-                await membersAgent
-                    .post(`/api/comments/${commentId}/report/`)
-                    .expectStatus(204)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .expectEmptyBody();
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: loggedInMember.id
+                });
+
+                await testBasicEmptyResponse('post', `/api/comments/${comment.get('id')}/report/`, 204);
 
                 // Check report should be the same (no extra created)
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + commentId + '\''});
+                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + comment.get('id') + '\''});
                 reports.models.length.should.eql(1);
 
                 const report = reports.models[0];
-                report.get('member_id').should.eql(member.id);
+                report.get('member_id').should.eql(loggedInMember.id);
 
                 mockManager.assert.sentEmailCount(0);
             });
 
             it('Can edit a comment on a post', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
+
                 const {body} = await membersAgent
-                    .put(`/api/comments/${commentId}`)
+                    .put(`/api/comments/${comment.get('id')}`)
                     .body({comments: [{
                         html: 'Updated comment'
                     }]})
@@ -712,7 +770,7 @@ describe('Comments API', function () {
                     })
                     .matchBodySnapshot({
                         comments: [{
-                            ...commentMatcherWithReplies({replies: 1}),
+                            ...commentMatcher,
                             edited_at: anyISODateTime
                         }]
                     });
@@ -721,9 +779,14 @@ describe('Comments API', function () {
             });
 
             it('Can not edit a comment post_id', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
+
                 const anotherPostId = fixtureManager.get('posts', 1).id;
+
                 await membersAgent
-                    .put(`/api/comments/${commentId}`)
+                    .put(`/api/comments/${comment.get('id')}`)
                     .body({comments: [{
                         post_id: anotherPostId
                     }]});
@@ -731,12 +794,16 @@ describe('Comments API', function () {
                 const {body} = await membersAgent
                     .get(`/api/comments/?filter=post_id:'${anotherPostId}'`);
 
-                assert(!body.comments.find(comment => comment.id === commentId), 'The comment should not have moved post');
+                assert(!body.comments.find(c => c.id === comment.get('id')), 'The comment should not have moved post');
             });
 
             it('Can not edit a comment which does not belong to you', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
                 await membersAgent2
-                    .put(`/api/comments/${commentId}`)
+                    .put(`/api/comments/${comment.get('id')}`)
                     .body({comments: [{
                         html: 'Illegal comment update'
                     }]})
@@ -753,9 +820,12 @@ describe('Comments API', function () {
             });
 
             it('Can not edit a comment as a member who is not you', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
                 const memberId = fixtureManager.get('members', 1).id;
                 await membersAgent
-                    .put(`/api/comments/${commentId}`)
+                    .put(`/api/comments/${comment.get('id')}`)
                     .body({comments: [{
                         html: 'Illegal comment update',
                         member_id: memberId
@@ -764,57 +834,32 @@ describe('Comments API', function () {
                 const {
                     body: {
                         comments: [
-                            comment
+                            fetchedComment
                         ]
                     }
-                } = await membersAgent.get(`/api/comments/${commentId}`)
-                    .expectStatus(200)
-                    .matchHeaderSnapshot({
-                        etag: anyEtag
-                    })
-                    .matchBodySnapshot({
-                        comments: [{
-                            ...commentMatcherWithReplies({replies: 1}),
-                            edited_at: anyISODateTime
-                        }]
-                    });
+                } = await testGetComments(`/api/comments/${comment.get('id')}`, [{
+                    ...commentMatcher,
+                    edited_at: anyISODateTime
+                }]);
 
-                assert(comment.member.id !== memberId);
+                assert(fetchedComment.member.id !== memberId);
             });
 
             it('Can not reply to a reply', async function () {
-                const {
-                    body: {
-                        comments: [{
-                            id: parentId
-                        }]
-                    }
-                } = await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        html: 'Parent'
-                    }]});
-
-                const {
-                    body: {
-                        comments: [{
-                            id: replyId
-                        }]
-                    }
-                } = await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        parent_id: parentId,
+                const {replies} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: 'Parent',
+                    replies: [{
+                        member_id: fixtureManager.get('members', 3).id,
                         html: 'Reply'
-                    }]});
+                    }]
+                });
 
                 await membersAgent
                     .post(`/api/comments/`)
                     .body({comments: [{
                         post_id: postId,
-                        parent_id: replyId,
+                        parent_id: replies[0].get('id'),
                         html: 'Reply to a reply!'
                     }]})
                     .expectStatus(400)
@@ -830,45 +875,21 @@ describe('Comments API', function () {
             });
 
             it('Can not edit a replies parent', async function () {
-                const {
-                    body: {
-                        comments: [{
-                            id: parentId
-                        }]
-                    }
-                } = await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        html: 'Parent'
-                    }]});
+                const parentId = (await dbFns.addComment({
+                    member_id: loggedInMember.id,
+                    html: 'Parent'
+                })).get('id');
 
-                const {
-                    body: {
-                        comments: [{
-                            id: newParentId
-                        }]
-                    }
-                } = await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        html: 'New Parent'
-                    }]});
+                const newParentId = (await dbFns.addComment({
+                    member_id: loggedInMember.id,
+                    html: 'New Parent'
+                })).get('id');
 
-                const {
-                    body: {
-                        comments: [{
-                            id: replyId
-                        }]
-                    }
-                } = await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        parent_id: parentId,
-                        html: 'Reply'
-                    }]});
+                const replyId = (await dbFns.addComment({
+                    member_id: loggedInMember.id,
+                    parent_id: parentId,
+                    html: 'Reply'
+                })).get('id');
 
                 // Attempt to edit the parent
                 await membersAgent
@@ -889,6 +910,17 @@ describe('Comments API', function () {
                     fixtureManager.get('posts', 1).id,
                     fixtureManager.get('posts', 2).id
                 ];
+
+                for (const i of ids.keys()) {
+                    // add i+1 comments so we have a different count for each post
+                    for (let j = 0; j < i + 1; j++) {
+                        await dbFns.addComment({
+                            post_id: ids[i],
+                            member_id: loggedInMember.id
+                        });
+                    }
+                }
+
                 await membersAgent
                     .get(`api/comments/counts/?ids=${ids.join(',')}`)
                     .expectStatus(200)
@@ -899,18 +931,10 @@ describe('Comments API', function () {
             });
 
             it('Can delete a comment, and it is redacted from', async function () {
-                const {
-                    body: {
-                        comments: [{
-                            id: commentToDeleteId
-                        }]
-                    }
-                } = await membersAgent
-                    .post(`/api/comments/`)
-                    .body({comments: [{
-                        post_id: postId,
-                        html: 'Comment to delete'
-                    }]});
+                const commentToDeleteId = (await dbFns.addComment({
+                    member_id: loggedInMember.id,
+                    html: 'Comment to delete'
+                })).get('id');
 
                 const {
                     body: {
@@ -972,7 +996,7 @@ describe('Comments API', function () {
         describe('Members with access', function () {
             before(async function () {
                 await membersAgent.loginAs('paid@example.com');
-                member = await models.Member.findOne({email: 'paid@example.com'}, {require: true});
+                loggedInMember = await models.Member.findOne({email: 'paid@example.com'}, {require: true});
 
                 const product = await getPaidProduct();
 
@@ -984,15 +1008,15 @@ describe('Comments API', function () {
                             id: product.id
                         }
                     ]
-                }, {id: member.id});
+                }, {id: loggedInMember.id});
             });
 
             it('Can comment on a post', async function () {
-                await testCanCommentOnPost(member);
+                await testCanCommentOnPost(loggedInMember);
             });
 
             it('Can reply to a comment', async function () {
-                await testCanReply(member);
+                await testCanReply(loggedInMember);
             });
         });
 
@@ -1049,7 +1073,7 @@ describe('Comments API', function () {
         describe('Members with access', function () {
             before(async function () {
                 await membersAgent.loginAs('member-premium@example.com');
-                member = await models.Member.findOne({email: 'member-premium@example.com'}, {require: true});
+                loggedInMember = await models.Member.findOne({email: 'member-premium@example.com'}, {require: true});
 
                 // Attach comped subscription to this member
                 await models.Member.edit({
@@ -1059,15 +1083,15 @@ describe('Comments API', function () {
                             id: product.id
                         }
                     ]
-                }, {id: member.id});
+                }, {id: loggedInMember.id});
             });
 
             it('Can comment on a post', async function () {
-                await testCanCommentOnPost(member);
+                await testCanCommentOnPost(loggedInMember);
             });
 
             it('Can reply to a comment', async function () {
-                await testCanReply(member);
+                await testCanReply(loggedInMember);
             });
         });
 

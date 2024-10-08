@@ -3,24 +3,29 @@ DESCRIPTION >
     Aggregate by referral and calculate session and views
 
 SQL >
-    WITH (SELECT domainWithoutWWW(href) FROM analytics_hits LIMIT 1) AS current_domain
+    WITH (SELECT domainWithoutWWW(href) FROM analytics_hits LIMIT 1) AS current_domain,
+    sessions AS (
+        SELECT
+            session_id, argMin(source, timestamp) AS source, 
+            maxIf(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
+        FROM analytics_hits
+        GROUP BY session_id
+    )
     SELECT
-        site_uuid,
-        toDate(timestamp) AS date,
-        device,
-        browser,
-        location,
-        source,
-        pathname,
-        maxIf(
-            member_status,
-            member_status IN ('paid', 'free', 'undefined')
-        ) AS member_status,
-        uniqState(session_id) AS visits,
+        a.site_uuid,
+        toDate(a.timestamp) AS date,
+        a.device,
+        a.browser,
+        a.location,
+        b.source AS source,
+        a.pathname,
+        b.member_status AS member_status,
+        uniqState(a.session_id) AS visits,
         countState() AS pageviews
-    FROM analytics_hits
-    WHERE source != current_domain
-    GROUP BY date, device, browser, location, source, pathname, site_uuid
+    FROM analytics_hits as a
+    INNER JOIN sessions AS b ON a.session_id = b.session_id
+    GROUP BY a.site_uuid, toDate(a.timestamp), a.device, a.browser, a.location, b.member_status, b.source, a.pathname
+    HAVING b.source != current_domain
 
 TYPE MATERIALIZED
 DATASOURCE analytics_sources_mv

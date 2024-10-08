@@ -1,14 +1,16 @@
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
+
+import NiceModal from '@ebay/nice-modal-react';
+import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
+import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import getUsername from '../utils/get-username';
-import {useActivitiesForUser, useSiteUrl} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
@@ -84,7 +86,6 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
-    const siteUrl = useSiteUrl();
 
     const {
         data,
@@ -96,7 +97,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeOwn: true,
         includeReplies: true,
         filter: {
-            type: ['Follow', 'Like', `Create:Note:isReplyToOwn,${new URL(siteUrl).hostname}`]
+            type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
         }
     });
 
@@ -171,13 +172,12 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         <div className=''>{getActivityDescription(activity)}</div>
                                         {getExtendedDescription(activity)}
                                     </div>
-                                    {isFollower(activity.actor.id) === false && (
-                                        <Button className='ml-auto' label='Follow' link onClick={(e) => {
-                                            e?.preventDefault();
-
-                                            alert('Implement me!');
-                                        }} />
-                                    )}
+                                    <FollowButton
+                                        className='ml-auto'
+                                        following={isFollower(activity.actor.id)}
+                                        handle={getUsername(activity.actor)}
+                                        type='link'
+                                    />
                                 </ActivityItem>
                             ))}
                         </div>

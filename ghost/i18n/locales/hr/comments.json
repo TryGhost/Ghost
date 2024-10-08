@@ -5,7 +5,7 @@
     "{{amount}} hrs ago": "Prije {{amount}} sati",
     "{{amount}} mins ago": "Prije {{amount}} minuta",
     "{{amount}} months ago": "Prije {{amount}} mjeseci",
-    "{{amount}} more": "",
+    "{{amount}} more": "{{amount}} više",
     "{{amount}} seconds ago": "Prije {{amount}} sekundi",
     "{{amount}} weeks ago": "Prije {{amount}} tjedana",
     "{{amount}} years ago": "Prije {{amount}} godine",
@@ -65,7 +65,7 @@
     "Start the conversation": "Pokreni razgovor",
     "This comment has been hidden.": "Ovaj komentar je skriven",
     "This comment has been removed.": "Ovaj komentar je maknut",
-    "Upgrade now": "",
+    "Upgrade now": "Nadogradite sada",
     "Yesterday": "Jučer",
     "Your request will be sent to the owner of this site.": "Vaš zahtjev će se poslati vasniku ovih web stranica."
 }
