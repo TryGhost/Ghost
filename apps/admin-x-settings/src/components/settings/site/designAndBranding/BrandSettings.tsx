@@ -188,8 +188,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     selectedOption={selectedHeadingFont}
                     title={'Heading font'}
                     onSelect={(option) => {
-                        if (option?.value === 'Theme default') {
-                            setHeadingFont('');
+                        if (option?.value === DEFAULT_FONT) {
+                            setHeadingFont(DEFAULT_FONT);
                             updateSetting('heading_font', '');
                         } else {
                             setHeadingFont(option?.value || '');
@@ -203,8 +203,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     selectedOption={selectedBodyFont}
                     title={'Body font'}
                     onSelect={(option) => {
-                        if (option?.value === 'Theme default') {
-                            setBodyFont('');
+                        if (option?.value === DEFAULT_FONT) {
+                            setBodyFont(DEFAULT_FONT);
                             updateSetting('body_font', '');
                         } else {
                             setBodyFont(option?.value || '');
