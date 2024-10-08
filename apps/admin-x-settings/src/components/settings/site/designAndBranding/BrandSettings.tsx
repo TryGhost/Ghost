@@ -66,10 +66,10 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     // we debounce this because the color picker fires a lot of events.
                     onChange={value => updateSetting('accent_color', value)}
                 />
-                <div className={`flex justify-between ${values.icon ? 'items-start ' : 'items-end'}`}>
+                <div className='flex items-start justify-between'>
                     <div>
                         <Heading level={6}>Publication icon</Heading>
-                        <Hint className='mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
+                        <Hint className='!mt-0 mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
                     </div>
                     <div className='flex gap-3'>
                         <ImageUpload
@@ -79,7 +79,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             id='logo'
                             imageBWCheckedBg={true}
                             imageURL={values.icon || ''}
-                            width={values.icon ? '66px' : '150px'}
+                            width={values.icon ? '66px' : '160px'}
                             onDelete={() => updateSetting('icon', null)}
                             onUpload={async (file) => {
                                 try {
@@ -97,37 +97,46 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         </ImageUpload>
                     </div>
                 </div>
-                <div>
-                    <Heading className='mb-2' level={6}>Publication logo</Heading>
-                    <ImageUpload
-                        deleteButtonClassName='!top-1 !right-1'
-                        height='80px'
-                        id='site-logo'
-                        imageBWCheckedBg={true}
-                        imageFit='contain'
-                        imageURL={values.logo || ''}
-                        onDelete={() => updateSetting('logo', null)}
-                        onUpload={async (file) => {
-                            try {
-                                updateSetting('logo', getImageUrl(await uploadImage({file})));
-                            } catch (e) {
-                                const error = e as APIError;
-                                if (error.response!.status === 415) {
-                                    error.message = 'Unsupported file type';
+                <div className={`flex items-start justify-between ${values.icon && 'mt-2'}`}>
+                    <div>
+                        <Heading level={6}>Publication logo</Heading>
+                        <Hint className='!mt-0 mr-5 max-w-[160px]'>Appears usually in the main header of your theme</Hint>
+                    </div>
+                    <div>
+                        <ImageUpload
+                            deleteButtonClassName='!top-1 !right-1'
+                            height='60px'
+                            id='site-logo'
+                            imageBWCheckedBg={true}
+                            imageFit='contain'
+                            imageURL={values.logo || ''}
+                            width='160px'
+                            onDelete={() => updateSetting('logo', null)}
+                            onUpload={async (file) => {
+                                try {
+                                    updateSetting('logo', getImageUrl(await uploadImage({file})));
+                                } catch (e) {
+                                    const error = e as APIError;
+                                    if (error.response!.status === 415) {
+                                        error.message = 'Unsupported file type';
+                                    }
+                                    handleError(error);
                                 }
-                                handleError(error);
-                            }
-                        }}
-                    >
-                    Upload logo
-                    </ImageUpload>
+                            }}
+                        >
+                        Upload logo
+                        </ImageUpload>
+                    </div>
                 </div>
-                <div>
-                    <Heading className='mb-2' level={6}>Publication cover</Heading>
+                <div className='mt-2 flex items-start justify-between'>
+                    <div>
+                        <Heading level={6}>Publication cover</Heading>
+                        <Hint className='!mt-0 mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>
+                    </div>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
                         editButtonClassName='!top-1 !right-10'
-                        height='180px'
+                        height='95px'
                         id='cover'
                         imageURL={values.coverImage || ''}
                         openUnsplash={() => setShowUnsplash(true)}
@@ -146,8 +155,9 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                                 })
                             }
                         }
-                        unsplashButtonClassName='!top-1 !right-1 z-50'
+                        unsplashButtonClassName='!bg-transparent !h-6 !top-1.5 !w-6 !right-1.5 z-50'
                         unsplashEnabled={unsplashEnabled}
+                        width='160px'
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file: any) => {
                             try {
@@ -181,7 +191,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     }
                 </div>
             </Form>
-            <Form className='mt-6' gap='sm' margins='lg' title='Typography'>
+            <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
                 <Select
                     hint={''}
                     options={customHeadingFonts}

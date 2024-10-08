@@ -41,8 +41,8 @@ const Form: React.FC<FormProps> = ({
         classes = clsx(
             classes,
             (margins === 'sm' && 'mb-7'),
-            (margins === 'md' && 'mb-11'),
-            (margins === 'lg' && 'mb-14')
+            (margins === 'md' && 'mb-10'),
+            (margins === 'lg' && 'mb-12')
         );
     }
 
@@ -50,8 +50,8 @@ const Form: React.FC<FormProps> = ({
         classes = clsx(
             classes,
             (margins === 'sm' && 'mt-7'),
-            (margins === 'md' && 'mt-11'),
-            (margins === 'lg' && 'mt-14')
+            (margins === 'md' && 'mt-10'),
+            (margins === 'lg' && 'mt-12')
         );
     }
 
