@@ -30,6 +30,7 @@
                                 autocorrect="off"
                                 autocomplete="username"
                                 value={{this.signin.identification}}
+                                data-test-input="email"
                                 {{on "input" this.handleInput}}
                                 {{on "blur" (fn this.validateProperty "identification")}}
                             />
@@ -47,6 +48,7 @@
                                 autocomplete="current-password"
                                 autocorrect="off"
                                 value={{this.signin.password}}
+                                data-test-input="password"
                                 {{on "input" this.handleInput}}
                             />
 

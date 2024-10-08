@@ -50,12 +50,12 @@ export default class SetupController extends Controller.extend(ValidationEngine)
     })
         setupTask;
 
-    @task(function* (authStrategy, authentication) {
+    @task(function* (authStrategy, {identification, password}) {
         // we don't want to redirect after sign-in during setup
         this.session.skipAuthSuccessHandler = true;
 
         try {
-            yield this.session.authenticate(authStrategy, ...authentication);
+            yield this.session.authenticate(authStrategy, {identification, password});
 
             this.errors.remove('session');
 
@@ -118,7 +118,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
                 // Don't call the success handler, otherwise we will be redirected to admin
                 this.session.skipAuthSuccessHandler = true;
 
-                return this.session.authenticate('authenticator:cookie', data.email, data.password).then(() => {
+                return this.session.authenticate('authenticator:cookie', {identification: data.email, password: data.password}).then(() => {
                     this.set('blogCreated', true);
                     return this._afterAuthentication(result);
                 }).catch((error) => {
