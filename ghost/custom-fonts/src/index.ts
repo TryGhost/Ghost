@@ -21,7 +21,7 @@ export function generateCustomFontCss(font: Font) {
 
     return `
         <style>
-            ${importStrings[font]}
+            ${importStrings[font]};
 
             p {
                 font-family: ${font};
