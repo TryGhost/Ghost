@@ -243,6 +243,8 @@ module.exports = function apiRoutes() {
         http(api.session.add)
     );
     router.del('/session', mw.authAdminApi, http(api.session.delete));
+    // resending verification code for 2FA
+    router.post('/session/verify', mw.authAdminApi, http(api.session.verify));
 
     // ## Identity
     router.get('/identities', mw.authAdminApi, http(api.identities.read));

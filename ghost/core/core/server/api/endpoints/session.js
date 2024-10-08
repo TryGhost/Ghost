@@ -64,6 +64,11 @@ const controller = {
         return Promise.resolve(function logoutSessionMw(req, res, next) {
             auth.session.logout(req, res, next);
         });
+    },
+    verify(frame) {
+        return Promise.resolve(function sendAuthCodeMw(req, res, next) {
+            auth.session.sendAuthCode(req, res, next);
+        });
     }
 };
 

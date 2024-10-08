@@ -28,6 +28,9 @@ const {
  * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
+ * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
+ * @prop {(req: Req, res: Res) => string} generateAuthCodeForUser
+ * @prop {(req: Req, res: Res) => Promise<void>} verifyAuthCodeForUser
  */
 
 /**
@@ -84,6 +87,42 @@ module.exports = function createSessionService({getSession, findUserById, getOri
         session.origin = origin;
         session.user_agent = req.get('user-agent');
         session.ip = req.ip;
+    }
+
+    /**
+     * generateAuthCodeForUser
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @returns {string}
+     */
+    async function generateAuthCodeForUser(req, res) {
+        return '123456';
+        
+    }
+
+    /**
+     * verifyAuthCodeForUser
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @returns {Promise<void>}
+     */
+    async function verifyAuthCodeForUser(req, res) {
+        
+        
+    }
+
+    /**
+     * sendAuthCodeToUser
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @returns {Promise<void>}
+     */
+    async function sendAuthCodeToUser(req, res) {
+        generateAuthCodeForUser();
+        // send auth code to user
     }
 
     /**
@@ -145,6 +184,8 @@ module.exports = function createSessionService({getSession, findUserById, getOri
         getUserForSession,
         createSessionForUser,
         removeUserForSession,
-        verifySession
+        verifySession,
+        sendAuthCodeToUser,
+        verifyAuthCodeForUser
     };
 };
