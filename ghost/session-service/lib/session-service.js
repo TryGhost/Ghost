@@ -1,6 +1,7 @@
 const {
     BadRequestError
 } = require('@tryghost/errors');
+const {totp} = require('otplib');
 
 /**
  * @typedef {object} User
@@ -38,11 +39,12 @@ const {
  * @param {(req: Req, res: Res) => Promise<Session>} deps.getSession
  * @param {(data: {id: string}) => Promise<User>} deps.findUserById
  * @param {(req: Req) => string} deps.getOriginOfRequest
+ * @param {(key: string) => string} deps.getSecret
  *
  * @returns {SessionService}
  */
 
-module.exports = function createSessionService({getSession, findUserById, getOriginOfRequest}) {
+module.exports = function createSessionService({getSession, findUserById, getOriginOfRequest, getSecret}) {
     /**
      * cookieCsrfProtection
      *
@@ -94,11 +96,18 @@ module.exports = function createSessionService({getSession, findUserById, getOri
      *
      * @param {Req} req
      * @param {Res} res
-     * @returns {string}
+     * @returns {Promise<string>}
      */
     async function generateAuthCodeForUser(req, res) {
-        return '123456';
-        
+        const session = await getSession(req, res); // Todo: Do we need to handle "No session found"?
+        const secret = getSecret('admin_session_secret') + session.user_id;
+        totp.options = {
+            digits: 6,
+            encoding: 'ascii',
+            step: 300 // time in sec, time for which the token will be valid //Todo: is this supposed to be 5 min?
+        };
+        const token = totp.generate(secret);
+        return token;
     }
 
     /**
@@ -106,11 +115,13 @@ module.exports = function createSessionService({getSession, findUserById, getOri
      *
      * @param {Req} req
      * @param {Res} res
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      */
-    async function verifyAuthCodeForUser(req, res) {
-        
-        
+    async function verifyAuthCodeForUser(req, res, token) {
+        const session = await getSession(req, res); // Todo: Do we need to handle "No session found"?
+        const secret = getSecret('admin_session_secret') + session.user_id;
+        const isValid = totp.check(token, secret);
+        return isValid;
     }
 
     /**
@@ -121,6 +132,7 @@ module.exports = function createSessionService({getSession, findUserById, getOri
      * @returns {Promise<void>}
      */
     async function sendAuthCodeToUser(req, res) {
+        const session = await getSession(req, res); // eslint-disable-line
         generateAuthCodeForUser();
         // send auth code to user
     }
@@ -186,6 +198,7 @@ module.exports = function createSessionService({getSession, findUserById, getOri
         removeUserForSession,
         verifySession,
         sendAuthCodeToUser,
-        verifyAuthCodeForUser
+        verifyAuthCodeForUser,
+        generateAuthCodeForUser
     };
 };
