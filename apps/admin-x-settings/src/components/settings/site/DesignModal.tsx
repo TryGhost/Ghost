@@ -49,7 +49,11 @@ const Sidebar: React.FC<{
     return (
         <div className='flex h-full flex-col justify-between'>
             <div className='p-7 pt-2' data-testid="design-setting-tabs">
-                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+                {tabs.length > 1 ? 
+                    <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+                    :
+                    <BrandSettings updateSetting={updateBrandSetting} values={brandSettings} />
+                }
             </div>
         </div>
     );

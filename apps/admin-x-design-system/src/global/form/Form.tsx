@@ -78,7 +78,7 @@ const Form: React.FC<FormProps> = ({
     }
 
     return (
-        <div className={classes + className}>
+        <div className={clsx(classes, className)}>
             {children}
         </div>
     );

@@ -1,9 +1,9 @@
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Form, Heading, Hint, ImageUpload, Select} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
@@ -33,18 +33,11 @@ const DEFAULT_FONT = 'Theme default';
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
-    const [siteDescription, setSiteDescription] = useState(values.description);
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
     const {unsplashConfig} = useFramework();
     const handleError = useHandleError();
-
-    const updateDescriptionDebouncedRef = useRef(
-        debounce((value: string) => {
-            updateSetting('description', value);
-        }, 500)
-    );
 
     const editor = usePinturaEditor();
 
@@ -63,63 +56,19 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const selectedBodyFont = {label: bodyFont, value: bodyFont};
 
     return (
-        <div className='mt-7'>
-            <SettingGroupContent>
-                <TextField
-                    key='site-description'
-                    hint='Used in your theme, meta data and search results'
-                    maxLength={200}
-                    title='Site description'
-                    value={siteDescription}
-                    onChange={(event) => {
-                        // Immediately update the local state
-                        setSiteDescription(event.target.value);
-                        // Debounce the updateSetting call
-                        updateDescriptionDebouncedRef.current(event.target.value);
-                    }}
-                />
-                <Select
-                    hint={''}
-                    options={customHeadingFonts}
-                    selectedOption={selectedHeadingFont}
-                    title={'Heading font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
-                            setHeadingFont(DEFAULT_FONT);
-                            updateSetting('heading_font', '');
-                        } else {
-                            setHeadingFont(option?.value || '');
-                            updateSetting('heading_font', option?.value || '');
-                        }
-                    }}
-                />
-                <Select
-                    hint={''}
-                    options={customBodyFonts}
-                    selectedOption={selectedBodyFont}
-                    title={'Body font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
-                            setBodyFont(DEFAULT_FONT);
-                            updateSetting('body_font', '');
-                        } else {
-                            setBodyFont(option?.value || '');
-                            updateSetting('body_font', option?.value || '');
-                        }
-                    }}
-                />
+        <>
+            <Form className='mt-4' gap='sm' margins='lg' title=''>
                 <ColorPickerField
                     debounceMs={200}
                     direction='rtl'
-                    title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
+                    title={<Heading className='mt-[3px]' level={6}>Accent color</Heading>}
                     value={values.accentColor}
-                    alwaysOpen
                     // we debounce this because the color picker fires a lot of events.
                     onChange={value => updateSetting('accent_color', value)}
                 />
                 <div className={`flex justify-between ${values.icon ? 'items-start ' : 'items-end'}`}>
                     <div>
-                        <Heading grey={(values.icon ? true : false)} level={6}>Publication icon</Heading>
+                        <Heading level={6}>Publication icon</Heading>
                         <Hint className='mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
                     </div>
                     <div className='flex gap-3'>
@@ -149,7 +98,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     </div>
                 </div>
                 <div>
-                    <Heading className='mb-2' grey={(values.logo ? true : false)} level={6}>Publication logo</Heading>
+                    <Heading className='mb-2' level={6}>Publication logo</Heading>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
                         height='80px'
@@ -174,7 +123,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     </ImageUpload>
                 </div>
                 <div>
-                    <Heading className='mb-2' grey={(values.coverImage ? true : false)} level={6}>Publication cover</Heading>
+                    <Heading className='mb-2' level={6}>Publication cover</Heading>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
                         editButtonClassName='!top-1 !right-10'
@@ -231,8 +180,40 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         )
                     }
                 </div>
-            </SettingGroupContent>
-        </div>
+            </Form>
+            <Form className='mt-6' gap='sm' margins='lg' title='Typography'>
+                <Select
+                    hint={''}
+                    options={customHeadingFonts}
+                    selectedOption={selectedHeadingFont}
+                    title={'Heading font'}
+                    onSelect={(option) => {
+                        if (option?.value === 'Theme default') {
+                            setHeadingFont('');
+                            updateSetting('heading_font', '');
+                        } else {
+                            setHeadingFont(option?.value || '');
+                            updateSetting('heading_font', option?.value || '');
+                        }
+                    }}
+                />
+                <Select
+                    hint={''}
+                    options={customBodyFonts}
+                    selectedOption={selectedBodyFont}
+                    title={'Body font'}
+                    onSelect={(option) => {
+                        if (option?.value === 'Theme default') {
+                            setBodyFont('');
+                            updateSetting('body_font', '');
+                        } else {
+                            setBodyFont(option?.value || '');
+                            updateSetting('body_font', option?.value || '');
+                        }
+                    }}
+                />
+            </Form>
+        </>
     );
 };
 
