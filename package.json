@@ -45,7 +45,7 @@
     "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/tinybird -it tinybirdco/tinybird-cli-docker",
     "tb:update": "docker pull tinybirdco/tinybird-cli-docker"
   },
-  "resolutions": {
+  "overrides": {
     "@tryghost/errors": "1.3.5",
     "@tryghost/logging": "2.4.18",
     "jackspeak": "2.1.1",
