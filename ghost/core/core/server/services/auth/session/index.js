@@ -2,6 +2,7 @@ const adapterManager = require('../../adapter-manager');
 const createSessionService = require('@tryghost/session-service');
 const sessionFromToken = require('@tryghost/mw-session-from-token');
 const createSessionMiddleware = require('./middleware');
+const settingsCache = require('../../../../shared/settings-cache');
 
 const expressSession = require('./express-session');
 
@@ -33,6 +34,9 @@ const sessionService = createSessionService({
     getSession: expressSession.getSession,
     findUserById({id}) {
         return models.User.findOne({id, status: 'active'});
+    },
+    getSecret(key) {
+        return settingsCache.get(key);
     }
 });
 
@@ -47,6 +51,9 @@ module.exports.createSessionFromToken = sessionFromToken({
     getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
     getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
 });
+
+// TODO: We have 51 lines here, should move functions out into a utils module
+/* eslint-disable max-lines */
 
 module.exports.sessionService = sessionService;
 module.exports.deleteAllSessions = expressSession.deleteAllSessions;

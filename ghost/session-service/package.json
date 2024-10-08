@@ -25,6 +25,7 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.3.5"
+    "@tryghost/errors": "1.3.5",
+    "otplib" : "12.0.1"
   }
 }

@@ -65,7 +65,7 @@ const controller = {
             auth.session.logout(req, res, next);
         });
     },
-    verify(frame) {
+    verify() {
         return Promise.resolve(function sendAuthCodeMw(req, res, next) {
             auth.session.sendAuthCode(req, res, next);
         });
