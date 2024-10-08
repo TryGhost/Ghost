@@ -49,8 +49,11 @@ describe('SessionService', function () {
         const expectedUser = await findUserById.returnValues[0];
         should.equal(actualUser, expectedUser);
 
-        await sessionService.destroyCurrentSession(req, res);
-        should.ok(req.session.destroy.calledOnce);
+        await sessionService.removeUserForSession(req, res);
+        should.equal(req.session.user_id, undefined);
+
+        const removedUser = await sessionService.getUserForSession(req, res);
+        should.equal(removedUser, null);
     });
 
     it('Throws an error when the csrf verification fails', async function () {
@@ -130,5 +133,56 @@ describe('SessionService', function () {
         };
 
         await sessionService.getUserForSession(req, res).should.be.fulfilled();
+    });
+
+    it('Can verify a user session', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        await sessionService.createSessionForUser(req, res, user);
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, undefined);
+
+        await sessionService.verifySession(req, res);
+        should.equal(req.session.verified, true);
+
+        await sessionService.removeUserForSession(req, res);
+        should.equal(req.session.user_id, undefined);
+        should.equal(req.session.verified, true);
+
+        await sessionService.createSessionForUser(req, res, user);
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, true);
     });
 });

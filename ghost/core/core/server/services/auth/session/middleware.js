@@ -8,9 +8,9 @@ function SessionMiddleware({sessionService}) {
         }
     }
 
-    async function destroySession(req, res, next) {
+    async function logout(req, res, next) {
         try {
-            await sessionService.destroyCurrentSession(req);
+            await sessionService.removeUserForSession(req, res);
             res.sendStatus(204);
         } catch (err) {
             next(err);
@@ -33,7 +33,7 @@ function SessionMiddleware({sessionService}) {
 
     return {
         createSession: createSession,
-        destroySession: destroySession,
+        logout: logout,
         authenticate: authenticate
     };
 }
