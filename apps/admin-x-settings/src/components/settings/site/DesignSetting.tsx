@@ -1,3 +1,4 @@
+import DesignSettingsImg from '../../../assets/images/design-settings.png';
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -16,8 +17,9 @@ const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='design'
             testId='design'
-            title="Design & branding"
-        />
+            title="Design & branding">
+            <img src={DesignSettingsImg} />
+        </TopLevelGroup>
     );
 };
 
