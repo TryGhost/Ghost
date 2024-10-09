@@ -254,6 +254,42 @@ async function initExpressApps({frontend, backend, config}) {
 }
 
 /**
+ * Initialize prometheus client
+ */
+function initPrometheusClient({config}) {
+    if (config.get('metrics_server:enabled')) {
+        debug('Begin: initPrometheusClient');
+        const prometheusClient = require('./shared/prometheus-client');
+        debug('End: initPrometheusClient');
+        return prometheusClient;
+    }
+    return null;
+}
+
+/**
+ * Starts the standalone metrics server and registers a cleanup task to stop it when the ghost server shuts down
+ * @param {object} ghostServer 
+ */
+async function initMetricsServer({prometheusClient, ghostServer, config}) {
+    debug('Begin: initMetricsServer');
+    if (ghostServer && config.get('metrics_server:enabled')) {
+        const {MetricsServer} = require('@tryghost/metrics-server');
+        const serverConfig = {
+            host: config.get('metrics_server:host') || '127.0.0.1',
+            port: config.get('metrics_server:port') || 9416
+        };
+        const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
+        const metricsServer = new MetricsServer({serverConfig, handler});
+        await metricsServer.start();
+        // Ensure the metrics server is cleaned up when the ghost server is shut down
+        ghostServer.registerCleanupTask(async () => {
+            await metricsServer.shutdown();
+        });
+    }
+    debug('End: initMetricsServer');
+}
+
+/**
  * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
@@ -515,6 +551,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const sentry = require('./shared/sentry');
         debug('End: Load sentry');
 
+        // Initialize prometheus client early to enable metrics collection during boot
+        // Note: this does not start the metrics server yet to avoid increasing boot time
+        const prometheusClient = initPrometheusClient({config});
+
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app')();
@@ -582,6 +622,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
+
+        // Step 8 - Init our metrics server, we don't wait for this to finish
+        initMetricsServer({prometheusClient, ghostServer, config});
 
         // If we pass the env var, kill Ghost
         if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

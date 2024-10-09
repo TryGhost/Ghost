@@ -4,6 +4,7 @@ const SUPPORTED_LOCALES = [
     'af', // Afrikaans
     'ar', // Arabic
     'bg', // Bulgarian
+    'bn', // Bengali
     'bs', // Bosnian
     'ca', // Catalan
     'cs', // Czech
@@ -19,6 +20,7 @@ const SUPPORTED_LOCALES = [
     'fi', // Finnish
     'fr', // French
     'gd', // Gaelic (Scottish)
+    'hi', // Hindi
     'hr', // Croatian
     'hu', // Hungarian
     'id', // Indonesian
@@ -26,6 +28,7 @@ const SUPPORTED_LOCALES = [
     'it', // Italian
     'ja', // Japanese
     'ko', // Korean
+    'kz', // Kazach
     'lt', // Lithuanian
     'mk', // Macedonian
     'mn', // Mongolian
@@ -48,10 +51,13 @@ const SUPPORTED_LOCALES = [
     'th', // Thai
     'tr', // Turkish
     'uk', // Ukrainian
+    'ur', // Urdu
     'uz', // Uzbek
     'vi', // Vietnamese
     'zh', // Chinese
-    'zh-Hant' // Traditional Chinese
+    'zh-Hant', // Traditional Chinese
+    'sw', // Swahili
+    'ta' // Tamil
 ];
 
 /**

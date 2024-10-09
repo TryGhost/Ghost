@@ -25,11 +25,13 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         handle: 'index',
         includeReplies: true,
         filter: {
-            type: ['Create:Article', 'Create:Note', 'Announce:Note']
+            type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
         }
     });
 
-    const activities = (data?.pages.flatMap(page => page.data) ?? []);
+    const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
+        return !activity.object.inReplyTo;
+    });
 
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
         setArticleContent(object);
