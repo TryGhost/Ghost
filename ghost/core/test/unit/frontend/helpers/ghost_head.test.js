@@ -1274,7 +1274,7 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
     });
-    describe('respects values from head_excludes', function () {
+    describe('respects values from head_excludes: ', function () {
         it('when head_excludes is empty', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
@@ -1294,6 +1294,7 @@ describe('{{ghost_head}} helper', function () {
             }));
             rendered.should.match(/portal@/);
             rendered.should.match(/sodo-search@/);
+            rendered.should.match(/js.stripe.com/);
         });
         it('when head_excludes contains search', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
@@ -1314,6 +1315,7 @@ describe('{{ghost_head}} helper', function () {
             }));
             rendered.should.not.match(/sodo-search@/);
             rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
         });
         it('when head_excludes contains portal', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
@@ -1335,6 +1337,7 @@ describe('{{ghost_head}} helper', function () {
             }));
             rendered.should.match(/sodo-search@/);
             rendered.should.not.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
         });
         it('can handle multiple head_excludes', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
@@ -1355,6 +1358,7 @@ describe('{{ghost_head}} helper', function () {
             }));
             rendered.should.not.match(/sodo-search@/);
             rendered.should.not.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
         });
         it('can exclude all', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
@@ -1375,7 +1379,94 @@ describe('{{ghost_head}} helper', function () {
             }));
             rendered.should.not.match(/sodo-search@/);
             rendered.should.not.match(/portal@/);
-            rendered.should.not.match(/stripe@/);
+            rendered.should.not.match(/js.stripe.com/);
+        });
+        it('when head excludes contains stripe', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let templateOptions = {
+                config: {
+                    head_excludes: ['stripe']
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.not.match(/js.stripe.com/);
+        });
+        it('shows the announcement when head_excludes does not contain announcement', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            settingsCache.get.withArgs('announcement_content').returns('Hello world');
+            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+
+            let templateOptions = {
+                config: {
+                    head_excludes: []
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+            rendered.should.match(/announcement-bar@/);
+        });
+        it('does not show the announcement when head_excludes contains announcement', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            settingsCache.get.withArgs('announcement_content').returns('Hello world');
+            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+
+            let templateOptions = {
+                config: {
+                    head_excludes: ['announcement']
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+            rendered.should.match(/generator/);
+            rendered.should.not.match(/announcement-bar@/);
+        });
+        it('does not show the generator (Ghost version) when head_excludes contains generator', async function () {
+
+            let templateOptions = {
+                config: {
+                    head_excludes: ['generator']
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.not.match(/generator/);
         });
     });
 });
