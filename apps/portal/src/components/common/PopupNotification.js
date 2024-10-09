@@ -15,14 +15,11 @@ export const PopupNotificationStyles = `
         left: 8px;
         right: 8px;
         padding: 12px;
-        background: var(--grey2);
+        background: var(--white);
         z-index: 11000;
         border-radius: 5px;
         font-size: 1.5rem;
-        box-shadow: 0px 0.8151839971542358px 0.8151839971542358px 0px rgba(var(--blackrgb),0.01),
-                    0px 2.2538793087005615px 2.2538793087005615px 0px rgba(var(--blackrgb),0.02),
-                    0px 5.426473140716553px 5.426473140716553px 0px rgba(var(--blackrgb),0.03),
-                    0px 18px 18px 0px rgba(var(--blackrgb),0.04);
+        box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.20), 0px 1px 4px 0px rgba(0, 0, 0, 0.07), 0px 3px 7px 0px rgba(0, 0, 0, 0.02);
         animation: popupnotification-slidein 0.3s ease-in-out;
     }
 
@@ -31,7 +28,7 @@ export const PopupNotificationStyles = `
     }
 
     .gh-portal-popupnotification p {
-        color: var(--white);
+        color: var(--grey0);
         margin: 0;
         padding: 0 20px;
         font-size: 1.5rem;
@@ -41,7 +38,7 @@ export const PopupNotificationStyles = `
     }
 
     .gh-portal-popupnotification a {
-        color: var(--white);
+        color: var(--grey0);
     }
 
     .gh-portal-popupnotification-icon {
@@ -65,7 +62,7 @@ export const PopupNotificationStyles = `
         top: 3px;
         bottom: 0;
         right: 3px;
-        color: var(--white);
+        color: var(--grey8);
         cursor: pointer;
         width: 16px;
         height: 16px;
