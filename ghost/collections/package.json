@@ -21,9 +21,12 @@
     ],
     "devDependencies": {
         "@tryghost/domain-events": "0.0.0",
+        "@types/knex": "^0.16.1",
+        "@types/lodash": "^4.17.10",
         "c8": "8.0.1",
         "mocha": "10.2.0",
-        "sinon": "15.2.0"
+        "sinon": "15.2.0",
+        "typescript": "^5.6.3"
     },
     "dependencies": {
         "@tryghost/debug": "0.1.32",
@@ -35,6 +38,7 @@
         "@tryghost/post-events": "0.0.0",
         "@tryghost/tpl": "0.1.32",
         "bson-objectid": "2.0.4",
+        "knex": "2.4.2",
         "lodash": "4.17.21"
     },
     "c8": {

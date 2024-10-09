@@ -7,8 +7,7 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "workspaces": [
-    "ghost/*",
-    "apps/*"
+    "*"
   ],
   "monorepo": {
     "public": false,
@@ -113,6 +112,8 @@
   },
   "devDependencies": {
     "@actions/core": "1.10.1",
+    "@types/mocha": "10.0.1",
+    "@types/node": "20.14.8",
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
     "eslint": "8.44.0",
@@ -124,6 +125,6 @@
     "nx": "19.8.4",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
-    "typescript": "5.4.5"
+    "typescript": "5.6.3"
   }
 }

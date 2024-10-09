@@ -1,3 +1,2 @@
 packages:
-  - 'apps/*'
-  - 'ghost/*'
+  - 'ghost/*/**'

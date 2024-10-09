@@ -5,6 +5,9 @@
       "module": "ESNext",
       "skipLibCheck": true,
       "types": ["vite/client"],
+      "paths": {
+        "react": ["./node_modules/@types/react"]
+      },
 
       /* Bundler mode */
       "moduleResolution": "bundler",
@@ -17,9 +20,6 @@
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "noFallthroughCasesInSwitch": true,
-      "paths": {
-        "react": ["./node_modules/@types/react"]
-      }
     },
     "include": ["src"],
     "references": [{ "path": "./tsconfig.node.json" }]

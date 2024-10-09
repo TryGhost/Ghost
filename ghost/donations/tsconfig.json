@@ -4,6 +4,8 @@
     "src/**/*"
   ],
   "compilerOptions": {
-    "outDir": "build"
+    "outDir": "build",
+    "types": ["node", "mocha"],
+    "typeRoots": ["./node_modules/@types"]
   }
 }
