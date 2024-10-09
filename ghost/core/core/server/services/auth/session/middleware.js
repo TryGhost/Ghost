@@ -1,8 +1,25 @@
+const errors = require('@tryghost/errors');
+const labs = require('../../../../shared/labs');
+
 function SessionMiddleware({sessionService}) {
     async function createSession(req, res, next) {
         try {
             await sessionService.createSessionForUser(req, res, req.user);
-            res.sendStatus(201);
+
+            if (labs.isSet('staff2fa')) {
+                const isVerified = await sessionService.isVerifiedSession(req, res);
+                if (isVerified) {
+                    res.sendStatus(201);
+                } else {
+                    throw new errors.NoPermissionError({
+                        code: '2FA_TOKEN_REQUIRED',
+                        errorType: 'Needs2FAError',
+                        message: 'User must verify session to login.'
+                    });
+                }
+            } else {
+                res.sendStatus(201);
+            }
         } catch (err) {
             next(err);
         }
@@ -13,7 +30,11 @@ function SessionMiddleware({sessionService}) {
             await sessionService.removeUserForSession(req, res);
             res.sendStatus(204);
         } catch (err) {
-            next(err);
+            if (errors.utils.isGhostError(err)) {
+                next(err);
+            } else {
+                next(new errors.InternalServerError({err}));
+            }
         }
     }
 

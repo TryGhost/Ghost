@@ -109,12 +109,12 @@ describe('Session controller', function () {
             const fakeReq = {};
             const fakeRes = {};
             const fakeNext = () => {};
-            const destroySessionStub = sinon.stub(sessionServiceMiddleware, 'destroySession');
+            const logoutSessionStub = sinon.stub(sessionServiceMiddleware, 'logout');
 
             return sessionController.delete().then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
-                const destroySessionStubCall = destroySessionStub.getCall(0);
+                const destroySessionStubCall = logoutSessionStub.getCall(0);
                 should.equal(destroySessionStubCall.args[0], fakeReq);
                 should.equal(destroySessionStubCall.args[1], fakeRes);
                 should.equal(destroySessionStubCall.args[2], fakeNext);

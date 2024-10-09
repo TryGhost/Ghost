@@ -1,7 +1,9 @@
 const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
+const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
 const sinon = require('sinon');
 const should = require('should');
+const labs = require('../../../../../../core/shared/labs');
 
 describe('Session Service', function () {
     before(function () {
@@ -14,9 +16,7 @@ describe('Session Service', function () {
 
     const fakeReq = function fakeReq() {
         return {
-            session: {
-                destroy() {}
-            },
+            session: {},
             user: null,
             body: {},
             get() {}
@@ -74,54 +74,63 @@ describe('Session Service', function () {
 
             sessionMiddleware.createSession(req, res);
         });
+
+        it('errors with a 403 when signing in while not verified', function (done) {
+            sinon.stub(labs, 'isSet').returns(true);
+            const req = fakeReq();
+            const res = fakeRes();
+
+            sinon.stub(req, 'get')
+                .withArgs('origin').returns('http://host.tld')
+                .withArgs('user-agent').returns('bububang');
+
+            req.ip = '127.0.0.1';
+            req.user = models.User.forge({id: 23});
+
+            sessionMiddleware.createSession(req, res, (err) => {
+                should.equal(err.statusCode, 403);
+                should.equal(err.code, '2FA_TOKEN_REQUIRED');
+                done();
+            });
+        });
     });
 
-    describe('destroySession', function () {
-        it('calls req.session.destroy', function (done) {
+    describe('logout', function () {
+        it('calls next with InternalServerError if removeSessionForUser errors', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            const destroyStub = sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn();
-                });
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    removeUserForSession: function () {
+                        return Promise.reject(new Error('oops'));
+                    }
+                }
+            });
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function () {
-                    should.equal(destroyStub.callCount, 1);
-                    done();
-                });
-
-            sessionMiddleware.destroySession(req, res);
-        });
-
-        it('calls next with InternalServerError if destroy errors', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn(new Error('oops'));
-                });
-
-            sessionMiddleware.destroySession(req, res, function next(err) {
+            middleware.logout(req, res, function next(err) {
                 should.equal(err.errorType, 'InternalServerError');
                 done();
             });
         });
 
-        it('calls sendStatus with 204 if destroy does not error', function (done) {
+        it('calls sendStatus with 204 if removeUserForSession does not error', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn();
-                });
             sinon.stub(res, 'sendStatus')
                 .callsFake(function (status) {
                     should.equal(status, 204);
                     done();
                 });
 
-            sessionMiddleware.destroySession(req, res);
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    removeUserForSession: function () {
+                        return Promise.resolve();
+                    }
+                }
+            });
+
+            middleware.logout(req, res);
         });
     });
 });
