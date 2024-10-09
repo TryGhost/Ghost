@@ -6,6 +6,7 @@ WORKDIR /home/ghost
 COPY docker-local-entrypoint.sh .
 
 ENV NX_DAEMON=true
+ENV NX_REJECT_UNKNOWN_LOCAL_CACHE=0
 
 EXPOSE 2368
 EXPOSE 4200
