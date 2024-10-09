@@ -1,7 +1,6 @@
 #!/bin/bash
 
-yarn global add rimraf
-rimraf -g '**/node_modules'
+find node_modules -type f -name "*.node"-print | xargs rm -rf
 
 yarn install
 
