@@ -154,7 +154,7 @@ describe('Session Service', function () {
             should.equal(sendAuthCodeToUserStub.callCount, 1);
             should.equal(nextStub.callCount, 0);
             should.equal(sendStatusStub.callCount, 1);
-            should.equal(sendStatusStub.args[0][0], 201);
+            should.equal(sendStatusStub.args[0][0], 200);
         });
 
         it('calls next with an error if sendAuthCodeToUser fails', async function () {
