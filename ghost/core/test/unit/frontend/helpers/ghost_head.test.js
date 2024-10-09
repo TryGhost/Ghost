@@ -1452,7 +1452,6 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/announcement-bar@/);
         });
         it('does not show the generator (Ghost version) when head_excludes contains generator', async function () {
-
             let templateOptions = {
                 config: {
                     head_excludes: ['generator']
@@ -1467,6 +1466,56 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
             rendered.should.not.match(/generator/);
+            rendered.should.match(/webmention/)
+        });
+        it('does not show the webmention when head_excludes contains webmention', async function () {
+            let templateOptions = {
+                config: {
+                    head_excludes: ['webmention']
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.not.match(/webmention/);
+        });
+        it('does not show the rss link when head_excludes contains rss', async function () {
+            let templateOptions = {
+                config: {
+                    head_excludes: ['rss']
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.not.match(/application\/rss\+xml/);
+        });
+        it('does not load the comments script when head_excludes contains commentcounts', async function () {
+            settingsCache.get.withArgs('comments_enabled').returns('all');
+            let templateOptions = {
+                config: {
+                    head_excludes: ['commentcounts']
+                }
+            };
+            let rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            }));
+            rendered.should.not.match(/comment-counts.min.js/)
         });
     });
 });
