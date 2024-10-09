@@ -7202,14 +7202,14 @@
     "@tryghost/debug" "^0.1.33"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.5.20":
-  version "0.5.20"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.5.20.tgz#e1c7a99314305178488dd8024b1b66c4a492caae"
-  integrity sha512-gPdss759jRIzI+o8U3wPCAL0qBB0DmLlsT8TPicF33kN4d/MSx5ab4bUtKqH/5AaYaSBQvPhZEEv5SZUI3Ztpw==
+"@tryghost/bookshelf-filter@^0.5.21":
+  version "0.5.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.5.21.tgz#4edfea61a714e7505916ee4f8cc18ce2142833d1"
+  integrity sha512-RUX0ZTloS/DFWa9eFZDIHGUxb5bdbjgHJnksaL/csE0zC3EjhdTTGIfnSzg8fv4T0fvRNJYM2TZ/hfciW9OSbA==
   dependencies:
     "@tryghost/debug" "^0.1.33"
     "@tryghost/errors" "^1.3.6"
-    "@tryghost/nql" "0.12.5"
+    "@tryghost/nql" "0.12.6"
     "@tryghost/tpl" "^0.1.33"
 
 "@tryghost/bookshelf-has-posts@^0.1.33":
@@ -7244,15 +7244,15 @@
     "@tryghost/tpl" "^0.1.33"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.6.24":
-  version "0.6.24"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.24.tgz#f44c783e11da55fab95d8a5064a96ae58360aede"
-  integrity sha512-tX35hQDTR7dXyY2Nd8t88hscVhRTe27okwxvIM9sR+QzJQ6yu7RUhQCqpdlRPtfzMwbF3vRxxaEAAaqsLZ4b6Q==
+"@tryghost/bookshelf-plugins@0.6.25":
+  version "0.6.25"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.6.25.tgz#27d49bc401c46114aa174589e14de85e34b7fb2c"
+  integrity sha512-+cPK+ro6ezGDA0P/08cErmWRkcrzbajb+1930uX9cjVG47VQMYGhrF0sey0XTgP1Xf5V/WNEGm6eZFf/yWzIyQ==
   dependencies:
     "@tryghost/bookshelf-collision" "^0.1.46"
     "@tryghost/bookshelf-custom-query" "^0.1.28"
     "@tryghost/bookshelf-eager-load" "^0.1.32"
-    "@tryghost/bookshelf-filter" "^0.5.20"
+    "@tryghost/bookshelf-filter" "^0.5.21"
     "@tryghost/bookshelf-has-posts" "^0.1.33"
     "@tryghost/bookshelf-include-count" "^0.3.16"
     "@tryghost/bookshelf-order" "^0.1.28"
@@ -7646,21 +7646,21 @@
     nodemailer-mailgun-transport "^2.1.5"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@0.6.1", "@tryghost/nql-lang@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.6.1.tgz#830847d71f0b04107f7d20e3ebc91530fa11df16"
-  integrity sha512-0fYuzWuHXYN0qk3EnqBPv7IQykn6IaFFp1XcY3CtB3nfYZqsJzVGylQFNpxx6dhRLN8ZxdycZ00HkRChd0tvjQ==
+"@tryghost/nql-lang@0.6.2", "@tryghost/nql-lang@^0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.6.2.tgz#529d4fc06840dd0d4f120610d3d081f5df51c12c"
+  integrity sha512-woIgIi89fpRnuBZQjZNF4MHbwp2IwYGQ/vEuvCGhHmOE47qhtEadvd0dCUnzOYSszgsFcp+xtOe6ZrICVEdUmw==
   dependencies:
     date-fns "^2.28.0"
 
-"@tryghost/nql@0.12.5", "@tryghost/nql@^0.12.5":
-  version "0.12.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.5.tgz#dc4531e26af06fd40c3b182295a480923cc44591"
-  integrity sha512-vc7IBsmYLb7zszLTFxGcDobkUKQ3cBKTEq3P71OGt7ranVI3KD1Du5Pq90eowQflT61DTy5eU7U9mltXOGvEkw==
+"@tryghost/nql@0.12.6", "@tryghost/nql@^0.12.5":
+  version "0.12.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.6.tgz#18c8b57f73d37269e2c0ab23b6c3f4f4030804b4"
+  integrity sha512-IIcfxSgK++O/6om42T+waIjuJCeZ0Ma88ITp/DRbaqgGzUpd9tRAyOzsTTxQkZ7OUbHXd165+ee4myHTh7fmSw==
   dependencies:
     "@tryghost/mongo-knex" "^0.9.1"
     "@tryghost/mongo-utils" "^0.6.2"
-    "@tryghost/nql-lang" "^0.6.1"
+    "@tryghost/nql-lang" "^0.6.2"
     mingo "^2.2.2"
 
 "@tryghost/pretty-cli@1.2.44", "@tryghost/pretty-cli@^1.2.38":
@@ -18669,10 +18669,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.43.6:
-  version "4.43.6"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.43.6.tgz#2c5749fdfbd7d250d76d67d6101ede26f974b742"
-  integrity sha512-JUpzQyV1Rl8mOYR+egFcRiHOpoTihn45ZlH3Z2D4z2tMqorG9OEnb1kf+VS+YKKpC9GY9PhJbG6tRrkthLbhEA==
+gscan@4.43.7:
+  version "4.43.7"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.43.7.tgz#fe39e9db02a770ee0e5a9f67b2129a29ee4b5bbf"
+  integrity sha512-Y91yFnr4owcmuzCK0PbQUUaqfX8YPYZQQiam3rp5XvfpazQYM4oaWF2AGGPmKXLnQg7m75qHcq+E860GnkQ8QA==
   dependencies:
     "@sentry/node" "^7.73.0"
     "@tryghost/config" "^0.2.18"
