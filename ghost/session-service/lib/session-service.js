@@ -147,7 +147,7 @@ module.exports = function createSessionService({
     async function sendAuthCodeToUser(req, res) {
         const token = await generateAuthCodeForUser(req, res);
         const user = await getUserForSession(req, res);
-        if(!user) {
+        if (!user) {
             throw new BadRequestError({
                 message: 'Could not fetch user from the session.'
             });
