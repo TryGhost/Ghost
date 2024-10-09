@@ -3,7 +3,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -143,6 +143,35 @@ describe('Acceptance: Authentication', function () {
             await click('[data-test-button="verify"]');
 
             expect(currentURL()).to.equal('/dashboard');
+        });
+
+        it('handles 2fa code verification errors', async function () {
+            this.server.post('/session', function () {
+                return new Response(403, {}, {
+                    errors: {
+                        code: '2FA_TOKEN_REQUIRED'
+                    }
+                });
+            });
+
+            this.server.put('/session/verify', function () {
+                return new Response(401, {}, {
+                    errors: {
+                        message: 'Invalid or expired token'
+                    }
+                });
+            });
+
+            await invalidateSession();
+            await visit('/signin');
+            await fillIn('[data-test-input="email"]', 'my@email.com');
+            await fillIn('[data-test-input="password"]', 'password');
+            await click('[data-test-button="sign-in"]');
+
+            await fillIn('[data-test-input="token"]', 123456);
+            await click('[data-test-button="verify"]');
+
+            expect(find('[data-test-flow-notification]')).to.have.trimmed.text('Invalid or expired token');
         });
     });
 
