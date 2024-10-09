@@ -30,7 +30,6 @@ Object {
       "members": true,
       "newEmailAddresses": true,
       "outboundLinkTagging": true,
-      "staff2fa": true,
       "stripeAutomaticTax": true,
       "themeErrorsNotification": true,
       "urlCache": true,

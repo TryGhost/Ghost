@@ -199,13 +199,13 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const getSecret = sinon.stub().returns('secret-key');
+        const getSettingsCache = sinon.stub().returns('secret-key');
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSecret
+            getSettingsCache
         });
 
         const req = Object.create(express.request, {
@@ -227,8 +227,12 @@ describe('SessionService', function () {
         const authCode = await sessionService.generateAuthCodeForUser(req, res);
         should.exist(authCode);
 
+        req.body = {
+            token: authCode
+        };
+
         // Verify the auth code
-        const isValid = await sessionService.verifyAuthCodeForUser(req, res, authCode);
+        const isValid = await sessionService.verifyAuthCodeForUser(req, res);
         should.equal(isValid, true);
     });
 
@@ -245,13 +249,13 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const getSecret = sinon.stub().returns('secret-key');
+        const getSettingsCache = sinon.stub().returns('secret-key');
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSecret
+            getSettingsCache
         });
 
         const req = Object.create(express.request, {
@@ -273,8 +277,12 @@ describe('SessionService', function () {
         const authCode = await sessionService.generateAuthCodeForUser(req, res);
         should.exist(authCode);
 
+        req.body = {
+            token: 'wrong-code'
+        };
+
         // Verify an incorrect auth code
-        const isValid = await sessionService.verifyAuthCodeForUser(req, res, 'wrong-code');
+        const isValid = await sessionService.verifyAuthCodeForUser(req, res);
         should.equal(isValid, false);
     });
 
@@ -313,7 +321,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSecret: getSecretFirst
+            getSettingsCache: getSecretFirst
         });
 
         const authCodeFirst = await sessionServiceFirst.generateAuthCodeForUser(req, res);
@@ -324,7 +332,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSecret: getSecretSecond
+            getSettingsCache: getSecretSecond
         });
 
         const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
