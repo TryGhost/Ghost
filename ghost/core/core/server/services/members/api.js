@@ -1,5 +1,6 @@
 const stripeService = require('../stripe');
 const settingsCache = require('../../../shared/settings-cache');
+const settingsHelpers = require('../../services/settings-helpers');
 const MembersApi = require('@tryghost/members-api');
 const logging = require('@tryghost/logging');
 const mail = require('../mail');
@@ -236,7 +237,8 @@ function createApiInstance(config) {
         memberAttributionService: memberAttributionService.service,
         emailSuppressionList,
         settingsCache,
-        sentry
+        sentry,
+        settingsHelpers
     });
 
     return membersApiInstance;

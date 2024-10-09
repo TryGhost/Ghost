@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const crypto = require('crypto');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
@@ -37,8 +38,9 @@ module.exports = class MemberBREADService {
      * @param {IStripeService} deps.stripeService
      * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
      * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
+     * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -52,6 +54,8 @@ module.exports = class MemberBREADService {
         this.memberAttributionService = memberAttributionService;
         /** @private */
         this.emailSuppressionList = emailSuppressionList;
+        /** @private */
+        this.settingsHelpers = settingsHelpers;
     }
 
     /**
@@ -245,6 +249,9 @@ module.exports = class MemberBREADService {
             suppressed: suppressionData.suppressed || !!model.get('email_disabled'),
             info: suppressionData.info
         };
+
+        const unsubscribeUrl = await this.settingsHelpers.createUnsubscribeUrl(member.id);
+        member.unsubscribe_url = unsubscribeUrl;
 
         return member;
     }
