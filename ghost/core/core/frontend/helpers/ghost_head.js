@@ -342,8 +342,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             // Taking the fonts straight from the passed in data, as they can't be used from the settings cache for the
             // theme preview until the settings are saved.
-            const headingFont = options.data.site.heading_font;
-            const bodyFont = options.data.site.body_font;
+            const headingFont = options.data.site.heading_font || settingsCache.get('heading_font');
+            const bodyFont = options.data.site.body_font || settingsCache.get('body_font');
             if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
                 (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
                 const customCSS = generateCustomFontCss({heading: headingFont, body: bodyFont});
