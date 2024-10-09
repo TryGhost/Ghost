@@ -7,7 +7,7 @@ const {escapeExpression, SafeString} = require('../services/handlebars');
 
 // BAD REQUIRE
 // @TODO fix this require
-const cardAssetService = require('../services/card-assets');
+const {cardAssets} = require('../services/assets-minification');
 
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
@@ -297,10 +297,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             // @TODO do this in a more "frameworky" way
-            if (cardAssetService.hasFile('js')) {
+            if (cardAssets.hasFile('js')) {
                 head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
             }
-            if (cardAssetService.hasFile('css')) {
+            if (cardAssets.hasFile('css')) {
                 head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
             }
 

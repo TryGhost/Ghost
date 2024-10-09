@@ -2,12 +2,13 @@ const debug = require('@tryghost/debug')('card-assets');
 const Minifier = require('@tryghost/minifier');
 const _ = require('lodash');
 const path = require('path');
-const fs = require('fs').promises;
-const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
+const AssetsMinificationBase = require('./AssetsMinificationBase');
 
-class CardAssetService {
+module.exports = class CardAssets extends AssetsMinificationBase {
     constructor(options = {}) {
+        super(options);
+
         this.src = options.src || path.join(config.get('paths').assetSrc, 'cards');
         this.dest = options.dest || config.getContentPath('public');
         this.minifier = new Minifier({src: this.src, dest: this.dest});
@@ -19,6 +20,9 @@ class CardAssetService {
         this.files = [];
     }
 
+    /**
+     * @override
+     */
     generateGlobs() {
         // CASE: The theme has asked for all card assets to be included by default
         if (this.config === true) {
@@ -50,45 +54,14 @@ class CardAssetService {
         return {};
     }
 
-    async minify(globs) {
-        try {
-            return await this.minifier.minify(globs);
-        } catch (error) {
-            if (error.code === 'EACCES') {
-                logging.error('Ghost was not able to write card asset files due to permissions.');
-                return;
-            }
-
-            throw error;
-        }
-    }
-
-    async clearFiles() {
-        this.files = [];
-
-        const rmFile = async (name) => {
-            await fs.unlink(path.join(this.dest, name));
-        };
-
-        let promises = [
-            // @deprecated switch this to use fs.rm when we drop support for Node v12
-            rmFile('cards.min.css'),
-            rmFile('cards.min.js')
-        ];
-
-        // We don't care if removing these files fails as it's valid for them to not exist
-        return Promise.allSettled(promises);
-    }
-
     hasFile(type) {
-        return this.files.indexOf(`cards.min.${type}`) > -1;
+        return Object.keys(this.generateGlobs()).indexOf(`cards.min.${type}`) > -1;
     }
 
     /**
      * A theme can declare which cards it supports, and we'll do the rest
      *
-     * @param {Array|boolean} cardAssetConfig
-     * @returns
+     * @override
      */
     async load(cardAssetConfig) {
         if (cardAssetConfig) {
@@ -105,6 +78,4 @@ class CardAssetService {
 
         this.files = await this.minify(globs) || [];
     }
-}
-
-module.exports = CardAssetService;
+};

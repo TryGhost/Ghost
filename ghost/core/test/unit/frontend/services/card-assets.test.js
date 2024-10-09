@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-const CardAssetService = require('../../../../core/frontend/services/card-assets/CardAssetService');
+const CardAssetService = require('../../../../core/frontend/services/assets-minification/CardAssets');
 
 const themeDefaults = require('../../../../core/frontend/services/theme-engine/config/defaults.json');
 
@@ -68,7 +68,8 @@ describe('Card Asset Service', function () {
     it('can clearFiles', async function () {
         const cardAssets = new CardAssetService({
             src: srcDir,
-            dest: destDir
+            dest: destDir,
+            config: true
         });
 
         await fs.writeFile(path.join(destDir, 'cards.min.css'), 'test-css');
