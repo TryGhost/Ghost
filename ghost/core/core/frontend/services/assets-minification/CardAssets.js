@@ -55,7 +55,19 @@ module.exports = class CardAssets extends AssetsMinificationBase {
     }
 
     hasFile(type) {
+        if (this.files.length) {
+            return this.files.indexOf(`cards.min.${type}`) > -1;
+        }
+
         return Object.keys(this.generateGlobs()).indexOf(`cards.min.${type}`) > -1;
+    }
+
+    invalidate(cardAssetConfig) {
+        if (cardAssetConfig) {
+            this.config = cardAssetConfig;
+        }
+
+        return super.invalidate();
     }
 
     /**
@@ -68,7 +80,7 @@ module.exports = class CardAssets extends AssetsMinificationBase {
             this.config = cardAssetConfig;
         }
 
-        debug('loading with config', cardAssetConfig);
+        debug('loading with config', this.config);
 
         await this.clearFiles();
 

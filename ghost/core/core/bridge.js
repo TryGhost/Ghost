@@ -51,6 +51,10 @@ class Bridge {
         return themeEngine.getActive();
     }
 
+    ensureAdminAuthAssetsMiddleware() {
+        return adminAuthAssets.serveMiddleware();
+    }
+
     async activateTheme(loadedTheme, checkedTheme) {
         let settings = {
             locale: settingsCache.get('locale')
@@ -60,15 +64,17 @@ class Bridge {
         try {
             themeEngine.setActive(settings, loadedTheme, checkedTheme);
 
+            logging.info('Invalidating assets for regeneration');
+
             const cardAssetConfig = this.getCardAssetConfig();
             debug('reload card assets config', cardAssetConfig);
-            await cardAssets.load(cardAssetConfig);
+            cardAssets.invalidate(cardAssetConfig);
 
             // TODO: is this in the right place?
             // rebuild asset files
-            await commentCountsAssets.load();
-            await adminAuthAssets.load();
-            await memberAttributionAssets.load();
+            commentCountsAssets.invalidate();
+            adminAuthAssets.invalidate();
+            memberAttributionAssets.invalidate();
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),

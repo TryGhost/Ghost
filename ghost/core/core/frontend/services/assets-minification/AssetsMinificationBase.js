@@ -6,8 +6,14 @@ const logging = require('@tryghost/logging');
 module.exports = class AssetsMinificationBase {
     minifier;
 
+    ready = false;
+
     constructor(options = {}) {
         this.options = options;
+    }
+
+    invalidate() {
+        this.ready = false;
     }
 
     generateGlobs() {
@@ -50,6 +56,24 @@ module.exports = class AssetsMinificationBase {
             }
 
             throw error;
+        } finally {
+            this.ready = true;
         }
+    }
+
+    serveMiddleware() {
+        const self = this;
+        /**
+         * @param {import('express').Request} req
+         * @param {import('express').Response} res
+         * @param {import('express').NextFunction} next
+         */
+        return async function serveMiddleware(req, res, next) {
+            if (!self.ready) {
+                await self.load();
+            }
+
+            next();
+        };
     }
 };

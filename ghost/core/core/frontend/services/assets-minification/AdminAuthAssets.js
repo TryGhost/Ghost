@@ -1,7 +1,7 @@
 // const debug = require('@tryghost/debug')('comments-counts-assets');
 const Minifier = require('@tryghost/minifier');
 const path = require('path');
-const fs = require('fs').promises;
+const fs = require('fs');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
@@ -16,6 +16,19 @@ module.exports = class AdminAuthAssets extends AssetsMinificationBase {
         this.dest = options.dest || path.join(config.getContentPath('public'), 'admin-auth');
 
         this.minifier = new Minifier({src: this.src, dest: this.dest});
+
+        try {
+            // TODO: don't do this synchronously
+            fs.mkdirSync(this.dest, {recursive: true});
+            fs.copyFileSync(path.join(this.src, 'index.html'), path.join(this.dest, 'index.html'));
+        } catch (error) {
+            if (error.code === 'EACCES') {
+                logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
+                return;
+            }
+
+            throw error;
+        }
     }
 
     /**
@@ -42,23 +55,6 @@ module.exports = class AdminAuthAssets extends AssetsMinificationBase {
     }
 
     /**
-     * @private
-     * @returns {Promise<void>}
-     */
-    async copyStatic() {
-        try {
-            await fs.copyFile(path.join(this.src, 'index.html'), path.join(this.dest, 'index.html'));
-        } catch (error) {
-            if (error.code === 'EACCES') {
-                logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
-                return;
-            }
-
-            throw error;
-        }
-    }
-
-    /**
      * Minify, move into the destination directory, and clear existing asset files.
      *
      * @override
@@ -69,6 +65,5 @@ module.exports = class AdminAuthAssets extends AssetsMinificationBase {
         const replacements = this.generateReplacements();
         await this.clearFiles();
         await this.minify(globs, {replacements});
-        await this.copyStatic();
     }
 };
