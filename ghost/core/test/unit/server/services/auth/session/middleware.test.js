@@ -87,7 +87,21 @@ describe('Session Service', function () {
             req.ip = '127.0.0.1';
             req.user = models.User.forge({id: 23});
 
-            sessionMiddleware.createSession(req, res, (err) => {
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    createSessionForUser: function () {
+                        return Promise.resolve();
+                    },
+                    isVerifiedSession: function () {
+                        return Promise.resolve(false);
+                    },
+                    sendAuthCodeToUser: function () {
+                        return Promise.resolve();
+                    }
+                }
+            });
+
+            middleware.createSession(req, res, (err) => {
                 should.equal(err.statusCode, 403);
                 should.equal(err.code, '2FA_TOKEN_REQUIRED');
                 done();
