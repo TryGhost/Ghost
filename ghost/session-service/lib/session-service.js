@@ -1,8 +1,9 @@
 const {
     BadRequestError
 } = require('@tryghost/errors');
-const {totp} = require('otplib');
+const emailTemplate = require('../lib/emails/signin');
 
+const {totp} = require('otplib');
 totp.options = {
     digits: 6,
     step: 60,
@@ -12,6 +13,7 @@ totp.options = {
 /**
  * @typedef {object} User
  * @prop {string} id
+ * @prop {(attr: string) => string} get
  */
 
 /**
@@ -45,9 +47,10 @@ totp.options = {
  * @param {(req: Req, res: Res) => Promise<Session>} deps.getSession
  * @param {(data: {id: string}) => Promise<User>} deps.findUserById
  * @param {(req: Req) => string} deps.getOriginOfRequest
- * @param {(key: string) => string} deps.getSecret
+ * @param {(key: string) => string} deps.getSettingsCache
  * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
- *
+ * @param {import('../../core/core/server/services/i18n').t} deps.t
+ * @param {import('../../core/core/shared/url-utils')} deps.urlUtils
  * @returns {SessionService}
  */
 
@@ -55,8 +58,10 @@ module.exports = function createSessionService({
     getSession,
     findUserById,
     getOriginOfRequest,
-    getSecret,
-    mailer
+    getSettingsCache,
+    mailer,
+    urlUtils,
+    t
 }) {
     /**
      * cookieCsrfProtection
@@ -112,8 +117,8 @@ module.exports = function createSessionService({
      * @returns {Promise<string>}
      */
     async function generateAuthCodeForUser(req, res) {
-        const session = await getSession(req, res); // Todo: Do we need to handle "No session found"?
-        const secret = getSecret('admin_session_secret') + session.user_id;
+        const session = await getSession(req, res);
+        const secret = getSettingsCache('admin_session_secret') + session.user_id;
         const token = totp.generate(secret);
         return token;
     }
@@ -126,8 +131,8 @@ module.exports = function createSessionService({
      * @returns {Promise<boolean>}
      */
     async function verifyAuthCodeForUser(req, res) {
-        const session = await getSession(req, res); // Todo: Do we need to handle "No session found"?
-        const secret = getSecret('admin_session_secret') + session.user_id;
+        const session = await getSession(req, res);
+        const secret = getSettingsCache('admin_session_secret') + session.user_id;
         const isValid = totp.check(req.body.token, secret);
         return isValid;
     }
@@ -140,19 +145,30 @@ module.exports = function createSessionService({
      * @returns {Promise<void>}
      */
     async function sendAuthCodeToUser(req, res) {
-        const session = await getSession(req, res); // eslint-disable-line
         const token = await generateAuthCodeForUser(req, res);
+        const user = await getUserForSession(req, res);
+        if(!user) {
+            throw new BadRequestError({
+                message: 'Could not fetch user from the session.'
+            });
+        }
+        const recipient = user.get('email');
+        const siteTitle = getSettingsCache('title');
+        const siteUrl = urlUtils.urlFor('home', true);
+        const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const siteDomain = (domain && domain[1]);
+        const email = emailTemplate({
+            t,
+            siteTitle: siteTitle,
+            email: recipient,
+            siteDomain: siteDomain,
+            siteUrl: siteUrl,
+            token
+        });
 
-        // TODO: Find email address for user associated with user requesting token
-        const recipient = 'TODO';
-
-        // TODO: Generate email
-        const email = `<html><body><p>Here is your token matey: ${token}</p></body></html>`;
-
-        // TODO: Send email
         await mailer.send({
             to: recipient,
-            subject: 'tokens4u',
+            subject: `Verification code: ${token}`,
             html: email
         });
 
