@@ -73,6 +73,10 @@ module.exports = {
         return mobiledocHtmlRenderer;
     },
 
+    render(mobiledoc, options) {
+        return this.mobiledocHtmlRenderer.render(mobiledoc, options);
+    },
+
     get htmlToMobiledocConverter() {
         try {
             if (process.env.CI) {

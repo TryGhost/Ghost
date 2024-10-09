@@ -59,7 +59,7 @@ class EmailServiceWrapper {
             settingsCache,
             settingsHelpers,
             renderers: {
-                mobiledoc: mobiledocLib.mobiledocHtmlRenderer,
+                mobiledoc: mobiledocLib,
                 lexical: lexicalLib
             },
             imageSize,
