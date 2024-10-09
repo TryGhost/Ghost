@@ -6,7 +6,7 @@
     "database": {
         "client": "mysql",
         "connection": {
-            "host": "ghost-mysql",
+            "host": "ghost-full-mysql",
             "user": "root",
             "password": "root",
             "database": "ghost"
@@ -14,7 +14,7 @@
     },
     "adapters": {
         "Redis": {
-            "host": "ghost-redis",
+            "host": "ghost-full-redis",
             "port": 6379
         }
     }
