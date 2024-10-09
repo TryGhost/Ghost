@@ -341,13 +341,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             const headingFont = settingsCache.get('heading_font');
-            if (typeof headingFont === 'string' && isValidCustomFont(headingFont)) {
-                head.push(generateCustomFontCss(headingFont, 'heading'));
-            }
-
             const bodyFont = settingsCache.get('body_font');
-            if (typeof bodyFont === 'string' && isValidCustomFont(bodyFont)) {
-                head.push(generateCustomFontCss(bodyFont, 'body'));
+            if (typeof headingFont === 'string' && isValidCustomFont(headingFont) &&
+                typeof bodyFont === 'string' && isValidCustomFont(bodyFont)) {
+                head.push(generateCustomFontCss({heading: headingFont, body: bodyFont}));
             }
         }
 

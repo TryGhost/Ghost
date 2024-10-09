@@ -1,7 +1,10 @@
 export type Font = 'Space Grotesk' | 'Bebas Neue' | 'Playfair Display' | 'Chakra Petch' | 'Noto Sans' | 'Poppins' | 'Fira Sans' | 'Inter' | 'Noto Serif' | 'Lora' | 'IBM Plex Serif' | 'EB Garamond' | 'Space Mono' | 'Fira Mono' | 'JetBrains Mono';
-export type Element = 'heading' | 'body';
+export type FontSelection = {
+    heading: Font,
+    body: Font
+};
 
-export function generateCustomFontCss(font: Font, element: Element) {
+export function generateCustomFontCss(fonts: FontSelection) {
     const importStrings = {
         'Space Grotesk': {
             url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)'
@@ -50,24 +53,24 @@ export function generateCustomFontCss(font: Font, element: Element) {
         }
     };
 
-    let selector;
-    switch (element) {
-    case 'heading':
-        selector = '.is-title, .gh-content [id]';
-        break;
-    case 'body':
-        selector = '.is-body';
-        break;
-    default:
-        break;
+    let fontImports = '';
+
+    if (fonts.heading === fonts.body) {
+        fontImports = `${importStrings[fonts.heading].url}`;
+    } else {
+        fontImports = `${importStrings[fonts.heading].url}; ${importStrings[fonts.body].url}`;
     }
 
     return `
         <style>
-            ${importStrings[font].url};
+            ${fontImports};
 
-            ${selector} {
-                font-family: ${font} !important;
+            .is-title, .gh-content [id] {
+                font-family: ${fonts.heading} !important;
+            }
+
+            .is-body {
+                font-family: ${fonts.body} !important;
             }
         </style>
     `;
