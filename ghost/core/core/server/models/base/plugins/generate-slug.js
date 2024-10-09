@@ -17,12 +17,9 @@ module.exports = function (Bookshelf) {
          * @return {Promise<String>} Resolves to a unique slug string
          */
         generateSlug: function generateSlug(Model, base, options) {
-            console.log('generate-slug called with base', base);
-            console.log('generate-slug called with options', options);
             let slug;
             let slugTryCount = 1;
             const baseName = Model.prototype.tableName.replace(/s$/, '');
-            console.log('baseName is', baseName);
             let longSlug;
 
             // Look for a matching slug, append an incrementing number if so
@@ -112,7 +109,6 @@ module.exports = function (Bookshelf) {
             }
 
             // Test for duplicate slugs.
-            console.log('try this slug', slug);
             return checkIfSlugExists(slug);
         }
     });
