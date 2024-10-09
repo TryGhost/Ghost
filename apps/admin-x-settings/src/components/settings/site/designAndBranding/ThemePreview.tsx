@@ -3,7 +3,7 @@ import React, {useCallback} from 'react';
 import {CustomThemeSetting, hiddenCustomThemeSettingValue} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
-type BrandSettings = {
+type GlobalSettings = {
     description: string;
     accentColor: string;
     icon: string;
@@ -15,7 +15,7 @@ type BrandSettings = {
 }
 
 interface ThemePreviewProps {
-    settings: BrandSettings
+    settings: GlobalSettings
     url: string
 }
 

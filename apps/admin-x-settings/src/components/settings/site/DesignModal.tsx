@@ -1,4 +1,4 @@
-import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
+import GlobalSettings, {GlobalSettingValues} from './designAndBranding/GlobalSettings';
 import React, {useEffect, useState} from 'react';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
@@ -13,32 +13,32 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Sidebar: React.FC<{
-    brandSettings: BrandSettingValues
+    globalSettings: GlobalSettingValues
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
-    updateBrandSetting: (key: string, value: SettingValue) => void
+    updateGlobalSetting: (key: string, value: SettingValue) => void
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
     handleSave: () => Promise<boolean>
 }> = ({
-    brandSettings,
+    globalSettings,
     themeSettingSections,
-    updateBrandSetting,
+    updateGlobalSetting,
     updateThemeSetting,
     onTabChange
 }) => {
-    const [selectedTab, setSelectedTab] = useState('brand');
+    const [selectedTab, setSelectedTab] = useState('global');
 
     const tabs: Tab[] = [
         {
-            id: 'brand',
-            title: 'Brand',
-            contents: <BrandSettings updateSetting={updateBrandSetting} values={brandSettings} />
+            id: 'global',
+            title: 'Global',
+            contents: <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
         },
-        ...themeSettingSections.map(({id, title, settings}) => ({
-            id,
-            title,
-            contents: <ThemeSettings settings={settings} updateSetting={updateThemeSetting} />
-        }))
+        {
+            id: 'theme-settings',
+            title: 'Theme settings',
+            contents: <ThemeSettings sections={themeSettingSections} updateSetting={updateThemeSetting} />
+        }
     ];
 
     const handleTabChange = (id: string) => {
@@ -52,7 +52,7 @@ const Sidebar: React.FC<{
                 {tabs.length > 1 ? 
                     <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
                     :
-                    <BrandSettings updateSetting={updateBrandSetting} values={brandSettings} />
+                    <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
                 }
             </div>
         </div>
@@ -111,7 +111,7 @@ const DesignModal: React.FC = () => {
         }
     }, [setFormState, themeSettings]);
 
-    const updateBrandSetting = (key: string, value: SettingValue) => {
+    const updateGlobalSetting = (key: string, value: SettingValue) => {
         updateForm(state => ({...state, settings: state.settings.map(setting => (
             setting.key === key ? {...setting, value, dirty: true} : setting
         ))}));
@@ -188,10 +188,10 @@ const DesignModal: React.FC = () => {
         />;
     const sidebarContent =
         <Sidebar
-            brandSettings={{description, accentColor, icon, logo, coverImage, headingFont, bodyFont}}
+            globalSettings={{description, accentColor, icon, logo, coverImage, headingFont, bodyFont}}
             handleSave={handleSave}
             themeSettingSections={themeSettingSections}
-            updateBrandSetting={updateBrandSetting}
+            updateGlobalSetting={updateGlobalSetting}
             updateThemeSetting={updateThemeSetting}
             onTabChange={onTabChange}
         />;
