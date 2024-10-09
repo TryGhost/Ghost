@@ -3,8 +3,8 @@ export type Font = HeadingFont | 'Bebas Neue' | 'Noto Sans' | 'Poppins' | 'Fira 
 export type CustomFonts = {heading: HeadingFont[], body: Font[]};
 
 export type FontSelection = {
-    heading: HeadingFont,
-    body: Font
+    heading?: HeadingFont,
+    body?: Font
 };
 
 export function generateCustomFontCss(fonts: FontSelection) {
@@ -60,38 +60,29 @@ export function generateCustomFontCss(fonts: FontSelection) {
         }
     };
 
-    if (fonts?.heading === fonts?.body) {
-        fontImports = `${importStrings[fonts.heading]?.url}`;
+    if (fonts?.heading && fonts?.body && fonts?.heading === fonts?.body) {
+        fontImports = `${importStrings[fonts?.heading]?.url};`;
     } else {
-        fontImports = `${importStrings[fonts?.heading]?.url ? `${importStrings[fonts?.heading]?.url};` : ''} ${importStrings[fonts?.body]?.url ? `${importStrings[fonts?.body]?.url};` : ''}`;
+        fontImports = '';
+
+        if (fonts?.heading) {
+            fontImports += `${importStrings[fonts?.heading]?.url};`;
+        }
+
+        if (fonts?.body) {
+            fontImports += `${importStrings[fonts?.body]?.url};`;
+        }
     }
 
     if (fonts?.body) {
-        bodyFontCSS = `
-            .is-body {
-                font-family: ${fonts.body} !important;
-            }
-
-        `;
+        bodyFontCSS = `.is-body {font-family: ${fonts.body} !important;}`;
     }
 
     if (fonts?.heading) {
-        headingFontCSS = `
-            .is-title, .gh-content [id] {
-                font-family: ${fonts.heading} !important;
-            }
-        `;
+        headingFontCSS = `.is-title, .gh-content [id] {font-family: ${fonts.heading} !important;}`;
     }
 
-    return `
-        <style>
-            ${fontImports}
-
-            ${bodyFontCSS}
-
-            ${headingFontCSS}
-        </style>
-    `;
+    return `<style>${fontImports}${bodyFontCSS}${headingFontCSS}</style>`;
 }
 
 export const CUSTOM_FONTS: CustomFonts = {
