@@ -101,6 +101,9 @@ export const CUSTOM_FONTS: CustomFonts = {
         'Chakra Petch'
     ],
     body: [
+        'Space Grotesk',
+        'Playfair Display',
+        'Chakra Petch',
         'Bebas Neue',
         'Noto Sans',
         'Poppins',
