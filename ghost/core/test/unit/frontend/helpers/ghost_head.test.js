@@ -14,8 +14,7 @@ const {cardAssets} = require('../../../../core/frontend/services/assets-minifica
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
-const {metaData, settingsCache, labs} = proxy;
-
+const {settingsCache, labs} = proxy;
 
 /**
  * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
@@ -1468,7 +1467,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
             rendered.should.not.match(/generator/);
-            rendered.should.match(/webmention/)
+            rendered.should.match(/webmention/);
         });
         it('does not show the webmention when head_excludes contains webmention', async function () {
             let templateOptions = {
@@ -1517,7 +1516,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            rendered.should.not.match(/comment-counts.min.js/)
+            rendered.should.not.match(/comment-counts.min.js/);
         });
         it('does not load the member attribution script when head_excludes contains memberattribution', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
@@ -1534,7 +1533,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            rendered.should.not.match(/member-attribution.min.js/)
+            rendered.should.not.match(/member-attribution.min.js/);
         });
         it('does not load the tinybird tracker script when head_excludes contains tinybirdtracker', async function () {
             configUtils.set({
@@ -1560,7 +1559,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            rendered.should.not.match(/flock.js/)
+            rendered.should.not.match(/flock.js/);
         });
         it('loads card assets when not excluded', async function () {
             // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
@@ -1599,7 +1598,7 @@ describe('{{ghost_head}} helper', function () {
             }));
             rendered.should.not.match(/cards.min.js/);
             rendered.should.not.match(/cards.min.css/);
-        })
+        });
         it('does not load meta tags when excluded with metadata', async function () {
             let templateOptions = {
                 config: {
