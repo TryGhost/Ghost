@@ -9,15 +9,16 @@ import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/image
 import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import type {Font} from '@tryghost/custom-fonts';
+import type {Font, HeadingFont} from '@tryghost/custom-fonts';
 
-// TODO: create custom types for heading and body fonts in @tryghost/custom-fonts, so we can extend
-// them separately
 type BodyFontOption = {
     value: Font | 'Theme default',
     label: Font | 'Theme default'
 };
-type HeadingFontOption = BodyFontOption;
+type HeadingFontOption = {
+    value: HeadingFont | 'Theme default',
+    label: HeadingFont | 'Theme default'
+};
 
 export interface BrandSettingValues {
     description: string
@@ -44,12 +45,14 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [headingFont, setHeadingFont] = useState(values.headingFont || DEFAULT_FONT);
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
-    // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
-    // between heading and body fonts
-    const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.map(x => ({label: x, value: x}));
+    const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map(x => ({label: x, value: x}));
+    // Add the default font option to the beginning of the options
+    // We don't store it in the database, so it's not a validated value in the custom-fonts package
     customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
-    const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.map(x => ({label: x, value: x}));
+    const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map(x => ({label: x, value: x}));
+    // Add the default font option to the beginning of the options
+    // We don't store it in the database, so it's not a validated value in the custom-fonts package
     customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
     const selectedHeadingFont = {label: headingFont, value: headingFont};
