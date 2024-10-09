@@ -13,6 +13,7 @@ services:
       - NODE_ENV=dockerdev
       - DEBUG=${DEBUG}
       - APP_FLAGS=${APP_FLAGS}
+    tty: true
   mysql:
     image: mysql:8.0.35
     container_name: ghost-full-mysql
