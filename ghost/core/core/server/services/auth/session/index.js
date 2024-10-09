@@ -4,6 +4,7 @@ const sessionFromToken = require('@tryghost/mw-session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
 const {GhostMailer} = require('../../mail');
+const {t} = require('../../i18n');
 
 const expressSession = require('./express-session');
 
@@ -38,10 +39,12 @@ const sessionService = createSessionService({
     findUserById({id}) {
         return models.User.findOne({id, status: 'active'});
     },
-    getSecret(key) {
+    getSettingsCache(key) {
         return settingsCache.get(key);
     },
-    mailer
+    mailer,
+    urlUtils,
+    t
 });
 
 module.exports = createSessionMiddleware({sessionService});
