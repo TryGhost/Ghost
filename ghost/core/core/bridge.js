@@ -16,10 +16,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
 const appService = require('./frontend/services/apps');
-const cardAssetService = require('./frontend/services/card-assets');
-const commentCountsAssetService = require('./frontend/services/comment-counts-assets');
-const adminAuthAssetService = require('./frontend/services/admin-auth-assets');
-const memberAttributionAssetService = require('./frontend/services/member-attribution-assets');
+const {adminAuthAssets, cardAssets,commentCountsAssets, memberAttributionAssets} = require('./frontend/services/assets-minification');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
@@ -65,13 +62,13 @@ class Bridge {
 
             const cardAssetConfig = this.getCardAssetConfig();
             debug('reload card assets config', cardAssetConfig);
-            await cardAssetService.load(cardAssetConfig);
+            await cardAssets.load(cardAssetConfig);
 
             // TODO: is this in the right place?
             // rebuild asset files
-            await commentCountsAssetService.load();
-            await adminAuthAssetService.load();
-            await memberAttributionAssetService.load();
+            await commentCountsAssets.load();
+            await adminAuthAssets.load();
+            await memberAttributionAssets.load();
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
