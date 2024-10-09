@@ -3,6 +3,12 @@ const {
 } = require('@tryghost/errors');
 const {totp} = require('otplib');
 
+totp.options = {
+    digits: 6,
+    step: 60,
+    window: [10, 10]
+};
+
 /**
  * @typedef {object} User
  * @prop {string} id
@@ -108,11 +114,6 @@ module.exports = function createSessionService({
     async function generateAuthCodeForUser(req, res) {
         const session = await getSession(req, res); // Todo: Do we need to handle "No session found"?
         const secret = getSecret('admin_session_secret') + session.user_id;
-        totp.options = {
-            digits: 6,
-            encoding: 'ascii',
-            step: 300 // time in sec, time for which the token will be valid //Todo: is this supposed to be 5 min?
-        };
         const token = totp.generate(secret);
         return token;
     }
