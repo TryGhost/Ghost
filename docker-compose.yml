@@ -9,3 +9,5 @@ services:
     ports:
       - 2368:2368
       - 4200:4200
+    environment:
+      - NODE_ENV=dockerdev

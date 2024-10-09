@@ -1,0 +1,21 @@
+{
+    "server": {
+        "host": "0.0.0.0",
+        "port": 2368
+    },
+    "database": {
+        "client": "mysql",
+        "connection": {
+            "host": "ghost-mysql",
+            "user": "root",
+            "password": "root",
+            "database": "ghost"
+        }
+    },
+    "adapters": {
+        "Redis": {
+            "host": "ghost-redis",
+            "port": 6379
+        }
+    }
+}
