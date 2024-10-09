@@ -133,4 +133,116 @@ describe('Session Service', function () {
             middleware.logout(req, res);
         });
     });
+
+    describe('sendAuthCode', function () {
+        it('sends an auth code to the user', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const sendAuthCodeToUserStub = sinon.stub().resolves(123);
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    sendAuthCodeToUser: sendAuthCodeToUserStub
+                }
+            });
+
+            await middleware.sendAuthCode(req, res, nextStub);
+
+            should.equal(sendAuthCodeToUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 0);
+            should.equal(sendStatusStub.callCount, 1);
+            should.equal(sendStatusStub.args[0][0], 201);
+        });
+
+        it('calls next with an error if sendAuthCodeToUser fails', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const sendAuthCodeToUserStub = sinon.stub().rejects(new Error('foo bar baz'));
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    sendAuthCodeToUser: sendAuthCodeToUserStub
+                }
+            });
+
+            await middleware.sendAuthCode(req, res, nextStub);
+
+            should.equal(sendAuthCodeToUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 1);
+            should.equal(sendStatusStub.callCount, 0);
+        });
+    });
+
+    describe('verifyAuthCode', function () {
+        it('returns 200 if the auth code is valid', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const verifyAuthCodeForUserStub = sinon.stub().resolves(true);
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub
+                }
+            });
+
+            await middleware.verifyAuthCode(req, res, nextStub);
+
+            should.equal(verifyAuthCodeForUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 0);
+            should.equal(sendStatusStub.callCount, 1);
+            should.equal(sendStatusStub.args[0][0], 200);
+        });
+
+        it('returns 401 if the auth code is invalid', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const verifyAuthCodeForUserStub = sinon.stub().resolves(false);
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub
+                }
+            });
+
+            await middleware.verifyAuthCode(req, res, nextStub);
+
+            should.equal(verifyAuthCodeForUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 0);
+            should.equal(sendStatusStub.callCount, 1);
+            should.equal(sendStatusStub.args[0][0], 401);
+        });
+
+        it('calls next with an error if sendAuthCodeToUser fails', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const verifyAuthCodeForUserStub = sinon.stub().rejects(new Error('foo bar baz'));
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub
+                }
+            });
+
+            await middleware.verifyAuthCode(req, res, nextStub);
+
+            should.equal(verifyAuthCodeForUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 1);
+            should.equal(sendStatusStub.callCount, 0);
+        });
+    });
 });
