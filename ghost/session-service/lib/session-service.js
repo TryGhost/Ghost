@@ -31,6 +31,7 @@ const {totp} = require('otplib');
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
+ * @prop {(req: Req, res: Res) => Promise<boolean>} isVerifiedSession
  */
 
 /**
@@ -169,6 +170,17 @@ module.exports = function createSessionService({
     }
 
     /**
+     * isVerifiedSession
+     *
+     * @param {Req} req
+     * @param {Res} res
+     */
+    async function isVerifiedSession(req, res) {
+        const session = await getSession(req, res);
+        return session.verified;
+    }
+
+    /**
      * removeUserForSession
      *
      * @param {Req} req
@@ -217,6 +229,7 @@ module.exports = function createSessionService({
         createSessionForUser,
         removeUserForSession,
         verifySession,
+        isVerifiedSession,
         sendAuthCodeToUser,
         verifyAuthCodeForUser,
         generateAuthCodeForUser
