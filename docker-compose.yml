@@ -11,4 +11,5 @@ services:
       - 4200:4200
     environment:
       - NODE_ENV=dockerdev
+      - DEBUG=${DEBUG}
       - APP_FLAGS=${APP_FLAGS}
