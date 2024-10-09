@@ -4,7 +4,7 @@
 // Outputs scripts and other assets at the top of a Ghost theme
 const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
-const {generateCustomFontCss, isValidCustomFont} = require('@tryghost/custom-fonts');
+const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
 // @TODO fix this require
 const {cardAssets} = require('../services/assets-minification');
@@ -340,11 +340,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            const headingFont = settingsCache.get('heading_font');
-            const bodyFont = settingsCache.get('body_font');
-            if (typeof headingFont === 'string' && isValidCustomFont(headingFont) &&
-                typeof bodyFont === 'string' && isValidCustomFont(bodyFont)) {
-                head.push(generateCustomFontCss({heading: headingFont, body: bodyFont}));
+            // Taking the fonts straight from the passed in data, as they can't be used from the settings cache for the
+            // theme preview until the settings are saved.
+            const headingFont = options.data.site.heading_font;
+            const bodyFont = options.data.site.body_font;
+            if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+                (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+                const customCSS = generateCustomFontCss({heading: headingFont, body: bodyFont});
+                head.push(new SafeString(customCSS));
             }
         }
 
