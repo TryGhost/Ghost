@@ -11,4 +11,4 @@ EXPOSE 2368
 EXPOSE 4200
 
 ENTRYPOINT ["./docker-local-entrypoint.sh"]
-CMD ["yarn", "dev"]
+CMD ["node", ".github/scripts/dev.js"]
