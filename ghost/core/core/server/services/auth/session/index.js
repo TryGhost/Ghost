@@ -3,6 +3,7 @@ const createSessionService = require('@tryghost/session-service');
 const sessionFromToken = require('@tryghost/mw-session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
+const {GhostMailer} = require('../../mail');
 
 const expressSession = require('./express-session');
 
@@ -29,6 +30,8 @@ function getOriginOfRequest(req) {
     return null;
 }
 
+const mailer = new GhostMailer();
+
 const sessionService = createSessionService({
     getOriginOfRequest,
     getSession: expressSession.getSession,
@@ -37,7 +40,8 @@ const sessionService = createSessionService({
     },
     getSecret(key) {
         return settingsCache.get(key);
-    }
+    },
+    mailer
 });
 
 module.exports = createSessionMiddleware({sessionService});

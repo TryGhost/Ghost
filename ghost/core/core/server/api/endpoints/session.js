@@ -65,9 +65,14 @@ const controller = {
             auth.session.logout(req, res, next);
         });
     },
-    verify() {
+    sendVerification() {
         return Promise.resolve(function sendAuthCodeMw(req, res, next) {
             auth.session.sendAuthCode(req, res, next);
+        });
+    },
+    verify() {
+        return Promise.resolve(function verifyAuthCodeMw(req, res, next) {
+            auth.session.verifyAuthCode(req, res, next);
         });
     }
 };

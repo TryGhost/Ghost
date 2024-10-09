@@ -34,7 +34,22 @@ function SessionMiddleware({sessionService}) {
     async function sendAuthCode(req, res, next) {
         try {
             await sessionService.sendAuthCodeToUser(req, res);
+
             res.sendStatus(201);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async function verifyAuthCode(req, res, next) {
+        try {
+            const verified = await sessionService.verifyAuthCodeForUser(req, res);
+
+            if (verified) {
+                res.sendStatus(200);
+            } else {
+                res.sendStatus(401);
+            }
         } catch (err) {
             next(err);
         }
@@ -44,7 +59,8 @@ function SessionMiddleware({sessionService}) {
         createSession: createSession,
         logout: logout,
         authenticate: authenticate,
-        sendAuthCode: sendAuthCode
+        sendAuthCode: sendAuthCode,
+        verifyAuthCode: verifyAuthCode
     };
 }
 

@@ -30,8 +30,7 @@ const {totp} = require('otplib');
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
- * @prop {(req: Req, res: Res) => string} generateAuthCodeForUser
- * @prop {(req: Req, res: Res) => Promise<void>} verifyAuthCodeForUser
+ * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
  */
 
 /**
@@ -40,11 +39,18 @@ const {totp} = require('otplib');
  * @param {(data: {id: string}) => Promise<User>} deps.findUserById
  * @param {(req: Req) => string} deps.getOriginOfRequest
  * @param {(key: string) => string} deps.getSecret
+ * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
  *
  * @returns {SessionService}
  */
 
-module.exports = function createSessionService({getSession, findUserById, getOriginOfRequest, getSecret}) {
+module.exports = function createSessionService({
+    getSession,
+    findUserById,
+    getOriginOfRequest,
+    getSecret,
+    mailer
+}) {
     /**
      * cookieCsrfProtection
      *
@@ -117,10 +123,10 @@ module.exports = function createSessionService({getSession, findUserById, getOri
      * @param {Res} res
      * @returns {Promise<boolean>}
      */
-    async function verifyAuthCodeForUser(req, res, token) {
+    async function verifyAuthCodeForUser(req, res) {
         const session = await getSession(req, res); // Todo: Do we need to handle "No session found"?
         const secret = getSecret('admin_session_secret') + session.user_id;
-        const isValid = totp.check(token, secret);
+        const isValid = totp.check(req.body.token, secret);
         return isValid;
     }
 
@@ -133,8 +139,22 @@ module.exports = function createSessionService({getSession, findUserById, getOri
      */
     async function sendAuthCodeToUser(req, res) {
         const session = await getSession(req, res); // eslint-disable-line
-        generateAuthCodeForUser();
-        // send auth code to user
+        const token = await generateAuthCodeForUser(req, res);
+
+        // TODO: Find email address for user associated with user requesting token
+        const recipient = 'TODO';
+
+        // TODO: Generate email
+        const email = `<html><body><p>Here is your token matey: ${token}</p></body></html>`;
+
+        // TODO: Send email
+        await mailer.send({
+            to: recipient,
+            subject: 'tokens4u',
+            html: email
+        });
+
+        return Promise.resolve();
     }
 
     /**
