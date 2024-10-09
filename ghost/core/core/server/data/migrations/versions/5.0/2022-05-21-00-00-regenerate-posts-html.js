@@ -43,7 +43,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
                 continue;
             }
 
-            const html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc);
+            const html = mobiledocLib.render(mobiledoc);
 
             const updatedAttrs = {
                 html
