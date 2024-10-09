@@ -12,12 +12,12 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {Font, HeadingFont} from '@tryghost/custom-fonts';
 
 type BodyFontOption = {
-    value: Font | 'Theme default',
-    label: Font | 'Theme default'
+    value: Font | typeof DEFAULT_FONT,
+    label: Font | typeof DEFAULT_FONT
 };
 type HeadingFontOption = {
-    value: HeadingFont | 'Theme default',
-    label: HeadingFont | 'Theme default'
+    value: HeadingFont | typeof DEFAULT_FONT,
+    label: HeadingFont | typeof DEFAULT_FONT
 };
 
 export interface BrandSettingValues {
@@ -30,6 +30,9 @@ export interface BrandSettingValues {
     bodyFont: string
 }
 
+// This is the label of the default font option.
+// Selecting this will remove the custom font for the selected
+// option.
 const DEFAULT_FONT = 'Theme default';
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
