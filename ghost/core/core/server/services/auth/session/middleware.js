@@ -11,6 +11,7 @@ function SessionMiddleware({sessionService}) {
                 if (isVerified) {
                     res.sendStatus(201);
                 } else {
+                    await sessionService.sendAuthCodeToUser(req, res);
                     throw new errors.NoPermissionError({
                         code: '2FA_TOKEN_REQUIRED',
                         errorType: 'Needs2FAError',
