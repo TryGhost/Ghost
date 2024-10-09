@@ -1,0 +1,11 @@
+services:
+  ghost:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/ghost
+    restart: always
+    ports:
+      - 2368:2368
+      - 4200:4200
