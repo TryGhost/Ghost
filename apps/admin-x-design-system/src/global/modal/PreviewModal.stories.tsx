@@ -101,6 +101,6 @@ export const BreadcrumbsToolbar: Story = {
     args: {
         ...Default.args,
         previewToolbarTabs: undefined,
-        previewToolbarBreadcrumbs: [{label: 'Previous', onClick: () => {}}, {label: 'Current'}]
+        previewToolbarBreadcrumbs: [{children: 'Previous', onClick: () => {}}, {children: 'Current'}]
     }
 };
