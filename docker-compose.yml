@@ -25,8 +25,6 @@ services:
       MYSQL_DATABASE: ghost
     restart: always
     volumes:
-      # Turns out you can drop .sql or .sql.gz files in here, cool!
-      - ./mysql-preload:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
     healthcheck:
       test: "mysql -uroot -proot ghost -e 'select 1'"
