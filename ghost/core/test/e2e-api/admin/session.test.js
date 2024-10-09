@@ -52,7 +52,10 @@ describe('Sessions API', function () {
             .expectEmptyBody()
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag
+                etag: anyEtag,
+                'set-cookie': [
+                    stringMatching(/^ghost-admin-api-session=/)
+                ]
             });
     });
 
