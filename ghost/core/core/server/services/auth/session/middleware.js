@@ -56,7 +56,7 @@ function SessionMiddleware({sessionService}) {
         try {
             await sessionService.sendAuthCodeToUser(req, res);
 
-            res.sendStatus(201);
+            res.sendStatus(200);
         } catch (err) {
             next(err);
         }
