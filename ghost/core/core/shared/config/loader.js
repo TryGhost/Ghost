@@ -28,6 +28,10 @@ function loadNconf(options) {
     nconf.argv();
     nconf.env({separator: '__', parseValues: true});
 
+    if (env === 'dockerdev') {
+        nconf.file('dockerdev', path.join(baseConfigPath, 'env','config.dockerdev.json'));
+    }
+
     // Now load various config json files
     nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
     if (!env.startsWith('testing')) {
