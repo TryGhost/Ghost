@@ -180,7 +180,9 @@ const DesignModal: React.FC = () => {
                 icon,
                 logo,
                 coverImage,
-                themeSettings: formState.themeSettings
+                themeSettings: formState.themeSettings,
+                headingFont,
+                bodyFont
             }}
             url={selectedTabURL}
         />;

@@ -10,6 +10,8 @@ type BrandSettings = {
     logo: string;
     coverImage: string;
     themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>;
+    bodyFont: string;
+    headingFont: string;
 }
 
 interface ThemePreviewProps {
@@ -23,14 +25,18 @@ function getPreviewData({
     icon,
     logo,
     coverImage,
-    themeSettings
+    themeSettings,
+    bodyFont,
+    headingFont
 }: {
     description: string;
     accentColor: string;
     icon: string;
     logo: string;
     coverImage: string;
-    themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>,
+    themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>;
+    bodyFont: string;
+    headingFont: string;
 }) {
     // Don't render twice while theme settings are loading
     if (!themeSettings) {
@@ -44,6 +50,8 @@ function getPreviewData({
     params.append('icon', icon);
     params.append('logo', logo);
     params.append('cover', coverImage);
+    params.append('bf', bodyFont);
+    params.append('hf', headingFont);
     const custom: {
         [key: string]: string | typeof hiddenCustomThemeSettingValue;
     } = {};
