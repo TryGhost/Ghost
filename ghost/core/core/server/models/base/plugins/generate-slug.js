@@ -20,6 +20,7 @@ module.exports = function (Bookshelf) {
             let slug;
             let slugTryCount = 1;
             const baseName = Model.prototype.tableName.replace(/s$/, '');
+
             let longSlug;
 
             // Look for a matching slug, append an incrementing number if so
@@ -81,7 +82,6 @@ module.exports = function (Bookshelf) {
                 // find the index of the first hyphen after the second character.
                 const hyphenIndex = slug.indexOf('-', 3);
 
-                //slug = (slug.indexOf('-') > -1) ? slug.slice(0, slug.indexOf('-')) : slug;
                 slug = hyphenIndex > -1 ? slug.slice(0, hyphenIndex) : slug;
             }
 
@@ -92,10 +92,12 @@ module.exports = function (Bookshelf) {
                     slug = 'hash-' + slug;
                 }
             }
+
             // single character slugs break things. Don't let that happen.
             if (slug.length === 1) {
                 slug = baseName + '-' + slug;
             }
+            
             // Some keywords cannot be changed
             slug = _.includes(urlUtils.getProtectedSlugs(), slug) ? slug + '-' + baseName : slug;
 
