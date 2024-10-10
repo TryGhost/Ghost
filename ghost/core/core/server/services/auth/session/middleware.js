@@ -42,8 +42,13 @@ function SessionMiddleware({sessionService}) {
     async function authenticate(req, res, next) {
         try {
             const user = await sessionService.getUserForSession(req, res);
-            const isVerified = await sessionService.isVerifiedSession(req, res);
-            if (user && isVerified) {
+            if (user) {
+                if (labs.isSet('staff2fa')) {
+                    const isVerified = await sessionService.isVerifiedSession(req, res);
+                    if (!isVerified) {
+                        return next();
+                    }
+                }
                 // Do not nullify `req.user` as it might have been already set
                 // in a previous middleware (authorize middleware).
                 req.user = user;
