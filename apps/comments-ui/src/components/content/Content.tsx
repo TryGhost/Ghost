@@ -8,9 +8,15 @@ import {useAppContext, useLabs} from '../../AppContext';
 import {useEffect} from 'react';
 
 const Content = () => {
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
-    const commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
     const labs = useLabs();
+
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
+    let commentsElements;
+    if (labs && labs.commentImprovements) {
+        // this is now managed by the api
+        commentsElements = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
+    }
+    commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
