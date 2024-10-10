@@ -34,7 +34,7 @@
     "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
     "docker:reset": "docker-compose -f .github/scripts/docker-compose.yml down -v && docker-compose -f .github/scripts/docker-compose.yml up -d --wait",
-    "up": "git submodule update --init && docker compose up --attach ghost --no-log-prefix",
+    "up": "git submodule update --init && docker compose -f docker/docker-compose.yml up --attach ghost --no-log-prefix",
     "compose": "docker compose -f docker/docker-compose.yml",
     "docker:dev:entry": "node .github/scripts/docker-dev-full.js",
     "lint": "nx run-many -t lint",
