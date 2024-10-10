@@ -1,4 +1,4 @@
-module.exports = ({t, siteTitle, email, siteDomain, siteUrl, token, deviceDetails}) => `
+module.exports = ({t, siteTitle, email, siteDomain, siteUrl, siteLogo, token, deviceDetails}) => `
 <!doctype html>
 <html>
   <head>
