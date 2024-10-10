@@ -1101,6 +1101,10 @@ textarea.gh-member-details-textarea {
     padding: 16px 0;
 }
 
+.gh-member-newsletter-row .for-switch {
+    display: flex;
+}
+
 .gh-member-newsletter-row:first-child {
     padding-top: 0;
 }
