@@ -11,6 +11,7 @@ const expressSession = require('./express-session');
 
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
+const {blogIcon} = require('../../../lib/image');
 const url = require('url');
 
 // TODO: We have too many lines here, should move functions out into a utils module
@@ -45,6 +46,10 @@ const sessionService = createSessionService({
     },
     getSettingsCache(key) {
         return settingsCache.get(key);
+    },
+    getBlogLogo() {
+        return blogIcon.getIconUrl({absolute: true, fallbackToDefault: false})
+            || 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
     },
     mailer,
     urlUtils,
