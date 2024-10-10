@@ -32,7 +32,7 @@ export function generateCustomFontCss(fonts: FontSelection) {
             url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)'
         },
         Inter: {
-            url: '@import url(https://fonts.bunny.net/css?family=inter:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=inter:400,500,600)'
         },
         'Noto Serif': {
             url: '@import url(https://fonts.bunny.net/css?family=noto-serif:400,700)'
