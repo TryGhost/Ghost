@@ -72,11 +72,11 @@ export function generateCustomFontCss(fonts: FontSelection) {
     }
 
     if (fonts?.body) {
-        bodyFontCSS = `.gh-body-font {font-family: ${fonts.body} !important;}`;
+        bodyFontCSS = `.gh-body-font {font-family: ${fonts.body};}`;
     }
 
     if (fonts?.heading) {
-        headingFontCSS = `.gh-heading-font, .gh-content [id] {font-family: ${fonts.heading} !important;}`;
+        headingFontCSS = `.gh-heading-font, .gh-content [id] {font-family: ${fonts.heading};}`;
     }
 
     return `<style>${fontImports}${bodyFontCSS}${headingFontCSS}</style>`;
