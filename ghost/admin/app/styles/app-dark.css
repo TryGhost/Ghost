@@ -1222,7 +1222,7 @@ kbd {
 }
 
 .gh-dashboard-tooltip {
-    background: var(--whitegrey);
+    background: var(--whitegrey-l2);
 }
 
 /* Empty states */
