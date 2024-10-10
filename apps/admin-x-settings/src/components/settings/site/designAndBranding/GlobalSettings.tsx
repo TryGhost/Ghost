@@ -1,3 +1,4 @@
+import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
@@ -10,10 +11,7 @@ import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {BodyFont, HeadingFont} from '@tryghost/custom-fonts';
-import BehindFeatureFlag from '../../../BehindFeatureFlag';
 
-// TODO: create custom types for heading and body fonts in @tryghost/custom-fonts, so we can extend
-// them separately
 type BodyFontOption = {
     value: BodyFont | typeof DEFAULT_FONT,
     label: BodyFont | typeof DEFAULT_FONT
@@ -48,8 +46,6 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [headingFont, setHeadingFont] = useState(values.headingFont || DEFAULT_FONT);
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
-    // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
-    // between heading and body fonts
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map(x => ({label: x, value: x}));
     customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
