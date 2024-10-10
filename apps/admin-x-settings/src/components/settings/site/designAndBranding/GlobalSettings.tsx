@@ -4,7 +4,7 @@ import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Form, Heading, Hint, ImageUpload, Select} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Form, Hint, ImageUpload, Select} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
@@ -61,14 +61,14 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <ColorPickerField
                     debounceMs={200}
                     direction='rtl'
-                    title={<Heading className='mt-[3px]' level={6}>Accent color</Heading>}
+                    title={<div>Accent color</div>}
                     value={values.accentColor}
                     // we debounce this because the color picker fires a lot of events.
                     onChange={value => updateSetting('accent_color', value)}
                 />
                 <div className='flex items-start justify-between'>
                     <div>
-                        <Heading level={6}>Publication icon</Heading>
+                        <div>Publication icon</div>
                         <Hint className='!mt-0 mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
                     </div>
                     <div className='flex gap-3'>
@@ -99,7 +99,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 </div>
                 <div className={`flex items-start justify-between ${values.icon && 'mt-2'}`}>
                     <div>
-                        <Heading level={6}>Publication logo</Heading>
+                        <div>Publication logo</div>
                         <Hint className='!mt-0 mr-5 max-w-[160px]'>Appears usually in the main header of your theme</Hint>
                     </div>
                     <div>
@@ -130,7 +130,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 </div>
                 <div className='mt-2 flex items-start justify-between'>
                     <div>
-                        <Heading level={6}>Publication cover</Heading>
+                        <div>Publication cover</div>
                         <Hint className='!mt-0 mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>
                     </div>
                     <ImageUpload
