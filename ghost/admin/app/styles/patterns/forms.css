@@ -213,6 +213,20 @@ select {
     -webkit-appearance: none;
 }
 
+.gh-input-admin-x {
+    height: 38px;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 0;
+    border-radius: 8px;
+}
+
+textarea.gh-input-admin-x {
+    padding-block: 8px;
+}
+
 .gh-select,
 select {
     cursor: pointer;
