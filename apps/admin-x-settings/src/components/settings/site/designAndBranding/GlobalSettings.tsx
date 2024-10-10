@@ -9,13 +9,13 @@ import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/image
 import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import type {Font, HeadingFont} from '@tryghost/custom-fonts';
+import type {BodyFont, HeadingFont} from '@tryghost/custom-fonts';
 
 // TODO: create custom types for heading and body fonts in @tryghost/custom-fonts, so we can extend
 // them separately
 type BodyFontOption = {
-    value: Font | typeof DEFAULT_FONT,
-    label: Font | typeof DEFAULT_FONT
+    value: BodyFont | typeof DEFAULT_FONT,
+    label: BodyFont | typeof DEFAULT_FONT
 };
 type HeadingFontOption = {
     value: HeadingFont | typeof DEFAULT_FONT,
