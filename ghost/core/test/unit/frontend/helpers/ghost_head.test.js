@@ -1125,6 +1125,102 @@ describe('{{ghost_head}} helper', function () {
         });
     });
 
+    describe('custom fonts', function () {
+        it('includes custom font when set in options data object', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    heading_font: 'Space Grotesk',
+                    body_font: 'Poppins'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('includes custom font when set in settings cache', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not include custom font when not set', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not include custom font when invalid', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('Wendy Sans');
+
+            const templateOptions = {
+                site: {
+                    heading_font: 'Comic Sans',
+                    body_font: ''
+                }
+            };
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+    });
+
     describe('members scripts', function () {
         it('includes portal when members enabled', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
