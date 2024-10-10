@@ -11,8 +11,8 @@ describe('Custom Fonts', function () {
 
     describe('isValidCustomFont', function () {
         it('returns true for valid body fonts', function () {
-            assert.equal(customFonts.isValidCustomFont('Space Grotesk'), true);
-            assert.equal(customFonts.isValidCustomFont('Poppins'), true);
+            assert.equal(customFonts.isValidCustomFont('Inter'), true);
+            assert.equal(customFonts.isValidCustomFont('Fira Sans'), true);
         });
 
         it('returns false for invalid fonts', function () {
@@ -28,17 +28,17 @@ describe('Custom Fonts', function () {
 
         it('returns false for invalid heading fonts', function () {
             assert.equal(customFonts.isValidCustomHeadingFont('Invalid Font'), false);
-            assert.equal(customFonts.isValidCustomHeadingFont('Poppins'), false);
+            assert.equal(customFonts.isValidCustomHeadingFont('Comic Sans'), false);
         });
     });
 
     describe('generateCustomFontCss', function () {
         it('returns correct CSS for single font', function () {
-            const result = customFonts.generateCustomFontCss({body: 'Space Grotesk'});
+            const result = customFonts.generateCustomFontCss({body: 'Noto Sans'});
 
-            assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=space-grotesk:700);'), true, 'Includes the correct import for the body font');
-            assert.equal(result.includes('.is-body {font-family: Space Grotesk !important;}'), true, 'Includes the correct CSS for the body font');
-            assert.equal(result.includes('.is-title, .gh-content [id]'), false, 'Does not include CSS for the title font');
+            assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);'), true, 'Includes the correct import for the body font');
+            assert.equal(result.includes('.gh-body-font {font-family: Noto Sans !important;}'), true, 'Includes the correct CSS for the body font');
+            assert.equal(result.includes('.gh-heading-font, .gh-content [id]'), false, 'Does not include CSS for the title font');
         });
 
         it('returns correct CSS for different heading and body fonts', function () {
@@ -46,14 +46,14 @@ describe('Custom Fonts', function () {
 
             assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=playfair-display:400);'), true, 'Includes the correct import for the heading font');
             assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=poppins:400,700);'), true, 'Includes the correct import for the body font');
-            assert.equal(result.includes('.is-title, .gh-content [id] {font-family: Playfair Display !important;}'), true, 'Includes the correct CSS for the heading font');
-            assert.equal(result.includes('.is-body {font-family: Poppins !important;}'), true, 'Includes the correct CSS for the body font');
+            assert.equal(result.includes('.gh-heading-font, .gh-content [id] {font-family: Playfair Display !important;}'), true, 'Includes the correct CSS for the heading font');
+            assert.equal(result.includes('.gh-body-font {font-family: Poppins !important;}'), true, 'Includes the correct CSS for the body font');
         });
 
         it('returns correct CSS with only one import for equal heading and body fonts', function () {
-            const result = customFonts.generateCustomFontCss({heading: 'Chakra Petch', body: 'Chakra Petch'});
+            const result = customFonts.generateCustomFontCss({heading: 'Lora', body: 'Lora'});
 
-            assert.equal(result, '<style>@import url(https://fonts.bunny.net/css?family=chakra-petch:400);.is-body {font-family: Chakra Petch !important;}.is-title, .gh-content [id] {font-family: Chakra Petch !important;}</style>', 'Includes the correct CSS with only one import for equal heading and body fonts');
+            assert.equal(result, '<style>@import url(https://fonts.bunny.net/css?family=lora:400,700);.gh-body-font {font-family: Lora !important;}.gh-heading-font, .gh-content [id] {font-family: Lora !important;}</style>', 'Includes the correct CSS with only one import for equal heading and body fonts');
         });
     });
 });

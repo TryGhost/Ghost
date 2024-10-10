@@ -1,5 +1,5 @@
-export type HeadingFont = 'Space Grotesk' | 'Playfair Display' | 'Chakra Petch' | BodyFont
 export type BodyFont = 'Noto Sans' | 'Poppins' | 'Fira Sans' | 'Inter' | 'Noto Serif' | 'Lora' | 'IBM Plex Serif' | 'EB Garamond' | 'Space Mono' | 'Fira Mono' | 'JetBrains Mono';
+export type HeadingFont = 'Space Grotesk' | 'Playfair Display' | 'Chakra Petch' | BodyFont;
 export type CustomFonts = {heading: HeadingFont[], body: BodyFont[]};
 
 export type FontSelection = {
@@ -72,11 +72,11 @@ export function generateCustomFontCss(fonts: FontSelection) {
     }
 
     if (fonts?.body) {
-        bodyFontCSS = `.is-body {font-family: ${fonts.body} !important;}`;
+        bodyFontCSS = `.gh-body-font {font-family: ${fonts.body} !important;}`;
     }
 
     if (fonts?.heading) {
-        headingFontCSS = `.is-title, .gh-content [id] {font-family: ${fonts.heading} !important;}`;
+        headingFontCSS = `.gh-heading-font, .gh-content [id] {font-family: ${fonts.heading} !important;}`;
     }
 
     return `<style>${fontImports}${bodyFontCSS}${headingFontCSS}</style>`;
