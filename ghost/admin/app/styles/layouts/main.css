@@ -4,7 +4,6 @@
     --mainmenu-color-active: var(--black);
     --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 320px;
-    --mainmenu-padding: var(--main-layout-area-padding);
 }
 
 /* Utils */
@@ -128,7 +127,7 @@
     display: flex;
     align-items: center;
     height: var(--main-layout-vpanel-height);
-    padding: var(--mainmenu-padding);
+    padding: 32px;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
@@ -137,7 +136,8 @@
     margin: 10px 0 0;
     box-shadow: var(--box-shadow-m);
     min-width: 290px;
-    padding: 6px 0;
+    padding: 4px 0;
+    border-radius: 8px;
 }
 
 .gh-nav-menu-dropdown-contributor .dropdown-menu {
@@ -147,17 +147,19 @@
 .gh-nav-menu-dropdown .dropdown-menu>li>a,
 .gh-nav-menu-dropdown .dropdown-menu>li>button {
     font-size: 1.4rem;
-    margin: 0;
+    margin: 1px 4px 0;
     width: unset;
-    padding: 8px 24px 9px;
+    padding: 8px 14px 9px;
+    height: 36px;
+    font-weight: 400;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu>li>button {
-    width: 100%;
+    width: calc(100% - 8px);
 }
 
 .gh-nav-menu-dropdown .dropdown-menu .divider {
-    margin: 6px 0;
+    margin: 4px 0;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu svg {
@@ -177,7 +179,8 @@
 
 .gh-nav-menu-icon {
     flex-shrink: 0;
-    margin-right: 10px;
+    margin-right: 12px;
+    margin-left: -6px;
     width: 32px;
     height: 32px;
     background-color: transparent;
@@ -200,7 +203,7 @@
     font-size: 1.5rem;
     letter-spacing: 0;
     line-height: 1.3em;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--black);
 }
 
@@ -244,7 +247,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding: 12px 24px;
+    padding: 12px 16px;
 }
 
 .gh-account-menu-header .gh-user-avatar {
@@ -273,7 +276,7 @@
     word-break: break-all;
     font-size: 1.5rem;
     letter-spacing: 0;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1;
 }
 
@@ -388,6 +391,7 @@
     list-style: none;
     font-size: 1.4rem;
     line-height: 1.6em;
+    padding: 0 20px;
 }
 
 .gh-nav-list:first-of-type {
@@ -416,14 +420,14 @@
 .gh-nav-list button.main-menu-item {
     display: flex;
     align-items: center;
-    color: var(--darkgrey-l1);
+    color: var(--middarkgrey);
     transition: none;
-    font-weight: 400;
-    padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);
+    font-weight: 500;
+    padding: 7px 14px;
     font-size: 1.4rem;
-    height: 34px;
-    margin: 0;
-    border-radius: 0;
+    height: 36px;
+    margin: 1px 0 0;
+    border-radius: var(--border-radius);
     box-sizing: border-box;
 }
 
@@ -433,10 +437,9 @@
 
 .gh-nav-list .active {
     position: relative;
-    color: var(--mainmenu-color-active);
-    font-weight: 700;
-    /* border: 1px solid var(--black);
-    padding: 7px calc(var(--mainmenu-padding) - 2px) 7px calc(var(--mainmenu-padding) + 5px); */
+    color: var(--black);
+    background-color: var(--whitegrey-l1);
+    font-weight: 600;
 }
 
 .gh-nav-list a:not(.active):hover,
@@ -448,7 +451,7 @@
 
 /* Icons */
 .gh-nav-list svg {
-    margin-right: 17px;
+    margin-right: 11px;
     width: 16px;
     height: 16px;
     /* fill: var(--midgrey); */
@@ -484,19 +487,27 @@
     padding-left: 8px;
     height: 16px;
     position: absolute;
-    left: 8px;
-    top: 9px;
+    left: 10px;
+    top: 10px;
     z-index: 999;
     opacity: 1;
 }
 
-.gh-nav-button-expand.expanded {
+.gh-nav-button-expand {
     padding-left: 9px;
     opacity: 0;
 }
 
-.gh-nav:hover .gh-nav-button-expand {
+.gh-nav-list-posts:hover .gh-nav-button-expand {
     opacity: 1;
+}
+
+.gh-nav-posts-icon {
+    transition: all ease 0.2s !important;
+}
+
+.gh-nav-list-posts:hover .gh-nav-posts-icon {
+    opacity: 0;
 }
 
 .gh-nav-button-expand svg {
@@ -523,7 +534,7 @@
     z-index: 999;
     padding: 10px;
     margin: 0;
-    right: 12px;
+    right: -6px;
     top: 0px;
     opacity: 0;
     transition: opacity ease 0.2s;
@@ -592,7 +603,7 @@
     z-index: 999;
     padding: 2px 7px;
     margin: 0;
-    right: 30px;
+    right: 10px;
     top: 5px;
     background: var(--mainmenu-color-hover-bg);
     color: var(--middarkgrey);
@@ -627,7 +638,7 @@
 
 .gh-nav-view-list a {
     position: relative;
-    padding-left: calc(var(--mainmenu-padding) + 40px);
+    padding-left: 42px;
 }
 
 .gh-nav-viewname {
@@ -646,7 +657,7 @@
     width: 8px;
     height: 8px;
     margin: 0;
-    right: 36px;
+    right: 18px;
 }
 
 .gh-nav-view-list .svg-midgrey .circle {
@@ -699,7 +710,7 @@
 
 .gh-nav-bottom {
     margin: 0;
-    padding: var(--mainmenu-padding);
+    padding: 32px;
 }
 
 .gh-nav-bottom .ember-basic-dropdown-trigger {
@@ -1587,7 +1598,7 @@
     position: relative;
     flex-grow: 1;
     padding-top: 0;
-    padding-bottom: var(--main-layout-area-padding);
+    padding-bottom: 32px;
 }
 
 .gh-canvas-sticky .view-container {
@@ -2043,7 +2054,7 @@ section.gh-ds h2 {
 
 .gh-done-panel {
     margin: 8px 0 24px;
-    padding: 52px var(--main-layout-area-padding) 16px;
+    padding: 52px 32px 16px;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     height: 100%;
     display: flex;

@@ -182,12 +182,11 @@
     /* Global layout values */
     --main-layout-content-sidepadding: 48px;
     --main-layout-content-maxwidth: 1320px;
-    --main-layout-area-padding: 32px;
     --main-layout-vpanel-height: 96px;
     --main-layout-section-vpadding: 3vw;
 
     /* Style values */
-    --border-radius: 5px;
+    --border-radius: 6px;
     --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 

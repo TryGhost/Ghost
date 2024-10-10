@@ -643,6 +643,14 @@ input:focus,
     color: color-mod(var(--middarkgrey-d1));
 }
 
+.gh-nav-list a:hover {
+    background: var(--whitegrey-l2);
+}
+
+.gh-nav-list .active {
+    background: var(--whitegrey-l2);
+}
+
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
 .gh-nav-list .gh-secondary-action:hover span,
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover,
@@ -655,8 +663,9 @@ input:focus,
     background: var(--whitegrey);
 }
 
-.gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
-    background: var(--whitegrey);
+.gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
+.gh-nav-menu-dropdown .dropdown-menu>li>a:hover, .gh-nav-menu-dropdown .dropdown-menu>li>button:hover {
+    background: var(--whitegrey-l2);
 }
 
 .gh-nav-btn-search:hover {
