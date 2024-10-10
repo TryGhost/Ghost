@@ -41,7 +41,7 @@ export function generateCustomFontCss(fonts: FontSelection) {
             url: '@import url(https://fonts.bunny.net/css?family=lora:400,700)'
         },
         'IBM Plex Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)'
         },
         'EB Garamond': {
             url: '@import url(https://fonts.bunny.net/css?family=eb-garamond:400,700)'
