@@ -8,7 +8,6 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
-const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
@@ -44,6 +43,12 @@ function formatDateLong(date, timezone) {
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// This aids with lazyloading the cheerio dependency
+function cheerioLoad(html) {
+    const cheerio = require('cheerio');
+    return cheerio.load(html);
 }
 
 /**
@@ -253,7 +258,7 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const $ = cheerio.load(html);
+        const $ = cheerioLoad(html);
 
         let allSegments = $('[data-gh-segment]')
             .get()
@@ -316,7 +321,7 @@ class EmailRenderer {
             }
         }
 
-        let $ = cheerio.load(html);
+        let $ = cheerioLoad(html);
 
         // Remove parts of the HTML not applicable to the current segment - We do this
         // before rendering the template as the preheader for the email may be generated
@@ -412,7 +417,7 @@ class EmailRenderer {
         // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
         // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
         // Other clients will ignore the width/height attributes and use the inlined CSS instead
-        $ = cheerio.load(html);
+        $ = cheerioLoad(html);
         const originalImageSizes = $('img').get().map((image) => {
             const src = image.attribs.src;
             const width = image.attribs.width;
@@ -429,7 +434,7 @@ class EmailRenderer {
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        $ = cheerio.load(html);
+        $ = cheerioLoad(html);
 
         // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
         const imageTags = $('img').get();
@@ -797,7 +802,7 @@ class EmailRenderer {
         // Actual template
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-    
+
         return this.#renderTemplate(data);
     }
 
