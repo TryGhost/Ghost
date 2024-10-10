@@ -5,8 +5,8 @@ import Heading from '../Heading';
 export interface FormProps {
     title?: string;
     grouped?: boolean;
-    gap?: 'none' | 'sm' | 'md' | 'lg';
-    margins?: 'none' | 'sm' | 'md' | 'lg';
+    gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+    margins?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
     className?: string;
@@ -28,6 +28,7 @@ const Form: React.FC<FormProps> = ({
 }) => {
     let classes = clsx(
         'flex flex-col',
+        (gap === 'xs' && 'gap-4'),
         (gap === 'sm' && 'gap-6'),
         (gap === 'md' && 'gap-8'),
         (gap === 'lg' && 'gap-11')

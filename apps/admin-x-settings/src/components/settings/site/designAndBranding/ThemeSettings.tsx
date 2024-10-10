@@ -20,15 +20,27 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                 const filteredSettings = section.settings.filter(setting => isCustomThemeSettingVisible(setting, section.settings.reduce((obj, {key, value}) => ({...obj, [key]: value}), {}))
                 );
 
+                let previousType: string | undefined;
+
                 return (
-                    <Form key={section.id} className='first-of-type:mt-6' gap='sm' margins='lg' title={section.title}>
-                        {filteredSettings.map(setting => (
-                            <ThemeSetting
-                                key={setting.key}
-                                setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)}
-                                setting={setting}
-                            />
-                        ))}
+                    <Form key={section.id} className='first-of-type:mt-6' gap='xs' margins='lg' title={section.title}>
+                        {filteredSettings.map((setting) => {
+                            let spaceClass = '';
+                            if (setting.type === 'boolean' && previousType !== 'boolean' && previousType !== undefined) {
+                                spaceClass = 'mt-3';
+                            }
+                            if ((setting.type === 'text' || setting.type === 'select') && (previousType === 'text' || previousType === 'select')) { 
+                                spaceClass = 'mt-2';
+                            }
+                            previousType = setting.type;
+                            return <div key={setting.key} className={spaceClass}>
+                                <ThemeSetting
+                                    key={setting.key}
+                                    setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)}
+                                    setting={setting}
+                                />
+                            </div>;
+                        })}
                     </Form>
                 );
             })}
