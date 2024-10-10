@@ -1594,6 +1594,11 @@ Dashboard Resources */
     border: none;
 }
 
+.gh-dashboard-resources .gh-dashboard-resource-box:hover,
+.gh-dashboard-newsletter .gh-dashboard-resource-box:hover {
+    box-shadow: 0 1px 5px -1px rgba(0,0,0,.2);
+}
+
 @media screen and (max-width: 1320px) {
     .gh-dashboard-resources .gh-dashboard-resource-box {
         grid-template-columns: 1fr;
