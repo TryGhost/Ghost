@@ -1,9 +1,8 @@
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../api/settings';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -50,6 +49,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <TextField
                 hint="The name of your site"
                 inputRef={focusRef}
+                maxLength={150}
                 placeholder="Site title"
                 title="Site title"
                 value={title}
@@ -57,6 +57,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <TextField
                 hint="A short description, used in your theme, meta data and search results"
+                maxLength={200}
                 placeholder="Site description"
                 title="Site description"
                 value={description}
@@ -65,11 +66,11 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='The details used to identify your publication around the web'
             isEditing={isEditing}
             keywords={keywords}
-            navid='title-and-description'
+            navid='general'
             saveState={saveState}
             testId='title-and-description'
             title='Title & description'
@@ -78,8 +79,8 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default TitleAndDescription;
+export default withErrorBoundary(TitleAndDescription, 'Title & description');

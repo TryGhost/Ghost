@@ -8,7 +8,7 @@ import {MailEventRepository} from './MailEventRepository';
 /**
  * @see https://documentation.mailgun.com/en/latest/user_manual.html#events-1
  */
-enum EventType {
+enum EventType { // eslint-disable-line no-shadow
     CLICKED = 'clicked',
     COMPLAINED = 'complained',
     DELIVERED = 'delivered',

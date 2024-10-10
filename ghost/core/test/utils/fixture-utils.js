@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
 const {sequence} = require('@tryghost/promise');
@@ -160,7 +160,7 @@ const fixtures = {
         let i;
 
         for (i = 0; i < max; i += 1) {
-            tagName = uuid.v4().split('-')[0];
+            tagName = crypto.randomUUID().split('-')[0];
             tags.push(DataGenerator.forKnex.createBasic({name: tagName, slug: tagName}));
         }
 
@@ -188,13 +188,15 @@ const fixtures = {
                 throw new Error('Trying to add more posts_tags than the number of posts.');
             }
 
-            return Promise.all(posts.slice(0, max).map((post) => {
-                post.tags = post.tags ? post.tags : [];
+            return models.Base.transaction((transacting) => {
+                return Promise.all(posts.slice(0, max).map((post) => {
+                    post.tags = post.tags ? post.tags : [];
 
-                return models.Post.edit({
-                    tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
-                }, _.merge({id: post.id}, context.internal));
-            }));
+                    return models.Post.edit({
+                        tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
+                    }, _.merge({id: post.id, transacting}, context.internal));
+                }));
+            });
         });
     },
 

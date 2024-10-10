@@ -1,4 +1,4 @@
-import {AddComment, Comment} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../AppContext';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -28,7 +28,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
     }
 
     // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
-    let firstCommentsLoadedAt: null | string = null;
+    let firstCommentCreatedAt: null | string = null;
 
     const api = {
         site: {
@@ -122,13 +122,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return json;
             },
             browse({page, postId}: {page: number, postId: string}) {
-                firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
+                let filter = null;
+                if (firstCommentCreatedAt) {
+                    filter = `created_at:<=${firstCommentCreatedAt}`;
+                }
 
-                const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
-                const order = encodeURIComponent('created_at DESC, id DESC');
+                const params = new URLSearchParams();
 
-                const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
-                return makeRequest({
+                params.set('limit', '20');
+                if (filter) {
+                    params.set('filter', filter);
+                }
+                params.set('page', page.toString());
+                const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
+                const response = makeRequest({
                     url,
                     method: 'GET',
                     headers: {
@@ -142,12 +149,22 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                         throw new Error('Failed to fetch comments');
                     }
                 });
+
+                if (!firstCommentCreatedAt) {
+                    response.then((body) => {
+                        const firstComment = body.comments[0];
+                        if (firstComment) {
+                            firstCommentCreatedAt = firstComment.created_at;
+                        }
+                    });
+                }
+
+                return response;
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
-                const filter = encodeURIComponent(`id:>${afterReplyId}`);
-                const order = encodeURIComponent('created_at ASC, id ASC');
+                const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
 
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&order=${order}&filter=${filter}`});
+                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&filter=${filter}`});
                 const res = await makeRequest({
                     url,
                     method: 'GET',
@@ -269,7 +286,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; }>
+        init: (() => {}) as () => Promise<{ member: any; labs: any}>
     };
 
     api.init = async () => {
@@ -277,7 +294,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             api.member.sessionData()
         ]);
 
-        return {member};
+        let labs = {};
+
+        try {
+            const settings = await api.site.settings();
+            if (settings.settings.labs) {
+                Object.assign(labs, settings.settings.labs);
+            }
+        } catch (e) {
+            labs = {};
+        }
+
+        return {member, labs};
     };
 
     return api;
@@ -285,3 +313,4 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
 export default setupGhostApi;
 export type GhostApi = ReturnType<typeof setupGhostApi>;
+export type LabsType = LabsContextType;

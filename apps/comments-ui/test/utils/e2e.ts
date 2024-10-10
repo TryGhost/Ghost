@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
+import {LabsType, MockedApi} from './MockedApi';
 import {Locator, Page} from '@playwright/test';
-import {MockedApi} from './MockedApi';
 import {expect} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
@@ -31,7 +31,7 @@ function authFrameMain() {
         }
 
         if (!d) {
-            return
+            return;
         }
         const data: {uid: string, action: string} = d;
 
@@ -76,7 +76,15 @@ export async function mockAdminAuthFrame({admin, page}) {
     });
 }
 
-export async function initialize({mockedApi, page, bodyStyle, ...options}: {
+export async function mockAdminAuthFrame204({admin, page}) {
+    await page.route(admin + 'auth-frame/', async (route) => {
+        await route.fulfill({
+            status: 204
+        });
+    });
+}
+
+export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '12345678', api = MOCKED_SITE_URL, ...options}: {
     mockedApi: MockedApi,
     page: Page,
     path?: string;
@@ -93,8 +101,18 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
     publication?: string,
     postId?: string,
     bodyStyle?: string,
+    labs?: LabsType
 }) {
     const sitePath = MOCKED_SITE_URL;
+
+    mockedApi.setSettings({
+        settings: {
+            labs: {
+                ...labs
+            }
+        }
+    });
+    
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
@@ -116,6 +134,14 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
         options.postId = mockedApi.postId;
     }
 
+    if (!options.key) {
+        options.key = key;
+    }
+
+    if (!options.api) {
+        options.api = api;
+    }
+
     await page.evaluate((data) => {
         const scriptTag = document.createElement('script');
         scriptTag.src = data.url;
@@ -126,10 +152,23 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
         document.body.appendChild(scriptTag);
     }, {url, options});
 
+    const commentsFrameSelector = 'iframe[title="comments-frame"]';
+
     await page.waitForSelector('iframe');
 
+    // wait for data to be loaded because our tests expect it
+    const iframeElement = await page.locator(commentsFrameSelector).elementHandle();
+    if (!iframeElement) {
+        throw new Error('iframe not found');
+    }
+    const iframe = await iframeElement.contentFrame();
+    if (!iframe) {
+        throw new Error('iframe contentFrame not found');
+    }
+    await iframe.waitForSelector('[data-loaded="true"]');
+
     return {
-        frame: page.frameLocator('iframe[title="comments-frame"]')
+        frame: page.frameLocator(commentsFrameSelector)
     };
 }
 
@@ -173,11 +212,19 @@ export async function setClipboard(page, text) {
 }
 
 export function getModifierKey() {
-    const os = require('os');
+    const os = require('os'); // eslint-disable-line @typescript-eslint/no-var-requires
     const platform = os.platform();
     if (platform === 'darwin') {
         return 'Meta';
     } else {
         return 'Control';
+    }
+}
+
+export function addMultipleComments(api, numComments) {
+    for (let i = 1; i <= numComments; i++) {
+        api.addComment({
+            html: `<p>This is comment ${i}.</p>`
+        });
     }
 }

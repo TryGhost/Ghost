@@ -12,10 +12,10 @@
                     </header>
                 </div>
             {{else}}
-                <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
+                <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
                     <header>
                         <div class="gh-site-icon" style={{site-icon-style}}></div>
-                        <h1>Sign in to {{this.config.blogTitle}}.</h1>
+                        <h1>{{this.config.blogTitle}}</h1>
                     </header>
                     <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
                         <label for="identification">Email address</label>
@@ -73,7 +73,7 @@
                         data-test-button="sign-in" />
                 </form>
 
-                <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
+                <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
             {{/if}}
         </section>
     </div>

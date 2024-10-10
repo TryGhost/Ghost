@@ -26,8 +26,8 @@ module.exports = class MailgunClient {
      * {
      *     'test@example.com': {
      *         name: 'Test User',
-     *         unique_id: '12345abcde',
-     *         unsubscribe_url: 'https://example.com/unsub/me'
+     *         unsubscribe_url: 'https://example.com/unsub/me',
+     *         list_unsubscribe: 'https://example.com/unsub/me'
      *     }
      * }
      */
@@ -70,6 +70,13 @@ module.exports = class MailgunClient {
                 'recipient-variables': JSON.stringify(recipientData)
             };
 
+            // Do we have a custom List-Unsubscribe header set?
+            // (we need a variable for this, as this is a per-email setting)
+            if (Object.keys(recipientData)[0] && recipientData[Object.keys(recipientData)[0]].list_unsubscribe) {
+                messageData['h:List-Unsubscribe'] = '<%recipient.list_unsubscribe%>, <%tag_unsubscribe_email%>';
+                messageData['h:List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+            }
+
             // add a reference to the original email record for easier mapping of mailgun event -> email
             if (message.id) {
                 messageData['v:email-id'] = message.id;
@@ -88,6 +95,11 @@ module.exports = class MailgunClient {
             // enable tracking if turned on for this email
             if (message.track_opens) {
                 messageData['o:tracking-opens'] = true;
+            }
+
+            // set the delivery time if specified
+            if (message.deliveryTime && message.deliveryTime instanceof Date) {
+                messageData['o:deliverytime'] = message.deliveryTime.toUTCString();
             }
 
             const mailgunConfig = this.#getConfig();
@@ -149,9 +161,13 @@ module.exports = class MailgunClient {
             return;
         }
 
-        debug(`fetchEvents: starting fetching first events page`);
+        debug(`[MailgunClient fetchEvents]: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
         const startDate = new Date();
+        const overallStartTime = Date.now();
+
+        let batchCount = 0;
+        let totalBatchTime = 0;
 
         try {
             let page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions);
@@ -159,13 +175,20 @@ module.exports = class MailgunClient {
             // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
             // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
             let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-            debug(`fetchEvents: finished fetching first page with ${events.length} events`);
+            debug(`[MailgunClient fetchEvents]: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
             const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
 
             while (events.length !== 0) {
+                const batchStartTime = Date.now();
                 await batchHandler(events);
+                const batchEndTime = Date.now();
+                const batchDuration = batchEndTime - batchStartTime;
+
+                batchCount += 1;
+                totalBatchTime += batchDuration;
+
                 eventCount += events.length;
 
                 if (eventCount >= maxEvents && (!beginTimestamp || !events[events.length - 1].timestamp || (events[events.length - 1].timestamp.getTime() > beginTimestamp))) {
@@ -173,7 +196,7 @@ module.exports = class MailgunClient {
                 }
 
                 const nextPageId = page.pages.next.page;
-                debug(`fetchEvents: starting fetching next page ${nextPageId}`);
+                debug(`[MailgunClient fetchEvents]: starting fetching next page ${nextPageId}`);
                 page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, {
                     page: nextPageId,
                     ...mailgunOptions
@@ -181,8 +204,14 @@ module.exports = class MailgunClient {
 
                 // We need to cap events at the time we started fetching them (see comment above)
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-                debug(`fetchEvents: finished fetching next page with ${events.length} events`);
+                debug(`[MailgunClient fetchEvents]: finished fetching next page with ${events.length} events`);
             }
+
+            const overallEndTime = Date.now();
+            const totalDuration = overallEndTime - overallStartTime;
+            const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
+
+            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
         } catch (error) {
             logging.error(error);
             throw error;
@@ -311,8 +340,25 @@ module.exports = class MailgunClient {
      * Returns configured batch size
      *
      * @returns {number}
-     */ 
+     */
     getBatchSize() {
         return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
+    }
+
+    /**
+     * Returns the configured target delivery window in seconds
+     * Ghost will attempt to deliver emails evenly distributed over this window
+     * 
+     * Defaults to 0 (no delay) if not set
+     * 
+     * @returns {number}
+     */
+    getTargetDeliveryWindow() {
+        const targetDeliveryWindow = this.#config.get('bulkEmail')?.targetDeliveryWindow;
+        // If targetDeliveryWindow is not set or is not a positive integer, return 0
+        if (targetDeliveryWindow === undefined || !Number.isInteger(parseInt(targetDeliveryWindow)) || parseInt(targetDeliveryWindow) < 0) {
+            return 0;
+        }
+        return parseInt(targetDeliveryWindow);
     }
 };

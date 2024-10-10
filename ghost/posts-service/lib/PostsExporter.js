@@ -96,7 +96,7 @@ class PostsExporter {
                 sends: email?.get('email_count') ?? null,
                 opens: trackOpens ? (email?.get('opened_count') ?? null) : null,
                 clicks: showEmailClickAnalytics ? (post.get('count__clicks') ?? 0) : null,
-                free_signups: membersTrackSources && published ? (post.get('count__signups') ?? 0) : null,
+                signups: membersTrackSources && published ? (post.get('count__signups') ?? 0) : null,
                 paid_conversions: membersTrackSources && paidMembersEnabled && published ? (post.get('count__paid_conversions') ?? 0) : null,
                 feedback_more_like_this: feedbackEnabled ? (post.get('count__positive_feedback') ?? 0) : null,
                 feedback_less_like_this: feedbackEnabled ? (post.get('count__negative_feedback') ?? 0) : null
@@ -126,7 +126,7 @@ class PostsExporter {
             }
 
             if (!membersTrackSources || !membersEnabled) {
-                removeableColumns.push('free_signups', 'paid_conversions');
+                removeableColumns.push('signups', 'paid_conversions');
             } else if (!paidMembersEnabled) {
                 removeableColumns.push('paid_conversions');
             }
@@ -226,9 +226,6 @@ class PostsExporter {
             for (const subfilter of filter.$or) {
                 strings.push(...this.filterToString(subfilter, allLabels, allTiers));
             }
-        } else if (filter.yg) {
-            // Single filter grouped in brackets
-            strings.push(...this.filterToString(filter.yg, allLabels, allTiers));
         } else {
             for (const key of Object.keys(filter)) {
                 if (key === 'label') {

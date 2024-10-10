@@ -198,7 +198,7 @@ describe('Acceptance: Signup', function () {
         expect(find('.gh-alert-content').textContent).to.have.string('Invalid token');
     });
 
-    it('redirects with alert on non-existant or expired token', async function () {
+    it('redirects with alert on non-existent or expired token', async function () {
         this.server.get('/authentication/invitation', function () {
             return {
                 invitation: [{valid: false}]

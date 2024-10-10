@@ -807,6 +807,13 @@
                     "description": "Internal frontend integration",
                     "type": "internal",
                     "api_keys": [{"type": "content"}]
+                },
+                {
+                    "slug": "ghost-core-content",
+                    "name": "Ghost Core Content API",
+                    "description": "Internal Content API integration for Admin access",
+                    "type": "core",
+                    "api_keys": [{"type": "content"}]
                 }
             ]
         }
@@ -922,7 +929,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Author": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
@@ -939,7 +946,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read"],
@@ -966,20 +973,6 @@
             },
             "entries": {
                 "coming-soon": ["News"]
-            }
-        },
-        {
-            "from": {
-                "model": "Collection",
-                "match": "slug",
-                "relation": "posts"
-            },
-            "to": {
-                "model": "Post",
-                "match": "slug"
-            },
-            "entries": {
-                "latest": ["coming-soon"]
             }
         },
         {

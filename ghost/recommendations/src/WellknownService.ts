@@ -1,5 +1,5 @@
-import {Recommendation} from "./Recommendation"
-import fs from "fs/promises";
+import {Recommendation} from './Recommendation';
+import fs from 'fs/promises';
 import _path from 'path';
 
 type UrlUtils = {
@@ -14,8 +14,8 @@ type Options = {
 }
 
 export class WellknownService {
-    dir: string
-    urlUtils: UrlUtils
+    dir: string;
+    urlUtils: UrlUtils;
 
     constructor({dir, urlUtils}: Options) {
         this.dir = dir;
@@ -25,10 +25,9 @@ export class WellknownService {
     #formatRecommendation(recommendation: Recommendation) {
         return {
             url: recommendation.url,
-            reason: recommendation.reason,
             updated_at: (recommendation.updatedAt ?? recommendation.createdAt).toISOString(),
-            created_at: (recommendation.createdAt).toISOString(),
-        }
+            created_at: (recommendation.createdAt).toISOString()
+        };
     }
 
     getPath() {

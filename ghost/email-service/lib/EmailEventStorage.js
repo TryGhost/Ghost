@@ -5,11 +5,13 @@ class EmailEventStorage {
     #db;
     #membersRepository;
     #models;
+    #emailSuppressionList;
 
-    constructor({db, models, membersRepository}) {
+    constructor({db, models, membersRepository, emailSuppressionList}) {
         this.#db = db;
         this.#models = models;
         this.#membersRepository = membersRepository;
+        this.#emailSuppressionList = emailSuppressionList;
     }
 
     async handleDelivered(event) {
@@ -111,7 +113,16 @@ class EmailEventStorage {
     }
 
     async handleUnsubscribed(event) {
-        return this.unsubscribeFromNewsletters(event);
+        try {
+            // Unsubscribe member from the specific newsletter
+            const newsletters = await this.findNewslettersToKeep(event);
+            await this.#membersRepository.update({newsletters}, {id: event.memberId});
+
+            // Remove member from Mailgun's suppression list
+            await this.#emailSuppressionList.removeUnsubscribe(event.email);
+        } catch (err) {
+            logging.error(err);
+        }
     }
 
     async handleComplained(event) {
@@ -128,11 +139,22 @@ class EmailEventStorage {
         }
     }
 
-    async unsubscribeFromNewsletters(event) {
+    async findNewslettersToKeep(event) {
         try {
-            await this.#membersRepository.update({newsletters: []}, {id: event.memberId});
+            const member = await this.#membersRepository.get({email: event.email}, {
+                withRelated: ['newsletters']
+            });
+            const existingNewsletters = member.related('newsletters');
+
+            const email = await this.#models.Email.findOne({id: event.emailId});
+            const newsletterToRemove = email.get('newsletter_id');
+
+            return existingNewsletters.models.filter(newsletter => newsletter.id !== newsletterToRemove).map((n) => {
+                return {id: n.id};
+            });
         } catch (err) {
             logging.error(err);
+            return [];
         }
     }
 }

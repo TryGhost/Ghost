@@ -3,8 +3,6 @@ const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
-// @ts-ignore
-const LeakyBucket = require('leaky-bucket');
 
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -41,10 +39,19 @@ module.exports = class StripeAPI {
     /**
      * StripeAPI
      */
-    constructor() {
+    constructor(deps) {
         /** @type {Stripe} */
         this._stripe = null;
         this._configured = false;
+        this.labs = deps.labs;
+    }
+
+    get PAYMENT_METHOD_TYPES() {
+        if (this.labs.isSet('additionalPaymentMethods')) {
+            return undefined;
+        } else {
+            return ['card'];
+        }
     }
 
     get configured() {
@@ -69,6 +76,10 @@ module.exports = class StripeAPI {
             this._configured = false;
             return;
         }
+
+        // Lazyloaded to protect sites without Stripe configured
+        const LeakyBucket = require('leaky-bucket');
+
         this._stripe = new Stripe(config.secretKey, {
             apiVersion: STRIPE_API_VERSION
         });
@@ -458,7 +469,7 @@ module.exports = class StripeAPI {
         }
 
         let stripeSessionOptions = {
-            payment_method_types: ['card'],
+            payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
@@ -488,6 +499,10 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer_email = customerEmail;
         }
 
+        if (customerId && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
+
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
@@ -510,6 +525,14 @@ module.exports = class StripeAPI {
         /**
          * @type {Stripe.Checkout.SessionCreateParams}
          */
+
+        // TODO - add it higher up the stack to the metadata object.
+        // add ghost_donation key to metadata object
+        metadata = {
+            ghost_donation: true,
+            ...metadata
+        };
+
         const stripeSessionOptions = {
             mode: 'payment',
             success_url: successUrl || this._config.checkoutSessionSuccessUrl,
@@ -534,8 +557,23 @@ module.exports = class StripeAPI {
             line_items: [{
                 price: priceId,
                 quantity: 1
-            }]
+            }],
+            custom_fields: [
+                {
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                }
+            ]
         };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
@@ -545,14 +583,16 @@ module.exports = class StripeAPI {
     /**
      * @param {ICustomer} customer
      * @param {object} options
-     *
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {string} options.currency - 3-letter ISO code in lowercase, e.g. `usd`
      * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
      */
     async createCheckoutSetupSession(customer, options) {
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.checkout.sessions.create({
             mode: 'setup',
-            payment_method_types: ['card'],
+            payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSetupSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSetupSessionCancelUrl,
             customer_email: customer.email,
@@ -560,7 +600,11 @@ module.exports = class StripeAPI {
                 metadata: {
                     customer_id: customer.id
                 }
-            }
+            },
+
+            // Note: this is required for dynamic payment methods
+            // https://docs.stripe.com/api/checkout/sessions/create#create_checkout_session-currency
+            currency: this.labs.isSet('additionalPaymentMethods') ? options.currency : undefined
         });
 
         return session;
@@ -675,20 +719,23 @@ module.exports = class StripeAPI {
      * @param {string} subscriptionId - The ID of the Subscription to modify
      * @param {string} id - The ID of the SubscriptionItem
      * @param {string} price - The ID of the new Price
+     * @param {object} [options={}] - Additional data to set on the subscription object
+     * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='always_invoice'] - The proration behavior to use. See [Stripe docs](https://docs.stripe.com/api/subscriptions/update#update_subscription-proration_behavior) for more info
+     * @param {string} [options.cancellationReason=null] - The user defined cancellation reason
      *
      * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
-    async updateSubscriptionItemPrice(subscriptionId, id, price) {
+    async updateSubscriptionItemPrice(subscriptionId, id, price, options = {}) {
         await this._rateLimitBucket.throttle();
         const subscription = await this._stripe.subscriptions.update(subscriptionId, {
-            proration_behavior: 'always_invoice',
+            proration_behavior: options.prorationBehavior || 'always_invoice',
             items: [{
                 id,
                 price
             }],
             cancel_at_period_end: false,
             metadata: {
-                cancellation_reason: null
+                cancellation_reason: options.cancellationReason ?? null
             }
         });
         return subscription;
@@ -757,6 +804,18 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         return await this._stripe.subscriptions.update(subscription, {
             default_payment_method: paymentMethod
+        });
+    }
+
+    /**
+     * @param {string} id - The ID of the subscription to cancel the trial for
+     *
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     */
+    async cancelSubscriptionTrial(id) {
+        await this._rateLimitBucket.throttle();
+        return this._stripe.subscriptions.update(id, {
+            trial_end: 'now'
         });
     }
 };

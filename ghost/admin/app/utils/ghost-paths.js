@@ -19,8 +19,10 @@ export default function () {
     let adminRoot = `${subdir}/ghost/`;
     let assetRoot = `${subdir}/ghost/assets/`;
     let apiRoot = `${subdir}/ghost/api/admin`;
+    let assetRootWithHost = `${window.location.protocol}//${window.location.host}${assetRoot}`;
 
     return {
+        assetRootWithHost,
         adminRoot,
         assetRoot,
         apiRoot,

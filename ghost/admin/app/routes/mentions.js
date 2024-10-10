@@ -39,7 +39,7 @@ export default class MentionsRoute extends AuthenticatedRoute {
         let extension = undefined;
 
         if (params.post_id) {
-            paginationSettings.filter = `resource_id:${params.post_id}+resource_type:post`;
+            paginationSettings.filter = `resource_id:'${params.post_id}'+resource_type:post`;
         } else {
             // Only return mentions with the same source once
             paginationSettings.unique = true;

@@ -189,8 +189,8 @@
     <div class="gh-expandable-block">
         <div class="gh-expandable-header">
             <div>
-                <h4 class="gh-expandable-title">Twitter card</h4>
-                <p class="gh-expandable-description">Customized structured data for Twitter.</p>
+                <h4 class="gh-expandable-title">X card</h4>
+                <p class="gh-expandable-description">Customized structured data for X.</p>
             </div>
             <button type="button" class="gh-btn gh-btn-expand" {{on "click" (toggle "twitterMetadataOpen" this)}}><span>{{if this.twitterMetadataOpen "Close" "Expand"}}</span></button>
         </div>
@@ -201,10 +201,10 @@
                 <div class="gh-twitter-settings">
                     <div class="gh-twitter-settings-left flex-basis-1-2-m flex-basis-2-3-l">
                         <GhFormGroup class="gh-tag-image-uploader" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="twitterImage">
-                            <label for="twitter-image">Twitter image</label>
+                            <label for="twitter-image">X image</label>
                             <GhImageUploaderWithPreview
                                 @image={{@tag.twitterImage}}
-                                @text="Add Twitter image"
+                                @text="Add X image"
                                 @allowUnsplash={{true}}
                                 @update={{fn this.setTagProperty "twitterImage"}}
                                 @remove={{fn this.setTagProperty "twitterImage" ""}}
@@ -212,7 +212,7 @@
                         </GhFormGroup>
 
                         <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="twitterTitle">
-                            <label for="twitter-title">Twitter title</label>
+                            <label for="twitter-title">X title</label>
                             <input
                                 type="text"
                                 id="twitter-title"
@@ -228,7 +228,7 @@
                         </GhFormGroup>
 
                         <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="twitterDesctiption">
-                            <label for="twitter-description">Twitter description</label>
+                            <label for="twitter-description">X description</label>
                             <textarea
                                 id="twitter-description"
                                 name="twitterDescription"
@@ -243,10 +243,10 @@
                     </div>
 
                     <div class="flex-basis-1-2-m flex-basis-1-3-l">
-                        <label>Twitter preview</label>
+                        <label>X preview</label>
                         <div class="gh-twitter-container">
                             <div class="flex ma4">
-                                <span>{{svg-jar "social-twitter" class="social-icon"}}</span>
+                                <span>{{svg-jar "social-x" class="social-icon"}}</span>
                                 <div class="w-100">
                                     <span class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</span>
                                     <span class="gh-social-og-time">12 hrs</span>

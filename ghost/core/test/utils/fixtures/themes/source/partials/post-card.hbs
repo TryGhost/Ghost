@@ -1,0 +1,37 @@
+<article class="gh-card {{post_class}}{{#unless @custom.show_images_in_feed}} no-image{{/unless}}">
+    <a class="gh-card-link" href="{{url}}">
+        {{#if feature_image}}
+            <figure class="gh-card-image">
+                <img
+                    srcset="{{img_url feature_image size="xs" format="webp"}} 160w,
+                            {{img_url feature_image size="s" format="webp"}} 320w,
+                            {{img_url feature_image size="m" format="webp"}} 600w,
+                            {{img_url feature_image size="l" format="webp"}} 960w,
+                            {{img_url feature_image size="xl" format="webp"}} 1200w,
+                            {{img_url feature_image size="xxl" format="webp"}} 2000w"
+                    sizes="{{#if imageSizes}}{{imageSizes}}{{else}}320px{{/if}}"
+                    src="{{img_url feature_image size="m"}}"
+                    alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}"
+                    {{#if lazyLoad}}loading="lazy"{{/if}}
+                >
+            </figure>
+        {{/if}}
+        <div class="gh-card-wrapper">
+            {{#if primary_tag}}
+                <p class="gh-card-tag">{{primary_tag.name}}</p>
+            {{/if}}
+            <h3 class="gh-card-title is-title">{{title}}</h3>
+            {{#if excerpt}}
+                <p class="gh-card-excerpt is-body">{{excerpt}}</p>
+            {{/if}}
+            <footer class="gh-card-meta"><!--
+             -->{{#if @custom.show_author}}
+                    <span class="gh-card-author">By {{#foreach authors}}{{#if @first}}{{name}}{{else}}, {{name}}{{/if}}{{/foreach}}</span>
+                {{/if}}
+                {{#if @custom.show_publish_date}}
+                    <time class="gh-card-date" datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time>
+                {{/if}}<!--
+         --></footer>
+        </div>
+    </a>
+</article>

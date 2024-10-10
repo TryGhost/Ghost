@@ -40,7 +40,41 @@ async function fetchOrCreatePersonalToken(userId) {
     return token;
 }
 
-module.exports = {
+function shouldInvalidateCacheAfterChange(model) {
+    // Model attributes that should trigger cache invalidation when changed
+    // (because they affect the frontend)
+    const publicAttrs = [
+        'name',
+        'slug',
+        'profile_image',
+        'cover_image',
+        'bio',
+        'website',
+        'location',
+        'facebook',
+        'twitter',
+        'status',
+        'visibility',
+        'meta_title',
+        'meta_description'
+    ];
+
+    if (model.wasChanged() === false) {
+        return false;
+    }
+
+    // Check if any of the changed attributes are public
+    for (const attr of Object.keys(model._changed)) {
+        if (publicAttrs.includes(attr) === true) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'users',
 
     browse: {
@@ -137,10 +171,8 @@ module.exports = {
                         }));
                     }
 
-                    if (model.wasChanged()) {
-                        this.headers.cacheInvalidate = true;
-                    } else {
-                        this.headers.cacheInvalidate = false;
+                    if (shouldInvalidateCacheAfterChange(model)) {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
 
                     return model;
@@ -256,3 +288,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

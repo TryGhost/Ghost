@@ -17,7 +17,7 @@ export default defineConfig({
     workers: process.env.CI ? '100%' : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: 'html',
-    timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 10000,
+    timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 20000,
     expect: {
         timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 5000
     },
@@ -57,6 +57,6 @@ export default defineConfig({
         command: `yarn dev:test`,
         url: `http://localhost:${E2E_PORT}/comments-ui.min.js`,
         reuseExistingServer: !process.env.CI,
-        timeout: 10000
+        timeout: 20000
     }
 });

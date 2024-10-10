@@ -14,7 +14,6 @@ describe('Mentions API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        mockManager.mockLabsEnabled('webmentions');
         // TODO: test various users' access
         await fixtureManager.init('users','mentions');
         await agent.loginAsOwner();
@@ -30,11 +29,5 @@ describe('Mentions API', function () {
             .matchBodySnapshot({
                 mentions: new Array(2).fill(matchMentionShallowIncludes)
             });
-    });
-
-    it('Cannot browse when lab disabled', async function () {
-        mockManager.mockLabsDisabled('webmentions');
-        await agent.get('mentions/')
-            .expectStatus(404);
     });
 });

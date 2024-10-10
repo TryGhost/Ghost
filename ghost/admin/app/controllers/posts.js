@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import SelectionList from 'ghost-admin/utils/selection-list';
+import SelectionList from 'ghost-admin/components/posts-list/selection-list';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -37,7 +37,7 @@ const VISIBILITIES = [{
     value: 'members'
 }, {
     name: 'Paid members-only',
-    value: 'paid'
+    value: '[paid,tiers]'
 }];
 
 const ORDERS = [{
@@ -83,14 +83,6 @@ export default class PostsController extends Controller {
         super(...arguments);
 
         Object.assign(this, DEFAULT_QUERY_PARAMS.posts);
-    }
-
-    get postsInfinityModel() {
-        return this.model;
-    }
-
-    get totalPosts() {
-        return this.model.meta?.pagination?.total ?? 0;
     }
 
     get showingAll() {
@@ -172,6 +164,6 @@ export default class PostsController extends Controller {
 
     @action
     openEditor(post) {
-        this.router.transitionTo('editor.edit', 'post', post.id);
+        this.router.transitionTo('lexical-editor.edit', 'post', post.id);
     }
 }

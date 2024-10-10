@@ -209,6 +209,10 @@ module.exports = {
         return apiFramework.pipeline(require('./recommendations'), localUtils);
     },
 
+    get incomingRecommendations() {
+        return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *

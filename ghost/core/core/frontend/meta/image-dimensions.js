@@ -1,4 +1,6 @@
 const _ = require('lodash');
+const {getImageWithSize} = require('../utils/images');
+const config = require('../../shared/config');
 const imageSizeCache = require('../../server/lib/image').cachedImageSizeFromUrl;
 
 /**
@@ -9,23 +11,28 @@ const imageSizeCache = require('../../server/lib/image').cachedImageSizeFromUrl;
  * called to receive image width and height
  */
 async function getImageDimensions(metaData) {
+    const MAX_SOCIAL_IMG_WIDTH = config.get('imageOptimization:internalImageSizes:social-image:width') || 1200;
+
     const fetch = {
         coverImage: imageSizeCache.getCachedImageSizeFromUrl(metaData.coverImage.url),
         authorImage: imageSizeCache.getCachedImageSizeFromUrl(metaData.authorImage.url),
         ogImage: imageSizeCache.getCachedImageSizeFromUrl(metaData.ogImage.url),
+        twitterImage: imageSizeCache.getCachedImageSizeFromUrl(metaData.twitterImage),
         logo: imageSizeCache.getCachedImageSizeFromUrl(metaData.site.logo.url)
     };
 
-    const [coverImage, authorImage, ogImage, logo] = await Promise.all([
+    const [coverImage, authorImage, ogImage, twitterImage, logo] = await Promise.all([
         fetch.coverImage,
         fetch.authorImage,
         fetch.ogImage,
+        fetch.twitterImage,
         fetch.logo
     ]);
     const imageObj = {
         coverImage,
         authorImage,
         ogImage,
+        twitterImage,
         logo
     };
 
@@ -53,12 +60,33 @@ async function getImageDimensions(metaData) {
                     });
                 }
             } else {
-                _.assign(metaData[value], {
-                    dimensions: {
-                        width: key.width,
-                        height: key.height
+                if (key.width > MAX_SOCIAL_IMG_WIDTH) {
+                    const ratio = key.height / key.width;
+                    key.width = MAX_SOCIAL_IMG_WIDTH;
+                    key.height = Math.round(MAX_SOCIAL_IMG_WIDTH * ratio);
+
+                    const sizeOptions = {
+                        requestedSize: `social-image`,
+                        imageSizes: config.get('imageOptimization:internalImageSizes')
+                    };
+
+                    if (typeof metaData[value] === 'string') {
+                        const url = getImageWithSize(metaData[value], sizeOptions);
+                        metaData[value] = url;
+                    } else {
+                        const url = getImageWithSize(metaData[value].url, sizeOptions);
+                        _.assign(metaData[value], {url});
                     }
-                });
+                }
+
+                if (typeof metaData[value] === 'object') {
+                    _.assign(metaData[value], {
+                        dimensions: {
+                            width: key.width,
+                            height: key.height
+                        }
+                    });
+                }
             }
         }
     });

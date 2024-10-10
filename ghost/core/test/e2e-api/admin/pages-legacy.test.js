@@ -38,7 +38,7 @@ describe('Pages API', function () {
         jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
     });
 
-    it('Can retrieve pages with lexical format', async function () {
+    it('Can retrieve pages with just lexical format', async function () {
         const res = await request.get(localUtils.API.getApiQuery('pages/?formats=lexical'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -121,7 +121,7 @@ describe('Pages API', function () {
         res.body.pages.length.should.eql(1);
         const [returnedPage] = res.body.pages;
 
-        const additionalProperties = ['lexical', 'reading_time'];
+        const additionalProperties = ['reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
         should.equal(returnedPage.mobiledoc, page.mobiledoc);
@@ -172,7 +172,7 @@ describe('Pages API', function () {
         res.body.pages.length.should.eql(1);
         const [returnedPage] = res.body.pages;
 
-        const additionalProperties = ['lexical', 'html', 'reading_time'];
+        const additionalProperties = ['html', 'reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
         should.equal(returnedPage.mobiledoc, null);

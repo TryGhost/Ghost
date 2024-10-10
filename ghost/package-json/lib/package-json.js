@@ -132,8 +132,13 @@ async function readPackages(packagePath) {
         }
 
         if (file.isSymbolicLink()) {
-            const packageFileOrig = await fs.stat(join(packagePath, file.name));
-            return packageFileOrig.isDirectory();
+            try {
+                const packageFileOrig = await fs.stat(join(packagePath, file.name));
+                return packageFileOrig.isDirectory();
+            } catch (err) {
+                // if there's an error reading the symlink, we should just return false
+                return false;
+            }
         }
 
         // Check the remaining items to ensure they are a directory
@@ -144,7 +149,7 @@ async function readPackages(packagePath) {
             const absolutePath = join(packagePath, packageFile.name);
             return processPackage(absolutePath, packageFile.name);
         })));
-    
+
     return _.keyBy(packages, 'name');
 }
 

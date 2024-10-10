@@ -1,5 +1,17 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
 
+export const ALL_POST_INCLUDES = [
+    'tags',
+    'authors',
+    'authors.roles',
+    'email',
+    'tiers',
+    'newsletter',
+    'count.clicks',
+    'post_revisions',
+    'post_revisions.author'
+].join(',');
+
 export default class Post extends ApplicationAdapter {
     buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
         const url = this.buildURL(modelName, id, snapshot, requestType, query);
@@ -29,7 +41,14 @@ export default class Post extends ApplicationAdapter {
             const convertToLexical = snapshot.adapterOptions.convertToLexical;
             parsedUrl.searchParams.append('convert_to_lexical', convertToLexical);
         }
-        
+
+        // on create/update we need to explicitly request post_revisions to be included
+        // so we can compare and create a new one later if needed but that means we
+        // have to specify every post include option
+        if (requestType === 'createRecord' || requestType === 'updateRecord') {
+            parsedUrl.searchParams.append('include', ALL_POST_INCLUDES);
+        }
+
         return parsedUrl.toString();
     }
 

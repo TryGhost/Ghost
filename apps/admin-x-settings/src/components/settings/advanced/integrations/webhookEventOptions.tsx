@@ -1,4 +1,4 @@
-import {SelectOptionGroup} from '../../../../admin-x-ds/global/form/Select';
+import {SelectOptionGroup} from '@tryghost/admin-x-design-system';
 
 const webhookEventOptions: SelectOptionGroup[] = [
     {

@@ -11,10 +11,12 @@ class EmailBatchesImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const emails = await this.transaction.select('id', 'created_at').from('emails');
+        const emails = await this.transaction.select('id', 'created_at', 'email_count').from('emails');
 
-        // TODO: Generate >1 batch per email
-        await this.importForEach(emails, quantity ?? emails.length);
+        // 1 batch per 1000 recipients
+        await this.importForEach(emails, quantity ?? (() => {
+            return Math.ceil(this.model.email_count / 1000);
+        }));
     }
 
     generate() {
@@ -23,7 +25,7 @@ class EmailBatchesImporter extends TableImporter {
         latestUpdatedDate.setHours(latestUpdatedDate.getHours() + 1);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             email_id: this.model.id,
             provider_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.datatype.hexadecimal({length: 16, prefix: '', case: 'lower'})}@m.example.com`,
             status: 'submitted', // TODO: introduce failures

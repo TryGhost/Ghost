@@ -1,4 +1,4 @@
-import {DonationPaymentEvent} from "./DonationPaymentEvent";
+import {DonationPaymentEvent} from './DonationPaymentEvent';
 
 export type DonationRepository = {
     save(event: DonationPaymentEvent): Promise<void>;

@@ -875,5 +875,36 @@ describe('Service', function () {
                 }]
             ).should.be.resolved();
         });
+
+        it('does not expose hidden settings in the public cache', async function () {
+            const HIDDEN_SETTING_VALUE = null;
+
+            const settingName = 'foo';
+            const settingDefinition = {
+                type: 'select',
+                options: ['Foo', 'Bar', 'Baz'],
+                default: 'Foo',
+                visibility: 'some_other_setting:bar'
+            };
+
+            await service.activateTheme('test', {
+                name: 'test',
+                customSettings: {
+                    [settingName]: settingDefinition
+                }
+            });
+
+            await service.updateSettings(
+                [{
+                    key: settingName,
+                    value: 'Foo',
+                    ...settingDefinition
+                }]
+            );
+
+            cache.getAll().should.deepEqual({
+                [settingName]: HIDDEN_SETTING_VALUE
+            });
+        });
     });
 });

@@ -1,19 +1,56 @@
 import Component from '@glimmer/component';
+import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+
+function hasParagraphWrapper(html) {
+    const domParser = new DOMParser();
+    const doc = domParser.parseFromString(html, 'text/html');
+
+    return doc.body?.firstElementChild?.tagName === 'P';
+}
 
 export default class GhEditorFeatureImageComponent extends Component {
     @service settings;
 
     @tracked isEditingAlt = false;
-    @tracked isHovered = false;
     @tracked captionInputFocused = false;
     @tracked showUnsplashSelector = false;
     @tracked canDrop = false;
+    @tracked tkCount = 0;
 
-    get hideButton() {
-        return !this.canDrop && !this.isHovered && !this.args.forceButtonDisplay;
+    get caption() {
+        const content = this.args.caption;
+        if (!content) {
+            return null;
+        }
+        // wrap in a paragraph, so it gets parsed correctly
+        return hasParagraphWrapper(content) ? content : `<p>${content}</p>`;
+    }
+
+    @action
+    setCaption(html) {
+        const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
+        this.args.updateCaption(cleanedHtml);
+    }
+
+    @action
+    registerEditorAPI(API) {
+        this.editorAPI = API;
+    }
+
+    @action
+    focusCaptionEditor() {
+        if (this.editorAPI) {
+            this.editorAPI.focusEditor({position: 'bottom'});
+        }
+    }
+
+    @action
+    handleCaptionBlur() {
+        this.captionInputFocused = false;
+        this.args.handleCaptionBlur();
     }
 
     @action
@@ -91,5 +128,13 @@ export default class GhEditorFeatureImageComponent extends Component {
     saveImage(setFiles, imageFile) {
         this.canDrop = false;
         setFiles([imageFile]);
+    }
+
+    @action
+    onTKCountChange(count) {
+        if (this.args.onTKCountChange) {
+            this.tkCount = count;
+            this.args.onTKCountChange(count);
+        }
     }
 }

@@ -21,7 +21,7 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
+const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -66,11 +66,22 @@ async function getNewsletters() {
     return (await models.Newsletter.findAll({filter: 'status:active'})).models;
 }
 
+async function createMember(data) {
+    const member = await models.Member.add({
+        name: '',
+        email_disabled: false,
+        ...data
+    });
+
+    return member;
+}
+
 const newsletterSnapshot = {
-    id: anyObjectId,
-    uuid: anyUuid,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+    id: anyObjectId
+};
+
+const attributionSnapshot = {
+    id: null
 };
 
 const subscriptionSnapshot = {
@@ -122,6 +133,7 @@ function buildMemberWithIncludesSnapshot(options) {
         uuid: anyUuid,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
+        attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
         labels: anyArray
@@ -142,20 +154,29 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
-    labels: anyArray,
-    newsletters: anyArray
+    labels: anyArray
 };
 
-const buildMemberMatcherShallowIncludesWithTiers = (tiersCount) => {
-    let tiers = anyArray;
-    if (tiersCount) {
-        tiers = new Array(tiers).fill(tierMatcher);
+/**
+ *
+ * @param {number} tiersCount
+ * @param {number} newsletterCount
+ * @returns
+ */
+const buildMemberMatcherShallowIncludesWithTiers = (tiersCount, newsletterCount) => {
+    const matcher = {
+        ...memberMatcherShallowIncludes
+    };
+
+    if (tiersCount !== undefined) {
+        matcher.tiers = new Array(tiersCount).fill(tierMatcher);
     }
 
-    return {
-        ...memberMatcherShallowIncludes,
-        tiers
-    };
+    if (newsletterCount !== undefined) {
+        matcher.newsletters = new Array(newsletterCount).fill(newsletterSnapshot);
+    }
+
+    return matcher;
 };
 
 let agent;
@@ -173,6 +194,7 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -245,7 +267,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -288,7 +310,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -331,7 +353,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -374,7 +396,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -414,7 +436,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -485,7 +507,16 @@ describe('Members API', function () {
             .get('/members/')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -493,12 +524,73 @@ describe('Members API', function () {
             });
     });
 
+    it('Can browse with limit', async function () {
+        await agent
+            .get('/members/?limit=3')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
+    it('Can browse with more than maximum allowed limit', async function () {
+        await agent
+            .get('/members/?limit=300')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
+    it('Can browse with limit=all', async function () {
+        await agent
+            .get('/members/?limit=all')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
     it('Can browse with filter', async function () {
         await agent
             .get('/members/?filter=label:label-1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -511,7 +603,11 @@ describe('Members API', function () {
             .get('/members/?filter=signup:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(3).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -519,12 +615,12 @@ describe('Members API', function () {
             });
     });
 
-    it('Can filter by signup attribution', async function () {
+    it('Can filter by conversion attribution', async function () {
         await agent
             .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -537,7 +633,7 @@ describe('Members API', function () {
             .get('/members/?search=member1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -550,7 +646,13 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -564,7 +666,12 @@ describe('Members API', function () {
             .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(4).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -577,7 +684,7 @@ describe('Members API', function () {
             .get(`/members/?filter=name:~'Venkman'`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 0))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -590,7 +697,13 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid&include=emailRecipients')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -608,7 +721,16 @@ describe('Members API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
             })
             .expect(({body}) => {
                 const {members} = body;
@@ -624,7 +746,16 @@ describe('Members API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
             })
             .expect(({body}) => {
                 const {members} = body;
@@ -637,7 +768,7 @@ describe('Members API', function () {
             .get('members/?search=egg')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -650,7 +781,7 @@ describe('Members API', function () {
             .get('members/?search=MEMBER2')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -663,7 +794,7 @@ describe('Members API', function () {
             .get('members/?search=egon&paid=true')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -691,7 +822,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -704,7 +835,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -717,7 +848,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers())
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -741,7 +872,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -791,7 +922,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -813,7 +944,7 @@ describe('Members API', function () {
             .body({members: [memberFailLimit]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -834,6 +965,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         await configUtils.restore();
+        settingsCache.set('email_verification_required', false);
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -947,6 +1079,85 @@ describe('Members API', function () {
             .expectStatus(200);
     });
 
+    it('Does not send a signup email when email verification is required', async function () {
+        mockManager.mockSetting('email_verification_required', true);
+
+        const member = {
+            name: 'Do not Send Me Confirmation',
+            email: 'member_not_getting_confirmation@test.com',
+            newsletters: [
+                newsletters[0],
+                newsletters[1]
+            ]
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        emailMockReceiver
+            .assertSentEmailCount(0);
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                },
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id
+                }
+            ]
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
+    });
+
     it('Add should fail when passing incorrect email_type query parameter', async function () {
         const newMember = {
             name: 'test',
@@ -1029,7 +1240,7 @@ describe('Members API', function () {
             .body({members: [initialMember]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1044,7 +1255,7 @@ describe('Members API', function () {
             .body({members: [compedPayload]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1))
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1558,6 +1769,29 @@ describe('Members API', function () {
         should.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
     });
 
+    it('Cannot add unknown tiers to a member', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[0].id;
+        const unknownProductId = 'blahblahid';
+
+        sinon.stub(logging, 'error');
+
+        await agent
+            .put(`/members/${memberId}/`)
+            .body({
+                members: [{
+                    tiers: [{
+                        id: unknownProductId
+                    }]
+                }]
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
         if (!memberWithPaidSubscription) {
             // Previous test failed
@@ -1691,7 +1925,7 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1723,7 +1957,7 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1822,7 +2056,7 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1855,7 +2089,7 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1889,7 +2123,7 @@ describe('Members API', function () {
 
         // Check activity feed
         const {body: eventsBody} = await agent
-            .get(`/members/events?filter=data.member_id:${newMember.id}`)
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -1956,7 +2190,7 @@ describe('Members API', function () {
             .body({members: [memberToCreate]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2007,7 +2241,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
+                    newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
             })
@@ -2028,7 +2262,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
+                    newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
             })
@@ -2036,6 +2270,150 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    it('can change the email address', async function () {
+        const memberToChange = {
+            name: 'Jon Snow',
+            email: 'jon.snow@test.com',
+            newsletters: []
+        };
+
+        const memberChanged = {
+            email: 'aegon.targaryen@test.com'
+        };
+
+        // Create member
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [memberToChange]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        // Update email address
+        const newMember = body.members[0];
+        await agent
+            .put(`/members/${newMember.id}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Check member events
+        await assertMemberEvents({
+            eventType: 'MemberEmailChangeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            ]
+        });
+
+        // Check activity feed
+        const {body: eventsBody} = await agent
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const events = eventsBody.events;
+
+        matchArrayWithoutOrder(events, [
+            {
+                type: 'email_change_event',
+                data: {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            },
+            {
+                type: 'signup_event'
+            }
+        ]);
+    });
+
+    describe('email_disabled', function () {
+        const testMemberId = '6543c13c13575e086a06b222';
+        const suppressedEmail = 'suppressed@email.com';
+        const okEmail = 'ok@email.com';
+
+        let testMember;
+        let suppression;
+
+        beforeEach(async function () {
+            testMember = await models.Member.add({id: testMemberId, email: okEmail, name: 'Test Member 123', email_disabled: false});
+            suppression = await models.Suppression.add({
+                email: suppressedEmail,
+                reason: 'bounce'
+            });
+        });
+
+        afterEach(async function () {
+            // Delete member & suppression
+            await models.Member.destroy({id: testMember.id});
+            await models.Suppression.destroy({id: suppression.id});
+        });
+
+        it('Updates the email_disabled field when a member email is updated', async function () {
+            // Now update the email address of the test member to suppressed email
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{email: suppressedEmail}]})
+                .expectStatus(200);
+
+            // email_disabled should be true
+            await testMember.refresh();
+            should(testMember.get('email_disabled')).be.true();
+
+            // Now update the email address of that member to a non-suppressed email
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{email: okEmail}]})
+                .expectStatus(200);
+
+            // email_disabled should be false
+            await testMember.refresh();
+            should(testMember.get('email_disabled')).be.false();
+        });
+    });
+
+    // Log out
+    it('Can log out', async function () {
+        const member = await createMember({
+            name: 'test',
+            email: 'member-log-out-test@test.com'
+        });
+
+        const startTransientId = member.get('transient_id');
+
+        await agent
+            .delete(`/members/${member.id}/sessions/`)
+            .expectStatus(204)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        await member.refresh();
+        assert.notEqual(member.get('transient_id'), startTransientId, 'The transient_id should have changed');
     });
 
     // Delete a member
@@ -2051,7 +2429,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2258,7 +2636,11 @@ describe('Members API', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(3).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2271,7 +2653,16 @@ describe('Members API', function () {
             .get('/members/?include=tiers&filter=tier:default-product')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill(buildMemberMatcherShallowIncludesWithTiers())
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2562,7 +2953,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: anyArray
+                    newsletters: new Array(0)
                 }]
             })
             .matchHeaderSnapshot({
@@ -2888,7 +3279,7 @@ describe('Members API Bulk operations', function () {
         should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
 
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -2916,7 +3307,7 @@ describe('Members API Bulk operations', function () {
 
         // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -3154,7 +3545,7 @@ describe('Members API Bulk operations', function () {
         should(model2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
 
         await agent
-            .put(`/members/bulk/?filter=id:${member1.id}`)
+            .put(`/members/bulk/?filter=id:'${member1.id}'`)
             .body({bulk: {
                 action: 'removeLabel',
                 meta: {

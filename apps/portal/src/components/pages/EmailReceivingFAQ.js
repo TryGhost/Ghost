@@ -7,28 +7,32 @@ import Interpolate from '@doist/react-interpolate';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export default function EmailReceivingPage() {
-    const {brandColor, onAction, site, lastPage, member, t} = useContext(AppContext);
+    const {brandColor, onAction, site, lastPage, member, t, pageData} = useContext(AppContext);
 
     const supportAddressEmail = getSupportAddress({site});
     const supportAddress = `mailto:${supportAddressEmail}`;
     const defaultNewsletterSenderEmail = getDefaultNewsletterSender({site});
+    const directAccess = (pageData && pageData.direct) || false;
+
     return (
         <div className="gh-email-receiving-faq">
             <header className='gh-portal-detail-header'>
-                <BackButton brandColor={brandColor} onClick={() => {
-                    if (!lastPage) {
-                        onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
-                    } else {
-                        onAction('switchPage', {page: 'accountHome'});
-                    }
-                }} />
+                {!directAccess &&
+                    <BackButton brandColor={brandColor} onClick={() => {
+                        if (!lastPage) {
+                            onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
+                        } else {
+                            onAction('switchPage', {page: 'accountHome'});
+                        }
+                    }} />
+                }
                 <CloseButton />
             </header>
 
             <div className="gh-longform">
                 <h3>{t(`Help! I'm not receiving emails`)}</h3>
 
-                <p>{t(`If you're not receiving the email newsletter you've subscribed to, here are few things to check.`)}</p>
+                <p>{t(`If you're not receiving the email newsletter you've subscribed to, here are a few things to check.`)}</p>
 
                 <h4>{t(`Verify your email address is correct`)}</h4>
 
@@ -64,7 +68,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`Send an email to {{senderEmail}} and say hello. This can also help signal to your mail provider that emails to-and-from this address should be trusted.`)}
+                        string={t(`Send an email to {{senderEmail}} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
                         }}

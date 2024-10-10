@@ -63,7 +63,8 @@ export default class GhMigrateIframe extends Component {
                 apiUrl: this.migrate.apiUrl,
                 apiToken: theToken,
                 darkMode: this.feature.nightShift,
-                stripe: this.migrate.isStripeConnected
+                stripe: this.migrate.isStripeConnected,
+                ghostVersion: this.migrate.ghostVersion
             }
         }, new URL(this.migrate.getIframeURL()).origin);
     }

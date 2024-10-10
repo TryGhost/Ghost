@@ -6,6 +6,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const {JSDOM} = require('jsdom');
 
 const messages = {
     db: {
@@ -23,6 +24,10 @@ const messages = {
     themes: {
         missingFile: 'Please select a theme.',
         invalidFile: 'Please select a valid zip file.'
+    },
+    members: {
+        missingFile: 'Please select a members CSV file.',
+        invalidFile: 'Please select a valid CSV file.'
     },
     images: {
         missingFile: 'Please select an image.',
@@ -45,13 +50,26 @@ const messages = {
 const enabledClear = config.get('uploadClear') || true;
 const upload = multer({dest: os.tmpdir()});
 
-const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error(err));
+const deleteSingleFile = (file) => {
+    if (!file.path) {
+        return;
+    }
+
+    fs.unlink(file.path).catch(err => logging.error(err));
+};
 
 const single = name => function singleUploadFunction(req, res, next) {
     const singleUpload = upload.single(name);
 
     singleUpload(req, res, (err) => {
         if (err) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
         if (enabledClear) {
@@ -88,6 +106,13 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
 
     mediaUpload(req, res, (err) => {
         if (err) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
 
@@ -120,22 +145,51 @@ const checkFileExists = (fileData) => {
 
 const checkFileIsValid = (fileData, types, extensions) => {
     const type = fileData.mimetype;
-
     if (types.includes(type) && extensions.includes(fileData.ext)) {
         return true;
     }
-
     return false;
+};
+
+/**
+ *
+ * @param {String} filepath
+ * @returns {Boolean}
+ *
+ * Checks for the presence of <script> tags or 'on' attributes in an SVG file
+ *
+ */
+const isSvgSafe = (filepath) => {
+    const fileContent = fs.readFileSync(filepath, 'utf8');
+    const document = new JSDOM(fileContent).window.document;
+    document.body.innerHTML = fileContent;
+    const svgEl = document.body.firstElementChild;
+
+    if (!svgEl) {
+        return false;
+    }
+
+    const attributes = Array.from(svgEl.attributes).map(({name}) => name);
+    const hasScriptAttr = !!attributes.find(attr => attr.startsWith('on'));
+    const scripts = svgEl.getElementsByTagName('script');
+
+    return scripts.length === 0 && !hasScriptAttr ? true : false;
 };
 
 /**
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const validation = function ({type}) {
     // if we finish the data/importer logic, we forward the request to the specified importer
+
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     */
     return function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
@@ -160,6 +214,14 @@ const validation = function ({type}) {
             }));
         }
 
+        if (req.file.ext === '.svg') {
+            if (!isSvgSafe(req.file.path)) {
+                return next(new errors.UnsupportedMediaTypeError({
+                    message: 'SVG files cannot contain <script> tags or "on" attributes.'
+                }));
+            }
+        }
+
         next();
     };
 };
@@ -168,7 +230,7 @@ const validation = function ({type}) {
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({type}) {
     return function mediaUploadValidation(req, res, next) {
@@ -231,5 +293,6 @@ module.exports = {
 // Exports for testing only
 module.exports._test = {
     checkFileExists,
-    checkFileIsValid
+    checkFileIsValid,
+    isSvgSafe
 };

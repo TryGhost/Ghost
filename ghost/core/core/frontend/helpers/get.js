@@ -2,7 +2,7 @@
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
 const {config, api, prepareContextResource} = require('../services/proxy');
-const {hbs} = require('../services/handlebars');
+const {hbs, SafeString} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -10,6 +10,7 @@ const tpl = require('@tryghost/tpl');
 
 const _ = require('lodash');
 const jsonpath = require('jsonpath');
+const nqlLang = require('@tryghost/nql-lang');
 
 const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
@@ -33,6 +34,9 @@ const RESOURCES = {
     },
     tiers: {
         alias: 'tiersPublic'
+    },
+    newsletters: {
+        alias: 'newslettersPublic'
     }
 };
 
@@ -117,6 +121,84 @@ function parseOptions(globals, data, options) {
     return options;
 }
 
+function optimiseFilterCacheability(resource, options) {
+    const noOptimisation = {
+        options,
+        parseResult(result) {
+            return result;
+        }
+    };
+    if (resource !== 'posts') {
+        return noOptimisation;
+    }
+
+    if (!options.filter) {
+        return noOptimisation;
+    }
+
+    try {
+        if (options.filter.split('id:-').length !== 2) {
+            return noOptimisation;
+        }
+
+        const parsedFilter = nqlLang.parse(options.filter);
+        // Support either `id:blah` or `id:blah+other:stuff`
+        if (!parsedFilter.$and && !parsedFilter.id) {
+            return noOptimisation;
+        }
+        const queries = parsedFilter.$and || [parsedFilter];
+        const query = queries.find((q) => {
+            return q?.id?.$ne;
+        });
+
+        if (!query) {
+            return noOptimisation;
+        }
+
+        const idToFilter = query.id.$ne;
+
+        let limit = options.limit;
+        if (options.limit !== 'all') {
+            limit = options.limit ? 1 + parseInt(options.limit, 10) : 16;
+        }
+
+        // We replace with id:-null so we don't have to deal with leading/trailing AND operators
+        const filter = options.filter.replace(/id:-[a-f0-9A-F]{24}/, 'id:-null');
+
+        const parseResult = function parseResult(result) {
+            const filteredPosts = result?.posts?.filter((post) => {
+                return post.id !== idToFilter;
+            }) || [];
+
+            const modifiedResult = {
+                ...result,
+                posts: limit === 'all' ? filteredPosts : filteredPosts.slice(0, limit - 1)
+            };
+
+            modifiedResult.meta = modifiedResult.meta || {};
+            modifiedResult.meta.cacheabilityOptimisation = true;
+
+            if (typeof modifiedResult?.meta?.pagination?.limit === 'number') {
+                modifiedResult.meta.pagination.limit = modifiedResult.meta.pagination.limit - 1;
+            }
+
+            return modifiedResult;
+        };
+
+        return {
+            options: {
+                ...options,
+                limit,
+                filter
+            },
+            parseResult
+        };
+    } catch (err) {
+        logging.warn(err);
+        return noOptimisation;
+    }
+}
+
 /**
  *
  * @param {String} resource
@@ -127,6 +209,12 @@ function parseOptions(globals, data, options) {
  */
 async function makeAPICall(resource, controllerName, action, apiOptions) {
     const controller = api[controllerName];
+    let makeRequest = options => controller[action](options);
+
+    const {
+        options,
+        parseResult
+    } = optimiseFilterCacheability(resource, apiOptions);
 
     let timer;
 
@@ -137,7 +225,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
             const logLevel = config.get('optimization:getHelper:timeout:level') || 'error';
             const threshold = config.get('optimization:getHelper:timeout:threshold');
 
-            const apiResponse = controller[action](apiOptions);
+            const apiResponse = makeRequest(options).then(parseResult);
 
             const timeout = new Promise((resolve) => {
                 timer = setTimeout(() => {
@@ -150,14 +238,14 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
                         }
                     }));
 
-                    resolve({[resource]: []});
+                    resolve({[resource]: [], '@@ABORTED_GET_HELPER@@': true});
                 }, threshold);
             });
 
             response = await Promise.race([apiResponse, timeout]);
             clearTimeout(timer);
         } else {
-            response = await controller[action](apiOptions);
+            response = await makeRequest(options).then(parseResult);
         }
 
         return response;
@@ -204,7 +292,6 @@ module.exports = async function get(resource, options) {
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
     apiOptions.context = {member: data.member};
-
     try {
         const response = await makeAPICall(resource, controllerName, action, apiOptions);
 
@@ -225,10 +312,16 @@ module.exports = async function get(resource, options) {
         }
 
         // Call the main template function
-        return options.fn(response, {
+        const rendered = options.fn(response, {
             data: data,
             blockParams: blockParams
         });
+
+        if (response['@@ABORTED_GET_HELPER@@']) {
+            return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
+        } else {
+            return rendered;
+        }
     } catch (error) {
         logging.error(error);
         data.error = error.message;
@@ -247,10 +340,14 @@ module.exports = async function get(resource, options) {
                         apiOptions,
                         returnedRows: returnedRowsCount
                     }
-                }));
+                }), {
+                    time: totalMs
+                });
             }
         }
     }
 };
 
 module.exports.async = true;
+
+module.exports.optimiseFilterCacheability = optimiseFilterCacheability;

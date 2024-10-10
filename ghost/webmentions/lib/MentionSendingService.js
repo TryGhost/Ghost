@@ -63,7 +63,7 @@ module.exports = class MentionSendingService {
                 return;
             }
             // make sure we have something to parse before we create a job
-            let html = post.get('html');
+            let html = post.get('status') === 'published' ? post.get('html') : null;
             let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
             if (html || previousHtml) {
                 await this.#jobService.addJob('sendWebmentions', async () => {
@@ -97,7 +97,11 @@ module.exports = class MentionSendingService {
             throwHttpErrors: false,
             maxRedirects: 10,
             followRedirect: true,
-            timeout: 10000
+            timeout: 15000,
+            retry: {
+                // Only retry on network issues, or specific HTTP status codes
+                limit: 3
+            }
         });
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -118,12 +122,23 @@ module.exports = class MentionSendingService {
      * @param {string|null} [resource.previousHtml]
      */
     async sendForHTMLResource(resource) {
-        const links = resource.html ? this.getLinks(resource.html) : [];
+        let links = resource.html ? this.getLinks(resource.html) : [];
         if (resource.previousHtml) {
-            // We also need to send webmentions for removed links
+            // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
+            const existingLinks = links;
+            links = [];
             const oldLinks = this.getLinks(resource.previousHtml);
+
             for (const link of oldLinks) {
-                if (!links.find(l => l.href === link.href)) {
+                if (!existingLinks.find(l => l.href === link.href)) {
+                    // Deleted link
+                    links.push(link);
+                }
+            }
+
+            for (const link of existingLinks) {
+                if (!oldLinks.find(l => l.href === link.href)) {
+                    // New link
                     links.push(link);
                 }
             }

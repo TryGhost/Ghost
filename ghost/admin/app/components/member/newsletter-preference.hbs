@@ -7,7 +7,7 @@
                     <div>
                         <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
                     </div>
-                    <div class="for-switch {{if this.suppressionData.suppressed 'disabled'}}">
+                    <div class="for-switch xs {{if this.suppressionData.suppressed 'disabled'}}">
                         <label class="switch" for={{newsletter.forId}}>
                             <Input
                                 @checked={{newsletter.subscribed}}

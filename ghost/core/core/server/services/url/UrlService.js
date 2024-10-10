@@ -219,14 +219,12 @@ class UrlService {
      * They would show localhost:2368/null/.
      *
      * @param {String} id
-     * @param {Object} options
+     * @param {Object} [options]
      * @param {Object} [options.absolute]
      * @param {Object} [options.withSubdirectory]
      * @returns {String}
      */
-    getUrlByResourceId(id, options) {
-        options = options || {};
-
+    getUrlByResourceId(id, options = {}) {
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {

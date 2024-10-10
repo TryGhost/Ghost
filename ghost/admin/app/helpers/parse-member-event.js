@@ -114,6 +114,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'subscriptions';
         }
 
+        if (event.type === 'email_change_event') {
+            icon = 'email-changed';
+        }
+
         return 'event-' + icon;
     }
 
@@ -208,8 +212,15 @@ export default class ParseMemberEventHelper extends Helper {
             return 'less like this';
         }
 
+        if (event.type === 'email_change_event') {
+            if (event.data.from_email && event.data.to_email) {
+                return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
+            }
+            return 'Email address changed';
+        }
+
         if (event.type === 'donation_event') {
-            return `Made a one-time payment`;
+            return 'Made a one-time payment';
         }
     }
 
@@ -220,7 +231,7 @@ export default class ParseMemberEventHelper extends Helper {
      *   object: 'My blog post'
      * When both words need to get appended, we'll add 'on'
      *  -> do this by returning 'on' in getJoin()
-     * This string is not added when action and object are in a separete table column, or when the getObject/getURL is empty
+     * This string is not added when action and object are in a separate table column, or when the getObject/getURL is empty
      */
     getJoin() {
         return '–';
@@ -330,7 +341,7 @@ export default class ParseMemberEventHelper extends Helper {
      * Get internal route props for a clickable object
      */
     getRoute(event) {
-        if (['comment_event', 'click_event', 'feedback_event'].includes(event.type)) {
+        if (['click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
                 return {
                     name: 'posts.analytics',

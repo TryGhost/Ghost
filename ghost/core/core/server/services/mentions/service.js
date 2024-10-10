@@ -27,7 +27,10 @@ function getPostUrl(post) {
 module.exports = {
     /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
     api: null,
+    /** @type {import('./BookshelfMentionRepository')} */
+    repository: null,
     controller: new MentionController(),
+    metadata: new WebmentionMetadata(),
     /** @type {import('@tryghost/webmentions/lib/MentionSendingService')} */
     sendingService: null,
     didInit: false,
@@ -40,7 +43,9 @@ module.exports = {
             MentionModel: models.Mention,
             DomainEvents
         });
-        const webmentionMetadata = new WebmentionMetadata();
+        this.repository = repository;
+
+        const webmentionMetadata = this.metadata;
         const discoveryService = new MentionDiscoveryService({externalRequest});
         const resourceService = new ResourceService({
             urlUtils,

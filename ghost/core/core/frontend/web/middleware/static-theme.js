@@ -45,7 +45,7 @@ function isAllowedFile(file) {
 
     const normalizedFilePath = path.normalize(decodedFilePath);
 
-    const allowedFiles = ['manifest.json'];
+    const allowedFiles = ['manifest.json', 'assetlinks.json'];
     const allowedPath = '/assets/';
     const alwaysDeny = ['.hbs'];
 

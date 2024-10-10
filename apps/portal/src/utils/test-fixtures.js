@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars*/
-import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
+import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getNewsletterData} from './fixtures-generator';
 
 export const transformTierFixture = [
     getFreeProduct({
@@ -24,11 +24,24 @@ export const transformTierFixture = [
     })
 ];
 
+export const newsletters = [
+    getNewsletterData({
+        name: 'Newsletter 1',
+        description: 'Newsletter 1 description',
+        sort_order: 1
+    }),
+    getNewsletterData({
+        name: 'Newsletter 2',
+        description: 'Newsletter 2 description',
+        sort_order: 2
+    })
+];
+
 export const singleSiteTier = [
     getFreeProduct({
         name: 'Free',
         description: 'Free tier description',
-        numOfBenefits: 0
+        numOfBenefits: 1
     })
     ,
     getProductData({
@@ -102,7 +115,9 @@ const baseSingleTierSite = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    recommendationsEnabled: false,
+    recommendations: []
 });
 
 const baseMultiTierSite = getSiteData({
@@ -130,7 +145,9 @@ const baseMultiTierSite = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    recommendationsEnabled: false,
+    recommendations: []
 });
 
 export const site = {
@@ -159,7 +176,8 @@ export const site = {
         onlyFreePlanWithoutStripe: {
             ...baseSingleTierSite,
             portal_plans: ['free'],
-            is_stripe_configured: false
+            is_stripe_configured: false,
+            newsletters: newsletters
         },
         membersInviteOnly: {
             ...baseSingleTierSite,
@@ -168,6 +186,11 @@ export const site = {
         membersDisabled: {
             ...baseSingleTierSite,
             members_signup_access: 'none'
+        },
+        withRecommendations: {
+            ...baseSingleTierSite,
+            recommendations_enabled: true,
+            recommendations: [{title: 'Recommendation 1', url: 'https://recommendation-1.org'}, {title: 'Recommendation 2', url: 'https://recommendation-2.org'}]
         }
     },
     multipleTiers: {
@@ -183,6 +206,11 @@ export const site = {
         withoutName: {
             ...baseMultiTierSite,
             portal_name: false
+        },
+        withRecommendations: {
+            ...baseMultiTierSite,
+            recommendations_enabled: true,
+            recommendations: [{title: 'Recommendation 1', url: 'https://recommendation-1.org'}, {title: 'Recommendation 2', url: 'https://recommendation-2.org'}]
         }
     }
 };
@@ -199,7 +227,8 @@ export const member = {
         subscriptions: [],
         paid: false,
         avatarImage: '',
-        subscribed: true
+        subscribed: true,
+        newsletters: []
     }),
     altFree: getMemberData({
         name: 'Jimmie Larson',
@@ -287,7 +316,19 @@ export const member = {
                 currentPeriodEnd: '2021-06-05T11:42:40.000Z'
             })
         ]
+    }),
+    subbedToNewsletter: getMemberData({
+        newsletters: newsletters,
+        enable_comment_notifications: true
     })
 };
-/* eslint-enable no-unused-vars*/
 
+export const memberWithNewsletter = {
+    uuid: member.free.uuid,
+    email: member.free.email,
+    name: member.free.name,
+    newsletters: newsletters,
+    enable_comment_notifications: true,
+    status: 'free'
+};
+/* eslint-enable no-unused-vars*/

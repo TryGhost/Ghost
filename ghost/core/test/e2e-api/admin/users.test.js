@@ -274,6 +274,36 @@ describe('User API', function () {
         jsonResponse.users[0].roles[0].name.should.equal('Administrator');
     });
 
+    it('Does not trigger cache invalidation when a private attribute on a user has been changed', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    comment_notifications: false
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.equal(res.headers['x-cache-invalidate'], undefined);
+    });
+
+    it('Does not trigger cache invalidation when no attribute on a user has been changed', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    facebook: null
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.equal(res.headers['x-cache-invalidate'], undefined);
+    });
+
     it('Can destroy an active user and transfer posts to the owner', async function () {
         const userId = testUtils.getExistingData().users[1].id;
         const userSlug = testUtils.getExistingData().users[1].slug;

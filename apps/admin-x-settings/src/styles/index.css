@@ -1,64 +1,51 @@
-@import './preflight.css';
+@import '@tryghost/admin-x-design-system/styles.css';
 
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+/* Only settings related overrides */
+.gh-update-banner ~ * #admin-x-settings-content {
+    top: 48px;
+}
 
-/* Defaults */
-@layer base {
-    @font-face {
-        font-family: "Inter";
-        src: local("Inter") format("truetype-variations");
-        font-weight: 100 900;
+.gh-update-banner ~ * #done-button-container {
+    top: 48px;
+}
+
+@media (max-width: 860px) {
+    .gh-update-banner ~ * #admin-x-settings-sidebar-scroller {
+        position: fixed;
+        top: 48px;
     }
 
-    body {
-        @apply font-sans text-black text-base leading-normal;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-        @apply font-bold tracking-tight leading-tighter;
-    }
-
-    h1 {
-        @apply text-5xl leading-supertight;
-    }
-
-    h2 {
-        @apply text-3xl;
-    }
-
-    h3 {
-        @apply text-2xl;
-    }
-
-    h4 {
-        @apply text-xl;
-    }
-
-    h5 {
-        @apply text-lg leading-tight;
-    }
-
-    h6 {
-        @apply text-md leading-normal;
+    .gh-update-banner ~ * #done-button-container {
+        top: 60px;
     }
 }
 
-:root {
-    font-size: 62.5%;
-    line-height: 1.5;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
+@media (max-width: 600px) {
+    .gh-update-banner ~ * #admin-x-settings-sidebar-scroller {
+        position: fixed;
+        top: 72px;
+    }
 
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-text-size-adjust: 100%;
+    .gh-update-banner ~ * #done-button-container {
+        top: 84px;
+    }
 }
 
-html, body, #root {
-    width: 100%;
-    height: 100%;
-    letter-spacing: unset;
+.admin-x-base {
+    opacity: 1;
+    animation-name: openAnimation;
+    animation-iteration-count: 1;
+    animation-timing-function: ease;
+    animation-duration: 0.35s;
+}
+
+@keyframes openAnimation {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1.0);
+    }
 }

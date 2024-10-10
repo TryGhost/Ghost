@@ -2,19 +2,22 @@ const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const glob = require('glob');
+const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, blogIcon, urlUtils, labs}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsHelpers = settingsHelpers;
         this.settingsCache = settingsCache;
+        this.blogIcon = blogIcon;
         this.urlUtils = urlUtils;
         this.labs = labs;
 
-        this.Handlebars = require('handlebars');
+        this.Handlebars = require('handlebars').create();
         this.registerPartials();
+        this.registerHelpers();
     }
 
     async notifyFreeMemberSignup({
@@ -36,16 +39,13 @@ class StaffServiceEmails {
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
 
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
-
             const templateData = {
                 memberData,
                 attributionTitle,
                 attributionUrl: attribution?.url || '',
                 referrerSource: attribution?.referrerSource,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -96,10 +96,6 @@ class StaffServiceEmails {
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
 
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
-
             const templateData = {
                 memberData,
                 attributionTitle,
@@ -109,6 +105,7 @@ class StaffServiceEmails {
                 offerData,
                 subscriptionData,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -128,7 +125,7 @@ class StaffServiceEmails {
         }
     }
 
-    async notifyPaidSubscriptionCanceled({member, tier, subscription}, options = {}) {
+    async notifyPaidSubscriptionCanceled({member, tier, subscription, cancelNow, expiryAt, canceledAt}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-canceled', options);
 
         for (const user of users) {
@@ -146,22 +143,20 @@ class StaffServiceEmails {
             };
 
             const subscriptionData = {
-                expiryAt: this.getFormattedDate(subscription.cancelAt),
-                canceledAt: this.getFormattedDate(subscription.canceledAt),
+                expiryAt: this.getFormattedDate(expiryAt),
+                cancelNow: cancelNow,
+                canceledAt: this.getFormattedDate(canceledAt),
                 cancellationReason: subscription.cancellationReason || ''
             };
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
 
             const templateData = {
                 memberData,
                 tierData,
                 subscriptionData,
                 siteTitle: this.settingsCache.get('title'),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
@@ -189,12 +184,9 @@ class StaffServiceEmails {
     async getSharedData(recipient) {
         let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`);
 
-        if (this.labs.isSet('adminXSettings')) {
-            staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${recipient.slug}`);
-        }
-
         return {
             siteTitle: this.settingsCache.get('title'),
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             accentColor: this.settingsCache.get('accent_color'),
@@ -236,9 +228,7 @@ class StaffServiceEmails {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
+
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -293,13 +283,11 @@ class StaffServiceEmails {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
 
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
+                siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
                 siteDomain: this.siteDomain,
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
@@ -308,7 +296,8 @@ class StaffServiceEmails {
                 donation: {
                     name: donationPaymentEvent.name ?? donationPaymentEvent.email,
                     email: donationPaymentEvent.email,
-                    amount: formattedAmount
+                    amount: formattedAmount,
+                    donationMessage: donationPaymentEvent.donationMessage
                 },
                 memberData,
                 accentColor: this.settingsCache.get('accent_color')
@@ -439,12 +428,10 @@ class StaffServiceEmails {
         return this.settingsHelpers.getDefaultEmailDomain();
     }
 
-    get membersAddress() {
-        // TODO: get from address of default newsletter?
-        return `noreply@${this.defaultEmailDomain}`;
-    }
-
     get fromEmailAddress() {
+        if (this.settingsHelpers.useNewEmailAddresses()) {
+            return EmailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
+        }
         return `noreply@${this.defaultEmailDomain}`;
     }
 
@@ -478,10 +465,7 @@ class StaffServiceEmails {
         });
     }
 
-    async renderHTML(templateName, data) {
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
-        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-
+    registerHelpers() {
         this.Handlebars.registerHelper('eq', function (arg, value, options) {
             if (arg === value) {
                 return options.fn(this);
@@ -497,15 +481,28 @@ class StaffServiceEmails {
             return array.slice(0,limit);
         });
 
+        this.Handlebars.registerHelper('encodeURIComponent', function (string) {
+            return encodeURIComponent(string);
+        });
+    }
+
+    async renderHTML(templateName, data) {
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
+        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+
         let sharedData = {};
         if (data.recipient) {
             sharedData = await this.getSharedData(data.recipient);
         }
 
-        return htmlTemplate({
+        const html = htmlTemplate({
             ...data,
             ...sharedData
         });
+
+        const juice = require('juice');
+
+        return juice(html, {inlinePseudoElements: true, removeStyleTags: true});
     }
 
     async renderText(templateName, data) {

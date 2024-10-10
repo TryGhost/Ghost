@@ -129,7 +129,7 @@
             <div class="gh-publish-setting-trigger">
                 <span>
                     {{#if @publishOptions.isScheduled}}
-                        {{capitalize (gh-format-post-time @publishOptions.scheduledAtUTC draft=true)}}
+                        {{capitalize (gh-format-post-time @publishOptions.scheduledAtUTC relative=true)}}
                     {{else}}
                         Right now
                     {{/if}}

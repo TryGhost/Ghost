@@ -8,6 +8,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
+    PostsBulkUnscheduledEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
@@ -44,10 +45,10 @@ class PostsService {
     async browsePosts(options) {
         let posts;
         if (options.collection) {
-            let collection = await this.collectionsService.getById(options.collection);
+            let collection = await this.collectionsService.getById(options.collection, {transaction: options.transacting});
 
             if (!collection) {
-                collection = await this.collectionsService.getBySlug(options.collection);
+                collection = await this.collectionsService.getBySlug(options.collection, {transaction: options.transacting});
             }
 
             if (!collection) {
@@ -56,10 +57,27 @@ class PostsService {
                 });
             }
 
-            const postIds = collection.posts;
-            options.filter = `id:[${postIds.join(',')}]+type:post`;
-            options.status = 'all';
-            posts = await this.models.Post.findPage(options);
+            const postIds = collection.posts.map(post => post.id);
+
+            if (postIds.length !== 0) {
+                options.filter = `id:[${postIds.join(',')}]+type:post`;
+                options.status = 'all';
+                posts = await this.models.Post.findPage(options);
+            } else {
+                posts = {
+                    data: [],
+                    meta: {
+                        pagination: {
+                            page: 1,
+                            pages: 1,
+                            total: 0,
+                            limit: options.limit || 15,
+                            next: null,
+                            prev: null
+                        }
+                    }
+                };
+            }
         } else {
             posts = await this.models.Post.findPage(options);
         }
@@ -91,7 +109,7 @@ class PostsService {
 
     /**
      *
-     * @param {any} frame
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @param {object} [options]
      * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
      * @returns
@@ -229,6 +247,19 @@ class PostsService {
 
             return updateResult;
         }
+        if (data.action === 'unschedule') {
+            const updateResult = await this.#updatePosts({status: 'draft', published_at: null}, {filter: this.#mergeFilters('status:scheduled', options.filter), context: options.context, actionName: 'unscheduled'});
+            // makes sure `email_only` value is reverted for the unscheduled posts
+            await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
+                data: {email_only: false},
+                column: 'post_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+            DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
+
+            return updateResult;
+        }
         if (data.action === 'feature') {
             const updateResult = await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
             DomainEvents.dispatch(PostsBulkFeaturedEvent.create(updateResult.editIds));
@@ -349,7 +380,7 @@ class PostsService {
     async #bulkDestroy(options) {
         if (!options.transacting) {
             return await this.models.Post.transaction(async (transacting) => {
-                return await this.bulkDestroy({
+                return await this.#bulkDestroy({
                     ...options,
                     transacting
                 });

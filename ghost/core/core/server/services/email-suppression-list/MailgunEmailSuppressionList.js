@@ -47,6 +47,15 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
         return true;
     }
 
+    async removeUnsubscribe(email) {
+        try {
+            await this.apiClient.removeUnsubscribe(email);
+        } catch (err) {
+            logging.error(err);
+            return false;
+        }
+    }
+
     async getSuppressionData(email) {
         try {
             const model = await this.Suppression.findOne({

@@ -23,7 +23,44 @@ const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value,
     };
 });
 
-module.exports = {
+/**
+ *
+ * @param {import('@tryghost/api-framework').Frame} frame
+ * @param {object} options
+ * @returns {object}
+ */
+function generateOptionsData(frame, options) {
+    return options.reduce((memo, option) => {
+        let value = frame.options?.[option];
+
+        if (['include', 'fields', 'formats'].includes(option) && typeof value === 'string') {
+            value = value.split(',').sort();
+        }
+
+        if (option === 'page') {
+            value = value || 1;
+        }
+
+        return {
+            ...memo,
+            [option]: value
+        };
+    }, {});
+}
+
+function generateAuthData(frame) {
+    if (frame.options?.context?.member) {
+        return {
+            free: frame.options?.context?.member.status === 'free',
+            tiers: frame.options?.context?.member.products?.map((product) => {
+                return product.slug;
+            }).sort()
+        };
+    }
+}
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'posts',
 
     browse: {
@@ -31,6 +68,23 @@ module.exports = {
             cacheInvalidate: false
         },
         cache: postsPublicService.api?.cache,
+        generateCacheKeyData(frame) {
+            return {
+                options: generateOptionsData(frame, [
+                    'include',
+                    'filter',
+                    'fields',
+                    'formats',
+                    'limit',
+                    'order',
+                    'page',
+                    'absolute_urls',
+                    'collection'
+                ]),
+                auth: generateAuthData(frame),
+                method: 'browse'
+            };
+        },
         options: [
             'include',
             'filter',
@@ -66,6 +120,24 @@ module.exports = {
     read: {
         headers: {
             cacheInvalidate: false
+        },
+        cache: postsPublicService.api?.cache,
+        generateCacheKeyData(frame) {
+            return {
+                options: generateOptionsData(frame, [
+                    'include',
+                    'fields',
+                    'formats',
+                    'absolute_urls'
+                ]),
+                auth: generateAuthData(frame),
+                method: 'read',
+                identifier: {
+                    id: frame.data.id,
+                    slug: frame.data.slug,
+                    uuid: frame.data.uuid
+                }
+            };
         },
         options: [
             'include',
@@ -108,3 +180,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

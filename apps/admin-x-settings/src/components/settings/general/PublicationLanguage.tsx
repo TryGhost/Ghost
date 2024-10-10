@@ -1,9 +1,8 @@
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../api/settings';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -14,8 +13,20 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleCancel,
         updateSetting,
         focusRef,
+        errors,
+        clearError,
         handleEditingChange
-    } = useSettingGroup();
+    } = useSettingGroup({
+        onValidate: () => {
+            if (!publicationLanguage) {
+                return {
+                    publicationLanguage: 'Enter a value'
+                };
+            }
+
+            return {};
+        }
+    });
 
     const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
 
@@ -43,18 +54,20 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputFields = (
         <SettingGroupContent columns={1}>
             <TextField
-                hint={hint}
+                error={!!errors.publicationLanguage}
+                hint={errors.publicationLanguage || hint}
                 inputRef={focusRef}
                 placeholder="Site language"
                 title='Site language'
                 value={publicationLanguage}
                 onChange={handleLanguageChange}
+                onKeyDown={() => clearError('password')}
             />
         </SettingGroupContent>
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description="Set the language/locale which is used on your site"
             isEditing={isEditing}
             keywords={keywords}
@@ -67,8 +80,8 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default PublicationLanguage;
+export default withErrorBoundary(PublicationLanguage, 'Publication language');

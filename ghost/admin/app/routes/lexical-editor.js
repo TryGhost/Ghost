@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
@@ -12,21 +11,13 @@ export default AuthenticatedRoute.extend({
 
     classNames: ['editor'],
 
-    config: inject(),
-
-    beforeModel() {
-        if (!this.config.editor?.url) {
-            return this.router.transitionTo('posts');
-        }
-    },
-
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);
     },
 
     setupController(controller, model, transition) {
-        if (transition.from?.name === 'posts.analytics') {
+        if (transition.from?.name === 'posts.analytics' && transition.to?.name !== 'lexical-editor.new') {
             controller.fromAnalytics = true;
         }
     },
@@ -48,7 +39,8 @@ export default AuthenticatedRoute.extend({
         },
 
         authorizationFailed() {
-            this.controller.send('toggleReAuthenticateModal');
+            // noop - re-auth is handled by controller save
+            return;
         },
 
         willTransition(transition) {

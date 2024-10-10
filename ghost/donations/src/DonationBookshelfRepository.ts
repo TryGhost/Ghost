@@ -12,6 +12,7 @@ type DonationEventModelInstance = BookshelfModelInstance & {
     member_id: string | null;
     amount: number;
     currency: string;
+    donation_message: string | null;
 
     attribution_id: string | null;
     attribution_url: string | null;
@@ -20,12 +21,12 @@ type DonationEventModelInstance = BookshelfModelInstance & {
     referrer_medium: string | null;
     referrer_url: string | null;
 }
-type DonationPaymentEventModel = BookshelfModel<DonationEventModelInstance>;
+type DonationPaymentEventBookshelfModel = BookshelfModel<DonationEventModelInstance>;
 
 export class DonationBookshelfRepository implements DonationRepository {
-    #Model: DonationPaymentEventModel;
+    #Model: DonationPaymentEventBookshelfModel;
 
-    constructor({DonationPaymentEventModel}: {DonationPaymentEventModel: DonationPaymentEventModel}) {
+    constructor({DonationPaymentEventModel}: {DonationPaymentEventModel: DonationPaymentEventBookshelfModel}) {
         this.#Model = DonationPaymentEventModel;
     }
 
@@ -36,13 +37,14 @@ export class DonationBookshelfRepository implements DonationRepository {
             member_id: event.memberId,
             amount: event.amount,
             currency: event.currency,
+            donation_message: event.donationMessage,
 
             attribution_id: event.attributionId,
             attribution_url: event.attributionUrl,
             attribution_type: event.attributionType,
             referrer_source: event.referrerSource,
             referrer_medium: event.referrerMedium,
-            referrer_url: event.referrerUrl,
+            referrer_url: event.referrerUrl
         });
     }
 }

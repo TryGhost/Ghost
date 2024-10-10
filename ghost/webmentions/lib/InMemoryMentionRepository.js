@@ -56,7 +56,7 @@ module.exports = class InMemoryMentionRepository {
      */
     async getBySourceAndTarget(source, target) {
         return this.#store.find((item) => {
-            return item.source.href === source.href && item.target.href === target.href && !Mention.isDeleted(item);
+            return item.source.href === source.href && item.target.href === target.href;
         });
     }
 

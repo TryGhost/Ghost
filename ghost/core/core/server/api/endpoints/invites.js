@@ -10,7 +10,8 @@ const messages = {
     inviteNotFound: 'Invite not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'invites',
 
     browse: {
@@ -127,3 +128,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

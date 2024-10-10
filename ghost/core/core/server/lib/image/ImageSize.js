@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('utils:image-size');
 const sizeOf = require('image-size');
-const probeSizeOf = require('probe-image-size');
+
 const url = require('url');
 const path = require('path');
 const _ = require('lodash');
@@ -17,22 +17,27 @@ const FETCH_ONLY_FORMATS = [
 ];
 
 class ImageSize {
-    constructor({config, storage, storageUtils, validator, urlUtils, request}) {
+    constructor({config, storage, storageUtils, validator, urlUtils, request, probe}) {
         this.config = config;
         this.storage = storage;
         this.storageUtils = storageUtils;
         this.validator = validator;
         this.urlUtils = urlUtils;
         this.request = request;
+        this.probe = probe;
 
         this.REQUEST_OPTIONS = {
             // we need the user-agent, otherwise some https request may fail (e.g. cloudfare)
             headers: {
                 'User-Agent': 'Mozilla/5.0 Safari/537.36'
             },
-            timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
-            retry: 0, // for `got`, used with image-size
-            encoding: null
+            timeout: {
+                request: this.config.get('times:getImageSizeTimeoutInMS') || 10000
+            },
+            retry: {
+                limit: 0 // for `got`, used with image-size
+            },
+            responseType: 'buffer'
         };
 
         this.NEEDLE_OPTIONS = {
@@ -78,7 +83,18 @@ class ImageSize {
             }));
         }
 
-        return probeSizeOf(imageUrl, this.NEEDLE_OPTIONS);
+        // wrap probe-image-size in a promise in case it is unresponsive/the timeout itself doesn't work
+        return (Promise.race([
+            this.probe(imageUrl, this.NEEDLE_OPTIONS),
+            new Promise((res, rej) => {
+                setTimeout(() => {
+                    rej(new errors.InternalServerError({
+                        message: 'Probe unresponsive.',
+                        code: 'IMAGE_SIZE_URL'
+                    }));
+                }, this.NEEDLE_OPTIONS.response_timeout);
+            })
+        ]));
     }
 
     // download full image then use image-size to get it's dimensions

@@ -4,8 +4,10 @@ const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const mw = require('./middleware');
 const config = require('../../../../../shared/config');
-const membersService = require('../../../../../server/services/members');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('content api');
 
@@ -32,7 +34,7 @@ module.exports = function apiRoutes() {
     router.get('/tags/slug/:slug', mw.authenticatePublic, http(api.tagsPublic.read));
 
     // ## Settings
-    router.get('/settings', mw.authenticatePublic, membersService.middleware.loadMemberSession, http(api.publicSettings.browse));
+    router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
     // ## Members
     router.get('/newsletters', mw.authenticatePublic, http(api.newslettersPublic.browse));

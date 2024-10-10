@@ -41,10 +41,17 @@ class APIVersionCompatibilityService {
      */
     async handleMismatch({acceptVersion, contentVersion, apiKeyValue, apiKeyType, requestURL, userAgent = ''}) {
         if (!await this.versionNotificationsDataService.fetchNotification(acceptVersion)) {
+            const integration = await this.versionNotificationsDataService.getIntegration(apiKeyValue, apiKeyType);
+
+            // We couldn't find the integration
+            if (!integration) {
+                return;
+            }
+
             const {
                 name: integrationName,
                 type: integrationType
-            } = await this.versionNotificationsDataService.getIntegration(apiKeyValue, apiKeyType);
+            } = integration;
 
             // @NOTE: "internal" or "core" integrations (https://ghost.notion.site/Data-Types-e5dc54dd0078443f9afd6b2abda443c4)
             //        are maintained by Ghost team, so there is no sense notifying the instance owner about it's incompatibility.

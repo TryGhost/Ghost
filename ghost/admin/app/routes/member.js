@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import AdminRoute from 'ghost-admin/routes/admin';
 import ConfirmUnsavedChangesModal from '../components/modals/confirm-unsaved-changes';
 import {action} from '@ember/object';
@@ -96,6 +97,7 @@ export default class MembersRoute extends AdminRoute {
     }
 
     async confirmUnsavedChanges() {
+        Sentry.captureMessage('showing unsaved changes modal for members route');
         this.confirmModal = this.modals
             .open(ConfirmUnsavedChangesModal)
             .finally(() => {

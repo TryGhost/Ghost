@@ -1,9 +1,9 @@
 {
     "Email sent": "E-mail enviado",
-    "Now check your email!": "Agora verifica o teu e-mail!",
-    "Please enter a valid email address": "Por favor, insere um endereço de e-mail válido",
-    "Something went wrong, please try again.": "Algo correu mal, por favor tenta novamente.",
+    "Now check your email!": "Verifique o seu e-mail agora!",
+    "Please enter a valid email address": "Por favor, insira um endereço de e-mail válido",
+    "Something went wrong, please try again.": "Algo correu mal, por favor tente novamente.",
     "Subscribe": "Subscrever",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Para completar o registo, clica no link de confirmação que está na tua caixa de entrada. Se não chegou em 3 minutos, verifica a tua pasta de spam!",
-    "Your email address": "O teu endereço de e-mail"
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Para completar o registo, clique no link de confirmação que está na sua caixa de entrada. Se passaram mais de 3 minutos e o email ainda não chegou, verifique a sua pasta de spam!",
+    "Your email address": "O seu endereço de e-mail"
 }

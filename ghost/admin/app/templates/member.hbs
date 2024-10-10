@@ -71,6 +71,16 @@
                                 <button
                                     type="button"
                                     class="mr2"
+                                    {{on "click" this.confirmLogoutMember}}
+                                    data-test-button="logout-member"
+                                >
+                                    <span>Sign out of all devices</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
                                     {{on "click" this.confirmDeleteMember}}
                                     data-test-button="delete-member"
                                 >

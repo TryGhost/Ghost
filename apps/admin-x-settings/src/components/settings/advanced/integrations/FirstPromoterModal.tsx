@@ -1,31 +1,31 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import useRouting from '../../../../hooks/useRouting';
+import {Form, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/firstpromoter.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const FirstpromoterModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
-    const modal = NiceModal.useModal();
 
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
-    const [accountId, setAccountId] = useState('');
-    const [enabled, setEnabled] = useState(false);
+    const [accountId, setAccountId] = useState<string | null>('');
 
     const [firstPromoterEnabled] = getSettingValues<boolean>(settings, ['firstpromoter']);
     const [firstPromoterId] = getSettingValues<string>(settings, ['firstpromoter_id']);
 
+    const [okLabel, setOkLabel] = useState('Save');
+    const [enabled, setEnabled] = useState<boolean>(!!firstPromoterEnabled);
+
     useEffect(() => {
         setEnabled(firstPromoterEnabled || false);
-        setAccountId(firstPromoterId || '');
+        setAccountId(firstPromoterId || null);
     }, [firstPromoterEnabled, firstPromoterId]);
 
     const handleSave = async () => {
@@ -39,8 +39,20 @@ const FirstpromoterModal = NiceModal.create(() => {
                 value: accountId
             }
         ];
-
-        await editSettings(updates);
+        try {
+            setOkLabel('Saving...');
+            await Promise.all([
+                editSettings(updates),
+                new Promise((resolve) => {
+                    setTimeout(resolve, 1000);
+                })
+            ]);
+            setOkLabel('Saved');
+        } catch (e) {
+            handleError(e);
+        } finally {
+            setTimeout(() => setOkLabel('Save'), 1000);
+        }
     };
 
     return (
@@ -48,14 +60,18 @@ const FirstpromoterModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            okColor='black'
-            okLabel='Save & close'
+            cancelLabel='Close'
+            dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
+            okColor={okLabel === 'Saved' ? 'green' : 'black'}
+            okLabel={okLabel}
             testId='firstpromoter-modal'
             title=''
             onOk={async () => {
-                await handleSave();
-                updateRoute('integrations');
-                modal.remove();
+                try {
+                    await handleSave();
+                } catch (e) {
+                    handleError(e);
+                }
             }}
         >
             <IntegrationHeader
@@ -81,7 +97,7 @@ const FirstpromoterModal = NiceModal.create(() => {
                             </>}
                             placeholder='XXXXXXXX'
                             title='FirstPromoter account ID'
-                            value={accountId}
+                            value={accountId || ''}
                             onChange={(e) => {
                                 setAccountId(e.target.value);
                             }}

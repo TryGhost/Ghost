@@ -50,30 +50,35 @@ class CacheManager {
         // NOTE: "!this.settingsCache" is for when setting's cache is used
         //       before it had a chance to initialize. Should be fixed when
         //       it is decoupled from the model layer
-        if (!this.settingsCache || !this.settingsCache.get(key)) {
+        if (!this.settingsCache) {
+            return;
+        }
+
+        const cacheEntry = this.settingsCache.get(key);
+        if (!cacheEntry) {
             return;
         }
 
         // Don't try to resolve to the value of the setting
         if (options && options.resolve === false) {
-            return this.settingsCache.get(key);
+            return cacheEntry;
         }
 
         // Default behavior is to try to resolve the value and return that
         try {
             // CASE: handle literal false
-            if (this.settingsCache.get(key).value === false || this.settingsCache.get(key).value === 'false') {
+            if (cacheEntry.value === false || cacheEntry.value === 'false') {
                 return false;
             }
 
             // CASE: if a string contains a number e.g. "1", JSON.parse will auto convert into integer
-            if (!isNaN(Number(this.settingsCache.get(key).value))) {
-                return this.settingsCache.get(key).value || null;
+            if (!isNaN(Number(cacheEntry.value))) {
+                return cacheEntry.value || null;
             }
 
-            return JSON.parse(this.settingsCache.get(key).value) || null;
+            return JSON.parse(cacheEntry.value) || null;
         } catch (err) {
-            return this.settingsCache.get(key).value || null;
+            return cacheEntry.value || null;
         }
     }
 

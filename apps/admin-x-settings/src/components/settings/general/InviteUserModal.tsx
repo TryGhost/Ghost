@@ -1,18 +1,19 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/form/Radio';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useAddInvite} from '../../../api/invites';
-import {useBrowseRoles} from '../../../api/roles';
+import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
+import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
+import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useRef, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
 const InviteUserModal = NiceModal.create(() => {
+    const modal = NiceModal.useModal();
     const rolesQuery = useBrowseRoles();
     const assignableRolesQuery = useBrowseRoles({
         searchParams: {limit: 'all', permissions: 'assign'}
@@ -30,7 +31,10 @@ const InviteUserModal = NiceModal.create(() => {
         role?: string;
     }>({});
 
+    const {data: {users} = {}} = useBrowseUsers();
+    const {data: {invites} = {}} = useBrowseInvites();
     const {mutateAsync: addInvite} = useAddInvite();
+    const handleError = useHandleError();
 
     useEffect(() => {
         if (focusRef.current) {
@@ -70,7 +74,7 @@ const InviteUserModal = NiceModal.create(() => {
     const roles = rolesQuery.data.roles;
     const assignableRoles = assignableRolesQuery.data.roles;
 
-    let okLabel = 'Send invitation now';
+    let okLabel = 'Send invitation';
     if (saveState === 'saving') {
         okLabel = 'Sending...';
     } else if (saveState === 'saved') {
@@ -84,14 +88,28 @@ const InviteUserModal = NiceModal.create(() => {
             return;
         }
 
-        if (Object.values(errors).some(error => error)) {
-            return;
-        }
-
         if (!validator.isEmail(email)) {
             setErrors({
                 email: 'Please enter a valid email address.'
             });
+            return;
+        }
+
+        if (users?.some(({email: userEmail}) => userEmail === email)) {
+            setErrors({
+                email: 'A user with that email address already exists.'
+            });
+            return;
+        }
+
+        if (invites?.some(({email: inviteEmail}) => inviteEmail === email)) {
+            setErrors({
+                email: 'A user with that email address was already invited.'
+            });
+            return;
+        }
+
+        if (errors.role) {
             return;
         }
 
@@ -105,16 +123,30 @@ const InviteUserModal = NiceModal.create(() => {
             setSaveState('saved');
 
             showToast({
-                message: `Invitation successfully sent to ${email}`,
+                title: `Invitation sent`,
+                message: `${email}`,
                 type: 'success'
             });
+
+            modal.remove();
+            updateRoute('staff?tab=invited');
         } catch (e) {
             setSaveState('error');
-
+            let title = 'Failed to send invitation';
+            let message = (<span>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
+            if (e instanceof APIError) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let data = e.data as any; // we have unknown data types in the APIError/error classes
+                if (data?.errors?.[0]?.type === 'EmailError') {
+                    message = (<span>Check your Mailgun configuration.</span>);
+                }
+            }
             showToast({
-                message: `Failed to send invitation to ${email}`,
+                title,
+                message,
                 type: 'error'
             });
+            handleError(e, {withToast: false});
             return;
         }
     };
@@ -148,16 +180,21 @@ const InviteUserModal = NiceModal.create(() => {
         });
     });
 
+    if (!!errors.email) {
+        okLabel = 'Retry';
+    }
+
     return (
         <Modal
             afterClose={() => {
-                updateRoute('users');
+                updateRoute('staff');
             }}
             cancelLabel=''
+            okColor={saveState === 'error' || !!errors.email ? 'red' : 'black'}
             okLabel={okLabel}
-            size={540}
             testId='invite-user-modal'
             title='Invite a new staff user'
+            width={540}
             onOk={handleSendInvitation}
         >
             <div className='flex flex-col gap-6 py-4'>
@@ -165,7 +202,6 @@ const InviteUserModal = NiceModal.create(() => {
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
                 <TextField
-                    clearBg={true}
                     error={!!errors.email}
                     hint={errors.email}
                     inputRef={focusRef}
@@ -175,6 +211,7 @@ const InviteUserModal = NiceModal.create(() => {
                     onChange={(event) => {
                         setEmail(event.target.value);
                     }}
+                    onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                 />
                 <div>
                     <Radio

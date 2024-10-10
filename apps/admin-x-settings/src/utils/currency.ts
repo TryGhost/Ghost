@@ -1,4 +1,4 @@
-import {SelectOptionGroup} from '../admin-x-ds/global/form/Select';
+import {SelectOptionGroup} from '@tryghost/admin-x-design-system';
 
 type CurrencyOption = {
     isoCode: string;
@@ -203,10 +203,11 @@ export function minimumAmountForCurrency(currency: string) {
     }
 }
 
-// Stripe doesn't allow amounts over 10,000 as a preset amount
-const MAX_AMOUNT = 10_000;
-
-export function validateCurrencyAmount(cents: number | undefined, currency: string | undefined, {allowZero = true} = {}) {
+export function validateCurrencyAmount(
+    cents: number | undefined,
+    currency: string | undefined,
+    {allowZero = true, maxAmount}: {allowZero?: boolean; maxAmount?: number} = {}
+) {
     if (cents === undefined || !currency) {
         return;
     }
@@ -222,7 +223,7 @@ export function validateCurrencyAmount(cents: number | undefined, currency: stri
         return `Non-zero amount must be at least ${symbol}${minAmount}.`;
     }
 
-    if (cents !== 0 && cents > (MAX_AMOUNT * 100)) {
-        return `Suggested amount cannot be more than ${symbol}${MAX_AMOUNT}.`;
+    if (maxAmount && cents !== 0 && cents > (maxAmount * 100)) {
+        return `Suggested amount cannot be more than ${symbol}${maxAmount}.`;
     }
 }

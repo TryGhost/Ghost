@@ -8,6 +8,11 @@ const messages = {
     notImplemented: 'The server does not support the functionality required to fulfill the request.'
 };
 
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
 const notImplemented = function notImplemented(req, res, next) {
     // CASE: user is logged in, allow
     if (!req.api_key) {
@@ -59,12 +64,16 @@ const notImplemented = function notImplemented(req, res, next) {
     next(new errors.InternalServerError({
         errorType: 'NotImplementedError',
         message: tpl(messages.notImplemented),
-        statusCode: '501'
+        statusCode: 501
     }));
 };
 
+/** @typedef {import('express').RequestHandler} RequestHandler */
+
 /**
  * Authentication for private endpoints
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.authAdminApi = [
     auth.authenticate.authenticateAdminApi,
@@ -79,6 +88,8 @@ module.exports.authAdminApi = [
 /**
  * Authentication for private endpoints with token in URL
  * Ex.: For scheduler publish endpoint
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.authAdminApiWithUrl = [
     auth.authenticate.authenticateAdminApiWithUrl,
@@ -92,6 +103,8 @@ module.exports.authAdminApiWithUrl = [
 
 /**
  * Middleware for public admin endpoints
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.publicAdminApi = [
     apiMw.cors,

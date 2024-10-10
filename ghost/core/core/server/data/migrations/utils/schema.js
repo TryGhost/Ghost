@@ -91,7 +91,51 @@ function createSetNullableMigration(table, column, options = {}) {
                 if (options.disableForeignKeyChecks) {
                     await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
                 }
-            }            
+            }
+        }
+    );
+}
+
+/**
+ * @param {string} table
+ * @param {string[]|string} columns One or multiple columns (in case the index should be for multiple columns)
+ * @returns {Migration}
+ */
+function createAddIndexMigration(table, columns) {
+    return createTransactionalMigration(
+        async function up(knex) {
+            await commands.addIndex(table, columns, knex);
+        },
+        async function down(knex) {
+            await commands.dropIndex(table, columns, knex);
+        }
+    );
+}
+
+/**
+ * @param {string} table
+ * @param {string} from
+ * @param {string} to
+ *
+ * @returns {Migration}
+ */
+function createRenameColumnMigration(table, from, to) {
+    return createNonTransactionalMigration(
+        async function up(knex) {
+            const hasColumn = await knex.schema.hasColumn(table, to);
+            if (hasColumn) {
+                logging.warn(`Renaming ${table}.${from} to ${table}.${to} column - skipping as column ${table}.${to} already exists`);
+            } else {
+                await commands.renameColumn(table, from, to, knex);
+            }
+        },
+        async function down(knex) {
+            const hasColumn = await knex.schema.hasColumn(table, from);
+            if (hasColumn) {
+                logging.warn(`Renaming ${table}.${to} to ${table}.${from} column - skipping as column ${table}.${from} already exists`);
+            } else {
+                await commands.renameColumn(table, to, from, knex);
+            }
         }
     );
 }
@@ -134,7 +178,9 @@ module.exports = {
     createAddColumnMigration,
     createDropColumnMigration,
     createSetNullableMigration,
-    createDropNullableMigration
+    createDropNullableMigration,
+    createRenameColumnMigration,
+    createAddIndexMigration
 };
 
 /**

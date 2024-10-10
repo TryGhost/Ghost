@@ -23,7 +23,7 @@ describe('EmailEventStorage', function () {
     before(async function () {
         // Stub queries before boot
         const queries = require('../../../../core/server/services/email-analytics/lib/queries');
-        sinon.stub(queries, 'getLastSeenEventTimestamp').callsFake(async function () {
+        sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
             // This is required because otherwise the last event timestamp will be now, and that is too close to NOW to start fetching new events
             return new Date(2000, 0, 1);
         });
@@ -78,7 +78,7 @@ describe('EmailEventStorage', function () {
 
         // Fire event processing
         // We use offloading to have correct coverage and usage of worker thread
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestNonOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -125,7 +125,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestNonOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -170,7 +170,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('opened_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -250,7 +250,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -268,7 +268,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -346,7 +346,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('delivered_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -364,7 +364,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -439,7 +439,7 @@ describe('EmailEventStorage', function () {
         assert.notEqual(initialModel.get('failed_at'), null, 'This test requires a failed email recipient');
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -455,7 +455,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -529,7 +529,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -544,7 +544,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -645,7 +645,7 @@ describe('EmailEventStorage', function () {
         assert.equal(initialModel.get('failed_at'), null);
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -661,7 +661,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -747,7 +747,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -763,7 +763,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -849,7 +849,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -865,7 +865,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -951,7 +951,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -967,7 +967,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -991,7 +991,7 @@ describe('EmailEventStorage', function () {
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
         const eventsURI = '/members/events/?' + encodeURIComponent(
-            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:${memberId}`
+            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:'${memberId}'`
         );
 
         // Check not unsubscribed
@@ -1015,7 +1015,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
@@ -1028,31 +1028,41 @@ describe('EmailEventStorage', function () {
     });
 
     it('Can handle unsubscribe events', async function () {
+        const newsletterToRemove = fixtureManager.get('newsletters', 0).id;
+        const newsletterToKeep = fixtureManager.get('newsletters', 1).id;
+
+        const email = fixtureManager.get('emails', 0);
+        await models.Email.edit({newsletter_id: newsletterToRemove}, {id: email.id});
+
         const emailBatch = fixtureManager.get('email_batches', 0);
-        const emailId = emailBatch.email_id;
+        assert(emailBatch.email_id === email.id);
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
+
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
-        // Reset
+        // Initialise member with 2 newsletters
         await membersService.api.members.update({newsletters: [
             {
-                id: fixtureManager.get('newsletters', 0).id
+                id: newsletterToRemove
+            },
+            {
+                id: newsletterToKeep
             }
         ]}, {id: memberId});
 
-        // Check not unsubscribed
+        // Check that the member is subscribed to 2 newsletters
         const memberInitial = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.notEqual(memberInitial.related('newsletters').length, 0, 'This test requires a member that is subscribed to at least one newsletter');
+        assert.equal(memberInitial.related('newsletters').length, 2, 'This test requires a member that is subscribed to at least one newsletter');
 
         events = [{
             event: 'unsubscribed',
             recipient: emailRecipient.member_email,
             'user-variables': {
-                'email-id': emailId
+                'email-id': email.id
             },
             message: {
                 headers: {
@@ -1064,15 +1074,23 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
 
         // Since this is all event based we should wait for all dispatched events to be completed.
         await DomainEvents.allSettled();
 
-        // Check if unsubscribed
+        // The member should be unsubscribed from the specific newsletter
         const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.equal(member.related('newsletters').length, 0);
+
+        // The member is now subscribed to 1 newsletter
+        assert.equal(member.related('newsletters').length, 1);
+
+        // The member is now unsubscribed from newsletter 0
+        assert(!member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToRemove));
+
+        // But the member is still subscribed to newsletter 1
+        assert(member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToKeep));
     });
 
     it('Can handle unknown events', async function () {
@@ -1100,7 +1118,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 1);
     });
 
@@ -1114,7 +1132,7 @@ describe('EmailEventStorage', function () {
         }];
 
         // Fire event processing
-        const result = await emailAnalytics.fetchLatest();
+        const result = await emailAnalytics.fetchLatestOpenedEvents();
         assert.equal(result, 0);
     });
 });

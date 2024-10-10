@@ -30,6 +30,7 @@ const expectedProperties = {
         'title',
         'slug',
         'mobiledoc',
+        'lexical',
         'comment_id',
         'feature_image',
         'feature_image_alt',
@@ -67,7 +68,6 @@ const expectedProperties = {
         'tiers',
         'newsletter',
         'count',
-        'post_revisions',
         'reading_time'
     ],
     user: [

@@ -27,23 +27,30 @@
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
     "dev": "node .github/scripts/dev.js",
-    "fix": "yarn cache clean && rm -rf node_modules && yarn",
+    "fix": "yarn cache clean && rimraf -g '**/node_modules' && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
-    "setup": "yarn && git submodule update --init",
+    "setup": "yarn && git submodule update --init && NODE_ENV=development node .github/scripts/setup.js",
+    "reset:data": "cd ghost/core && node index.js generate-data --clear-database --quantities members:100000,posts:500 --seed 123",
+    "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
+    "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
+    "docker:reset": "docker-compose -f .github/scripts/docker-compose.yml down -v && docker-compose -f .github/scripts/docker-compose.yml up -d --wait",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
+    "test:browser": "node .github/scripts/dev.js --browser-tests --all",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
-    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
-    "prepare": "husky install .github/hooks"
+    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
+    "prepare": "husky install .github/hooks",
+    "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/tinybird -it tinybirdco/tinybird-cli-docker",
+    "tb:update": "docker pull tinybirdco/tinybird-cli-docker"
   },
   "resolutions": {
-    "@elastic/elasticsearch": "8.5.0",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/errors": "1.3.5",
+    "@tryghost/logging": "2.4.18",
+    "jackspeak": "2.1.1",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.45"
   },
   "renovate": {
     "extends": [
@@ -61,7 +68,8 @@
       "validator",
       "codemirror",
       "faker",
-      "ember-cli-code-coverage"
+      "ember-cli-code-coverage",
+      "ember-cli-terser"
     ],
     "ignorePaths": [
       "test",
@@ -104,15 +112,18 @@
     "*.js": "eslint"
   },
   "devDependencies": {
-    "concurrently": "8.2.1",
+    "@actions/core": "1.10.1",
+    "chalk": "4.1.2",
+    "concurrently": "8.2.2",
     "eslint": "8.44.0",
-    "eslint-plugin-ghost": "3.3.0",
+    "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
-    "lint-staged": "14.0.1",
-    "nx": "16.7.4",
-    "rimraf": "5.0.1",
-    "ts-node": "10.9.1",
-    "typescript": "5.2.2"
+    "inquirer": "8.2.6",
+    "lint-staged": "15.2.10",
+    "nx": "19.8.4",
+    "rimraf": "5.0.10",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5"
   }
 }

@@ -6,7 +6,7 @@ import * as helpers from '../utils/helpers';
 import {formSubmitHandler, planClickHandler} from '../data-attributes';
 
 // Mock data
-function getMockData() {
+function getMockData({newsletterQuerySelectorResult = null} = {}) {
     const site = FixturesSite.singleTier.basic;
     const member = null;
 
@@ -63,6 +63,9 @@ function getMockData() {
                         value: 'Gold'
                     }];
                 }
+                if (elem === 'input[type=hidden][data-members-newsletter], input[type=checkbox][data-members-newsletter]:checked, input[type=radio][data-members-newsletter]:checked' && newsletterQuerySelectorResult) {
+                    return newsletterQuerySelectorResult;
+                }
             }
         }
     };
@@ -80,6 +83,13 @@ describe('Member Data attributes:', () => {
                 return Promise.resolve({
                     ok: true,
                     json: async () => ({success: true})
+                });
+            }
+
+            if (url.includes('api/integrity-token')) {
+                return Promise.resolve({
+                    ok: true,
+                    text: async () => 'testtoken'
                 });
             }
 
@@ -136,12 +146,12 @@ describe('Member Data attributes:', () => {
         jest.restoreAllMocks();
     });
     describe('data-members-form', () => {
-        test('allows free signup', () => {
+        test('allows free signup', async () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
 
-            formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
 
-            expect(window.fetch).toHaveBeenCalledTimes(1);
+            expect(window.fetch).toHaveBeenCalledTimes(2);
             const expectedBody = JSON.stringify({
                 email: 'jamie@example.com',
                 emailType: 'signup',
@@ -154,9 +164,10 @@ describe('Member Data attributes:', () => {
                     refSource: 'ghost-explore',
                     refUrl: 'https://example.com/blog/',
                     time: 1611234567890
-                }]
+                }],
+                integrityToken: 'testtoken'
             });
-            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+            expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
     });
 
@@ -234,6 +245,63 @@ describe('Member Data attributes:', () => {
                 },
                 method: 'POST'
             });
+        });
+    });
+
+    describe('data-members-newsletter', () => {
+        test('includes specified newsletters in request', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
+                newsletterQuerySelectorResult: [{
+                    value: 'Some Newsletter'
+                }]
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(window.fetch).toHaveBeenCalledTimes(2);
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }],
+                newsletters: [{name: 'Some Newsletter'}],
+                integrityToken: 'testtoken'
+            });
+            expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+        });
+
+        test('does not include newsletters in request if there are no newsletter inputs', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
+                newsletterQuerySelectorResult: []
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(window.fetch).toHaveBeenCalledTimes(2);
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }],
+                integrityToken: 'testtoken'
+            });
+            expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
     });
 });

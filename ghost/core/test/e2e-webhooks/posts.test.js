@@ -1,6 +1,6 @@
 const moment = require('moment-timezone');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL, anyString} = matchers;
+const {anyGhostAgent, anyArray, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL, anyString} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -48,7 +48,8 @@ const buildPostSnapshotWithTiers = ({published, tiersCount, roles = true}) => {
         url: anyLocalURL,
         tiers: new Array(tiersCount).fill(tierSnapshot),
         primary_author: buildAuthorSnapshot(roles),
-        authors: new Array(1).fill(buildAuthorSnapshot(roles))
+        authors: new Array(1).fill(buildAuthorSnapshot(roles)),
+        post_revisions: anyArray
     };
 };
 
@@ -65,7 +66,8 @@ const buildPostSnapshotWithTiersAndTags = ({published, tiersCount, tags, roles =
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles)),
         primary_tag: tags ? tagSnapshot : null,
-        tags: tags ? new Array(1).fill(tagSnapshot) : []
+        tags: tags ? new Array(1).fill(tagSnapshot) : [],
+        post_revisions: anyArray
     };
 };
 
@@ -496,7 +498,7 @@ describe('post.* events', function () {
                 posts: [updatedPost]
             })
             .expectStatus(200);
-        
+
         updatedPost.tags = [];
 
         await adminAPIAgent

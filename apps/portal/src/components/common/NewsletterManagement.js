@@ -32,7 +32,7 @@ function SuccessIcon({show, checked}) {
     classNames.push('gh-portal-checkmark-container');
 
     return (
-        <div className={classNames.join(' ')}>
+        <div className={classNames.join(' ')} data-testid='checkmark-container'>
             <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />
         </div>
     );
@@ -46,7 +46,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     const [showUpdated, setShowUpdated] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
+        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
@@ -95,7 +95,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     }
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
+        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
             <div className='gh-portal-list-detail'>
                 <h3>{t('Comments')}</h3>
                 <p>{t('Get notified when someone replies to your comment')}</p>
@@ -205,7 +205,7 @@ export default function NewsletterManagement({
                         <span className="gh-portal-footer-secondary-light">{t('Not receiving emails?')}</span>
                         <button
                             className="gh-portal-btn-text gh-email-faq-page-button"
-                            onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ'})}
+                            onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ', pageData: {direct: false}})}
                         >
                             {/* eslint-disable-next-line i18next/no-literal-string */}
                             {t('Get help')} &rarr;

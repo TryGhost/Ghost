@@ -71,7 +71,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 model._originalOptions = collection._originalOptions;
             }));
 
-            return proto.onFetchingCollection.call(this, collection, attrs, options);
+            return proto.onFetchedCollection.call(this, collection, attrs, options);
         },
 
         onCreating: function onCreating(model, attrs, options) {

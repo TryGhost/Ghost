@@ -274,21 +274,21 @@ SchedulingDefault.prototype._pingUrl = function (object) {
     const maxTries = 30;
 
     const options = {
-        timeout: requestTimeout,
-        method: httpMethod.toLowerCase(),
-        retry: 0,
-        headers: {
-            'Content-Type': 'application/json'
+        timeout: {
+            request: requestTimeout
+        },
+        method: httpMethod,
+        retry: {
+            limit: 0
         }
     };
 
     // CASE: If we detect to publish a post in the past (case blog is down), we add a force flag
     if (moment(time).isBefore(moment())) {
         if (httpMethod === 'GET') {
-            // @TODO: rename to searchParams when updating to Got v10
-            options.query = 'force=true';
+            options.searchParams = {force: true};
         } else {
-            options.body = JSON.stringify({force: true});
+            options.json = {force: true};
         }
     }
 

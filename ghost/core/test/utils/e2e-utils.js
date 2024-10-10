@@ -4,7 +4,7 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const uuid = require('uuid');
+const crypto = require('crypto');
 
 // Ghost Internals
 const boot = require('../../core/boot');
@@ -75,12 +75,12 @@ const prepareContentFolder = (options) => {
     fs.ensureDirSync(path.join(contentFolderForTests, 'settings'));
 
     if (options.copyThemes) {
-        // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
+        // Copy all themes into the new test content folder. Default active theme is always source. If you want to use a different theme, you have to set the active theme (e.g. stub)
         fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
     }
 
-    // Copy theme even if frontend is disabled, as admin can use casper when viewing themes section
-    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
+    // Copy theme even if frontend is disabled, as admin can use source when viewing themes section
+    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
 
     if (options.redirectsFile) {
         redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
@@ -213,7 +213,7 @@ const startGhost = async (options) => {
         forceStart: false,
         copyThemes: false,
         copySettings: false,
-        contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
+        contentFolder: path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test'),
         subdir: false
     }, options);
 

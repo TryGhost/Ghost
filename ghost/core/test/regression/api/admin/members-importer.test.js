@@ -342,6 +342,10 @@ describe('Members Importer API', function () {
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
 
         mockManager.assert.sentEmail({
+            subject: 'Your member import is complete'
+        });
+
+        mockManager.assert.sentEmail({
             subject: 'Email needs verification'
         });
     });

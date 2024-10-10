@@ -6,7 +6,8 @@ const messages = {
     collectionNotFound: 'Collection not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'collections',
 
     browse: {
@@ -29,7 +30,11 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return collectionsService.api.getAll(frame.options);
+            return collectionsService.api.getAll({
+                filter: frame.options.filter,
+                limit: frame.options.limit,
+                page: frame.options.page
+            });
         }
     },
 
@@ -83,7 +88,7 @@ module.exports = {
 
     edit: {
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'
@@ -106,15 +111,6 @@ module.exports = {
                     message: tpl(messages.collectionNotFound)
                 });
             }
-
-            // @NOTE: cache invalidation has to be done manually for now
-            //        because the model's wasChanged is not returned from
-            //        the service using in-memory repository layer
-            // if (model.wasChanged()) {
-            this.headers.cacheInvalidate = true;
-            // } else {
-            //     this.headers.cacheInvalidate = false;
-            // }
 
             return model;
         }
@@ -141,3 +137,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

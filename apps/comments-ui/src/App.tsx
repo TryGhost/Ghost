@@ -1,3 +1,5 @@
+/* eslint-disable no-shadow */
+
 import AuthFrame from './AuthFrame';
 import ContentBox from './components/ContentBox';
 import PopupBox from './components/PopupBox';
@@ -24,15 +26,18 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         pagination: null,
         commentCount: 0,
         secundaryFormCount: 0,
-        popup: null
+        popup: null,
+        labs: null
     });
+
+    const iframeRef = React.createRef<HTMLIFrameElement>();
 
     const api = React.useMemo(() => {
         return setupGhostApi({
             siteUrl: options.siteUrl,
             apiUrl: options.apiUrl!,
             apiKey: options.apiKey!
-        })
+        });
     }, [options]);
 
     const [adminApi, setAdminApi] = useState<AdminApi|null>(null);
@@ -45,7 +50,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             return {
                 ...state,
                 ...newState
-            }
+            };
         });
     }, [setFullState]);
 
@@ -55,7 +60,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             // because updates to state may be asynchronous
             // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
             setState((state) => {
-                return SyncActionHandler({action, data, state, api, adminApi: adminApi!, options})
+                return SyncActionHandler({action, data, state, api, adminApi: adminApi!, options});
             });
             return;
         }
@@ -66,7 +71,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         setState((state) => {
             ActionHandler({action, data, state, api, adminApi: adminApi!, options}).then((updatedState) => {
                 setState({...updatedState});
-            }).catch(console.error);
+            }).catch(console.error); // eslint-disable-line no-console
 
             // No immediate changes
             return {};
@@ -125,21 +130,21 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             pagination: data.meta.pagination,
             count: count
         };
-    }
+    };
 
-    /** Initialize comments setup on load, fetch data and setup state*/
+    /** Initialize comments setup once in viewport, fetch data and setup state*/
     const initSetup = async () => {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {member} = await api.init();
+            const {member, labs} = await api.init();
             const {comments, pagination, count} = await fetchComments();
-
             const state = {
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
-                commentCount: count
+                commentCount: count,
+                labs: labs
             };
 
             setState(state);
@@ -153,18 +158,42 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         }
     };
 
+    /** Delay initialization until comments block is in viewport */
     useEffect(() => {
-        initSetup();
-    }, []);
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    initSetup();
+                    if (iframeRef.current) {
+                        observer.unobserve(iframeRef.current);
+                    }
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        });
+
+        if (iframeRef.current) {
+            observer.observe(iframeRef.current);
+        }
+
+        return () => {
+            if (iframeRef.current) {
+                observer.unobserve(iframeRef.current);
+            }
+        };
+    }, [iframeRef.current]);
 
     const done = state.initStatus === 'success';
 
     return (
         <AppContext.Provider value={context}>
-            <CommentsFrame>
+            <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>
+            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
             <PopupBox />
         </AppContext.Provider>
     );

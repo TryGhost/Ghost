@@ -193,7 +193,7 @@ describe('{{#foreach}} helper', function () {
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
         });
 
-        it('should handle rowStart and rowEnd for multiple columns (array)', function () {
+        it('should handle rowStart and rowEnd for multiple columns (object)', function () {
             const expected = [
                 {first: true, last: false, even: false, odd: true, rowStart: true, rowEnd: false},
                 {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: true},
@@ -400,6 +400,27 @@ describe('{{#foreach}} helper', function () {
             const expected = '<ul><li>first</li><li>second</li><li>third</li></ul>';
             shouldCompileToExpected(templateString, arrayHashWithVis, expected);
             shouldCompileToExpected(templateString, objectHashWithVis, expected);
+        });
+
+        it('foreach with newsletters with members visibility', function () {
+            const newsletterObjectHashWithVisibility = {
+                newsletters: {
+                    first: {name: 'first', visibility: 'members', subscribe_on_signup: true},
+                    second: {name: 'second', visibility: 'members', subscribe_on_signup: true},
+                    third: {name: 'third', visibility: 'paid', subscribe_on_signup: false}
+                }
+            };
+            const newsletterArrayHashWithVisibility = {
+                newsletters: [
+                    {name: 'first', visibility: 'members', subscribe_on_signup: true},
+                    {name: 'second', visibility: 'members', subscribe_on_signup: true},
+                    {name: 'third', visibility: 'paid', subscribe_on_signup: false}
+                ]
+            };
+            const templateString = '<ul>{{#foreach newsletters}}<li>{{name}}</li>{{else}}not this{{/foreach}}</ul>';
+            const expected = '<ul><li>first</li><li>second</li><li>third</li></ul>';
+            shouldCompileToExpected(templateString, newsletterObjectHashWithVisibility, expected);
+            shouldCompileToExpected(templateString, newsletterArrayHashWithVisibility, expected);
         });
 
         it('foreach with from 2', function () {

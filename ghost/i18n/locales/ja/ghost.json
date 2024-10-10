@@ -13,7 +13,7 @@
     "If you did not make this request, you can safely ignore this email.": "このリクエストを行っていない場合は、このメールを無視してください。",
     "If you did not make this request, you can simply delete this message.": "このリクエストを行っていない場合は、このメールを削除してください。",
     "Please confirm your email address with this link:": "このリンクを使用してメールアドレスを確認してください：",
-    "Secure sign in link for {{siteTitle}}": "{{siteTitle}}への安全なログイン先リンク",
+    "Secure sign in link for {{siteTitle}}": "{{siteTitle}}へのログインリンクです",
     "See you soon!": "引き続きよろしくお願いします。",
     "Sent to {{email}}": "{{email}}に送信",
     "Sign in": "ログイン",

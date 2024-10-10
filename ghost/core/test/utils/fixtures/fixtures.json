@@ -725,6 +725,7 @@
                     "paid_subscription_started_notificaton": true,
                     "paid_subscription_canceled_notification": false,
                     "mention_notifications": true,
+                    "recommendation_notifications": true,
                     "milestone_notifications": true,
                     "donation_notifications": true,
                     "status": "inactive",
@@ -742,6 +743,7 @@
                     "paid_subscription_started_notification": true,
                     "paid_subscription_canceled_notification": false,
                     "mention_notifications": true,
+                    "recommendation_notifications": true,
                     "milestone_notifications": true,
                     "donation_notifications": true,
                     "location": "The Internet",
@@ -1103,7 +1105,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Author": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
@@ -1120,7 +1122,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read"],

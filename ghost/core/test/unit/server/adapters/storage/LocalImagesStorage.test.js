@@ -153,7 +153,7 @@ describe('Local Images Storage', function () {
                 });
         });
 
-        it('success', function (done) {
+        it('success (leading and trailing slashes)', function (done) {
             localFileStore.read({path: '/ghost-logo.png/'})
                 .then(function (bytes) {
                     bytes.length.should.eql(8638);

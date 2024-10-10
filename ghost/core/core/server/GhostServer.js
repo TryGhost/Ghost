@@ -4,6 +4,7 @@ const debug = require('@tryghost/debug')('server');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 const notify = require('./notify');
 const moment = require('moment');
 const stoppable = require('stoppable');
@@ -66,7 +67,7 @@ class GhostServer {
      * Starts the ghost server listening on the configured port.
      * Requires an express app to be passed in
      *
-     * @param  {Object} rootApp - Required express app instance.
+     * @param  {import('express').Application} rootApp - Required express app instance.
      * @return {Promise} Resolves once Ghost has started
      */
     start(rootApp) {
@@ -126,8 +127,8 @@ class GhostServer {
 
             // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
             process
-                .removeAllListeners('SIGINT').on('SIGINT', self.shutdown.bind(self))
-                .removeAllListeners('SIGTERM').on('SIGTERM', self.shutdown.bind(self));
+                .removeAllListeners('SIGINT').on('SIGINT', () => self.shutdown())
+                .removeAllListeners('SIGTERM').on('SIGTERM', () => self.shutdown());
         });
     }
 
@@ -169,8 +170,16 @@ class GhostServer {
         try {
             // If we never fully started, there's nothing to stop
             if (this.httpServer && this.httpServer.listening) {
+                // Time how long it takes to close all in-flight requests
+                const startTime = Date.now();
+
                 // We stop the server first so that no new long running requests or processes can be started
                 await this._stopServer();
+
+                const shutdownDuration = Date.now() - startTime;
+                if (shutdownDuration > 15000) {
+                    metrics.metric('long-shutdown', shutdownDuration);
+                }
             }
             // Do all of the cleanup tasks
             await this._cleanup();

@@ -8,6 +8,8 @@ const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const metrics = require('@tryghost/metrics');
+const settingsHelpers = require('../settings-helpers');
+const emailAddress = require('../email-address');
 const messages = {
     title: 'Ghost at {domain}',
     checkEmailConfigInstructions: 'Please see {url} for instructions on configuring email.',
@@ -16,29 +18,59 @@ const messages = {
     reason: ' Reason: {reason}.',
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
+const {EmailAddressParser} = require('@tryghost/email-addresses');
+const logging = require('@tryghost/logging');
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
 }
 
-function getFromAddress(requestedFromAddress) {
+/**
+ * @param {string} requestedFromAddress
+ * @param {string} requestedReplyToAddress
+ * @returns {{from: string, replyTo?: string|null}}
+ */
+function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
+    if (settingsHelpers.useNewEmailAddresses()) {
+        if (!requestedFromAddress) {
+            // Use the default config
+            requestedFromAddress = emailAddress.service.defaultFromEmail;
+        }
+
+        // Clean up email addresses (checks whether sending is allowed + email address is valid)
+        const addresses = emailAddress.service.getAddressFromString(requestedFromAddress, requestedReplyToAddress);
+
+        // fill in missing name if not set
+        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title') : tpl(messages.title, {domain: getDomain()});
+        if (!addresses.from.name) {
+            addresses.from.name = defaultSiteTitle;
+        }
+
+        return {
+            from: EmailAddressParser.stringify(addresses.from),
+            replyTo: addresses.replyTo ? EmailAddressParser.stringify(addresses.replyTo) : null
+        };
+    }
     const configAddress = config.get('mail') && config.get('mail').from;
 
     const address = requestedFromAddress || configAddress;
     // If we don't have a from address at all
     if (!address) {
         // Default to noreply@[blog.url]
-        return getFromAddress(`noreply@${getDomain()}`);
+        return getFromAddress(`noreply@${getDomain()}`, requestedReplyToAddress);
     }
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(address, {require_tld: false})) {
         const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : tpl(messages.title, {domain: getDomain()});
-        return `"${defaultSiteTitle}" <${address}>`;
+        return {
+            from: `"${defaultSiteTitle}" <${address}>`
+        };
     }
 
-    return address;
+    logging.warn(`Invalid from address used for sending emails: ${address}`);
+    return {from: address};
 }
 
 /**
@@ -47,16 +79,21 @@ function getFromAddress(requestedFromAddress) {
  * @param {Object} message
  * @param {boolean} [message.forceTextContent] - force text content
  * @param {string} [message.from] - sender email address
+ * @param {string} [message.replyTo]
  * @returns {Object}
  */
 function createMessage(message) {
     const encoding = 'base64';
     const generateTextFromHTML = !message.forceTextContent;
-    return Object.assign({}, message, {
-        from: getFromAddress(message.from),
+
+    const addresses = getFromAddress(message.from, message.replyTo);
+
+    return {
+        ...message,
+        ...addresses,
         generateTextFromHTML,
         encoding
-    });
+    };
 }
 
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
@@ -154,13 +191,13 @@ module.exports = class GhostMailer {
             return tpl(messages.messageSent);
         }
 
-        if (response.pending.length > 0) {
+        if (response.pending && response.pending.length > 0) {
             throw createMailError({
                 message: tpl(messages.reason, {reason: 'Email has been temporarily rejected'})
             });
         }
 
-        if (response.errors.length > 0) {
+        if (response.errors && response.errors.length > 0) {
             throw createMailError({
                 message: tpl(messages.reason, {reason: response.errors[0].message})
             });

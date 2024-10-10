@@ -2,12 +2,12 @@ import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import {useContext, useEffect, useState} from 'react';
 import {getSiteNewsletters} from '../../utils/helpers';
-import setupGhostApi from '../../utils/api';
 import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import Interpolate from '@doist/react-interpolate';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
+import LoadingPage from './LoadingPage';
 
 function SiteLogo() {
     const {site} = useContext(AppContext);
@@ -32,18 +32,21 @@ function AccountHeader() {
     );
 }
 
-async function updateMemberNewsletters({api, memberUuid, newsletters, enableCommentNotifications}) {
+async function updateMemberNewsletters({api, memberUuid, key, newsletters, enableCommentNotifications}) {
     try {
-        return await api.member.updateNewsletters({uuid: memberUuid, newsletters, enableCommentNotifications});
+        return await api.member.updateNewsletters({uuid: memberUuid, key, newsletters, enableCommentNotifications});
     } catch (e) {
         // ignore auto unsubscribe error
     }
 }
 
+// NOTE: This modal is available even if not logged in, but because it's possible to also be logged in while making modifications,
+//  we need to update the member data in the context if logged in.
 export default function UnsubscribePage() {
-    const {site, pageData, onAction, t} = useContext(AppContext);
-    const api = setupGhostApi({siteUrl: site.url});
+    const {site, api, pageData, member: loggedInMember, onAction, t} = useContext(AppContext);
+    // member is the member data fetched from the API based on the uuid and its state is limited to just this modal, not all of Portal
     const [member, setMember] = useState();
+    const [loading, setLoading] = useState(true);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
@@ -54,47 +57,92 @@ export default function UnsubscribePage() {
     const {comments_enabled: commentsEnabled} = site;
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
-    useEffect(() => {
-        const ghostApi = setupGhostApi({siteUrl: site.url});
-        (async () => {
-            const memberData = await ghostApi.member.newsletters({uuid: pageData.uuid});
+    const updateNewsletters = async (newsletters) => {
+        if (loggedInMember) {
+            // when we have a member logged in, we need to update the newsletters in the context
+            onAction('updateNewsletterPreference', {newsletters});
+        } else {
+            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
+        }
+        setSubscribedNewsletters(newsletters);
+    };
 
-            setMember(memberData);
+    const updateCommentNotifications = async (enabled) => {
+        let updatedData;
+        if (loggedInMember) {
+            // when we have a member logged in, we need to update the newsletters in the context
+            await onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
+            updatedData = {...loggedInMember, enable_comment_notifications: enabled};
+        } else {
+            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
+        }
+        setMember(updatedData);
+    };
+
+    const unsubscribeAll = async () => {
+        let updatedMember;
+        if (loggedInMember) {
+            await onAction('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
+            updatedMember = {...loggedInMember};
+            updatedMember.newsletters = [];
+            updatedMember.enable_comment_notifications = false;
+        } else {
+            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+        }
+        setSubscribedNewsletters([]);
+        setMember(updatedMember);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t(`Unsubscribed from all emails.`)
+        });
+    };
+
+    // This handles the url query param actions that ultimately launch this component/modal
+    useEffect(() => {
+        (async () => {
+            let memberData;
+            try {
+                memberData = await api.member.newsletters({uuid: pageData.uuid, key: pageData.key});
+                setMember(memberData ?? null);
+                setLoading(false);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('[PORTAL] Error fetching member newsletters', e);
+                setMember(null);
+                setLoading(false);
+                return;
+            }
+
+            if (memberData === null) {
+                return;
+            }
+
             const memberNewsletters = memberData?.newsletters || [];
             setSubscribedNewsletters(memberNewsletters);
-            if (siteNewsletters?.length === 1 && !commentsEnabled) {
+            if (siteNewsletters?.length === 1 && !commentsEnabled && !pageData.newsletterUuid) {
                 // Unsubscribe from all the newsletters, because we only have one
-                const updatedData = await updateMemberNewsletters({
-                    api: ghostApi,
-                    memberUuid: pageData.uuid,
-                    newsletters: []
-                });
-                setSubscribedNewsletters(updatedData.newsletters);
+                await updateNewsletters([]);
             } else if (pageData.newsletterUuid) {
                 // Unsubscribe link for a specific newsletter
-                const updatedData = await updateMemberNewsletters({
-                    api: ghostApi,
-                    memberUuid: pageData.uuid,
-                    newsletters: memberNewsletters?.filter((d) => {
-                        return d.uuid !== pageData.newsletterUuid;
-                    })
-                });
-                setSubscribedNewsletters(updatedData.newsletters);
+                await updateNewsletters(memberNewsletters?.filter((d) => {
+                    return d.uuid !== pageData.newsletterUuid;
+                }));
             } else if (pageData.comments && commentsEnabled) {
                 // Unsubscribe link for comments
-                const updatedData = await updateMemberNewsletters({
-                    api: ghostApi,
-                    memberUuid: pageData.uuid,
-                    enableCommentNotifications: false
-                });
-
-                setMember(updatedData);
+                await updateCommentNotifications(false);
             }
         })();
     }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
 
-    // Case: Email not found
-    if (member === null) {
+    if (loading) {
+        // Loading member data from the API based on the uuid
+        return (
+            <LoadingPage />
+        );
+    }
+
+    // Case: invalid uuid passed
+    if (!member) {
         return (
             <div className='gh-portal-content gh-portal-feedback with-footer'>
                 <CloseButton />
@@ -176,6 +224,11 @@ export default function UnsubscribePage() {
         const unsubscribedNewsletter = siteNewsletters?.find((d) => {
             return d.uuid === pageData.newsletterUuid;
         });
+
+        if (!unsubscribedNewsletter) {
+            return null;
+        }
+
         const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
         return (
             <>
@@ -198,23 +251,13 @@ export default function UnsubscribePage() {
             notification={HeaderNotification}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={async (newsletters) => {
-                setSubscribedNewsletters(newsletters);
+                await updateNewsletters(newsletters);
                 setHasInteracted(true);
-                await api.member.updateNewsletters({uuid: pageData.uuid, newsletters});
             }}
-            updateCommentNotifications={async (enabled) => {
-                const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, enableCommentNotifications: enabled});
-                setMember(updatedMember);
-            }}
+            updateCommentNotifications={updateCommentNotifications}
             unsubscribeAll={async () => {
+                await unsubscribeAll();
                 setHasInteracted(true);
-                setSubscribedNewsletters([]);
-                onAction('showPopupNotification', {
-                    action: 'updated:success',
-                    message: t(`Email preference updated.`)
-                });
-                const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
-                setMember(updatedMember);
             }}
             isPaidMember={member?.status !== 'free'}
             isCommentsEnabled={commentsEnabled !== 'off'}

@@ -50,6 +50,15 @@ describe('Pages Content API', function () {
             });
     });
 
+    it('Cannot request pages with mobiledoc or lexical fields', async function () {
+        await agent
+            .get(`pages/?fields=mobiledoc,lexical,published_at,created_at,updated_at,uuid`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                pages: new Array(5).fill(pageMatcher)
+            });
+    });
+
     it('Can request page', async function () {
         const res = await agent.get(`pages/${fixtureManager.get('posts', 5).id}/`)
             .expectStatus(200)

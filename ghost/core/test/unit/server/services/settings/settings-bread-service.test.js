@@ -183,7 +183,21 @@ describe('UNIT > Settings BREAD Service:', function () {
                         return 'test';
                     }
                 },
-                labsService: {}
+                labsService: {
+                    isSet() {
+                        return false;
+                    }
+                },
+                emailAddressService: {
+                    service: {
+                        validate() {
+                            return {
+                                allowed: true,
+                                verificationEmailRequired: true
+                            };
+                        }
+                    }
+                }
             });
 
             const settings = await defaultSettingsManager.edit([

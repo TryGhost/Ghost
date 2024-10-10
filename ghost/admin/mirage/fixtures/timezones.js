@@ -132,7 +132,7 @@ export default [
         label: '(GMT +2:00) Harare'
     },
     {
-        name: 'Europe/Kyiv',
+        name: 'Europe/Kiev',
         label: '(GMT +2:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius'
     },
     {

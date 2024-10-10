@@ -1,23 +1,24 @@
-const {test, expect} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 
 test.describe('Site Settings', () => {
     test.describe('Privacy setting', () => {
-        test('A site set to private should require a password to access it', async ({page, browser}) => {
+        test('A site set to private should require a password to access it', async ({sharedPage, browser}) => {
             // set private mode in admin "on"
-            await page.goto('/ghost');
+            await sharedPage.goto('/ghost');
 
-            await page.locator('[data-test-nav="settings"]').click();
-            await page.locator('[data-test-nav="general"]').click();
+            await sharedPage.locator('[data-test-nav="settings"]').click();
 
-            // @NOTE: needs a data-test selector
-            await page.locator('label.switch span').click();
+            const section = sharedPage.getByTestId('locksite');
+
+            await section.getByRole('button', {name: 'Edit'}).click();
+
+            await section.getByLabel(/Enable password protection/).check();
+            await section.getByLabel('Site password').fill('password');
 
             // save changes
-            await page.locator('[data-test-button="save"]').click();
-            await page.getByRole('button', {name: 'Saved'}).waitFor({
-                state: 'visible',
-                timeout: 1000
-            });
+            await section.getByRole('button', {name: 'Save'}).click();
+            await expect(section.getByLabel('Site password')).toHaveCount(0);
 
             // copy site password
             //const passwordInput = await page.locator('[data-test-password-input]');
@@ -40,20 +41,20 @@ test.describe('Site Settings', () => {
             // await frontendPage.waitForSelector('.site-title');
             // await expect(frontendPage.locator('.site-title')).toHaveText('The Local Test');
 
-            // // set private mode in admin "off"
-            // @NOTE: needs a data-test selector
-            await page.locator('label.switch span').click();
+            // set private mode in admin "off"
+            await section.getByRole('button', {name: 'Edit'}).click();
+
+            await section.getByLabel(/Enable password protection/).uncheck();
 
             // save changes
-            await page.locator('[data-test-button="save"]').click();
-            await page.getByRole('button', {name: 'Saved'}).waitFor({
-                state: 'visible',
-                timeout: 1000
-            });
+            await section.getByRole('button', {name: 'Save'}).click();
+            await expect(section.getByLabel('Site password')).toHaveCount(0);
 
             // check the site is publicly accessible
-            await frontendPage.goto('/');
-            await expect(frontendPage.locator('.site-title')).toHaveText('The Local Test');
+            await expect(async () => {
+                await frontendPage.goto('/');
+                await expect(frontendPage.locator('.gh-navigation-brand')).toHaveText('The Local Test');
+            }).toPass();
         });
     });
 });

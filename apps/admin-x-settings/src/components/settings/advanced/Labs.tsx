@@ -1,27 +1,19 @@
 import AlphaFeatures from './labs/AlphaFeatures';
 import BetaFeatures from './labs/BetaFeatures';
-import Button from '../../../admin-x-ds/global/Button';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
-import MigrationOptions from './labs/MigrationOptions';
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
-import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
+import TopLevelGroup from '../../TopLevelGroup';
+import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';
+type LabsTab = 'labs-alpha-features' | 'labs-beta-features';
 
 const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-migration-options');
+    const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
     const [isOpen, setIsOpen] = useState(false);
     const {config} = useGlobalData();
 
     const tabs = [
-        {
-            id: 'labs-migration-options',
-            title: 'Migration options',
-            contents: <MigrationOptions />
-        },
         {
             id: 'labs-beta-features',
             title: 'Beta features',
@@ -35,16 +27,16 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ].filter(Boolean) as Tab<LabsTab>[];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customHeader={
                 <div className='z-10 flex items-start justify-between'>
                     <SettingGroupHeader description='This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.' title='Labs' />
                     {
                         !isOpen ?
-                            <Button color='green' label='Open' link onClick={() => {
+                            <Button className='mt-[-5px]' color='clear' label='Open' size='sm' onClick={() => {
                                 setIsOpen(true);
                             }} /> :
-                            <Button color='green' label='Close' link onClick={() => {
+                            <Button className='mt-[-5px]' color='grey' label='Close' size='sm' onClick={() => {
                                 setIsOpen(false);
                             }} />
                     }
@@ -56,14 +48,14 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='labs'
         >
             {isOpen ?
-                <TabView<'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+                <TabView<'labs-alpha-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                 :
                 <div className='absolute inset-0 z-0 overflow-hidden opacity-70'>
-                    <img className='absolute -right-6 -top-6' src={LabsBubbles} />
+                    <img className='absolute -right-6 -top-6 dark:opacity-10' src={LabsBubbles} />
                 </div>
             }
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default Labs;
+export default withErrorBoundary(Labs, 'Labs');

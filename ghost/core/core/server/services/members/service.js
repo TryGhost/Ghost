@@ -19,6 +19,7 @@ const tiersService = require('../tiers');
 const VerificationTrigger = require('@tryghost/verification-trigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
+const RequestIntegrityTokenProvider = require('./RequestIntegrityTokenProvider');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -55,7 +56,9 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
         },
         getTierByName: async (name) => {
             const tiers = await tiersService.api.browse({
-                filter: `name:'${name}'`
+                filter: {
+                    name
+                }
             });
 
             if (tiers.data.length > 0) {
@@ -89,7 +92,13 @@ const initVerificationTrigger = () => {
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            const fromAddress = config.get('user_email');
+            let fromAddress = config.get('user_email');
+            let replyTo = undefined;
+
+            if (settingsHelpers.useNewEmailAddresses()) {
+                replyTo = fromAddress;
+                fromAddress = settingsHelpers.getNoReplyAddress();
+            }
 
             if (escalationAddress) {
                 await ghostMailer.send({
@@ -100,6 +109,7 @@ const initVerificationTrigger = () => {
                     }),
                     forceTextContent: true,
                     from: fromAddress,
+                    replyTo,
                     to: escalationAddress
                 });
             }
@@ -183,6 +193,11 @@ module.exports = {
 
     ssr: null,
     verificationTrigger: null,
+
+    requestIntegrityTokenProvider: new RequestIntegrityTokenProvider({
+        themeSecret: settingsCache.get('theme_session_secret'),
+        tokenDuration: 1000 * 60 * 5
+    }),
 
     stripeConnect: require('./stripe-connect'),
 

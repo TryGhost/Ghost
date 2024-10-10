@@ -1,6 +1,7 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const FormData = require('form-data');
 const p = require('path');
+const fsExtra = require('fs-extra');
 const {promises: fs} = require('fs');
 const assert = require('assert/strict');
 const config = require('../../../core/shared/config');
@@ -185,6 +186,20 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'loadingcat_square.gif', contentType: 'image/gif'});
     });
 
+    it('Will error when filename is too long', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const fileContents = await fs.readFile(originalFilePath);
+        const loggingStub = sinon.stub(logging, 'error');
+        await uploadImageRequest({fileContents, filename: `${'a'.repeat(300)}.png`, contentType: 'image/png'})
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+        sinon.assert.calledOnce(loggingStub);
+    });
+
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
@@ -286,5 +301,103 @@ describe('Images API', function () {
         });
         await uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
         clock.restore();
+    });
+
+    it('Does not try to delete non-existing file upon invalid request', async function () {
+        sinon.stub(logging, 'error');
+        const unlinkStub = sinon.stub(fsExtra, 'unlink');
+
+        await agent
+            .post('/images/upload/')
+            .body(JSON.stringify({}))
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+
+        // We didn't upload an image, so we shouldn't have called unlink
+        sinon.assert.notCalled(unlinkStub);
+    });
+
+    it('Errors when trying to upload invalid form body', async function () {
+        sinon.stub(logging, 'error');
+
+        await agent
+            .post('/images/upload/')
+            .header('Content-Type', 'multipart/form-data')
+            .body(new FormData())
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
+    it('Errors when image request body is broken', async function () {
+        // Manually construct a broken request body
+        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+        const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
+
+        // eslint-disable-next-line no-undef
+        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
+            type: 'multipart/form-data; boundary=boundary'
+        })).text();
+
+        sinon.stub(logging, 'error');
+        await agent
+            .post('/images/upload/')
+            .header('Content-Type', 'multipart/form-data; boundary=boundary')
+            .body(brokenDataBlob)
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
+    it('Errors when image request body is broken #2', async function () {
+        // Manually construct a broken request body
+        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+
+        // Note: this differs from above test by not including the boundary at the end of the payload
+        const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
+
+        // eslint-disable-next-line no-undef
+        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
+            type: 'multipart/form-data; boundary=boundary'
+        })).text();
+
+        sinon.stub(logging, 'error');
+        await agent
+            .post('/images/upload/')
+            .header('Content-Type', 'multipart/form-data; boundary=boundary')
+            .body(brokenDataBlob)
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
+    it('Does not return HTTP 500 when image processing fails', async function () {
+        sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
+
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const fileContents = await fs.readFile(originalFilePath);
+
+        const loggingStub = sinon.stub(logging, 'error');
+        await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+        sinon.assert.calledOnce(loggingStub);
     });
 });

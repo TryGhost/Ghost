@@ -7,6 +7,7 @@ const configUtils = require('../../../../utils/configUtils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
 const assert = require('assert/strict');
+const emailAddress = require('../../../../../core/server/services/email-address');
 
 // Mock SMTP config
 const SMTP = {
@@ -41,6 +42,11 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
+    before(function () {
+        emailAddress.init();
+        sinon.restore();
+    });
+
     afterEach(async function () {
         mailer = null;
         await configUtils.restore();
