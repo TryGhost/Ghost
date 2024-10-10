@@ -83,7 +83,10 @@ class CommentsService {
         await this.emails.notifyPostAuthors(comment);
 
         if (comment.get('parent_id')) {
-            await this.emails.notifyParentCommentAuthor(comment);
+            await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'});
+        }
+        if (comment.get('in_reply_to_id')) {
+            await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to'});
         }
     }
 
@@ -253,11 +256,12 @@ class CommentsService {
 
     /**
      * @param {string} parent - The ID of the Comment to reply to
+     * @param {string} inReplyTo - The ID of the Reply to reply to
      * @param {string} member - The ID of the Member to comment as
      * @param {string} comment - The HTML content of the Comment
      * @param {any} options
      */
-    async replyToComment(parent, member, comment, options) {
+    async replyToComment(parent, inReplyTo, member, comment, options) {
         this.checkEnabled();
         const memberModel = await this.models.Member.findOne({
             id: member
@@ -281,6 +285,7 @@ class CommentsService {
                 message: tpl(messages.replyToReply)
             });
         }
+
         const postModel = await this.models.Post.findOne({
             id: parentComment.get('post_id')
         }, {
@@ -291,10 +296,27 @@ class CommentsService {
 
         this.checkPostAccess(postModel, memberModel);
 
+        let inReplyToComment;
+        if (parent && inReplyTo) {
+            inReplyToComment = await this.getCommentByID(inReplyTo, options);
+
+            // we only allow references to published comments to avoid leaking
+            // hidden data via the snippet included in API responses
+            if (inReplyToComment && inReplyToComment.get('status') !== 'published') {
+                inReplyToComment = null;
+            }
+
+            // we don't allow in_reply_to references across different parents
+            if (inReplyToComment && inReplyToComment.get('parent_id') !== parent) {
+                inReplyToComment = null;
+            }
+        }
+
         const model = await this.models.Comment.add({
             post_id: parentComment.get('post_id'),
             member_id: member,
             parent_id: parentComment.id,
+            in_reply_to_id: inReplyToComment && inReplyToComment.get('id'),
             html: comment,
             status: 'published'
         }, options);

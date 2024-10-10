@@ -1,9 +1,12 @@
 const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const commentFields = [
     'id',
+    'in_reply_to_id',
+    'in_reply_to_snippet',
     'status',
     'html',
     'created_at',
@@ -42,6 +45,10 @@ const countFields = [
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
+    if (jsonModel.inReplyTo && jsonModel.inReplyTo.status === 'published') {
+        jsonModel.in_reply_to_snippet = htmlToPlaintext.comment(jsonModel.inReplyTo.html);
+    }
+
     const response = _.pick(jsonModel, commentFields);
 
     if (jsonModel.member) {
@@ -77,7 +84,7 @@ const commentMapper = (model, frame) => {
             response.html = null;
         }
     }
-    
+
     return response;
 };
 

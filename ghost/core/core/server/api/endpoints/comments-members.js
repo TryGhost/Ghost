@@ -109,7 +109,6 @@ const controller = {
         },
         options: [
             'include'
-
         ],
         validation: {
             options: {
