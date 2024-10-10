@@ -2,6 +2,10 @@ const {
     BadRequestError
 } = require('@tryghost/errors');
 const emailTemplate = require('../lib/emails/signin');
+const UAParser = require('ua-parser-js');
+const got = require('got');
+const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
 
 const {totp} = require('otplib');
 totp.options = {
@@ -143,6 +147,75 @@ module.exports = function createSessionService({
         return isValid;
     }
 
+    const formatTime = new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short'
+    }).format;
+
+    /**
+     * Get a readable location string from an IP address.
+     * @param {string} ip - The IP address to look up.
+     * @returns {Promise<string>} - A readable location string or 'Unknown Location'.
+     */
+    async function getGeolocationFromIP(ip) {
+        ip = '212.19.89.120';
+        if (!ip || (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip))) {
+            return;
+        }
+
+        const gotOpts = {
+            timeout: 500
+        };
+
+        if (process.env.NODE_ENV?.startsWith('test')) {
+            gotOpts.retry = 0;
+        }
+
+        const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ip)}.json`;
+        const response = await got(geojsUrl, gotOpts).json();
+
+        const {
+            city = '',
+            region = '',
+            country = ''
+        } = response || {};
+
+        const locationParts = [];
+
+        if (city) {
+            locationParts.push(city);
+        }
+        if (region) {
+            locationParts.push(region);
+        }
+        if (country) {
+            locationParts.push(country);
+        }
+
+        return locationParts.join(', ').trim() || 'Unknown Location';
+    }
+
+    async function getDeviceDetails(userAgent, ip) {
+        const parser = new UAParser();
+        parser.setUA(userAgent);
+        const result = parser.getResult();
+        const deviceParts = [
+            result.browser?.name || '',
+            result.os?.name || ''
+        ].filter(Boolean);
+
+        return {
+            device: deviceParts.join(', '),
+            location: await getGeolocationFromIP(ip),
+            time: formatTime(new Date())
+        };
+    }
+
     /**
      * sendAuthCodeToUser
      *
@@ -151,9 +224,8 @@ module.exports = function createSessionService({
      * @returns {Promise<void>}
      */
     async function sendAuthCodeToUser(req, res) {
-        const token = await generateAuthCodeForUser(req, res);
-
         const session = await getSession(req, res);
+        const token = await generateAuthCodeForUser(req, res);
         const user = await findUserById({id: session.user_id});
 
         if (!user) {
@@ -172,7 +244,8 @@ module.exports = function createSessionService({
             email: recipient,
             siteDomain: siteDomain,
             siteUrl: siteUrl,
-            token
+            token: token,
+            deviceDetails: await getDeviceDetails(session.user_agent, session.ip)
         });
 
         await mailer.send({
