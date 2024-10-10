@@ -344,24 +344,26 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            // Taking the fonts straight from the passed in data, as they can't be used from the
-            // settings cache for the theme preview until the settings are saved. Once saved,
-            // we need to use the settings cache to provide the correct CSS injection.
-            const headingFont = options.data.site.heading_font || settingsCache.get('heading_font');
-            const bodyFont = options.data.site.body_font || settingsCache.get('body_font');
-            if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
-                (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
-                /** @type FontSelection */
-                const fontSelection = {};
+            if (labs.isSet('customFonts')) {
+                // Taking the fonts straight from the passed in data, as they can't be used from the
+                // settings cache for the theme preview until the settings are saved. Once saved,
+                // we need to use the settings cache to provide the correct CSS injection.
+                const headingFont = options.data.site.heading_font || settingsCache.get('heading_font');
+                const bodyFont = options.data.site.body_font || settingsCache.get('body_font');
+                if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+                    (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+                    /** @type FontSelection */
+                    const fontSelection = {};
 
-                if (headingFont) {
-                    fontSelection.heading = headingFont;
+                    if (headingFont) {
+                        fontSelection.heading = headingFont;
+                    }
+                    if (bodyFont) {
+                        fontSelection.body = bodyFont;
+                    }
+                    const customCSS = generateCustomFontCss(fontSelection);
+                    head.push(new SafeString(customCSS));
                 }
-                if (bodyFont) {
-                    fontSelection.body = bodyFont;
-                }
-                const customCSS = generateCustomFontCss(fontSelection);
-                head.push(new SafeString(customCSS));
             }
         }
 
