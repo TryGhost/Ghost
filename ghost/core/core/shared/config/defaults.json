@@ -164,6 +164,9 @@
                 "threshold": 200,
                 "level": "warn"
             }
+        },
+        "themes": {
+            "skipBootChecks": false
         }
     },
     "imageOptimization": {
