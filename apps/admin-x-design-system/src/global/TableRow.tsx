@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, {forwardRef} from 'react';
 
-export const tableRowHoverBgClasses = 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950';
+export const tableRowHoverBgClasses = '-mx-4 px-4 hover:bg-grey-50 dark:hover:bg-grey-950';
 
 export interface TableRowProps {
     id?: string;
