@@ -76,7 +76,7 @@ export function generateCustomFontCss(fonts: FontSelection) {
     }
 
     if (fonts?.heading) {
-        headingFontCSS = `.gh-heading-font, .gh-content [id] {font-family: ${fonts.heading};}`;
+        headingFontCSS = `.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: ${fonts.heading};}`;
     }
 
     return `<style>${fontImports}${bodyFontCSS}${headingFontCSS}</style>`;
