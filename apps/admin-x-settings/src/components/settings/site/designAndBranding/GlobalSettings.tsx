@@ -18,7 +18,8 @@ type BodyFontOption = {
 };
 type HeadingFontOption = {
     value: HeadingFont | typeof DEFAULT_FONT,
-    label: HeadingFont | typeof DEFAULT_FONT
+    label: HeadingFont | typeof DEFAULT_FONT,
+    className?: string
 };
 
 export interface GlobalSettingValues {
@@ -46,10 +47,47 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [headingFont, setHeadingFont] = useState(values.headingFont || DEFAULT_FONT);
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
-    const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map(x => ({label: x, value: x}));
+    const fontClassName = (fontName: string) => {
+        if (fontName === 'Space Grotesk') {
+            return 'font-space-grotesk';
+        } else if (fontName === 'Chakra Petch') {
+            return 'font-chakra-petch';
+        } else if (fontName === 'Noto Sans') {
+            return 'font-noto-sans';
+        } else if (fontName === 'Poppins') {
+            return 'font-poppins';
+        } else if (fontName === 'Fira Sans') {
+            return 'font-fira-sans';
+        } else if (fontName === 'Noto Serif') {
+            return 'font-noto-serif';
+        } else if (fontName === 'Lora') {
+            return 'font-lora';
+        } else if (fontName === 'IBM Plex Serif') {
+            return 'font-ibm-plex-serif';
+        } else if (fontName === 'EB Garamond') {
+            return 'font-eb-garamond';
+        } else if (fontName === 'Space Mono') {
+            return 'font-space-mono';
+        } else if (fontName === 'Fira Mono') {
+            return 'font-fira-mono';
+        } else if (fontName === 'JetBrains Mono') {
+            return 'font-jetbrains-mono';
+        } 
+        return '';
+    };
+
+    // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
+    // between heading and body fonts
+    const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
+        let className = fontClassName(x);
+        return {label: x, value: x, className};
+    });
     customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
-    const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map(x => ({label: x, value: x}));
+    const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map((x) => {
+        let className = fontClassName(x);
+        return {label: x, value: x, className};
+    });
     customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
 
     const selectedHeadingFont = {label: headingFont, value: headingFont};
@@ -210,6 +248,8 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                     />
                     <Select
                         hint={''}
+                        maxMenuHeight={200}
+                        menuPosition='fixed'
                         options={customBodyFonts}
                         selectedOption={selectedBodyFont}
                         title={'Body font'}

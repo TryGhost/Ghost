@@ -48,7 +48,7 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex h-full flex-col justify-between'>
-            <div className='p-7 pt-2' data-testid="design-setting-tabs">
+            <div className='grow p-7 pt-2' data-testid="design-setting-tabs">
                 {tabs.length > 1 ? 
                     <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
                     :
