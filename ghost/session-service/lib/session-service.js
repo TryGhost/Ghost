@@ -49,6 +49,7 @@ totp.options = {
  * @param {(req: Req) => string} deps.getOriginOfRequest
  * @param {(key: string) => string} deps.getSettingsCache
  * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
+ * @param {import('../../core/core/shared/labs')} deps.labs
  * @param {import('../../core/core/server/services/i18n').t} deps.t
  * @param {import('../../core/core/shared/url-utils')} deps.urlUtils
  * @returns {SessionService}
@@ -61,6 +62,7 @@ module.exports = function createSessionService({
     getSettingsCache,
     mailer,
     urlUtils,
+    labs,
     t
 }) {
     /**
@@ -107,6 +109,10 @@ module.exports = function createSessionService({
         session.origin = origin;
         session.user_agent = req.get('user-agent');
         session.ip = req.ip;
+
+        if (!labs.isSet('staff2fa')) {
+            session.verified = true;
+        }
     }
 
     /**
