@@ -18669,10 +18669,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.43.7:
-  version "4.43.7"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.43.7.tgz#fe39e9db02a770ee0e5a9f67b2129a29ee4b5bbf"
-  integrity sha512-Y91yFnr4owcmuzCK0PbQUUaqfX8YPYZQQiam3rp5XvfpazQYM4oaWF2AGGPmKXLnQg7m75qHcq+E860GnkQ8QA==
+gscan@4.44.0:
+  version "4.44.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.44.0.tgz#7f8d9408fa390dd5829aafc98159245277acf42b"
+  integrity sha512-f+ZLM5FKiJrglzQMkfpgNivJNEJ9+bllVFx972FfkKUV/b/PjE55KlNLJhw+ZxYZVBNM6lbxCsTywOeuvPgFFg==
   dependencies:
     "@sentry/node" "^7.73.0"
     "@tryghost/config" "^0.2.18"
