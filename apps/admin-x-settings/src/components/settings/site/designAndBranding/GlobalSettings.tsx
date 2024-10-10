@@ -10,6 +10,7 @@ import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {BodyFont, HeadingFont} from '@tryghost/custom-fonts';
+import BehindFeatureFlag from '../../../BehindFeatureFlag';
 
 // TODO: create custom types for heading and body fonts in @tryghost/custom-fonts, so we can extend
 // them separately
@@ -194,38 +195,40 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                     }
                 </div>
             </Form>
-            <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
-                <Select
-                    hint={''}
-                    options={customHeadingFonts}
-                    selectedOption={selectedHeadingFont}
-                    title={'Heading font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
-                            setHeadingFont(DEFAULT_FONT);
-                            updateSetting('heading_font', '');
-                        } else {
-                            setHeadingFont(option?.value || '');
-                            updateSetting('heading_font', option?.value || '');
-                        }
-                    }}
-                />
-                <Select
-                    hint={''}
-                    options={customBodyFonts}
-                    selectedOption={selectedBodyFont}
-                    title={'Body font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
-                            setBodyFont(DEFAULT_FONT);
-                            updateSetting('body_font', '');
-                        } else {
-                            setBodyFont(option?.value || '');
-                            updateSetting('body_font', option?.value || '');
-                        }
-                    }}
-                />
-            </Form>
+            <BehindFeatureFlag flag="customFonts">
+                <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
+                    <Select
+                        hint={''}
+                        options={customHeadingFonts}
+                        selectedOption={selectedHeadingFont}
+                        title={'Heading font'}
+                        onSelect={(option) => {
+                            if (option?.value === DEFAULT_FONT) {
+                                setHeadingFont(DEFAULT_FONT);
+                                updateSetting('heading_font', '');
+                            } else {
+                                setHeadingFont(option?.value || '');
+                                updateSetting('heading_font', option?.value || '');
+                            }
+                        }}
+                    />
+                    <Select
+                        hint={''}
+                        options={customBodyFonts}
+                        selectedOption={selectedBodyFont}
+                        title={'Body font'}
+                        onSelect={(option) => {
+                            if (option?.value === DEFAULT_FONT) {
+                                setBodyFont(DEFAULT_FONT);
+                                updateSetting('body_font', '');
+                            } else {
+                                setBodyFont(option?.value || '');
+                                updateSetting('body_font', option?.value || '');
+                            }
+                        }}
+                    />
+                </Form>
+            </BehindFeatureFlag>
         </>
     );
 };
