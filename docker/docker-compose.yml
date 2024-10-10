@@ -1,10 +1,17 @@
 services:
   ghost:
     build:
-      context: ..
+      context: ../
       dockerfile: docker/Dockerfile
-    volumes:
-      - ..:/home/ghost
+    develop: 
+      watch: 
+        - path: ../
+          action: sync
+          target: /home/ghost
+          ignore: 
+            - node_modules/
+        - path: yarn.lock
+          action: rebuild
     restart: always
     ports:
       - 2368:2368
