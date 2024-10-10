@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  nodejs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ghost-node
+    restart: unless-stopped
+    ports:
+      - "2368:2368"
+    volumes:
+      - .:/app
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0.35
+    hostname: ghost-mysql-2
+    container_name: ghost-mysql-2
+    # We'll need to look into how we can further fine tune the memory usage/performance here
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost
+    restart: always
+    healthcheck:
+      test: "mysql -uroot -proot ghost -e 'select 1'"
+      interval: 1s
+      retries: 120
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
