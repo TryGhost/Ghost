@@ -99,6 +99,7 @@
     flex-direction: column;
     min-width: 0;
     /* background: linear-gradient(315deg,var(--whitegrey-l2),var(--white)); */
+    /* background: var(--whitegrey-l2); */
     transform: translateX(0);
     border-right: 1px solid var(--main-color-area-divider);
     transition: flex-basis 250ms;
