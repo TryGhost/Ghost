@@ -13,7 +13,8 @@
                 </p>
                 <GhFormGroup @errors={{this.verifyData.errors}} @hasValidated={{this.verifyData.hasValidated}} @property="token">
                     <label for="token">Verification code</label>
-                    <span class="gh-input-icon">
+
+                    <span class="gh-input-icon forgotten-wrap">
                         <input
                             id="token"
                             name="token"
@@ -28,6 +29,22 @@
                             {{on "input" this.handleTokenInput}}
                             {{on "blur" this.validateToken}}
                         />
+
+                        <GhTaskButton
+                            @task={{this.resendTokenTask}}
+                            @class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
+                            @type="button"
+                            @successClass=""
+                            @failureClass=""
+                            @disabled={{this.resendTokenCountdownStarted}}
+                            as |task|
+                        >
+                            {{#if this.resendTokenCountdownStarted}}
+                                <span>Resend again in {{this.resendTokenCountdown}}s</span>
+                            {{else}}
+                                <span>{{#if task.isRunning}}{{svg-jar "spinner" class="gh-spinner"}}&nbsp;Sending{{else}}Resend{{/if}}</span>
+                            {{/if}}
+                        </GhTaskButton>
                     </span>
                 </GhFormGroup>
 
@@ -40,14 +57,6 @@
                     @useAccentColor={{true}}
                     data-test-button="verify" />
             </form>
-
-            <GhTaskButton
-                @buttonText="Resend verification code"
-                @successText="Verification code sent"
-                @task={{this.resendTokenTask}}
-                @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
-                @type="submit"
-                data-test-button="resend" />
 
             <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
         </section>
