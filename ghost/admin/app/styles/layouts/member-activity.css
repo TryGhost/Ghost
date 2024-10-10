@@ -338,13 +338,13 @@
     padding-bottom: 0;
 }
 
-.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch.xs label {
+.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch label {
     width: 34px !important;
     height: 20px !important;
     padding: 0;
 }
 
-.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch.xs {
+.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch {
     display: flex;
     align-items: center;
 }
