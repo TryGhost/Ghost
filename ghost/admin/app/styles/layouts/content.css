@@ -878,6 +878,10 @@
     min-width: 0;
 }
 
+.gh-post-analytics-resource:hover {
+    box-shadow: 0 1px 5px -1px rgba(0,0,0,.2);
+}
+
 .gh-post-analytics-resource .thumbnail {
     border-radius: var(--border-radius);
     width: 100%;
