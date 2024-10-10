@@ -21,6 +21,9 @@ services:
       - DEBUG=${DEBUG}
       - APP_FLAGS=${APP_FLAGS}
     tty: true
+    depends_on:
+      - mysql
+      - redis
   mysql:
     image: mysql:8.0.35
     container_name: ghost-full-mysql
