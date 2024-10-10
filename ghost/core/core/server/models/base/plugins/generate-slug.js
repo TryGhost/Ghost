@@ -79,7 +79,10 @@ module.exports = function (Bookshelf) {
             // If it's a user, let's try to cut it down (unless this is a human request)
             if (baseName === 'user' && options && options.shortSlug && slugTryCount === 1 && slug !== 'ghost-owner') {
                 longSlug = slug;
-                slug = (slug.indexOf('-') > -1) ? slug.slice(0, slug.indexOf('-')) : slug;
+                // find the index of the first hyphen after the second character.
+                const hyphenIndex = slug.indexOf('-', 3);
+
+                slug = hyphenIndex > -1 ? slug.slice(0, hyphenIndex) : slug;
             }
 
             if (!_.has(options, 'importing') || !options.importing) {
@@ -90,6 +93,11 @@ module.exports = function (Bookshelf) {
                 }
             }
 
+            // single character slugs break things. Don't let that happen.
+            if (slug.length === 1) {
+                slug = baseName + '-' + slug;
+            }
+            
             // Some keywords cannot be changed
             slug = _.includes(urlUtils.getProtectedSlugs(), slug) ? slug + '-' + baseName : slug;
 

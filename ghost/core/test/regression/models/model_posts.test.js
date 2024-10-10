@@ -1897,9 +1897,9 @@ describe('Post Model', function () {
 
                 updatedPost.tags.should.have.lengthOf(3);
 
-                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'c'});
-                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'c-2'});
-                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'c-3'});
+                updatedPost.tags[0].should.have.properties({name: 'C', slug: 'tag-c'});
+                updatedPost.tags[1].should.have.properties({name: 'C++', slug: 'tag-c-2'});
+                updatedPost.tags[2].should.have.properties({name: 'C#', slug: 'tag-c-3'});
             });
         });
 
