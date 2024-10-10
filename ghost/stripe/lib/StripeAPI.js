@@ -3,8 +3,6 @@ const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
-// @ts-ignore
-const LeakyBucket = require('leaky-bucket');
 
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -78,6 +76,10 @@ module.exports = class StripeAPI {
             this._configured = false;
             return;
         }
+
+        // Lazyloaded to protect sites without Stripe configured
+        const LeakyBucket = require('leaky-bucket');
+
         this._stripe = new Stripe(config.secretKey, {
             apiVersion: STRIPE_API_VERSION
         });
