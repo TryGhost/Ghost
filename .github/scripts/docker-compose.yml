@@ -28,7 +28,7 @@ services:
     restart: always
   prometheus:
     profiles: [monitoring]
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:v2.54.1
     container_name: ghost-prometheus
     ports:
       - "9090:9090"
