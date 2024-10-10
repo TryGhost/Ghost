@@ -369,6 +369,10 @@
     text-shadow: 0px 1px 4px rgba(0,0,0,0.3);
 }
 
+.modal-content .gh-nav-search-modal .ember-power-select-option {
+    height: auto;
+}
+
 @media (max-width: 800px) {
     .gh-nav-search {
         min-width: 220px;
