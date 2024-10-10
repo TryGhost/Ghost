@@ -163,7 +163,6 @@ module.exports = function createSessionService({
      * @returns {Promise<string>} - A readable location string or 'Unknown Location'.
      */
     async function getGeolocationFromIP(ip) {
-        ip = '212.19.89.120';
         if (!ip || (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip))) {
             return;
         }
@@ -235,6 +234,7 @@ module.exports = function createSessionService({
         }
         const recipient = user.get('email');
         const siteTitle = getSettingsCache('title');
+        const siteLogo = urlUtils.urlFor('image', {image: getSettingsCache('logo')}, true);
         const siteUrl = urlUtils.urlFor('home', true);
         const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         const siteDomain = (domain && domain[1]);
@@ -244,13 +244,14 @@ module.exports = function createSessionService({
             email: recipient,
             siteDomain: siteDomain,
             siteUrl: siteUrl,
+            siteLogo: siteLogo,
             token: token,
             deviceDetails: await getDeviceDetails(session.user_agent, session.ip)
         });
 
         await mailer.send({
             to: recipient,
-            subject: `${token} is your ghost signin verification code`,
+            subject: `${token} is your Ghost signin verification code`,
             html: email
         });
     }
