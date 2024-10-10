@@ -26,10 +26,10 @@ export function generateCustomFontCss(fonts: FontSelection) {
             url: '@import url(https://fonts.bunny.net/css?family=noto-sans:400,700)'
         },
         Poppins: {
-            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,500,600)'
         },
         'Fira Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)'
         },
         Inter: {
             url: '@import url(https://fonts.bunny.net/css?family=inter:400,700)'
