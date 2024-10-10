@@ -1,10 +1,10 @@
-export type HeadingFont = 'Space Grotesk' | 'Playfair Display' | 'Chakra Petch'
-export type Font = HeadingFont | 'Bebas Neue' | 'Noto Sans' | 'Poppins' | 'Fira Sans' | 'Inter' | 'Noto Serif' | 'Lora' | 'IBM Plex Serif' | 'EB Garamond' | 'Space Mono' | 'Fira Mono' | 'JetBrains Mono';
-export type CustomFonts = {heading: HeadingFont[], body: Font[]};
+export type HeadingFont = 'Space Grotesk' | 'Playfair Display' | 'Chakra Petch' | BodyFont
+export type BodyFont = 'Noto Sans' | 'Poppins' | 'Fira Sans' | 'Inter' | 'Noto Serif' | 'Lora' | 'IBM Plex Serif' | 'EB Garamond' | 'Space Mono' | 'Fira Mono' | 'JetBrains Mono';
+export type CustomFonts = {heading: HeadingFont[], body: BodyFont[]};
 
 export type FontSelection = {
     heading?: HeadingFont,
-    body?: Font
+    body?: BodyFont
 };
 
 export function generateCustomFontCss(fonts: FontSelection) {
@@ -15,9 +15,6 @@ export function generateCustomFontCss(fonts: FontSelection) {
     const importStrings = {
         'Space Grotesk': {
             url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)'
-        },
-        'Bebas Neue': {
-            url: '@import url(https://fonts.bunny.net/css?family=bebas-neue:400)'
         },
         'Playfair Display': {
             url: '@import url(https://fonts.bunny.net/css?family=playfair-display:400)'
@@ -89,13 +86,20 @@ export const CUSTOM_FONTS: CustomFonts = {
     heading: [
         'Space Grotesk',
         'Playfair Display',
-        'Chakra Petch'
+        'Chakra Petch',
+        'Noto Sans',
+        'Poppins',
+        'Fira Sans',
+        'Inter',
+        'Noto Serif',
+        'Lora',
+        'IBM Plex Serif',
+        'EB Garamond',
+        'Space Mono',
+        'Fira Mono',
+        'JetBrains Mono'
     ],
     body: [
-        'Space Grotesk',
-        'Playfair Display',
-        'Chakra Petch',
-        'Bebas Neue',
         'Noto Sans',
         'Poppins',
         'Fira Sans',
@@ -114,8 +118,8 @@ export function getCustomFonts(): CustomFonts {
     return CUSTOM_FONTS;
 }
 
-export function isValidCustomFont(font: string): font is Font {
-    return CUSTOM_FONTS.body.includes(font as Font);
+export function isValidCustomFont(font: string): font is BodyFont {
+    return CUSTOM_FONTS.body.includes(font as BodyFont);
 }
 
 export function isValidCustomHeadingFont(font: string): font is HeadingFont {
