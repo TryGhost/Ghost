@@ -1,5 +1,5 @@
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('fs');
 const _ = require('lodash');
 
 /**
@@ -25,7 +25,7 @@ const makePathsAbsolute = function makePathsAbsolute(nconf, obj, parent) {
 };
 
 const doesContentPathExist = function doesContentPathExist(contentPath) {
-    if (!fs.pathExistsSync(contentPath)) {
+    if (!fs.existsSync(contentPath)) {
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
         // eslint-disable-next-line ghost/ghost-custom/no-native-error
