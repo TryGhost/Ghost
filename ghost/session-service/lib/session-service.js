@@ -146,7 +146,10 @@ module.exports = function createSessionService({
      */
     async function sendAuthCodeToUser(req, res) {
         const token = await generateAuthCodeForUser(req, res);
-        const user = await getUserForSession(req, res);
+
+        const session = await getSession(req, res);
+        const user = await findUserById({id: session.user_id});
+
         if (!user) {
             throw new BadRequestError({
                 message: 'Could not fetch user from the session.'
@@ -171,8 +174,6 @@ module.exports = function createSessionService({
             subject: `Verification code: ${token}`,
             html: email
         });
-
-        return Promise.resolve();
     }
 
     /**
