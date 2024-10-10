@@ -14,46 +14,60 @@ export function generateCustomFontCss(fonts: FontSelection) {
 
     const importStrings = {
         'Space Grotesk': {
-            url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)'
+            url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)',
+            adjust: 'none'
         },
         'Playfair Display': {
-            url: '@import url(https://fonts.bunny.net/css?family=playfair-display:400)'
+            url: '@import url(https://fonts.bunny.net/css?family=playfair-display:400)',
+            adjust: 'none'
         },
         'Chakra Petch': {
-            url: '@import url(https://fonts.bunny.net/css?family=chakra-petch:400)'
+            url: '@import url(https://fonts.bunny.net/css?family=chakra-petch:400)',
+            adjust: 'none'
         },
         'Noto Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=noto-sans:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=noto-sans:400,700)',
+            adjust: 'none'
         },
         Poppins: {
-            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,500,600)'
+            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,500,600)',
+            adjust: 'none'
         },
         'Fira Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)'
+            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)',
+            adjust: 'none'
         },
         Inter: {
-            url: '@import url(https://fonts.bunny.net/css?family=inter:400,500,600)'
+            url: '@import url(https://fonts.bunny.net/css?family=inter:400,500,600)',
+            adjust: 'none'
         },
         'Noto Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=noto-serif:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=noto-serif:400,700)',
+            adjust: 'none'
         },
         Lora: {
-            url: '@import url(https://fonts.bunny.net/css?family=lora:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=lora:400,700)',
+            adjust: 'none'
         },
         'IBM Plex Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)'
+            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)',
+            adjust: 'none'
         },
         'EB Garamond': {
-            url: '@import url(https://fonts.bunny.net/css?family=eb-garamond:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=eb-garamond:400,700)',
+            adjust: 0.45
         },
         'Space Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=space-mono:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=space-mono:400,700)',
+            adjust: 'none'
         },
         'Fira Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-mono:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=fira-mono:400,700)',
+            adjust: 'none'
         },
         'JetBrains Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700)'
+            url: '@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700)',
+            adjust: 'none'
         }
     };
 
@@ -72,11 +86,11 @@ export function generateCustomFontCss(fonts: FontSelection) {
     }
 
     if (fonts?.body) {
-        bodyFontCSS = `.gh-body-font {font-family: ${fonts.body};}`;
+        bodyFontCSS = `.gh-body-font {font-family: ${fonts.body}; font-size-adjust: ${importStrings[fonts.body].adjust};}`;
     }
 
     if (fonts?.heading) {
-        headingFontCSS = `.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: ${fonts.heading};}`;
+        headingFontCSS = `.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: ${fonts.heading}; font-size-adjust: ${importStrings[fonts.heading].adjust};}`;
     }
 
     return `<style>${fontImports}${bodyFontCSS}${headingFontCSS}</style>`;
