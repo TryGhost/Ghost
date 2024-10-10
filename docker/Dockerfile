@@ -4,7 +4,6 @@ FROM node:$NODE_VERSION-bullseye
 WORKDIR /home/ghost
 
 COPY ../ .
-RUN ls
 RUN yarn
 
 ENV NX_DAEMON=true
