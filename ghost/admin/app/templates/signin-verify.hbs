@@ -41,6 +41,14 @@
                     data-test-button="verify" />
             </form>
 
+            <GhTaskButton
+                @buttonText="Resend verification code"
+                @successText="Verification code sent"
+                @task={{this.resendTokenTask}}
+                @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
+                @type="submit"
+                data-test-button="resend" />
+
             <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
         </section>
     </div>

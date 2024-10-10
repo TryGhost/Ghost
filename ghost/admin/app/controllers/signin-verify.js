@@ -30,6 +30,7 @@ class VerifyData {
 export default class SigninVerifyController extends Controller {
     @service ajax;
     @service session;
+    @service ghostPaths;
 
     @tracked flowErrors = '';
     @tracked verifyData = new VerifyData();
@@ -59,6 +60,26 @@ export default class SigninVerifyController extends Controller {
                 this.flowErrors = error.payload.errors[0].message;
             } else {
                 this.flowErrors = 'There was a problem with the verification token.';
+            }
+        }
+    }
+
+    @task
+    *resendTokenTask() {
+        const resendTokenPath = `${this.ghostPaths.apiRoot}/session/verify`;
+
+        try {
+            yield this.ajax.post(resendTokenPath, {
+                contentType: 'application/json;charset=utf-8',
+                // ember-ajax will try and parse the response as JSON if not explicitly set
+                dataType: 'text'
+            });
+            return true;
+        } catch (error) {
+            if (error && error.payload && error.payload.errors) {
+                this.flowErrors = error.payload.errors[0].message;
+            } else {
+                this.flowErrors = 'There was a problem resending the verification token.';
             }
         }
     }
