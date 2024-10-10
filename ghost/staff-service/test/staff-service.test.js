@@ -18,7 +18,7 @@ function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
 
     // has right from/to address
     mailStub.calledWith(sinon.match({
-        from: 'ghost@ghost.example',
+        from: 'noreply@ghost.example',
         to: 'owner@ghost.org'
     })).should.be.true();
 
