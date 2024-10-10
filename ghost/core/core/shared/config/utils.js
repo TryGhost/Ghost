@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const _ = require('lodash');
 
 /**
  * transform all relative paths to absolute paths
@@ -11,11 +10,11 @@ const _ = require('lodash');
  * Path can be a "." to re-present current folder
  */
 const makePathsAbsolute = function makePathsAbsolute(nconf, obj, parent) {
-    _.each(obj, function (configValue, pathsKey) {
-        if (_.isObject(configValue)) {
+    Object.entries(obj).forEach(([pathsKey, configValue]) => {
+        if (configValue && typeof configValue === 'object') {
             makePathsAbsolute(nconf, configValue, parent + ':' + pathsKey);
         } else if (
-            _.isString(configValue) &&
+            typeof configValue === 'string' &&
             (configValue.match(/\/+|\\+/) || configValue === '.') &&
             !path.isAbsolute(configValue)
         ) {
