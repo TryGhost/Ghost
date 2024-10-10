@@ -16,11 +16,15 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
+        const labs = {
+            isSet: () => false
+        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
-            getOriginOfRequest
+            getOriginOfRequest,
+            labs
         });
 
         const req = Object.create(express.request, {
@@ -68,11 +72,15 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('other-origin');
+        const labs = {
+            isSet: () => false
+        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
-            getOriginOfRequest
+            getOriginOfRequest,
+            labs
         });
 
         const req = Object.create(express.request, {
@@ -107,11 +115,15 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('other-origin');
+        const labs = {
+            isSet: () => false
+        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
-            getOriginOfRequest
+            getOriginOfRequest,
+            labs
         });
 
         const req = Object.create(express.request, {
@@ -147,11 +159,15 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
+        const labs = {
+            isSet: () => true
+        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
-            getOriginOfRequest
+            getOriginOfRequest,
+            labs
         });
 
         const req = Object.create(express.request, {
@@ -200,12 +216,16 @@ describe('SessionService', function () {
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const getSettingsCache = sinon.stub().returns('secret-key');
+        const labs = {
+            isSet: () => true
+        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSettingsCache
+            getSettingsCache,
+            labs
         });
 
         const req = Object.create(express.request, {
@@ -250,12 +270,16 @@ describe('SessionService', function () {
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const getSettingsCache = sinon.stub().returns('secret-key');
+        const labs = {
+            isSet: true
+        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSettingsCache
+            getSettingsCache,
+            labs
         });
 
         const req = Object.create(express.request, {
@@ -299,6 +323,9 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
+        const labs = {
+            isSet: () => true
+        };
 
         const req = Object.create(express.request, {
             ip: {
@@ -321,7 +348,8 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSettingsCache: getSecretFirst
+            getSettingsCache: getSecretFirst,
+            labs
         });
 
         const authCodeFirst = await sessionServiceFirst.generateAuthCodeForUser(req, res);

@@ -1,25 +1,20 @@
 const errors = require('@tryghost/errors');
-const labs = require('../../../../shared/labs');
 
 function SessionMiddleware({sessionService}) {
     async function createSession(req, res, next) {
         try {
             await sessionService.createSessionForUser(req, res, req.user);
 
-            if (labs.isSet('staff2fa')) {
-                const isVerified = await sessionService.isVerifiedSession(req, res);
-                if (isVerified) {
-                    res.sendStatus(201);
-                } else {
-                    await sessionService.sendAuthCodeToUser(req, res);
-                    throw new errors.NoPermissionError({
-                        code: '2FA_TOKEN_REQUIRED',
-                        errorType: 'Needs2FAError',
-                        message: 'User must verify session to login.'
-                    });
-                }
-            } else {
+            const isVerified = await sessionService.isVerifiedSession(req, res);
+            if (isVerified) {
                 res.sendStatus(201);
+            } else {
+                await sessionService.sendAuthCodeToUser(req, res);
+                throw new errors.NoPermissionError({
+                    code: '2FA_TOKEN_REQUIRED',
+                    errorType: 'Needs2FAError',
+                    message: 'User must verify session to login.'
+                });
             }
         } catch (err) {
             next(err);
@@ -43,12 +38,11 @@ function SessionMiddleware({sessionService}) {
         try {
             const user = await sessionService.getUserForSession(req, res);
             if (user) {
-                if (labs.isSet('staff2fa')) {
-                    const isVerified = await sessionService.isVerifiedSession(req, res);
-                    if (!isVerified) {
-                        return next();
-                    }
+                const isVerified = await sessionService.isVerifiedSession(req, res);
+                if (!isVerified) {
+                    return next();
                 }
+
                 // Do not nullify `req.user` as it might have been already set
                 // in a previous middleware (authorize middleware).
                 req.user = user;

@@ -5,12 +5,16 @@ const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
 const {GhostMailer} = require('../../mail');
 const {t} = require('../../i18n');
+const labs = require('../../../../shared/labs');
 
 const expressSession = require('./express-session');
 
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
 const url = require('url');
+
+// TODO: We have too many lines here, should move functions out into a utils module
+/* eslint-disable max-lines */
 
 function getOriginOfRequest(req) {
     const origin = req.get('origin');
@@ -44,6 +48,7 @@ const sessionService = createSessionService({
     },
     mailer,
     urlUtils,
+    labs,
     t
 });
 
@@ -58,9 +63,6 @@ module.exports.createSessionFromToken = sessionFromToken({
     getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
     getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
 });
-
-// TODO: We have 51 lines here, should move functions out into a utils module
-/* eslint-disable max-lines */
 
 module.exports.sessionService = sessionService;
 module.exports.deleteAllSessions = expressSession.deleteAllSessions;
