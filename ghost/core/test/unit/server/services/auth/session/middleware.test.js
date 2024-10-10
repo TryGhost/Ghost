@@ -204,7 +204,8 @@ describe('Session Service', function () {
 
             const middleware = SessionMiddlware({
                 sessionService: {
-                    verifyAuthCodeForUser: verifyAuthCodeForUserStub
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub,
+                    verifySession: sinon.stub().resolves(true)
                 }
             });
 

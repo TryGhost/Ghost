@@ -42,7 +42,8 @@ function SessionMiddleware({sessionService}) {
     async function authenticate(req, res, next) {
         try {
             const user = await sessionService.getUserForSession(req, res);
-            if (user) {
+            const isVerified = await sessionService.isVerifiedSession(req, res);
+            if (user && isVerified) {
                 // Do not nullify `req.user` as it might have been already set
                 // in a previous middleware (authorize middleware).
                 req.user = user;
@@ -68,6 +69,7 @@ function SessionMiddleware({sessionService}) {
             const verified = await sessionService.verifyAuthCodeForUser(req, res);
 
             if (verified) {
+                await sessionService.verifySession(req, res);
                 res.sendStatus(200);
             } else {
                 res.sendStatus(401);
