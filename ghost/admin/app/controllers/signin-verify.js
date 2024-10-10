@@ -9,6 +9,8 @@ import {tracked} from '@glimmer/tracking';
 
 const {Errors} = DS;
 
+const DEFAULT_RESEND_TOKEN_COUNTDOWN = 15;
+
 // eslint-disable-next-line ghost/ember/alias-model-in-controller
 class VerifyData {
     @tracked token;
@@ -34,6 +36,25 @@ export default class SigninVerifyController extends Controller {
 
     @tracked flowErrors = '';
     @tracked verifyData = new VerifyData();
+    @tracked resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
+    @tracked resendTokenCountdownStarted = false;
+
+    startResendTokenCountdown() {
+        this.resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
+        this.resendTokenCountdownStarted = true;
+        this.resendTokenCountdownInterval = setInterval(() => {
+            if (this.resendTokenCountdown > 0) {
+                this.resendTokenCountdown = this.resendTokenCountdown - 1;
+            } else {
+                this.resetResendTokenCountdown();
+            }
+        }, 1000);
+    }
+
+    resetResendTokenCountdown() {
+        clearInterval(this.resendTokenCountdownInterval);
+        this.resendTokenCountdownStarted = false;
+    }
 
     @action
     resetData() {
@@ -74,6 +95,7 @@ export default class SigninVerifyController extends Controller {
                 // ember-ajax will try and parse the response as JSON if not explicitly set
                 dataType: 'text'
             });
+            this.startResendTokenCountdown();
             return true;
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
