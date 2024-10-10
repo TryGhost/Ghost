@@ -48,35 +48,23 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent columns={2}>
-            <Toggle
-                checked={trackEmailOpens}
-                label='Newsletter opens'
-                onChange={(e) => {
-                    handleToggleChange('email_track_opens', e);
-                }}
-            />
-            <Toggle
-                checked={trackEmailClicks}
-                label='Newsletter clicks'
-                onChange={(e) => {
-                    handleToggleChange('email_track_clicks', e);
-                }}
-            />
-            <Toggle
-                checked={trackMemberSources}
-                label='Member sources'
-                onChange={(e) => {
-                    handleToggleChange('members_track_sources', e);
-                }}
-            />
-            <Toggle
-                checked={outboundLinkTagging}
-                label='Outbound link tagging'
-                onChange={(e) => {
-                    handleToggleChange('outbound_link_tagging', e);
-                }}
-            />
+        <SettingGroupContent columns={1}>
+            {[
+                {key: 'email_track_opens', label: 'Newsletter opens', checked: trackEmailOpens},
+                {key: 'email_track_clicks', label: 'Newsletter clicks', checked: trackEmailClicks},
+                {key: 'members_track_sources', label: 'Member sources', checked: trackMemberSources},
+                {key: 'outbound_link_tagging', label: 'Outbound link tagging', checked: outboundLinkTagging}
+            ].map(({key, label, checked}) => (
+                <div key={key} className="flex items-center justify-between">
+                    <span>{label}</span>
+                    <Toggle
+                        checked={checked}
+                        onChange={(e) => {
+                            handleToggleChange(key, e);
+                        }}
+                    />
+                </div>
+            ))}
         </SettingGroupContent>
     );
 
