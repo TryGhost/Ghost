@@ -1,0 +1,42 @@
+services:
+  ghost:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/ghost
+    restart: always
+    ports:
+      - 2368:2368
+      - 4200:4200
+    environment:
+      - NODE_ENV=dockerdev
+      - DEBUG=${DEBUG}
+      - APP_FLAGS=${APP_FLAGS}
+    tty: true
+  mysql:
+    image: mysql:8.0.35
+    container_name: ghost-full-mysql
+    # We'll need to look into how we can further fine tune the memory usage/performance here
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost
+    restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: "mysql -uroot -proot ghost -e 'select 1'"
+      interval: 1s
+      retries: 120
+  redis:
+    image: redis:7.0
+    container_name: ghost-full-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+volumes:
+  mysql-data:
