@@ -52,6 +52,7 @@ totp.options = {
  * @param {(data: {id: string}) => Promise<User>} deps.findUserById
  * @param {(req: Req) => string} deps.getOriginOfRequest
  * @param {(key: string) => string} deps.getSettingsCache
+ * @param {() => string} deps.getBlogLogo
  * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
  * @param {import('../../core/core/shared/labs')} deps.labs
  * @param {import('../../core/core/server/services/i18n').t} deps.t
@@ -64,6 +65,7 @@ module.exports = function createSessionService({
     findUserById,
     getOriginOfRequest,
     getSettingsCache,
+    getBlogLogo,
     mailer,
     urlUtils,
     labs,
@@ -234,7 +236,7 @@ module.exports = function createSessionService({
         }
         const recipient = user.get('email');
         const siteTitle = getSettingsCache('title');
-        const siteLogo = urlUtils.urlFor('image', {image: getSettingsCache('logo')}, true);
+        const siteLogo = getBlogLogo();
         const siteUrl = urlUtils.urlFor('home', true);
         const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         const siteDomain = (domain && domain[1]);
