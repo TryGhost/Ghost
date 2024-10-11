@@ -47,7 +47,7 @@ const FollowSite = NiceModal.create(() => {
                     title='Profile name'
                     value={profileName}
                     data-test-new-follower
-                    onChange={e => setProfileName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfileName(e.target.value)}
                 />
             </div>
         </Modal>

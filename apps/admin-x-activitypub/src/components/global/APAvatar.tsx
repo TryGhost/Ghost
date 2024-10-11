@@ -17,7 +17,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     let imageClass = 'z-10 rounded w-10 h-10 object-cover';
     const badgeClass = `w-6 h-6 z-20 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
     let badgeColor = '';
-    const [iconUrl, setIconUrl] = useState(author?.icon?.url);
+    const [iconUrl, setIconUrl] = useState(author?.icon?.url); 
 
     switch (badge) {
     case 'user-fill':
