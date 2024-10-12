@@ -36,7 +36,6 @@
     "docker:reset": "docker-compose -f .github/scripts/docker-compose.yml down -v && docker-compose -f .github/scripts/docker-compose.yml up -d --wait",
     "up": "git submodule update --init && docker compose -f docker/docker-compose.yml up --attach ghost --no-log-prefix --watch",
     "compose": "docker compose -f docker/docker-compose.yml",
-    "docker:dev:entry": "node .github/scripts/docker-dev-full.js",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
