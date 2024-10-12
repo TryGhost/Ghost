@@ -22,8 +22,10 @@ services:
       - APP_FLAGS=${APP_FLAGS}
     tty: true
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
   mysql:
     image: mysql:8.0.35
     container_name: ghost-full-mysql
@@ -47,6 +49,10 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      retries: 120
 
 volumes:
   mysql-data:
