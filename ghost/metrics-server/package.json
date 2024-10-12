@@ -32,7 +32,7 @@
     "typescript": "5.6.2"
   },
   "dependencies": {
-    "express": "4.21.0",
+    "express": "4.21.1",
     "stoppable": "1.1.0"
   }
 }

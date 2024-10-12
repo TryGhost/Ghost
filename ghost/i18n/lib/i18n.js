@@ -56,7 +56,8 @@ const SUPPORTED_LOCALES = [
     'vi', // Vietnamese
     'zh', // Chinese
     'zh-Hant', // Traditional Chinese
-    'sw' // Swahili
+    'sw', // Swahili
+    'ta' // Tamil
 ];
 
 /**
