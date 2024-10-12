@@ -742,7 +742,7 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
+                this.set('html', mobiledocLib.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidMobiledocStructure),
