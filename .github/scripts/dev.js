@@ -6,6 +6,23 @@ const exec = util.promisify(require('child_process').exec);
 const chalk = require('chalk');
 const concurrently = require('concurrently');
 
+const ALLOWED_FLAGS = {
+    'ghost': 'Run only Ghost server & frontend without Admin',
+    'admin': 'Run only Ghost Admin without Ghost server',
+    'portal': 'Run Ghost with the local version of Portal',
+    'adminX': 'Run Ghost with the local version of AdminX',
+    'lexical': 'Run Ghost with the local version of the Lexical editor',
+    'search': 'Run Ghost with the local version of Search',
+    'comments': 'Run Ghost with the local version of Comments',
+    'signup': 'Run Ghost with the local version of the signup form',
+    'announcementBar': 'Run Ghost with the local version of the announcement bar',
+    'all': 'Run Ghost with the local version of all apps',
+    'browser-tests': 'Run the browser test suite for Ghost',
+    'https': 'Use HTTPS to connect to portal, comments, lexical, etc.',
+    'offline': 'Run in offline mode',
+    'stripe': 'Run `stripe --listen` to work with Stripe Webhooks locally'
+}
+
 // check we're running on Node 18 and above
 const nodeVersion = parseInt(process.versions.node.split('.')[0]);
 if (nodeVersion < 18) {
@@ -37,8 +54,22 @@ const siteUrl = config.getSiteUrl();
 // Accept flags from the command line and environment variables
 // e.g. `yarn dev --portal` or `APP_FLAGS=portal yarn dev`
 const CLI_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
-const ENV_ARGS = process.env.APP_FLAGS?.split(',') || [];
-const APP_FLAGS = [...CLI_ARGS, ...ENV_ARGS];
+if (CLI_ARGS.length > 0) {
+    console.warn('Using dash dash flags is deprecated. Please use the APP_FLAGS environment variable instead.');
+}
+const ENV_ARGS = process.env.APP_FLAGS?.trim().split(',') || [];
+const APP_FLAGS = [...CLI_ARGS, ...ENV_ARGS].map((flag) => {
+    if (flag.trim() === '') {
+        return;
+    }
+    if (Object.keys(ALLOWED_FLAGS).includes(flag)) {
+        return flag;
+    } else {
+        console.warn(`${flag} is not a valid APP_FLAG.`);
+        console.log(`Valid values for APP_FLAGS include: ${Object.keys(ALLOWED_FLAGS)}`);
+        return;
+    }
+}).filter(flag => !!flag);
 
 let commands = [];
 
@@ -238,8 +269,11 @@ async function handleStripe() {
     process.env.NX_DISABLE_DB = "true";
     await exec("yarn nx reset --onlyDaemon");
     await exec("yarn nx daemon --start");
-
+    
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
+    if (APP_FLAGS.length === 0) {
+        console.log(chalk.blue('Set the APP_FLAGS environment variable to run Ghost with the local version of Portal, Lexical, etc.'));
+    }
 
     const {result} = concurrently(commands, {
         prefix: 'name',
