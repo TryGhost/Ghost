@@ -20,6 +20,8 @@ describe('Config Loader', function () {
         let loader;
 
         beforeEach(function () {
+            // Override process.env.database__client in case it is set (e.g. when running tests in docker)
+            process.env.database__client = undefined;
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             loader = rewire('../../../../core/shared/config/loader');
