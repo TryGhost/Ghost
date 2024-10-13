@@ -18,8 +18,8 @@ services:
       - 4200:4200
     environment:
       - NODE_ENV=dockerdev
-      - DEBUG=${DEBUG}
-      - APP_FLAGS=${APP_FLAGS}
+      - DEBUG=${DEBUG:-}
+      - APP_FLAGS=${APP_FLAGS:-}
     tty: true
     depends_on:
       mysql:
