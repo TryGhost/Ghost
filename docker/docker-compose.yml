@@ -17,9 +17,17 @@ services:
       - 2368:2368
       - 4200:4200
     environment:
-      - NODE_ENV=dockerdev
       - DEBUG=${DEBUG:-}
       - APP_FLAGS=${APP_FLAGS:-}
+      - server__host=0.0.0.0
+      - server__port=2368
+      - database__client=mysql2
+      - database__connection__host=ghost-full-mysql
+      - database__connection__user=root
+      - database__connection__password=root
+      - database__connection__database=ghost
+      - adapters__Redis__host=ghost-full-redis
+      - adapters__Redis__host=6379
     tty: true
     depends_on:
       mysql:
