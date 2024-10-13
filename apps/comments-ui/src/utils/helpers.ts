@@ -1,4 +1,4 @@
-import {Comment, TranslationFunction} from '../AppContext';
+import {Comment, Member, TranslationFunction} from '../AppContext';
 
 export function formatNumber(number: number): string {
     if (number !== 0 && !number) {
@@ -114,6 +114,26 @@ export function getInitials(name: string): string {
     }
 
     return parts[0].substring(0, 1).toLocaleUpperCase() + parts[parts.length - 1].substring(0, 1).toLocaleUpperCase();
+}
+
+export function getMemberName(member: Member | null, t: TranslationFunction) {
+    if (!member) {
+        return t('Deleted member');
+    }
+
+    if (!member.name) {
+        return t('Anonymous');
+    }
+
+    return member.name;
+}
+
+export function getMemberNameFromComment(comment: Comment, t: TranslationFunction) {
+    return getMemberName(comment.member, t);
+}
+
+export function getMemberInitialsFromComment(comment: Comment, t: TranslationFunction) {
+    return getInitials(getMemberName(comment.member, t));
 }
 
 // Rudimentary check for screen width
