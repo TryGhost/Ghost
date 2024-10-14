@@ -25,7 +25,7 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "bson-objectid": "2.0.4",
-    "@tryghost/domain-events": "0.0.0"
+    "@tryghost/domain-events": "0.0.0",
+    "bson-objectid": "2.0.4"
   }
 }
