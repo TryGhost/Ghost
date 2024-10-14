@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@radix-ui/react-form": "0.0.3",
-    "use-debounce": "10.0.3",
+    "use-debounce": "10.0.4",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "react": "18.3.1",
