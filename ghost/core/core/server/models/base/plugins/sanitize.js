@@ -164,11 +164,10 @@ module.exports = function (Bookshelf) {
 
             let options = _.cloneDeep(unfilteredOptions);
             const extraAllowedProperties = filterConfig.extraAllowedProperties || [];
-            let permittedOptions;
-
-            permittedOptions = this.permittedOptions(methodName, options);
-            permittedOptions = _.union(permittedOptions, extraAllowedProperties);
-            options = _.pick(options, permittedOptions);
+            const permittedOptions = [...new Set([...this.permittedOptions(methodName, options), ...extraAllowedProperties])];
+            options = Object.fromEntries(
+                Object.entries(options).filter(([key]) => permittedOptions.includes(key))
+            );
 
             if (this.defaultRelations) {
                 options = this.defaultRelations(methodName, options);
