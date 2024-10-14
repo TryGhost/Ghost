@@ -4,11 +4,13 @@ import ContentTitle from './ContentTitle';
 import MainForm from './forms/MainForm';
 import Pagination from './Pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
+import {SortingForm} from './forms/SortingForm';
 import {useAppContext, useLabs} from '../../AppContext';
 import {useEffect} from 'react';
 
 const Content = () => {
     const labs = useLabs();
+    const {t} = useAppContext();
 
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     let commentsElements;
@@ -42,22 +44,40 @@ const Content = () => {
     const hasOpenSecundaryForms = secundaryFormCount > 0;
 
     return (
-        <>
-            <ContentTitle count={commentCount} showCount={showCount} title={title}/>
-            <Pagination />
-            <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
-                {commentsElements}
-            </div>
-            <div>
-                {!hasOpenSecundaryForms
-                    ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
-                    : null
-                }
-            </div>
-            {
-                labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
-            }
-        </>
+        labs.commentImprovements ? (
+            <>
+                <ContentTitle count={commentCount} showCount={showCount} title={title}/>
+                <div>
+                    {!hasOpenSecundaryForms
+                        ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
+                        : null
+                    }
+                </div>
+                <div className="mb-7 mt-3 flex items-center justify-between">
+                    <span className="text-grey-700 dark:text-grey-300 text-sm font-medium">
+                        {t('Sort by')}: <SortingForm/>
+                    </span>
+                </div>
+                <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
+                    {commentsElements}
+                </div>
+                <Pagination />
+            </>
+        ) : (
+            <>
+                <ContentTitle count={commentCount} showCount={showCount} title={title}/>
+                <Pagination />
+                <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
+                    {commentsElements}
+                </div>
+                <div>
+                    {!hasOpenSecundaryForms
+                        ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
+                        : null
+                    }
+                </div>
+            </>
+        )
     );
 };
 

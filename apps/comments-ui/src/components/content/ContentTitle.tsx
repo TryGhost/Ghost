@@ -1,6 +1,5 @@
-import {SortingForm} from './forms/SortingForm';
 import {formatNumber} from '../../utils/helpers';
-import {useAppContext, useLabs} from '../../AppContext';
+import {useAppContext} from '../../AppContext';
 
 type CountProps = {
     showCount: boolean,
@@ -42,21 +41,17 @@ type ContentTitleProps = {
     count: number
 };
 const ContentTitle: React.FC<ContentTitleProps> = ({title, showCount, count}) => {
-    const labs = useLabs();
     // We have to check for null for title because null means default, wheras empty string means empty
     if (!title && !showCount && title !== null) {
         return null;
     }
 
     return (
-        <div className="mb-8 flex w-full items-baseline justify-between font-sans">
+        <div className="mb-7 flex w-full items-baseline justify-between font-sans">
             <h2 className="text-[2.2rem] font-bold tracking-tight sm:text-2xl dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
                 <Title title={title}/>
             </h2>
             <Count count={count} showCount={showCount} />
-
-            {labs.commentImprovements && <SortingForm/>}
-
         </div>
     );
 };
