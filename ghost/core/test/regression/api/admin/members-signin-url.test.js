@@ -109,14 +109,21 @@ describe('Members Sigin URL API', function () {
                     return testUtils.createAPIKey({user: testUtils.DataGenerator.Content.users[0]});
                 })
                 .then((key) => {
-                    //request.apiKey = key;
+                    request.apiKey = key;
                 });
         });    
-        
+        it('Cannot read without the key', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
+                .set('Origin', config.get('url'))
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
+        });   
         it('Can read', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
                 .set('Origin', config.get('url'))
+                .set('Authorization', `Ghost ${request.apiKey.id}:${request.apiKey.secret}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
@@ -128,6 +135,6 @@ describe('Members Sigin URL API', function () {
                     jsonResponse.member_signin_urls.should.have.length(1);
                     localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin_url');
                 });
-        });
+        }); 
     });
 });
