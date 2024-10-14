@@ -100,18 +100,6 @@ describe('Members Sigin URL API', function () {
         });
     });
     describe('With an admin API key', function () {
-        before(function () {
-            return localUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createAPIKey({user: testUtils.DataGenerator.Content.users[0]});
-                })
-                .then((key) => {
-                    request.apiKey = key;
-                });
-        });    
         it('Cannot read without the key', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
@@ -123,7 +111,7 @@ describe('Members Sigin URL API', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
                 .set('Origin', config.get('url'))
-                .set('Authorization', `Ghost ${request.apiKey.id}:${request.apiKey.secret}`)
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
