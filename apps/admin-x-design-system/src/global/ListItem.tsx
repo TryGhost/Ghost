@@ -45,17 +45,18 @@ const ListItem: React.FC<ListItemProps> = ({
         'group/list-item relative flex items-center justify-between',
         bgOnHover && 'hover:bg-grey-50 dark:hover:bg-grey-950',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-b-transparent dark:border-grey-900' : 'border-y border-transparent',
+        onClick && 'cursor-pointer before:absolute before:inset-0 before:content-[""]', 
         className
     );
 
     return (
-        <div className={listItemClasses} data-testid={testId}>
+        <div className={listItemClasses} data-testid={testId} onClick={handleClick}>
             {bgOnHover && (
                 <div className="absolute inset-0 -mx-4 rounded-lg bg-grey-50 opacity-0 group-hover/list-item:opacity-100 dark:bg-grey-950" />
             )}
             <div className="relative flex w-full items-center justify-between">
                 {children ? children :
-                    <div className={`flex grow items-center gap-3 ${onClick && 'cursor-pointer'}`} onClick={handleClick}>
+                    <div className={`flex grow items-center gap-3`}>
                         {avatar && avatar}
                         <div className={`flex grow flex-col py-3 pr-6`} id={id}>
                             <span>{title}</span>
