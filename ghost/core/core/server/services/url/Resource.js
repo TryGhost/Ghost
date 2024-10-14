@@ -13,13 +13,12 @@ class Resource extends EventEmitter {
     constructor(type, obj) {
         super();
 
-        this.data = {};
         this.config = {
             type: type,
             reserved: false
         };
 
-        Object.assign(this.data, obj);
+        this.data = obj;
     }
 
     /**
