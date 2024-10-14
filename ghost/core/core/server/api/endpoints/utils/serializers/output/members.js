@@ -204,7 +204,6 @@ function serializeMember(member, options) {
         serialized.subscribed = true;
     }
 
-    console.log(`serialized`, serialized);
     return serialized;
 }
 
