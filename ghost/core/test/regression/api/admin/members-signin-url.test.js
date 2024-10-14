@@ -99,4 +99,34 @@ describe('Members Sigin URL API', function () {
                 .expect(403);
         });
     });
+    describe('With an admin API key', function () {
+        before(async function () {
+            return localUtils.startGhost()
+                .then(function () {
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    return testUtils.createAPIKey({user: testUtils.DataGenerator.Content.users[0]});
+                })
+                .then((key) => {
+                    request.apiKey = key;
+                });
+            });    
+        });
+        it('Can read', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.member_signin_urls);
+                    jsonResponse.member_signin_urls.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin_url');
+                });
+        });
 });
