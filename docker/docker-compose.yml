@@ -3,13 +3,16 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile
-    develop: 
-      watch: 
+    volumes:
+      - ../.yarncache:/home/ghost/.yarncache
+    develop:
+      watch:
         - path: ../
           action: sync
           target: /home/ghost
-          ignore: 
+          ignore:
             - node_modules/
+            - .yarncache/
         - path: yarn.lock
           action: rebuild
     restart: always
