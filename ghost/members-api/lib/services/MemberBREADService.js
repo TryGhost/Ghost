@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
-const crypto = require('crypto');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
