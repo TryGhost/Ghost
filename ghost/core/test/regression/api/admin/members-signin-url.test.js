@@ -100,7 +100,7 @@ describe('Members Sigin URL API', function () {
         });
     });
     describe('With an admin API key', function () {
-        before(async function () {
+        before(function () {
             return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
@@ -109,10 +109,10 @@ describe('Members Sigin URL API', function () {
                     return testUtils.createAPIKey({user: testUtils.DataGenerator.Content.users[0]});
                 })
                 .then((key) => {
-                    request.apiKey = key;
+                    //request.apiKey = key;
                 });
-            });    
-        });
+        });    
+        
         it('Can read', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
@@ -129,4 +129,5 @@ describe('Members Sigin URL API', function () {
                     localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin_url');
                 });
         });
+    });
 });
