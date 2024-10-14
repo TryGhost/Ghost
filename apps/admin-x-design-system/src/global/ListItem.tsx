@@ -42,28 +42,33 @@ const ListItem: React.FC<ListItemProps> = ({
     };
 
     const listItemClasses = clsx(
-        'group/list-item flex items-center justify-between',
-        bgOnHover && '-mx-4 px-4 hover:bg-grey-50 dark:hover:bg-grey-950',
+        'group/list-item relative flex items-center justify-between',
+        bgOnHover && 'hover:bg-grey-50 dark:hover:bg-grey-950',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200 dark:border-grey-900 dark:hover:border-grey-800' : 'border-y border-transparent hover:border-grey-200 first-of-type:hover:border-t-transparent dark:hover:border-grey-800',
         className
     );
 
     return (
         <div className={listItemClasses} data-testid={testId}>
-            {children ? children :
-                <div className={`flex grow items-center gap-3 ${onClick && 'cursor-pointer'}`} onClick={handleClick}>
-                    {avatar && avatar}
-                    <div className={`flex grow flex-col py-3 pr-6`} id={id}>
-                        <span>{title}</span>
-                        {detail && <span className='text-xs text-grey-700'>{detail}</span>}
+            {bgOnHover && (
+                <div className="absolute inset-0 -mx-4 rounded-lg bg-grey-50 opacity-0 transition-opacity group-hover/list-item:opacity-100 dark:bg-grey-950" />
+            )}
+            <div className="relative flex w-full items-center justify-between">
+                {children ? children :
+                    <div className={`flex grow items-center gap-3 ${onClick && 'cursor-pointer'}`} onClick={handleClick}>
+                        {avatar && avatar}
+                        <div className={`flex grow flex-col py-3 pr-6`} id={id}>
+                            <span>{title}</span>
+                            {detail && <span className='text-xs text-grey-700'>{detail}</span>}
+                        </div>
                     </div>
-                </div>
-            }
-            {action &&
-                <div className={`visible py-3 md:pl-6 ${paddingRight && 'md:pr-6'} ${hideActions ? 'group-hover/list-item:visible md:invisible' : ''}`}>
-                    {action}
-                </div>
-            }
+                }
+                {action &&
+                    <div className={`visible py-3 md:pl-6 ${paddingRight && 'md:pr-6'} ${hideActions ? 'group-hover/list-item:visible md:invisible' : ''}`}>
+                        {action}
+                    </div>
+                }
+            </div>
         </div>
     );
 };
