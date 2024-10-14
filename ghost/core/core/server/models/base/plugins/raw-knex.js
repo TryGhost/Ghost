@@ -172,14 +172,14 @@ module.exports = function (Bookshelf) {
                             const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
 
                             objects = _.map(objects, (object) => {
-                                _.each(Object.keys(relationsToAttach), (relation) => {
+                                for (const relation in relationsToAttach) {
                                     if (!relationsToAttach[relation][object.id]) {
                                         object[relation] = [];
-                                        return;
+                                        continue;
                                     }
 
                                     object[relation] = relationsToAttach[relation][object.id];
-                                });
+                                }
 
                                 object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
                                     attributes: object,
