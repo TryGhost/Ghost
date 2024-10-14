@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, {forwardRef} from 'react';
 
-export const tableRowHoverBgClasses = 'before:absolute before:inset-x-[-16px] before:top-0 before:bottom-0 before:bg-grey-50 before:opacity-0 hover:before:opacity-100 before:rounded-md before:transition-opacity dark:before:bg-grey-950';
+export const tableRowHoverBgClasses = 'before:absolute before:inset-x-[-16px] before:top-[-1px] before:bottom-0 before:bg-grey-50 before:opacity-0 hover:before:opacity-100 before:rounded-md before:transition-opacity dark:before:bg-grey-950 hover:z-10';
 
 export interface TableRowProps {
     id?: string;
@@ -32,6 +32,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
         bgOnHover && tableRowHoverBgClasses,
         onClick && 'cursor-pointer',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-950' : 'border-y border-none first-of-type:hover:border-t-transparent',
+        'hover:border-b-transparent',
         className
     );
 
@@ -41,7 +42,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
                 <div className="relative z-10 flex items-center">
                     <div className="grow py-2">{children}</div>
                     {action &&
-                        <div className={`flex items-center justify-end p-2${hideActions ? 'opacity-0 group-hover/table-row:opacity-100' : ''}`}>
+                        <div className={`flex items-center justify-end p-2${hideActions ? ' opacity-0 group-hover/table-row:opacity-100' : ''}`}>
                             {action}
                         </div>
                     }

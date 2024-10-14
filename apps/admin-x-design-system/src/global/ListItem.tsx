@@ -47,7 +47,7 @@ const ListItem: React.FC<ListItemProps> = ({
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-900' : 'border-y border-transparent',
         onClick && 'cursor-pointer before:absolute before:inset-0 before:content-[""]',
         'hover:z-10 hover:border-b-transparent',
-        '-mb-px pb-px', // Negative margin to overlap borders
+        '-mb-px pb-px', 
         className
     );
 
