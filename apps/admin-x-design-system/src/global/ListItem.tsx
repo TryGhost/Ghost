@@ -44,15 +44,17 @@ const ListItem: React.FC<ListItemProps> = ({
     const listItemClasses = clsx(
         'group/list-item relative flex items-center justify-between',
         bgOnHover && 'hover:bg-grey-50 dark:hover:bg-grey-950',
-        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-b-transparent dark:border-grey-900' : 'border-y border-transparent',
-        onClick && 'cursor-pointer before:absolute before:inset-0 before:content-[""]', 
+        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-900' : 'border-y border-transparent',
+        onClick && 'cursor-pointer before:absolute before:inset-0 before:content-[""]',
+        'hover:z-10 hover:border-b-transparent',
+        '-mb-px pb-px', // Negative margin to overlap borders
         className
     );
 
     return (
         <div className={listItemClasses} data-testid={testId} onClick={handleClick}>
             {bgOnHover && (
-                <div className="absolute inset-0 -mx-4 rounded-lg bg-grey-50 opacity-0 group-hover/list-item:opacity-100 dark:bg-grey-950" />
+                <div className="absolute inset-0 -z-10 -mx-4 rounded-lg bg-grey-50 opacity-0 group-hover/list-item:opacity-100 dark:bg-grey-950" />
             )}
             <div className="relative flex w-full items-center justify-between">
                 {children ? children :
