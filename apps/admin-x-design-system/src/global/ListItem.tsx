@@ -44,7 +44,7 @@ const ListItem: React.FC<ListItemProps> = ({
     const listItemClasses = clsx(
         'group/list-item relative flex items-center justify-between',
         bgOnHover && 'hover:bg-grey-50 dark:hover:bg-grey-950',
-        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200 dark:border-grey-900 dark:hover:border-grey-800' : 'border-y border-transparent hover:border-grey-200 first-of-type:hover:border-t-transparent dark:hover:border-grey-800',
+        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-b-transparent dark:border-grey-900' : 'border-y border-transparent',
         className
     );
 
