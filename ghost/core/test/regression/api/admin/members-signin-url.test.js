@@ -105,7 +105,7 @@ describe('Members Sigin URL API', function () {
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
                 .set('Origin', config.get('url'))
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(401);
+                .expect(403);
         });   
         it('Can read', function () {
             return request
