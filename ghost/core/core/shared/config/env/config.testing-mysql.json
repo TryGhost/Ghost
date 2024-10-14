@@ -30,6 +30,18 @@
             "lifetime": 3600,
             "freeRetries": 4
         },
+        "user_verification": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "send_verification_code": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
         "global_reset": {
             "minWait": 3600000,
             "maxWait": 3600000,
