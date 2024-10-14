@@ -21,7 +21,7 @@ test.describe('Social account settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
+        await section.getByLabel(`URL of your publication’s Facebook Page`).fill('https://www.facebook.com/fb');
         await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://x.com/tw');
 
         await section.getByRole('button', {name: 'Save'}).click();
@@ -49,7 +49,7 @@ test.describe('Social account settings', async () => {
         const section = page.getByTestId('social-accounts');
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        const facebookInput = section.getByLabel(`URL of your publication's Facebook Page`);
+        const facebookInput = section.getByLabel(`URL of your publication’s Facebook Page`);
 
         await testUrlValidation(
             facebookInput,

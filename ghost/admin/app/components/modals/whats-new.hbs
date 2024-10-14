@@ -1,5 +1,5 @@
 <div class="modal-content">
-    <h1 class="gh-whasnew-modal-title">What's new?</h1>
+    <h1 class="gh-whasnew-modal-title">What’s new?</h1>
     <section class="gh-whatsnew-modal-entries" {{did-insert (perform this.whatsNew.updateLastSeen)}}>
         {{#each this.whatsNew.entries as |entry|}}
             <a class="gh-whatsnew-modal-entry" href={{entry.url}} target="_blank" rel="noopener noreferrer">
