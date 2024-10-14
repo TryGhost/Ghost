@@ -51,7 +51,7 @@ const ListItem: React.FC<ListItemProps> = ({
     return (
         <div className={listItemClasses} data-testid={testId}>
             {bgOnHover && (
-                <div className="absolute inset-0 -mx-4 rounded-lg bg-grey-50 opacity-0 transition-opacity group-hover/list-item:opacity-100 dark:bg-grey-950" />
+                <div className="absolute inset-0 -mx-4 rounded-lg bg-grey-50 opacity-0 group-hover/list-item:opacity-100 dark:bg-grey-950" />
             )}
             <div className="relative flex w-full items-center justify-between">
                 {children ? children :
@@ -64,7 +64,7 @@ const ListItem: React.FC<ListItemProps> = ({
                     </div>
                 }
                 {action &&
-                    <div className={`visible py-3 md:pl-6 ${paddingRight && 'md:pr-6'} ${hideActions ? 'group-hover/list-item:visible md:invisible' : ''}`}>
+                    <div className={`visible py-3 md:pl-2 ${paddingRight && 'md:pr-2'} ${hideActions ? 'group-hover/list-item:visible md:invisible' : ''}`}>
                         {action}
                     </div>
                 }
