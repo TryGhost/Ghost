@@ -16,8 +16,6 @@ class DynamicRedirectManager {
 
         /** @private */
         this.router = express.Router();
-        /** @private @type {string[]} */
-        this.redirectIds = [];
         /** @private @type {Object.<string, {fromRegex: RegExp, to: string, options: {permanent: boolean}}>} */
         this.redirects = {};
 
@@ -103,10 +101,6 @@ class DynamicRedirectManager {
 
             const fromRegex = this.buildRegex(from);
             const redirectId = from;
-
-            if (!this.redirectIds.includes(redirectId)) {
-                this.redirectIds.push(redirectId);
-            }
             
             this.redirects[redirectId] = {
                 fromRegex,
@@ -131,11 +125,10 @@ class DynamicRedirectManager {
      * @returns {void}
      */
     removeRedirect(redirectId) {
-        this.redirectIds.splice(this.redirectIds.indexOf(redirectId), 1);
         delete this.redirects[redirectId];
 
         this.router = express.Router();
-        this.redirectIds.forEach(id => this.setupRedirect(id));
+        Object.keys(this.redirects).forEach(id => this.setupRedirect(id));
 
         return;
     }
@@ -144,7 +137,6 @@ class DynamicRedirectManager {
      * @returns {void}
      */
     removeAllRedirects() {
-        this.redirectIds = [];
         this.redirects = {};
         this.router = express.Router();
     }
