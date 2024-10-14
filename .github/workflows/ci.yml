@@ -175,7 +175,7 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install --cached --immutable
+        run: yarn install --immutable --check-cache
 
       - name: Build packages
         if: steps.cache_built_packages.outputs.cache-hit != 'true'
