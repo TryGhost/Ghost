@@ -47,14 +47,21 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>
             </TableCell>
             <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
-                {(count === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px items-end gap-1 text-right'>
-                    <span className='text-right'>{numberWithCommas(count)}</span>
-                </div>)}
+                {(count === 0) ? (
+                    <span className="text-grey-500 dark:text-grey-900">-</span>
+                ) : (
+                    <div className='text-right'>
+                        <span>{numberWithCommas(count)}</span>
+                    </div>
+                )}
             </TableCell>
-            <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (null) : (<div className=''>
-                    <span className='min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span><span className='whitespace-nowrap text-left text-sm lowercase text-grey-700 opacity-0 transition-opacity group-hover/table-row:opacity-100'> from you</span>
-                </div>)}
+            <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
+                {(count === 0) ? null : (
+                    <div className='-mt-px text-left'>
+                        <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
+                        <span className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>from you</span>
+                    </div>
+                )}
             </TableCell>
         </TableRow>
     );
