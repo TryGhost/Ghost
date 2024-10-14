@@ -48,16 +48,16 @@ module.exports = class AssetsMinificationBase {
 
     async minify(globs, options) {
         try {
-            return await this.minifier.minify(globs, options);
+            const result = await this.minifier.minify(globs, options);
+            this.ready = true;
+            return result;
         } catch (error) {
             if (error.code === 'EACCES') {
                 logging.error('Ghost was not able to write asset files due to permissions.');
                 return;
             }
 
-            throw error;
-        } finally {
-            this.ready = true;
+            throw error;           
         }
     }
 
