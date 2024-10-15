@@ -21,7 +21,7 @@ export type Comment = {
         replies: number,
         likes: number,
     },
-    member: Member,
+    member: Member | null,
     edited_at: string,
     created_at: string,
     html: string
