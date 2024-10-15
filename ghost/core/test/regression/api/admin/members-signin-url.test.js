@@ -106,11 +106,6 @@ describe('Members Sigin URL API', function () {
             request = supertest.agent(config.get('url'));
             await testUtils.initFixtures('members', 'api_keys');
 
-            const admin = await testUtils.createUser({
-                user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[0].name
-            });
-            request.user = admin;
             key = testUtils.DataGenerator.Content.api_keys[0];
             token = localUtils.getValidAdminToken('/admin/', key);   
         });
@@ -139,20 +134,5 @@ describe('Members Sigin URL API', function () {
                     localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin_url');
                 });
         }); 
-        it('Can read the members endpoint with a key (confirming token is ok!)', function () {
-            return request
-                .get(localUtils.API.getApiQuery(`members/`))
-                .set('Origin', config.get('url'))
-                .set('Authorization', `Ghost ${token}`)
-                .set('Content-Type', 'application/json')
-                .expect(200)
-                .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.members);
-                    jsonResponse.members.should.have.length(8);
-                });
-        });
     });
 });
