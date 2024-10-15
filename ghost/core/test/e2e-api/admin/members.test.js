@@ -22,6 +22,7 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -40,6 +41,8 @@ async function assertMemberEvents({eventType, memberId, asserts}) {
     const eventsJSON = events.map(e => e.toJSON());
 
     // Order shouldn't matter here
+    console.log(`asserts`, asserts);
+    console.log(`eventsJSON`, eventsJSON);
     for (const a of asserts) {
         eventsJSON.should.matchAny(a);
     }
@@ -136,7 +139,8 @@ function buildMemberWithIncludesSnapshot(options) {
         attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
-        labels: anyArray
+        labels: anyArray,
+        unsubscribe_url: anyString
     };
 }
 
@@ -154,7 +158,8 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
-    labels: anyArray
+    labels: anyArray,
+    unsubscribe_url: anyString
 };
 
 /**
@@ -487,13 +492,14 @@ describe('Members API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
         await agent.loginAsOwner();
-
+        
         newsletters = await getNewsletters();
     });
-
+    
     beforeEach(function () {
         mockManager.mockStripe();
         emailMockReceiver = mockManager.mockMail();
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
@@ -2035,7 +2041,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Can subscribe to a newsletter', async function () {
+    it.only('Can subscribe to a newsletter', async function () {
         const clock = sinon.useFakeTimers(Date.now());
         const memberToChange = {
             name: 'change me',
@@ -2064,6 +2070,8 @@ describe('Members API', function () {
                 location: anyLocationFor('members')
             });
         const newMember = body.members[0];
+        console.log(`newMember`, newMember);
+        console.log(`body.members`, body.members);
         const before = new Date();
         before.setMilliseconds(0);
 
