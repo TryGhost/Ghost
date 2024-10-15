@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.119.0",
+    "@sentry/node": "7.119.2",
     "@slack/webhook": "7.0.3",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
@@ -224,12 +224,12 @@
     "yjs": "13.6.20"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.119.0",
+    "@sentry/profiling-node": "7.119.2",
     "@tryghost/html-to-mobiledoc": "3.1.2",
     "sqlite3": "5.1.7"
   },
   "devDependencies": {
-    "@actions/core": "1.10.1",
+    "@actions/core": "1.11.1",
     "@playwright/test": "1.46.1",
     "@tryghost/express-test": "0.13.15",
     "@tryghost/webhook-mock-receiver": "0.2.14",

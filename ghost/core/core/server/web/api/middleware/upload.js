@@ -6,7 +6,6 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const {JSDOM} = require('jsdom');
 
 const messages = {
     db: {
@@ -160,6 +159,8 @@ const checkFileIsValid = (fileData, types, extensions) => {
  *
  */
 const isSvgSafe = (filepath) => {
+    const {JSDOM} = require('jsdom');
+
     const fileContent = fs.readFileSync(filepath, 'utf8');
     const document = new JSDOM(fileContent).window.document;
     document.body.innerHTML = fileContent;

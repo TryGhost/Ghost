@@ -41,7 +41,7 @@
     "@faker-js/faker": "7.6.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.119.0",
+    "@sentry/ember": "7.119.2",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
     "@tinybirdco/charts": "0.2.1",
