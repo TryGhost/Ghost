@@ -35,7 +35,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow className="group" testId='recommendation-list-item'>
+        <TableRow className='group' testId='recommendation-list-item'>
             <TableCell onClick={showDetails}>
                 <div className='flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
@@ -46,21 +46,21 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
+            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-left align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
                 {(count === 0) ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
                 ) : (
-                    <div className='text-right'>
-                        <span>{numberWithCommas(count)}</span>
+                    <div className='-mt-px text-right'>
+                        <span className='text-left'>{numberWithCommas(count)}</span>
                     </div>
                 )}
             </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden w-[1%] whitespace-nowrap text-left align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {(count === 0) ? null : (
-                    <div className='-mt-px'>
-                        <span className='-mb-px inline-block whitespace-nowrap text-sm text-grey-700'>
-                            <span className='lowercase'>{showSubscribers ? newMembers : clicks}</span>
-                            <span className='opacity-0 transition-opacity duration-200 group-hover:opacity-100'> from you</span>
+                    <div className='text-left'>
+                        <span className='text-sm lowercase text-grey-700'>
+                            <span>{showSubscribers ? newMembers : clicks}</span>
+                            <span className='invisible group-hover:visible'> from you</span>
                         </span>
                     </div>
                 )}
