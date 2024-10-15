@@ -11,7 +11,6 @@ export interface SettingGroupContentProps {
     values?: Array<SettingValueProps>;
     children?: React.ReactNode;
     className?: string;
-    // Add this new prop
     customGapY?: string;
 }
 
