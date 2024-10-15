@@ -100,14 +100,20 @@ describe('Members Sigin URL API', function () {
         });
     });
     describe('With an admin API key', function () {
+        let key, token
         before(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
+            await testUtils.initFixtures('members', 'api_keys');
+
             const admin = await testUtils.createUser({
                 user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
                 role: testUtils.DataGenerator.Content.roles[0].name
             });
             request.user = admin;
+            key = testUtils.DataGenerator.Content.api_keys[0];
+            token = localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0]);
+            
         });
         it('Cannot read without the key', function () {
             return request
@@ -120,7 +126,8 @@ describe('Members Sigin URL API', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
                 .set('Origin', config.get('url'))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+                .set('Content-Type', 'application/json')
+                .set('Authorization', `Ghost ${token}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
@@ -133,5 +140,21 @@ describe('Members Sigin URL API', function () {
                     localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin_url');
                 });
         }); 
+        it('Can read the members endpoint with a key (confirming token is ok!)', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`members/`))
+                .set('Origin', config.get('url'))
+                .set('Authorization', `Ghost ${token}`)
+                .set('Content-Type', 'application/json')
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.members);
+                    jsonResponse.members.should.have.length(8);
+                });
+        });
     });
+
 });
