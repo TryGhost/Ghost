@@ -48,14 +48,19 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent columns={1}>
+        <SettingGroupContent columns={1} customGapY='gap-y-0'>
             {[
                 {key: 'email_track_opens', label: 'Newsletter opens', checked: trackEmailOpens},
                 {key: 'email_track_clicks', label: 'Newsletter clicks', checked: trackEmailClicks},
                 {key: 'members_track_sources', label: 'Member sources', checked: trackMemberSources},
                 {key: 'outbound_link_tagging', label: 'Outbound link tagging', checked: outboundLinkTagging}
-            ].map(({key, label, checked}) => (
-                <div key={key} className="flex items-center justify-between">
+            ].map(({key, label, checked}, index, array) => (
+                <div 
+                    key={key} 
+                    className={`flex items-center justify-between py-3 ${
+                        index !== array.length - 1 ? 'border-b border-grey-200' : ''
+                    }`}
+                >
                     <span>{label}</span>
                     <Toggle
                         checked={checked}
