@@ -1,5 +1,5 @@
 import Form from './Form';
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
@@ -10,6 +10,7 @@ type Props = {
 };
 const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction, t} = useAppContext();
+    const [hasContent, setHasContent] = useState(false);
 
     const config = {
         placeholder: (commentsCount === 0 ? t('Start the conversation') : t('Join the discussion')),
@@ -27,7 +28,9 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             status: 'published',
             html
         });
-    }, [postId, dispatchAction]);
+        
+        editor?.commands.clearContent();
+    }, [postId, dispatchAction, editor]);
 
     // C keyboard shortcut to focus main form
     const formEl = useRef(null);
@@ -71,7 +74,6 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
                 return;
             }
         };
-
         // Note: normally we would need to attach this listener to the window + the iframe window. But we made listener
         // in the Iframe component that passes down all the keydown events to the main window to prevent that
         window.addEventListener('keydown', keyDownListener, {passive: true});
@@ -81,14 +83,32 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         };
     }, [editor]);
 
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                setHasContent(!editor.isEmpty);
+            };
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+            
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
+
     const submitProps = {
         submitText: (
             <>
                 <span className="hidden sm:inline">{t('Add comment')} </span><span className="sm:hidden">{t('Comment')}</span>
             </>
         ),
-        submitSize: 'large',
-        submit
+        submitSize: 'large' as const,
+        submit,
+        hasContent
     };
 
     const isOpen = editor?.isFocused ?? false;

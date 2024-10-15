@@ -1,6 +1,6 @@
 import React from 'react';
 import {Avatar} from '../Avatar';
-import {Comment, useAppContext} from '../../../AppContext';
+import {Comment, useAppContext, useLabs} from '../../../AppContext';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
@@ -18,10 +18,12 @@ type FormEditorProps = {
     reduced?: boolean;
     isOpen: boolean;
     editor: Editor | null;
-    submitText: JSX.Element | null;
+    submitText: React.ReactNode;
     submitSize: SubmitSize;
+    hasContent: boolean;
 };
-const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
+const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize, hasContent}) => {
+    const labs = useLabs();
     const {t} = useAppContext();
     let buttonIcon = null;
 
@@ -105,7 +107,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     return (
         <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]'}`}>
             <div
-                className={`text-md min-h-[120px] w-full rounded-md border border-black/10 bg-white/90 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}
+                className={`text-md min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}
             `}
                 data-testid="form-editor">
                 <EditorContent
@@ -117,15 +119,31 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
                 {close &&
                     <button className="ml-2.5 font-sans text-sm font-medium text-neutral-900/50 outline-0 transition-all hover:text-neutral-900/70 dark:text-white/60 dark:hover:text-white/75" type="button" onClick={close}>{t('Cancel')}</button>
                 }
-                <button
-                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-[6px] bg-neutral-900 px-3 py-2 text-center font-sans text-base font-medium text-white/95 outline-0 transition-all duration-150 hover:bg-black hover:text-white sm:text-sm dark:bg-white/95 dark:text-neutral-800 dark:hover:bg-white dark:hover:text-neutral-900`}
-                    data-testid="submit-form-button"
-                    type="button"
-                    onClick={submitForm}
-                >
-                    <span>{buttonIcon}</span>
-                    {submitText && <span>{submitText}</span>}
-                </button>
+                {labs.commentImprovements ? (
+                    <button
+                        className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md px-3 py-2 text-center font-sans text-base font-medium outline-0 transition-all duration-200 sm:text-sm ${
+                            hasContent 
+                                ? 'bg-[var(--gh-accent-color)] text-white hover:brightness-105' 
+                                : 'bg-black/5 text-neutral-900 dark:bg-white/15 dark:text-neutral-300'
+                        }`}
+                        data-testid="submit-form-button"
+                        type="button"
+                        onClick={submitForm}
+                    >
+                        <span>{buttonIcon}</span>
+                        {submitText && <span>{submitText}</span>}
+                    </button>
+                ) : (
+                    <button
+                        className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-[6px] bg-neutral-900 px-3 py-2 text-center font-sans text-base font-medium text-white/95 outline-0 transition-all duration-150 hover:bg-black hover:text-white sm:text-sm dark:bg-white/95 dark:text-neutral-800 dark:hover:bg-white dark:hover:text-neutral-900`}
+                        data-testid="submit-form-button"
+                        type="button"
+                        onClick={submitForm}
+                    >
+                        <span>{buttonIcon}</span>
+                        {submitText && <span>{submitText}</span>}
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -176,16 +194,17 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
 
 type FormProps = {
     comment?: Comment;
-    submit: (data: {html: string}) => Promise<void>;
-    submitText: JSX.Element;
-    submitSize: SubmitSize;
-    close?: () => void;
     editor: Editor | null;
-    reduced: boolean;
+    submit: (data: {html: string}) => Promise<void>;
+    submitText: React.ReactNode;
+    submitSize: 'small' | 'medium' | 'large';
+    close?: () => void;
     isOpen: boolean;
+    reduced: boolean;
+    hasContent: boolean;
 };
 
-const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen}) => {
+const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen, hasContent}) => {
     const {member, dispatchAction} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
@@ -268,7 +287,18 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                    <FormEditor close={close} editor={editor} isOpen={isOpen} progress={progress} reduced={reduced} setProgress={setProgress} submit={submit} submitSize={submitSize} submitText={submitText} />
+                    <FormEditor 
+                        close={close} 
+                        editor={editor} 
+                        hasContent={hasContent} 
+                        isOpen={isOpen} 
+                        progress={progress} 
+                        reduced={reduced} 
+                        setProgress={setProgress} 
+                        submit={submit} 
+                        submitSize={submitSize} 
+                        submitText={submitText}
+                    />
                 </div>
                 <div className='absolute left-0 top-1 flex h-11 w-full items-start justify-start sm:h-12'>
                     <div className="pointer-events-none mr-2 grow-0 sm:mr-3">

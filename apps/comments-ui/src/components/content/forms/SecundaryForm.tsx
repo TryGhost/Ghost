@@ -2,7 +2,7 @@ import Form, {SubmitSize} from './Form';
 import {Editor} from '@tiptap/react';
 import {isMobile} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useSecondUpdate} from '../../../utils/hooks';
 
 type Props = {
@@ -13,8 +13,10 @@ type Props = {
     submitText: JSX.Element;
     submitSize: SubmitSize;
 };
+
 const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
     const {dispatchAction, secundaryFormCount} = useAppContext();
+    const [hasContent, setHasContent] = useState(false);
 
     // Keep track of the amount of open forms
     useEffect(() => {
@@ -35,11 +37,37 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
         };
     }, [secundaryFormCount]);
 
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                setHasContent(!editor.isEmpty);
+            };
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+            
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
+
     const reduced = isMobile();
 
     return (
         <div className='mt-[-16px] pr-3'>
-            <Form close={close} editor={editor} isOpen={true} reduced={reduced} submit={submit} submitSize={submitSize} submitText={submitText} />
+            <Form 
+                close={close} 
+                editor={editor} 
+                hasContent={hasContent} 
+                isOpen={true} 
+                reduced={reduced} 
+                submit={submit} 
+                submitSize={submitSize} 
+                submitText={submitText}
+            />
         </div>
     );
 };

@@ -48,10 +48,7 @@ const Content = () => {
             <>
                 <ContentTitle count={commentCount} showCount={showCount} title={title}/>
                 <div>
-                    {!hasOpenSecundaryForms
-                        ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
-                        : null
-                    }
+                    {member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />}
                 </div>
                 <div className="z-20 mb-7 mt-3">
                     <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
