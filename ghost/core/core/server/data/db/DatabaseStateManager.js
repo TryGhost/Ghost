@@ -1,6 +1,9 @@
 const KnexMigrator = require('knex-migrator');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
+
+const sentry = require('../../../shared/sentry');
 
 const states = {
     READY: 0,
@@ -61,9 +64,14 @@ class DatabaseStateManager {
             // CASE: database connection errors, unknown cases
             let errorToThrow = error;
             if (!errors.utils.isGhostError(errorToThrow)) {
-                errorToThrow = new errors.InternalServerError({message: errorToThrow.message, err: errorToThrow});
+                errorToThrow = new errors.InternalServerError({
+                    code: 'DATABASE_ERROR',
+                    message: errorToThrow.message,
+                    err: errorToThrow
+                });
             }
 
+            sentry.captureException(errorToThrow);
             throw errorToThrow;
         }
     }
@@ -79,11 +87,25 @@ class DatabaseStateManager {
             }
 
             if (state === states.NEEDS_INITIALISATION) {
+                const beforeInitializationTime = Date.now();
+                
                 await this.knexMigrator.init();
+
+                metrics.metric('migrations', {
+                    value: Date.now() - beforeInitializationTime,
+                    type: 'initialization'
+                });
             }
 
             if (state === states.NEEDS_MIGRATION) {
+                const beforeMigrationTime = Date.now();
+
                 await this.knexMigrator.migrate();
+
+                metrics.metric('migrations', {
+                    value: Date.now() - beforeMigrationTime,
+                    type: 'migrations'
+                });      
             }
 
             state = await this.getState();
@@ -92,9 +114,14 @@ class DatabaseStateManager {
         } catch (error) {
             let errorToThrow = error;
             if (!errors.utils.isGhostError(error)) {
-                errorToThrow = new errors.InternalServerError({message: errorToThrow.message, err: errorToThrow});
+                errorToThrow = new errors.InternalServerError({
+                    code: 'DATABASE_ERROR',
+                    message: errorToThrow.message,
+                    err: errorToThrow
+                });
             }
 
+            sentry.captureException(errorToThrow);
             throw errorToThrow;
         }
     }
