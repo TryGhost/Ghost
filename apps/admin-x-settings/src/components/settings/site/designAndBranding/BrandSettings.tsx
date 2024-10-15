@@ -131,7 +131,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                                     image: values.coverImage || '',
                                     handleSave: async (file:File) => {
                                         try {
-                                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                            updateSetting('cover_image', getImageUrl(await uploadImage({file, original: values.coverImage})));
                                         } catch (e) {
                                             handleError(e);
                                         }

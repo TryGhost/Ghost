@@ -9,12 +9,16 @@ import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
+const IMAGE_STATUS_NEW = 'new';
+const IMAGE_STATUS_EDITED = 'edited';
+
 export const fileTypes = {
     image: {
         mimeTypes: ['image/gif', 'image/jpg', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
         extensions: ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'],
         endpoint: '/images/upload/',
-        resourceName: 'images'
+        resourceName: 'images',
+        uploadParams: {purpose: 'image', status: IMAGE_STATUS_NEW}
     },
     video: {
         mimeTypes: ['video/mp4', 'video/webm', 'video/ogg'],
@@ -546,9 +550,15 @@ export default class KoenigLexicalEditor extends Component {
                 const fileFormData = new FormData();
                 fileFormData.append('file', file, file.name);
 
+                formData = {...fileTypes[type].uploadParams, ...formData};
+
                 Object.keys(formData || {}).forEach((key) => {
                     fileFormData.append(key, formData[key]);
                 });
+
+                if (type === 'image' && file.edited) {
+                    fileFormData.set('status', IMAGE_STATUS_EDITED);
+                }
 
                 const url = `${ghostPaths().apiRoot}${fileTypes[type].endpoint}`;
 
