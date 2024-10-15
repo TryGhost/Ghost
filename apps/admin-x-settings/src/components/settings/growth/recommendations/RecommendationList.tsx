@@ -57,9 +57,11 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
             </TableCell>
             <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {(count === 0) ? null : (
-                    <div className='-mt-px text-left'>
-                        <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
-                        <span className='mt-1 whitespace-nowrap text-right text-sm text-grey-700 opacity-0 transition-opacity duration-200 group-hover:opacity-100'>from you</span>
+                    <div className='-mt-px'>
+                        <span className='-mb-px inline-block whitespace-nowrap text-sm text-grey-700'>
+                            <span className='lowercase'>{showSubscribers ? newMembers : clicks}</span>
+                            <span className='opacity-0 transition-opacity duration-200 group-hover:opacity-100'> from you</span>
+                        </span>
                     </div>
                 )}
             </TableCell>
