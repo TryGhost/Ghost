@@ -41,8 +41,6 @@ async function assertMemberEvents({eventType, memberId, asserts}) {
     const eventsJSON = events.map(e => e.toJSON());
 
     // Order shouldn't matter here
-    console.log(`asserts`, asserts);
-    console.log(`eventsJSON`, eventsJSON);
     for (const a of asserts) {
         eventsJSON.should.matchAny(a);
     }
@@ -2041,7 +2039,7 @@ describe('Members API', function () {
             });
     });
 
-    it.only('Can subscribe to a newsletter', async function () {
+    it('Can subscribe to a newsletter', async function () {
         const clock = sinon.useFakeTimers(Date.now());
         const memberToChange = {
             name: 'change me',
@@ -2070,8 +2068,6 @@ describe('Members API', function () {
                 location: anyLocationFor('members')
             });
         const newMember = body.members[0];
-        console.log(`newMember`, newMember);
-        console.log(`body.members`, body.members);
         const before = new Date();
         before.setMilliseconds(0);
 
