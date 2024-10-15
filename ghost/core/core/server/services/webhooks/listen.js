@@ -42,7 +42,11 @@ const WEBHOOKS = [
     'post.tag.attached',
     'post.tag.detached',
     'page.tag.attached',
-    'page.tag.detached'
+    'page.tag.detached',
+
+    'user.added',
+    'user.edited',
+    'user.deleted'
 ];
 
 const listen = async () => {
