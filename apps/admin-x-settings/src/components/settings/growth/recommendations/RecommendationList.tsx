@@ -35,9 +35,9 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow testId='recommendation-list-item'>
+        <TableRow className="group" testId='recommendation-list-item'>
             <TableCell onClick={showDetails}>
-                <div className='group flex items-center gap-3 hover:cursor-pointer'>
+                <div className='flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
                         <div className="mb-0.5 flex items-center gap-3">
                             <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
@@ -59,7 +59,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 {(count === 0) ? null : (
                     <div className='-mt-px text-left'>
                         <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
-                        <span className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>from you</span>
+                        <span className='mt-1 whitespace-nowrap text-right text-sm text-grey-700 opacity-0 transition-opacity duration-200 group-hover:opacity-100'>from you</span>
                     </div>
                 )}
             </TableCell>
