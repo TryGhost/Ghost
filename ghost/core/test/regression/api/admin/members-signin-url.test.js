@@ -100,7 +100,7 @@ describe('Members Sigin URL API', function () {
         });
     });
     describe('With an admin API key', function () {
-        let key, token
+        let key, token;
         before(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
@@ -112,8 +112,7 @@ describe('Members Sigin URL API', function () {
             });
             request.user = admin;
             key = testUtils.DataGenerator.Content.api_keys[0];
-            token = localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0]);
-            
+            token = localUtils.getValidAdminToken('/admin/', key);   
         });
         it('Cannot read without the key', function () {
             return request
@@ -156,5 +155,4 @@ describe('Members Sigin URL API', function () {
                 });
         });
     });
-
 });
