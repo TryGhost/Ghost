@@ -6,6 +6,7 @@ import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
+import {keyDown} from 'ember-keyboard/test-support/test-helpers';
 
 describe('Acceptance: Members', function () {
     let hooks = setupApplicationTest();
@@ -40,7 +41,7 @@ describe('Acceptance: Members', function () {
             await authenticateSession();
         });
 
-        it('it renders, can be navigated, can edit member', async function () {
+        it.only('it renders, can be navigated, can edit member', async function () {
             let member1 = this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
             this.server.create('member', {createdAt: moment.utc().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')});
 
@@ -91,6 +92,13 @@ describe('Acceptance: Members', function () {
             await click('[data-test-link="members-back"]');
 
             // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+
+            await visit(`/members/${member1.id}`);
+            await fillIn('[data-test-input="member-name"]', 'New Name 222');
+            await keyDown('cmd+s');
+
+            await click('[data-test-link="members-back"]');
             expect(currentURL(), 'currentURL').to.equal('/members');
         });
 
