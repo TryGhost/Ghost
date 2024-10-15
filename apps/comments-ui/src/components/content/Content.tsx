@@ -53,12 +53,12 @@ const Content = () => {
                         : null
                     }
                 </div>
-                <div className="mb-7 mt-3 flex items-center justify-between">
-                    <span className="text-grey-700 dark:text-grey-300 text-sm font-medium">
+                <div className="z-20 mb-7 mt-3">
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
                         {t('Sort by')}: <SortingForm/>
                     </span>
                 </div>
-                <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
+                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements">
                     {commentsElements}
                 </div>
                 <Pagination />

@@ -27,11 +27,11 @@ const Pagination = () => {
     return (
         labs.commentImprovements ? (
             <button className="text-md group mb-10 flex items-center px-0 pb-2 pt-0 text-left font-sans font-semibold text-neutral-700 dark:text-white" data-testid="pagination-component" type="button" onClick={loadMore}>
-                <span className="flex h-[39px] items-center justify-center whitespace-nowrap rounded-[6px] bg-[rgba(0,0,0,0.05)] px-4 py-2 text-center font-sans text-sm font-semibold text-neutral-700 outline-0 transition-[opacity,background] duration-150 hover:bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-100 dark:hover:bg-[rgba(255,255,255,0.1)]">{text}</span>
+                <span className="flex h-[40px] items-center justify-center whitespace-nowrap rounded-[6px] bg-black/5 px-4 py-2 text-center font-sans text-sm font-semibold text-neutral-700 outline-0 transition-all duration-150 hover:bg-black/10 dark:bg-white/15 dark:text-neutral-300 dark:hover:bg-white/20 dark:hover:text-neutral-100">{text}</span>
             </button>
         ) : (
             <button className="text-md group mb-10 flex w-full items-center px-0 pb-2 pt-0 text-left font-sans font-semibold text-neutral-700 dark:text-white" data-testid="pagination-component" type="button" onClick={loadMore}>
-                <span className="flex h-[39px] w-full items-center justify-center whitespace-nowrap rounded-[6px] bg-[rgba(0,0,0,0.05)] px-3 py-2 text-center font-sans text-sm font-semibold text-neutral-700 outline-0 transition-[opacity,background] duration-150 hover:bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-100 dark:hover:bg-[rgba(255,255,255,0.1)]">↑ {text}</span>
+                <span className="flex h-[40px] w-full items-center justify-center whitespace-nowrap rounded-[6px] bg-black/5 px-3 py-2 text-center font-sans text-sm font-semibold text-neutral-700 outline-0 transition-all duration-150 hover:bg-black/10 dark:bg-white/15 dark:text-neutral-300 dark:hover:bg-white/20 dark:hover:text-neutral-100">↑ {text}</span>
             </button>
         )
     );

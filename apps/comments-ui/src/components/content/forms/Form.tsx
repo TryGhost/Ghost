@@ -105,7 +105,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     return (
         <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]'}`}>
             <div
-                className={`text-md min-h-[120px] w-full rounded-md border border-[rgba(0,0,0,0.1)] bg-[rgba(255,255,255,0.9)] p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-[rgba(255,255,255,0.14)] dark:text-neutral-300${isOpen ? 'cursor-text' : 'cursor-pointer'}
+                className={`text-md min-h-[120px] w-full rounded-md border border-black/10 bg-white/90 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}
             `}
                 data-testid="form-editor">
                 <EditorContent
@@ -115,10 +115,10 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
             </div>
             <div className="absolute bottom-1 right-1 flex space-x-4 transition-[opacity] duration-150 sm:bottom-2 sm:right-2">
                 {close &&
-                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400" type="button" onClick={close}>{t('Cancel')}</button>
+                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-900/50 outline-0 transition-all hover:text-neutral-900/70 dark:text-white/60 dark:hover:text-white/75" type="button" onClick={close}>{t('Cancel')}</button>
                 }
                 <button
-                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-[6px] border bg-neutral-900 px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-[opacity] duration-150 sm:text-sm dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
+                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-[6px] bg-neutral-900 px-3 py-2 text-center font-sans text-base font-medium text-white/95 outline-0 transition-all duration-150 hover:bg-black hover:text-white sm:text-sm dark:bg-white/95 dark:text-neutral-800 dark:hover:bg-white dark:hover:text-neutral-900`}
                     data-testid="submit-form-button"
                     type="button"
                     onClick={submitForm}
@@ -152,7 +152,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
         >
             <div className="flex flex-wrap">
                 <div
-                    className="w-full font-sans text-base font-bold leading-snug text-[rgb(23,23,23)] sm:w-auto sm:text-sm dark:text-[rgba(255,255,255,0.85)]"
+                    className="w-full font-sans text-base font-bold leading-snug text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
                     data-testid="member-name"
                     onClick={editName}
                 >
@@ -160,13 +160,13 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
                 </div>
                 <div className="flex items-baseline justify-start">
                     <button
-                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] sm:text-sm dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] ${!expertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
+                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-black/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
                         data-testid="expertise-button"
                         type="button"
                         onClick={editExpertise}
                     >
                         <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : 'Add your expertise'}</span>
-                        {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
+                        {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
                     </button>
                 </div>
             </div>
