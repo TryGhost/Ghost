@@ -100,6 +100,15 @@ describe('Members Sigin URL API', function () {
         });
     });
     describe('With an admin API key', function () {
+        before(async function () {
+            await localUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            const admin = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[0].name
+            });
+            request.user = admin;
+        });
         it('Cannot read without the key', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
@@ -107,7 +116,7 @@ describe('Members Sigin URL API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
         });   
-        it('Can read', function () {
+        it('Can read with a key', function () {
             return request
                 .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
                 .set('Origin', config.get('url'))
