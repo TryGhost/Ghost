@@ -72,6 +72,27 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(findAll('[data-test-post-id]')).to.have.length(1);
                 expect(find('[data-test-no-posts-box]')).to.not.exist;
             });
+
+            describe('context menu', function () {
+                let publishedPost;
+
+                beforeEach(async function () {
+                    publishedPost = this.server.create('post', {status: 'published'});
+                });
+
+                it('does not render the context menu', async function () {
+                    await visit('/posts');
+
+                    // get the post
+                    const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                    expect(post, 'post').to.exist;
+
+                    await triggerEvent(post, 'contextmenu');
+
+                    let contextMenu = find('.gh-posts-context-menu');
+                    expect(contextMenu, 'context menu').to.not.be.visible;
+                });
+            });
         });
 
         describe('as author', function () {
@@ -102,6 +123,59 @@ describe('Acceptance: Posts / Pages', function () {
                 // only author's post is shown
                 expect(findAll('[data-test-post-id]').length, 'post count').to.equal(1);
                 expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
+            });
+
+            describe('context menu', function () {
+                it('does not render the context menu', async function () {
+                    await visit('/posts');
+
+                    // get the post
+                    const post = find(`[data-test-post-id="${authorPost.id}"]`);
+                    expect(post, 'post').to.exist;
+
+                    await triggerEvent(post, 'contextmenu');
+
+                    let contextMenu = find('.gh-posts-context-menu');
+                    expect(contextMenu, 'context menu').to.not.be.visible;
+                });
+            });
+        });
+
+        describe('as editor', function () {
+            let editor, editorPost;
+
+            beforeEach(async function () {
+                let editorRole = this.server.create('role', {name: 'Editor'});
+                editor = this.server.create('user', {roles: [editorRole]});
+                editorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Post'});
+
+                await authenticateSession();
+            });
+
+            describe('context menu', function () {
+                it('renders the correct options', async function () {
+                    await visit('/posts');
+
+                    const post = find(`[data-test-post-id="${editorPost.id}"]`);
+                    expect(post, 'post').to.exist;
+
+                    await triggerEvent(post, 'contextmenu');
+
+                    // Test that the context menu is rendered
+                    const contextMenu = find('.gh-posts-context-menu');
+                    expect(contextMenu, 'context menu').to.exist;
+
+                    // Test that the context menu has the correct buttons
+                    const buttons = contextMenu.querySelectorAll('button');
+                    expect(buttons.length, 'context menu buttons').to.equal(5);
+                    expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
+                    expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Unpublish');
+                    expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Feature');
+                    expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Add a tag');
+                    expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Duplicate');
+                });
+
+                // Note: we cover the functionality of the context menu buttons in the 'as admin' section
             });
         });
 

@@ -30,7 +30,7 @@
         {{/if}}
     {{/if}}
     {{#if this.canFeatureSelection}}
-        {{#if this.shouldFeatureSelection }}
+        {{#if this.shouldFeatureSelection}}
             <li>
                 <button class="mr2" type="button" {{on "click" this.featurePosts}} data-test-button="feature">
                     <span>{{svg-jar "star" class="mb1 star"}}Feature</span>
@@ -44,11 +44,13 @@
             </li>
         {{/if}}
     {{/if}}
+
     <li>
         <button class="mr2" type="button" {{on "click" this.addTagToPosts}} data-test-button="add-tag">
             <span>{{svg-jar "tag"}}Add a tag</span>
         </button>
     </li>
+
     {{#if this.membersUtils.isMembersEnabled}}
         <li>
             <button class="mr2" type="button" {{on "click" this.editPostsAccess}} data-test-button="change-access">
@@ -56,14 +58,16 @@
             </button>
         </li>
     {{/if}}
-    {{#if this.session.user.isAdmin}}
-        {{#if this.canCopySelection}}
+
+    {{#if this.canCopySelection}}
         <li>
             <button class="mr2" type="button" {{on "click" this.copyPosts}} data-test-button="duplicate">
                 <span>{{svg-jar "duplicate"}}Duplicate</span>
             </button>
         </li>
-        {{/if}}
+    {{/if}}
+
+    {{#if this.session.user.isAdmin}}
         <li>
             <button class="mr2" type="button" {{on "click" this.deletePosts}} data-test-button="delete">
                 <span class="red">{{svg-jar "trash"}}Delete</span>
