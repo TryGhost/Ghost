@@ -112,7 +112,7 @@
     "*.js": "eslint"
   },
   "devDependencies": {
-    "@actions/core": "1.10.1",
+    "@actions/core": "1.11.1",
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
     "eslint": "8.44.0",
