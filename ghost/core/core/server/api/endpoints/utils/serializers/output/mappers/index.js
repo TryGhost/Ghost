@@ -9,7 +9,6 @@ module.exports = {
     emailFailures: require('./email-failures'),
     images: require('./images'),
     integrations: require('./integrations'),
-    oembed: require('./oembed'),
     pages: require('./pages'),
     posts: require('./posts'),
     settings: require('./settings'),
