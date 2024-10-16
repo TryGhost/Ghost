@@ -139,7 +139,7 @@ describe('Themes middleware', function () {
 
     describe('updateTemplateOptions', function () {
         it('is called with correct data', function (done) {
-            const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
+            const themeDataExpectedProps = ['posts_per_page', 'image_sizes', 'head_excludes'];
 
             executeMiddleware(middleware, req, res, function next(err) {
                 try {
