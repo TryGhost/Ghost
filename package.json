@@ -29,7 +29,7 @@
     "dev": "node .github/scripts/dev.js",
     "fix": "yarn cache clean && rimraf -g '**/node_modules' && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
-    "setup": "yarn && git submodule update --init && NODE_ENV=development node .github/scripts/setup.js",
+    "setup": "yarn && git submodule update --init && nx run-many -t build:ts && NODE_ENV=development node .github/scripts/setup.js",
     "reset:data": "cd ghost/core && node index.js generate-data --clear-database --quantities members:100000,posts:500 --seed 123",
     "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
