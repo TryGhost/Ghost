@@ -1,4 +1,4 @@
-const {combineTransactionalMigrations, addPermissionToRole} = require('../../utils');
+const {addPermissionToRole} = require('../../utils');
 
 module.exports = addPermissionToRole({
     permission: 'Read member signin urls',
