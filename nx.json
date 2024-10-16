@@ -35,6 +35,7 @@
             "cache": true
         },
         "test:unit": {
+            "dependsOn": ["^build:ts"],
             "cache": true
         }
     },
