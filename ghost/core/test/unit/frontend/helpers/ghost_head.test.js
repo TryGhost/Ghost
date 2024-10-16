@@ -10,6 +10,7 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
@@ -393,12 +394,19 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('without Code Injection', function () {
+        let loggingErrorStub; // assert # of calls if test throws errors, do not globally stub
+
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
         });
 
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -406,6 +414,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
@@ -771,19 +780,27 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('outputs structured data but not schema for custom collection', async function () {
@@ -951,6 +968,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not contain amphtml link', async function () {
+            let loggingErrorStub = sinon.stub(logging, 'error');
+
             const renderObject = {
                 post: posts[1]
             };
@@ -963,6 +982,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+
+            sinon.assert.calledOnce(loggingErrorStub);
         });
     });
 
