@@ -20,7 +20,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     onUnfollow
 }) => {
     const [isFollowing, setIsFollowing] = useState(following);
-    const [isLoading, setIsLoading] = useState(false);
 
     const mutation = useFollow(
         'index',
@@ -39,7 +38,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     );
 
     const handleClick = async () => {
-        setIsLoading(true);
         try {
             if (isFollowing) {
                 setIsFollowing(false);
@@ -54,8 +52,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
             }
         } catch (error) {
             setIsFollowing(!isFollowing);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -67,7 +63,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         <Button
             className={className}
             color="black"
-            disabled={isLoading}
             label={isFollowing ? 'Following' : 'Follow'}
             link={type === 'link'}
             onClick={(event: React.MouseEvent) => {
