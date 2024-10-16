@@ -242,6 +242,7 @@ describe('Migrations', function () {
             permissions.should.havePermission('Edit collections', ['Administrator', 'Editor', 'Admin Integration']);
             permissions.should.havePermission('Add collections', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Delete collections', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Read member signin urls', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {
