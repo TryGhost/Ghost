@@ -12,9 +12,6 @@ const Content = () => {
     const commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
     const labs = useLabs();
 
-    const paidOnly = commentsEnabled === 'paid';
-    const isPaidMember = member && !!member.paid;
-
     useEffect(() => {
         const elem = document.getElementById(ROOT_DIV_ID);
 
@@ -33,7 +30,11 @@ const Content = () => {
         }
     }, []);
 
-    const hasOpenSecundaryForms = secundaryFormCount > 0;
+    const isPaidOnly = commentsEnabled === 'paid';
+    const isPaidMember = member && !!member.paid;
+
+    const showCTA = !member || (isPaidOnly && !isPaidMember);
+    const hasOpenReplyForms = secundaryFormCount > 0;
 
     return (
         <>
@@ -43,9 +44,11 @@ const Content = () => {
                 {commentsElements}
             </div>
             <div>
-                {!hasOpenSecundaryForms
-                    ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
-                    : null
+                {hasOpenReplyForms
+                    ? null
+                    : showCTA
+                        ? <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />
+                        : <MainForm commentsCount={commentCount} />
                 }
             </div>
             {
