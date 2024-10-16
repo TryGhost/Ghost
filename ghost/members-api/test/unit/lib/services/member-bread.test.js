@@ -290,7 +290,7 @@ describe('MemberBreadService', function () {
             });
         });
 
-        it.only('returns a member with an unsubscribe url', async function () {
+        it('returns a member with an unsubscribe url', async function () {
             const memberBreadService = getService();
             const member = await memberBreadService.read({id: MEMBER_ID});
 
