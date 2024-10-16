@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const xml = require('xml');
+const moment = require('moment');
 const path = require('path');
 const urlUtils = require('../../../shared/url-utils');
 const localUtils = require('./utils');
@@ -95,24 +96,23 @@ class BaseSiteMapGenerator {
     }
 
     /**
-     * @returns {Date}
+     * @returns {moment.Moment}
      */
     getLastModifiedForDatum(datum) {
         if (datum.updated_at || datum.published_at || datum.created_at) {
             const modifiedDate = datum.updated_at || datum.published_at || datum.created_at;
 
-            return new Date(modifiedDate);
+            return moment(modifiedDate);
         } else {
-            return new Date();
+            return moment();
         }
     }
 
     updateLastModified(datum) {
         const lastModified = this.getLastModifiedForDatum(datum);
-        const lastModifiedTime = lastModified.getTime();
 
-        if (lastModifiedTime > this.lastModified) {
-            this.lastModified = lastModifiedTime;
+        if (lastModified > this.lastModified) {
+            this.lastModified = lastModified;
         }
     }
 
