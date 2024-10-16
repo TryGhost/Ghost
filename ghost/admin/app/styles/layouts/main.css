@@ -340,7 +340,7 @@
 
 .gh-nav-search-icon {
     position: absolute;
-    top: 23px;
+    top: 21px;
     left: 15px;
     bottom: 0;
     z-index: 1;
@@ -367,6 +367,10 @@
     background: none;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0px 1px 4px rgba(0,0,0,0.3);
+}
+
+.modal-content .gh-nav-search-modal .ember-power-select-option {
+    height: auto;
 }
 
 @media (max-width: 800px) {

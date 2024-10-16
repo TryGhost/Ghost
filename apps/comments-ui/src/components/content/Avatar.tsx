@@ -1,6 +1,6 @@
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
 import {Comment, useAppContext} from '../../AppContext';
-import {getInitials} from '../../utils/helpers';
+import {getMemberInitialsFromComment} from '../../utils/helpers';
 
 function getDimensionClasses() {
     return 'w-8 h-8';
@@ -64,19 +64,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         return `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
     };
 
-    const commentGetInitials = () => {
-        if (comment && !comment.member) {
-            return getInitials(t('Deleted member'));
-        }
-
-        const commentMember = (comment ? comment.member : member);
-
-        if (!commentMember || !commentMember.name) {
-            return getInitials(t('Anonymous'));
-        }
-        return getInitials(commentMember.name);
-    };
-
+    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) || '';
     const commentMember = (comment ? comment.member : member);
 
     const bgColor = HSLtoString(generateHSL());
@@ -88,7 +76,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         <>
             {memberName ?
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} data-testid="avatar-background" style={avatarStyle}>
-                    <p className="font-sans text-base font-semibold text-white">{ commentGetInitials() }</p>
+                    <p className="font-sans text-base font-semibold text-white">{memberInitials}</p>
                 </div>) :
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`} data-testid="avatar-background" >
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />

@@ -73,7 +73,7 @@
     "@radix-ui/react-switch": "1.1.0",
     "@radix-ui/react-tabs": "1.1.0",
     "@radix-ui/react-tooltip": "1.1.2",
-    "@sentry/react": "7.119.0",
+    "@sentry/react": "7.119.2",
     "@tailwindcss/forms": "0.5.9",
     "@tailwindcss/line-clamp": "0.4.4",
     "@uiw/react-codemirror": "4.23.5",
@@ -84,7 +84,7 @@
     "react-colorful": "5.6.1",
     "react-hot-toast": "2.4.1",
     "react-select": "5.8.1",
-    "tailwindcss": "3.4.13"
+    "tailwindcss": "3.4.14"
   },
   "peerDependencies": {
     "react": "^18.2.0",

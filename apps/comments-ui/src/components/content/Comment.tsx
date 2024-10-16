@@ -7,7 +7,7 @@ import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
 import {Comment, useAppContext, useLabs} from '../../AppContext';
 import {Transition} from '@headlessui/react';
-import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
+import {formatExplicitTime, getMemberNameFromComment, isCommentPublished} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
 import {useState} from 'react';
 
@@ -196,10 +196,9 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, isInReplyMode, clos
 // -- Published comment components --
 //
 
-// TODO: move name detection to helper
 const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     const {t} = useAppContext();
-    const name = !comment.member ? t('Deleted member') : (comment.member.name ? comment.member.name : t('Anonymous'));
+    const name = getMemberNameFromComment(comment, t);
     return (
         <h4 className="text-[rgb(23,23,23] font-sans text-base font-bold leading-snug sm:text-sm dark:text-[rgba(255,255,255,0.85)]">
             {name}
