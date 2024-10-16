@@ -445,6 +445,11 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
+
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v4
@@ -503,6 +508,11 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
 
       - name: Record start time
         run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
