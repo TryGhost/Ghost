@@ -501,6 +501,15 @@ describe('Comments API', function () {
                 ]);
             });
 
+            it('Browsing comments does not return the member unsubscribe_url', async function () {
+                await setupBrowseCommentsData();
+                const response = await testGetComments(`/api/comments/post/${postId}/`, [
+                    commentMatcher,
+                    commentMatcherWithReplies({replies: 1})
+                ]);
+                should.not.exist(response.body.comments[0].unsubscribe_url);
+            });
+
             it('Can reply to your own comment', async function () {
                 // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
                 const timezone = settingsCache.get('timezone');
