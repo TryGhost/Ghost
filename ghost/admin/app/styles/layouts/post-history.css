@@ -161,7 +161,7 @@
     background: var(--white);
 }
 
-.gh-post-history-footer .for-switch.xs {
+.gh-post-history-footer .for-switch {
     width: 100%;
 }
 
@@ -174,7 +174,7 @@
     font-weight: 500;
 }
 
-.gh-post-history-footer .for-switch.xs label {
+.gh-post-history-footer .for-switch label {
     width: inherit !important;
     height: inherit !important;
 }
