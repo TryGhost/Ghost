@@ -48,7 +48,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent columns={1} customGapY='gap-y-0'>
+        <SettingGroupContent className='analytics-settings' columns={1}>
             {[
                 {key: 'email_track_opens', label: 'Newsletter opens', checked: trackEmailOpens},
                 {key: 'email_track_clicks', label: 'Newsletter clicks', checked: trackEmailClicks},

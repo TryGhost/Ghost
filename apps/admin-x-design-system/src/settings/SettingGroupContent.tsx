@@ -11,19 +11,12 @@ export interface SettingGroupContentProps {
     values?: Array<SettingValueProps>;
     children?: React.ReactNode;
     className?: string;
-    customGapY?: string;
 }
 
-const SettingGroupContent: React.FC<SettingGroupContentProps> = ({
-    columns,
-    values,
-    children,
-    className,
-    customGapY
-}) => {
-    let styles = `flex flex-col gap-x-5 ${customGapY || 'gap-y-7'}`;
+const SettingGroupContent: React.FC<SettingGroupContentProps> = ({columns, values, children, className}) => {
+    let styles = 'flex flex-col gap-x-5 gap-y-7';
     if (columns === 2) {
-        styles = `grid grid-cols-1 md:grid-cols-2 gap-x-8 ${customGapY || 'gap-y-6'}`;
+        styles = 'grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6';
     }
 
     styles += ` ${className}`;
