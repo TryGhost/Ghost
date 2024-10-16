@@ -21,7 +21,6 @@ describe('Config Loader', function () {
 
         beforeEach(function () {
             // Override process.env.database__client in case it is set (e.g. when running tests in docker)
-            process.env.database__client = undefined;
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             loader = rewire('../../../../core/shared/config/loader');
@@ -29,6 +28,10 @@ describe('Config Loader', function () {
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
+
+            // database__client is set in docker-compose
+            // reset to undefined to ensure consistent test setup
+            process.env.database__client = undefined;
         });
 
         afterEach(function () {
