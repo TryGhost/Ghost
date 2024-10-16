@@ -5,6 +5,8 @@ const assert = require('assert/strict');
 const models = require('../../../core/server/models');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const sinon = require('sinon');
 
 const subscriptionSnapshot = {
     id: anyString,
@@ -49,6 +51,7 @@ describe('Members API: edit subscriptions', function () {
     });
 
     beforeEach(function () {
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme'); // member uuid changes with every test run
         mockManager.mockStripe();
         mockManager.mockMail();
     });

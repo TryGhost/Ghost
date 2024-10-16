@@ -829,9 +829,10 @@ describe('Front-end members behavior', function () {
                     'created_at',
                     'enable_comment_notifications',
                     'newsletters',
-                    'email_suppression'
+                    'email_suppression',
+                    'unsubscribe_url'
                 ]);
-                Object.keys(memberData).should.have.length(13);
+                Object.keys(memberData).should.have.length(14);
                 memberData.should.not.have.property('id');
                 memberData.newsletters.should.have.length(1);
 

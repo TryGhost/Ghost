@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const logging = require('@tryghost/logging');
+const crypto = require('crypto');
 
 const messages = {
     incorrectKeyType: 'type must be one of "direct" or "connect".'
@@ -177,6 +178,30 @@ class SettingsHelpers {
 
     useNewEmailAddresses() {
         return this.#managedEmailEnabled() || this.labs.isSet('newEmailAddresses');
+    }
+
+    createUnsubscribeUrl(uuid, options = {}) {
+        const siteUrl = this.urlUtils.urlFor('home', true);
+        const unsubscribeUrl = new URL(siteUrl);
+        const key = this.getMembersValidationKey();
+        unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
+        if (uuid) {
+            // hash key with member uuid for verification (and to not leak uuid) - it's possible to update member email prefs without logging in
+            // @ts-ignore
+            const hmac = crypto.createHmac('sha256', key).update(`${uuid}`).digest('hex');
+            unsubscribeUrl.searchParams.set('uuid', uuid);
+            unsubscribeUrl.searchParams.set('key', hmac);
+        } else {
+            unsubscribeUrl.searchParams.set('preview', '1');
+        }
+        if (options.newsletterUuid) {
+            unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
+        }
+        if (options.comments) {
+            unsubscribeUrl.searchParams.set('comments', '1');
+        }
+
+        return unsubscribeUrl.href;
     }
 
     // PRIVATE

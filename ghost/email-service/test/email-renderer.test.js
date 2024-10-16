@@ -61,6 +61,10 @@ async function validateHtml(html) {
     assert.equal(report.valid, true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
 }
 
+const createUnsubscribeUrl = (uuid) => {
+    return `https://example.com/unsubscribe/?uuid=${uuid}&key=456`;
+};
+
 const getMembersValidationKey = () => {
     return 'members-key';
 };
@@ -98,7 +102,7 @@ describe('Email renderer', function () {
                         }
                     }
                 },
-                settingsHelpers: {getMembersValidationKey}
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl}
             });
             newsletter = createModel({
                 uuid: 'newsletteruuid'
@@ -119,8 +123,8 @@ describe('Email renderer', function () {
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
             assert.equal(replacements[0].id, 'list_unsubscribe');
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update(member.uuid).digest('hex');
-            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=${member.uuid}&key=${memberHmac}&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl(member.uuid);
+            assert.equal(replacements[0].getValue(member), unsubscribeUrl);
         });
 
         it('returns a replacement if it is used', function () {
@@ -156,8 +160,8 @@ describe('Email renderer', function () {
             assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update(member.uuid).digest('hex');
-            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=${member.uuid}&key=${memberHmac}&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl(member.uuid);
+            assert.equal(replacements[0].getValue(member), unsubscribeUrl);
         });
 
         it('returns correct name', function () {
@@ -2303,7 +2307,8 @@ describe('Email renderer', function () {
                     }
                 },
                 settingsHelpers: {
-                    getMembersValidationKey
+                    getMembersValidationKey,
+                    createUnsubscribeUrl
                 }
             });
         });
@@ -2312,21 +2317,26 @@ describe('Email renderer', function () {
             const response = await emailRenderer.createUnsubscribeUrl('memberuuid', {
                 newsletterUuid: 'newsletteruuid'
             });
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update('memberuuid').digest('hex');
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?uuid=memberuuid&key=${memberHmac}&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl('memberuuid', {
+                newsletterUuid: 'newsletteruuid'
+            });
+            assert.equal(response, unsubscribeUrl);
         });
 
         it('includes comments', async function () {
             const response = await emailRenderer.createUnsubscribeUrl('memberuuid', {
                 comments: true
             });
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update('memberuuid').digest('hex');
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?uuid=memberuuid&key=${memberHmac}&comments=1`);
+            const unsubscribeUrl = createUnsubscribeUrl('memberuuid', {
+                comments: true
+            });
+            assert.equal(response, unsubscribeUrl);
         });
 
         it('works for previews', async function () {
             const response = await emailRenderer.createUnsubscribeUrl();
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?preview=1`);
+            const unsubscribeUrl = createUnsubscribeUrl();
+            assert.equal(response, unsubscribeUrl);
         });
     });
 

@@ -26,6 +26,9 @@ describe('MemberBreadService', function () {
 
         const getService = () => {
             return new MemberBreadService({
+                settingsHelpers: {
+                    createUnsubscribeUrl: sinon.stub().returns('https://example.com/unsubscribe/?uuid=123&key=456')
+                },
                 memberRepository: memberRepositoryStub,
                 memberAttributionService: memberAttributionServiceStub,
                 emailSuppressionList: emailSuppressionListStub
@@ -285,6 +288,13 @@ describe('MemberBreadService', function () {
                 suppressed: true,
                 info: 'bounce'
             });
+        });
+
+        it('returns a member with an unsubscribe url', async function () {
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.unsubscribe_url, 'https://example.com/unsubscribe/?uuid=123&key=456');
         });
     });
 });

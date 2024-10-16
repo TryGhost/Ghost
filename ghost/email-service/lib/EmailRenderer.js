@@ -123,7 +123,7 @@ class EmailRenderer {
     /**
      * @param {object} dependencies
      * @param {object} dependencies.settingsCache
-     * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string}} dependencies.settingsHelpers
+     * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
@@ -505,27 +505,7 @@ class EmailRenderer {
      * @param {boolean} [options.comments] Unsubscribe from comment emails
      */
     createUnsubscribeUrl(uuid, options = {}) {
-        const siteUrl = this.#urlUtils.urlFor('home', true);
-        const unsubscribeUrl = new URL(siteUrl);
-        const key = this.#settingsHelpers.getMembersValidationKey();
-        unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-        if (uuid) {
-            // hash key with member uuid for verification (and to not leak uuid) - it's possible to update member email prefs without logging in
-            // @ts-ignore
-            const hmac = crypto.createHmac('sha256', key).update(`${uuid}`).digest('hex');
-            unsubscribeUrl.searchParams.set('uuid', uuid);
-            unsubscribeUrl.searchParams.set('key', hmac);
-        } else {
-            unsubscribeUrl.searchParams.set('preview', '1');
-        }
-        if (options.newsletterUuid) {
-            unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
-        }
-        if (options.comments) {
-            unsubscribeUrl.searchParams.set('comments', '1');
-        }
-
-        return unsubscribeUrl.href;
+        return this.#settingsHelpers.createUnsubscribeUrl(uuid, options);
     }
 
     /**

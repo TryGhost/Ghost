@@ -72,7 +72,8 @@ module.exports = function MembersAPI({
     memberAttributionService,
     emailSuppressionList,
     settingsCache,
-    sentry
+    sentry,
+    settingsHelpers
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -144,7 +145,8 @@ module.exports = function MembersAPI({
         labsService,
         stripeService: stripeAPIService,
         memberAttributionService,
-        emailSuppressionList
+        emailSuppressionList,
+        settingsHelpers
     });
 
     const geolocationService = new GeolocationService();
