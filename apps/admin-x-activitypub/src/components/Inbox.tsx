@@ -20,7 +20,8 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         data,
         fetchNextPage,
         hasNextPage,
-        isFetchingNextPage
+        isFetchingNextPage,
+        isLoading
     } = useActivitiesForUser({
         handle: 'index',
         includeReplies: true,
@@ -99,9 +100,13 @@ const Inbox: React.FC<InboxProps> = ({}) => {
             <MainNavigation page='home' title="Home" onLayoutChange={handleLayoutChange} />
             <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full'>
-                    {activities.length > 0 ? (
+                    {isLoading ? (
+                        <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                            <LoadingIndicator size='lg' />
+                        </div>
+                    ) : activities.length > 0 ? (
                         <>
-                            <ul className='mx-auto flex max-w-[640px] flex-col'>
+                            <ul className={`mx-auto flex ${layout === 'inbox' ? 'max-w-[740px]' : 'max-w-[540px]'} flex-col`}>
                                 {activities.map((activity, index) => (
                                     <li
                                         key={activity.id}
