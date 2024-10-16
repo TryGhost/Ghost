@@ -141,7 +141,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                 {showLoading && (
                     <LoadingIndicator size='lg'/>
                 )}
-                {showNoResults && (
+                {showNoResults && (query.length > 0) && (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
