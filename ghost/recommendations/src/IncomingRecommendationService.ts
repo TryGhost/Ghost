@@ -95,8 +95,10 @@ export class IncomingRecommendationService {
     }
 
     async #updateIncomingRecommendations() {
-        // Note: we also recheck recommendations that were not verified (verification could have failed)
-        const filter = this.#getMentionFilter();
+        // We refresh all incoming recommendations, including:
+        // - recommendations that were not verified, as the verification could have failed
+        // - recommendations that were deleted previously. Implementation note: given that we have `deleted:false` as default filter in the Mention model, we need to override it here
+        const filter = this.#getMentionFilter() + '+deleted:[true,false]';
         await this.#mentionsApi.refreshMentions({filter, limit: 100});
     }
 
