@@ -54,19 +54,14 @@ module.exports = function (Bookshelf) {
 
             Object.keys(attrs).forEach((key) => {
                 if (attrs[key] && tableDef?.[key]?.type === 'dateTime') {
-                    const dateValue = new Date(attrs[key]);
+                    const dateMoment = moment(attrs[key]);
 
                     // CASE: You are somehow able to store e.g. 0000-00-00 00:00:00
                     // Protect the code base and return the current date time.
-                    if (!isNaN(dateValue.getTime())) {
-                        // Valid date: set to the start of the second
-                        dateValue.setMilliseconds(0);
-                        attrs[key] = dateValue;
+                    if (dateMoment.isValid()) {
+                        attrs[key] = dateMoment.startOf('seconds').toDate();
                     } else {
-                        // Invalid date: use current date-time
-                        const currentDate = new Date();
-                        currentDate.setMilliseconds(0);
-                        attrs[key] = currentDate;
+                        attrs[key] = moment().startOf('seconds').toDate();
                     }
                 }
             });
