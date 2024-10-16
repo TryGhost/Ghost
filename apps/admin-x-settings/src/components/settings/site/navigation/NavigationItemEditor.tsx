@@ -15,8 +15,7 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     onAddItem?: () => void; // New prop
 }
 
-const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled,textFieldClasses, action, className, onAddItem,...props
-}) => {
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, onAddItem,...props}) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && item.label && item.url) {
             e.preventDefault();
