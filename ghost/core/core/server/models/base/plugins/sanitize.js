@@ -35,21 +35,21 @@ module.exports = function (Bookshelf) {
 
             switch (methodName) {
             case 'toJSON':
-                return baseOptions.concat('shallow', 'columns', 'previous');
+                return [...baseOptions, 'shallow', 'columns', 'previous'];
             case 'destroy':
-                return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
+                return [...baseOptions, ...extraOptions, 'id', 'destroyBy', 'require'];
             case 'add':
-                return baseOptions.concat(extraOptions, ['autoRefresh']);
+                return [...baseOptions, ...extraOptions, 'autoRefresh'];
             case 'edit':
-                return baseOptions.concat(extraOptions, ['id', 'require', 'autoRefresh']);
+                return [...baseOptions, ...extraOptions, 'id', 'require', 'autoRefresh'];
             case 'findOne':
-                return baseOptions.concat(extraOptions, ['columns', 'require', 'mongoTransformer']);
+                return [...baseOptions, ...extraOptions, 'columns', 'require', 'mongoTransformer'];
             case 'findAll':
-                return baseOptions.concat(extraOptions, ['filter', 'columns', 'mongoTransformer']);
+                return [...baseOptions, ...extraOptions, 'filter', 'columns', 'mongoTransformer'];
             case 'findPage':
-                return baseOptions.concat(extraOptions, ['filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer']);
+                return [...baseOptions, ...extraOptions, 'filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer'];
             default:
-                return baseOptions.concat(extraOptions);
+                return [...baseOptions, ...extraOptions];
             }
         },
 
