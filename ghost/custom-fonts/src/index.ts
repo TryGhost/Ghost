@@ -98,33 +98,33 @@ export function generateCustomFontCss(fonts: FontSelection) {
 
 export const CUSTOM_FONTS: CustomFonts = {
     heading: [
-        'Space Grotesk',
-        'Playfair Display',
         'Chakra Petch',
-        'Noto Sans',
-        'Poppins',
-        'Fira Sans',
-        'Inter',
-        'Noto Serif',
-        'Lora',
-        'IBM Plex Serif',
         'EB Garamond',
-        'Space Mono',
         'Fira Mono',
-        'JetBrains Mono'
+        'Fira Sans',
+        'IBM Plex Serif',
+        'Inter',
+        'JetBrains Mono',
+        'Lora',
+        'Noto Sans',
+        'Noto Serif',
+        'Playfair Display',
+        'Poppins',
+        'Space Grotesk',
+        'Space Mono'
     ],
     body: [
-        'Noto Sans',
-        'Poppins',
-        'Fira Sans',
-        'Inter',
-        'Noto Serif',
-        'Lora',
-        'IBM Plex Serif',
         'EB Garamond',
-        'Space Mono',
         'Fira Mono',
-        'JetBrains Mono'
+        'Fira Sans',
+        'IBM Plex Serif',
+        'Inter',
+        'JetBrains Mono',
+        'Lora',
+        'Noto Sans',
+        'Noto Serif',
+        'Poppins',
+        'Space Mono'
     ]
 };
 

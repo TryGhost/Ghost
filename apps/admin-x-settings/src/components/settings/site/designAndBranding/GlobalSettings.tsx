@@ -48,31 +48,31 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
     const fontClassName = (fontName: string) => {
-        if (fontName === 'Space Grotesk') {
-            return 'font-space-grotesk';
-        } else if (fontName === 'Chakra Petch') {
+        if (fontName === 'Chakra Petch') {
             return 'font-chakra-petch';
-        } else if (fontName === 'Noto Sans') {
-            return 'font-noto-sans';
-        } else if (fontName === 'Poppins') {
-            return 'font-poppins';
-        } else if (fontName === 'Fira Sans') {
-            return 'font-fira-sans';
-        } else if (fontName === 'Noto Serif') {
-            return 'font-noto-serif';
-        } else if (fontName === 'Lora') {
-            return 'font-lora';
-        } else if (fontName === 'IBM Plex Serif') {
-            return 'font-ibm-plex-serif';
         } else if (fontName === 'EB Garamond') {
             return 'font-eb-garamond';
-        } else if (fontName === 'Space Mono') {
-            return 'font-space-mono';
         } else if (fontName === 'Fira Mono') {
             return 'font-fira-mono';
+        } else if (fontName === 'Fira Sans') {
+            return 'font-fira-sans';
+        } else if (fontName === 'IBM Plex Serif') {
+            return 'font-ibm-plex-serif';
         } else if (fontName === 'JetBrains Mono') {
             return 'font-jetbrains-mono';
-        } 
+        } else if (fontName === 'Lora') {
+            return 'font-lora';
+        } else if (fontName === 'Noto Sans') {
+            return 'font-noto-sans';
+        } else if (fontName === 'Noto Serif') {
+            return 'font-noto-serif';
+        } else if (fontName === 'Poppins') {
+            return 'font-poppins';
+        } else if (fontName === 'Space Grotesk') {
+            return 'font-space-grotesk';
+        } else if (fontName === 'Space Mono') {
+            return 'font-space-mono';
+        }
         return '';
     };
 
