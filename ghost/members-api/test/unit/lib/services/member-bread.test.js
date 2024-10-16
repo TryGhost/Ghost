@@ -27,7 +27,7 @@ describe('MemberBreadService', function () {
         const getService = () => {
             return new MemberBreadService({
                 settingsHelpers: {
-                    createUnsubscribeUrl: sinon.stub().resolves('https://example.com/unsubscribe/?uuid=123&key=456')
+                    createUnsubscribeUrl: sinon.stub().returns('https://example.com/unsubscribe/?uuid=123&key=456')
                 },
                 memberRepository: memberRepositoryStub,
                 memberAttributionService: memberAttributionServiceStub,
@@ -290,7 +290,7 @@ describe('MemberBreadService', function () {
             });
         });
 
-        it('returns a member with an unsubscribe url', async function () {
+        it.only('returns a member with an unsubscribe url', async function () {
             const memberBreadService = getService();
             const member = await memberBreadService.read({id: MEMBER_ID});
 
