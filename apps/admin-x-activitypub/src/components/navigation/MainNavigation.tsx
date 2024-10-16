@@ -10,7 +10,7 @@ interface MainNavigationProps {
 }
 
 const MainNavigation: React.FC<MainNavigationProps> = ({
-    title = 'Home',
+    // title = 'Home',
     page = '',
     onLayoutChange
 }) => {
