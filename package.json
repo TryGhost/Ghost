@@ -41,7 +41,7 @@
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
-    "test:unit:docker": "NODE_ENV=testing docker compose -f docker/development.compose.yml run --rm --remove-orphans ghost yarn test:unit",
+    "test:unit:docker": "NODE_ENV=testing yarn compose run --rm --remove-orphans ghost yarn test:unit",
     "test:browser": "APP_FLAGS=browser-tests,all node .github/scripts/dev.js",
     "test:browser:docker": "APP_FLAGS=browser-tests,allyarn compose run --rm --remove-orphans ghost bash -c 'yarn test:browser'",
     "test:all:docker": "NODE_ENV=testing yarn compose run --rm --remove-orphans ghost bash -c 'cd ghost/core && yarn test:all'",
