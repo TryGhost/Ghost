@@ -1,9 +1,9 @@
+const assert = require('assert').strict;
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/configUtils');
-const logging = require('@tryghost/logging');
+const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
@@ -15,6 +15,7 @@ describe('{{#get}} helper', function () {
     let fn;
     let inverse;
     let locals = {};
+    let logging;
 
     before(function () {
         models.init();
@@ -25,20 +26,65 @@ describe('{{#get}} helper', function () {
         inverse = sinon.spy();
 
         locals = {root: {}, globalProp: {foo: 'bar'}};
+
+        // We're testing how the browse stub is called, not the response.
+        // Each get call errors since the posts resource is not populated.
+        logging = {
+            error: sinon.stub(loggingLib, 'error'),
+            warn: sinon.stub(loggingLib, 'warn')
+        };
     });
 
     afterEach(function () {
         sinon.restore();
     });
 
+    describe('cacheability optimisation', function () {
+        it('Ignores non posts', function () {
+            const apiOptions = {
+                filter: 'id:-abcdef1234567890abcdef12'
+            };
+            const {
+                options,
+                parseResult
+            } = get.optimiseFilterCacheability('not-posts', apiOptions);
+            assert.equal(options.filter, 'id:-abcdef1234567890abcdef12');
+            assert.deepEqual(parseResult({not: 'modified'}), {not: 'modified'});
+        });
+        it('Changes the filter for simple id negations', function () {
+            const apiOptions = {
+                filter: 'id:-abcdef1234567890abcdef12',
+                limit: 1
+            };
+            const {
+                options,
+                parseResult
+            } = get.optimiseFilterCacheability('posts', apiOptions);
+            assert.equal(options.filter, 'id:-null');
+            assert.deepEqual(parseResult({
+                posts: [{
+                    id: 'abcdef1234567890abcdef12'
+                }, {
+                    id: '1234567890abcdef12345678'
+                }]
+            }), {
+                posts: [{
+                    id: '1234567890abcdef12345678'
+                }],
+                meta: {
+                    cacheabilityOptimisation: true
+                }
+            });
+        });
+    });
+
     describe('context preparation', function () {
-        let browsePostsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
             locals = {root: {_locals: {}}};
 
-            browsePostsStub = sinon.stub(api, 'postsPublic').get(() => {
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({posts: [{feature_image_caption: '<a href="#">A link</a>'}], meta: meta})
                 };
@@ -62,13 +108,12 @@ describe('{{#get}} helper', function () {
     });
 
     describe('authors', function () {
-        let browseAuthorsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
             locals = {root: {_locals: {}}};
 
-            browseAuthorsStub = sinon.stub(api, 'authorsPublic').get(() => {
+            sinon.stub(api, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -84,6 +129,35 @@ describe('{{#get}} helper', function () {
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('newsletters', function () {
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {}}};
+
+            sinon.stub(api, 'newslettersPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({newsletters: [], meta: meta})
+                };
+            });
+        });
+
+        it('browse newsletters', function (done) {
+            get.call(
+                {},
+                'newsletters',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('newsletters');
+                fn.firstCall.args[0].newsletters.should.eql([]);
                 inverse.called.should.be.false();
 
                 done();
@@ -324,9 +398,6 @@ describe('{{#get}} helper', function () {
 
     describe('optimization', function () {
         beforeEach(function () {
-            sinon.spy(logging, 'error');
-            sinon.spy(logging, 'warn');
-
             sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: () => {
@@ -339,8 +410,8 @@ describe('{{#get}} helper', function () {
                 };
             });
         });
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should log a warning if it hits the notify threshold', async function () {
@@ -363,12 +434,13 @@ describe('{{#get}} helper', function () {
         it('should log an error and return safely if it hits the timeout threshold', async function () {
             configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            await get.call(
+            const result = await get.call(
                 {},
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             );
 
+            assert(result.toString().includes('data-aborted-get-helper'));
             // A log message will be output
             logging.error.calledOnce.should.be.true();
             // The get helper gets called with an empty array of results

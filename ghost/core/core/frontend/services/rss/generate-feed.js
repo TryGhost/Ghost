@@ -1,5 +1,4 @@
 const downsize = require('downsize');
-const Promise = require('bluebird');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils');
 const {routerManager} = require('../routing');

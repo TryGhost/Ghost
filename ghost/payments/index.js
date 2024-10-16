@@ -1,1 +1,1 @@
-module.exports = require('./lib/payments');
+module.exports = require('./lib/PaymentsService');

@@ -1,9 +1,13 @@
 const storage = require('../../adapters/storage');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'files',
     upload: {
         statusCode: 201,
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: false,
         async query(frame) {
             const filePath = await storage.getStorage('files').save({
@@ -17,3 +21,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

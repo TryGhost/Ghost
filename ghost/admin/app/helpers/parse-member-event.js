@@ -10,7 +10,7 @@ export default class ParseMemberEventHelper extends Helper {
     @service membersUtils;
 
     compute([event, hasMultipleNewsletters]) {
-        const subject = event.data.member.name || event.data.member.email;
+        const subject = event.data.member ? (event.data.member.name || event.data.member.email) : (event.data.name || event.data.email || '');
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
@@ -19,6 +19,7 @@ export default class ParseMemberEventHelper extends Helper {
         const join = this.getJoin(event);
         const object = this.getObject(event);
         const url = this.getURL(event);
+        const route = this.getRoute(event);
         const timestamp = moment(event.data.created_at);
         const source = this.getSource(event);
 
@@ -36,6 +37,7 @@ export default class ParseMemberEventHelper extends Helper {
             info,
             description,
             url,
+            route,
             timestamp
         };
     }
@@ -76,18 +78,12 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'opened-email';
         }
 
-        if (this.feature.get('suppressionList')) {
-            if (event.type === 'email_sent_event') {
-                icon = 'sent-email';
-            }
+        if (event.type === 'email_sent_event') {
+            icon = 'sent-email';
+        }
 
-            if (event.type === 'email_delivered_event') {
-                icon = 'received-email';
-            }
-        } else {
-            if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
-                icon = 'received-email';
-            }
+        if (event.type === 'email_delivered_event') {
+            icon = 'received-email';
         }
 
         if (event.type === 'email_failed_event') {
@@ -112,6 +108,14 @@ export default class ParseMemberEventHelper extends Helper {
             } else {
                 icon = 'less-like-this';
             }
+        }
+
+        if (event.type === 'donation_event') {
+            icon = 'subscriptions';
+        }
+
+        if (event.type === 'email_change_event') {
+            icon = 'email-changed';
         }
 
         return 'event-' + icon;
@@ -167,22 +171,16 @@ export default class ParseMemberEventHelper extends Helper {
             return 'opened email';
         }
 
-        if (this.feature.get('suppressionList')) {
-            if (event.type === 'email_sent_event') {
-                return 'sent email';
-            }
+        if (event.type === 'email_sent_event') {
+            return 'sent email';
+        }
 
-            if (event.type === 'email_delivered_event') {
-                return 'received email';
-            }
-        } else {
-            if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
-                return 'received email';
-            }
+        if (event.type === 'email_delivered_event') {
+            return 'received email';
         }
 
         if (event.type === 'email_failed_event') {
-            return this.feature.get('suppressionList') ? 'bounced email' : 'failed to receive email';
+            return 'bounced email';
         }
 
         if (event.type === 'email_complaint_event') {
@@ -213,6 +211,17 @@ export default class ParseMemberEventHelper extends Helper {
             }
             return 'less like this';
         }
+
+        if (event.type === 'email_change_event') {
+            if (event.data.from_email && event.data.to_email) {
+                return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
+            }
+            return 'Email address changed';
+        }
+
+        if (event.type === 'donation_event') {
+            return 'Made a one-time payment';
+        }
     }
 
     /**
@@ -222,7 +231,7 @@ export default class ParseMemberEventHelper extends Helper {
      *   object: 'My blog post'
      * When both words need to get appended, we'll add 'on'
      *  -> do this by returning 'on' in getJoin()
-     * This string is not added when action and object are in a separete table column, or when the getObject/getURL is empty
+     * This string is not added when action and object are in a separate table column, or when the getObject/getURL is empty
      */
     getJoin() {
         return '–';
@@ -232,7 +241,7 @@ export default class ParseMemberEventHelper extends Helper {
      * Clickable object, shown between action and info, or in a separate column in some views
      */
     getObject(event) {
-        if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.type === 'signup_event' || event.type === 'subscription_event' || event.type === 'donation_event') {
             if (event.data.attribution?.title) {
                 return event.data.attribution.title;
             }
@@ -288,6 +297,12 @@ export default class ParseMemberEventHelper extends Helper {
             return 'Free';
         }
 
+        if (event.type === 'donation_event') {
+            const symbol = getSymbol(event.data.currency);
+            const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
+            return formattedAmount;
+        }
+
         return;
     }
 
@@ -308,15 +323,39 @@ export default class ParseMemberEventHelper extends Helper {
      * Make the object clickable
      */
     getURL(event) {
-        if (event.type === 'comment_event' || event.type === 'click_event' || event.type === 'feedback_event') {
+        if (['comment_event', 'click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
                 return event.data.post.url;
             }
         }
 
-        if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (['signup_event', 'subscription_event', 'donation_event'].includes(event.type)) {
             if (event.data.attribution && event.data.attribution.url) {
                 return event.data.attribution.url;
+            }
+        }
+        return;
+    }
+
+    /**
+     * Get internal route props for a clickable object
+     */
+    getRoute(event) {
+        if (['click_event', 'feedback_event'].includes(event.type)) {
+            if (event.data.post) {
+                return {
+                    name: 'posts.analytics',
+                    model: event.data.post.id
+                };
+            }
+        }
+
+        if (['signup_event', 'subscription_event'].includes(event.type)) {
+            if (event.data.attribution_type === 'post') {
+                return {
+                    name: 'posts.analytics',
+                    model: event.data.attribution_id
+                };
             }
         }
         return;

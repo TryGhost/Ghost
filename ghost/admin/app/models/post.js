@@ -3,7 +3,6 @@ import Model, {attr, belongsTo, hasMany} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
-import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {compare, isBlank} from '@ember/utils';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy, reads} from '@ember/object/computed';
@@ -72,6 +71,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     feature: service(),
     ghostPaths: service(),
     clock: service(),
+    search: service(),
     settings: service(),
     membersUtils: service(),
 
@@ -101,20 +101,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return null;
-        }
-
-        // avoid modifying any references in the original blank doc object
-        return JSON.parse(JSON.stringify(BLANK_MOBILEDOC));
-    }}),
-    lexical: attr('string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return BLANK_LEXICAL;
-        }
-
-        return null;
+    mobiledoc: attr('json-string'),
+    lexical: attr('string', {defaultValue: () => {
+        return BLANK_LEXICAL;
     }}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
@@ -131,6 +120,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImage: attr('string'),
     featureImageAlt: attr('string'),
     featureImageCaption: attr('string'),
+    showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
@@ -138,6 +128,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     newsletter: belongsTo('newsletter', {embedded: 'always', async: false}),
     publishedBy: belongsTo('user', {async: true}),
     tags: hasMany('tag', {embedded: 'always', async: false}),
+    postRevisions: hasMany('post_revisions', {embedded: 'always', async: false}),
 
     primaryAuthor: reads('authors.firstObject'),
     primaryTag: reads('tags.firstObject'),
@@ -145,10 +136,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     scratch: null,
     lexicalScratch: null,
     titleScratch: null,
-
-    // HACK: used for validation so that date/time can be validated based on
-    // eventual status rather than current status
-    statusScratch: null,
+    //This is used to store the initial lexical state from the
+    // secondary editor to get the schema up to date in case its outdated
+    secondaryLexicalState: null,
 
     // For use by date/time pickers - will be validated then converted to UTC
     // on save. Updated by an observer whenever publishedAtUTC changes.
@@ -453,5 +443,18 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtBlogTZ = this.publishedAtBlogTZ;
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
+    },
+
+    // when a published post is updated, unpublished, or deleted we expire the search content cache
+    save() {
+        const [oldStatus] = this.changedAttributes().status || [];
+
+        return this._super(...arguments).then((res) => {
+            if (this.status === 'published' || oldStatus === 'published') {
+                this.search.expireContent();
+            }
+
+            return res;
+        });
     }
 });

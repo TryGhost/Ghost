@@ -32,8 +32,8 @@ describe('{{link_class}} helper', function () {
         };
     });
 
-    after(function () {
-        configUtils.restore();
+    after(async function () {
+        await configUtils.restore();
     });
 
     it('throws an error for missing for=""', function () {

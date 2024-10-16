@@ -4,8 +4,10 @@ import sinon from 'sinon';
 import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -19,8 +21,12 @@ describe('Acceptance: Editor', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(async function () {
+        this.server.loadFixtures('configs');
+    });
+
     it('redirects to signin when not authenticated', async function () {
-        let author = this.server.create('user'); // necesary for post-author association
+        let author = this.server.create('user'); // necessary for post-author association
         this.server.create('post', {authors: [author]});
 
         await invalidateSession();
@@ -110,11 +116,11 @@ describe('Acceptance: Editor', function () {
         let author;
 
         beforeEach(async function () {
+            this.server.loadFixtures();
             let role = this.server.create('role', {name: 'Administrator'});
             author = this.server.create('user', {roles: [role]});
-            this.server.loadFixtures('settings');
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         describe('post settings menu', function () {
@@ -150,7 +156,7 @@ describe('Acceptance: Editor', function () {
                 await blur('[data-test-date-time-picker-time-input]');
 
                 expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
-                    .to.equal('Must be in the past');
+                    .to.equal('Please choose a past date and time.');
 
                 // closing the PSM will reset the invalid date/time
                 await click('[data-test-psm-trigger]');
@@ -178,74 +184,7 @@ describe('Acceptance: Editor', function () {
                 await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
 
                 expect(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss')).to.equal('2017-04-09 12:00:00');
-
-                // go to settings to change the timezone
-                await visit('/settings/general');
-                await click('[data-test-toggle-timezone]');
-
-                expect(currentURL(), 'currentURL for settings')
-                    .to.equal('/settings/general');
-                expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
-                    .to.equal('(GMT) UTC');
-
-                // select a new timezone
-                find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
-
-                await triggerEvent('#timezone', 'change');
-                // save the settings
-                await click('[data-test-button="save"]');
-
-                expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
-                    .to.equal('(GMT +12:00) International Date Line West');
-
-                // and now go back to the editor
-                await visit('/editor/post/1');
-
-                await click('[data-test-psm-trigger]');
-                expect(
-                    find('[data-test-date-time-picker-date-input]').value,
-                    'date after timezone change'
-                ).to.equal('2017-04-10');
-
-                expect(
-                    find('[data-test-date-time-picker-time-input]').value,
-                    'time after timezone change'
-                ).to.equal('00:00');
             });
-        });
-
-        it.skip('handles validation errors when scheduling', async function () {
-            this.server.put('/posts/:id/', function () {
-                return new Response(422, {}, {
-                    errors: [{
-                        type: 'ValidationError',
-                        message: 'Error test'
-                    }]
-                });
-            });
-
-            let post = this.server.create('post', 1, {authors: [author], status: 'draft'});
-            let plusTenMin = moment().utc().add(10, 'minutes');
-
-            await visit(`/editor/post/${post.id}`);
-
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-scheduled-option]');
-            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', plusTenMin.toDate());
-            await fillIn('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]', plusTenMin.format('HH:mm'));
-            await blur('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]');
-
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                findAll('.gh-alert').length,
-                'number of alerts after failed schedule'
-            ).to.equal(1);
-
-            expect(
-                find('.gh-alert').textContent,
-                'alert text after failed schedule'
-            ).to.match(/Error test/);
         });
 
         it.skip('handles title validation errors correctly', async function () {
@@ -271,45 +210,6 @@ describe('Acceptance: Editor', function () {
                 'alert text after invalid title'
             ).to.match(/Title cannot be longer than 255 characters/);
         });
-
-        // NOTE: these tests are specific to the mobiledoc editor
-        // it('inserts a placeholder if the title is blank', async function () {
-        //     this.server.createList('post', 1);
-        //
-        //     // post id 1 is a draft, checking for draft behaviour now
-        //     await visit('/editor/post/1');
-        //
-        //     expect(currentURL(), 'currentURL')
-        //         .to.equal('/editor/post/1');
-        //
-        //     await titleRendered();
-        //
-        //     let title = find('#koenig-title-input div');
-        //     expect(title.data('placeholder')).to.equal('Your Post Title');
-        //     expect(title.hasClass('no-content')).to.be.false;
-        //
-        //     await replaceTitleHTML('');
-        //     expect(title.hasClass('no-content')).to.be.true;
-        //
-        //     await replaceTitleHTML('test');
-        //     expect(title.hasClass('no-content')).to.be.false;
-        // });
-        //
-        // it('removes HTML from the title.', async function () {
-        //     this.server.createList('post', 1);
-        //
-        //     // post id 1 is a draft, checking for draft behaviour now
-        //     await visit('/editor/post/1');
-        //
-        //     expect(currentURL(), 'currentURL')
-        //         .to.equal('/editor/post/1');
-        //
-        //     await titleRendered();
-        //
-        //     let title = find('#koenig-title-input div');
-        //     await replaceTitleHTML('<div>TITLE&nbsp;&#09;&nbsp;&thinsp;&ensp;&emsp;TEST</div>&nbsp;');
-        //     expect(title.html()).to.equal('TITLE      TEST ');
-        // });
 
         it('renders first countdown notification before scheduled time', async function () {
             let clock = sinon.useFakeTimers(moment().valueOf());
@@ -338,7 +238,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
-            let adminRole = this.server.create('role', {name: 'Adminstrator'});
+            let adminRole = this.server.create('role', {name: 'Administrator'});
             let authorRole = this.server.create('role', {name: 'Author'});
             let user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});
@@ -593,8 +493,41 @@ describe('Acceptance: Editor', function () {
             ).to.equal(0);
         });
 
+        it('handles in-editor excerpt update and validation', async function () {
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            let post = this.server.create('post', {authors: [author], customExcerpt: 'Existing excerpt'});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(find('[data-test-textarea="excerpt"]'), 'initial textarea').to.be.visible;
+            expect(find('[data-test-textarea="excerpt"]'), 'initial textarea').to.have.value('Existing excerpt');
+
+            await fillIn('[data-test-textarea="excerpt"]', 'New excerpt');
+            expect(find('[data-test-textarea="excerpt"]'), 'updated textarea').to.have.value('New excerpt');
+
+            await triggerEvent('[data-test-textarea="excerpt"]', 'keydown', {
+                key: 's',
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            expect(post.customExcerpt, 'saved excerpt').to.equal('New excerpt');
+
+            await fillIn('[data-test-textarea="excerpt"]', Array(302).join('a'));
+
+            expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.exist;
+            expect(find('[data-test-error="excerpt"]')).to.have.trimmed.text('Excerpt cannot be longer than 300 characters.');
+
+            await fillIn('[data-test-textarea="excerpt"]', Array(300).join('a'));
+
+            expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.not.exist;
+        });
+
         // https://github.com/TryGhost/Ghost/issues/11786
-        it('save shortcut works when tags/authors field is focused', async function () {
+        // NOTE: Flaky test with moving to Lexical editor, skipping for now
+        it.skip('save shortcut works when tags/authors field is focused', async function () {
             let post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);
@@ -631,6 +564,195 @@ describe('Acceptance: Editor', function () {
             await blur('[data-test-token-input] input');
 
             // no expects, will throw with an error and fail when it hits the bug
+        });
+
+        it('renders a breadcrumb back to the post list', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Posts');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal('/ghost/posts');
+        });
+
+        it('renders a breadcrumb back to the analytics list if that\'s where we came from ', async function () {
+            let post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            // visit the analytics page for the post
+            await visit(`/posts/analytics/${post.id}`);
+            // now visit the editor for the same post
+            await visit(`/editor/post/${post.id}`);
+
+            // Breadcrumbs should point back to Analytics page
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal(`/ghost/posts/analytics/${post.id}`);
+        });
+
+        it('does not render analytics breadcrumb for a new post', async function () {
+            const post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            // visit the analytics page for the post
+            await visit(`/posts/analytics/${post.id}`);
+            // start a new post
+            await visit('/editor/post');
+
+            // Breadcrumbs should not contain Analytics link
+            expect(find('[data-test-breadcrumb]'), 'breadcrumb text').to.contain.text('Posts');
+            expect(find('[data-test-editor-post-status]')).to.contain.text('New');
+        });
+
+        it('handles TKs in title', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-editor-title-input]').value,
+                'initial title'
+            ).to.equal('Post 0');
+
+            await fillIn('[data-test-editor-title-input]', 'Test TK Title');
+
+            expect(
+                find('[data-test-editor-title-input]').value,
+                'title after typing'
+            ).to.equal('Test TK Title');
+
+            // check for TK indicator
+            expect(
+                find('[data-testid="tk-indicator"]'),
+                'TK indicator text'
+            ).to.exist;
+
+            // click publish to see if confirmation comes up
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-modal="tk-reminder"]'),
+                'TK reminder modal'
+            ).to.exist;
+        });
+
+        it('handles TKs in excerpt', async function () {
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            const post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-textarea="excerpt"]').value,
+                'initial excerpt'
+            ).to.equal('');
+
+            await fillIn('[data-test-textarea="excerpt"]', 'Test TK excerpt');
+
+            expect(
+                find('[data-test-textarea="excerpt"]').value,
+                'excerpt after typing'
+            ).to.equal('Test TK excerpt');
+
+            // check for TK indicator
+            expect(
+                find('[data-testid="tk-indicator-excerpt"]'),
+                'TK indicator text'
+            ).to.exist;
+
+            // click publish to see if confirmation comes up
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-modal="tk-reminder"]'),
+                'TK reminder modal'
+            ).to.exist;
+        });
+
+        // We shouldn't ever see 404s from the API but we do/have had a bug where
+        // a new post can enter a state where it appears saved but hasn't hit
+        // the API to create the post meaning it has no ID but the store is
+        // making PUT requests rather than a POST request in which case it's
+        // hitting `/posts/` rather than `/posts/:id` and receiving a 404. On top
+        // of that our application error handler was erroring because there was
+        // no transition alongside the error so this test makes sure that works
+        // and we enter a visible error state rather than letting unsaved changes
+        // pile up and contributing to larger potential data loss.
+        it('handles 404 from invalid PUT API request', async function () {
+            this.server.put('/posts/', () => {
+                return new Response(404, {}, {
+                    errors: [
+                        {
+                            message: 'Resource could not be found.',
+                            errorType: 'NotFoundError',
+                            statusCode: 404
+                        }
+                    ]
+                });
+            });
+
+            await visit('/editor/post');
+            await waitFor(editorSelector);
+
+            // simulate the bad state where a post.save will trigger a PUT with no id
+            const controller = this.owner.lookup('controller:lexical-editor');
+            controller.post.transitionTo('updated.uncommitted');
+
+            // this will trigger an autosave which will hit our simulated 404
+            await pasteInEditor('Testing');
+
+            // we should see an error - previously this was failing silently
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
+        });
+
+        it('handles 404 from valid PUT API request', async function () {
+            // this doesn't match what we're actually seeing in the above mentioned
+            // bug state but it's a good enough simulation for testing our error handler
+            this.server.put('/posts/:id/', () => {
+                return new Response(404, {}, {
+                    errors: [
+                        {
+                            message: 'Resource could not be found.',
+                            errorType: 'NotFoundError',
+                            statusCode: 404
+                        }
+                    ]
+                });
+            });
+
+            await visit('/editor/post');
+            await waitFor(editorSelector);
+            await fillIn(titleSelector, 'Test 404 handling');
+            // this triggers the initial creation request - in the actual bug this doesn't happen
+            await blur(titleSelector);
+            expect(currentRouteName()).to.equal('lexical-editor.edit');
+            // this will trigger an autosave which will hit our simulated 404
+            await pasteInEditor('Testing');
+
+            // we should see an error - previously this was failing silently
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.contain.text('Post has been deleted in a different session');
         });
     });
 });

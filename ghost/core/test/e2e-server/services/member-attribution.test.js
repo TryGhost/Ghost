@@ -191,8 +191,8 @@ describe('Member Attribution Service', function () {
                 configUtils.set('url', 'https://siteurl.com/subdirectory/');
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
             });
 
             it('resolves urls', async function () {
@@ -397,6 +397,26 @@ describe('Member Attribution Service', function () {
                 type: 'url',
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
+                referrerUrl: null
+            }));
+        });
+
+        it('resolves Portal signup URLs', async function () {
+            // NOTE: We cannot test the actual hash URL here; the attribution below is what is receieved when navigating to /#/portal/signup?ref=ghost
+            // TODO: We don't appear to have tests for parsing URLs for params.
+            const attribution = await memberAttributionService.service.getAttribution([
+                {
+                    path: '/',
+                    time: Date.now(),
+                    referrerSource: 'casper'
+                }
+            ]);
+            attribution.should.match(({
+                id: null,
+                url: '/',
+                type: 'url',
+                referrerSource: 'casper',
+                referrerMedium: null,
                 referrerUrl: null
             }));
         });

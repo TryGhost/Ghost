@@ -25,9 +25,9 @@ describe('Local Images Storage', function () {
         momentStub = sinon.stub(moment.fn, 'format');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     beforeEach(function () {
@@ -153,7 +153,7 @@ describe('Local Images Storage', function () {
                 });
         });
 
-        it('success', function (done) {
+        it('success (leading and trailing slashes)', function (done) {
             localFileStore.read({path: '/ghost-logo.png/'})
                 .then(function (bytes) {
                     bytes.length.should.eql(8638);

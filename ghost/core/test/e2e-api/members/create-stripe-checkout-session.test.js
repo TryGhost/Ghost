@@ -5,7 +5,7 @@ const should = require('should');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 
-let membersAgent, adminAgent, membersService;
+let membersAgent, adminAgent;
 
 async function getPost(id) {
     // eslint-disable-next-line dot-notation
@@ -18,15 +18,12 @@ describe('Create Stripe Checkout Session', function () {
         membersAgent = agents.membersAgent;
         adminAgent = agents.adminAgent;
 
-        membersService = require('../../../core/server/services/members');
-
         await fixtureManager.init('posts', 'members');
         await adminAgent.loginAsOwner();
     });
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockManager.mockStripe();
     });
 
     afterEach(function () {
@@ -81,7 +78,7 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
                 if (match) {
                     if (resource === 'products') {
@@ -109,7 +106,7 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 if (uri === '/v1/checkout/sessions') {
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
                 }
@@ -151,7 +148,7 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
                 if (match) {
                     if (resource === 'products') {
@@ -221,7 +218,7 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
                 if (match) {
                     if (resource === 'products') {
@@ -249,7 +246,7 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri, body) => {
+            .reply((uri) => {
                 if (uri === '/v1/checkout/sessions') {
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
                 }
@@ -292,7 +289,7 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri, body) => {
+                .reply((uri) => {
                     const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
                     if (match) {
                         if (resource === 'products') {
@@ -376,7 +373,7 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri, body) => {
+                .reply((uri) => {
                     const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
                     if (match) {
                         if (resource === 'products') {
@@ -457,7 +454,7 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri, body) => {
+                .reply((uri) => {
                     const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
                     if (match) {
                         if (resource === 'products') {

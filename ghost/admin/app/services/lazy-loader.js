@@ -32,12 +32,10 @@ export default class LazyLoaderService extends Service {
         }
 
         let scriptPromise = new RSVP.Promise((resolve, reject) => {
-            let {adminRoot} = this.ghostPaths;
-
             let script = document.createElement('script');
             script.type = 'text/javascript';
             script.async = true;
-            script.src = `${adminRoot}${url}`;
+            script.src = `${config.cdnUrl ? '' : this.ghostPaths.adminRoot}${url}`;
 
             let el = document.getElementsByTagName('script')[0];
             el.parentNode.insertBefore(script, el);
@@ -65,7 +63,7 @@ export default class LazyLoaderService extends Service {
             let link = document.createElement('link');
             link.id = `${key}-styles`;
             link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
-            link.href = `${this.ghostPaths.adminRoot}${url}`;
+            link.href = `${config.cdnUrl ? '' : this.ghostPaths.adminRoot}${url}`;
             link.onload = () => {
                 link.onload = null;
                 if (alternate) {

@@ -280,6 +280,47 @@
         0 -4px 7px rgba(0, 0, 0, 0.06);
 }
 
+.gh-about-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 80px;
+}
+
+.gh-whats-new-canvas .gh-about-container {
+    display: flex;
+    grid-template-columns: unset;
+    grid-gap: unset;
+    margin: 0 auto;
+    max-width: 920px;
+    margin-top: 60px;
+}
+
+.gh-about-container h2 {
+    font-size: 1.65rem;
+    line-height: 1.4em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--lightgrey-l2);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.gh-about-box {
+    position: sticky;
+    top: 96px;
+    right: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    height: max-content;
+    border-radius: 3px;
+    min-width: 300px;
+}
+
+.gh-about-box.grey {
+    border: none;
+    background: var(--main-color-content-greybg);
+}
+
 @media (max-width: 1380px) {
     .gh-wn-content {
         max-width: 36vw;
@@ -303,18 +344,6 @@
         grid-gap: 32px;
     }
 
-    .gh-env-details {
-        grid-row: 1/2;
-    }
-
-    .gh-about-content-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-gap: 20px;
-        grid-row: 2/3;
-        margin-top: -12px;
-    }
-
     .gh-whats-new {
         grid-row: 3/4;
     }
@@ -326,15 +355,6 @@
 
     .gh-wn-entry iframe {
         max-width: 100%;
-    }
-}
-
-@media (max-width: 540px) {
-    .gh-about-content-actions {
-        grid-template-columns: unset;
-        grid-template-rows: auto;
-        grid-gap: 12px;
-        margin-top: -20px;
     }
 }
 

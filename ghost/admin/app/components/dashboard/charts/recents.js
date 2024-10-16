@@ -11,8 +11,8 @@ export default class Recents extends Component {
     @tracked posts = [];
     excludedEventTypes = ['aggregated_click_event'];
 
-    @action 
-    async loadPosts() {
+    @action
+    async loadData() {
         this.posts = await this.store.query('post', {limit: 5, filter: 'status:[published,sent]', order: 'published_at desc'});
     }
 
@@ -26,12 +26,21 @@ export default class Recents extends Component {
         this.selected = 'activity';
     }
 
+    @action
+    changeTabToMentions() {
+        this.selected = 'mentions';
+    }
+
     get postsTabSelected() {
         return (this.selected === 'posts');
     }
 
     get activityTabSelected() {
         return (this.selected === 'activity');
+    }
+
+    get mentionsTabSelected() {
+        return (this.selected === 'mentions');
     }
 
     get areMembersEnabled() {

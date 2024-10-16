@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup Form</title>
+    <link rel="stylesheet" href="/src/styles/demo.css" />
+  </head>
+  <body>
+    <div id="demo-container">
+        <nav class="mode">
+            <a href="/">Development build</a>
+            <a href="/preview.html" class="selected">Production build</a>
+        </nav>
+        <h1>Full signup form</h1>
+        <p>
+            Currently connected to Ghost running at <code>%VITE_SITE_URL%</code>. Please duplicate <code>.env.development</code> as <code>.env.development.local</code> and modify it to change the site url locally (when you get an error when submitting the forms).
+        </p>
+
+        <!-- Because we need to use ESM modules during develoment, the src should be different to force reexecution of each script -->
+        <div style="height: 40vmin; min-height: 360px;">
+            <script
+                src="http://localhost:6174/signup-form.min.js"
+                data-title="My site name"
+                data-description="An independent publication about embeddable signup forms."
+                data-icon="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png"
+                data-background-color="#F1F3F4"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="With icon"
+                async
+            ></script>
+        </div>
+
+        <hr>
+        <h1>Without icon</h1>
+        <div style="height: 40vmin; min-height: 360px;">
+            <script
+                src="http://localhost:6174/signup-form.min.js"
+                data-title="Site without icon"
+                data-description="An independent publication about embeddable signup forms."
+                data-background-color="#F1F3F4"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="Without icon"
+                async
+            ></script>
+        </div>
+
+        <hr>
+        <h1>Minimal</h1>
+
+        <div style="min-height: 58px">
+            <script
+                src="http://localhost:6174/signup-form.min.js"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="Minimal"
+                async
+            ></script>
+        </div>
+
+        <hr>
+        <h1>With invalid configuration</h1>
+        <p>When you submit this one, it will throw an error.</p>
+
+        <div style="min-height: 58px">
+            <script
+                src="http://localhost:6174/signup-form.min.js"
+                data-button-color="#ff0095"
+                data-site="https://invalid/"
+                async
+            ></script>
+        </div>
+
+        <hr>
+        <h1>Translated</h1>
+
+        <div style="height: 40vmin; min-height: 360px;">
+            <script
+                src="http://localhost:6174/signup-form.min.js"
+                data-title="My site name"
+                data-description="An independent publication about embeddable signup forms."
+                data-icon="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png"
+                data-background-color="#F1F3F4"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="With icon"
+                data-locale="nl-BE"
+                async
+            ></script>
+        </div>
+
+        <hr>
+
+        <div style="min-height: 58px; max-width: 440px;">
+            <script
+                src="http://localhost:6174/signup-form.min.js"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="Minimal"
+                data-locale="nl-BE"
+                async
+            ></script>
+        </div>
+    </div>
+  </body>
+</html>

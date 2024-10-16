@@ -7,7 +7,6 @@ const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
-const _ = require('lodash');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const config = require('../../../core/shared/config');
@@ -211,13 +210,12 @@ describe('Frontend Routing', function () {
                 });
 
                 after(function (done) {
-                    configUtils.restore();
-
-                    testUtils.startGhost({forceStart: true})
-                        .then(function () {
-                            request = supertest.agent(config.get('url'));
-                            addPosts(done);
-                        });
+                    configUtils.restore().then(() => {
+                        return testUtils.startGhost({forceStart: true});
+                    }).then(function () {
+                        request = supertest.agent(config.get('url'));
+                        addPosts(done);
+                    });
                 });
 
                 it('should redirect without slash', function (done) {

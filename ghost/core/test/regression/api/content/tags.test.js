@@ -17,8 +17,8 @@ describe('api/endpoints/content/tags', function () {
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     it('Can read tags with fields', function () {

@@ -16,12 +16,91 @@ describe('api/endpoints/content/posts', function () {
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         urlUtils.restore();
     });
 
     const validKey = localUtils.getValidKey();
+
+    it('can not filter posts by author.password or authors.password', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await testUtils.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: 'bruteforcepasswordtestuseremail@example.com',
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00',
+            created_by: '1'
+        });
+
+        const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
+
+        await testUtils.knex('posts_authors').insert({
+            id: '644fd18ca1f0b764b0279b2f',
+            post_id: postId,
+            author_id: userId
+        });
+
+        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors.password:'${hashedPassword}'`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(200);
+
+        const data = JSON.parse(res.text);
+
+        await testUtils.knex('posts_authors').where('id', '644fd18ca1f0b764b0279b2f').del();
+        await testUtils.knex('users').where('id', userId).del();
+
+        if (data.posts.length === 1) {
+            throw new Error('fuck');
+        }
+    });
+
+    it('can not filter posts by author.email or authors.email', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userEmail = 'bruteforcepasswordtestuseremail@example.com';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await testUtils.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: userEmail,
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00',
+            created_by: '1'
+        });
+
+        const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
+
+        await testUtils.knex('posts_authors').insert({
+            id: '644fd18ca1f0b764b0279b2f',
+            post_id: postId,
+            author_id: userId
+        });
+
+        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors.email:'${userEmail}'`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(200);
+
+        const data = JSON.parse(res.text);
+
+        await testUtils.knex('posts_authors').where('id', '644fd18ca1f0b764b0279b2f').del();
+        await testUtils.knex('users').where('id', userId).del();
+
+        if (data.posts.length === 1) {
+            throw new Error('fuck');
+        }
+    });
 
     it('browse posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
@@ -223,24 +302,28 @@ describe('api/endpoints/content/posts', function () {
         before (function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
-                visibility: 'public'
+                visibility: 'public',
+                published_at: new Date('2023-07-15T04:20:30.000+00:00')
             });
 
             membersPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-not-be-seen',
-                visibility: 'members'
+                visibility: 'members',
+                published_at: new Date('2023-07-20T04:20:30.000+00:00')
             });
 
             paidPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-be-paid-for',
-                visibility: 'paid'
+                visibility: 'paid',
+                published_at: new Date('2023-07-25T04:20:30.000+00:00')
             });
 
             membersPostWithPaywallCard = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-have-a-taste',
                 visibility: 'members',
                 mobiledoc: '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}',
-                html: '<p>Free content</p><!--members-only--><p>Members content</p>'
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                published_at: new Date('2023-07-30T04:20:30.000+00:00')
             });
 
             return testUtils.fixtures.insertPosts([

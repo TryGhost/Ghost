@@ -1,5 +1,4 @@
 const serialize = require('./serialize');
-const Promise = require('bluebird');
 
 module.exports = (event, model) => {
     const payload = {};

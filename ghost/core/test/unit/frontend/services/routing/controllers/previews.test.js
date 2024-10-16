@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/configUtils');
 const api = require('../../../../../../core/frontend/services/proxy').api;
@@ -23,9 +22,9 @@ describe('Unit - services/routing/controllers/previews', function () {
         };
     }
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     let previewStub;

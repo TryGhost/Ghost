@@ -30,9 +30,10 @@
         @labels={{@filter.value}}
         @allowCreation={{false}}
         @allowEdit={{true}}
+        @renderInPlace={{true}}
     />
 
-{{else if (eq @filter.type 'tier')}}
+{{else if (eq @filter.type 'tier_id')}}
     <div class="relative">
         <Tiers::SegmentSelect
             @onChange={{fn this.setTiersFilterValue @filter}}
@@ -117,7 +118,7 @@
     <GhDatePicker
         @value={{@filter.value}}
         @maxDate={{now}}
-        @maxDateError="Must be in the past"
+        @maxDateError="Please choose a past date."
         @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />

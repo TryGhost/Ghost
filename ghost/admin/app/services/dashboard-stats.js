@@ -3,6 +3,8 @@ import moment from 'moment-timezone';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+import mergeStatsByDate from 'ghost-admin/utils/merge-stats-by-date';
+
 /**
  * @typedef MrrStat
  * @type {Object}
@@ -57,8 +59,8 @@ import {tracked} from '@glimmer/tracking';
 /**
  * @typedef PaidMembersByCadence
  * @type {Object}
- * @property {number} year Paid memebrs on annual plan
- * @property {number} month Paid memebrs on monthly plan
+ * @property {number} year Paid members on annual plan
+ * @property {number} month Paid members on monthly plan
  */
 
 /**
@@ -85,6 +87,7 @@ export default class DashboardStatsService extends Service {
     @service membersCountCache;
     @service settings;
     @service membersUtils;
+    @service membersStats;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -240,14 +243,16 @@ export default class DashboardStatsService extends Service {
             return [];
         }
 
+        const firstChartDay = moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+
         return this.memberAttributionStats.filter((stat) => {
             if (this.chartDays === 'all') {
                 return true;
             }
-            return stat.date >= moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+            return stat.date >= firstChartDay;
         }).reduce((acc, stat) => {
             const statSource = stat.source ?? '';
-            const existingSource = acc.find(s => s.source === statSource);
+            const existingSource = acc.find(s => s.source.toLowerCase() === statSource.toLowerCase());
             if (existingSource) {
                 existingSource.signups += stat.signups || 0;
                 existingSource.paidConversions += stat.paidConversions || 0;
@@ -460,39 +465,7 @@ export default class DashboardStatsService extends Service {
             }
         }
 
-        function mergeDates(list, entry) {
-            const [current, ...rest] = list;
-
-            if (!current) {
-                return entry ? [entry] : [];
-            }
-
-            if (!entry) {
-                return mergeDates(rest, {
-                    date: current.date,
-                    count: current.count,
-                    positiveDelta: current.positive_delta,
-                    negativeDelta: current.negative_delta,
-                    signups: current.signups,
-                    cancellations: current.cancellations
-                });
-            }
-
-            if (current.date === entry.date) {
-                return mergeDates(rest, {
-                    date: entry.date,
-                    count: entry.count + current.count,
-                    positiveDelta: entry.positiveDelta + current.positive_delta,
-                    negativeDelta: entry.negativeDelta + current.negative_delta,
-                    signups: entry.signups + current.signups,
-                    cancellations: entry.cancellations + current.cancellations
-                });
-            }
-
-            return [entry].concat(mergeDates(list));
-        }
-
-        const subscriptionCountStats = mergeDates(result.stats);
+        const subscriptionCountStats = mergeStatsByDate(result.stats);
 
         this.paidMembersByCadence = paidMembersByCadence;
         this.paidMembersByTier = paidMembersByTier;
@@ -524,8 +497,7 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        let statsUrl = this.ghostPaths.url.api('stats/member_count');
-        let stats = yield this.ajax.request(statsUrl);
+        const stats = yield this.membersStats.fetchMemberCount();
         this.memberCountStats = stats.stats.map((d) => {
             return {
                 ...d,
@@ -693,8 +665,8 @@ export default class DashboardStatsService extends Service {
         }
 
         const [paid, free] = yield Promise.all([
-            this.membersCountCache.count('newsletters.status:active+status:-free'),
-            this.membersCountCache.count('newsletters.status:active+status:free')
+            this.membersCountCache.count('newsletters.status:active+status:-free+email_disabled:0'),
+            this.membersCountCache.count('newsletters.status:active+status:free+email_disabled:0')
         ]);
 
         this.newsletterSubscribers = {
@@ -723,7 +695,7 @@ export default class DashboardStatsService extends Service {
         }
 
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
-        const result = yield this.store.query('email', {limit: 100, filter: 'submitted_at:>' + start30d.toISOString()});
+        const result = yield this.store.query('email', {limit: 100, filter: `submitted_at:>'${start30d.toISOString()}'`});
         this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);
     }
 

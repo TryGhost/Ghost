@@ -1,6 +1,5 @@
 const path = require('path');
-const fs = require('fs-extra');
-const _ = require('lodash');
+const fs = require('fs');
 
 /**
  * transform all relative paths to absolute paths
@@ -11,11 +10,11 @@ const _ = require('lodash');
  * Path can be a "." to re-present current folder
  */
 const makePathsAbsolute = function makePathsAbsolute(nconf, obj, parent) {
-    _.each(obj, function (configValue, pathsKey) {
-        if (_.isObject(configValue)) {
+    Object.entries(obj).forEach(([pathsKey, configValue]) => {
+        if (configValue && typeof configValue === 'object') {
             makePathsAbsolute(nconf, configValue, parent + ':' + pathsKey);
         } else if (
-            _.isString(configValue) &&
+            typeof configValue === 'string' &&
             (configValue.match(/\/+|\\+/) || configValue === '.') &&
             !path.isAbsolute(configValue)
         ) {
@@ -25,10 +24,10 @@ const makePathsAbsolute = function makePathsAbsolute(nconf, obj, parent) {
 };
 
 const doesContentPathExist = function doesContentPathExist(contentPath) {
-    if (!fs.pathExistsSync(contentPath)) {
+    if (!fs.existsSync(contentPath)) {
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-        // eslint-disable-next-line no-restricted-syntax
+        // eslint-disable-next-line ghost/ghost-custom/no-native-error
         throw new Error('Your content path does not exist! Please double check `paths.contentPath` in your custom config file e.g. config.production.json.');
     }
 };
@@ -40,7 +39,7 @@ const checkUrlProtocol = function checkUrlProtocol(url) {
     if (!url.match(/^https?:\/\//i)) {
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-        // eslint-disable-next-line no-restricted-syntax
+        // eslint-disable-next-line ghost/ghost-custom/no-native-error
         throw new Error('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"');
     }
 };

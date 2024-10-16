@@ -7,7 +7,7 @@ function getFrontendAppConfig(app) {
     if (typeof scriptUrl === 'string' && scriptUrl.includes('{version}')) {
         scriptUrl = scriptUrl.replace('{version}', appVersion);
     }
-    if (stylesUrl?.includes('{version}')) {
+    if (typeof stylesUrl === 'string' && stylesUrl?.includes('{version}')) {
         stylesUrl = stylesUrl.replace('{version}', appVersion);
     }
     return {
@@ -24,6 +24,9 @@ function getDataAttributes(data) {
         return dataAttributes;
     }
     Object.entries(data).forEach(([key, value]) => {
+        if (value === undefined) {
+            return;
+        }
         dataAttributes += `data-${key}="${value}" `;
     });
 

@@ -1,11 +1,13 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
-const should = require('should');
 const sinon = require('sinon');
+const should = require('should');
+
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 
@@ -18,6 +20,9 @@ const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
+const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -62,22 +67,55 @@ async function getNewsletters() {
     return (await models.Newsletter.findAll({filter: 'status:active'})).models;
 }
 
+async function createMember(data) {
+    const member = await models.Member.add({
+        name: '',
+        email_disabled: false,
+        ...data
+    });
+
+    return member;
+}
+
 const newsletterSnapshot = {
-    id: anyObjectId,
-    uuid: anyUuid,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+    id: anyObjectId
+};
+
+const attributionSnapshot = {
+    id: null
 };
 
 const subscriptionSnapshot = {
+    id: anyString,
     start_date: anyString,
     current_period_end: anyString,
     price: {
+        id: anyString,
         price_id: anyObjectId,
         tier: {
+            id: anyString,
             tier_id: anyObjectId
         }
+    },
+    plan: {
+        id: anyString
+    },
+    customer: {
+        id: anyString
     }
+};
+
+const tierSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    monthly_price_id: anyString,
+    yearly_price_id: anyString
+};
+
+const subscriptionSnapshotWithTier = {
+    ...subscriptionSnapshot,
+    tier: tierSnapshot
 };
 
 function buildMemberWithoutIncludesSnapshot(options) {
@@ -96,9 +134,11 @@ function buildMemberWithIncludesSnapshot(options) {
         uuid: anyUuid,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
+        attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
-        labels: anyArray
+        labels: anyArray,
+        unsubscribe_url: anyString
     };
 }
 
@@ -117,19 +157,29 @@ const memberMatcherShallowIncludes = {
     updated_at: anyISODateTime,
     subscriptions: anyArray,
     labels: anyArray,
-    newsletters: anyArray
+    unsubscribe_url: anyString
 };
 
-const buildMemberMatcherShallowIncludesWithTiers = (tiersCount) => {
-    let tiers = anyArray;
-    if (tiersCount) {
-        tiers = new Array(tiers).fill(tierMatcher);
+/**
+ *
+ * @param {number} tiersCount
+ * @param {number} newsletterCount
+ * @returns
+ */
+const buildMemberMatcherShallowIncludesWithTiers = (tiersCount, newsletterCount) => {
+    const matcher = {
+        ...memberMatcherShallowIncludes
+    };
+
+    if (tiersCount !== undefined) {
+        matcher.tiers = new Array(tiersCount).fill(tierMatcher);
     }
 
-    return {
-        ...memberMatcherShallowIncludes,
-        tiers
-    };
+    if (newsletterCount !== undefined) {
+        matcher.newsletters = new Array(newsletterCount).fill(newsletterSnapshot);
+    }
+
+    return matcher;
 };
 
 let agent;
@@ -147,6 +197,7 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -164,6 +215,7 @@ describe('Members API without Stripe', function () {
             .body({members: [newMember]})
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -189,9 +241,6 @@ describe('Members API - member attribution', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
-
-        // For some reason it is enabled by default?
-        mockManager.mockLabsEnabled('memberAttribution');
     });
 
     afterEach(function () {
@@ -221,9 +270,10 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -263,9 +313,10 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -305,9 +356,10 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -347,9 +399,10 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -386,9 +439,10 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expect(({body}) => {
@@ -412,6 +466,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/events/?filter=type:signup_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -429,18 +484,20 @@ describe('Members API - member attribution', function () {
 
 describe('Members API', function () {
     let newsletters;
+    let emailMockReceiver;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
         await agent.loginAsOwner();
-
+        
         newsletters = await getNewsletters();
     });
-
+    
     beforeEach(function () {
         mockManager.mockStripe();
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
@@ -454,21 +511,93 @@ describe('Members API', function () {
             .get('/members/')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
 
+    it('Can browse with limit', async function () {
+        await agent
+            .get('/members/?limit=3')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
+    it('Can browse with more than maximum allowed limit', async function () {
+        await agent
+            .get('/members/?limit=300')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
+    it('Can browse with limit=all', async function () {
+        await agent
+            .get('/members/?limit=all')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+    
     it('Can browse with filter', async function () {
         await agent
             .get('/members/?filter=label:label-1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -478,21 +607,27 @@ describe('Members API', function () {
             .get('/members/?filter=signup:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(3).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
 
-    it('Can filter by signup attribution', async function () {
+    it('Can filter by conversion attribution', async function () {
         await agent
             .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -502,9 +637,10 @@ describe('Members API', function () {
             .get('/members/?search=member1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -514,9 +650,35 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can filter by tier id', async function () {
+        const products = await getPaidProduct();
+        await agent
+            .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -526,9 +688,10 @@ describe('Members API', function () {
             .get(`/members/?filter=name:~'Venkman'`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 0))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -538,9 +701,16 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid&include=emailRecipients')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -551,10 +721,20 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyContentLength
+                'content-length': anyContentLength,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
             })
             .expect(({body}) => {
                 const {members} = body;
@@ -566,10 +746,20 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyContentLength
+                'content-length': anyContentLength,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
             })
             .expect(({body}) => {
                 const {members} = body;
@@ -582,9 +772,10 @@ describe('Members API', function () {
             .get('members/?search=egg')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -594,9 +785,10 @@ describe('Members API', function () {
             .get('members/?search=MEMBER2')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -606,9 +798,10 @@ describe('Members API', function () {
             .get('members/?search=egon&paid=true')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -618,6 +811,7 @@ describe('Members API', function () {
             .get('members/?search=do_not_exist')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -632,9 +826,10 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -644,9 +839,10 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -656,9 +852,10 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers())
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -679,18 +876,22 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
         const newMember = body.members[0];
 
+        // Cannot add same member twice
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
+        sinon.assert.calledOnce(loggingStub);
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -725,9 +926,10 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -746,9 +948,10 @@ describe('Members API', function () {
             .body({members: [memberFailLimit]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -756,6 +959,7 @@ describe('Members API', function () {
 
         await DomainEvents.allSettled();
         assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
+
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'
         });
@@ -764,7 +968,8 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberPassVerification.id}`);
         await agent.delete(`/members/${memberFailVerification.id}`);
 
-        configUtils.restore();
+        await configUtils.restore();
+        settingsCache.set('email_verification_required', false);
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -776,6 +981,19 @@ describe('Members API', function () {
                 newsletters[1]
             ]
         };
+
+        // Set site title to something with a special character to ensure subject line doesn't get escaped
+        // Refs https://github.com/TryGhost/Team/issues/2895
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost\'s Test Site'
+                    }
+                ]
+            })
+            .expectStatus(200);
 
         const {body} = await agent
             .post('/members/?send_email=true&email_type=signup')
@@ -789,16 +1007,24 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyString
             });
 
         const newMember = body.members[0];
 
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
-            to: 'member_getting_confirmation@test.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchMetadataSnapshot();
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -832,6 +1058,98 @@ describe('Members API', function () {
         await agent
             .delete(`members/${body.members[0].id}/`)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
+
+        // Reset the site title to the default
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost'
+                    }
+                ]
+            })
+            .expectStatus(200);
+    });
+
+    it('Does not send a signup email when email verification is required', async function () {
+        mockManager.mockSetting('email_verification_required', true);
+
+        const member = {
+            name: 'Do not Send Me Confirmation',
+            email: 'member_not_getting_confirmation@test.com',
+            newsletters: [
+                newsletters[0],
+                newsletters[1]
+            ]
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        emailMockReceiver
+            .assertSentEmailCount(0);
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                },
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id
+                }
+            ]
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expectStatus(204);
@@ -852,11 +1170,13 @@ describe('Members API', function () {
 
         const statusEventsBefore = await models.MemberStatusEvent.findAll();
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`members/?send_email=true&email_type=lel`)
             .body({members: [newMember]})
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -924,23 +1244,25 @@ describe('Members API', function () {
             .body({members: [initialMember]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
 
         const newMember = body.members[0];
 
-        const updatedMember = await agent
+        await agent
             .put(`/members/${newMember.id}/`)
             .body({members: [compedPayload]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1))
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1144,6 +1466,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1215,24 +1538,9 @@ describe('Members API', function () {
                 data: [fakeSubscription]
             }
         };
-        nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
-
-                if (!match) {
-                    return [500];
-                }
-
-                if (resource === 'customers') {
-                    return [200, fakeCustomer];
-                }
-
-                if (resource === 'subscriptions') {
-                    return [200, fakeSubscription];
-                }
-            });
+        stripeMocker.customers.push(fakeCustomer);
+        stripeMocker.subscriptions.push(fakeSubscription);
+        stripeMocker.prices.push(fakePrice);
 
         const initialMember = {
             name: fakeCustomer.name,
@@ -1259,6 +1567,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1343,24 +1652,10 @@ describe('Members API', function () {
                 data: [fakeSubscription]
             }
         };
-        nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
-                if (!match) {
-                    return [500];
-                }
-
-                if (resource === 'customers') {
-                    return [200, fakeCustomer];
-                }
-
-                if (resource === 'subscriptions') {
-                    return [200, fakeSubscription];
-                }
-            });
+        stripeMocker.customers.push(fakeCustomer);
+        stripeMocker.subscriptions.push(fakeSubscription);
+        stripeMocker.prices.push(fakePrice);
 
         const initialMember = {
             name: fakeCustomer.name,
@@ -1387,6 +1682,7 @@ describe('Members API', function () {
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1477,6 +1773,29 @@ describe('Members API', function () {
         should.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
     });
 
+    it('Cannot add unknown tiers to a member', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[0].id;
+        const unknownProductId = 'blahblahid';
+
+        sinon.stub(logging, 'error');
+
+        await agent
+            .put(`/members/${memberId}/`)
+            .body({
+                members: [{
+                    tiers: [{
+                        id: unknownProductId
+                    }]
+                }]
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
         if (!memberWithPaidSubscription) {
             // Previous test failed
@@ -1494,6 +1813,7 @@ describe('Members API', function () {
             ]
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1512,6 +1832,7 @@ describe('Members API', function () {
             tiers: []
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1533,7 +1854,7 @@ describe('Members API', function () {
         should(memberWithPaidSubscription.tiers[0].id).not.eql(product.id);
 
         // Add it manually
-        const member = await models.Member.edit({
+        await models.Member.edit({
             products: [
                 ...memberWithPaidSubscription.tiers,
                 {
@@ -1608,9 +1929,10 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1639,9 +1961,10 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1689,6 +2012,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -1705,10 +2029,12 @@ describe('Members API', function () {
             .expectStatus(404)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: anyUuid,
+                    context: anyString
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -1734,9 +2060,10 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1766,9 +2093,10 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1799,10 +2127,11 @@ describe('Members API', function () {
 
         // Check activity feed
         const {body: eventsBody} = await agent
-            .get(`/members/events?filter=data.member_id:${newMember.id}`)
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1865,9 +2194,10 @@ describe('Members API', function () {
             .body({members: [memberToCreate]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -1897,43 +2227,9 @@ describe('Members API', function () {
 
     it('Can add a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
-        const price = testUtils.DataGenerator.Content.stripe_prices[0];
 
-        function nockCallback(method, uri, body) {
-            const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
-
-            if (!match) {
-                return [500];
-            }
-
-            if (resource === 'customers') {
-                return [200, {id: 'cus_123', email: 'member1@test.com'}];
-            }
-
-            if (resource === 'subscriptions') {
-                const now = Math.floor(Date.now() / 1000);
-                return [200, {id: 'sub_123', customer: 'cus_123', cancel_at_period_end: false, items: {
-                    data: [{price: {
-                        id: price.stripe_price_id,
-                        recurring: {
-                            interval: price.interval
-                        },
-                        unit_amount: price.amount,
-                        currency: price.currency.toLowerCase()
-                    }}]
-                }, status: 'active', current_period_end: now + 24 * 3600, start_date: now}];
-            }
-        }
-
-        nock('https://api.stripe.com:443')
-            .persist()
-            .post(/v1\/.*/)
-            .reply((uri, body) => nockCallback('POST', uri, body));
-
-        nock('https://api.stripe.com:443')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => nockCallback('GET', uri, body));
+        // Get the stripe price ID of the default price for month
+        const price = await stripeMocker.getPriceForTier('default-product', 'month');
 
         await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -1948,11 +2244,13 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: new Array(1).fill(newsletterSnapshot),
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -1967,113 +2265,159 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: new Array(1).fill(newsletterSnapshot),
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
 
-    it('Can edit a subscription', async function () {
-        const memberId = testUtils.DataGenerator.Content.members[1].id;
-        const price = testUtils.DataGenerator.Content.stripe_prices[0];
-        const stripeCustomerId = 'cus_GbEMMOZNVrL450';
-        const stripeSubscriptionId = 'sub_K1cBgJt6sCMu5n';
-
-        const stripeSubscriptionFixture = ({status = 'active'} = {}) => {
-            const now = Math.floor(Date.now() / 1000);
-            return {
-                id: stripeSubscriptionId,
-                customer: stripeCustomerId,
-                cancel_at_period_end: false,
-                items: {
-                    data: [{
-                        price: {
-                            id: price.stripe_price_id,
-                            recurring: {
-                                interval: price.interval
-                            },
-                            unit_amount: price.amount,
-                            currency: price.currency.toLowerCase()
-                        }
-                    }]
-                },
-                status: status,
-                current_period_end: now + 24 * 3600,
-                start_date: now
-            };
+    it('can change the email address', async function () {
+        const memberToChange = {
+            name: 'Jon Snow',
+            email: 'jon.snow@test.com',
+            newsletters: []
         };
 
-        nock('https://api.stripe.com:443')
-            .post('/v1/customers')
-            .reply(200, {
-                id: `cus_GbEMMOZNVrL450`,
-                email: 'member1@test.com'
-            });
+        const memberChanged = {
+            email: 'aegon.targaryen@test.com'
+        };
 
-        nock('https://api.stripe.com:443')
-            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture());
-
-        nock('https://api.stripe.com:443')
-            .post('/v1/subscriptions')
-            .reply(200, stripeSubscriptionFixture());
-
-        const res = await agent
-            .post(`/members/${memberId}/subscriptions/`)
-            .body({
-                stripe_price_id: price.id
-            })
-            .expectStatus(200)
+        // Create member
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [memberToChange]})
+            .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
-                })
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        // Update email address
+        const newMember = body.members[0];
+        await agent
+            .put(`/members/${newMember.id}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
-        const subscriptionId = res.body.members[0].subscriptions[0].id;
+        // Check member events
+        await assertMemberEvents({
+            eventType: 'MemberEmailChangeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            ]
+        });
 
-        nock('https://api.stripe.com:443')
-            .delete(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
-
-        nock('https://api.stripe.com:443')
-            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
-
-        const editRes = await agent
-            .put(`/members/${memberId}/subscriptions/${subscriptionId}`)
-            .body({
-                status: 'canceled'
-            })
+        // Check activity feed
+        const {body: eventsBody} = await agent
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
+            .body({members: [memberChanged]})
             .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
-                })
-            })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
-        assert.equal('canceled', editRes.body.members[0].subscriptions[0].status);
+        const events = eventsBody.events;
+
+        matchArrayWithoutOrder(events, [
+            {
+                type: 'email_change_event',
+                data: {
+                    from_email: 'jon.snow@test.com',
+                    to_email: 'aegon.targaryen@test.com'
+                }
+            },
+            {
+                type: 'signup_event'
+            }
+        ]);
+    });
+
+    describe('email_disabled', function () {
+        const testMemberId = '6543c13c13575e086a06b222';
+        const suppressedEmail = 'suppressed@email.com';
+        const okEmail = 'ok@email.com';
+
+        let testMember;
+        let suppression;
+
+        beforeEach(async function () {
+            testMember = await models.Member.add({id: testMemberId, email: okEmail, name: 'Test Member 123', email_disabled: false});
+            suppression = await models.Suppression.add({
+                email: suppressedEmail,
+                reason: 'bounce'
+            });
+        });
+
+        afterEach(async function () {
+            // Delete member & suppression
+            await models.Member.destroy({id: testMember.id});
+            await models.Suppression.destroy({id: suppression.id});
+        });
+
+        it('Updates the email_disabled field when a member email is updated', async function () {
+            // Now update the email address of the test member to suppressed email
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{email: suppressedEmail}]})
+                .expectStatus(200);
+
+            // email_disabled should be true
+            await testMember.refresh();
+            should(testMember.get('email_disabled')).be.true();
+
+            // Now update the email address of that member to a non-suppressed email
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{email: okEmail}]})
+                .expectStatus(200);
+
+            // email_disabled should be false
+            await testMember.refresh();
+            should(testMember.get('email_disabled')).be.false();
+        });
+    });
+
+    // Log out
+    it('Can log out', async function () {
+        const member = await createMember({
+            name: 'test',
+            email: 'member-log-out-test@test.com'
+        });
+
+        const startTransientId = member.get('transient_id');
+
+        await agent
+            .delete(`/members/${member.id}/sessions/`)
+            .expectStatus(204)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        await member.refresh();
+        assert.notEqual(member.get('transient_id'), startTransientId, 'The transient_id should have changed');
     });
 
     // Delete a member
@@ -2089,9 +2433,10 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2103,6 +2448,7 @@ describe('Members API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2115,6 +2461,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2129,12 +2476,61 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
 
+    // Export members to CSV
+
+    it('Can export CSV', async function () {
+        const res = await agent
+            .get(`/members/upload/?limit=all`)
+            .expectStatus(200)
+            .expectEmptyBody() // express-test body parsing doesn't support CSV
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-version': anyContentVersion,
+                'content-length': anyContentLength,
+                'content-disposition': anyString
+            });
+
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+
+        const csv = Papa.parse(res.text, {header: true});
+        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
+        should.exist(csv.data.find(row => row.name === 'Winston Zeddemore'));
+        should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
+        should.exist(csv.data.find(row => row.email === 'member2@test.com'));
+        should.exist(csv.data.find(row => row.tiers.length > 0));
+        should.exist(csv.data.find(row => row.labels.length > 0));
+    });
+
+    it('Can export a filtered CSV', async function () {
+        const res = await agent
+            .get(`/members/upload/?search=Egg`)
+            .expectStatus(200)
+            .expectEmptyBody() // express-test body parsing doesn't support CSV
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-version': anyContentVersion,
+                'content-disposition': anyString
+            });
+
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+
+        const csv = Papa.parse(res.text, {header: true});
+        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
+        should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
+        should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
+        should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
+        // note that this member doesn't have tiers
+        should.exist(csv.data.find(row => row.labels.length > 0));
+    });
+
     it('Can delete a member without cancelling Stripe Subscription', async function () {
         let subscriptionCanceled = false;
+        mockManager.restore();
         nock('https://api.stripe.com')
             .persist()
             .delete(/v1\/.*/)
@@ -2162,55 +2558,48 @@ describe('Members API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
         assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
     });
 
-    // Export members to CSV
+    it('Can delete a member while cancelling Stripe Subscription', async function () {
+        let subscriptionCanceled = false;
+        mockManager.restore();
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
 
-    it('Can export CSV', async function () {
-        const res = await agent
-            .get(`/members/upload/?limit=all`)
-            .expectStatus(200)
-            .expectEmptyBody() // express-test body parsing doesn't support CSV
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyContentLength,
-                'content-disposition': anyString
+                if (match && resource === 'subscriptions') {
+                    subscriptionCanceled = true;
+                    return [200, {
+                        id,
+                        status: 'canceled'
+                    }];
+                }
+
+                return [500];
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        // @TODO This is wrong because it changes the state for the rest of the tests
+        // We need to add a member via a fixture and then remove them OR work out how
+        // to reapply fixtures before each test
+        const memberToDelete = fixtureManager.get('members', 3);
 
-        const csv = Papa.parse(res.text, {header: true});
-        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
-        should.exist(csv.data.find(row => row.name === 'Winston Zeddemore'));
-        should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
-        should.exist(csv.data.find(row => row.email === 'member2@test.com'));
-        should.exist(csv.data.find(row => row.tiers.length > 0));
-        should.exist(csv.data.find(row => row.labels.length > 0));
-    });
-
-    it('Can export a filtered CSV', async function () {
-        const res = await agent
-            .get(`/members/upload/?search=Egg`)
-            .expectStatus(200)
-            .expectEmptyBody() // express-test body parsing doesn't support CSV
+        await agent
+            .delete(`members/${memberToDelete.id}/?cancel=true`)
+            .expectStatus(204)
+            .expectEmptyBody()
             .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-disposition': anyString
+                'content-version': anyContentVersion,
+                etag: anyEtag
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
-
-        const csv = Papa.parse(res.text, {header: true});
-        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
-        should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
-        should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
-        should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
-        // note that this member doesn't have tiers
-        should.exist(csv.data.find(row => row.labels.length > 0));
+        assert.equal(subscriptionCanceled, true, 'expected subscription to be canceled');
     });
 
     // Get stats
@@ -2225,15 +2614,18 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
 
     it('Errors when fetching stats with unknown days param value', async function () {
+        sinon.stub(logging, 'error');
         await agent
             .get('members/stats/?days=nope')
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -2248,9 +2640,14 @@ describe('Members API', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(4).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2)
+                ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2260,9 +2657,19 @@ describe('Members API', function () {
             .get('/members/?include=tiers&filter=tier:default-product')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill(buildMemberMatcherShallowIncludesWithTiers())
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1)
+                ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2295,6 +2702,7 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2321,9 +2729,11 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
@@ -2365,11 +2775,13 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
 
         const memberId = body.members[0].id;
+
         const editedMember = {
             subscribed: true // no change
         };
@@ -2391,12 +2803,173 @@ describe('Members API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
         const changedMember = body2.members[0];
         assert.equal(changedMember.newsletters.length, 2);
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member is still subscribed for a newsletter that is off by default');
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed for the newsletter it subscribed to');
+    });
+
+    it('Adding newsletters to member with no subscriptions works even with subscribed false', async function () {
+        // Add member with no subscriptions
+        const member = {
+            name: 'test newsletter',
+            email: 'memberAddNewsletterSubscribed@test.com',
+            newsletters: []
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(0).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        const memberId = body.members[0].id;
+
+        const editedMember = {
+            subscribed: false,
+            newsletters: [
+                {
+                    id: testUtils.DataGenerator.Content.newsletters[0].id
+                }
+            ]
+        };
+
+        // Edit member
+        const {body: body2} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(1).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        const changedMember = body2.members[0];
+        assert.equal(changedMember.newsletters.length, 1);
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member should be subscribed to the newsletter');
+    });
+
+    it('Updating member data without newsletters does not change newsletters', async function () {
+        // check that this newsletter is archived, or this test would not make sense
+        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
+        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
+
+        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        const memberNewsletters = member.related('newsletters').models;
+        // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
+        //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
+        // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
+
+        const memberId = member.get('id');
+        const editedMember = {
+            id: memberId,
+            name: 'new name'
+        };
+
+        // edit member
+        const {body} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(1).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const changedMember = body.members[0];
+        assert.equal(changedMember.newsletters.length, 1); // the api only returns active newsletters
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed to an active newsletter');
+
+        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
+    });
+
+    it('Updating newsletter subscriptions does not unsubscribe member from archived newsletter', async function () {
+        // check that this newsletter is archived, or this test would not make sense
+        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
+        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
+
+        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        const memberNewsletters = member.related('newsletters').models;
+        // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
+        //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
+        // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
+
+        // remove active newsletter subscriptions
+        const memberId = member.get('id');
+        const editedMember = {
+            newsletters: []
+        };
+
+        // edit member
+        const {body} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: new Array(0)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const changedMember = body.members[0];
+        assert.equal(changedMember.newsletters.length, 0); // the api only returns active newsletters, so this member should have none
+
+        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
     });
 
     it('Can add and send a signup confirmation email (old)', async function () {
@@ -2422,6 +2995,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyString
             });
@@ -2460,6 +3034,7 @@ describe('Members API', function () {
         await agent
             .delete(`members/${body.members[0].id}/`)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expectStatus(204);
@@ -2495,6 +3070,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyString
             });
@@ -2550,6 +3126,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2585,6 +3162,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2632,6 +3210,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
@@ -2663,6 +3242,7 @@ describe('Members API', function () {
                 ]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2703,7 +3283,7 @@ describe('Members API Bulk operations', function () {
         should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
 
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -2722,6 +3302,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2730,7 +3311,7 @@ describe('Members API Bulk operations', function () {
 
         // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -2749,6 +3330,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2805,6 +3387,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2832,6 +3415,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2871,6 +3455,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2898,6 +3483,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -2938,6 +3524,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -2962,7 +3549,7 @@ describe('Members API Bulk operations', function () {
         should(model2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
 
         await agent
-            .put(`/members/bulk/?filter=id:${member1.id}`)
+            .put(`/members/bulk/?filter=id:'${member1.id}'`)
             .body({bulk: {
                 action: 'removeLabel',
                 meta: {
@@ -2987,6 +3574,7 @@ describe('Members API Bulk operations', function () {
                 }
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 

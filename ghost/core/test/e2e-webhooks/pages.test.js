@@ -6,6 +6,7 @@ const {
     matchers
 } = require('../utils/e2e-framework');
 const {
+    anyArray,
     anyGhostAgent,
     anyUuid,
     anyLocalURL,
@@ -57,7 +58,8 @@ const buildPageSnapshotWithTiers = ({
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles)),
         primary_tag: tags ? tagSnapshot : null,
-        tags: tags ? new Array(1).fill(tagSnapshot) : []
+        tags: tags ? new Array(1).fill(tagSnapshot) : [],
+        post_revisions: anyArray
     };
 };
 
@@ -395,7 +397,7 @@ describe('page.* events', function () {
                 'content-length': anyNumber,
                 'user-agent': anyGhostAgent
             })
-            .matchBodySnapshot({               
+            .matchBodySnapshot({
                 page: {
                     current: buildPageSnapshotWithTiers({
                         published: true,
@@ -575,7 +577,7 @@ describe('page.* events', function () {
                 }
             });
     });
-    
+
     it('page.rescheduled event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/page-rescheduled/';
         await webhookMockReceiver.mock(webhookURL);
@@ -629,6 +631,61 @@ describe('page.* events', function () {
                         tiersCount: 2,
                         published: true
                     })
+                }
+            });
+    });
+    it('page.unscheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-unscheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.unscheduled',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.unscheduled webhook',
+                        status: 'scheduled',
+                        published_at: moment().add(6, 'hours').toISOString()
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const previouslyScheduledPage = res.body.pages[0];
+        previouslyScheduledPage.status = 'draft';
+        previouslyScheduledPage.published_at = null;
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [previouslyScheduledPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: {
+                        ...buildPreviousPageSnapshotWithTiers(2),
+                        published_at: anyISODateTime
+                    }
                 }
             });
     });

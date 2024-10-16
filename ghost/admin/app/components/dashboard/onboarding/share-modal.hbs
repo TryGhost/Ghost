@@ -1,0 +1,63 @@
+<div class="modal-content" data-test-modal="onboarding-share">
+    <header class="modal-header">
+        <h1>Share your publication</h1>
+    </header>
+    <button type="button" class="close" id="ob-close-share-modal" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="gh-share-card-container">
+        {{#let (get-setting "coverImage") as |imageUrl|}}
+            {{#if imageUrl}}
+                <div class="gh-share-card-image">
+                    <img src={{imageUrl}} alt="" role="presentation" />
+                </div>
+            {{else}}
+                <div class="gh-share-card-image gh-cover-placeholder">{{svg-jar "picture"}}</div>
+            {{/if}}
+
+            <div class="gh-share-card-content">
+                <div class="gh-share-card-title">{{get-setting "title"}}</div>
+                <div class="gh-share-card-description">
+                    {{get-setting "description"}}
+                </div>
+            </div>
+        {{/let}}
+    </div>
+
+
+    <span class="gh-tip">Set your publication's cover image and description in <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" id="ob-share-modal-design-settings">Design settings</LinkTo>.</span>
+
+    <div class="gh-copy-publication-link">
+        <span>{{this.config.blogUrl}}</span>
+        <GhTaskButton
+            data-test-button="copy-share-link"
+            id="ob-copy-publication-link"
+            @buttonText="Copy"
+            @task={{this.copySiteUrl}}
+            @successText="Copied!"
+            @successClass="gh-share-link-success"
+            @class="gh-btn-icon"
+        />
+    </div>
+
+    <ul class="gh-share-links">
+        <li>
+            <a href="https://twitter.com/intent/tweet?url={{this.encodedUrl}}" target="_blank" rel="noopener noreferrer" class="gh-share-link" id="ob-share-on-x" title="Share your publication on X">
+                <span>{{svg-jar "social-x"}}</span>
+            </a>
+        </li>
+        <li>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{this.encodedUrl}}" target="_blank" rel="noopener noreferrer" class="gh-share-link" id="ob-share-on-fb" title="Share your publication on Facebook">
+                <div class="share-link-content">
+                    <span>{{svg-jar "social-facebook"}}</span>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/feed/?shareActive=true&text={{this.encodedUrl}}" target="_blank" rel="noopener noreferrer" class="gh-share-link" id="ob-share-on-li" title="Share your publication on LinkedIn">
+                <div class="share-link-content">
+                    <span>{{svg-jar "social-linkedin"}}</span>
+                </div>
+            </a>
+        </li>
+    </ul>
+</div>

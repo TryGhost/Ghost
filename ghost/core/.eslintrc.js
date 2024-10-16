@@ -30,7 +30,7 @@ module.exports = {
                 'core/server/data/migrations/versions/3.*/*'
             ],
             rules: {
-                'ghost/filenames/match-regex': ['error', '^(?:\\d{2}|\\d{4}(?:-\\d{2}){4})(?:-[a-zA-Z]+){2,}$', true]
+                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z]+){2,}$', true]
             }
         },
         {
@@ -74,6 +74,12 @@ module.exports = {
                         message: 'Invalid require of core/frontend from core/shared.'
                     }
                 ]]
+            }
+        },
+        {
+            files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
+            rules: {
+                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
             }
         },
         /**

@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import {CONFIRM_EMAIL_MAX_POLL_LENGTH, CONFIRM_EMAIL_POLL_LENGTH} from '../../publish-management';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -13,9 +14,16 @@ function isString(str) {
 export default class PublishFlowCompleteWithEmailError extends Component {
     @tracked newEmailErrorMessage;
     @tracked retryErrorMessage;
+    @inject config;
 
     get emailErrorMessage() {
         return this.newEmailErrorMessage || this.args.emailErrorMessage;
+    }
+
+    get isPartialError() {
+        // For now we look at the error message.
+        // This is covered in E2E tests so we'll be notified when this changes.
+        return this.emailErrorMessage && this.emailErrorMessage.includes('partially');
     }
 
     @task({drop: true})

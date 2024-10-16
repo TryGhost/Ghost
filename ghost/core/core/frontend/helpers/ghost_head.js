@@ -2,12 +2,12 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
+const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 
 // BAD REQUIRE
 // @TODO fix this require
-const cardAssetService = require('../services/card-assets');
+const {cardAssets} = require('../services/assets-minification');
 
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
@@ -19,7 +19,7 @@ const {get: getMetaData, getAssetUrl} = metaData;
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
-    return '<meta ' + type + '="' + property + '" content="' + content + '" />';
+    return '<meta ' + type + '="' + property + '" content="' + content + '">';
 }
 
 function finaliseStructuredData(meta) {
@@ -45,13 +45,16 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-    if (!settingsCache.get('members_enabled')) {
+    // Do not load Portal if both Memberships and Tips & Donations are disabled
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
+
     const {scriptUrl} = getFrontendAppConfig('portal');
 
     const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
     const attributes = {
+        i18n: labs.isSet('i18n'),
         ghost: urlUtils.getSiteUrl(),
         key: frontendKey,
         api: urlUtils.urlFor('api', {type: 'content'}, true)
@@ -64,7 +67,10 @@ function getMembersHelper(data, frontendKey) {
     let membersHelper = `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     if (settingsCache.get('paid_members_enabled')) {
-        membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
+        // disable fraud detection for e2e tests to reduce waiting time
+        const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
+
+        membersHelper += `<script async src="https://js.stripe.com/v3/${isFraudSignalsEnabled}"></script>`;
     }
     return membersHelper;
 }
@@ -72,15 +78,83 @@ function getMembersHelper(data, frontendKey) {
 function getSearchHelper(frontendKey) {
     const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
     const {scriptUrl, stylesUrl} = getFrontendAppConfig('sodoSearch');
+
+    if (!scriptUrl) {
+        return '';
+    }
+
     const attrs = {
         key: frontendKey,
         styles: stylesUrl,
-        'sodo-search': adminUrl
+        'sodo-search': adminUrl,
+        locale: settingsCache.get('locale') || 'en'
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
     return helper;
+}
+
+function getAnnouncementBarHelper(data) {
+    const preview = data?.site?._preview;
+    const isFilled = settingsCache.get('announcement_content') && settingsCache.get('announcement_visibility').length;
+
+    if (!isFilled && !preview) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('announcementBar');
+    const siteUrl = urlUtils.getSiteUrl();
+    const announcementUrl = new URL('members/api/announcement/', siteUrl);
+    const attrs = {
+        'announcement-bar': siteUrl,
+        'api-url': announcementUrl
+    };
+
+    if (preview) {
+        const searchParam = new URLSearchParams(preview);
+        const announcement = searchParam.get('announcement');
+        const announcementBackground = searchParam.has('announcement_bg') ? searchParam.get('announcement_bg') : '';
+        const announcementVisibility = searchParam.has('announcement_vis');
+
+        if (!announcement || !announcementVisibility) {
+            return;
+        }
+        attrs.announcement = escapeExpression(announcement);
+        attrs['announcement-background'] = escapeExpression(announcementBackground);
+        attrs.preview = true;
+    }
+
+    const dataAttrs = getDataAttributes(attrs);
+    let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+
+    return helper;
+}
+
+function getWebmentionDiscoveryLink() {
+    try {
+        const siteUrl = urlUtils.getSiteUrl();
+        const webmentionUrl = new URL('webmentions/receive/', siteUrl);
+        return `<link href="${webmentionUrl.href}" rel="webmention">`;
+    } catch (err) {
+        logging.warn(err);
+        return '';
+    }
+}
+
+function getTinybirdTrackerScript(dataRoot) {
+    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
+    const endpoint = config.get('tinybird:tracker:endpoint');
+    const token = config.get('tinybird:tracker:token');
+
+    const tbParams = _.map({
+        site_uuid: config.get('tinybird:tracker:id'),
+        post_uuid: dataRoot.post?.uuid,
+        member_uuid: dataRoot.member?.uuid,
+        member_status: dataRoot.member?.status
+    }, (value, key) => `tb_${key}="${value}"`).join(' ');
+
+    return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 /**
@@ -158,15 +232,15 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (context) {
             // head is our main array that holds our meta data
             if (meta.metaDescription && meta.metaDescription.length > 0) {
-                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '" />');
+                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
             }
 
             // no output in head if a publication icon is not set
             if (settingsCache.get('icon')) {
-                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
             }
 
-            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '" />');
+            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
 
             if (_.includes(context, 'preview')) {
                 head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
@@ -178,17 +252,17 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
             if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
-                    escapeExpression(meta.ampUrl) + '" />');
+                    escapeExpression(meta.ampUrl) + '">');
             }
 
             if (meta.previousUrl) {
                 head.push('<link rel="prev" href="' +
-                    escapeExpression(meta.previousUrl) + '" />');
+                    escapeExpression(meta.previousUrl) + '">');
             }
 
             if (meta.nextUrl) {
                 head.push('<link rel="next" href="' +
-                    escapeExpression(meta.nextUrl) + '" />');
+                    escapeExpression(meta.nextUrl) + '">');
             }
 
             if (!_.includes(context, 'paged') && useStructuredData) {
@@ -205,22 +279,28 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
 
         head.push('<meta name="generator" content="Ghost ' +
-            escapeExpression(safeVersion) + '" />');
+            escapeExpression(safeVersion) + '">');
 
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(meta.site.title) + '" href="' +
-            escapeExpression(meta.rssUrl) + '" />');
+            escapeExpression(meta.rssUrl) + '">');
 
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey));
             head.push(getSearchHelper(frontendKey));
+            head.push(getAnnouncementBarHelper(options.data));
+            try {
+                head.push(getWebmentionDiscoveryLink());
+            } catch (err) {
+                logging.warn(err);
+            }
 
             // @TODO do this in a more "frameworky" way
-            if (cardAssetService.hasFile('js')) {
+            if (cardAssets.hasFile('js')) {
                 head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
             }
-            if (cardAssetService.hasFile('css')) {
+            if (cardAssets.hasFile('css')) {
                 head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
             }
 
@@ -230,6 +310,18 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
+            }
+
+            if (options.data.site.accent_color) {
+                const accentColor = escapeExpression(options.data.site.accent_color);
+                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+
+                if (existingScriptIndex !== -1) {
+                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+                } else {
+                    head.push(styleTag);
+                }
             }
 
             if (!_.isEmpty(globalCodeinjection)) {
@@ -243,18 +335,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-        }
 
-        // AMP template has style injected directly because there can only be one <style amp-custom> tag
-        if (options.data.site.accent_color && !_.includes(context, 'amp')) {
-            const accentColor = escapeExpression(options.data.site.accent_color);
-            const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
-
-            if (existingScriptIndex !== -1) {
-                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
-            } else {
-                head.push(styleTag);
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+                head.push(getTinybirdTrackerScript(dataRoot));
             }
         }
 

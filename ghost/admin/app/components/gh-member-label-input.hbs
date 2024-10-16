@@ -6,19 +6,20 @@
     @onChange={{this.updateLabels}}
     @onCreate={{this.createLabel}}
     @options={{this.availableLabels}}
-    @renderInPlace={{true}}
+    @renderInPlace={{@renderInPlace}}
     @selected={{this.selectedLabels}}
     @showCreateWhen={{this.hideCreateOptionOnMatchingLabel}}
     @triggerId={{this.triggerId}}
     @selectedItemComponent={{component "gh-token-input/label-selected-item"}}
     @disabled={{@disabled}}
     @allowCreation={{@allowCreation}}
+    @placeholder={{@placeholder}}
     as |label|
 >
     <div style="display: flex; width: 100%;">
         <span
             class="dropdown-label"
-            style="flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+            style="display: -webkit-box; flex-grow: 1; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2;"
             title="{{label.name}}"
             data-test-label-filter={{label.name}}>
             {{label.name}}

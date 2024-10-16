@@ -1,12 +1,10 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const db = require('../db');
 const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
-const clients = require('./clients');
 
 const messages = {
     hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -155,6 +153,79 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
         }
 
         await transaction.raw(sql);
+    }
+}
+
+/**
+ * @param {string} tableName
+ * @param {string} from
+ * @param {string} to
+ * @param {import('knex').Knex.Transaction} [transaction]
+ */
+async function renameColumn(tableName, from, to, transaction = db.knex) {
+    logging.info(`Renaming column '${from}' to '${to}' in table '${tableName}'`);
+
+    if (DatabaseInfo.isMySQL(transaction)) {
+        // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
+        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`;`);
+    }
+
+    return await transaction.schema.table(tableName, function (table) {
+        table.renameColumn(from, to);
+    });
+}
+
+/**
+ * Adds an non-unique index to a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to add indexes to
+ * @param {string|string[]} columns - column(s) to add indexes for
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ */
+async function addIndex(tableName, columns, transaction = db.knex) {
+    try {
+        logging.info(`Adding index for '${columns}' in table '${tableName}'`);
+
+        return await transaction.schema.table(tableName, function (table) {
+            table.index(columns);
+        });
+    } catch (err) {
+        if (err.code === 'SQLITE_ERROR') {
+            logging.warn(`Index for '${columns}' already exists for table '${tableName}'`);
+            return;
+        }
+        if (err.code === 'ER_DUP_KEYNAME') {
+            logging.warn(`Index for '${columns}' already exists for table '${tableName}'`);
+            return;
+        }
+        throw err;
+    }
+}
+
+/**
+ * Drops a non-unique index from a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to remove indexes from
+ * @param {string|string[]} columns - column(s) to remove indexes for
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ */
+async function dropIndex(tableName, columns, transaction = db.knex) {
+    try {
+        logging.info(`Dropping index for '${columns}' in table '${tableName}'`);
+
+        return await transaction.schema.table(tableName, function (table) {
+            table.dropIndex(columns);
+        });
+    } catch (err) {
+        if (err.code === 'SQLITE_ERROR') {
+            logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
+            return;
+        }
+        if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY') {
+            logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
+            return;
+        }
+        throw err;
     }
 }
 
@@ -432,11 +503,15 @@ function deleteTable(table, transaction = db.knex) {
 /**
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
-function getTables(transaction = db.knex) {
+async function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (_.includes(_.keys(clients), client)) {
-        return clients[client].getTables(transaction);
+    if (client === 'sqlite3') {
+        const response = await transaction.raw('select * from sqlite_master where type = "table"');
+        return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
+    } else if (client === 'mysql2') {
+        const response = await transaction.raw('show tables');
+        return _.flatten(_.map(response[0], entry => _.values(entry)));
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
@@ -446,11 +521,15 @@ function getTables(transaction = db.knex) {
  * @param {string} table
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
-function getIndexes(table, transaction = db.knex) {
+async function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (_.includes(_.keys(clients), client)) {
-        return clients[client].getIndexes(table, transaction);
+    if (client === 'sqlite3') {
+        const response = await transaction.raw(`pragma index_list("${table}")`);
+        return _.flatten(_.map(response, 'name'));
+    } else if (client === 'mysql2') {
+        const response = await transaction.raw(`SHOW INDEXES from ${table}`);
+        return _.flatten(_.map(response[0], 'Key_name'));
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
@@ -460,11 +539,15 @@ function getIndexes(table, transaction = db.knex) {
  * @param {string} table
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
-function getColumns(table, transaction = db.knex) {
+async function getColumns(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (_.includes(_.keys(clients), client)) {
-        return clients[client].getColumns(table);
+    if (client === 'sqlite3') {
+        const response = await transaction.raw(`pragma table_info("${table}")`);
+        return _.flatten(_.map(response, 'name'));
+    } else if (client === 'mysql2') {
+        const response = await transaction.raw(`SHOW COLUMNS from ${table}`);
+        return _.flatten(_.map(response[0], 'Field'));
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
@@ -506,10 +589,13 @@ module.exports = {
     getIndexes,
     addUnique,
     dropUnique,
+    addIndex,
+    dropIndex,
     addPrimaryKey,
     addForeign,
     dropForeign,
     addColumn,
+    renameColumn,
     dropColumn,
     setNullable,
     dropNullable,

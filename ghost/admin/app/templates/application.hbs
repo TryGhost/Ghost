@@ -1,6 +1,13 @@
 <GhApp>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
+    {{#if this.upgradeStatus.refreshRequired}}
+        <div class="gh-update-banner">
+            {{!-- template-lint-disable no-invalid-link-text --}}
+            <span>Ghost has been updated! To get access to the latest features, refresh or <a href="javascript:window.location.reload(true)">click here</a>.</span>
+        </div>
+    {{/if}}
+
     <GhAlerts />
 
     <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
@@ -23,22 +30,25 @@
 
         <GhContentCover />
 
-        {{#unless this.session.user.isContributor}}
-            <GhMobileNavBar />
-        {{/unless}}
+        {{#if this.session.user}}
+            {{#unless this.session.user.isContributor}}
+                <GhMobileNavBar />
+            {{/unless}}
+        {{/if}}
     </div>
+
+    {{#if this.showScriptExtension}}
+        {{{this.showScriptExtension.container}}}
+        {{!-- template-lint-disable no-forbidden-elements --}}
+        <script src="{{this.showScriptExtension.src}}"></script>
+    {{/if}}
 
     {{#if this.settings.accentColor}}
         <style>
             :root {
                 --accent-color: {{this.settings.accentColor}};
                 --adjusted-accent-color: {{this.ui.adjustedAccentColor}};
-            }
-            .koenig-editor__editor a:not([class]) {
-                color: var(--adjusted-accent-color);
-            }
-            .koenig-editor__editor blockquote {
-                border-left: 0.25rem solid var(--adjusted-accent-color);
+                --kg-accent-color: {{this.settings.accentColor}};
             }
 
             .gh-btn-accent {

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
 const logging = require('@tryghost/logging');
-const WebhookTrigger = require('./trigger');
+const WebhookTrigger = require('./WebhookTrigger');
 const models = require('../../models');
 const payload = require('./payload');
 
@@ -52,7 +52,7 @@ const listen = async () => {
         const overLimit = await limitService.checkWouldGoOverLimit('customIntegrations');
 
         if (overLimit) {
-            logging.info(`Skipped subscribing webhooks to events. The "customIntegrations" plan limit is enabled."`);
+            logging.info(`Skipped subscribing webhooks to events. The "customIntegrations" plan limit is enabled.`);
             return;
         }
     }

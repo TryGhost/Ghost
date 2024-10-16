@@ -6,10 +6,14 @@ const models = require('../../models');
 const events = require('../../lib/common/events');
 const {settingsCache} = require('../../services/settings-helpers');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'themes',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         query() {
             return themeService.api.getJSON();
@@ -17,6 +21,9 @@ module.exports = {
     },
 
     readActive: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         async query() {
             let themeName = settingsCache.get('active_theme');
@@ -59,7 +66,9 @@ module.exports = {
     },
 
     install: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'source',
             'ref'
@@ -83,7 +92,7 @@ module.exports = {
                 const {theme, themeOverridden} = await themeService.api.installFromGithub(frame.options.ref);
 
                 if (themeOverridden) {
-                    this.headers.cacheInvalidate = true;
+                    frame.setHeader('X-Cache-Invalidate', '/*');
                 }
 
                 events.emit('theme.uploaded', {name: theme.name});
@@ -94,7 +103,9 @@ module.exports = {
     },
 
     upload: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'add'
         },
@@ -115,8 +126,7 @@ module.exports = {
             return themeService.api.setFromZip(zip)
                 .then(({theme, themeOverridden}) => {
                     if (themeOverridden) {
-                        // CASE: clear cache
-                        this.headers.cacheInvalidate = true;
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
                     events.emit('theme.uploaded', {name: theme.name});
                     return theme;
@@ -125,6 +135,9 @@ module.exports = {
     },
 
     download: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'name'
         ],
@@ -168,3 +181,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

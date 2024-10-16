@@ -1,0 +1,349 @@
+.gh-post-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 10px;
+}
+
+.gh-post-actions-menu.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
+}
+
+/* Debug screen
+/* ---------------------------------------------------------- */
+.gh-email-debug .gh-post-analytics-header .gh-canvas-header-content {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.gh-email-debug-error {
+    display: flex;
+    margin-top: 20px;
+    padding: 12px 16px 12px 40px;
+}
+
+.gh-email-debug-error svg {
+    height: 20px !important;
+    margin-top: -2px;
+}
+
+.gh-email-debug-errortext {
+    flex-grow: 1;
+    margin-left: 4px;
+}
+
+.gh-email-debug-error h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-email-debug-error button {
+    min-width: 80px;
+}
+
+.gh-email-debug-settingstab-icon {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 11px;
+    margin-top: 2px;
+}
+
+.gh-email-debug-settingstab-icon svg path,
+.gh-email-debug-settingstab-icon svg circle {
+    stroke-width: 2;
+}
+
+.gh-email-debug .gh-list {
+    border-bottom: none;
+}
+
+.gh-email-debug .gh-list thead,
+.gh-email-debug .gh-list tbody {
+    width: 100%;
+}
+
+.gh-email-debug .gh-list tr:first-of-type .gh-list-data {
+    border-top: none;
+}
+
+.gh-email-debug .gh-list tr .gh-list-data:first-of-type {
+    padding-left: 0;
+}
+
+.gh-email-debug-col-member {
+    padding-left: 0;
+    width: 25%;
+}
+
+.gh-email-debug-member {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.gh-email-debug-failure {
+    display: flex;
+}
+
+.gh-email-debug-failure svg {
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+}
+
+.gh-email-debug-failure-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+}
+
+.gh-email-debug-failure-codes {
+    display: flex;
+    gap: 20px;
+}
+
+.gh-email-debug-failure-code {
+    color: var(--midgrey);
+}
+
+.gh-email-debug-failure-code span {
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-email-debug .gh-list-data {
+    height: 98px;
+}
+
+.gh-email-debug-permanent-failures .gh-list-data,
+.gh-email-debug-temporary-failures .gh-list-data {
+    height: 80px;
+}
+
+.gh-email-debug-batch-col-status span {
+    display: inline-block;
+    position: relative;
+    padding-left: 16px;
+    color: var(--midlightgrey);
+}
+
+.gh-email-debug-batch-col-status span::before {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 6px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--midlightgrey);
+}
+
+.gh-email-debug-batch-col-status .failed {
+    color: color-mod(var(--red) l(-2%));
+}
+
+.gh-email-debug-batch-col-status .failed::before {
+    background: var(--red);
+}
+
+.gh-email-debug-batch-col-status .submitting {
+    color: var(--blue);
+}
+
+.gh-email-debug-batch-col-status .submitting::before {
+    background: var(--blue);
+}
+
+.gh-email-debug-batch-col-status .submitted {
+    color: var(--green);
+}
+
+.gh-email-debug-batch-col-status .submitted::before {
+    background: var(--green);
+}
+
+.gh-email-debug-batch-col-created,
+.gh-email-debug-batch-col-details {
+    color: var(--midgrey);
+}
+
+.gh-email-debug-batch-col-created span,
+.gh-email-debug-batch-col-segment span {
+    white-space: nowrap;
+}
+
+.gh-email-debug-batch-col-details .detailtext div {
+    word-break: break-all;
+}
+
+.gh-email-debug-batch-col-details .detailtext .noselect {
+    user-select: none;
+}
+
+.gh-email-debug-batch-col-details .detailtext div code {
+    white-space: unset;
+    word-break: normal;
+    user-select: text;
+}
+
+.gh-email-debug-batch-col-details .error {
+    color: color-mod(var(--red) l(-2%));
+    font-weight: unset;
+}
+
+.gh-email-debug-batch-col-segment span {
+    display: inline-block;
+    border-radius: 2px;
+    background: color-mod(var(--black) a(5%));
+    padding: 1px 6px;
+    color: var(--middarkgrey);
+}
+
+.gh-email-debug-batch-col-details span {
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-email-debug-batch-col-details .download-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 20px;
+}
+
+.gh-email-debug-batch-col-details .download-icon path {
+    stroke: var(--midgrey);
+}
+
+.gh-email-debug-batch-col-details .detailtext {
+    flex-grow: 1;
+}
+
+.gh-email-debug-settings {
+    font-size: 1.3rem;
+    margin: 12px 0 20px;
+}
+
+.gh-email-debug-settings .gh-type-number {
+    font-variant-numeric: tabular-nums;
+}
+
+.gh-email-debug-settings hr {
+    margin: 8px 0;
+    border-top-color: var(--whitegrey);
+}
+
+.gh-email-debug-settings tr td {
+    font-weight: 500;
+    padding: 6px 0;
+}
+
+.gh-email-debug-settings tr td:first-of-type {
+    width: 30%;
+    white-space: nowrap;
+    color: var(--midgrey);
+}
+
+.gh-email-debug-settings-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.gh-email-debug-settings-icon .check {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-email-debug-settings-icon .check path {
+    stroke: var(--green);
+    stroke-width: 2.5;
+}
+
+.gh-email-debug-settings-icon .x path {
+    stroke: var(--midgrey);
+}
+
+.gh-email-debug-schedule-analytics {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    margin: .8rem 0 0;
+    color: var(--green-d1);
+}
+
+.gh-email-debug-schedule-analytics svg {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 6px;
+}
+
+.gh-email-debug-schedule-analytics svg g {
+    stroke: var(--green-d1);
+    stroke-width: 3px;
+}
+
+.gh-email-debug-empty-list {
+    margin: 120px 40px;
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-email-debug-readmore-error {
+    display: inline-flex;
+    width: 100%;
+}
+
+.gh-email-debug-readmore-error label {
+    order: 3;
+    cursor: pointer;
+}
+
+.gh-email-debug-readmore-error .toggle-checkbox {
+    display: none;
+}
+
+.gh-email-debug-readmore-error span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    color: color-mod(var(--red) l(-2%));
+    word-break: break-all;
+}
+
+.gh-email-debug-readmore-error .toggle-checkbox:checked ~ span {
+    display: block;
+    -webkit-box-orient: unset;
+    -webkit-line-clamp: unset;
+    overflow: unset;
+    word-break: break-word;
+}
+
+.gh-email-debug-readmore-error .toggle-checkbox:checked ~ label {
+    display: none !important;
+}
+
+.gh-email-debug-readmore-error svg {
+    width: 12px;
+    height: 12px;
+    margin: 0;
+}
+
+.gh-email-debug-readmore-error svg circle {
+    fill: var(--midgrey);
+}
+
+.gh-email-debug-readmore-error label {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    border-radius: 2px;
+    height: 14px;
+    margin-top: 3px;
+    margin-left: 8px;
+    background: var(--whitegrey);
+}

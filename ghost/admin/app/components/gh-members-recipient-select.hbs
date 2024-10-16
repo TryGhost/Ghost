@@ -67,7 +67,7 @@
                         disabled={{@disabled}}
                         aria-label="Specific people toggle"
                         {{on "change" this.toggleSpecificFilter}}
-                        data-test-checkbox="paid-members"
+                        data-test-checkbox="specific-members"
                     >
                     <div class="flex">
                         <span class="input-toggle-component"></span>
@@ -79,20 +79,22 @@
     {{/if}}
 </div>
 {{#if this.isSpecificChecked}}
-    <label class="gh-main-section-header small bn">Selection</label>
-    <GhTokenInput
-        @class="select-members select-members-recipient"
-        @dropdownClass={{@dropdownClass}}
-        @options={{this.specificOptions}}
-        @selected={{this.selectedSpecificOptions}}
-        @disabled={{@disabled}}
-        @searchMessage="All labels selected"
-        @optionsComponent={{component "power-select/options"}}
-        @allowCreation={{false}}
-        @renderInPlace={{this.renderInPlace}}
-        @onChange={{this.selectSpecificOptions}}
-        as |option|
-    >
-        {{option.name}}
-    </GhTokenInput>
+    <div data-test-select="specific-members">
+        <label class="gh-main-section-header small bn">Selection</label>
+        <GhTokenInput
+            @class="select-members select-members-recipient"
+            @dropdownClass={{@dropdownClass}}
+            @options={{this.specificOptions}}
+            @selected={{this.selectedSpecificOptions}}
+            @disabled={{@disabled}}
+            @searchMessage="All labels selected"
+            @optionsComponent={{component "power-select/options"}}
+            @allowCreation={{false}}
+            @renderInPlace={{this.renderInPlace}}
+            @onChange={{this.selectSpecificOptions}}
+            as |option|
+        >
+            {{option.name}}
+        </GhTokenInput>
+    </div>
 {{/if}}

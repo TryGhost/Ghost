@@ -3,8 +3,8 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
 describe('Unit: Helper: gh-count-down-characters', function () {
-    let validStyle = 'color: rgb(48, 207, 67);';
-    let errorStyle = 'color: rgb(226, 84, 64);';
+    let validStyle = 'color: rgb(48, 207, 67); font-weight: bold;';
+    let errorStyle = 'color: rgb(226, 84, 64); font-weight: bold;';
 
     it('counts chars', function () {
         let result = countDownCharacters(['test', 200]);

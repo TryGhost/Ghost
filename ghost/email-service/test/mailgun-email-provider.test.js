@@ -1,7 +1,7 @@
-const MailgunEmailProvider = require('../lib/mailgun-email-provider');
+const MailgunEmailProvider = require('../lib/MailgunEmailProvider');
 const sinon = require('sinon');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Mailgun Email Provider', function () {
     describe('send', function () {
@@ -27,6 +27,8 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
+            
+            const deliveryTime = new Date();
 
             const response = await mailgunEmailProvider.send({
                 subject: 'Hi',
@@ -56,7 +58,8 @@ describe('Mailgun Email Provider', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
             });
             should(response.id).eql('provider-123');
             should(sendStub.calledOnce).be.true();
@@ -68,6 +71,7 @@ describe('Mailgun Email Provider', function () {
                     from: 'ghost@example.com',
                     replyTo: 'ghost@example.com',
                     id: '123',
+                    deliveryTime,
                     track_opens: true,
                     track_clicks: true
                 },
@@ -225,9 +229,40 @@ describe('Mailgun Email Provider', function () {
     });
 
     describe('getMaximumRecipients', function () {
+        let mailgunClient;
+        let getBatchSizeStub;
+
         it('returns 1000', function () {
-            const provider = new MailgunEmailProvider({});
-            assert.strictEqual(provider.getMaximumRecipients(), 1000);
+            getBatchSizeStub = sinon.stub().returns(1000);
+
+            mailgunClient = {
+                getBatchSize: getBatchSizeStub
+            };
+            
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            assert.equal(provider.getMaximumRecipients(), 1000);
+        });
+    });
+
+    describe('getTargetDeliveryWindow', function () {
+        let mailgunClient;
+        let getTargetDeliveryWindowStub;
+
+        it('returns the configured target delivery window', function () {
+            getTargetDeliveryWindowStub = sinon.stub().returns(0);
+
+            mailgunClient = {
+                getTargetDeliveryWindow: getTargetDeliveryWindowStub
+            };
+            
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            assert.equal(provider.getTargetDeliveryWindow(), 0);
         });
     });
 });

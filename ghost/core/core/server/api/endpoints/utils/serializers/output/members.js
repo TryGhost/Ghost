@@ -1,8 +1,8 @@
 //@ts-check
+const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
-const labs = require('../../../../../../shared/labs');
 
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -28,7 +28,7 @@ module.exports = {
  *
  * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{members: SerializedMember[], meta: PageMeta}}
  */
@@ -42,7 +42,7 @@ function paginatedMembers(page, _apiConfig, frame) {
 /**
  * @param {import('bookshelf').Model} model
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{members: SerializedMember[]}}
  */
@@ -55,7 +55,7 @@ function singleMember(model, _apiConfig, frame) {
 /**
  * @param {object} bulkActionResult
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{bulk: SerializedBulkAction}}
  */
@@ -114,6 +114,26 @@ function serializeAttribution(attribution) {
     };
 }
 
+function serializeNewsletter(newsletter) {
+    const newsletterFields = [
+        'id',
+        'name',
+        'description',
+        'status'
+    ];
+
+    return _.pick(newsletter, newsletterFields);
+}
+
+function serializeNewsletters(newsletters) {
+    return newsletters
+        .filter(newsletter => newsletter.status === 'active')
+        .sort((a, b) => {
+            return a.sort_order - b.sort_order;
+        })
+        .map(newsletter => serializeNewsletter(newsletter));
+}
+
 /**
  * @param {import('bookshelf').Model} member
  * @param {object} options
@@ -147,7 +167,8 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
-        attribution: serializeAttribution(json.attribution)
+        attribution: serializeAttribution(json.attribution),
+        unsubscribe_url: json.unsubscribe_url
     };
 
     if (json.products) {
@@ -172,16 +193,10 @@ function serializeMember(member, options) {
         delete subscription.price.product;
     }
 
-    if (labs.isSet('suppressionList')) {
-        serialized.email_suppression = json.email_suppression;
-    }
+    serialized.email_suppression = json.email_suppression;
 
     if (json.newsletters) {
-        serialized.newsletters = json.newsletters
-            .filter(newsletter => newsletter.status === 'active')
-            .sort((a, b) => {
-                return a.sort_order - b.sort_order;
-            });
+        serialized.newsletters = serializeNewsletters(json.newsletters);
     }
     // override the `subscribed` param to mean "subscribed to any active newsletter"
     serialized.subscribed = false;
@@ -205,9 +220,9 @@ function passthrough(data) {
  * @template Data
  * @template Response
  * @param {string} debugString
- * @param {(data: Data, apiConfig: APIConfig, frame: Frame) => Response} serialize - A function to serialize the data into an object suitable for API response
+ * @param {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => Response} serialize
  *
- * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => void}
+ * @returns {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => void}
  */
 function createSerializer(debugString, serialize) {
     return function serializer(data, apiConfig, frame) {
@@ -340,9 +355,4 @@ function createSerializer(debugString, serialize) {
  * @typedef {Object} APIConfig
  * @prop {string} docName
  * @prop {string} method
- */
-
-/**
- * @typedef {Object<string, any>} Frame
- * @prop {Object} options
  */

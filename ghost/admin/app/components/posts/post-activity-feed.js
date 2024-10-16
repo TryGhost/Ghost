@@ -1,20 +1,29 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class PostActivityFeed extends Component {
     @service feature;
 
     _pageSize = 5;
     _eventTypes = {
-        sent: this.feature.get('suppressionList')
-            ? ['email_sent_event', 'email_delivered_event', 'email_failed_event']
-            : ['email_sent_event'],
+        sent: ['email_sent_event', 'email_delivered_event', 'email_failed_event'],
         opened: ['email_opened_event'],
         clicked: ['aggregated_click_event'],
         feedback: ['feedback_event'],
         conversion: ['subscription_event', 'signup_event']
     };
+
+    @tracked savedEventsFetcher = null;
+
+    @action
+    saveEvents(fetcher) {
+        if (fetcher && fetcher.data && fetcher.data.length > 0) {
+            this.savedEventsFetcher = fetcher;
+        }
+        return null;
+    }
 
     get getEventTypes() {
         return this._eventTypes[this.args.eventType];

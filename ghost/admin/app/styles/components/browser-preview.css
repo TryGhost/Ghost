@@ -26,6 +26,24 @@
     border-bottom-right-radius: 3px;
 }
 
+@media (max-width: 1600px) {
+    .gh-browserpreview-iframecontainer .site-frame iframe {
+        width: 130%;
+        height: 130%;
+        transform: scale(calc(100 / 130));
+        transform-origin: 0 0;
+    }
+}
+
+@media (min-width: 1601px) and (max-width: 1920px) {
+    .gh-browserpreview-iframecontainer .site-frame iframe {
+        width: 110%;
+        height: 110%;
+        transform: scale(calc(100 / 110));
+        transform-origin: 0 0;
+    }
+}
+
 .gh-browserpreview-browser {
     background: var(--whitegrey-l1);
     border-top-left-radius: 3px;

@@ -11,8 +11,10 @@
 
     <p class="gh-publish-confirmation">
         {{this.emailErrorMessage}}
+        {{#unless this.config.mailgunIsConfigured}}
         <br><br>
-        Please verify your email settings if the error persists.
+        If the error persists, please verify your email settings.
+        {{/unless}}
     </p>
 
     {{#if this.retryErrorMessage}}
@@ -24,7 +26,7 @@
     <div class="gh-publish-cta">
         <GhTaskButton
             @task={{this.retryEmailTask}}
-            @buttonText="Retry sending email"
+            @buttonText={{if this.isPartialError "Send remaining emails" "Retry sending email"}}
             @runningText="Sending"
             @successText="Sent"
             @class="gh-btn gh-btn-large gh-btn-red"

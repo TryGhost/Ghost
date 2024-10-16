@@ -26,7 +26,7 @@ function matchCacheKey(req, cache) {
     return true;
 }
 
-function createPublicFileMiddleware(location, file, mime, maxAge) {
+function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) {
     let cache;
     // These files are provided by Ghost, and therefore live inside of the core folder
     const staticFilePath = config.get('paths').publicFilePath;
@@ -45,7 +45,7 @@ function createPublicFileMiddleware(location, file, mime, maxAge) {
         }
 
         // send image files directly and let express handle content-length, etag, etc
-        if (mime.match(/^image/)) {
+        if (mime.match(/^image/) || options.disableServerCache) {
             return res.sendFile(filePath, (err) => {
                 if (err && err.status === 404) {
                     // ensure we're triggering basic asset 404 and not a templated 404
@@ -101,8 +101,8 @@ function createPublicFileMiddleware(location, file, mime, maxAge) {
 
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
-function servePublicFile(location, file, type, maxAge) {
-    const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge);
+function servePublicFile(location, file, type, maxAge, options = {}) {
+    const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
 
     return function servePublicFileMiddleware(req, res, next) {
         if (req.path === '/' + file) {

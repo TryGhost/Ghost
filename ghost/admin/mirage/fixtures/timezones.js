@@ -133,7 +133,7 @@ export default [
     },
     {
         name: 'Europe/Kiev',
-        label: '(GMT +2:00) Helsinki, Kiev, Riga, Sofia, Tallinn, Vilnius'
+        label: '(GMT +2:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius'
     },
     {
         name: 'Asia/Jerusalem',

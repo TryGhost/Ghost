@@ -1,9 +1,13 @@
 const tiersService = require('../../services/tiers');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'tiers',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -20,3 +24,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

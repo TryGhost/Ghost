@@ -1,10 +1,14 @@
 const feedbackService = require('../../services/audience-feedback');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'feedback',
 
     add: {
         statusCode: 201,
+        headers: {
+            cacheInvalidate: false
+        },
         validation: {
             data: {
                 post_id: {
@@ -21,3 +25,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

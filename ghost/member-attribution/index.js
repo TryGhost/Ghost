@@ -1,6 +1,7 @@
 module.exports = {
-    MemberAttributionService: require('./lib/service'),
-    AttributionBuilder: require('./lib/attribution'),
-    UrlTranslator: require('./lib/url-translator'),
-    ReferrerTranslator: require('./lib/referrer-translator')
+    MemberAttributionService: require('./lib/MemberAttributionService'),
+    AttributionBuilder: require('./lib/AttributionBuilder'),
+    UrlTranslator: require('./lib/UrlTranslator'),
+    ReferrerTranslator: require('./lib/ReferrerTranslator'),
+    OutboundLinkTagger: require('./lib/OutboundLinkTagger')
 };

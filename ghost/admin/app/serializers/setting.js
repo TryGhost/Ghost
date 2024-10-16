@@ -23,7 +23,7 @@ export default class Setting extends ApplicationSerializer {
     }
 
     serializeAttribute(snapshot, json, key, attributes) {
-        // Only serialize attributes that have changed and 
+        // Only serialize attributes that have changed and
         // send a partial update to the API to avoid conflicts
         // with different screens using the same model
         // See https://github.com/TryGhost/Ghost/issues/15470

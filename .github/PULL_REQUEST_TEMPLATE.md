@@ -7,6 +7,3 @@ Please include a description of your change & check your PR against this list, t
 - [ ] The build will pass (run `yarn test:all` and `yarn lint`)
 
 We appreciate your contribution!
-
-Also, if you'd be interested in writing code like this for us more regularly, we're hiring:
-https://careers.ghost.org

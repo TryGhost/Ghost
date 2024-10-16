@@ -1,8 +1,8 @@
-const Promise = require('bluebird');
 const commands = require('../../schema').commands;
 const schema = require('../../schema').tables;
 const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema);
+const {sequence} = require('@tryghost/promise');
 
 module.exports.up = async (options) => {
     const connection = options.connection;
@@ -10,10 +10,10 @@ module.exports.up = async (options) => {
     const existingTables = await commands.getTables(connection);
     const missingTables = schemaTables.filter(t => !existingTables.includes(t));
 
-    await Promise.mapSeries(missingTables, async (table) => {
+    await sequence(missingTables.map(table => async () => {
         logging.info('Creating table: ' + table);
         await commands.createTable(table, connection);
-    });
+    }));
 };
 
 /**
@@ -24,9 +24,9 @@ module.exports.up = async (options) => {
 
         // Reference between tables!
         schemaTables.reverse();
-        await Promise.mapSeries(schemaTables, async (table) => {
+        await sequence(schemaTables.map(table => async () => {
             logging.info('Drop table: ' + table);
             await commands.deleteTable(table, connection);
-        });
+        }));
     };
  */

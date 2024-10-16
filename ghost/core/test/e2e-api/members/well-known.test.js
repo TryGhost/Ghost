@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyString, anyEtag} = matchers;
 
 describe('Members .well-known', function () {
@@ -7,6 +7,11 @@ describe('Members .well-known', function () {
     before(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
+        mockManager.mockMail();
+    });
+
+    after(function () {
+        mockManager.restore();
     });
 
     describe('GET /jwks.json', function () {

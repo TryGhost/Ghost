@@ -3,7 +3,7 @@ const routing = require('../services/routing');
 
 /**
  *
- * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
+ * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
  * @returns {import('express').Router}
  */
 module.exports = function siteRoutes(routerConfig) {

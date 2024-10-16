@@ -1,8 +1,12 @@
 const models = require('../../models');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'roles',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'permissions'
         ],
@@ -17,3 +21,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

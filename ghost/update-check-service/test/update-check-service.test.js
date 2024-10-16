@@ -2,10 +2,11 @@ require('./utils');
 
 const sinon = require('sinon');
 const moment = require('moment');
-const uuid = require('uuid');
+const crypto = require('crypto');
+const assert = require('assert/strict');
 
 const logging = require('@tryghost/logging');
-const UpdateCheckService = require('../lib/update-check-service');
+const UpdateCheckService = require('../lib/UpdateCheckService');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};
@@ -65,7 +66,7 @@ describe('Update Check', function () {
             requestStub.calledOnce.should.equal(true);
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].query.ghost_version.should.equal('0.8.0');
+            requestStub.args[0][1].searchParams.ghost_version.should.equal('0.8.0');
         });
 
         it('update check won\'t happen if it\'s too early', async function () {
@@ -124,7 +125,7 @@ describe('Update Check', function () {
             requestStub.calledOnce.should.equal(true);
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].query.ghost_version.should.equal('5.3.4');
+            requestStub.args[0][1].searchParams.ghost_version.should.equal('5.3.4');
         });
     });
 
@@ -173,7 +174,7 @@ describe('Update Check', function () {
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
 
-            const data = requestStub.args[0][1].body;
+            const data = requestStub.args[0][1].json;
             data.ghost_version.should.equal('4.0.0');
             data.node_version.should.equal(process.versions.node);
             data.env.should.equal(process.env.NODE_ENV);
@@ -195,7 +196,7 @@ describe('Update Check', function () {
                 id: 1,
                 custom: 0,
                 messages: [{
-                    id: uuid.v4(),
+                    id: crypto.randomUUID(),
                     version: '999.9.x',
                     content: '<p>Hey there! This is for 999.9.0 version</p>',
                     dismissible: true,
@@ -267,7 +268,7 @@ describe('Update Check', function () {
             const notification = {
                 id: 1,
                 messages: [{
-                    id: uuid.v4(),
+                    id: crypto.randomUUID(),
                     version: 'custom1',
                     content: '<p>Critical message. Upgrade your site!</p>',
                     dismissible: false,
@@ -371,7 +372,8 @@ describe('Update Check', function () {
                     settings: {
                         edit: settingsStub
                     }
-                }
+                },
+                config: {}
             });
 
             updateCheckService.updateCheckError({});
@@ -380,6 +382,31 @@ describe('Update Check', function () {
             logging.error.called.should.be.true();
             logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
             logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+        });
+
+        it('logs and rethrows an error when error with rethrow configuration', function () {
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        edit: settingsStub
+                    }
+                },
+                config: {
+                    rethrowErrors: true
+                }
+            });
+
+            try {
+                updateCheckService.updateCheckError({});
+                assert.fail('should have thrown');
+            } catch (e) {
+                settingsStub.called.should.be.true();
+                logging.error.called.should.be.true();
+                logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
+                logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+
+                e.context.should.equal('Checking for updates failed, your site will continue to function.');
+            }
         });
     });
 });

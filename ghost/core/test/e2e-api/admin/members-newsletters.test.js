@@ -1,5 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyArray} = matchers;
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const sinon = require('sinon');
 
 const memberMatcherShallowIncludesForNewsletters = {
     id: anyObjectId,
@@ -20,6 +22,10 @@ describe('Members API - With Newsletters', function () {
         await agent.loginAsOwner();
     });
 
+    beforeEach(function () {
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
+    });
+
     afterEach(function () {
         mockManager.restore();
     });
@@ -34,6 +40,7 @@ describe('Members API - With Newsletters', function () {
                 members: new Array(6).fill(memberMatcherShallowIncludesForNewsletters)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -46,6 +53,7 @@ describe('Members API - With Newsletters', function () {
                 members: new Array(2).fill(memberMatcherShallowIncludesForNewsletters)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -56,6 +64,10 @@ describe('Members API - With Newsletters - compat mode', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
@@ -72,6 +84,7 @@ describe('Members API - With Newsletters - compat mode', function () {
                 members: new Array(6).fill(memberMatcherShallowIncludesForNewsletters)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -84,6 +97,7 @@ describe('Members API - With Newsletters - compat mode', function () {
                 members: new Array(2).fill(memberMatcherShallowIncludesForNewsletters)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

@@ -1,6 +1,4 @@
-const Promise = require('bluebird');
 const _ = require('lodash');
-const uuid = require('uuid');
 const crypto = require('crypto');
 const keypair = require('keypair');
 const ObjectID = require('bson-objectid').default;
@@ -51,7 +49,7 @@ function parseDefaultSettings() {
     const defaultSettingsFlattened = {};
 
     const dynamicDefault = {
-        db_hash: () => uuid.v4(),
+        db_hash: () => crypto.randomUUID(),
         public_hash: () => crypto.randomBytes(15).toString('hex'),
         admin_session_secret: () => crypto.randomBytes(32).toString('hex'),
         theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
@@ -161,7 +159,7 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     formatOnWrite(attrs) {
-        if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
+        if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image', 'pintura_js_url', 'pintura_css_url'].includes(attrs.key)) {
             attrs.value = urlUtils.toTransformReady(attrs.value);
         }
 
@@ -183,7 +181,7 @@ Settings = ghostBookshelf.Model.extend({
         }
 
         // transform URLs from __GHOST_URL__ to absolute
-        if (['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
+        if (['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image', 'pintura_js_url', 'pintura_css_url'].includes(attrs.key)) {
             attrs.value = urlUtils.transformReadyToAbsolute(attrs.value);
         }
 
@@ -211,8 +209,8 @@ Settings = ghostBookshelf.Model.extend({
             data = [data];
         }
 
-        return Promise.map(data, function (item) {
-            // Accept an array of models as input
+        // Accept an array of models as input
+        const promises = data.map(function (item) {
             if (item.toJSON) {
                 item = item.toJSON();
             }
@@ -254,6 +252,7 @@ Settings = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.NotFoundError({message: tpl(messages.unableToFindSetting, {key: item.key})}));
             });
         });
+        return Promise.all(promises);
     },
 
     populateDefaults: async function populateDefaults(unfilteredOptions) {
@@ -322,16 +321,6 @@ Settings = ghostBookshelf.Model.extend({
         }
 
         return allSettings;
-    },
-
-    permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        if (hasUserPermission && hasApiKeyPermission) {
-            return Promise.resolve();
-        }
-
-        return Promise.reject(new errors.NoPermissionError({
-            message: tpl(messages.notEnoughPermission)
-        }));
     },
 
     validators: {

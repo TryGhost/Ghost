@@ -3,6 +3,7 @@ const logging = require('@tryghost/logging');
 const ObjectId = require('bson-objectid').default;
 const {createTransactionalMigration} = require('../../utils');
 const DatabaseInfo = require('@tryghost/database-info');
+const GhostError = require('@tryghost/errors').GhostError;
 
 // This migration links together members_created_events and members_subscription_created_events
 
@@ -46,7 +47,9 @@ module.exports = createTransactionalMigration(
 
             if (response1[0] !== 0) {
                 logging.error(`Inserted ${response1[0]} members_created_events, expected 0`);
-                throw new Error('Rolling back');
+                throw new GhostError({
+                    message: 'Rolling back'
+                });
             }
 
             const response2 = await knex('members_subscription_created_events').insert(batch.map((r) => {
@@ -61,7 +64,9 @@ module.exports = createTransactionalMigration(
 
             if (response2[0] !== 0) {
                 logging.error(`Inserted ${response1[0]} members_subscription_created_events, expected 0`);
-                throw new Error('Rolling back');
+                throw new GhostError({
+                    message: 'Rolling back'
+                });
             }
         }
         logging.info(`Linked ${rows.length} members_created_events and members_subscription_created_events`);

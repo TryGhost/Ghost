@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -6,11 +6,15 @@ const moment = require('moment');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const settingsCache = require('../../core/shared/settings-cache');
+const settingsHelpers = require('../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
 const models = require('../../core/server/models');
-const {mockManager} = require('../utils/e2e-framework');
+const {fixtureManager} = require('../utils/e2e-framework');
 const DataGenerator = require('../utils/fixtures/data-generator');
+const members = require('../../core/server/services/members');
+const membersEventsService = require('../../core/server/services/members-events');
+const crypto = require('crypto');
 
 function assertContentIsPresent(res) {
     res.text.should.containEql('<h2 id="markdown">markdown</h2>');
@@ -20,12 +24,24 @@ function assertContentIsAbsent(res) {
     res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
 }
 
+async function createMember(data) {
+    return await members.api.members.create({
+        ...data
+    });
+}
+
+async function cycleTransientId(data) {
+    return await members.api.members.cycleTransientId({
+        ...data
+    });
+}
+
 describe('Front-end members behavior', function () {
     let request;
 
     async function loginAsMember(email) {
         // Member should exist, because we are signin in
-        await models.Member.findOne({email}, {require: true});
+        const member = await models.Member.findOne({email}, {require: true});
 
         // membersService needs to be required after Ghost start so that settings
         // are pre-populated with defaults
@@ -44,6 +60,8 @@ describe('Front-end members behavior', function () {
                 should.exist(redirectUrl.searchParams.get('success'));
                 redirectUrl.searchParams.get('success').should.eql('true');
             });
+
+        return member;
     }
 
     before(async function () {
@@ -72,6 +90,11 @@ describe('Front-end members behavior', function () {
         sinon.restore();
     });
 
+    beforeEach(function () {
+        // Clear the lastSeenAtCache to avoid side effects from other tests
+        membersEventsService.clearLastSeenAtCache();
+    });
+
     describe('Member routes', function () {
         it('should error serving webhook endpoint without any parameters', async function () {
             await request.post('/members/webhooks/stripe')
@@ -91,6 +114,7 @@ describe('Front-end members behavior', function () {
 
         it('should return no content when removing member sessions', async function () {
             await request.del('/members/api/session')
+                .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
                 .expect(204);
         });
 
@@ -109,11 +133,10 @@ describe('Front-end members behavior', function () {
                 .expect(400);
         });
 
-        //TODO: Remove 500 expect once tests are wired up with Stripe
-        it('should not throw 400 for using offer id on members create checkout session endpoint', async function () {
+        it('should error for using an invalid offer id on members create checkout session endpoint', async function () {
             await request.post('/members/api/create-stripe-checkout-session')
                 .send({
-                    offerId: '62826b1b6dccb3e3e997ebd4',
+                    offerId: 'invalid',
                     identity: null,
                     metadata: {
                         name: 'Jamie Larsen'
@@ -123,7 +146,7 @@ describe('Front-end members behavior', function () {
                     tierId: null,
                     cadence: null
                 })
-                .expect(500);
+                .expect(400);
         });
 
         it('should error for invalid data on members create update session endpoint', async function () {
@@ -134,8 +157,8 @@ describe('Front-end members behavior', function () {
         it('should error for invalid subscription id on members create update session endpoint', async function () {
             const membersService = require('../../core/server/services/members');
             const email = 'test-member-create-update-session@email.com';
-            await membersService.api.members.create({email});
-            const token = await membersService.api.getMemberIdentityToken(email);
+            const member = await membersService.api.members.create({email});
+            const token = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
             await request.post('/members/api/create-stripe-update-session')
                 .send({
                     identity: token,
@@ -153,97 +176,114 @@ describe('Front-end members behavior', function () {
                 .expect(400);
         });
 
-        it('should error for fetching member newsletters with missing uuid', async function () {
-            await request.get('/members/api/member/newsletters')
-                .expect(400);
-        });
+        describe('Newsletters', function () {
+            afterEach(function () {
+                sinon.restore();
+            });
 
-        it('should error for fetching member newsletters with invalid uuid', async function () {
-            await request.get('/members/api/member/newsletters?uuid=abc')
-                .expect(404);
-        });
+            it('should error for fetching member newsletters with missing uuid', async function () {
+                await request.get('/members/api/member/newsletters')
+                    .expect(401);
+            });
 
-        it('should error for updating member newsletters with missing uuid', async function () {
-            await request.put('/members/api/member/newsletters')
-                .expect(400);
-        });
+            it('should error for fetching member newsletters with invalid uuid', async function () {
+                await request.get('/members/api/member/newsletters?uuid=abc')
+                    .expect(401);
+            });
 
-        it('should error for updating member newsletters with invalid uuid', async function () {
-            await request.put('/members/api/member/newsletters?uuid=abc')
-                .expect(404);
-        });
+            it('should error for updating member newsletters with missing uuid', async function () {
+                await request.put('/members/api/member/newsletters')
+                    .expect(401);
+            });
 
-        it('should fetch and update member newsletters with valid uuid', async function () {
-            const memberUUID = DataGenerator.Content.members[0].uuid;
+            it('should error for updating member newsletters with invalid uuid', async function () {
+                await request.put('/members/api/member/newsletters?uuid=abc')
+                    .expect(401);
+            });
 
-            // Can fetch newsletter subscriptions
-            const getRes = await request.get(`/members/api/member/newsletters?uuid=${memberUUID}`)
-                .expect(200);
-            const getJsonResponse = getRes.body;
+            it('should error for updating member newsletters with no key', async function () {
+                sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+                await request.get('/members/api/member/newsletters?uuid=abc')
+                    .expect(401);
+            });
 
-            should.exist(getJsonResponse);
-            getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
-            getJsonResponse.should.not.have.property('id');
-            getJsonResponse.newsletters.should.have.length(1);
+            it('should 401 for GET member newsletters with a mismatched hmac key', async function () {
+                sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+                await request.get('/members/api/member/newsletters?uuid=abc&key=blah')
+                    .expect(401);
+            });
 
-            // Can update newsletter subscription
-            const originalNewsletters = getJsonResponse.newsletters;
-            const originalNewsletterName = originalNewsletters[0].name;
-            originalNewsletters[0].name = 'cannot change me';
+            it('should 401 for PUT member newsletters with a mismatched hmac key', async function () {
+                sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+                await request.put('/members/api/member/newsletters?uuid=abc&key=blah')
+                    .expect(401);
+            });
 
-            const res = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}`)
-                .send({
-                    newsletters: []
-                })
-                .expect(200);
-            const jsonResponse = res.body;
+            it('should fetch and update member newsletters with valid uuid', async function () {
+                const memberUUID = DataGenerator.Content.members[0].uuid;
 
-            should.exist(jsonResponse);
-            jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
-            jsonResponse.should.not.have.property('id');
-            jsonResponse.newsletters.should.have.length(0);
+                // Can fetch newsletter subscriptions
+                sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+                const memberHmac = crypto.createHmac('sha256', 'test').update(memberUUID).digest('hex');
+                const getRes = await request.get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                    .expect(200);
+                const getJsonResponse = getRes.body;
 
-            const resRestored = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}`)
-                .send({
-                    newsletters: originalNewsletters
-                })
-                .expect(200);
+                should.exist(getJsonResponse);
+                getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+                getJsonResponse.should.not.have.property('id');
+                getJsonResponse.newsletters.should.have.length(1);
 
-            const restoreJsonResponse = resRestored.body;
-            should.exist(restoreJsonResponse);
-            restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
-            restoreJsonResponse.should.not.have.property('id');
-            restoreJsonResponse.newsletters.should.have.length(1);
-            // @NOTE: this seems like too much exposed information, needs a review
-            restoreJsonResponse.newsletters[0].should.have.properties([
-                'id',
-                'uuid',
-                'name',
-                'description',
-                'feedback_enabled',
-                'slug',
-                'sender_name',
-                'sender_email',
-                'sender_reply_to',
-                'status',
-                'visibility',
-                'subscribe_on_signup',
-                'sort_order',
-                'header_image',
-                'show_header_icon',
-                'show_header_title',
-                'title_font_category',
-                'title_alignment',
-                'show_feature_image',
-                'body_font_category',
-                'footer_content',
-                'show_badge',
-                'show_header_name',
-                'created_at',
-                'updated_at'
-            ]);
+                // NOTE: these should be snapshots not code
+                Object.keys(getJsonResponse.newsletters[0]).should.have.length(5);
+                getJsonResponse.newsletters[0].should.have.properties([
+                    'id',
+                    'uuid',
+                    'name',
+                    'description',
+                    'sort_order'
+                ]);
 
-            should.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
+                // Can update newsletter subscription
+                const originalNewsletters = getJsonResponse.newsletters;
+                const originalNewsletterName = originalNewsletters[0].name;
+                originalNewsletters[0].name = 'cannot change me';
+
+                const res = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                    .send({
+                        newsletters: []
+                    })
+                    .expect(200);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+                jsonResponse.should.not.have.property('id');
+                jsonResponse.newsletters.should.have.length(0);
+
+                const resRestored = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                    .send({
+                        newsletters: originalNewsletters
+                    })
+                    .expect(200);
+
+                const restoreJsonResponse = resRestored.body;
+                should.exist(restoreJsonResponse);
+                restoreJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+                restoreJsonResponse.should.not.have.property('id');
+                restoreJsonResponse.newsletters.should.have.length(1);
+                // @NOTE: this seems like too much exposed information, needs a review
+                Object.keys(restoreJsonResponse.newsletters[0]).should.have.length(5);
+                restoreJsonResponse.newsletters[0].should.have.properties([
+                    'id',
+                    'uuid',
+                    'name',
+                    'description',
+                    'sort_order'
+                ]);
+
+                should.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
+            });
         });
 
         it('should serve theme 404 on members endpoint', async function () {
@@ -261,7 +301,7 @@ describe('Front-end members behavior', function () {
 
     describe('Unsubscribe', function () {
         afterEach(function () {
-            mockManager.restore();
+            sinon.restore();
         });
 
         it('should redirect with uuid and action param', async function () {
@@ -276,9 +316,195 @@ describe('Front-end members behavior', function () {
                 .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&newsletter=YYY&action=unsubscribe');
         });
 
+        it('should pass through an optional key param', async function () {
+            await request.get('/unsubscribe/?uuid=XXX&key=YYY')
+                .expect(302)
+                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&key=YYY&action=unsubscribe');
+        });
+
         it('should reject when missing a uuid', async function () {
             await request.get('/unsubscribe/')
                 .expect(400);
+        });
+
+        it('should return unauthorized with a bad key', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+            const member = await createMember({
+                email: 'unsubscribe-member-test@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('therealkey');
+            const memberHmac = crypto.createHmac('sha256','thefalsekey').update(memberUUID).digest('hex');
+
+            // auth via uuid+key should fail
+            await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(401);
+        });
+
+        it('should do an actual unsubscribe on POST', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+            const member = await createMember({
+                email: 'unsubscribe-member-test-another@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            // Can fetch newsletter subscriptions
+            let getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            let getJsonResponse = getRes.body;
+            assert.equal(getJsonResponse.newsletters.length, 1);
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(201);
+
+            getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            getJsonResponse = getRes.body;
+
+            assert.equal(getJsonResponse.newsletters.length, 0, 'Sending a POST request to the unsubscribe endpoint should unsubscribe the member');
+        });
+
+        it('should only do a partial unsubscribe on POST', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+            const newsletter2Id = fixtureManager.get('newsletters', 1).id;
+            const newsletter2Uuid = fixtureManager.get('newsletters', 1).uuid;
+
+            const member = await createMember({
+                email: 'unsubscribe-member-test-2@example.com',
+                newsletters: [
+                    {id: newsletterId},
+                    {id: newsletter2Id}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            // Can fetch newsletter subscriptions
+            let getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            let getJsonResponse = getRes.body;
+            assert.equal(getJsonResponse.newsletters.length, 2);
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&newsletter=${newsletter2Uuid}&key=${memberHmac}`)
+                .expect(201);
+
+            getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            getJsonResponse = getRes.body;
+
+            assert.equal(getJsonResponse.newsletters.length, 1, 'Sending a POST request to the unsubscribe endpoint should unsubscribe the member from that specific newsletter');
+        });
+
+        it('should unsubscribe from comment notifications on POST', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+
+            const member = await createMember({
+                email: 'unsubscribe-member-test-3@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ],
+                enable_comment_notifications: true
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            // Can fetch newsletter subscriptions
+            let getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            let getJsonResponse = getRes.body;
+            assert.equal(getJsonResponse.newsletters.length, 1);
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}&comments=1`)
+                .expect(201);
+
+            const updatedMember = await members.api.members.get({id: member.id}, {withRelated: ['newsletters']});
+            assert.equal(updatedMember.get('enable_comment_notifications'), false);
+            assert.equal(updatedMember.related('newsletters').models.length, 1);
+        });
+
+        it('unsubscribe post works with x-www-form-urlencoded', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+            const member = await createMember({
+                email: 'unsubscribe-member-test-4@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            // Can fetch newsletter subscriptions
+            let getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            let getJsonResponse = getRes.body;
+            assert.equal(getJsonResponse.newsletters.length, 1);
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}`)
+                .type('form')
+                .send({'List-Unsubscribe': 'One-Click'})
+                .expect(201);
+
+            getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            getJsonResponse = getRes.body;
+
+            assert.equal(getJsonResponse.newsletters.length, 0, 'Sending a POST request to the unsubscribe endpoint should unsubscribe the member');
+        });
+
+        it('unsubscribe post works with multipart/form-data', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+            const member = await createMember({
+                email: 'unsubscribe-member-test-5@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            // Can fetch newsletter subscriptions
+            let getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            let getJsonResponse = getRes.body;
+            assert.equal(getJsonResponse.newsletters.length, 1);
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}`)
+                .field('List-Unsubscribe', 'One-Click')
+                .expect(201);
+
+            getRes = await request
+                .get(`/members/api/member/newsletters?uuid=${memberUUID}&key=${memberHmac}`)
+                .expect(200);
+            getJsonResponse = getRes.body;
+
+            assert.equal(getJsonResponse.newsletters.length, 0, 'Sending a POST request to the unsubscribe endpoint should unsubscribe the member');
         });
     });
 
@@ -388,6 +614,104 @@ describe('Front-end members behavior', function () {
             });
         });
 
+        describe('log out', function () {
+            let member;
+
+            beforeEach(async function () {
+                member = await loginAsMember('member1@test.com');
+            });
+
+            it('an invalid token causes a set-cookie logout when requesting the identity', async function () {
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                // Cycle the transient id manually
+                await cycleTransientId({id: member.id});
+
+                await member.refresh();
+                const transientId = member.get('transient_id');
+
+                await request.get('/members/api/session')
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
+            });
+
+            it('by default only destroys current session', async function () {
+                const transientId = member.get('transient_id');
+
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                await request.del('/members/api/session')
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
+            });
+
+            it('can destroy all sessions', async function () {
+                const transientId = member.get('transient_id');
+
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                await request.del('/members/api/session')
+                    .send({
+                        all: true
+                    })
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has changed
+                await member.refresh();
+                assert.notEqual(member.get('transient_id'), transientId);
+            });
+
+            it('can destroy only current session', async function () {
+                const transientId = member.get('transient_id');
+
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                await request.del('/members/api/session')
+                    .send({
+                        all: false
+                    })
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
+            });
+        });
+
         describe('as free member', function () {
             before(async function () {
                 await loginAsMember('member1@test.com');
@@ -451,6 +775,8 @@ describe('Front-end members behavior', function () {
                     .expect(200)
                     .expect(assertContentIsPresent);
 
+                await DomainEvents.allSettled();
+
                 assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
                 member = await models.Member.findOne({email});
                 assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after having visited a page while logged-in.');
@@ -480,6 +806,45 @@ describe('Front-end members behavior', function () {
                         should.exist(redirectUrl.searchParams.get('success'));
                         redirectUrl.searchParams.get('success').should.eql('true');
                     });
+            });
+
+            it('can fetch member data', async function () {
+                const res = await request.get('/members/api/member')
+                    .expect(200);
+
+                const memberData = res.body;
+                should.exist(memberData);
+
+                // @NOTE: this should be a snapshot test not code
+                memberData.should.have.properties([
+                    'uuid',
+                    'email',
+                    'name',
+                    'firstname',
+                    'expertise',
+                    'avatar_image',
+                    'subscribed',
+                    'subscriptions',
+                    'paid',
+                    'created_at',
+                    'enable_comment_notifications',
+                    'newsletters',
+                    'email_suppression',
+                    'unsubscribe_url'
+                ]);
+                Object.keys(memberData).should.have.length(14);
+                memberData.should.not.have.property('id');
+                memberData.newsletters.should.have.length(1);
+
+                // @NOTE: this should be a snapshot test not code
+                Object.keys(memberData.newsletters[0]).should.have.length(5);
+                memberData.newsletters[0].should.have.properties([
+                    'id',
+                    'uuid',
+                    'name',
+                    'description',
+                    'sort_order'
+                ]);
             });
 
             it('can read public post content', async function () {
@@ -532,6 +897,8 @@ describe('Front-end members behavior', function () {
                     .get('/free-to-see/')
                     .expect(200)
                     .expect(assertContentIsPresent);
+
+                await DomainEvents.allSettled();
 
                 assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
                 member = await models.Member.findOne({email});

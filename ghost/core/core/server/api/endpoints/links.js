@@ -1,9 +1,13 @@
 const linkTrackingService = require('../../services/link-tracking');
 const INVALIDATE_ALL_REDIRECTS = '/r/*';
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'links',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'filter'
         ],
@@ -56,3 +60,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

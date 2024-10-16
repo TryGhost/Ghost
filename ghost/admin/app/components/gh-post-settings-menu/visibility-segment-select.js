@@ -75,23 +75,36 @@ export default class VisibilitySegmentSelect extends Component {
         this.tiers = tiers;
 
         if (tiers.length > 0) {
-            const tiersGroup = {
-                groupName: 'Tiers',
+            const activeTiersGroup = {
+                groupName: 'Active tiers',
+                options: []
+            };
+
+            const archivedTiersGroup = {
+                groupName: 'Archived tiers',
                 options: []
             };
 
             tiers.forEach((tier) => {
-                tiersGroup.options.push({
+                const tierData = {
                     name: tier.name,
                     id: tier.id,
                     count: tier.count?.members,
                     class: 'segment-tier'
-                });
+                };
+
+                if (tier.active) {
+                    activeTiersGroup.options.push(tierData);
+                } else {
+                    archivedTiersGroup.options.push(tierData);
+                }
             });
 
-            options.push(tiersGroup);
+            options.push(activeTiersGroup);
+            options.push(archivedTiersGroup);
+
             if (this.args.selectDefaultTier && !this.args.tiers) {
-                this.setSegment([tiersGroup.options[0]]);
+                this.setSegment([activeTiersGroup.options[0]]);
             }
         }
 

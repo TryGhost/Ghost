@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -20,11 +20,13 @@
   "devDependencies": {
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "14.0.2"
+    "sinon": "15.2.0"
   },
   "dependencies": {
+    "@tryghost/email-addresses": "0.0.0",
+    "handlebars": "4.7.8",
+    "juice": "9.1.0",
     "lodash": "4.17.21",
-    "moment": "2.29.1",
-    "handlebars": "4.7.7"
+    "moment": "2.29.1"
   }
 }

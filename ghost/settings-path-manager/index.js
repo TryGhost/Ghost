@@ -1,1 +1,1 @@
-module.exports = require('./lib/settings-path-manager');
+module.exports = require('./lib/SettingsPathManager');

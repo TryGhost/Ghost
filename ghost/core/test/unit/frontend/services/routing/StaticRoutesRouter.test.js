@@ -10,8 +10,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     let next;
     let routerCreatedSpy;
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     beforeEach(function () {
@@ -90,7 +90,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             should.not.exist(res.locals.slug);
         });
 
-        it('fn: _prepareStaticRouteContext', function () {
+        it('fn: _prepareStaticRouteContext (mainRoute=root)', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []}, routerCreatedSpy);
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);

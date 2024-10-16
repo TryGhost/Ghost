@@ -166,7 +166,7 @@ describe('Themes middleware', function () {
 
                         // signup_url should get added
                         signup_url: '#/portal',
-                        
+
                         // the comments_enabled setting should be mapped to comments_access, and comments_enabled should be a boolean
                         comments_enabled: true,
                         comments_access: 'all'
@@ -185,7 +185,7 @@ describe('Themes middleware', function () {
             settingsCache.get
                 .withArgs('members_signup_access').returns('none');
 
-            executeMiddleware(middleware, req, res, function next(err) {
+            executeMiddleware(middleware, req, res, function next() {
                 try {
                     const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
                     const data = templateOptions.data;

@@ -1,11 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
 const exporter = require('../../../../../core/server/data/exporter');
 const schema = require('../../../../../core/server/data/schema');
 const models = require('../../../../../core/server/models');
+const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema.tables);
 
 describe('Exporter', function () {
@@ -157,7 +157,7 @@ describe('Exporter', function () {
     describe('exportFileName', function () {
         it('should return a correctly structured filename', function (done) {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
-                new Promise.resolve({
+                Promise.resolve({
                     get: function () {
                         return 'testblog';
                     }
@@ -175,7 +175,7 @@ describe('Exporter', function () {
 
         it('should return a correctly structured filename if settings is empty', function (done) {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
-                new Promise.resolve()
+                Promise.resolve()
             );
 
             exporter.fileName().then(function (result) {
@@ -189,12 +189,14 @@ describe('Exporter', function () {
 
         it('should return a correctly structured filename if settings errors', function (done) {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
-                new Promise.reject()
+                Promise.reject()
             );
+            const loggingStub = sinon.stub(logging, 'error');
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
+                loggingStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
@@ -212,7 +214,7 @@ describe('Exporter', function () {
             const nonSchemaTables = ['migrations', 'migrations_lock'];
             const requiredTables = schemaTables.concat(nonSchemaTables);
             // NOTE: You should not add tables to this list unless they are temporary
-            const ignoredTables = ['temp_member_analytic_events'];
+            const ignoredTables = ['temp_member_analytic_events', 'temp_mail_events'];
 
             const expectedTables = requiredTables.filter(table => !ignoredTables.includes(table)).sort();
             const actualTables = BACKUP_TABLES.concat(TABLES_ALLOWLIST).sort();
@@ -228,13 +230,13 @@ describe('Exporter', function () {
             } = require('../../../../../core/server/data/exporter/table-lists.js');
             const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
-            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr, index) => {
+            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr) => {
                 return acc + Object.keys(defaultSettings[curr]).length;
             }, 0);
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 72;
+            const allowedKeysLength = 86;
             totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });

@@ -25,11 +25,11 @@ const forPost = (attrs, options) => {
             }
 
             if (relation === 'author' && attrs.author) {
-                attrs.author = forUser(attrs.author, options);
+                attrs.author = forUser(attrs.author);
             }
 
             if (relation === 'authors' && attrs.authors) {
-                attrs.authors = attrs.authors.map(author => forUser(author, options));
+                attrs.authors = attrs.authors.map(author => forUser(author));
             }
         });
     }
@@ -58,7 +58,7 @@ const forTag = (attrs) => {
 };
 
 const forSetting = (attrs) => {
-    if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
+    if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image', 'pintura_js_url', 'pintura_css_url'].includes(attrs.key)) {
         attrs.value = urlUtils.relativeToAbsolute(attrs.value);
     }
 

@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:roles');
 const canThis = require('../../../../../services/permissions').canThis;
 
@@ -13,17 +12,23 @@ module.exports = {
                 roles: roles
             };
         } else {
-            return Promise.filter(roles.map((role) => {
-                return canThis(frame.options.context).assign.role(role)
-                    .return(role)
-                    .catch(() => {});
-            }), (value) => {
-                return value && (value.name !== 'Owner');
-            }).then((filteredRoles) => {
-                return frame.response = {
-                    roles: filteredRoles
-                };
-            });
+            return Promise.all(
+                roles.map(async (role) => {
+                    let permissionResult;
+                    try {
+                        await canThis(frame.options.context).assign.role(role);
+                        permissionResult = role;
+                    } catch (err) {
+                        permissionResult = {};
+                    }
+                    return permissionResult && permissionResult.name && (permissionResult.name !== 'Owner');   
+                }))
+                .then(results => roles.filter((_v, index) => results[index]))   
+                .then((filteredRoles) => {
+                    return frame.response = {
+                        roles: filteredRoles
+                    };
+                });
         }
     }
 };

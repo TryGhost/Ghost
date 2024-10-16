@@ -1,6 +1,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
 import EmberObject, {action, defineProperty} from '@ember/object';
+import LogoutMemberModal from '../components/members/modals/logout-member';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
 import {inject as service} from '@ember/service';
@@ -14,10 +15,15 @@ export default class MemberController extends Controller {
     @service session;
     @service dropdown;
     @service membersStats;
+    @service membersCountCache;
     @service modals;
     @service notifications;
     @service router;
     @service store;
+
+    queryParams = [
+        {postAnalytics: 'post'}
+    ];
 
     @tracked isLoading = false;
     @tracked showImpersonateMemberModal = false;
@@ -27,8 +33,15 @@ export default class MemberController extends Controller {
     _previousLabels = null;
     _previousNewsletters = null;
 
-    directlyFromAnalytics = false;
-    fromAnalytics = null;
+    @tracked directlyFromAnalytics = false;
+    @tracked postAnalytics = null;
+
+    get fromAnalytics() {
+        if (!this.postAnalytics) {
+            return null;
+        }
+        return [this.postAnalytics];
+    }
 
     constructor() {
         super(...arguments);
@@ -127,7 +140,18 @@ export default class MemberController extends Controller {
             afterDelete: () => {
                 this.membersStats.invalidate();
                 this.members.refreshData();
+                this.membersCountCache.clear();
                 this.transitionToRoute('members');
+            }
+        });
+    }
+
+    @action
+    confirmLogoutMember() {
+        this.modals.open(LogoutMemberModal, {
+            member: this.member,
+            afterLogout: () => {
+                this.members.refreshData();
             }
         });
     }
@@ -159,11 +183,17 @@ export default class MemberController extends Controller {
         Object.assign(member, scratchProps);
 
         try {
+            const clearCountCache = member.isNew; // clear cache for adding new members so the count is updated without waiting for a refresh
+
             yield member.save();
             member.updateLabels();
             this.members.refreshData();
 
             this.setInitialRelationshipValues();
+
+            if (clearCountCache) {
+                this.membersCountCache.clear();
+            }
 
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
@@ -182,6 +212,7 @@ export default class MemberController extends Controller {
                         member.hasValidated.pushObject(payloadError.property);
                     }
                 }
+                return;
             }
 
             throw error;

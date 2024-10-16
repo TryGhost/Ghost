@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const security = require('@tryghost/security');
 const request = require('@tryghost/request');
-const errors = require('@tryghost/errors/lib/errors');
+const errors = require('@tryghost/errors');
 const limitService = require('../../services/limits');
 const {setFromZip} = require('./storage');
 
@@ -41,7 +41,7 @@ const installFromGithub = async (ref) => {
             headers: {
                 accept: 'application/vnd.github.v3+json'
             },
-            encoding: null
+            responseType: 'buffer'
         });
 
         await fs.writeFile(downloadPath, response.body);

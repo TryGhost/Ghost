@@ -1,13 +1,7 @@
 import Modifier from 'ember-modifier';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {createRoot} from 'react-dom/client';
 import {registerDestructor} from '@ember/destroyable';
-
-// make globals available for any pulled in UMD components
-// - avoids external components needing to bundle React and running into multiple version errors
-window.React = React;
-window.ReactDOM = ReactDOM;
 
 export default class ReactRenderModifier extends Modifier {
     constructor(owner, args) {
@@ -16,15 +10,11 @@ export default class ReactRenderModifier extends Modifier {
     }
 
     modify(element, [reactComponent], {props}) {
-        if (!this.didSetup) {
-            if (!this.root) {
-                this.root = createRoot(element);
-            }
-
-            this.root.render(React.createElement(reactComponent, {...props}));
-
-            this.didSetup = true;
+        if (!this.root) {
+            this.root = createRoot(element);
         }
+
+        this.root.render(React.createElement(reactComponent, {...props}));
     }
 
     cleanup = () => {

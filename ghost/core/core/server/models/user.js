@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
@@ -68,7 +67,11 @@ User = ghostBookshelf.Model.extend({
             comment_notifications: true,
             free_member_signup_notification: true,
             paid_subscription_started_notification: true,
-            paid_subscription_canceled_notification: false
+            paid_subscription_canceled_notification: false,
+            mention_notifications: true,
+            recommendation_notifications: true,
+            milestone_notifications: true,
+            donation_notifications: true
         };
     },
 
@@ -202,7 +205,7 @@ User = ghostBookshelf.Model.extend({
 
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
-            tasks.gravatar = (function lookUpGravatar() {
+            tasks.push((function lookUpGravatar() {
                 const {gravatar} = require('../lib/image');
 
                 return gravatar.lookup({
@@ -212,11 +215,11 @@ User = ghostBookshelf.Model.extend({
                         self.set('profile_image', response.image);
                     }
                 });
-            })();
+            })());
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
-            tasks.slug = (function generateSlug() {
+            tasks.push((function generateSlug() {
                 return ghostBookshelf.Model.generateSlug(
                     User,
                     self.get('slug') || self.get('name'),
@@ -228,7 +231,7 @@ User = ghostBookshelf.Model.extend({
                     .then(function then(slug) {
                         self.set({slug: slug});
                     });
-            })();
+            })());
         }
 
         /**
@@ -272,15 +275,15 @@ User = ghostBookshelf.Model.extend({
                 }
             }
 
-            tasks.hashPassword = (function hashPassword() {
+            tasks.push((function hashPassword() {
                 return security.password.hash(self.get('password'))
                     .then(function (hash) {
                         self.set('password', hash);
                     });
-            })();
+            })());
         }
 
-        return Promise.props(tasks);
+        return Promise.all(tasks);
     },
 
     toJSON: function toJSON(unfilteredOptions) {
@@ -504,6 +507,14 @@ User = ghostBookshelf.Model.extend({
             filter += '+paid_subscription_started_notification:true';
         } else if (type === 'paid-canceled') {
             filter += '+paid_subscription_canceled_notification:true';
+        } else if (type === 'mention-received') {
+            filter += '+mention_notifications:true';
+        } else if (type === 'milestone-received') {
+            filter += '+milestone_notifications:true';
+        } else if (type === 'donation') {
+            filter += '+donation_notifications:true';
+        } else if (type === 'recommendation-received') {
+            filter += '+recommendation_notifications:true';
         }
         const updatedOptions = _.merge({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {
@@ -670,17 +681,17 @@ User = ghostBookshelf.Model.extend({
 
                 // CASE: it is possible to add roles by name, by id or by object
                 if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
-                    return Promise.map(roles, function (roleName) {
+                    const rolePromises = roles.map((roleName) => {
                         return ghostBookshelf.model('Role').findOne({
                             name: roleName
                         }, options);
-                    }).then(function (roleModels) {
-                        roles = [];
-
-                        _.each(roleModels, function (roleModel) {
-                            roles.push(roleModel.id);
-                        });
                     });
+                    return Promise.all(rolePromises)
+                        .then((roleModels) => {
+                            roles = roleModels.map((roleModel) => {
+                                return roleModel.id;
+                            });
+                        });
                 }
 
                 return Promise.resolve();

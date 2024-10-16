@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('api:endpoints:utils:validators:input:users');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');

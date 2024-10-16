@@ -75,5 +75,9 @@ module.exports = {
 
     get snippets() {
         return require('./snippets');
+    },
+
+    get mail_events() {
+        return require('./mail-events');
     }
 };

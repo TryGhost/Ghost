@@ -7,7 +7,7 @@
                 <div class="gh-nav-menu-details-sitetitle">{{this.config.blogTitle}}</div>
             </div>
             <div class="gh-nav-menu-search">
-                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}}><span>{{svg-jar "search"}}</span></button>
+                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}} data-test-button="search"><span>{{svg-jar "search"}}</span></button>
             </div>
         </header>
     {{/unless}}
@@ -17,8 +17,13 @@
         {{#unless this.session.user.isContributor}}
             <div class="gh-nav-top">
                 <ul class="gh-nav-list gh-nav-main">
+                    {{#if (feature "ActivityPub")}}
+                        <li>
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub</LinkTo>
+                        </li>
+                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
-                    <li class="relative">
+                    <li class="relative gh-nav-list-home">
                         <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
                     </li>
                     {{/if}}
@@ -32,16 +37,23 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
+                    {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
+                    <li class="relative">
+                        <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
+                    </li>
+                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
-                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
+                        <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
+                            {{svg-jar "globe-simple"}} Explore
+                        </a>
                     </li>
                     {{/if}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
                         <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
-                        <LinkTo @route="editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
+                        <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
                         {{#if this.session.user.isAuthorOrContributor}}
                             {{#if this.customViews.forPosts}}
                                 <ul class="gh-nav-view-list">
@@ -98,24 +110,28 @@
                         <li class="relative">
                             {{#if (eq this.router.currentRouteName "members.index")}}
                                 <LinkTo @route="members" @current-when="members member member.new" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
-                                    {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
-                                    {{/unless}}
+                                    {{#let (members-count-fetcher) as |count|}}
+                                        {{#unless count.isLoading}}
+                                            <span class="gh-nav-member-count">{{format-number count.count}}</span>
+                                        {{/unless}}
+                                    {{/let}}
                                 </LinkTo>
                             {{else}}
                                 <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Members
-                                    {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
-                                    {{/unless}}
+                                    {{#let (members-count-fetcher) as |count|}}
+                                        {{#unless count.isLoading}}
+                                            <span class="gh-nav-member-count">{{format-number count.count}}</span>
+                                        {{/unless}}
+                                    {{/let}}
                                 </LinkTo>
                             {{/if}}
                         </li>
 
-                        {{#if this.settings.paidMembersEnabled}}
-                            <li>
-                                <LinkTo @route="offers" @current-when="offers offer offer.new" @alt="Offers" data-test-nav="offers">{{svg-jar "percentage"}}Offers</LinkTo>
-                            </li>
-                        {{/if}}
+                    {{/if}}
+                    {{#if (feature "adminXDemo")}}
+                        <li>
+                            <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>
+                        </li>
                     {{/if}}
                 </ul>
 
@@ -145,11 +161,6 @@
                             </li>
                         {{/each}}
                     </ul>
-                {{/if}}
-
-                {{#if this.showScriptExtension}}
-                    {{{this.config.clientExtensions.script.container}}}
-                    <script src="{{this.config.clientExtensions.script.src}}"></script>
                 {{/if}}
             </div>
         {{/unless}}

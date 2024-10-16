@@ -1,9 +1,11 @@
+import * as Sentry from '@sentry/ember';
 import AjaxService from 'ember-ajax/services/ajax';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import moment from 'moment-timezone';
+import semverCoerce from 'semver/functions/coerce';
+import semverLt from 'semver/functions/lt';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
-import {captureMessage} from '@sentry/ember';
 import {get} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
@@ -41,7 +43,7 @@ export function isVersionMismatchError(errorOrStatus, payload) {
 
 export class DataImportError extends AjaxError {
     constructor(payload) {
-        super(payload, 'he server encountered an error whilst importing data.');
+        super(payload, 'The server encountered an error whilst importing data.');
     }
 }
 
@@ -99,6 +101,17 @@ export function isUnsupportedMediaTypeError(errorOrStatus) {
     } else {
         return errorOrStatus === 415;
     }
+}
+
+/**
+ * Returns the code (from the payload) from an error object.
+ * @returns {string|null} error code
+ */
+export function getErrorCode(errorOrStatus) {
+    if (isAjaxError(errorOrStatus) && errorOrStatus.payload && errorOrStatus.payload.errors && Array.isArray(errorOrStatus.payload.errors) && errorOrStatus.payload.errors.length > 0) {
+        return errorOrStatus.payload.errors[0].code || null;
+    }
+    return null;
 }
 
 /* Maintenance error */
@@ -183,6 +196,7 @@ export function isAcceptedResponse(errorOrStatus) {
 @classic
 class ajaxService extends AjaxService {
     @service session;
+    @service upgradeStatus;
 
     @inject config;
 
@@ -257,7 +271,7 @@ class ajaxService extends AjaxService {
                 success = true;
 
                 if (attempts !== 0 && this.config.sentry_dsn) {
-                    captureMessage('Request took multiple attempts', {extra: getErrorData()});
+                    Sentry.captureMessage('Request took multiple attempts', {extra: getErrorData()});
                 }
 
                 return result;
@@ -275,7 +289,7 @@ class ajaxService extends AjaxService {
                     await timeout(retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
                     attempts += 1;
                 } else if (attempts > 0 && this.config.sentry_dsn) {
-                    captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                    Sentry.captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
                     throw error;
                 } else {
                     throw error;
@@ -285,6 +299,25 @@ class ajaxService extends AjaxService {
     }
 
     handleResponse(status, headers, payload, request) {
+        // set some context variables for Sentry in case there is an error
+        Sentry.setContext('ajax', {
+            url: request.url,
+            method: request.method,
+            status
+        });
+        Sentry.setTag('ajax_status', status);
+        Sentry.setTag('ajax_url', request.url.slice(0, 200)); // the max length of a tag value is 200 characters
+        Sentry.setTag('ajax_method', request.method);
+
+        if (headers['content-version']) {
+            const contentVersion = semverCoerce(headers['content-version']);
+            const appVersion = semverCoerce(config.APP.version);
+
+            if (semverLt(appVersion, contentVersion)) {
+                this.upgradeStatus.refreshRequired = true;
+            }
+        }
+
         if (this.isVersionMismatchError(status, headers, payload)) {
             return new VersionMismatchError(payload);
         } else if (this.isServerUnreachableError(status, headers, payload)) {

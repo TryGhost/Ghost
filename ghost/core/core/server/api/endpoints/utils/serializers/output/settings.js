@@ -2,6 +2,8 @@ const _ = require('lodash');
 const utils = require('../../index');
 const mappers = require('./mappers');
 
+/** @typedef {import('@tryghost/api-framework').Frame} Frame */
+
 /**
  * Filters an object based on a given filter object
  * @private
@@ -25,7 +27,7 @@ function settingsFilter(settings, filter) {
  *
  * @param {Object} models
  * @param {Object} apiConfig
- * @param {Object} frame
+ * @param {Frame} frame
  */
 function serializeSettings(models, apiConfig, frame) {
     let filteredSettings;
@@ -33,7 +35,7 @@ function serializeSettings(models, apiConfig, frame) {
     // If this is public, we already have the right data, we just need to add an Array wrapper
     if (utils.isContentAPI(frame)) {
         filteredSettings = models;
-        
+
         // Change the returned icon location to use a resized version, to prevent serving giant icon files
         const icon = filteredSettings.icon;
         if (icon) {
@@ -79,7 +81,7 @@ function passthrough(data) {
  * @template Data
  * @param {Data} data
  * @param {Object} apiConfig
- * @param {Object} frame
+ * @param {Frame} frame
  */
 function serializeData(data, apiConfig, frame) {
     frame.response = data;

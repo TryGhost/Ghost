@@ -68,7 +68,6 @@ describe('Default Frontend routing', function () {
 
                     $('body.home-template').length.should.equal(1);
                     $('article.post').length.should.equal(7);
-                    $('article.tag-getting-started').length.should.equal(7);
 
                     res.text.should.not.containEql('__GHOST_URL__');
                 });
@@ -170,7 +169,7 @@ describe('Default Frontend routing', function () {
             });
 
             after(async function () {
-                configUtils.restore();
+                await configUtils.restore();
 
                 await testUtils.startGhost({forceStart: true});
                 request = supertest.agent(configUtils.config.get('url'));
@@ -272,7 +271,7 @@ describe('Default Frontend routing', function () {
             await request.get('/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -284,7 +283,7 @@ describe('Default Frontend routing', function () {
             await request.get('/author/ghost/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -296,7 +295,7 @@ describe('Default Frontend routing', function () {
             await request.get('/tag/getting-started/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -320,14 +319,13 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
 
-            // The response here is a publicly documented format users rely on
-            // In case it's changed remember to update the docs at https://ghost.org/help/modifying-robots-txt/
             res.text.should.equal(
                 'User-agent: *\n' +
                 'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
-                'Disallow: /p/\n' +
                 'Disallow: /email/\n' +
-                'Disallow: /r/\n'
+                'Disallow: /members/api/comments/counts/\n' +
+                'Disallow: /r/\n' +
+                'Disallow: /webmentions/receive/\n'
             );
         });
 
@@ -463,7 +461,7 @@ describe('Default Frontend routing', function () {
             await request.get(`/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
@@ -474,7 +472,7 @@ describe('Default Frontend routing', function () {
             await request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);

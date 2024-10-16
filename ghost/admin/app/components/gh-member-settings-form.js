@@ -1,9 +1,8 @@
 import Component from '@glimmer/component';
-import moment from 'moment-timezone';
 import {action} from '@ember/object';
-import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
+import {didCancel, task} from 'ember-concurrency';
+import {getSubscriptionData} from 'ghost-admin/utils/subscription-data';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class extends Component {
@@ -60,38 +59,9 @@ export default class extends Component {
                 return typeof value.id !== 'undefined' && self.findIndex(element => (element.tier_id || element.id) === (value.tier_id || value.id)) === index;
             });
 
-        let subscriptionData = subscriptions.filter((sub) => {
-            return !!sub.price;
-        }).map((sub) => {
-            const data = {
-                ...sub,
-                attribution: {
-                    ...sub.attribution,
-                    referrerSource: sub.attribution?.referrer_source || 'Unknown',
-                    referrerMedium: sub.attribution?.referrer_medium || '-'
-                },
-                startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
-                validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
-                cancellationReason: sub.cancellation_reason,
-                price: {
-                    ...sub.price,
-                    currencySymbol: getSymbol(sub.price.currency),
-                    nonDecimalAmount: getNonDecimal(sub.price.amount)
-                },
-                isComplimentary: !sub.id
-            };
-            if (sub.trial_end_at) {
-                const inTrialMode = moment(sub.trial_end_at).isAfter(new Date(), 'day');
-                if (inTrialMode) {
-                    data.trialUntil = moment(sub.trial_end_at).format('D MMM YYYY');
-                }
-            }
+        let subsWithPrice = subscriptions.filter(sub => !!sub.price);
+        let subscriptionData = subsWithPrice.map(sub => getSubscriptionData(sub));
 
-            if (!sub.id && sub.tier?.expiry_at) {
-                data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
-            }
-            return data;
-        });
         return tiers.map((tier) => {
             let tierSubscriptions = subscriptionData.filter((subscription) => {
                 return subscription?.price?.tier?.tier_id === (tier.tier_id || tier.id);
@@ -116,18 +86,9 @@ export default class extends Component {
         return null;
     }
 
-    get canShowSingleNewsletter() {
-        return (
-            this.newslettersList?.length === 1
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
-            && !this.feature.get('suppressionList')
-        );
-    }
-
     get canShowMultipleNewsletters() {
         return (
-            (this.newslettersList?.length > 1 || this.feature.get('suppressionList'))
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+            this.settings.editorDefaultEmailRecipients !== 'disabled'
         );
     }
 
@@ -143,8 +104,17 @@ export default class extends Component {
 
     @action
     setup() {
-        this.fetchTiers.perform();
-        this.fetchNewsletters.perform();
+        try {
+            this.fetchTiers.perform();
+            this.fetchNewsletters.perform();
+        } catch (e) {
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
+            }
+
+            throw e;
+        }
     }
 
     @action

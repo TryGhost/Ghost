@@ -1,21 +1,25 @@
-const assert = require('assert');
+const assert = require('assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
-const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag, anyUuid, anyContentLength} = matchers;
+const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
+const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 69;
+const CURRENT_SETTINGS_COUNT = 87;
 
 const settingsMatcher = {};
 
 const publicHashSettingMatcher = {
+    key: 'public_hash',
     value: stringMatching(/[a-z0-9]{30}/)
 };
 
 const labsSettingMatcher = {
+    key: 'labs',
     value: stringMatching(/\{[^\s]+\}/)
 };
 
@@ -28,32 +32,32 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 58) {
+    if (length > 61) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[58] = labsSettingMatcher;
+        settingsArray[61] = labsSettingMatcher;
     }
 
     return settingsArray;
 };
 
 describe('Settings API', function () {
-    let agent, membersService;
+    let agent;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
-
-        membersService = require('../../../core/server/services/members');
     });
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     describe('Browse', function () {
@@ -67,7 +71,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 });
         });
 
@@ -79,6 +84,7 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(1)
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -89,6 +95,7 @@ describe('Settings API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -99,11 +106,19 @@ describe('Settings API', function () {
             const settingsToChange = [
                 {
                     key: 'title',
-                    value: []
+                    value: ''
                 },
                 {
                     key: 'codeinjection_head',
                     value: null
+                },
+                {
+                    key: 'announcement_content',
+                    value: '<p>Great news coming soon!</p>'
+                },
+                {
+                    key: 'announcement_visibility',
+                    value: JSON.stringify(['visitors', 'free_members'])
                 },
                 {
                     key: 'navigation',
@@ -178,6 +193,7 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
@@ -203,7 +219,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 });
 
             // Check returned WITH prefix
@@ -230,16 +247,17 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
-                    assert.strictEqual(emailVerificationRequired.value, false);
+                    assert.equal(emailVerificationRequired.value, false);
                 });
             mockManager.assert.sentEmailCount(0);
         });
 
-        it('editing members_support_address triggers email verification flow', async function () {
+        it('[LEGACY] editing members_support_address triggers email verification flow', async function () {
             await agent.put('settings/')
                 .body({
                     settings: [{key: 'members_support_address', value: 'support@example.com'}]
@@ -251,11 +269,12 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.strictEqual(membersSupportAddress.value, 'noreply');
+                    assert.equal(membersSupportAddress.value, 'noreply');
 
                     assert.deepEqual(body.meta, {
                         sent_email_verification: ['members_support_address']
@@ -286,16 +305,75 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.strictEqual(membersSupportAddress.value, 'support@example.com');
+                    assert.equal(membersSupportAddress.value, 'support@example.com');
 
                     assert.deepEqual(body.meta, {});
                 });
 
             mockManager.assert.sentEmailCount(0);
+        });
+
+        it('fails to edit setting with unsupported announcement_visibility value', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
+            const settingsToChange = [
+                {
+                    key: 'announcement_visibility',
+                    value: JSON.stringify(['invalid value'])
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            sinon.assert.calledOnce(loggingStub);
+        });
+
+        it('fails to edit setting with unsupported announcement_background value', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
+            const settingsToChange = [
+                {
+                    key: 'announcement_background',
+                    value: 'not a background value'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 
@@ -318,17 +396,19 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.strictEqual(membersSupportAddress.value, 'support@example.com');
+                    assert.equal(membersSupportAddress.value, 'support@example.com');
                 });
 
             mockManager.assert.sentEmailCount(0);
         });
 
         it('cannot update invalid keys via token', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             const token = await (new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,
@@ -348,8 +428,11 @@ describe('Settings API', function () {
                     ]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 
@@ -360,6 +443,7 @@ describe('Settings API', function () {
                 .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
@@ -411,8 +495,202 @@ describe('Settings API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+    });
+
+    describe('Managed email without custom sending domain', function () {
+        this.beforeEach(function () {
+            configUtils.set('hostSettings:managedEmail:enabled', true);
+            configUtils.set('hostSettings:managedEmail:sendingDomain', null);
+            configUtils.set('mail:from', 'default@email.com');
+        });
+
+        it('editing members_support_address triggers email verification flow', async function () {
+            const currentSetting = settingsCache.get('members_support_address');
+            assert(currentSetting !== 'othersupport@example.com', 'This test requires a changed email address');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'othersupport@example.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                })
+                .expect(({body}) => {
+                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
+                    assert.equal(membersSupportAddress.value, currentSetting);
+
+                    assert.deepEqual(body.meta, {
+                        sent_email_verification: ['members_support_address']
+                    });
+                });
+
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Verify email address',
+                to: 'othersupport@example.com'
+            });
+        });
+
+        it('editing members_support_address equaling default does not trigger verification flow', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'default@email.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                });
+
+            mockManager.assert.sentEmailCount(0);
+        });
+    });
+
+    describe('Managed email with custom sending domain', function () {
+        this.beforeEach(function () {
+            configUtils.set('hostSettings:managedEmail:enabled', true);
+            configUtils.set('hostSettings:managedEmail:sendingDomain', 'sendingdomain.com');
+            configUtils.set('mail:from', 'default@email.com');
+        });
+
+        it('editing members_support_address without matching domain triggers email verification flow', async function () {
+            const currentSetting = settingsCache.get('members_support_address');
+            assert(currentSetting !== 'othersupport@example.com', 'This test requires a changed email address');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'othersupport@example.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                })
+                .expect(({body}) => {
+                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
+                    assert.equal(membersSupportAddress.value, currentSetting);
+
+                    assert.deepEqual(body.meta, {
+                        sent_email_verification: ['members_support_address']
+                    });
+                });
+
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Verify email address',
+                to: 'othersupport@example.com'
+            });
+        });
+
+        it('editing members_support_address with matching domain does not trigger email verification flow', async function () {
+            const currentSetting = settingsCache.get('members_support_address');
+            assert(currentSetting !== 'support@sendingdomain.com', 'This test requires a changed email address');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'support@sendingdomain.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                });
+
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('editing members_support_address equaling default does not trigger verification flow', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'default@email.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                });
+
+            mockManager.assert.sentEmailCount(0);
+        });
+    });
+
+    describe('Self hoster without managed email', function () {
+        this.beforeEach(function () {
+            configUtils.set('hostSettings:managedEmail:enabled', false);
+            configUtils.set('hostSettings:managedEmail:sendingDomain', '');
+            mockLabsEnabled('newEmailAddresses');
+        });
+
+        it('editing members_support_address does not trigger email verification flow', async function () {
+            const currentSetting = settingsCache.get('members_support_address');
+            assert(currentSetting !== 'support@customdomain.com', 'This test requires a changed email address');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'support@customdomain.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                });
+
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('editing members_support_address equaling default does not trigger verification flow', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'default@email.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
+                });
+
+            mockManager.assert.sentEmailCount(0);
         });
     });
 });

@@ -15,6 +15,15 @@
             "newPath": "/content/images/photos/cat.jpg"
         }
     ],
+    "files": [
+        {
+            "name": "best-memes.pdf",
+            "path": "/tmp/test/path/images/best-memes.pdf",
+            "originalPath": "files/best-memes.pdf",
+            "targetDir": "/test/content/files",
+            "newPath": "/content/files/best-memes.pdf"
+        }
+    ],
     "data": {
         "meta": {
             "exported_on": 1388318311015,

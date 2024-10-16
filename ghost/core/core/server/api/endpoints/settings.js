@@ -21,10 +21,14 @@ async function getStripeConnectData(frame) {
     }
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'settings',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: ['group'],
         permissions: true,
         query(frame) {
@@ -33,6 +37,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: ['key'],
         validation: {
             options: {
@@ -63,7 +70,7 @@ module.exports = {
         ],
         async query(frame) {
             await settingsBREADService.verifyKeyUpdate(frame.data.token);
-            
+
             // We need to return all settings here, because we have calculated settings that might change
             const browse = await settingsBREADService.browse(frame.options.context);
 
@@ -73,6 +80,9 @@ module.exports = {
 
     disconnectStripeConnectIntegration: {
         statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'edit'
         },
@@ -113,7 +123,7 @@ module.exports = {
 
     edit: {
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         permissions: {
             unsafeAttrsObject(frame) {
@@ -125,10 +135,8 @@ module.exports = {
 
             let result = await settingsBREADService.edit(frame.data.settings, frame.options, stripeConnectData);
 
-            if (_.isEmpty(result)) {
-                this.headers.cacheInvalidate = false;
-            } else {
-                this.headers.cacheInvalidate = true;
+            if (!_.isEmpty(result)) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
             }
 
             // We need to return all settings here, because we have calculated settings that might change
@@ -158,7 +166,8 @@ module.exports = {
             disposition: {
                 type: 'yaml',
                 value: 'routes.yaml'
-            }
+            },
+            cacheInvalidate: false
         },
         response: {
             format: 'plain'
@@ -171,3 +180,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

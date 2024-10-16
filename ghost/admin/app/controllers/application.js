@@ -9,11 +9,22 @@ export default class ApplicationController extends Controller {
     @service session;
     @service settings;
     @service ui;
+    @service upgradeStatus;
 
     @inject config;
 
     get showBilling() {
         return this.config.hostSettings?.billing?.enabled;
+    }
+
+    get showScriptExtension() {
+        const {session} = this;
+
+        if (!session.isAuthenticated || !session.user) {
+            return false;
+        }
+
+        return this.config.clientExtensions?.script;
     }
 
     get showNavMenu() {

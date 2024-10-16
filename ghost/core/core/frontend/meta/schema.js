@@ -107,10 +107,7 @@ function getPostSchema(metaData, data) {
         keywords: metaData.keywords && metaData.keywords.length > 0 ?
             metaData.keywords.join(', ') : null,
         description: description,
-        mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': metaData.site.url || null
-        }
+        mainEntityOfPage: metaData.url
     };
     schema.author = trimSchema(schema.author);
     return trimSchema(schema);
@@ -123,10 +120,7 @@ function getHomeSchema(metaData) {
         publisher: schemaPublisherObject(metaData),
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
-        mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': metaData.site.url || null
-        },
+        mainEntityOfPage: metaData.url,
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
             null
@@ -142,10 +136,7 @@ function getTagSchema(metaData, data) {
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
         name: data.tag.name,
-        mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': metaData.site.url || null
-        },
+        mainEntityOfPage: metaData.url,
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
             null
@@ -161,11 +152,8 @@ function getAuthorSchema(metaData, data) {
         sameAs: trimSameAs(data, 'author'),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
-        image: schemaImageObject(metaData.coverImage),
-        mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': metaData.site.url || null
-        },
+        image: schemaImageObject(metaData.authorImage) || schemaImageObject(metaData.coverImage),
+        mainEntityOfPage: metaData.authorUrl,
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
             null

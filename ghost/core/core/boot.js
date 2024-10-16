@@ -64,7 +64,7 @@ function notifyServerReady(error) {
   * @param {object} options.config
   */
 async function initDatabase({config}) {
-    const DatabaseStateManager = require('./server/data/db/state-manager');
+    const DatabaseStateManager = require('./server/data/db/DatabaseStateManager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
 
@@ -102,6 +102,11 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
     debug('End: settings');
 
+    debug('Begin: i18n');
+    const i18n = require('./server/services/i18n');
+    await i18n.init();
+    debug('End: i18n');
+
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
@@ -131,6 +136,19 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
             await jobService.shutdown();
         });
         debug('End: Job Service');
+
+        // Mentions Job Service allows mentions to be processed in the background
+        debug('Begin: Mentions Job Service');
+        const mentionsJobService = require('./server/services/mentions-jobs');
+
+        if (config.get('server:testmode')) {
+            mentionsJobService.initTestMode();
+        }
+
+        ghostServer.registerCleanupTask(async () => {
+            await mentionsJobService.shutdown();
+        });
+        debug('End: Mentions Job Service');
 
         ghostServer.registerCleanupTask(async () => {
             await urlService.shutdown();
@@ -165,7 +183,7 @@ async function initServicesForFrontend({bootLogger}) {
     debug('End: Link Redirects');
 
     debug('Begin: Themes');
-    // customThemSettingsService.api must be initialized before any theme activation occurs
+    // customThemeSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
     customThemeSettingsService.init();
 
@@ -236,6 +254,42 @@ async function initExpressApps({frontend, backend, config}) {
 }
 
 /**
+ * Initialize prometheus client
+ */
+function initPrometheusClient({config}) {
+    if (config.get('metrics_server:enabled')) {
+        debug('Begin: initPrometheusClient');
+        const prometheusClient = require('./shared/prometheus-client');
+        debug('End: initPrometheusClient');
+        return prometheusClient;
+    }
+    return null;
+}
+
+/**
+ * Starts the standalone metrics server and registers a cleanup task to stop it when the ghost server shuts down
+ * @param {object} ghostServer 
+ */
+async function initMetricsServer({prometheusClient, ghostServer, config}) {
+    debug('Begin: initMetricsServer');
+    if (ghostServer && config.get('metrics_server:enabled')) {
+        const {MetricsServer} = require('@tryghost/metrics-server');
+        const serverConfig = {
+            host: config.get('metrics_server:host') || '127.0.0.1',
+            port: config.get('metrics_server:port') || 9416
+        };
+        const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
+        const metricsServer = new MetricsServer({serverConfig, handler});
+        await metricsServer.start();
+        // Ensure the metrics server is cleaned up when the ghost server is shut down
+        ghostServer.registerCleanupTask(async () => {
+            await metricsServer.shutdown();
+        });
+    }
+    debug('End: initMetricsServer');
+}
+
+/**
  * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
@@ -261,14 +315,21 @@ async function initDynamicRouting() {
 }
 
 /**
+ * The app service cannot be loaded unless the frontend is enabled
+ * In future, the logic to determine whether this should be loaded should be in the service loader
+ */
+async function initAppService() {
+    debug('Begin: App Service');
+    const appService = require('./frontend/services/apps');
+    await appService.init();
+}
+
+/**
  * Services are components that make up part of Ghost and need initializing on boot
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
- *
- * @param {object} options
- * @param {object} options.config
  */
-async function initServices({config}) {
+async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -278,9 +339,7 @@ async function initServices({config}) {
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
-    const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
-    const appService = require('./frontend/services/apps');
     const limits = require('./server/services/limits');
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
@@ -292,6 +351,20 @@ async function initServices({config}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
+    const emailAnalytics = require('./server/services/email-analytics');
+    const mentionsService = require('./server/services/mentions');
+    const mentionsEmailReport = require('./server/services/mentions-email-report');
+    const tagsPublic = require('./server/services/tags-public');
+    const postsPublic = require('./server/services/posts-public');
+    const slackNotifications = require('./server/services/slack-notifications');
+    const mediaInliner = require('./server/services/media-inliner');
+    const collections = require('./server/services/collections');
+    const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
+    const mailEvents = require('./server/services/mail-events');
+    const donationService = require('./server/services/donations');
+    const recommendationsService = require('./server/services/recommendations');
+    const emailAddressService = require('./server/services/email-address');
+    const statsService = require('./server/services/stats');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -303,36 +376,80 @@ async function initServices({config}) {
     //       so they are initialized before it.
     await stripe.init();
 
+    // NOTE: newsletter service and email service depend on email address service
+    await emailAddressService.init(),
+
     await Promise.all([
         memberAttribution.init(),
+        mentionsService.init(),
+        mentionsEmailReport.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
+        tagsPublic.init(),
+        postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
-        mega.listen(),
+        emailAnalytics.init(),
         webhooks.listen(),
-        appService.init(),
         apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
         comments.init(),
         linkTracking.init(),
-        emailSuppressionList.init()
+        emailSuppressionList.init(),
+        slackNotifications.init(),
+        collections.init(),
+        modelToDomainEventInterceptor.init(),
+        mediaInliner.init(),
+        mailEvents.init(),
+        donationService.init(),
+        recommendationsService.init(),
+        statsService.init()
     ]);
     debug('End: Services');
 
-    // Initialize analytics events
-    if (config.get('segment:key')) {
-        require('./server/analytics-events').init();
-    }
-
     debug('End: initServices');
+}
+
+/**
+ * Set up an dependencies that need to be injected into NestJS
+ */
+async function initNestDependencies() {
+    debug('Begin: initNestDependencies');
+    const GhostNestApp = require('@tryghost/ghost');
+    const providers = [];
+    providers.push({
+        provide: 'logger',
+        useValue: require('@tryghost/logging')
+    }, {
+        provide: 'SessionService',
+        useValue: require('./server/services/auth/session').sessionService
+    }, {
+        provide: 'AdminAuthenticationService',
+        useValue: require('./server/services/auth/api-key').admin
+    }, {
+        provide: 'DomainEvents',
+        useValue: require('@tryghost/domain-events')
+    }, {
+        provide: 'SettingsCache',
+        useValue: require('./shared/settings-cache')
+    }, {
+        provide: 'knex',
+        useValue: require('./server/data/db').knex
+    }, {
+        provide: 'UrlUtils',
+        useValue: require('./shared/url-utils')
+    });
+    for (const provider of providers) {
+        GhostNestApp.addProvider(provider);
+    }
+    debug('End: initNestDependencies');
 }
 
 /**
@@ -363,6 +480,9 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/update-check');
     updateCheck.scheduleRecurringJobs();
+
+    const milestonesService = require('./server/services/milestones');
+    milestonesService.initAndRun();
 
     debug('End: initBackgroundServices');
 }
@@ -425,17 +545,22 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
     try {
         // Step 1 - require more fundamental components
+
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
-        require('./shared/sentry');
+        const sentry = require('./shared/sentry');
         debug('End: Load sentry');
+
+        // Initialize prometheus client early to enable metrics collection during boot
+        // Note: this does not start the metrics server yet to avoid increasing boot time
+        const prometheusClient = initPrometheusClient({config});
 
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/ghost-server');
+            const GhostServer = require('./server/GhostServer');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
@@ -446,6 +571,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
+        const connection = require('./server/data/db/connection');
+        sentry.initQueryTracing(
+            connection
+        );
         debug('End: Get DB ready');
 
         // Step 4 - Load Ghost with all its services
@@ -460,9 +589,24 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         if (frontend) {
             await initDynamicRouting();
+            await initAppService();
+        }
+
+        // TODO: move this to the correct place once we figure out where that is
+        if (ghostServer) {
+            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
+            await lexicalMultiplayer.init(ghostServer);
+            await lexicalMultiplayer.enable();
         }
 
         await initServices({config});
+
+        // Gate the NestJS framework behind an env var to prevent it from being loaded (and slowing down boot)
+        // If we ever ship the new framework, we can remove this
+        // Using an env var because you can't use labs flags here
+        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK) {
+            await initNestDependencies();
+        }
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
@@ -478,6 +622,14 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
+
+        // Step 8 - Init our metrics server, we don't wait for this to finish
+        initMetricsServer({prometheusClient, ghostServer, config});
+
+        // If we pass the env var, kill Ghost
+        if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
+            process.exit(0);
+        }
 
         // We return the server purely for testing purposes
         if (server) {

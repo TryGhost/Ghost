@@ -5,11 +5,17 @@ const {SafeString} = require('../../../../../core/frontend/services/handlebars')
 
 describe('Unit - services/routing/helpers/format-response', function () {
     let posts;
+    let pages;
     let tags;
 
     beforeEach(function () {
         posts = [
             testUtils.DataGenerator.forKnex.createPost({slug: 'sluggy-thing'})
+        ];
+
+        pages = [
+            testUtils.DataGenerator.forKnex.createPost({slug: 'home', page: true}),
+            testUtils.DataGenerator.forKnex.createPost({slug: 'about', page: true, show_title_and_feature_image: false})
         ];
 
         tags = [
@@ -33,6 +39,43 @@ describe('Unit - services/routing/helpers/format-response', function () {
             const formatted = helpers.formatResponse.entry(postObject);
 
             formatted.post.feature_image_caption.should.be.an.instanceof(SafeString);
+        });
+
+        it('should set up @page local for posts', function () {
+            const postObject = posts[0];
+            const locals = {};
+
+            helpers.formatResponse.entry(postObject, ['post'], locals);
+
+            locals.should.be.an.Object().with.properties('_templateOptions');
+            locals._templateOptions.data.should.be.an.Object().with.properties('page');
+            locals._templateOptions.data.page.show_title_and_feature_image.should.be.true();
+        });
+
+        it('should set up @page local for pages', function () {
+            const postObject = pages[0];
+            const locals = {};
+
+            const formatted = helpers.formatResponse.entry(postObject, ['page'], locals);
+
+            formatted.page.should.not.have.property('show_title_and_feature_image');
+
+            locals.should.be.an.Object().with.properties('_templateOptions');
+            locals._templateOptions.data.should.be.an.Object().with.properties('page');
+            locals._templateOptions.data.page.show_title_and_feature_image.should.be.true();
+        });
+
+        it('should assign properties on @page for pages', function () {
+            const postObject = pages[1];
+            const locals = {};
+
+            const formatted = helpers.formatResponse.entry(postObject, ['page'], locals);
+
+            formatted.page.should.not.have.property('show_title_and_feature_image');
+
+            locals.should.be.an.Object().with.properties('_templateOptions');
+            locals._templateOptions.data.should.be.an.Object().with.properties('page');
+            locals._templateOptions.data.page.show_title_and_feature_image.should.be.false();
         });
     });
 
@@ -107,6 +150,23 @@ describe('Unit - services/routing/helpers/format-response', function () {
             formatted.featured_single.feature_image_caption.should.be.an.instanceof(SafeString);
             formatted.featured_multiple[0].feature_image_caption.should.be.an.instanceof(SafeString);
             formatted.featured_multiple[1].feature_image_caption.should.be.an.instanceof(SafeString);
+        });
+
+        it('should set @page when data.page is present (e.g. custom routing)', function () {
+            const data = {
+                posts,
+                data: {
+                    page: [pages[1]]
+                }
+            };
+            const locals = {};
+
+            const formatted = helpers.formatResponse.entries(data, true, locals);
+            formatted.page.should.not.have.property('show_title_and_feature_image');
+
+            locals.should.be.an.Object().with.properties('_templateOptions');
+            locals._templateOptions.data.should.be.an.Object().with.properties('page');
+            locals._templateOptions.data.page.show_title_and_feature_image.should.be.false();
         });
     });
 });

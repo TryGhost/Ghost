@@ -1,10 +1,10 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const moment = require('moment');
 
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const pageMatcher = {
     published_at: anyISODateTimeWithTZ,
@@ -26,6 +26,7 @@ describe('Pages Content API', function () {
         const res = await agent.get(`pages/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -49,10 +50,20 @@ describe('Pages Content API', function () {
             });
     });
 
+    it('Cannot request pages with mobiledoc or lexical fields', async function () {
+        await agent
+            .get(`pages/?fields=mobiledoc,lexical,published_at,created_at,updated_at,uuid`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                pages: new Array(5).fill(pageMatcher)
+            });
+    });
+
     it('Can request page', async function () {
         const res = await agent.get(`pages/${fixtureManager.get('posts', 5).id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({

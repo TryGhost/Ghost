@@ -1,6 +1,8 @@
 const urlService = require('../url');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
+const config = require('../../../shared/config');
 
 class MemberAttributionServiceWrapper {
     init() {
@@ -11,7 +13,7 @@ class MemberAttributionServiceWrapper {
 
         // Wire up all the dependencies
         const {
-            MemberAttributionService, UrlTranslator, ReferrerTranslator, AttributionBuilder
+            MemberAttributionService, UrlTranslator, ReferrerTranslator, AttributionBuilder, OutboundLinkTagger
         } = require('@tryghost/member-attribution');
         const models = require('../../models');
 
@@ -32,6 +34,12 @@ class MemberAttributionServiceWrapper {
 
         this.attributionBuilder = new AttributionBuilder({urlTranslator, referrerTranslator});
 
+        this.outboundLinkTagger = new OutboundLinkTagger({
+            isEnabled: () => !labs.isSet('outboundLinkTagging') || !!settingsCache.get('outbound_link_tagging'),
+            getSiteUrl: () => config.getSiteUrl(),
+            urlUtils
+        });
+
         // Expose the service
         this.service = new MemberAttributionService({
             models: {
@@ -40,8 +48,7 @@ class MemberAttributionServiceWrapper {
                 Integration: models.Integration
             },
             attributionBuilder: this.attributionBuilder,
-            getTrackingEnabled: () => !!settingsCache.get('members_track_sources'),
-            getSiteTitle: () => settingsCache.get('title')
+            getTrackingEnabled: () => !!settingsCache.get('members_track_sources')
         });
     }
 }

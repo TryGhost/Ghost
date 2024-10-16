@@ -5,13 +5,18 @@ const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../server/adapters/storage');
 const activeTheme = require('../../services/theme-engine/active');
 const config = require('../../../shared/config');
+const {imageSize} = require('../../../server/lib/image');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 const FORMAT_PATH_REGEX = /^\/format\/([^./]+)\//;
-
 const TRAILING_SLASH_REGEX = /\/+$/;
 
-module.exports = function (req, res, next) {
+const RESIZE_TIMEOUT_SECONDS = 10;
+
+module.exports = function handleImageSizes(req, res, next) {
+    // In admin we need to read images and calculate the average color (blocked by CORS otherwise)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
     if (!SIZE_PATH_REGEX.test(req.url)) {
         return next();
     }
@@ -21,7 +26,7 @@ module.exports = function (req, res, next) {
     }
 
     const requestedDimension = req.url.match(SIZE_PATH_REGEX)[1];
-    
+
     // Note that we don't use sizeImageDir because we need to keep the trailing slash
     let imagePath = req.url.replace(`/size/${requestedDimension}`, '');
 
@@ -39,7 +44,7 @@ module.exports = function (req, res, next) {
         // We need to keep the first slash here
         let url = req.originalUrl
             .replace(`/size/${requestedDimension}`, '');
-        
+
         if (format) {
             url = url.replace(`/format/${format}`, '');
         }
@@ -81,7 +86,7 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
-    if (format) {        
+    if (format) {
         // CASE: When formatting, we need to check if the imageTransform package supports this specific format
         if (!imageTransform.canTransformToFormat(format)) {
             // transform not supported
@@ -89,7 +94,7 @@ module.exports = function (req, res, next) {
         }
     }
 
-    // CASE: when transforming is supported, we need to check if it is desired 
+    // CASE: when transforming is supported, we need to check if it is desired
     // (e.g. it is not desired to resize SVGs when not formatting them to a different type)
     if (!format && !imageTransform.shouldResizeFileExtension(requestUrlFileExtension)) {
         return redirectToOriginal();
@@ -111,23 +116,7 @@ module.exports = function (req, res, next) {
             return;
         }
 
-        const {dir, name, ext} = path.parse(imagePath);
-        const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
-
-        if (!imageNameMatched) {
-            // CASE: Image name does not contain any characters?
-            // RESULT: Hand off to `next()` which will 404
-            return;
-        }
-        const unoptimizedImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
-
-        return storageInstance.exists(unoptimizedImagePath)
-            .then((unoptimizedImageExists) => {
-                if (unoptimizedImageExists) {
-                    return unoptimizedImagePath;
-                }
-                return imagePath;
-            })
+        return imageSize.getOriginalImagePath(imagePath)
             .then((storagePath) => {
                 return storageInstance.read({path: storagePath});
             })
@@ -135,7 +124,12 @@ module.exports = function (req, res, next) {
                 if (originalImageBuffer.length <= 0) {
                     throw new NoContentError();
                 }
-                return imageTransform.resizeFromBuffer(originalImageBuffer, {withoutEnlargement: requestUrlFileExtension !== '.svg', ...imageDimensionConfig, format});
+                return imageTransform.resizeFromBuffer(originalImageBuffer, {
+                    withoutEnlargement: requestUrlFileExtension !== '.svg',
+                    ...imageDimensionConfig,
+                    format,
+                    timeout: RESIZE_TIMEOUT_SECONDS
+                });
             })
             .then((resizedImageBuffer) => {
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);
@@ -151,6 +145,13 @@ module.exports = function (req, res, next) {
         if (err.code === 'SHARP_INSTALLATION' || err.code === 'IMAGE_PROCESSING' || err.errorType === 'NoContentError') {
             return redirectToOriginal();
         }
+
+        if (err.errorType === 'NotFoundError') {
+            return next();
+        }
+
         next(err);
     });
 };
+
+module.exports.RESIZE_TIMEOUT_SECONDS = RESIZE_TIMEOUT_SECONDS;

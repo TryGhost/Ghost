@@ -1,9 +1,13 @@
 const models = require('../../models');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'newsletters',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'filter',
             'fields',
@@ -17,3 +21,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

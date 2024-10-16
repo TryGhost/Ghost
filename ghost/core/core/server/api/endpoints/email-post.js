@@ -7,10 +7,14 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'email_post',
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'include'
@@ -43,3 +47,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

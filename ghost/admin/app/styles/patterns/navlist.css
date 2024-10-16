@@ -3,13 +3,6 @@
 
 .nav-list {
     padding: 0;
-    max-width: 500px;
-    background: var(--main-color-content-greybg);
-    border-radius: var(--border-radius);
-}
-
-.nav-list.nav-list-block {
-    max-width: none;
 }
 
 .nav-list-item {
@@ -17,30 +10,25 @@
     display: block;
     margin: 0;
     color: var(--darkgrey);
+    border-bottom: 1px solid var(--whitegrey-d1);
 }
 
 .nav-list-item:hover {
-    background: var(--whitegrey);
+    background: var(--whitegrey-l2);
     cursor: pointer;
 }
 
+.nav-list-item.selected {
+    background: var(--whitegrey-l2);
+}
+
 .nav-list-item:first-of-type {
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: var(--border-radius);
-}
-
-.nav-list-item:last-of-type {
-    border-bottom-right-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
-}
-
-.nav-list-item:not(:last-of-type) {
-    border-bottom: 1px solid var(--white);
+    border-top: 1px solid var(--whitegrey-d1);
 }
 
 .nav-list-item button {
     width: 100%;
-    padding: 9px 40px 10px 12px;
+    padding: 2rem 2.4rem;
     text-align: left;
 }
 
@@ -48,30 +36,53 @@
     color: var(--darkgrey);
 }
 
-.nav-list-item b {
-    display: block;
+.nav-list-item span {
+    display: flex;
+    align-items: center;
+    color: var(--black);
     font-size: 1.4rem;
     line-height: 1.375;
     font-weight: 600;
 }
 
-.nav-list-item span {
-    display: block;
-    color: var(--midgrey);
-    font-size: 1.2rem;
-    line-height: 1.375;
-    letter-spacing: 0.2px;
+li.nav-list-item svg {
+    margin: 0 1rem 0 0;
+    height: 1.6rem;
+    width: 1.6rem;
 }
 
-.nav-list-item svg {
+li.nav-list-item svg path:not(li.nav-list-item .history path) {
+    stroke-width: 1.8;
+}
+
+li.nav-list-item .history {
+    width: 1.8rem;
+    height: 1.8rem;
+}
+
+li.nav-list-item.delete {
+    color: var(--red);
+}
+
+li.nav-list-item .arrow-right {
     position: absolute;
     top: 50%;
-    right: 10px;
-    margin-top: -0.9rem;
+    right: 24px;
+    margin: -0.9rem 0 0;
     height: 1.4rem;
     width: 1.4rem;
 }
 
-.nav-list-item svg path {
+li.nav-list-item .arrow-right path {
     fill: var(--midgrey);
+}
+
+.nav-list-item-notification {
+    margin: 0 2.4rem 2rem;
+    color: var(--middarkgrey);
+}
+
+.nav-list-item-notification a {
+    color: var(--green-d1);
+    font-weight: 500;
 }

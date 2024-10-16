@@ -1,5 +1,5 @@
-const EmailService = require('../lib/email-service');
-const assert = require('assert');
+const EmailService = require('../lib/EmailService');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');
 
@@ -10,6 +10,7 @@ describe('Email Service', function () {
     let membersRepository;
     let emailRenderer;
     let sendingService;
+    let scheduleRecurringJobs;
 
     beforeEach(function () {
         memberCount = 123;
@@ -19,6 +20,7 @@ describe('Email Service', function () {
         };
         verificicationRequired = false;
         scheduleEmail = sinon.stub().returns();
+        scheduleRecurringJobs = sinon.stub().resolves();
         settings = {};
         settingsCache = {
             get(key) {
@@ -85,7 +87,10 @@ describe('Email Service', function () {
             settingsCache,
             emailRenderer,
             membersRepository,
-            sendingService
+            sendingService,
+            emailAnalyticsJobs: {
+                scheduleRecurringJobs
+            }
         });
     });
 
@@ -149,12 +154,28 @@ describe('Email Service', function () {
 
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
-            assert.strictEqual(email.get('feedback_enabled'), true);
-            assert.strictEqual(email.get('newsletter_id'), post.get('newsletter').id);
-            assert.strictEqual(email.get('post_id'), post.id);
-            assert.strictEqual(email.get('status'), 'pending');
-            assert.strictEqual(email.get('source'), post.get('mobiledoc'));
-            assert.strictEqual(email.get('source_type'), 'mobiledoc');
+            assert.equal(email.get('feedback_enabled'), true);
+            assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
+            assert.equal(email.get('post_id'), post.id);
+            assert.equal(email.get('status'), 'pending');
+            assert.equal(email.get('source'), post.get('mobiledoc'));
+            assert.equal(email.get('source_type'), 'mobiledoc');
+            sinon.assert.calledOnce(scheduleRecurringJobs);
+        });
+
+        it('Ignores analytics job scheduling errors', async function () {
+            const post = createModel({
+                id: '123',
+                newsletter: createModel({
+                    status: 'active',
+                    feedback_enabled: true
+                }),
+                mobiledoc: 'Mobiledoc'
+            });
+
+            scheduleRecurringJobs.rejects(new Error('Test error'));
+            await service.createEmail(post);
+            sinon.assert.calledOnce(scheduleRecurringJobs);
         });
 
         it('Creates and schedules an email with lexical', async function () {
@@ -169,12 +190,12 @@ describe('Email Service', function () {
 
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
-            assert.strictEqual(email.get('feedback_enabled'), true);
-            assert.strictEqual(email.get('newsletter_id'), post.get('newsletter').id);
-            assert.strictEqual(email.get('post_id'), post.id);
-            assert.strictEqual(email.get('status'), 'pending');
-            assert.strictEqual(email.get('source'), post.get('lexical'));
-            assert.strictEqual(email.get('source_type'), 'lexical');
+            assert.equal(email.get('feedback_enabled'), true);
+            assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
+            assert.equal(email.get('post_id'), post.id);
+            assert.equal(email.get('status'), 'pending');
+            assert.equal(email.get('source'), post.get('lexical'));
+            assert.equal(email.get('source_type'), 'lexical');
         });
 
         it('Stores the error in the email model if scheduling fails', async function () {
@@ -191,8 +212,8 @@ describe('Email Service', function () {
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
 
-            assert.strictEqual(email.get('error'), 'Test error');
-            assert.strictEqual(email.get('status'), 'failed');
+            assert.equal(email.get('error'), 'Test error');
+            assert.equal(email.get('status'), 'failed');
         });
 
         it('Stores a default error in the email model if scheduling fails', async function () {
@@ -209,8 +230,8 @@ describe('Email Service', function () {
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
 
-            assert.strictEqual(email.get('error'), 'Something went wrong while scheduling the email');
-            assert.strictEqual(email.get('status'), 'failed');
+            assert.equal(email.get('error'), 'Something went wrong while scheduling the email');
+            assert.equal(email.get('status'), 'failed');
         });
 
         it('Checks limits before scheduling', async function () {
@@ -232,11 +253,27 @@ describe('Email Service', function () {
         it('Schedules email again', async function () {
             const email = createModel({
                 status: 'failed',
-                error: 'Test error'
+                error: 'Test error',
+                post: createModel({
+                    status: 'published'
+                })
             });
 
             await service.retryEmail(email);
             sinon.assert.calledOnce(scheduleEmail);
+        });
+
+        it('Does not schedule email again if draft', async function () {
+            const email = createModel({
+                status: 'failed',
+                error: 'Test error',
+                post: createModel({
+                    status: 'draft'
+                })
+            });
+
+            await assert.rejects(service.retryEmail(email));
+            sinon.assert.notCalled(scheduleEmail);
         });
 
         it('Checks limits before scheduling', async function () {
@@ -256,21 +293,85 @@ describe('Email Service', function () {
             const member = createModel({
                 uuid: '123',
                 name: 'Example member',
-                email: 'example@example.com'
+                email: 'example@example.com',
+                status: 'free'
             });
             membersRepository.get.resolves(member);
-            const exampleMember = await service.getExampleMember('example@example.com');
-            assert.strictEqual(exampleMember.id, member.id);
-            assert.strictEqual(exampleMember.name, member.get('name'));
-            assert.strictEqual(exampleMember.email, member.get('email'));
-            assert.strictEqual(exampleMember.uuid, member.get('uuid'));
+            const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
+            assert.equal(exampleMember.id, member.id);
+            assert.equal(exampleMember.name, member.get('name'));
+            assert.equal(exampleMember.email, member.get('email'));
+            assert.equal(exampleMember.uuid, member.get('uuid'));
+            assert.equal(exampleMember.status, 'free');
+            assert.deepEqual(exampleMember.subscriptions, []);
+            assert.deepEqual(exampleMember.tiers, []);
+        });
+
+        it('Returns a paid member', async function () {
+            const member = createModel({
+                uuid: '123',
+                name: 'Example member',
+                email: 'example@example.com',
+                status: 'paid',
+                stripeSubscriptions: [
+                    createModel({
+                        status: 'active',
+                        current_period_end: new Date(2050, 0, 1),
+                        cancel_at_period_end: false
+                    })
+                ],
+                products: [createModel({
+                    name: 'Silver',
+                    expiry_at: null
+                })]
+            });
+            membersRepository.get.resolves(member);
+            const exampleMember = await service.getExampleMember('example@example.com', 'status:-free');
+            assert.equal(exampleMember.id, member.id);
+            assert.equal(exampleMember.name, member.get('name'));
+            assert.equal(exampleMember.email, member.get('email'));
+            assert.equal(exampleMember.uuid, member.get('uuid'));
+            assert.equal(exampleMember.status, 'paid');
+            assert.deepEqual(exampleMember.subscriptions, [
+                {
+                    status: 'active',
+                    current_period_end: new Date(2050, 0, 1),
+                    cancel_at_period_end: false,
+                    id: member.related('stripeSubscriptions')[0].id
+                }
+            ]);
+            assert.deepEqual(exampleMember.tiers, [
+                {
+                    name: 'Silver',
+                    expiry_at: null,
+                    id: member.related('products')[0].id
+                }
+            ]);
+        });
+
+        it('Returns a forced free member', async function () {
+            const member = createModel({
+                uuid: '123',
+                name: 'Example member',
+                email: 'example@example.com',
+                status: 'paid'
+            });
+            membersRepository.get.resolves(member);
+            const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
+            assert.equal(exampleMember.id, member.id);
+            assert.equal(exampleMember.name, member.get('name'));
+            assert.equal(exampleMember.email, member.get('email'));
+            assert.equal(exampleMember.uuid, member.get('uuid'));
+            assert.equal(exampleMember.status, 'free');
+            assert.deepEqual(exampleMember.subscriptions, []);
+            assert.deepEqual(exampleMember.tiers, []);
         });
 
         it('Returns a member without name if member does not exist', async function () {
             membersRepository.get.resolves(undefined);
             const exampleMember = await service.getExampleMember('example@example.com');
-            assert.strictEqual(exampleMember.name, '');
-            assert.strictEqual(exampleMember.email, 'example@example.com');
+            assert.equal(exampleMember.name, '');
+            assert.equal(exampleMember.email, 'example@example.com');
             assert.ok(exampleMember.id);
             assert.ok(exampleMember.uuid);
         });
@@ -309,9 +410,9 @@ describe('Email Service', function () {
             });
 
             const data = await service.previewEmail(post, post.get('newsletter'), null);
-            assert.strictEqual(data.html, 'Hello Jamie Larson, Jamie Larson');
-            assert.strictEqual(data.plaintext, 'Hello Jamie Larson');
-            assert.strictEqual(data.subject, 'Subject');
+            assert.equal(data.html, 'Hello Jamie Larson, Jamie Larson');
+            assert.equal(data.plaintext, 'Hello Jamie Larson');
+            assert.equal(data.subject, 'Subject');
         });
     });
 
@@ -327,8 +428,10 @@ describe('Email Service', function () {
             await service.sendTestEmail(post, post.get('newsletter'), null, ['example@example.com']);
             sinon.assert.calledOnce(sendingService.send);
             const members = sendingService.send.firstCall.args[0].members;
-            assert.strictEqual(members.length, 1);
-            assert.strictEqual(members[0].email, 'example@example.com');
+            const options = sendingService.send.firstCall.args[1];
+            assert.equal(members.length, 1);
+            assert.equal(members[0].email, 'example@example.com');
+            assert.equal(options.isTestEmail, true);
         });
     });
 });

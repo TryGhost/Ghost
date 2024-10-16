@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const events = require('../../../../../core/server/lib/common/events');
 const Urls = require('../../../../../core/server/services/url/Urls');
+const logging = require('@tryghost/logging');
 
 describe('Unit: services/url/Urls', function () {
     let urls;
@@ -70,6 +71,7 @@ describe('Unit: services/url/Urls', function () {
 
         urls.getByResourceId('object-id-x').resource.data.slug.should.eql('a');
 
+        sinon.stub(logging, 'error');
         // add duplicate
         urls.add({
             url: '/test/',

@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
@@ -8,23 +7,41 @@ const messages = {
     snippetAlreadyExists: 'Snippet already exists.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'snippets',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'order',
-            'page'
+            'page',
+            'formats',
+            'filter'
         ],
         permissions: true,
+        validation: {
+            options: {
+                formats: {
+                    values: models.Snippet.allowedFormats
+                }
+            }
+        },
         query(frame) {
             return models.Snippet.findPage(frame.options);
         }
     },
 
     read: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'formats'
+        ],
         data: [
             'id'
         ],
@@ -45,7 +62,12 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'formats'
+        ],
         permissions: true,
         query(frame) {
             return models.Snippet.add(frame.data.snippets[0], frame.options)
@@ -60,9 +82,12 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
-            'id'
+            'id',
+            'formats'
         ],
         validation: {
             options: {
@@ -88,7 +113,9 @@ module.exports = {
 
     destroy: {
         statusCode: 204,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -105,3 +132,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

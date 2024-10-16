@@ -1,0 +1,94 @@
+{
+  "name": "@tryghost/sodo-search",
+  "version": "1.3.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/TryGhost/Ghost.git"
+  },
+  "author": "Ghost Foundation",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@tryghost/content-api": "1.11.21",
+    "flexsearch": "0.7.43",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "scripts": {
+    "dev": "concurrently \"vite preview -l silent\" \"yarn build:watch\" \"yarn tailwind\"",
+    "build": "vite build && yarn tailwind:base",
+    "build:watch": "vite build --watch",
+    "tailwind": "yarn tailwind:base --watch ",
+    "tailwind:base": "npx tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
+    "test": "vitest run",
+    "test:ci": "yarn test --coverage",
+    "test:unit": "yarn test:ci",
+    "lint": "eslint src --ext .js --cache",
+    "preship": "yarn lint",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+    "prepublishOnly": "yarn build"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
+    "extends": [
+      "plugin:ghost/browser",
+      "plugin:react/recommended"
+    ],
+    "plugins": [
+      "ghost"
+    ],
+    "rules": {
+      "react/prop-types": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "coverageReporters": [
+      "cobertura",
+      "text-summary",
+      "html"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "5.17.0",
+    "@testing-library/react": "12.1.5",
+    "@vitejs/plugin-react": "4.2.1",
+    "jsdom": "24.1.3",
+    "nock": "13.3.3",
+    "vite": "4.5.3",
+    "vite-plugin-svgr": "3.3.0",
+    "vitest": "0.34.3"
+  }
+}

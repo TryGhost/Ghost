@@ -56,7 +56,7 @@ module.exports = class LinkClickRepository {
         }
 
         const model = await this.#MemberLinkClickEventModel.add({
-            // Only store the parthname (no support for variable query strings)
+            // Only store the pathname (no support for variable query strings)
             redirect_id: linkClick.link_id.toHexString(),
             member_id: member.id
         }, {});

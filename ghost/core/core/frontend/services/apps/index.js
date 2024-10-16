@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('services:apps');
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -15,8 +14,8 @@ module.exports = {
     init: function () {
         debug('init begin');
         const appsToLoad = config.get('apps:internal');
-
-        return Promise.map(appsToLoad, appName => loader.activateAppByName(appName))
+        const appPromises = appsToLoad.map(appName => loader.activateAppByName(appName));
+        return Promise.all(appPromises)
             .catch(function (err) {
                 logging.error(new errors.InternalServerError({
                     err: err,

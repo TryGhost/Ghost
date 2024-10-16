@@ -108,6 +108,15 @@ export default class GhMembersRecipientSelect extends Component {
         }
 
         const newSpecificFilters = new Set(selectedOptions.map(o => o.segment));
+
+        // If the user has deselected all options, clear the _previousSpecificFilters
+        // and force the specific filter to be checked so that the user can still see the options select
+        // Refs https://github.com/TryGhost/Team/issues/2859
+        if (newSpecificFilters.size === 0) {
+            this._previousSpecificFilters = undefined;
+            this.forceSpecificChecked = true;
+        }
+
         this.updateFilter({newSpecificFilters});
     }
 
@@ -156,21 +165,33 @@ export default class GhMembersRecipientSelect extends Component {
         const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all'});
 
         if (tiers.length > 1) {
-            const tiersGroup = {
-                groupName: 'Tiers',
+            const activeTiersGroup = {
+                groupName: 'Active tiers',
+                options: []
+            };
+
+            const archivedTiersGroup = {
+                groupName: 'Archived tiers',
                 options: []
             };
 
             tiers.forEach((tier) => {
-                tiersGroup.options.push({
+                const tierData = {
                     name: tier.name,
                     segment: `tier:${tier.slug}`,
                     count: tier.count?.members,
                     class: 'segment-tier'
-                });
+                };
+
+                if (tier.active) {
+                    activeTiersGroup.options.push(tierData);
+                } else {
+                    archivedTiersGroup.options.push(tierData);
+                }
             });
 
-            options.push(tiersGroup);
+            options.push(activeTiersGroup);
+            options.push(archivedTiersGroup);
         }
 
         this.specificOptions = options;

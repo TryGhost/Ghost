@@ -1,5 +1,4 @@
 const should = require('should');
-const sinon = require('sinon');
 
 const preview = require('../../../../../core/frontend/services/theme-engine/preview');
 

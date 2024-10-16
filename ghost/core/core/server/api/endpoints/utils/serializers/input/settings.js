@@ -38,11 +38,14 @@ const EDITABLE_SETTINGS = [
     'portal_name',
     'portal_button',
     'portal_plans',
+    'portal_default_plan',
     'portal_button_style',
     'firstpromoter',
     'firstpromoter_id',
     'portal_button_icon',
     'portal_button_signup_text',
+    'portal_signup_terms_html',
+    'portal_signup_checkbox_required',
     'mailgun_api_key',
     'mailgun_domain',
     'mailgun_base_url',
@@ -59,7 +62,17 @@ const EDITABLE_SETTINGS = [
     'editor_default_email_recipients',
     'editor_default_email_recipients_filter',
     'labs',
-    'comments_enabled'
+    'comments_enabled',
+    'outbound_link_tagging',
+    'announcement_content',
+    'announcement_background',
+    'announcement_visibility',
+    'pintura',
+    'pintura_js_url',
+    'pintura_css_url',
+    'donations_currency',
+    'donations_suggested_amount',
+    'recommendations_enabled'
 ];
 
 module.exports = {

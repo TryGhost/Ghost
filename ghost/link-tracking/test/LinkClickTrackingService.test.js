@@ -1,10 +1,11 @@
 const LinkClickTrackingService = require('../lib/LinkClickTrackingService');
 const sinon = require('sinon');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
 const PostLink = require('../lib/PostLink');
 const {RedirectEvent} = require('@tryghost/link-redirects');
+const errors = require('@tryghost/errors');
 
 describe('LinkClickTrackingService', function () {
     it('exists', function () {
@@ -40,7 +41,7 @@ describe('LinkClickTrackingService', function () {
             assert.ok(getAll.calledOnceWithExactly({filter: 'post_id:1'}));
 
             // Check returned value
-            assert.deepStrictEqual(links, ['test']);
+            assert.deepEqual(links, ['test']);
         });
     });
 
@@ -207,6 +208,142 @@ describe('LinkClickTrackingService', function () {
                 errors: [],
                 unsuccessfulData: []
             });
+        });
+
+        //test for #parseLinkFilter method
+        it('correctly decodes and parses the filter', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(true)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 0,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves([])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'post_id:1+to:\'https://example.com/path\''
+            };
+
+            const data = {
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://example.com/new-path'}
+                }
+            };
+
+            const result = await service.bulkEdit(data, options);
+
+            should(postLinkRepositoryStub.updateLinks.calledOnce).be.true();
+            should(result).eql({
+                successful: 0,
+                unsuccessful: 0,
+                errors: [],
+                unsuccessfulData: []
+            });
+
+            const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
+            should(filterOptions.filter).equal('post_id:\'1\'+to:\'https://example.com/path\'');
+        });
+
+        //test for #parseLinkFilter method
+        it('correctly decodes and parses the filter for encoded urls', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(true)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 0,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves([])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'post_id:1+to:\'https://example.com/path%2Ftestpath\''
+            };
+
+            const data = {
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://example.com/new-path'}
+                }
+            };
+
+            const result = await service.bulkEdit(data, options);
+
+            should(postLinkRepositoryStub.updateLinks.calledOnce).be.true();
+            should(result).eql({
+                successful: 0,
+                unsuccessful: 0,
+                errors: [],
+                unsuccessfulData: []
+            });
+
+            const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
+            should(filterOptions.filter).equal('post_id:\'1\'+to:\'https://example.com/path%2Ftestpath\'');
+        });
+
+        //test for #parseLinkFilter method
+        it('throws BadRequestError for invalid filter', async function () {
+            const urlUtilsStub = {
+                absoluteToTransformReady: sinon.stub().returnsArg(0),
+                isSiteUrl: sinon.stub().returns(true)
+            };
+            const postLinkRepositoryStub = {
+                updateLinks: sinon.stub().resolves({
+                    successful: 0,
+                    unsuccessful: 0,
+                    errors: [],
+                    unsuccessfulData: []
+                })
+            };
+            const linkRedirectServiceStub = {
+                getFilteredIds: sinon.stub().resolves([])
+            };
+
+            const service = new LinkClickTrackingService({
+                urlUtils: urlUtilsStub,
+                postLinkRepository: postLinkRepositoryStub,
+                linkRedirectService: linkRedirectServiceStub
+            });
+
+            const options = {
+                filter: 'invalid_filter'
+            };
+
+            const data = {
+                action: 'updateLink',
+                meta: {
+                    link: {to: 'https://example.com/new-path'}
+                }
+            };
+
+            await should(service.bulkEdit(data, options)).be.rejectedWith(errors.BadRequestError);
         });
     });
 });

@@ -33,6 +33,7 @@ class MagicLink {
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
+     * @param {object} [options.sentry]
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
@@ -44,6 +45,7 @@ class MagicLink {
         this.getText = options.getText || defaultGetText;
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
+        this.sentry = options.sentry || undefined;
     }
 
     /**
@@ -53,10 +55,12 @@ class MagicLink {
      * @param {string} options.email - The email to send magic link to
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
-     * @param {string} [options.referrer=null] - The referrer of the request, if exists
+     * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
      * @returns {Promise<{token: Token, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
+        this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
+        
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
@@ -84,13 +88,14 @@ class MagicLink {
      * @param {object} options
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions. This type will also get stored in the token data.
+     * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
      * @returns {Promise<URL>} - signin URL
      */
     async getMagicLink(options) {
         const type = options.type ?? 'signin';
         const token = await this.tokenProvider.create({...options.tokenData, type});
 
-        return this.getSigninURL(token, type);
+        return this.getSigninURL(token, type, options.referrer);
     }
 
     /**

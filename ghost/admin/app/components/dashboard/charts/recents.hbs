@@ -1,4 +1,4 @@
-<section class="gh-dashboard-section gh-dashboard-recents" {{did-insert this.loadPosts}}>
+<section class="gh-dashboard-section gh-dashboard-recents" {{did-insert this.loadData}}>
     <article class="gh-dashboard-box">
         <div class="gh-dashboard-tabs">
             <button type="button" class="gh-dashboard-tab {{if this.postsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPosts}}>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="gh-dashboard-list-body">
                     {{#each this.posts as |post|}}
-                        <LinkTo class="gh-dashboard-list-item permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
+                        <LinkTo class="gh-dashboard-list-item permalink" @route="posts.analytics" @model={{post.id}}>
                             <div class="gh-dashboard-list-item-sub">
                                 <span class="gh-dashboard-list-text">{{post.title}}</span>
                             </div>
@@ -65,7 +65,7 @@
                     <LinkTo @route="posts" @query={{reset-query-params "posts"}}>View all posts &rarr;</LinkTo>
                 </div>
             </div>
-        {{else}}
+        {{else if this.activityTabSelected}}
             <div class="gh-dashboard-recents-activity gh-dashboard-list" data-test-dashboard-member-activity>
                 <div class="gh-dashboard-list-header">
                     <div class="gh-dashboard-list-title">Member</div>
@@ -93,18 +93,31 @@
                                     {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
                                         <div class="gh-dashboard-list-item member-details">
                                             <div class="gh-dashboard-list-item-sub">
-                                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
-                                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item>{{parsedEvent.subject}}</LinkTo>
+                                                {{#if parsedEvent.member}}
+                                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                    <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item>{{parsedEvent.subject}}</LinkTo>
+                                                {{else}}
+                                                    {{#if parsedEvent.email}}
+                                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                        <a class="gh-dashboard-list-text" href="mailto:{{parsedEvent.email}}" target="_blank" rel="noopener noreferrer" title="{{parsedEvent.email}}">{{parsedEvent.subject}}</a>
+                                                    {{else}}
+                                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                        <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                                    {{/if}}
+                                                {{/if}}
                                             </div>
                                             <div class="gh-dashboard-list-item-sub">
                                                 {{svg-jar parsedEvent.icon }}
                                                 <span class="gh-dashboard-list-subtext">
-                                                    <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                                                    <span class="gh-members-activity-description feature-memberAttribution">
                                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
                                                         {{#if parsedEvent.info}}
                                                             <span class="highlight">({{parsedEvent.info}})</span>
                                                         {{/if}}
-                                                        {{#if parsedEvent.url}}
+                                                        {{#if parsedEvent.route}}
+                                                            <span class="gh-members-activity-event-join">{{parsedEvent.join}}</span>
+                                                            <LinkTo class="gh-members-activity-object-link" @route={{parsedEvent.route.name}} @model={{parsedEvent.route.model}}>{{parsedEvent.object}}</LinkTo>
+                                                        {{else if parsedEvent.url}}
                                                             <span class="gh-members-activity-event-join">{{parsedEvent.join}}</span>
                                                             <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
                                                         {{else if parsedEvent.email}}

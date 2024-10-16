@@ -23,10 +23,18 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: true}) showHeaderIcon;
     @attr({defaultValue: true}) showHeaderTitle;
     @attr({defaultValue: true}) showHeaderName;
+    @attr({defaultValue: true}) showPostTitleSection;
+    @attr({defaultValue: false}) showExcerpt;
+    @attr({defaultValue: true}) showCommentCta;
+    @attr({defaultValue: false}) showSubscriptionDetails;
+    @attr({defaultValue: false}) showLatestPosts;
     @attr({defaultValue: 'sans_serif'}) titleFontCategory;
     @attr({defaultValue: 'center'}) titleAlignment;
     @attr({defaultValue: true}) showFeatureImage;
     @attr({defaultValue: 'sans_serif'}) bodyFontCategory;
+    @attr({defaultValue: 'light'}) backgroundColor;
+    @attr({defaultValue: null}) borderColor;
+    @attr({defaultValue: null}) titleColor;
     @attr footerContent;
     @attr({defaultValue: true}) showBadge;
     @attr count;
@@ -36,13 +44,13 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr _meta;
 
     /**
-     * The filter that we should use to filter out members that are subscribed to this newsletter
+     * The filter that we should use to filter out members that are actively subscribed to this newsletter
      */
     get recipientFilter() {
-        const idFilter = 'newsletters.slug:' + this.slug;
+        const filter = [`newsletters.slug:${this.slug}`, 'email_disabled:0'];
         if (this.visibility === 'paid') {
-            return idFilter + '+status:-free';
+            filter.push('status:-free');
         }
-        return idFilter;
+        return filter.join('+');
     }
 }

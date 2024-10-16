@@ -43,8 +43,8 @@
 .fill-red g { fill: var(--red); }
 .fill-pink path,
 .fill-pink g { fill: var(--pink); }
-.fill-white path,
-.fill-white g { fill: var(--white); }
+.fill-white-no-conflict path,
+.fill-white-no-conflict g { fill: var(--white); }
 
 .fill-white-10 path,
 .fill-white-10 g { fill: var(--white-10); }
@@ -239,8 +239,8 @@
 .fill-color-inherit path,
 .fill-color-inherit g { fill: inherit; }
 
-.fill-white path,
-.fill-white g       {  fill: var(--white)  }
+.fill-white-no-conflict path,
+.fill-white-no-conflict g       {  fill: var(--white)  }
 
 
 .stroke-blue path,

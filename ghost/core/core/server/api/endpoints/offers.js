@@ -6,10 +6,14 @@ const messages = {
     offerNotFound: 'Offer not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'offers',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'filter'
         ],
@@ -23,6 +27,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: ['id'],
         permissions: true,
         async query(frame) {
@@ -76,3 +83,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

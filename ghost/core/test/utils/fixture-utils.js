@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
 const {sequence} = require('@tryghost/promise');
@@ -65,7 +65,6 @@ const fixtures = {
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
         let i;
-        let j;
         let k = 0;
         let posts = [];
 
@@ -161,7 +160,7 @@ const fixtures = {
         let i;
 
         for (i = 0; i < max; i += 1) {
-            tagName = uuid.v4().split('-')[0];
+            tagName = crypto.randomUUID().split('-')[0];
             tags.push(DataGenerator.forKnex.createBasic({name: tagName, slug: tagName}));
         }
 
@@ -189,13 +188,15 @@ const fixtures = {
                 throw new Error('Trying to add more posts_tags than the number of posts.');
             }
 
-            return Promise.all(posts.slice(0, max).map((post) => {
-                post.tags = post.tags ? post.tags : [];
+            return models.Base.transaction((transacting) => {
+                return Promise.all(posts.slice(0, max).map((post) => {
+                    post.tags = post.tags ? post.tags : [];
 
-                return models.Post.edit({
-                    tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
-                }, _.merge({id: post.id}, context.internal));
-            }));
+                    return models.Post.edit({
+                        tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
+                    }, _.merge({id: post.id, transacting}, context.internal));
+                }));
+            });
         });
     },
 
@@ -460,6 +461,12 @@ const fixtures = {
         }));
     },
 
+    insertMentions: function insertMentions() {
+        return Promise.all(DataGenerator.forKnex.mentions.map((mention) => {
+            return models.Mention.add(mention, context.internal);
+        }));
+    },
+
     insertEmails: function insertEmails() {
         return Promise.all(DataGenerator.forKnex.emails.map((email) => {
             return models.Email.add(email, context.internal);
@@ -472,6 +479,21 @@ const fixtures = {
         });
 
         return models.Product.add(archivedProduct, context.internal);
+    },
+
+    insertHiddenTiers: function insertArchivedTiers() {
+        let hiddenTier = DataGenerator.forKnex.createProduct({
+            visibility: 'none'
+        });
+
+        return models.Product.add(hiddenTier, context.internal);
+    },
+
+    insertExtraTiers: async function insertExtraTiers() {
+        const extraTier = DataGenerator.forKnex.createProduct({});
+        const extraTier2 = DataGenerator.forKnex.createProduct({slug: 'silver', name: 'Silver'});
+        await models.Product.add(extraTier, context.internal);
+        await models.Product.add(extraTier2, context.internal);
     },
 
     insertProducts: async function insertProducts() {
@@ -636,7 +658,7 @@ const fixtures = {
                 memberIds: DataGenerator.forKnex.members.map(member => member.id)
             };
 
-            return emailAnalyticsService.aggregateStats(toAggregate);
+            return emailAnalyticsService.service.aggregateStats(toAggregate);
         });
     },
 
@@ -809,8 +831,14 @@ const toDoList = {
     custom_theme_settings: function insertCustomThemeSettings() {
         return fixtures.insertCustomThemeSettings();
     },
+    'tiers:extra': function insertExtraTiers() {
+        return fixtures.insertExtraTiers();
+    },
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();
+    },
+    'tiers:hidden': function insertHiddenTiers() {
+        return fixtures.insertHiddenTiers();
     },
     comments: function insertComments() {
         return fixtures.insertComments();
@@ -826,6 +854,9 @@ const toDoList = {
     },
     links: function insertLinks() {
         return fixtures.insertLinks();
+    },
+    mentions: function insertMentions() {
+        return fixtures.insertMentions();
     }
 };
 
@@ -881,6 +912,10 @@ const getFixtureOps = (toDos) => {
 
             fixtureOps.push(toDoList[toDo]);
         }
+    });
+
+    fixtureOps.push(() => {
+        return require('../../core/server/services/tiers').repository?.init();
     });
 
     return fixtureOps;

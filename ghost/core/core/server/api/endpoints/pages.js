@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
-const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
 const messages = {
@@ -11,9 +11,13 @@ const messages = {
 
 const postsService = getPostServiceInstance();
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'pages',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -45,6 +49,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -90,7 +97,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'formats',
@@ -113,10 +122,8 @@ module.exports = {
         query(frame) {
             return models.Post.add(frame.data.pages[0], frame.options)
                 .then((model) => {
-                    if (model.get('status') !== 'published') {
-                        this.headers.cacheInvalidate = false;
-                    } else {
-                        this.headers.cacheInvalidate = true;
+                    if (model.get('status') === 'published') {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
 
                     return model;
@@ -125,13 +132,17 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'id',
             'formats',
             'source',
             'force_rerender',
+            'save_revision',
+            'convert_to_lexical',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
@@ -156,9 +167,65 @@ module.exports = {
         async query(frame) {
             const model = await models.Post.edit(frame.data.pages[0], frame.options);
 
-            this.headers.cacheInvalidate = postsService.handleCacheInvalidation(model);
+            const cacheInvalidation = postsService.handleCacheInvalidation(model);
+
+            if (cacheInvalidation === true) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            } else if (cacheInvalidation.value) {
+                frame.setHeader('X-Cache-Invalidate', cacheInvalidation.value);
+            }
 
             return model;
+        }
+    },
+
+    bulkEdit: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        data: [
+            'action',
+            'meta'
+        ],
+        validation: {
+            data: {
+                action: {
+                    required: true
+                }
+            },
+            options: {
+                filter: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'edit'
+        },
+        async query(frame) {
+            return await postsService.bulkEdit(frame.data.bulk, frame.options);
+        }
+    },
+
+    bulkDestroy: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'destroy'
+        },
+        async query(frame) {
+            return await postsService.bulkDestroy(frame.options);
         }
     },
 
@@ -188,5 +255,33 @@ module.exports = {
         query(frame) {
             return models.Post.destroy({...frame.options, require: true});
         }
+    },
+
+    copy: {
+        statusCode: 201,
+        headers: {
+            location: {
+                resolve: postsService.generateCopiedPostLocationFromUrl
+            },
+            cacheInvalidate: false
+        },
+        options: [
+            'id',
+            'formats'
+        ],
+        validation: {
+            id: {
+                required: true
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'add'
+        },
+        async query(frame) {
+            return postsService.copyPost(frame);
+        }
     }
 };
+
+module.exports = controller;

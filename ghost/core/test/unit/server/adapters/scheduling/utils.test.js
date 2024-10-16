@@ -1,7 +1,6 @@
 const should = require('should');
 const fs = require('fs-extra');
 const configUtils = require('../../../../utils/configUtils');
-const config = require('../../../../../core/shared/config');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
@@ -14,13 +13,13 @@ describe('Scheduling: utils', function () {
         }
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         if (scope.adapter) {
             fs.unlinkSync(scope.adapter);
             scope.adapter = null;
         }
 
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('success', function () {
@@ -31,7 +30,7 @@ describe('Scheduling: utils', function () {
             }).catch(done);
         });
 
-        it('create good adapter', function (done) {
+        it('create good adapter from custom file', function (done) {
             scope.adapter = schedulingPath + 'another-scheduler.js';
 
             configUtils.set({
@@ -42,7 +41,7 @@ describe('Scheduling: utils', function () {
 
             const jsFile = '' +
                 'var util = require(\'util\');' +
-                'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/SchedulingBase\');' +
+                'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/scheduling-base\');' +
                 'var AnotherAdapter = function (){ SchedulingBase.call(this); };' +
                 'util.inherits(AnotherAdapter, SchedulingBase);' +
                 'AnotherAdapter.prototype.run = function (){};' +

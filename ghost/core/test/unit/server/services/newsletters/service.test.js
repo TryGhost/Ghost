@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 // DI requirements
 const models = require('../../../../../core/server/models');
@@ -8,8 +8,8 @@ const mail = require('../../../../../core/server/services/mail');
 // Mocked utilities
 const urlUtils = require('../../../../utils/urlUtils');
 const {mockManager} = require('../../../../utils/e2e-framework');
-
-const NewslettersService = require('../../../../../core/server/services/newsletters/service');
+const {EmailAddressService} = require('@tryghost/email-addresses');
+const NewslettersService = require('../../../../../core/server/services/newsletters/NewslettersService');
 
 class TestTokenProvider {
     async create(data) {
@@ -41,7 +41,30 @@ describe('NewslettersService', function () {
             mail,
             singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig(),
-            limitService
+            limitService,
+            emailAddressService: {
+                service: new EmailAddressService({
+                    getManagedEmailEnabled: () => {
+                        return false;
+                    },
+                    getSendingDomain: () => {
+                        return null;
+                    },
+                    getDefaultEmail: () => {
+                        return {
+                            address: 'default@example.com'
+                        };
+                    },
+                    isValidEmailAddress: () => {
+                        return true;
+                    },
+                    labs: {
+                        isSet() {
+                            return false;
+                        }
+                    }
+                })
+            }
         });
     });
 
@@ -79,14 +102,12 @@ describe('NewslettersService', function () {
 
     // @TODO replace this with a specific function for fetching all available newsletters
     describe('browse', function () {
-        it('lists all newsletters by calling findAll and toJSON', async function () {
-            const toJSONStub = sinon.stub();
-            const findAllStub = sinon.stub(models.Newsletter, 'findAll').returns({toJSON: toJSONStub});
+        it('lists all newsletters by calling findPage', async function () {
+            const findAllStub = sinon.stub(models.Newsletter, 'findPage').returns({data: []});
 
             await newsletterService.browse({});
 
             sinon.assert.calledOnce(findAllStub);
-            sinon.assert.calledOnce(toJSONStub);
         });
     });
 
@@ -263,7 +284,7 @@ describe('NewslettersService', function () {
                 ]
             });
             sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world'}, options);
-            
+
             sinon.assert.calledTwice(findOneStub);
             sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
             sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});

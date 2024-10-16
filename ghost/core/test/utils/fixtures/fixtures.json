@@ -1,6 +1,25 @@
 {
     "models": [
         {
+            "name": "Collection",
+            "entries": [
+                {
+                    "title":            "Latest",
+                    "slug":             "latest",
+                    "description":      "All posts",
+                    "type":             "automatic",
+                    "filter":           ""
+                },
+                {
+                    "title":            "Featured",
+                    "slug":             "featured",
+                    "description":      "Featured posts",
+                    "type":             "automatic",
+                    "filter":           "featured:true"
+                }
+            ]
+        },
+        {
             "name": "Product",
             "entries": [
                 {
@@ -75,6 +94,10 @@
                 {
                     "name": "Ghost Explore Integration",
                     "description": "Internal Integration for the Ghost Explore directory"
+                },
+                {
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Internal Integration for the Self-Serve migration tool"
                 },
                 {
                     "name": "DB Backup Integration",
@@ -633,6 +656,61 @@
                     "name": "Edit links",
                     "action_type": "edit",
                     "object_type": "link"
+                },
+                {
+                    "name": "Browse mentions",
+                    "action_type": "browse",
+                    "object_type": "mention"
+                },
+                {
+                    "name": "Browse collections",
+                    "action_type": "browse",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Read collections",
+                    "action_type": "read",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Edit collections",
+                    "action_type": "edit",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Add collections",
+                    "action_type": "add",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Delete collections",
+                    "action_type": "destroy",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Browse recommendations",
+                    "action_type": "browse",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Read recommendations",
+                    "action_type": "read",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Edit recommendations",
+                    "action_type": "edit",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Add recommendations",
+                    "action_type": "add",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Delete recommendations",
+                    "action_type": "destroy",
+                    "object_type": "recommendation"
                 }
             ]
         },
@@ -646,6 +724,10 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notificaton": true,
                     "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "recommendation_notifications": true,
+                    "milestone_notifications": true,
+                    "donation_notifications": true,
                     "status": "inactive",
                     "roles": []
                 },
@@ -660,6 +742,10 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notification": true,
                     "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "recommendation_notifications": true,
+                    "milestone_notifications": true,
+                    "donation_notifications": true,
                     "location": "The Internet",
                     "website": "https://ghost.org",
                     "bio": "You can delete this user to remove all the welcome posts",
@@ -873,6 +959,18 @@
                     "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
                 },
                 {
+                    "slug": "self-serve-migration",
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Core Self-Serve Migration integration",
+                    "type": "core",
+                    "api_keys": [
+                        {
+                            "type": "admin",
+                            "role": "Self-Serve Migration Integration"
+                        }
+                    ]
+                },
+                {
                     "slug": "ghost-backup",
                     "name": "Ghost Backup",
                     "description": "Internal DB Backup integration",
@@ -939,7 +1037,10 @@
                     "newsletter": "all",
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all",
+                    "recommendation": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -949,6 +1050,11 @@
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
+                },
+                "Self-Serve Migration Integration": {
+                    "db": "importContent",
+                    "member": "add",
+                    "tag": "read"
                 },
                 "Admin Integration": {
                     "mail": "all",
@@ -965,6 +1071,7 @@
                     "webhook": "all",
                     "action": "all",
                     "member": "all",
+                    "member_signin_url": "read",
                     "label": "all",
                     "email_preview": "all",
                     "email": "all",
@@ -974,7 +1081,10 @@
                     "newsletter": ["browse", "read", "add", "edit"],
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all",
+                    "recommendation": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -991,10 +1101,12 @@
                     "snippet": "all",
                     "label": ["browse", "read"],
                     "product": ["browse", "read"],
-                    "newsletter": ["browse", "read"]
+                    "newsletter": ["browse", "read"],
+                    "collection": "all",
+                    "recommendation": ["browse", "read"]
                 },
                 "Author": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
@@ -1006,10 +1118,12 @@
                     "snippet": ["browse", "read"],
                     "label": ["browse", "read"],
                     "product": ["browse", "read"],
-                    "newsletter": ["browse", "read"]
+                    "newsletter": ["browse", "read"],
+                    "collection": ["browse", "read", "add"],
+                    "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read"],
@@ -1018,7 +1132,9 @@
                     "theme": ["browse"],
                     "email_preview": "read",
                     "email": "read",
-                    "snippet": ["browse", "read"]
+                    "snippet": ["browse", "read"],
+                    "collection": ["browse", "read"],
+                    "recommendation": ["browse", "read"]
                 }
             }
         },
@@ -1040,6 +1156,28 @@
                 "welcome": ["Getting Started"],
                 "portal": ["Getting Started"],
                 "sell": ["Getting Started"]
+            }
+        },
+        {
+            "from": {
+                "model": "Collection",
+                "match": "slug",
+                "relation": "posts"
+            },
+            "to": {
+                "model": "Post",
+                "match": "slug"
+            },
+            "entries": {
+                "latest": {
+                    "integrations": "integrations",
+                    "grow": "grow",
+                    "sell": "sell",
+                    "portal": "portal",
+                    "write": "write",
+                    "design": "design",
+                    "welcome": "welcome"
+                }
             }
         },
         {

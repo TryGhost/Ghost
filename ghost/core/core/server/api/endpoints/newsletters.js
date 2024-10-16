@@ -1,12 +1,15 @@
-const models = require('../../models');
-const allowedIncludes = ['count.posts', 'count.members'];
+const allowedIncludes = ['count.posts', 'count.members', 'count.active_members'];
 
 const newslettersService = require('../../services/newsletters');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'newsletters',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -24,11 +27,14 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Newsletter.findPage(frame.options);
+            return newslettersService.browse(frame.options);
         }
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -102,6 +108,9 @@ module.exports = {
     },
 
     verifyPropertyUpdate: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'edit'
         },
@@ -113,3 +122,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

@@ -12,9 +12,13 @@ const integrationsService = getIntegrationsServiceInstance({
     ApiKeyModel: models.ApiKey
 });
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'integrations',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'include',
@@ -32,6 +36,9 @@ module.exports = {
         }
     },
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         data: [
             'id'
@@ -63,6 +70,9 @@ module.exports = {
         }
     },
     edit: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         data: [
             'name',
@@ -91,6 +101,9 @@ module.exports = {
     },
     add: {
         statusCode: 201,
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         data: [
             'name',
@@ -125,6 +138,9 @@ module.exports = {
     },
     destroy: {
         statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'id'
@@ -148,3 +164,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

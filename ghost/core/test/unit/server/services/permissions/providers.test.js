@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const Promise = require('bluebird');
 const models = require('../../../../../core/server/models');
 const providers = require('../../../../../core/server/services/permissions/providers');
 
@@ -192,7 +191,7 @@ describe('Permission Providers', function () {
 
             // Get permissions for the user
             providers.user(1)
-                .then(function (res) {
+                .then(function () {
                     done(new Error('Locked user should should throw an error'));
                 })
                 .catch((err) => {
@@ -206,7 +205,7 @@ describe('Permission Providers', function () {
     describe('API Key', function () {
         it('errors if api_key cannot be found', function (done) {
             let findApiKeySpy = sinon.stub(models.ApiKey, 'findOne');
-            findApiKeySpy.returns(new Promise.resolve());
+            findApiKeySpy.returns(Promise.resolve());
             providers.apiKey(1)
                 .then(() => {
                     done(new Error('Should have thrown an api key not found error'));

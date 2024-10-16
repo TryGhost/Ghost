@@ -39,7 +39,7 @@ function checkResponseValue(jsonResponse, expectedProperties) {
         jsonResponse.should.not.have.property(prop);
     });
 
-    providedProperties.length.should.eql(expectedProperties.length);
+    providedProperties.length.should.eql(expectedProperties.length, 'provided properties length does not match expected properties length');
 }
 
 // @TODO: support options pattern only, it's annoying to call checkResponse(null, null, null, something)

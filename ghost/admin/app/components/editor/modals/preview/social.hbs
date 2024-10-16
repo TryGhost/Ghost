@@ -114,7 +114,7 @@
 
             <div class="gh-social-twitter-container">
                 <div class="flex ma4">
-                    <span>{{svg-jar "social-twitter" class="social-icon"}}</span>
+                    <span>{{svg-jar "social-x" class="social-icon"}}</span>
                     <div>
                         <span class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</span>
                         <span class="gh-social-og-time">12 hrs</span>
@@ -254,7 +254,7 @@
                     >{{@post.metaDescription}}</textarea>
                 {{else}}
                     <div class="gh-seo-preview-desc editable pointer" role="button" aria-label="Edit meta description" {{on "click" this.editMetaDescription}}>
-                        {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 149}}
+                        {{moment-format (now) "DD MMM YYYY"}} — {{#if this.serpDescription}}{{truncate this.serpDescription 149}}{{else}}Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set. Click to edit.{{/if}}
                     </div>
                 {{/if}}
             </div>

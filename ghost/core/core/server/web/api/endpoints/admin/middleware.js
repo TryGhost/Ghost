@@ -8,9 +8,18 @@ const messages = {
     notImplemented: 'The server does not support the functionality required to fulfill the request.'
 };
 
-const notImplemented = function (req, res, next) {
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
+const notImplemented = function notImplemented(req, res, next) {
     // CASE: user is logged in, allow
     if (!req.api_key) {
+        return next();
+    }
+
+    if (req.query.god_mode && process.env.NODE_ENV === 'development') {
         return next();
     }
 
@@ -25,6 +34,8 @@ const notImplemented = function (req, res, next) {
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
         labels: ['GET', 'PUT', 'DELETE', 'POST'],
         users: ['GET'],
+        roles: ['GET'],
+        invites: ['POST'],
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         tiers: ['GET', 'PUT', 'POST'],
@@ -36,7 +47,8 @@ const notImplemented = function (req, res, next) {
         files: ['POST'],
         media: ['POST'],
         db: ['POST'],
-        settings: ['GET']
+        settings: ['GET'],
+        oembed: ['GET']
     };
 
     const match = req.url.match(/^\/(\w+)\/?/);
@@ -52,12 +64,16 @@ const notImplemented = function (req, res, next) {
     next(new errors.InternalServerError({
         errorType: 'NotImplementedError',
         message: tpl(messages.notImplemented),
-        statusCode: '501'
+        statusCode: 501
     }));
 };
 
+/** @typedef {import('express').RequestHandler} RequestHandler */
+
 /**
  * Authentication for private endpoints
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.authAdminApi = [
     auth.authenticate.authenticateAdminApi,
@@ -72,6 +88,8 @@ module.exports.authAdminApi = [
 /**
  * Authentication for private endpoints with token in URL
  * Ex.: For scheduler publish endpoint
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.authAdminApiWithUrl = [
     auth.authenticate.authenticateAdminApiWithUrl,
@@ -85,6 +103,8 @@ module.exports.authAdminApiWithUrl = [
 
 /**
  * Middleware for public admin endpoints
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.publicAdminApi = [
     apiMw.cors,

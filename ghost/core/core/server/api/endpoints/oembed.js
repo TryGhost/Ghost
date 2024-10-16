@@ -1,30 +1,13 @@
-const config = require('../../../shared/config');
-const externalRequest = require('../../lib/request-external');
+const oembed = require('../../services/oembed');
 
-const OEmbed = require('@tryghost/oembed-service');
-const oembed = new OEmbed({config, externalRequest});
-
-const NFT = require('../../services/nft-oembed');
-const nft = new NFT({
-    config: {
-        apiKey: config.get('opensea').privateReadOnlyApiKey
-    }
-});
-
-const Twitter = require('../../services/twitter-embed');
-const twitter = new Twitter({
-    config: {
-        bearerToken: config.get('twitter').privateReadOnlyToken
-    }
-});
-
-oembed.registerProvider(nft);
-oembed.registerProvider(twitter);
-
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'oembed',
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: false,
         data: [
             'url',
@@ -38,3 +21,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

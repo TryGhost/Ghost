@@ -1,8 +1,7 @@
 const ghostBookshelf = require('./base');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const _ = require('lodash');
 const config = require('../../shared/config');
-const {gravatar} = require('../lib/image');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -10,7 +9,8 @@ const Member = ghostBookshelf.Model.extend({
     defaults() {
         return {
             status: 'free',
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
+            transient_id: crypto.randomUUID(),
             email_count: 0,
             email_opened_count: 0,
             enable_comment_notifications: true
@@ -37,6 +37,9 @@ const Member = ghostBookshelf.Model.extend({
             key: 'tiers',
             replacement: 'products.slug'
         }, {
+            key: 'tier_id',
+            replacement: 'products.id'
+        },{
             key: 'newsletters',
             replacement: 'newsletters.slug'
         }, {
@@ -219,8 +222,8 @@ const Member = ghostBookshelf.Model.extend({
 
     async updateTierExpiry(products = [], options = {}) {
         for (const product of products) {
-            if (product?.expiry_at) {
-                const expiry = new Date(product.expiry_at);
+            if (product?.id) {
+                const expiry = product.expiry_at ? new Date(product.expiry_at) : null;
                 const queryOptions = _.extend({}, options, {
                     query: {where: {product_id: product.id}}
                 });
@@ -370,8 +373,10 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     searchQuery: function searchQuery(queryBuilder, query) {
-        queryBuilder.where('members.name', 'like', `%${query}%`);
-        queryBuilder.orWhere('members.email', 'like', `%${query}%`);
+        queryBuilder.where(function () {
+            this.where('members.name', 'like', `%${query}%`)
+                .orWhere('members.email', 'like', `%${query}%`);
+        });
     },
 
     orderRawQuery(field, direction) {
@@ -391,6 +396,7 @@ const Member = ghostBookshelf.Model.extend({
         // Will not use gravatar if privacy.useGravatar is false in config
         attrs.avatar_image = null;
         if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
+            const {gravatar} = require('../lib/image');
             attrs.avatar_image = gravatar.url(attrs.email, {size: 250, default: 'blank'});
         }
 
@@ -468,7 +474,11 @@ const Member = ghostBookshelf.Model.extend({
         // we use raw queries instead of model relationships because model hydration is expensive
         const query = ghostBookshelf.knex('members_newsletters')
             .join('newsletters', 'members_newsletters.newsletter_id', '=', 'newsletters.id')
-            .where('newsletters.status', 'active')
+            .join('members', 'members_newsletters.member_id', '=', 'members.id')
+            .where({
+                'newsletters.status': 'active',
+                'members.email_disabled': false
+            })
             .distinct('member_id as id');
 
         if (unfilteredOptions.transacting) {

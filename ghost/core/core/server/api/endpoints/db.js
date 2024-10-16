@@ -1,16 +1,21 @@
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
+const mediaInliner = require('../../services/media-inliner');
 const errors = require('@tryghost/errors');
+const {pool} = require('@tryghost/promise');
 const models = require('../../models');
 const settingsCache = require('../../../shared/settings-cache');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'db',
 
     backupContent: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'include',
@@ -47,7 +52,8 @@ module.exports = {
             disposition: {
                 type: 'file',
                 value: () => (exporter.fileName())
-            }
+            },
+            cacheInvalidate: false
         },
         permissions: true,
         async query(frame) {
@@ -81,15 +87,42 @@ module.exports = {
             cacheInvalidate: true
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const siteTimezone = settingsCache.get('timezone');
             const importTag = `#Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
+
+            let email;
+            if (frame.user) {
+                email = frame.user.get('email');
+            } else {
+                email = await models.User.getOwnerUser().get('email');
+            }
+
             return importer.importFromFile(frame.file, {
                 user: {
-                    email: frame.user.get('email')
+                    email: email
                 },
                 importTag
             });
+        }
+    },
+
+    inlineMedia: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'importContent'
+        },
+        validation: {
+            options: {
+                include: {
+                    values: ['domains']
+                }
+            }
+        },
+        async query(frame) {
+            return mediaInliner.api.startMediaInliner(frame.data.domains);
         }
     },
 
@@ -119,15 +152,15 @@ module.exports = {
 
                     return models.Post.findAll(queryOpts)
                         .then((response) => {
-                            return Promise.map(response.models, (post) => {
+                            return pool(response.models.map(post => () => {
                                 return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                            }, {concurrency: 100});
+                            }), 100);
                         })
                         .then(() => models.Tag.findAll(queryOpts))
                         .then((response) => {
-                            return Promise.map(response.models, (tag) => {
+                            return pool(response.models.map(tag => () => {
                                 return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                            }, {concurrency: 100});
+                            }), 100);
                         })
                         .catch((err) => {
                             throw new errors.InternalServerError({
@@ -141,3 +174,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

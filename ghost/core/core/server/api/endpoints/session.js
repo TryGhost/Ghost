@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -9,7 +8,8 @@ const messages = {
     accessDenied: 'Access Denied.'
 };
 
-const session = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     read(frame) {
         /*
          * TODO
@@ -32,7 +32,7 @@ const session = {
             email: object.username,
             password: object.password
         }).then((user) => {
-            return Promise.resolve((req, res, next) => {
+            return Promise.resolve(function sessionMiddleware(req, res, next) {
                 req.brute.reset(function (err) {
                     if (err) {
                         return next(err);
@@ -61,10 +61,10 @@ const session = {
         });
     },
     delete() {
-        return Promise.resolve((req, res, next) => {
+        return Promise.resolve(function destroySessionMw(req, res, next) {
             auth.session.destroySession(req, res, next);
         });
     }
 };
 
-module.exports = session;
+module.exports = controller;

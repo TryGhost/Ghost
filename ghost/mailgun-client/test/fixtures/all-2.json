@@ -11,7 +11,7 @@
           "message-id": "0201125133533.1.C55897076DBD42F2@domain.com"
         }
       },
-      "timestamp": 1606399301.266528
+      "timestamp": 1606399301.266
     },
     {
       "event": "failed",
@@ -25,7 +25,7 @@
           "message-id": "0201125133533.1.C55897076DBD42F2@domain.com"
         }
       },
-      "timestamp": 1606399301.266528
+      "timestamp": 1606399301.266
     }
   ],
   "paging": {

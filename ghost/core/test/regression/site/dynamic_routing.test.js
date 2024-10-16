@@ -65,8 +65,7 @@ describe('Dynamic Routing', function () {
 
                     $('title').text().should.equal('Ghost');
                     $('body.home-template').length.should.equal(1);
-                    $('article.post').length.should.equal(5);
-                    $('article.tag-getting-started').length.should.equal(5);
+                    $('article.post').length.should.equal(7);
 
                     done();
                 });
@@ -142,9 +141,8 @@ describe('Dynamic Routing', function () {
                     should.not.exist(res.headers['set-cookie']);
                     should.exist(res.headers.date);
 
-                    $('body').attr('class').should.eql('tag-template tag-getting-started');
+                    $('body').attr('class').should.eql('tag-template tag-getting-started has-sans-title has-sans-body');
                     $('article.post').length.should.equal(5);
-                    $('article.tag-getting-started').length.should.equal(5);
 
                     done();
                 });
@@ -229,14 +227,12 @@ describe('Dynamic Routing', function () {
                     });
             });
 
-            after(function () {
-                configUtils.restore();
+            after(async function () {
+                await configUtils.restore();
 
-                return testUtils.startGhost({forceStart: true})
-                    .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
-                        request = supertest.agent(config.get('url'));
-                    });
+                await testUtils.startGhost({forceStart: true});
+                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
+                request = supertest.agent(config.get('url'));
             });
 
             it('should redirect without slash', function (done) {
@@ -431,14 +427,12 @@ describe('Dynamic Routing', function () {
                     });
             });
 
-            after(function () {
-                configUtils.restore();
+            after(async function () {
+                await configUtils.restore();
 
-                return testUtils.startGhost({forceStart: true})
-                    .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
-                        request = supertest.agent(config.get('url'));
-                    });
+                await testUtils.startGhost({forceStart: true});
+                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
+                request = supertest.agent(config.get('url'));
             });
 
             it('should redirect without slash', function (done) {

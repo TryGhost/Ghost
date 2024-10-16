@@ -6,6 +6,7 @@ const urlUtil = require('../../../../../../../core/server/api/endpoints/utils/se
 const cleanUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/clean');
 const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
+const memberAttribution = require('../../../../../../../core/server/services/member-attribution');
 
 function createJsonModel(data) {
     return Object.assign(data, {toJSON: sinon.stub().returns(data)});
@@ -29,9 +30,13 @@ describe('Unit: utils/serializers/output/mappers', function () {
             sinon.stub(cleanUtil, 'post').returns({});
             sinon.stub(cleanUtil, 'tag').returns({});
             sinon.stub(cleanUtil, 'author').returns({});
+
+            memberAttribution.outboundLinkTagger = {
+                addToHtml: sinon.stub().callsFake(html => Promise.resolve(html))
+            };
         });
 
-        it('calls mapper on relations', function () {
+        it('calls mapper on relations', async function () {
             const frame = {
                 original: {
                     context: {}
@@ -57,7 +62,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 }]
             }));
 
-            mappers.posts(post, frame);
+            await mappers.posts(post, frame);
 
             dateUtil.forPost.callCount.should.equal(1);
 
@@ -172,6 +177,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 id: snippet.id,
                 name: snippet.name,
                 mobiledoc: snippet.mobiledoc,
+                lexical: snippet.lexical,
                 created_at: snippet.created_at,
                 updated_at: snippet.updated_at,
                 created_by: snippet.created_by,
@@ -213,7 +219,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const newsletter = createJsonModel(testUtils.DataGenerator.forKnex.createNewsletter({
                 name: 'Full newsletter',
-                slug: 'full-newsletter'
+                slug: 'full-newsletter',
+                sender_email: null,
+                sender_reply_to: 'newsletter'
             }));
 
             const mapped = mappers.newsletters(newsletter, frame);

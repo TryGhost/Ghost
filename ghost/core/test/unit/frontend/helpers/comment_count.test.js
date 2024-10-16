@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
 const {mockManager} = require('../../../utils/e2e-framework');
 
-const commentCount = require('../../../../core/frontend/helpers/comment_count');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {html} = require('common-tags');
 const {settingsCache} = proxy;
@@ -27,10 +26,10 @@ describe('{{comment_count}} helper', function () {
         sinon.stub(settingsCache, 'get');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         mockManager.restore();
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('returns a script with the post id when autowrap is disabled', async function () {

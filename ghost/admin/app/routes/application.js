@@ -1,9 +1,14 @@
+import * as Sentry from '@sentry/ember';
+import AdminXSettings from '../components/admin-x/settings';
 import AuthConfiguration from 'ember-simple-auth/configuration';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {InitSentryForEmber} from '@sentry/ember';
+import {getSentryConfig} from '../utils/sentry';
+import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -15,6 +20,7 @@ import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 function K() {
@@ -25,6 +31,11 @@ let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
+
+// make globals available for any pulled in UMD components
+// - avoids external components needing to bundle React and running into multiple version errors
+window.React = React;
+window.ReactDOM = ReactDOM;
 
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
@@ -78,6 +89,11 @@ export default Route.extend(ShortcutsRoute, {
         didTransition() {
             this.session.appLoadTransition = null;
             this.send('closeMenus');
+
+            // Need a tiny delay here to allow the router to update to the current route
+            later(() => {
+                Sentry.setTag('route', this.router.currentRouteName);
+            }, 2);
         },
 
         authorizationFailed() {
@@ -88,7 +104,7 @@ export default Route.extend(ShortcutsRoute, {
         save: K,
 
         error(error, transition) {
-            // unauthoirized errors are already handled in the ajax service
+            // unauthorized errors are already handled in the ajax service
             if (isUnauthorizedError(error)) {
                 return false;
             }
@@ -96,22 +112,27 @@ export default Route.extend(ShortcutsRoute, {
             if (isNotFoundError(error)) {
                 if (transition) {
                     transition.abort();
+
+                    let routeInfo = transition?.to;
+                    let router = this.router;
+                    let params = [];
+
+                    if (routeInfo) {
+                        for (let key of Object.keys(routeInfo.params)) {
+                            params.push(routeInfo.params[key]);
+                        }
+
+                        let url = router.urlFor(routeInfo.name, ...params)
+                            .replace(/^#\//, '')
+                            .replace(/^\//, '')
+                            .replace(/^ghost\//, '');
+
+                        return this.replaceWith('error404', url);
+                    }
                 }
 
-                let routeInfo = transition.to;
-                let router = this.router;
-                let params = [];
-
-                for (let key of Object.keys(routeInfo.params)) {
-                    params.push(routeInfo.params[key]);
-                }
-
-                let url = router.urlFor(routeInfo.name, ...params)
-                    .replace(/^#\//, '')
-                    .replace(/^\//, '')
-                    .replace(/^ghost\//, '');
-
-                return this.replaceWith('error404', url);
+                // when there's no transition we fall through to our generic error handler
+                // for network errors that will hit the isAjaxError branch below
             }
 
             if (isVersionMismatchError(error)) {
@@ -161,20 +182,8 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            InitSentryForEmber({
-                dsn: this.config.sentry_dsn,
-                environment: this.config.sentry_env,
-                release: `ghost@${this.config.version}`,
-                beforeSend(event) {
-                    event.tags = event.tags || {};
-                    event.tags.shown_to_user = event.tags.shown_to_user || false;
-                    event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
-                    return event;
-                },
-                // TransitionAborted errors surface from normal application behaviour
-                // - https://github.com/emberjs/ember.js/issues/12505
-                ignoreErrors: [/^TransitionAborted$/]
-            });
+            const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
+            Sentry.init(sentryConfig);
         }
 
         if (this.session.isAuthenticated) {
@@ -191,6 +200,11 @@ export default Route.extend(ShortcutsRoute, {
             // enforce opening the BMA in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
+
+        // Preload settings to avoid a delay when opening
+        setTimeout(() => {
+            importComponent(AdminXSettings.packageName);
+        }, 1000);
     }
 
 });

@@ -1,8 +1,9 @@
-const {DataGenerator} = require('../../../utils');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const models = require('../../../../core/server/models');
 const sinon = require('sinon');
-require('should');
+const should = require('should');
+
+const {DataGenerator} = require('../../../utils');
+const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
+const models = require('../../../../core/server/models');
 
 let agent;
 let clock;

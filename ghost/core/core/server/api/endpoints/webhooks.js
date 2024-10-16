@@ -15,14 +15,16 @@ const webhooksService = getWebhooksServiceInstance({
     WebhookModel: models.Webhook
 });
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'webhooks',
 
     add: {
         statusCode: 201,
         headers: {
             // NOTE: remove if there is ever a 'read' method
-            location: false
+            location: false,
+            cacheInvalidate: false
         },
         options: [],
         data: [],
@@ -33,6 +35,9 @@ module.exports = {
     },
 
     edit: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             before: (frame) => {
                 if (frame.options.context && frame.options.context.integration && frame.options.context.integration.id) {
@@ -84,7 +89,9 @@ module.exports = {
 
     destroy: {
         statusCode: 204,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -127,3 +134,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

@@ -1,7 +1,7 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('http');
 
-const Frame = require('./frame');
+const Frame = require('./Frame');
 const headers = require('./headers');
 
 /**
@@ -10,11 +10,17 @@ const headers = require('./headers');
  * This wrapper is used in the routes definition (see web/).
  * The wrapper receives the express request, prepares the frame and forwards the request to the pipeline.
  *
- * @param {Function} apiImpl - Pipeline wrapper, which executes the target ctrl function.
- * @return {Function}
+ * @param {import('@tryghost/api-framework').Controller} apiImpl - Pipeline wrapper, which executes the target ctrl function.
+ * @return {import('express').RequestHandler}
  */
 const http = (apiImpl) => {
-    return async (req, res, next) => {
+    /**
+     * @param {import('express').Request} req - Express request object.
+     * @param {import('express').Response} res - Express response object.
+     * @param {import('express').NextFunction} next - Express next function.
+     * @returns {Promise<import('express').RequestHandler>}
+     */
+    return async function Http(req, res, next) {
         debug(`External API request to ${req.url}`);
         let apiKey = null;
         let integration = null;

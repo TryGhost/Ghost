@@ -1,7 +1,0 @@
-name: Canary Build
-on: workflow_dispatch
-env:
-  FORCE_COLOR: 1
-jobs:
-  canary:
-    uses: tryghost/actions/.github/workflows/canary.yml@main

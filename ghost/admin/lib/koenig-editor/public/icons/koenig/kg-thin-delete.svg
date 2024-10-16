@@ -1,8 +1,0 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-    <title>
-        kg-thin-delete
-    </title>
-    <g stroke="#FFF" fill="none" fill-rule="evenodd">
-        <path stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M1 4h13.5M13 4v9.5c0 1-.5 1.5-1.5 1.5H4c-1 0-1.5-.5-1.5-1.5V4M4.75 4V2.5c0-.414.146-.768.44-1.06.292-.294.646-.44 1.06-.44h3c1 0 1.5.5 1.5 1.5V4M6.25 6.75v5.5M9.25 6.75v5.5"/>
-    </g>
-</svg>

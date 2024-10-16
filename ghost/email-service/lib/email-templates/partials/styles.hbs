@@ -11,6 +11,11 @@ img {
     max-width: 100%;
 }
 
+img.is-dark-background {
+        display: none !important;
+        mso-hide: all !important;
+}
+
 body {
     background-color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
@@ -106,8 +111,24 @@ ul {
     list-style: disc;
 }
 
+ul ul {
+    list-style: circle;
+}
+
+ul ul ul {
+    list-style: square;
+}
+
 ol {
     list-style: decimal;
+}
+
+ol ol {
+    list-style: lower-alpha;
+}
+
+ol ol ol {
+    list-style: lower-roman;
 }
 
 ul,
@@ -136,8 +157,8 @@ dd {
 }
 
 blockquote {
-    margin: 2em 0 2em 0;
-    padding: 0 25px 0 25px;
+    margin: 0;
+    padding: 0;
     border-left: {{accentColor}} 2px solid;
     font-size: 17px;
     font-weight: 500;
@@ -147,16 +168,21 @@ blockquote {
 
 blockquote.kg-blockquote-alt {
     border-left: 0 none;
-    padding: 0 50px 0 50px;
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    color: #999999;
+    color: #738a94;
 }
 
 blockquote p {
-    margin: 0.8em 0;
+    margin: 2em 25px;
+    padding: 0 !important;
     font-size: 1em;
+}
+
+blockquote.kg-blockquote-alt p {
+    margin-right: 50px;
+    margin-left: 50px;
 }
 
 blockquote small {
@@ -247,9 +273,15 @@ figure {
 figcaption {
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-    font-size: 14px;
-    padding-top: 5px;
+    font-size: 13px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     line-height: 1.5em;
+    color: #738a94;
+}
+
+figcaption a {
+    text-decoration: none!important;
 }
 
 code {
@@ -266,11 +298,13 @@ pre {
     color: #ffffff;
 }
 
-p code {
+p code,
+li code {
     background: #F2F7FA;
     word-break: break-all;
     padding: 1px 7px;
     border-radius: 3px;
+    color: {{accentColor}};
 }
 
 figure blockquote p {
@@ -278,29 +312,25 @@ figure blockquote p {
 }
 
 .header-image {
-    padding-top: 16px;
+    padding-top: 24px;
+    padding-bottom: 16px;
 }
 
 .site-icon {
-    padding-bottom: 10px;
-    padding-top: 20px;
+    padding-bottom: 8px;
+    padding-top: 8px;
     text-align: center;
     border-radius: 3px;
 }
 
 .site-icon img {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 3px;
 }
 
 .site-info {
-    padding-top: 50px;
-}
-
-.site-info-bordered {
-    padding-top: 50px;
-    border-bottom: 1px solid #e5eff5;
+    padding-top: 32px;
 }
 
 .site-url {
@@ -313,7 +343,7 @@ figure blockquote p {
 }
 
 .site-url-bottom-padding {
-    padding-bottom: 50px;
+    padding-bottom: 12px;
 }
 
 .site-title {
@@ -321,19 +351,27 @@ figure blockquote p {
 }
 
 .site-subtitle {
-    color: #8695a4;
-    font-size: 14px;
+    color: #738a94;
+    font-size: 13px;
     font-weight: 400;
     text-transform: none;
 }
 
 .post-title {
-    padding-bottom: 10px;
-    font-size: 42px;
+    font-size: 36px;
     line-height: 1.1em;
     font-weight: 700;
     text-align: center;
 }
+
+.post-title-with-excerpt {
+    padding-bottom: 8px;
+}
+
+.post-title-no-excerpt {
+    padding-bottom: 16px;
+}
+
 .post-title-serif {
     font-family: Georgia, serif;
     letter-spacing: -0.01em;
@@ -343,22 +381,57 @@ figure blockquote p {
 }
 
 .post-title-link {
-    color: #15212A;
     display: block;
+    margin-top: 32px;
+    color: #15212A;
     text-align: center;
-    margin-top: 50px;
+    line-height: 1.1em;
 }
+
 .post-title-link-left {
+    text-align: left;
+}
+
+.post-excerpt-wrapper {
+    width: 100%;
+    max-width: 600px !important;
+}
+
+.post-excerpt {
+    margin: 0;
+    color: #15212A;
+    font-size: 19px;
+    line-height: 1.4em;
+    text-align: center;
+}
+
+.post-excerpt-with-feature-image {
+    padding-bottom: 28px;
+}
+
+.post-excerpt-no-feature-image {
+    padding-bottom: 32px;
+}
+
+.post-excerpt-serif-serif {
+    font-family: Georgia, serif;
+    font-size: 20px;
+}
+
+.post-excerpt-serif-sans {
+    font-size: 20px;
+    font-family: Georgia, serif;
+}
+
+.post-excerpt-left {
     text-align: left;
 }
 
 .post-meta,
 .view-online {
-    padding-bottom: 50px;
     color: #738a94;
     font-size: 13px;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
+    font-weight: 400;
     text-align: center;
 }
 
@@ -366,36 +439,196 @@ figure blockquote p {
     text-align: left;
 }
 
-.post-meta-date {
-    white-space: nowrap;
+.post-meta-left.view-online-mobile {
+    display: none !important;
 }
 
-.view-online {
+.post-meta-left.view-online {
     text-align: right;
+}
+
+.post-meta-center.view-online {
+    display: none !important;
+}
+
+.post-meta-center .view-online,
+.post-meta-center .view-online a {
+    text-decoration: underline !important;
+}
+
+.post-meta-date {
+    white-space: nowrap;
 }
 
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: #15212A;
+    color: #738a94;
+    text-decoration: underline !important;
 }
 
 .feature-image {
     padding-bottom: 30px;
     width: 100%;
+    text-align: center;
+}
+
+.feature-image-row:first-child > td,
+.header-image-row + .feature-image-row > td,
+.site-info-row + .feature-image-row > td {
+    padding-top: 24px;
 }
 
 .feature-image-with-caption {
-    padding-bottom: 10px;
+    width: 100%;
+    padding: 0;
+    font-size: 13px!important;
 }
 
 .feature-image-caption {
     width: 100%;
-    padding-bottom: 30px;
+    padding-top: 5px;
+    padding-bottom: 32px;
     text-align: center;
-    font-size: 13px;
+    font-size: 13px !important;
     color: #738a94;
+    line-height: 1.5em;
 }
+
+.kg-card-figcaption {
+    font-size: 13px;
+}
+
+/* -------------------------------------
+    FEEDBACK BUTTONS
+------------------------------------- */
+
+.feedback-buttons {
+    width: auto !important;
+    margin: auto;
+}
+
+.feedback-buttons-mobile {
+    display: none !important;
+    mso-hide: all !important;
+}
+
+.feedback-button-mobile-text {
+    color: #15212A;
+    font-size: 13px !important;
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+/* -------------------------------------
+    LATEST POSTS TABLE
+------------------------------------- */
+
+.latest-posts-header {
+    margin: 0;
+    padding: 8px 0 8px;
+    color: #15212A;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.latest-post {
+    max-width: 600px !important;
+    padding: 16px 0;
+}
+
+.latest-post a {
+    text-decoration: none !important;
+}
+
+.latest-post-img a {
+    display: block;
+    height: 100px;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+}
+
+.latest-post-img img {
+    object-fit: cover;
+}
+
+.latest-post-title {
+    padding-right: 12px;
+}
+
+.latest-post h4 {
+    margin: 0;
+    padding: 2px 0 4px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.latest-post h4.no-image {
+    padding: 12px 0 4px;
+}
+
+.latest-post h4 a {
+    color: #15212A !important;
+}
+
+.latest-post p {
+    margin: 0;
+    padding: 0;
+    color: #738a94;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.latest-post p a {
+    color: #738a94 !important;
+}
+
+/* -------------------------------------
+    SUBSCRIPTION DETAILS BOX
+------------------------------------- */
+
+.subscription-box {
+    padding: 32px 0;
+    border-bottom: 1px solid #e5eff5;
+    color: #15212A;
+}
+
+.subscription-box h3 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+}
+
+.subscription-box p {
+    margin-bottom: 0;
+    color: #15212A !important;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.45em;
+    text-decoration: none;
+}
+
+.subscription-box p a {
+    color: #15212A !important;
+    text-decoration: none;
+}
+
+.manage-subscription {
+    white-space: nowrap;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: right;
+    line-height: 1.45em;
+    vertical-align: bottom;
+    color: {{accentColor}};
+}
+
+/* -------------------------------------
+    POST CONTENT
+------------------------------------- */
 
 .post-content {
     max-width: 600px !important;
@@ -414,6 +647,10 @@ figure blockquote p {
     color: #15212A;
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
+}
+
+.post-content-row:first-child > td, .header-image-row + .post-content-row > td {
+    padding-top: 32px;
 }
 
 .post-content a,
@@ -442,8 +679,12 @@ a[data-flickr-embed] img {
 .kg-image-card img {
     display: block;
     margin: 0 auto;
+    height: auto;
     width: auto;
-    height: auto !important;
+}
+
+.kg-image-card span {
+    text-align: center;
 }
 
 .kg-bookmark-container {
@@ -510,6 +751,10 @@ a[data-flickr-embed] img {
     margin-right: 8px;
     width: 22px;
     height: 22px;
+}
+
+.kg-bookmark-icon[src$=".svg"] {
+    display: none;
 }
 
 .kg-bookmark-author {
@@ -596,7 +841,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-audio-thumbnail.placeholder {
-    background: {{accentColor}} !important;
+    background-color: {{accentColor}} !important;
 }
 
 .kg-callout-card {
@@ -604,10 +849,6 @@ a[data-flickr-embed] img {
     margin: 0 0 1.5em 0;
     padding: 20px 28px;
     border-radius: 3px;
-}
-
-.kg-callout-card p {
-    margin: 0
 }
 
 .kg-callout-card-grey {
@@ -748,7 +989,7 @@ a[data-flickr-embed] img {
     margin: 0;
     padding: 8px 16px;
     text-decoration: none !important;
-    color: #15171A !important;
+    color: #15171A;
 }
 
 .kg-size-large .kg-header-card-button {
@@ -764,6 +1005,165 @@ a[data-flickr-embed] img {
     color: #ffffff !important;
 }
 
+/* Header v2 */
+
+.kg-header-card.kg-v2 {
+    padding: 0;
+    text-align: inherit;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-image {
+    height: 320px;
+    background-repeat: no-repeat;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-content {
+    padding: 80px 48px;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+    padding-top: 64px;
+    padding-bottom: 64px;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-heading {
+    margin: 0;
+    line-height: 1em;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-subheading {
+    margin: 0.75em 0 0;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-heading a,
+.kg-header-card.kg-v2 .kg-header-card-subheading a {
+    color: inherit;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-button {
+    margin-top: 24px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.kg-product-card {
+    width: 100%;
+    margin: 0 0 1.5em;
+    padding: 20px;
+    border-radius: 3px;
+    border: 1px solid #e5eff5;
+}
+.kg-product-card-image {
+    width: 100%;
+}
+.kg-product-rating img {
+    width: 96px;
+    border: none;
+}
+.kg-audio-card {
+    width: auto;
+    width: 100%;
+    margin: 0 auto 1.5em;
+    border-radius: 3px;
+    border: 1px solid #e5eff5;
+}
+.kg-audio-title {
+    display: block;
+    padding-right: 20px;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 18px;
+    text-decoration: none !important;
+    color: #15212A !important;
+}
+.kg-audio-play-button {
+    display: block;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    color: #15212A !important;
+    border-style: solid;
+    border-width: 8px 0px 8px 16px;
+    border-color: transparent transparent transparent currentColor;
+}
+.kg-audio-duration {
+    display: block;
+    text-decoration: none !important;
+    font-size: 13px;
+    color: #15171A !important;
+}
+.kg-audio-link {
+    color: #738a94 !important;
+}
+.kg-file-card {
+    width: auto;
+    width: 100%;
+    margin: 0 0 1.5em 0;
+    border-radius: 3px;
+    border: 1px solid #e5eff5;
+}
+.kg-file-title {
+    display: block;
+    width: 100%;
+    padding-left: 12px;
+    padding-top: 8px;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 1.3em;
+    text-decoration: none !important;
+    color: #15212A !important;
+}
+.kg-file-description {
+    display: block;
+    width: 100%;
+    padding-left: 12px;
+    padding-top: 2px;
+    font-size: 15px;
+    line-height: 1.4em;
+    text-decoration: none !important;
+    color: #738a94 !important;
+}
+.kg-file-meta {
+    display: block;
+    width: 100%;
+    padding-left: 12px;
+    padding-top: 4px;
+    padding-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.4em;
+    text-decoration: none !important;
+    color: #738a94 !important;
+}
+.kg-file-name {
+    font-weight: 500;
+    color: #15212A !important;
+}
+.kg-file-thumbnail {
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 2px;
+    background-color: {{accentColor}} !important;
+}
+.kg-twitter-card {
+    width: auto;
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 12px;
+    border: 1px solid #e5eff5;
+}
+
+.kg-toggle-card {
+    background: transparent;
+    padding: 20px;
+    margin-bottom: 1.5em;
+    border-radius: 4px;
+    border: 1px solid #738a94;
+}
+
 
 /* -------------------------------------
     HEADER, FOOTER, MAIN
@@ -771,12 +1171,12 @@ a[data-flickr-embed] img {
 .main {
     background: #ffffff;
     border-radius: 3px;
+    border-spacing: 20px 0;
     width: 100%;
 }
 
 .wrapper {
     box-sizing: border-box;
-    padding: 0 20px;
 }
 
 .content-block {
@@ -788,7 +1188,7 @@ a[data-flickr-embed] img {
     color: #738a94;
     margin-top: 20px;
     text-align: center;
-    font-size: 13px;
+    font-size: 13px!important;
     padding-bottom: 10px;
     padding-top: 10px;
     padding-left: 30px;
@@ -799,6 +1199,7 @@ a[data-flickr-embed] img {
 .footer a {
     color: #738a94;
     text-decoration: underline;
+    font-size: 13px;
 }
 
 /* -------------------------------------
@@ -822,6 +1223,7 @@ a[data-flickr-embed] img {
     background-color: #ffffff;
     border-radius: 5px;
     text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
 .btn a {
@@ -907,6 +1309,14 @@ a[data-flickr-embed] img {
     width: 0;
 }
 
+.mobile-only {
+    display: none;
+}
+
+.hide-desktop {
+    display: none;
+}
+
 /* -------------------------------------
     RESPONSIVE AND MOBILE FRIENDLY STYLES
 ------------------------------------- */
@@ -917,22 +1327,45 @@ a[data-flickr-embed] img {
         min-width: 100%;
     }
 
+    .hide-mobile {
+        display: none;
+    }
+
+    .mobile-only {
+        display: initial !important;
+    }
+
+    .hide-desktop {
+        display: initial !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
     table.body p,
     table.body ul,
     table.body ol,
-    table.body td,
-    table.body span {
+    table.body td {
+        font-size: 16px;
+    }
+
+    table.body .post-excerpt {
         font-size: 16px !important;
+    }
+
+    table.body .kg-callout-card {
+        padding: 16px 24px !important;
+    }
+
+    table.body .kg-callout-text {
+        font-size: 16px !important;
+        line-height: 1.5em !important;
     }
 
     table.body pre {
         white-space: pre-wrap !important;
         word-break: break-word !important;
-    }
-
-    table.body .wrapper,
-    table.body .article {
-        padding: 0 10px !important;
     }
 
     table.body .content {
@@ -945,6 +1378,7 @@ a[data-flickr-embed] img {
     }
 
     table.body .main {
+        border-spacing: 10px 0 !important;
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
@@ -964,35 +1398,140 @@ a[data-flickr-embed] img {
         width: auto !important;
     }
 
+    table.body .site-icon {
+        padding-top: 0 !important;
+    }
+
+    table.body .site-info {
+        padding-top: 24px !important;
+    }
+
+    table.body .post-title-link {
+        margin-top: 24px !important;
+    }
+
+    table.body .post-meta-wrapper {
+        padding-bottom: 24px !important;
+    }
+
     table.body .site-icon img {
-        width: 40px !important;
-        height: 40px !important;
+        width: 36px !important;
+        height: 36px !important;
     }
 
     table.body .site-url a {
-        font-size: 14px !important;
-        padding-bottom: 15px !important;
+        font-size: 13px !important;
+        padding-bottom: 16px !important;
     }
 
-    table.body .post-meta {
+    table.body .post-meta,
+    table.body .post-meta-date {
         white-space: normal !important;
-        font-size: 12px !important;
-        line-height: 1.5em;
+        font-size: 13px !important;
+        line-height: 1.2em;
+    }
+
+    table.body .post-meta,
+    table.body .view-online {
+        width: 100% !important;
+    }
+
+    table.body .post-meta-left,
+    table.body .post-meta-left.view-online {
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    table.body .post-meta.view-online-mobile {
+        display: table-row !important;
+    }
+
+    table.body .post-meta-left.view-online-mobile,
+    table.body .post-meta-left.view-online-mobile .view-online {
+        text-align: left !important;
+    }
+
+    table.body .post-meta.view-online.desktop {
+        display: none !important;
+    }
+
+    table.body .view-online {
+        text-decoration: underline;
+    }
+
+
+    table.body .footer p, table.body .footer p span {
+        font-size: 13px !important;
     }
 
     table.body .view-online-link,
     table.body .footer,
     table.body .footer a {
-        font-size: 12px !important;
+        font-size: 13px !important;
     }
 
     table.body .post-title a {
-        font-size: 32px !important;
-        line-height: 1.15em !important;
+        font-size: 26px !important;
+        line-height: 1.1em !important;
+    }
+
+    table.feedback-buttons {
+        display: none !important;
+    }
+
+    table.feedback-buttons-mobile {
+        display: table !important;
+        width: 100% !important;
+        max-width: 390px;
+    }
+
+    table.body .feedback-button-mobile-text {
+        font-size: 13px !important;
+    }
+
+    table.body .latest-posts-header {
+        font-size: 12px !important;
+    }
+
+    table.body .latest-post-title {
+        padding-right: 8px !important;
+    }
+
+    table.body .latest-post h4, table.body .latest-post h4 span {
+        padding: 4px 0 6px !important;
+        font-size: 15px !important;
+    }
+
+    table.body .latest-post-excerpt,
+    table.body .latest-post-excerpt a,
+    table.body .latest-post-excerpt span {
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+    }
+
+    table.body .subscription-box h3 {
+        font-size: 14px !important;
+    }
+
+    table.body .subscription-box p,
+    table.body .subscription-box p span {
+        font-size: 13px !important;
+    }
+
+    table.body .subscription-details,
+    table.body .manage-subscription {
+        display: inline-block;
+        width: 100%;
+        text-align: left !important;
+        font-size: 13px !important;
+    }
+
+    table.body .subscription-details {
+        padding-bottom: 12px;
     }
 
     table.body .kg-bookmark-card {
-        width: 90vw !important;
+        width: 90vw;
     }
 
     table.body .kg-bookmark-thumbnail {
@@ -1012,7 +1551,8 @@ a[data-flickr-embed] img {
         line-height: 1.3em !important;
     }
 
-    table.body h2 {
+    table.body h2,
+    table.body h2 span {
         font-size: 26px !important;
         line-height: 1.22em !important;
     }
@@ -1038,31 +1578,66 @@ a[data-flickr-embed] img {
     }
 
     table.body blockquote {
-        font-size: 17px;
+        font-size: 16px !important;
         line-height: 1.6em;
         margin-bottom: 0;
-        padding-left: 15px;
+    }
+
+    table.body blockquote p {
+        margin-right: 15px !important;
+        margin-left: 15px !important;
     }
 
     table.body blockquote.kg-blockquote-alt {
         border-left: 0 none !important;
-        margin: 0 0 2.5em 0 !important;
-        padding: 0 50px 0 50px !important;
-        font-size: 1.2em;
+        margin: 0 !important;
+        font-size: 18px !important;
+        line-height: 1.4em !important;
     }
 
-    table.body blockquote + * {
-        margin-top: 1.5em !important;
+    table.body blockquote.kg-blockquote-alt p {
+        margin-right: 20px !important;
+        margin-left: 20px !important;
     }
 
     table.body hr {
         margin: 2em 0 !important;
     }
 
-    table.body figcaption,
-    table.body figcaption a {
-        font-size: 13px !important;
+    table.body .kg-header-card.kg-v2 span {
+        font-size: inherit !important;
     }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-content {
+        padding-top: 64px !important;
+        padding-bottom: 64px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+        padding-top: 52px !important;
+        padding-bottom: 52px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-heading {
+        font-size: 2.2em !important;
+        line-height: 1.1 !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
+        line-height: 1.3em !important;
+    }
+
+   .feature-image-caption {
+        font-size: 13px!important;
+   }
+
+   .kg-card-figcaption {
+        font-size: 13px!important;
+    }
+
+   .kg-card-figcaption p, .kg-card-figcaption p span {
+        font-size: 13px!important;
+   }
 
 }
 
@@ -1070,6 +1645,10 @@ a[data-flickr-embed] img {
     PRESERVE THESE STYLES IN THE HEAD
 ------------------------------------- */
 @media all {
+    .subscription-details p.hidden {
+        display: none !important;
+    }
+
     .ExternalClass {
         width: 100%;
     }
@@ -1123,4 +1702,5 @@ a[data-flickr-embed] img {
         height: 30px;
     }
 {{/if}}
+
 </style>

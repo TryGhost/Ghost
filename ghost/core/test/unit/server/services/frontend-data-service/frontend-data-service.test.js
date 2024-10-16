@@ -1,9 +1,11 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 
 const models = require('../../../../../core/server/models');
 
-const FrontendDataService = require('../../../../../core/server/services/frontend-data-service/frontend-data-service');
+const FrontendDataService = require('../../../../../core/server/services/frontend-data-service/FrontendDataService');
+
+const logging = require('@tryghost/logging');
 
 describe('Frontend Data Service', function () {
     let service, modelStub, fakeModel;
@@ -32,11 +34,14 @@ describe('Frontend Data Service', function () {
 
     it('returns null if anything goes wrong', async function () {
         modelStub.returns();
+        const loggingStub = sinon.stub(logging, 'error');
 
         const key = await service.getFrontendKey();
 
         sinon.assert.calledOnce(modelStub);
         assert.equal(key, null);
+        sinon.assert.calledOnce(loggingStub);
+        assert.equal(loggingStub.firstCall.firstArg.message, 'Unable to find the internal frontend key');
     });
 
     it('returns the key from a model response', async function () {

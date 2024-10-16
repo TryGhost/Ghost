@@ -61,6 +61,7 @@
     max-width: 20px;
     vertical-align: middle;
     fill: var(--midgrey);
+    color: var(--midgrey);
 }
 
 .gh-publish-preview-newtab {
@@ -259,7 +260,7 @@
 
 /* Mobile preview */
 .gh-post-preview-iframe {
-    transform: scale(0.84);
+    transform: scale(0.8);
     transform-origin: 0 0;
     width: 361px;
     height: 786px;
@@ -284,6 +285,12 @@
     overflow: auto;
 }
 
+@media (max-width: 1024px) {
+    .gh-post-preview-email-container {
+        height: calc(100vh - 64px);
+    }
+}
+
 .gh-post-preview-email-mockup {
     display: flex;
     flex-direction: column;
@@ -302,7 +309,7 @@
         0 41.8px 33.4px rgba(0, 0, 0, 0.05),
         0 100px 80px rgba(0, 0, 0, 0.07);
     ;
-    border-radius: 3px;
+    border-radius: 3px 3px 0 0;
 }
 
 .gh-post-preview-email-container iframe {
@@ -428,6 +435,13 @@
     width: 40px;
     height: 40px;
     margin-right: 8px;
+}
+
+.gh-twitter-container .social-icon,
+.gh-social-twitter-container .social-icon {
+    width: 34px;
+    height: 34px;
+    margin-right: 12px;
 }
 
 .gh-social-og-container {

@@ -25,6 +25,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
     @tracked submitting = false;
     @tracked loggingIn = false;
+    @tracked flowNotification = '';
     @tracked flowErrors = '';
     @tracked passwordResetEmailSent = false;
 
@@ -58,6 +59,8 @@ export default class SigninController extends Controller.extend(ValidationEngine
                 return this.notifications.showAPIError(error);
             }
 
+            this.signin.errors.clear();
+
             if (error && error.payload && error.payload.errors) {
                 let [mainError] = error.payload.errors;
 
@@ -65,6 +68,11 @@ export default class SigninController extends Controller.extend(ValidationEngine
                 mainError.context = htmlSafe(mainError.context || '');
 
                 this.flowErrors = (mainError.context.string || mainError.message.string);
+
+                if (mainError.type === 'TooManyRequestsError') {
+                    // Prefer full message in this case
+                    this.flowErrors = mainError.message.string;
+                }
 
                 if (mainError.type === 'PasswordResetRequiredError') {
                     this.passwordResetEmailSent = true;
@@ -116,21 +124,19 @@ export default class SigninController extends Controller.extend(ValidationEngine
         let notifications = this.notifications;
 
         this.flowErrors = '';
+        this.flowNotification = '';
         // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
         this.hasValidated.addObject('identification');
 
         try {
             yield this.validate({property: 'forgotPassword'});
             yield this.ajax.post(forgottenUrl, {data: {password_reset: [{email}]}});
-            notifications.showAlert(
-                'Please check your email for instructions.',
-                {type: 'info', key: 'forgot-password.send.success'}
-            );
+            this.flowNotification = 'An email with password reset instructions has been sent.';
             return true;
         } catch (error) {
             // ValidationEngine throws "undefined" for failed validation
             if (!error) {
-                return this.flowErrors = 'We need your email address to reset your password!';
+                return this.flowErrors = 'We need your email address to reset your password.';
             }
 
             if (isVersionMismatchError(error)) {

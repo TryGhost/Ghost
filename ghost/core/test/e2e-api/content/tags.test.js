@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
@@ -18,8 +18,8 @@ describe('Tags Content API', function () {
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     const validKey = localUtils.getValidKey();

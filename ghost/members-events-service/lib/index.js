@@ -1,4 +1,5 @@
 module.exports = {
-    LastSeenAtUpdater: require('./last-seen-at-updater'),
-    EventStorage: require('./event-storage')
+    LastSeenAtUpdater: require('./LastSeenAtUpdater'),
+    LastSeenAtCache: require('./LastSeenAtCache'),
+    EventStorage: require('./EventStorage')
 };

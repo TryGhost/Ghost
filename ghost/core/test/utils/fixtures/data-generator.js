@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
@@ -27,7 +27,7 @@ DataGenerator.Content = {
             id: '618ba1ffbe2896088840a6df',
             title: 'HTML Ipsum',
             slug: 'html-ipsum',
-            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
+            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
             published_at: new Date('2015-01-01'),
             custom_excerpt: 'This is my custom excerpt!',
             feature_image: 'https://example.com/super_photo.jpg'
@@ -36,7 +36,7 @@ DataGenerator.Content = {
             id: '618ba1ffbe2896088840a6e1',
             title: 'Ghostly Kitchen Sink',
             slug: 'ghostly-kitchen-sink',
-            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><img src="__GHOST_URL__/content/images/lol.jpg"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
+            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><img src="__GHOST_URL__/content/images/lol.jpg"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
             published_at: new Date('2015-01-02'),
             feature_image: '__GHOST_URL__/content/images/2018/hey.jpg'
         },
@@ -56,7 +56,7 @@ DataGenerator.Content = {
             id: '618ba1ffbe2896088840a6e5',
             title: 'Not finished yet',
             slug: 'unfinished',
-            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
+            mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
             status: 'draft',
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c903'
         },
@@ -64,7 +64,9 @@ DataGenerator.Content = {
             id: '618ba1ffbe2896088840a6e7',
             title: 'Not so short, bit complex',
             slug: 'not-so-short-bit-complex',
+            // NOTE: this has some invalid HTML, has a missing `</p>` after `</nav>`
             mobiledoc: DataGenerator.markdownToMobiledoc('<p><nav><ul><li><a href=\"#nowhere\" title=\"Anchor URL\">Lorem</a></li><li><a href=\"__GHOST_URL__/about#nowhere\" title=\"Relative URL\">Aliquam</a></li><li><a href=\"//somewhere.com/link#nowhere\" title=\"Protocol Relative URL\">Tortor</a></li><li><a href=\"http://somewhere.com/link#nowhere\" title=\"Absolute URL\">Morbi</a></li><li><a href=\"#nowhere\" title=\"Praesent dapibus, neque id cursus faucibus\">Praesent</a></li><li><a href=\"#nowhere\" title=\"Pellentesque fermentum dolor\">Pellentesque</a></li></ul></nav><p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p><table><thead><tr><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>a</td><td>b</td><td>c</td><td>d</td></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr><tr><td>i</td><td>j</td><td>k</td><td>l</td></tr></tbody></table><dl><dt>Definition list</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd><dt>Lorem ipsum dolor sit amet</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd></dl><ul><li>Morbi in sem quis dui placerat ornare. Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu. Cras consequat.</li><li>Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus.</li><li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li><li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li></ul></p>'),
+            published_at: new Date('2015-01-04'),
             featured: true
         },
         {
@@ -131,7 +133,8 @@ DataGenerator.Content = {
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
             password: 'Sl1m3rson99',
-            profile_image: 'https://example.com/super_photo.jpg'
+            profile_image: 'https://example.com/super_photo.jpg',
+            paid_subscription_canceled_notification: true
         },
         {
             // admin
@@ -301,14 +304,18 @@ DataGenerator.Content = {
             email: 'member1@test.com',
             name: 'Mr Egg',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
-            status: 'free'
+            status: 'free',
+            email_disabled: false,
+            created_at: moment().subtract(8, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
             email: 'member2@test.com',
             email_open_rate: 50,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
-            status: 'free'
+            status: 'free',
+            email_disabled: false,
+            created_at: moment().subtract(7, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -316,28 +323,36 @@ DataGenerator.Content = {
             name: 'Egon Spengler',
             email_open_rate: 80,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
-            status: 'paid'
+            status: 'paid',
+            email_disabled: false,
+            created_at: moment().subtract(6, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
             email: 'trialing@test.com',
             name: 'Ray Stantz',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
-            status: 'paid'
+            status: 'paid',
+            email_disabled: false,
+            created_at: moment().subtract(5, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
             email: 'comped@test.com',
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
-            status: 'paid'
+            status: 'paid',
+            email_disabled: false,
+            created_at: moment().subtract(4, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
             email: 'vip@test.com',
             name: 'Winston Zeddemore',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
-            status: 'free'
+            status: 'free',
+            email_disabled: false,
+            created_at: moment().subtract(3, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -345,7 +360,9 @@ DataGenerator.Content = {
             name: 'Peter Venkman',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
             status: 'paid',
-            subscribed: false
+            subscribed: false,
+            email_disabled: false,
+            created_at: moment().subtract(2, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -353,7 +370,9 @@ DataGenerator.Content = {
             name: 'Dana Barrett',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
             status: 'paid',
-            subscribed: false
+            subscribed: false,
+            email_disabled: false,
+            created_at: moment().subtract(1, 'day').toDate()
         }
     ],
 
@@ -721,25 +740,27 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
             status: 'submitted',
-            email_count: 2,
+            email_count: 0, // match the number of email_recipients relations below
             recipient_filter: 'all',
             subject: 'You got mailed!',
             html: '<p>Look! I\'m an email</p>',
             plaintext: 'Waba-daba-dab-da',
             track_opens: false,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            newsletter_id: null // newsletter[0] relation added later
         },
         {
             id: ObjectId().toHexString(),
             uuid: '365daa11-4bf0-4614-ad43-6346387ffa00',
             status: 'failed',
             error: 'Everything went south',
-            email_count: 3,
+            email_count: 3, // doesn't match the number of email_recipients relations below, some calculations may be off
             subject: 'You got mailed! Again!',
             html: '<p>What\'s that? Another email!</p>',
             plaintext: 'yes this is an email',
             track_opens: false,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            newsletter_id: null // newsletter[1] relation added later
         }
     ],
 
@@ -890,6 +911,42 @@ DataGenerator.Content = {
             created_at: null,
             updated_at: null
         }
+    ],
+
+    // TODO: build mentions for testing browse endpoint
+    mentions: [
+        // source: webmention.source,
+        // target: webmention.target,
+        // timestamp: new Date(),
+        // payload: webmention.payload,
+        // resourceId: resourceInfo.type === 'post' ? resourceInfo.id : null,
+        // sourceTitle: metadata.title,
+        // sourceSiteTitle: metadata.siteTitle,
+        // sourceAuthor: metadata.author,
+        // sourceExcerpt: metadata.excerpt,
+        // sourceFavicon: metadata.favicon,
+        // sourceFeaturedImage: metadata.image
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://source.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title!',
+            sourceExcerpt: 'Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://anothersource.com',
+            target: 'https://anothertarget.com',
+            sourceTitle: 'Another Title!',
+            sourceExcerpt: 'Another Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://src.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title goes here',
+            sourceExcerpt: 'Excerpt goes here'
+        }
     ]
 };
 
@@ -988,7 +1045,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             title: 'title',
             status: 'published',
             feature_image: null,
@@ -1058,7 +1115,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
             client_uri: 'http://localhost:9000',
@@ -1107,7 +1164,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
@@ -1200,6 +1257,9 @@ DataGenerator.forKnex = (function () {
             slug: 'gold',
             active: true,
             type: 'paid',
+            currency: 'usd',
+            monthly_price: 500,
+            yearly_price: 5000,
             visibility: 'public',
             benefits: [],
             created_by: DataGenerator.Content.users[0].id,
@@ -1247,7 +1307,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             expires: Date.now() + constants.ONE_DAY_MS
         });
     }
@@ -1257,7 +1317,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),
@@ -1337,6 +1397,13 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             created_at: new Date(),
             updated_at: new Date()
+        });
+    }
+
+    function createMention(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            created_at: new Date()
         });
     }
 
@@ -1626,7 +1693,7 @@ DataGenerator.forKnex = (function () {
         createEmailRecipient(DataGenerator.Content.email_recipients[5])
     ];
 
-    const email_recipient_failures = email_recipients.flatMap((recipient, index) => {
+    const email_recipient_failures = email_recipients.flatMap((recipient) => {
         if (recipient.failed_at === null) {
             if (recipient.delivered_at === null) {
                 return [{
@@ -1849,6 +1916,12 @@ DataGenerator.forKnex = (function () {
         createLink(DataGenerator.Content.links[2])
     ];
 
+    const mentions = [
+        createMention(DataGenerator.Content.mentions[0]),
+        createMention(DataGenerator.Content.mentions[1]),
+        createMention(DataGenerator.Content.mentions[2])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1880,6 +1953,7 @@ DataGenerator.forKnex = (function () {
         createNewsletter,
         createOffer,
         createComment,
+        createMention,
 
         invites,
         posts,
@@ -1912,6 +1986,7 @@ DataGenerator.forKnex = (function () {
         comments,
         redirects,
         links,
+        mentions,
 
         members_paid_subscription_events,
         members_created_events,

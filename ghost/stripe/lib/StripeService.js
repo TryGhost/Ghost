@@ -1,34 +1,68 @@
 const WebhookManager = require('./WebhookManager');
 const StripeAPI = require('./StripeAPI');
-const StripeMigrations = require('./Migrations');
+const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
+const DomainEvents = require('@tryghost/domain-events');
+const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
+const SubscriptionEventService = require('./services/webhook/SubscriptionEventService');
+const InvoiceEventService = require('./services/webhook/InvoiceEventService');
+const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
 module.exports = class StripeService {
     constructor({
+        labs,
         membersService,
+        donationService,
+        staffService,
         StripeWebhook,
         models
     }) {
-        const api = new StripeAPI();
-        const webhookManager = new WebhookManager({
-            StripeWebhook,
-            api
-        });
+        const api = new StripeAPI({labs});
         const migrations = new StripeMigrations({
             models,
             api
         });
-        const webhookController = new WebhookController({
-            webhookManager,
+
+        const webhookManager = new WebhookManager({
+            StripeWebhook,
+            api
+        });
+
+        const subscriptionEventService = new SubscriptionEventService({
+            get memberRepository(){
+                return membersService.api.members;
+            }
+        });
+
+        const invoiceEventService = new InvoiceEventService({
             api,
             get memberRepository(){
                 return membersService.api.members;
             },
-            get productRepository() {
+            get eventRepository(){
+                return membersService.api.events;
+            },
+            get productRepository(){
+                return membersService.api.productRepository;
+            }
+        });
+
+        const checkoutSessionEventService = new CheckoutSessionEventService({
+            api,
+            get memberRepository(){
+                return membersService.api.members;
+            },
+            get productRepository(){
                 return membersService.api.productRepository;
             },
-            get eventRepository() {
+            get eventRepository(){
                 return membersService.api.events;
+            },
+            get donationRepository(){
+                return donationService.repository;
+            },
+            get staffServiceEmails(){
+                return staffService.api.emails;
             },
             sendSignupEmail(email){
                 return membersService.api.sendEmailWithMagicLink({
@@ -42,6 +76,13 @@ module.exports = class StripeService {
             }
         });
 
+        const webhookController = new WebhookController({
+            webhookManager,
+            subscriptionEventService,
+            invoiceEventService,
+            checkoutSessionEventService
+        });
+
         this.models = models;
         this.api = api;
         this.webhookManager = webhookManager;
@@ -50,6 +91,7 @@ module.exports = class StripeService {
     }
 
     async connect() {
+        DomainEvents.dispatch(StripeLiveEnabledEvent.create({message: 'Stripe Live Mode Enabled'}));
     }
 
     async disconnect() {
@@ -66,6 +108,8 @@ module.exports = class StripeService {
         await this.webhookManager.stop();
 
         this.api.configure(null);
+
+        DomainEvents.dispatch(StripeLiveDisabledEvent.create({message: 'Stripe Live Mode Disabled'}));
     }
 
     async configure(config) {
@@ -73,6 +117,9 @@ module.exports = class StripeService {
             secretKey: config.secretKey,
             publicKey: config.publicKey,
             enablePromoCodes: config.enablePromoCodes,
+            get enableAutomaticTax() {
+                return config.enableAutomaticTax;
+            },
             checkoutSessionSuccessUrl: config.checkoutSessionSuccessUrl,
             checkoutSessionCancelUrl: config.checkoutSessionCancelUrl,
             checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,

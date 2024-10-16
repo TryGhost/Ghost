@@ -84,7 +84,7 @@ describe('Acceptance: Setup', function () {
 
             // it redirects to the dashboard
             expect(currentURL(), 'url after submitting account details')
-                .to.equal('/setup/done');
+                .to.equal('/dashboard');
         });
 
         it('handles validation errors in setup', async function () {
@@ -182,9 +182,9 @@ describe('Acceptance: Setup', function () {
             await authenticateSession();
         });
 
-        it('transitions to done screen', async function () {
+        it('transitions to dashboard', async function () {
             await visit('/?firstStart=true');
-            expect(currentURL()).to.equal('/setup/done');
+            expect(currentURL()).to.equal('/dashboard');
         });
     });
 });

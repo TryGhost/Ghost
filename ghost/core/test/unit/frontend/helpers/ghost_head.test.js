@@ -10,6 +10,7 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
@@ -101,6 +102,18 @@ describe('{{ghost_head}} helper', function () {
             profile_image: '/content/images/test-author-image.png',
             cover_image: '/content/images/author-cover-image.png',
             website: 'http://authorwebsite.com',
+            updated_at: new Date(0)
+        }));
+
+        // User without profile image but with cover image
+        users.push(createUser({
+            name: 'Author name',
+            slug: 'AuthorName2',
+            bio: 'Author bio',
+            cover_image: '/content/images/author-cover-image.png',
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser',
             updated_at: new Date(0)
         }));
 
@@ -328,6 +341,19 @@ describe('{{ghost_head}} helper', function () {
             published_at: new Date(0),
             updated_at: new Date(0)
         }));
+
+        posts.push(createPost({ // Post 10
+            title: 'Testing stats',
+            uuid: 'post_uuid',
+            excerpt: 'Creating stats for the site',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Creating stats for the site'),
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
     };
 
     before(function () {
@@ -362,18 +388,25 @@ describe('{{ghost_head}} helper', function () {
         makeFixtures();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('without Code Injection', function () {
+        let loggingErrorStub; // assert # of calls if test throws errors, do not globally stub
+
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
         });
 
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -381,6 +414,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
@@ -494,6 +528,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+            renderObject.post.should.eql(postBk);
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', async function () {
@@ -713,7 +748,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data and schema on first author page with cover image', async function () {
             await testGhostHead(testUtils.createHbsResponse({
-                renderObject: {author: users[0]},
+                renderObject: {author: users[2]},
                 locals: {
                     // @TODO: WHY?
                     relativeUrl: '/author/authorname/',
@@ -745,19 +780,27 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('outputs structured data but not schema for custom collection', async function () {
@@ -925,6 +968,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not contain amphtml link', async function () {
+            let loggingErrorStub = sinon.stub(logging, 'error');
+
             const renderObject = {
                 post: posts[1]
             };
@@ -937,6 +982,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+
+            sinon.assert.calledOnce(loggingErrorStub);
         });
     });
 
@@ -1052,6 +1099,30 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+
+        it('does not override code injection', async function () {
+            settingsCache.get.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
+
+            const renderObject = {
+                post: Object.assign({}, posts[1], {codeinjection_head: '<style>:root {--ghost-accent-color: #post-code-injection}</style>'})
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#site-setting'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/amp/',
+                    context: null,
+                    safeVersion: '0.3'
+                }
+            }));
+        });
     });
 
     describe('members scripts', function () {
@@ -1143,6 +1214,82 @@ describe('{{ghost_head}} helper', function () {
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+    });
+
+    describe('includes tinybird tracker script when config is set', function () {
+        beforeEach(function () {
+            configUtils.set({
+                tinybird: {
+                    tracker: {
+                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
+                        endpoint: 'https://api.tinybird.co',
+                        token: 'tinybird_token',
+                        id: 'tb_test_site_uuid'
+                    }
+                }
+            });
+        });
+        it('with all tb_variables set to undefined on logged out home page', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('Sets tb_post_uuid on post page', async function () {
+            const renderObject = {
+                post: posts[10]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('sets tb_member_x variables on logged in home page', async function () {
+            const renderObject = {
+                member: {
+                    uuid: 'member_uuid',
+                    status: 'paid'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('sets both tb_member_x variables and tb_post_uuid on logged in post page', async function () {
+            const renderObject = {
+                member: {
+                    uuid: 'member_uuid',
+                    status: 'free'
+                },
+                post: posts[10]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
                     safeVersion: '4.3'
                 }
             }));

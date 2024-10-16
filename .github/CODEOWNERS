@@ -1,4 +1,0 @@
-# All database migrations must be reviewed by devops
-
-/ghost/core/core/server/data/schema/       @daniellockyer
-/ghost/core/core/server/data/migrations/   @daniellockyer

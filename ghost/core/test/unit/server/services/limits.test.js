@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
@@ -23,8 +23,8 @@ describe('Limit Service Init', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 

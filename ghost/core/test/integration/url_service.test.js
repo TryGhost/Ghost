@@ -1,7 +1,5 @@
-const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const models = require('../../core/server/models');
@@ -240,9 +238,9 @@ describe('Integration: services/url/UrlService', function () {
             })();
         });
 
-        afterEach(function () {
+        afterEach(async function () {
             urlService.resetGenerators();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         it('getUrl', function () {

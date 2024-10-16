@@ -7,6 +7,11 @@ export default class GhExploreIframe extends Component {
     @service router;
     @service feature;
 
+    constructor() {
+        super(...arguments);
+        window.addEventListener('message', this.handleIframeMessage);
+    }
+
     willDestroy() {
         super.willDestroy(...arguments);
         window.removeEventListener('message', this.handleIframeMessage);
@@ -14,8 +19,11 @@ export default class GhExploreIframe extends Component {
 
     @action
     setup() {
-        this.explore.getExploreIframe().src = this.explore.getIframeURL();
-        window.addEventListener('message', this.handleIframeMessage);
+        // Only begin setup when Explore window is toggled open
+        // to avoid unnecessary loading of assets
+        if (this.explore.exploreWindowOpen) {
+            this.explore.getExploreIframe().src = this.explore.iframeURL;
+        }
     }
 
     @action
@@ -25,7 +33,7 @@ export default class GhExploreIframe extends Component {
         }
 
         // only process messages coming from the explore iframe
-        if (event?.data && this.explore.getIframeURL().includes(event?.origin)) {
+        if (event?.data && this.explore.iframeURL.includes(event?.origin)) {
             if (event.data?.request === 'apiUrl') {
                 this._handleUrlRequest();
             }
@@ -37,6 +45,13 @@ export default class GhExploreIframe extends Component {
             if (event.data?.siteData) {
                 this._handleSiteDataUpdate(event.data);
             }
+        }
+    }
+
+    @action
+    async handleDarkModeChange() {
+        if (this.explore.exploreWindowOpen) {
+            this.explore.sendUIUpdate({darkMode: this.feature.nightShift});
         }
     }
 

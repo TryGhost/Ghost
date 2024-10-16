@@ -1,5 +1,6 @@
-const assert = require('assert');
-const {agentProvider} = require('../utils/e2e-framework');
+const assert = require('assert/strict');
+const {agentProvider, matchers} = require('../utils/e2e-framework');
+const {anyContentVersion} = matchers;
 const config = require('../../core/shared/config');
 
 describe('OPTIONS requests', function () {
@@ -27,7 +28,9 @@ describe('OPTIONS requests', function () {
             await adminAgent
                 .options('site')
                 .expectStatus(204)
-                .matchHeaderSnapshot();
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion
+                });
         });
 
         it('Handles no origin header request', async function () {
@@ -38,7 +41,9 @@ describe('OPTIONS requests', function () {
                     }
                 })
                 .expectStatus(200)
-                .matchHeaderSnapshot();
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion
+                });
         });
 
         it('Handles cross-domain origin header request', async function () {
@@ -49,7 +54,9 @@ describe('OPTIONS requests', function () {
                     }
                 })
                 .expectStatus(200)
-                .matchHeaderSnapshot();
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion
+                });
         });
     });
 
@@ -129,7 +136,9 @@ describe('OPTIONS requests', function () {
             await contentAPIAgent
                 .options('site')
                 .expectStatus(204)
-                .matchHeaderSnapshot();
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion
+                });
         });
 
         it('Handles no origin header request', async function () {
@@ -140,7 +149,9 @@ describe('OPTIONS requests', function () {
                     }
                 })
                 .expectStatus(204)
-                .matchHeaderSnapshot();
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion
+                });
         });
 
         it('Handles cross-domain origin header request', async function () {
@@ -151,7 +162,9 @@ describe('OPTIONS requests', function () {
                     }
                 })
                 .expectStatus(204)
-                .matchHeaderSnapshot();
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion
+                });
         });
     });
 });

@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -34,8 +33,8 @@ describe('Frontend behavior tests', function () {
 
         beforeEach(function () {
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-            const postsAPI = require('../../../core/server/api/endpoints/posts-public');
-            postSpy = sinon.spy(postsAPI.browse, 'query');
+            const postsAPI = require('../../../core/server/api/endpoints').postsPublic;
+            postSpy = sinon.spy(postsAPI, 'browse');
         });
 
         afterEach(function () {
@@ -43,8 +42,8 @@ describe('Frontend behavior tests', function () {
             sinon.restore();
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
             sinon.restore();
         });
@@ -144,22 +143,20 @@ describe('Frontend behavior tests', function () {
                     });
             });
 
-            it('serve tag', function () {
+            it('serve tag', async function () {
                 const req = {
                     method: 'GET',
                     url: '/tag/bacon/',
                     host: 'example.com'
                 };
 
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('tag');
+                const response = await localUtils.mockExpress.invoke(app, req);
+                response.statusCode.should.eql(200);
+                response.template.should.eql('tag');
 
-                        postSpy.args[0][0].options.filter.should.eql('(tags:\'bacon\'+tags.visibility:public)+type:post');
-                        postSpy.args[0][0].options.page.should.eql(1);
-                        postSpy.args[0][0].options.limit.should.eql(2);
-                    });
+                postSpy.args[0][0].filter.should.eql('tags:\'bacon\'+tags.visibility:public');
+                postSpy.args[0][0].page.should.eql(1);
+                postSpy.args[0][0].limit.should.eql(2);
             });
 
             it('serve tag rss', function () {
@@ -292,9 +289,9 @@ describe('Frontend behavior tests', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(function () {
+        after(async function () {
             urlUtils.restore();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         describe('protocol', function () {
@@ -330,7 +327,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('assets', function () {
-            it('blog is https, request is http', function () {
+            it('blog is https, request is http (png)', function () {
                 const req = {
                     secure: false,
                     method: 'GET',
@@ -345,7 +342,7 @@ describe('Frontend behavior tests', function () {
                     });
             });
 
-            it('blog is https, request is http', function () {
+            it('blog is https, request is http (css)', function () {
                 const req = {
                     secure: false,
                     method: 'GET',
@@ -398,8 +395,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -475,8 +472,6 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
                         response.statusCode.should.eql(200);
                         response.template.should.eql('something');
                     });
@@ -505,8 +500,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -558,8 +553,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -567,7 +562,7 @@ describe('Frontend behavior tests', function () {
                 sinon.restore();
             });
 
-            it('serve post', function () {
+            it('serve 404 when there is post with given slug', function () {
                 const req = {
 
                     method: 'GET',
@@ -650,8 +645,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -726,8 +721,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -749,7 +744,7 @@ describe('Frontend behavior tests', function () {
                     });
             });
 
-            it('post without tag', function () {
+            it('post without tag on something collection', function () {
                 const req = {
                     method: 'GET',
                     url: '/something/html-ipsum/',
@@ -873,8 +868,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -978,8 +973,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
                 sinon.restore();
             });
@@ -1036,8 +1031,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -1087,8 +1082,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
                 sinon.restore();
             });
@@ -1262,8 +1257,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -1299,7 +1294,7 @@ describe('Frontend behavior tests', function () {
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-                        response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
+                        response.headers['content-type'].should.eql('application/rss+xml; charset=UTF-8');
                     });
             });
 
@@ -1331,8 +1326,6 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
                         response.statusCode.should.eql(200);
                         response.template.should.eql('channel3');
                     });
@@ -1455,7 +1448,7 @@ describe('Frontend behavior tests', function () {
                 routes: {
                     '/podcast/rss/': {
                         templates: ['podcast/rss'],
-                        content_type: 'text/xml'
+                        content_type: 'application/rss+xml'
                     },
                     '/cooking/': {
                         controller: 'channel',
@@ -1495,8 +1488,8 @@ describe('Frontend behavior tests', function () {
             localUtils.overrideGhostConfig(configUtils);
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             urlUtils.restore();
         });
 
@@ -1567,7 +1560,7 @@ describe('Frontend behavior tests', function () {
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                     response.template.should.eql('podcast/rss');
-                    response.headers['content-type'].should.eql('text/xml; charset=utf-8');
+                    response.headers['content-type'].should.eql('application/rss+xml');
                     response.body.match(/<link>/g).length.should.eql(2);
                 });
         });

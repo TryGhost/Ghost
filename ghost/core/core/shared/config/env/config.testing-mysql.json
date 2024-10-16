@@ -3,6 +3,9 @@
     "server": {
         "port": 2369
     },
+    "metrics_server": {
+        "port": 9417
+    },
     "database": {
         "client": "mysql",
         "connection": {
@@ -13,7 +16,7 @@
         }
     },
     "logging": {
-        "level": "fatal"
+        "level": "error"
     },
     "spam": {
         "user_login": {
@@ -44,6 +47,18 @@
             "maxWait": 3600000,
             "lifetime": 3600,
             "freeRetries":99
+        },
+        "webmentions_block": {
+            "minWait": 100000,
+            "maxWait": 100000,
+            "lifetime": 3600,
+            "freeRetries": 3
+        },
+        "email_preview_block": {
+            "minWait": 360000,
+            "maxWait": 360000,
+            "lifetime": 3600,
+            "freeRetries": 10
         }
     },
     "privacy": {

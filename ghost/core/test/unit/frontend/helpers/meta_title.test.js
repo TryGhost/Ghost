@@ -14,8 +14,8 @@ describe('{{meta_title}} helper', function () {
             });
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             sinon.restore();
         });
 

@@ -104,5 +104,31 @@ module.exports = {
      */
     membersAuthEnumeration(req, res, next) {
         return spamPrevention.membersAuthEnumeration().prevent(req, res, next);
+    },
+
+    /**
+     * Blocks webmention spam
+     */
+
+    webmentionsLimiter(req, res, next) {
+        return spamPrevention.webmentionsBlock().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('webmention_blocked');
+            }
+        })(req, res, next);
+    },
+
+    /**
+     * Blocks preview email spam
+     */
+
+    previewEmailLimiter(req, res, next) {
+        return spamPrevention.emailPreviewBlock().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('preview_email_blocked');
+            }
+        })(req, res, next);
     }
 };

@@ -6,11 +6,15 @@ const {MIGRATION_USER} = require('./constants');
 
 /**
  * Creates a migration which will insert a new setting in settings table
- * @param {object} settingSpec - setting key, value, group and type
- *
+ * @param {object} settingSpec - setting type and group
+ * @param {string} settingSpec.key - settings key
+ * @param {*} settingSpec.value - settings value
+ * @param {'array' | 'string' | 'number' | 'boolean' | 'object'} settingSpec.type - settings type
+ * @param {string} settingSpec.group - settings group
+ * @param {'PUBLIC' | 'RO' | 'PUBLIC,RO'} [settingSpec.flags] - settings flag
  * @returns {Object} migration object returning config/up/down properties
  */
-function addSetting({key, value, type, group}) {
+function addSetting({key, value, type, group, flags = null}) {
     return createTransactionalMigration(
         async function up(connection) {
             const settingExists = await connection('settings')
@@ -31,6 +35,7 @@ function addSetting({key, value, type, group}) {
                     value,
                     group,
                     type,
+                    flags,
                     created_at: now,
                     created_by: MIGRATION_USER
                 });

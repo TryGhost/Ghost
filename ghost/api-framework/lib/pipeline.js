@@ -1,9 +1,10 @@
 const debug = require('@tryghost/debug')('pipeline');
 const _ = require('lodash');
+const stringify = require('json-stable-stringify');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
 
-const Frame = require('./frame');
+const Frame = require('./Frame');
 const serializers = require('./serializers');
 const validators = require('./validators');
 
@@ -19,8 +20,8 @@ const STAGES = {
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
-         * @param {Object} apiImpl -  Controller configuration.
-         * @param {Object} frame
+         * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+         * @param {import('@tryghost/api-framework').Frame} frame
          * @return {Promise}
          */
         input(apiUtils, apiConfig, apiImpl, frame) {
@@ -56,8 +57,8 @@ const STAGES = {
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
-         * @param {Object} apiImpl -  Controller configuration.
-         * @param {Object} frame
+         * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+         * @param {import('@tryghost/api-framework').Frame} frame
          * @return {Promise}
          */
         input(apiUtils, apiConfig, apiImpl, frame) {
@@ -79,8 +80,8 @@ const STAGES = {
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
-         * @param {Object} apiImpl -  Controller configuration.
-         * @param {Object} frame
+         * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+         * @param {import('@tryghost/api-framework').Frame} frame
          * @return {Promise}
          */
         output(response, apiUtils, apiConfig, apiImpl, frame) {
@@ -98,8 +99,8 @@ const STAGES = {
      *
      * @param {Object} apiUtils - Local utils of target API version.
      * @param {Object} apiConfig - Docname & Method of ctrl.
-     * @param {Object} apiImpl -  Controller configuration.
-     * @param {Object} frame
+     * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
     permissions(apiUtils, apiConfig, apiImpl, frame) {
@@ -144,8 +145,8 @@ const STAGES = {
      *
      * @param {Object} apiUtils - Local utils of target API version.
      * @param {Object} apiConfig - Docname & Method of ctrl.
-     * @param {Object} apiImpl -  Controller configuration.
-     * @param {Object} frame
+     * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
     query(apiUtils, apiConfig, apiImpl, frame) {
@@ -158,6 +159,8 @@ const STAGES = {
         return apiImpl.query(frame);
     }
 };
+
+const controllerMap = new Map();
 
 /**
  * @description The pipeline runs the request through all stages (validation, serialisation, permissions).
@@ -173,21 +176,27 @@ const STAGES = {
  * 4. Controller - Execute the controller implementation & receive model response.
  * 5. Output Serialisation - Output formatting, Deprecations, Extra attributes etc...
  *
- * @param {Object} apiController
+ * @param {import('@tryghost/api-framework').Controller} apiController
  * @param {Object} apiUtils - Local utils (validation & serialisation) from target API version
  * @param {String} [apiType] - Content or Admin API access
  * @return {Object}
  */
 const pipeline = (apiController, apiUtils, apiType) => {
-    const keys = Object.keys(apiController);
+    if (controllerMap.has(apiController)) {
+        return controllerMap.get(apiController);
+    }
+
+    const keys = Object.keys(apiController).filter(key => key !== 'docName');
     const docName = apiController.docName;
 
     // CASE: api controllers are objects with configuration.
     //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
-    return keys.reduce((obj, method) => {
+    const result = keys.reduce((obj, method) => {
         const apiImpl = _.cloneDeep(apiController)[method];
 
-        obj[method] = function wrapper() {
+        Object.freeze(apiImpl.headers);
+
+        obj[method] = async function ImplWrapper() {
             const apiConfig = {docName, method};
             let options;
             let data;
@@ -229,30 +238,45 @@ const pipeline = (apiController, apiUtils, apiType) => {
             frame.docName = docName;
             frame.method = method;
 
-            return Promise.resolve()
-                .then(() => {
-                    return STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return STAGES.query(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then((response) => {
-                    return STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return frame.response;
-                });
+            let cacheKeyData = frame.options;
+            if (apiImpl.generateCacheKeyData) {
+                cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+            }
+
+            const cacheKey = stringify(cacheKeyData);
+
+            if (apiImpl.cache) {
+                const response = await apiImpl.cache.get(cacheKey, getResponse);
+                if (response) {
+                    return Promise.resolve(response);
+                }
+            }
+
+            async function getResponse() {
+                await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
+                await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
+                await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
+                const response = await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
+                await STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
+                return frame.response;
+            }
+
+            const response = await getResponse();
+
+            if (apiImpl.cache) {
+                await apiImpl.cache.set(cacheKey, response);
+            }
+
+            return response;
         };
 
         Object.assign(obj[method], apiImpl);
         return obj;
     }, {});
+
+    controllerMap.set(apiController, result);
+
+    return result;
 };
 
 module.exports = pipeline;

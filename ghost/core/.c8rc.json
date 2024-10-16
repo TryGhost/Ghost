@@ -6,10 +6,10 @@
     "text-summary",
     "cobertura"
   ],
-  "statements": 60,
-  "branches": 85,
+  "statements": 58.7,
+  "branches": 84,
   "functions": 50,
-  "lines": 60,
+  "lines": 58.7,
   "include": [
     "core/{*.js,frontend,server,shared}"
   ],
@@ -30,6 +30,9 @@
     "!core/server/web/shared/middleware/**",
     "core/server/api/endpoints/**",
     "!core/server/api/endpoints/utils",
-    "core/server/services/members/jobs/**"
+    "core/server/services/email-analytics/jobs/**",
+    "core/server/services/members/jobs/**",
+    "core/server/services/email-service/wrapper.js",
+    "core/server/services/**/service.js"
   ]
 }

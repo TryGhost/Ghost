@@ -6,6 +6,7 @@ import {isEmpty} from '@ember/utils';
 @classic
 export default class MemberImportValidatorService extends Service {
     @service ajax;
+    @service feature;
     @service membersUtils;
 
     @service ghostPaths;
@@ -22,6 +23,7 @@ export default class MemberImportValidatorService extends Service {
      * If the data contains 30 rows or fewer, all rows should be validated.
      *
      * @param {Array} data JSON objects mapped from CSV file
+     * @param {number} validationSampleSize number of rows to sample
      */
     _sampleData(data, validationSampleSize = 30) {
         let validatedSet = [{}];
@@ -68,9 +70,7 @@ export default class MemberImportValidatorService extends Service {
     }
 
     /**
-     * Detects supported data types and auto-detects following two needed for validation:
-     *  1. email
-     *  2. stripe_customer_id
+     * Detects supported data types and auto-detects following needed for validation: email
      *
      * Returned "mapping" object contains mappings that could be accepted by the API
      * to map validated types.
@@ -83,9 +83,14 @@ export default class MemberImportValidatorService extends Service {
             'note',
             'subscribed_to_emails',
             'complimentary_plan',
+            'stripe_customer_id',
             'labels',
             'created_at'
         ];
+
+        if (this.feature.importMemberTier) {
+            supportedTypes.push('import_tier');
+        }
 
         const autoDetectedTypes = [
             'email'
@@ -93,7 +98,7 @@ export default class MemberImportValidatorService extends Service {
 
         let mapping = {};
         let i = 0;
-        // loopping through all sampled data until needed data types are detected
+        // looping through all sampled data until needed data types are detected
         while (i <= (data.length - 1)) {
             if (mapping.email && mapping.stripe_customer_id) {
                 break;

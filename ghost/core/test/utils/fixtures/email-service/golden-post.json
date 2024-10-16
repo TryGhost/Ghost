@@ -1,0 +1,391 @@
+{
+    "root": {
+        "children": [
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "This is just a simple paragraph, no frills.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "This is block quote",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "extended-quote",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "This is a...different block quote",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "aside",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "This is a heading!",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "extended-heading",
+                "version": 1,
+                "tag": "h2"
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "Here's a smaller heading.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "extended-heading",
+                "version": 1,
+                "tag": "h3"
+            },
+            {
+                "type": "image",
+                "version": 1,
+                "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg",
+                "width": null,
+                "height": null,
+                "title": "",
+                "alt": "Cows eat grass.",
+                "caption": "<span style=\"white-space: pre-wrap;\">A lovely cow</span>",
+                "cardWidth": "regular",
+                "href": ""
+            },
+            {
+                "type": "markdown",
+                "version": 1,
+                "markdown": "# A heading\nand a paragraph (in markdown!)"
+            },
+            {
+                "type": "html",
+                "version": 1,
+                "html": "<p>A paragraph inside an HTML card.</p>\n<p>And another one, with some <b>bold</b> text.</p>"
+            },
+            {
+                "type": "horizontalrule",
+                "version": 1
+            },
+            {
+                "type": "gallery",
+                "version": 1,
+                "images": [
+                    {
+                        "row": 0,
+                        "src": "https://images.unsplash.com/photo-1702352461386-15dcf064708a?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "width": null,
+                        "height": null,
+                        "alt": "",
+                        "caption": "",
+                        "fileName": "photo-1702352461386-15dcf064708a"
+                    },
+                    {
+                        "row": 0,
+                        "src": "https://images.unsplash.com/photo-1702377168432-ac8b5e387998?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "width": null,
+                        "height": null,
+                        "alt": "",
+                        "caption": "",
+                        "fileName": "photo-1702377168432-ac8b5e387998"
+                    },
+                    {
+                        "row": 0,
+                        "src": "https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "width": 2070,
+                        "height": 1380,
+                        "alt": "",
+                        "caption": "",
+                        "fileName": "premium_photo-1700558685152-81f821a40724"
+                    }
+                ],
+                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A gallery.</span></p>"
+            },
+            {
+                "type": "bookmark",
+                "version": 1,
+                "url": "https://ghost.org",
+                "metadata": {
+                    "icon": "https://ghost.org/favicon.ico",
+                    "title": "Ghost: Independent technology for modern publishing",
+                    "description": "Beautiful, modern publishing with newsletters and premium subscriptions built-in. Used by Sky, 404Media, Lever News, Tangle, The Browser, and thousands more.",
+                    "author": "",
+                    "publisher": "Ghost - The Professional Publishing Platform",
+                    "thumbnail": "https://ghost.org/images/meta/ghost.png"
+                },
+                "caption": "<p><span style=\"white-space: pre-wrap;\">My favorite website.</span></p>"
+            },
+            {
+                "type": "email",
+                "version": 1,
+                "html": "<p><span style=\"white-space: pre-wrap;\">Hey </span><code spellcheck=\"false\" style=\"white-space: pre-wrap;\"><span>{first_name, \"there\"}</span></code><span style=\"white-space: pre-wrap;\">,</span></p>"
+            },
+            {
+                "type": "email-cta",
+                "version": 1,
+                "alignment": "left",
+                "buttonText": "",
+                "buttonUrl": "",
+                "html": "<p><span style=\"white-space: pre-wrap;\">Hello there, fellow users of electronic mail.</span></p>",
+                "segment": "status:free",
+                "showButton": false,
+                "showDividers": true
+            },
+            {
+                "type": "paywall",
+                "version": 1
+            },
+            {
+                "type": "button",
+                "version": 1,
+                "buttonText": "Click me, I'm a button!",
+                "alignment": "center",
+                "buttonUrl": "https://ghost.org"
+            },
+            {
+                "type": "callout",
+                "version": 1,
+                "calloutText": "<p><span style=\"white-space: pre-wrap;\">I had an idea...</span></p>",
+                "calloutEmoji": "💡",
+                "backgroundColor": "blue"
+            },
+            {
+                "type": "toggle",
+                "version": 1,
+                "heading": "<span style=\"white-space: pre-wrap;\">Spoiler alert!</span>",
+                "content": "<p><span style=\"white-space: pre-wrap;\">Just kidding</span></p>"
+            },
+            {
+                "type": "audio",
+                "version": 1,
+                "duration": 105.822041,
+                "mimeType": "audio/mpeg",
+                "src": "https://main.ghost.org/content/media/2023/12/sample.mp3",
+                "title": "Sample",
+                "thumbnailSrc": ""
+            },
+            {
+                "type": "video",
+                "version": 1,
+                "src": "https://main.ghost.org/content/media/2023/12/sample_640x360.mp4",
+                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A lovely video of a woman on the beach doing nothing.</span></p>",
+                "fileName": "sample_640x360.mp4",
+                "mimeType": "video/mp4",
+                "width": 640,
+                "height": 360,
+                "duration": 13.346667,
+                "thumbnailSrc": "https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg",
+                "customThumbnailSrc": "",
+                "thumbnailWidth": 640,
+                "thumbnailHeight": 360,
+                "cardWidth": "regular",
+                "loop": true
+            },
+            {
+                "type": "product",
+                "version": 1,
+                "productImageSrc": "https://main.ghost.org/content/images/2023/12/ghost-logo.png",
+                "productImageWidth": 800,
+                "productImageHeight": 257,
+                "productTitle": "<span style=\"white-space: pre-wrap;\">Make a blog!</span>",
+                "productDescription": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">with Ghost</span></p>",
+                "productRatingEnabled": true,
+                "productStarRating": 5,
+                "productButtonEnabled": true,
+                "productButton": "Click here",
+                "productUrl": "https://ghost.org"
+            },
+            {
+                "type": "header",
+                "version": 2,
+                "size": "small",
+                "style": "dark",
+                "buttonEnabled": false,
+                "buttonUrl": "",
+                "buttonText": "",
+                "header": "<span style=\"white-space: pre-wrap;\">Good news everyone!</span>",
+                "subheader": "<span style=\"white-space: pre-wrap;\">This header renders properly in </span><i><em class=\"italic\" style=\"white-space: pre-wrap;\">all</em></i><span style=\"white-space: pre-wrap;\"> email clients!</span>",
+                "backgroundImageSrc": "",
+                "accentColor": "#14171b",
+                "alignment": "center",
+                "backgroundColor": "#000000",
+                "backgroundImageWidth": null,
+                "backgroundImageHeight": null,
+                "backgroundSize": "cover",
+                "textColor": "#FFFFFF",
+                "buttonColor": "#ffffff",
+                "buttonTextColor": "#000000",
+                "layout": "full",
+                "swapped": false
+            },
+            {
+                "type": "embed",
+                "version": 1,
+                "url": "https://www.youtube.com/watch?v=jfKfPfyJRdk",
+                "embedType": "video",
+                "html": "<iframe width=\"200\" height=\"150\" src=\"https://www.youtube.com/embed/jfKfPfyJRdk?feature=oembed\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen title=\"lofi hip hop radio 📚 - beats to relax/study to\"></iframe>",
+                "metadata": {
+                    "title": "lofi hip hop radio 📚 - beats to relax/study to",
+                    "author_name": "Lofi Girl",
+                    "author_url": "https://www.youtube.com/@LofiGirl",
+                    "type": "video",
+                    "height": 150,
+                    "width": 200,
+                    "version": "1.0",
+                    "provider_name": "YouTube",
+                    "provider_url": "https://www.youtube.com/",
+                    "thumbnail_height": 360,
+                    "thumbnail_width": 480,
+                    "thumbnail_url": "https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg",
+                    "html": "<iframe width=\"200\" height=\"150\" src=\"https://www.youtube.com/embed/jfKfPfyJRdk?feature=oembed\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen title=\"lofi hip hop radio 📚 - beats to relax/study to\"></iframe>"
+                },
+                "caption": ""
+            },
+            {
+                "type": "signup",
+                "version": 1,
+                "alignment": "left",
+                "backgroundColor": "#F0F0F0",
+                "backgroundImageSrc": "",
+                "backgroundSize": "cover",
+                "textColor": "#000000",
+                "buttonColor": "accent",
+                "buttonTextColor": "#FFFFFF",
+                "buttonText": "Subscribe",
+                "disclaimer": "<span style=\"white-space: pre-wrap;\">No spam. Unsubscribe anytime.</span>",
+                "header": "<span style=\"white-space: pre-wrap;\">Sign up for This Is The Main</span>",
+                "labels": [],
+                "layout": "wide",
+                "subheader": "<span style=\"white-space: pre-wrap;\">The testing and tweaking of Ghost, now with extra long description for the same price of epic staging</span>",
+                "successMessage": "Email sent! Check your inbox to complete your signup.",
+                "swapped": false
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "Some text.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "A blockquote",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "extended-quote",
+                "version": 1
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "Some more text.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "type": "codeblock",
+                "version": 1,
+                "code": "console.log('Hello world!');",
+                "language": "javascript",
+                "caption": "<p><span style=\"white-space: pre-wrap;\">A tiny little script.</span></p>"
+            },
+            {
+                "type": "file",
+                "src": "https://main.ghost.org/content/files/2023/11/test.txt",
+                "fileTitle": "test",
+                "fileCaption": "A tiny text file.",
+                "fileName": "test.txt",
+                "fileSize": 16
+            }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "root",
+        "version": 1
+    }
+}

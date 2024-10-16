@@ -13,7 +13,7 @@
 
                     {{#unless this.directlyFromAnalytics}}
                         {{svg-jar "arrow-right-small"}}
-                        <LinkTo @route="members" data-test-link="members-back">
+                        <LinkTo @route="members" data-test-link="members-back" @query={{hash postAnalytics=this.postAnalytics}}>
                             Members
                         </LinkTo>
                     {{/unless}}
@@ -65,6 +65,16 @@
                                     data-test-button="impersonate"
                                 >
                                     <span>Impersonate</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.confirmLogoutMember}}
+                                    data-test-button="logout-member"
+                                >
+                                    <span>Sign out of all devices</span>
                                 </button>
                             </li>
                             <li>

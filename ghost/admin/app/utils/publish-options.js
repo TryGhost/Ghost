@@ -10,6 +10,7 @@ export default class PublishOptions {
     limit = null;
     settings = null;
     store = null;
+    membersCountCache = null;
 
     // passed in models
     post = null;
@@ -31,6 +32,10 @@ export default class PublishOptions {
             )
                 || (this.post.isDraft && this.post.email && this.post.email.status === 'failed')
         );
+    }
+
+    get willEmailImmediately() {
+        return this.willEmail && !this.isScheduled;
     }
 
     get willPublish() {
@@ -168,7 +173,11 @@ export default class PublishOptions {
     }
 
     get recipientFilter() {
-        return this.selectedRecipientFilter === undefined ? this.defaultRecipientFilter : this.selectedRecipientFilter;
+        if (this.selectedRecipientFilter === undefined) {
+            return (this.post.newsletter && this.post.emailSegment) || this.defaultRecipientFilter;
+        } else {
+            return this.selectedRecipientFilter;
+        }
     }
 
     get defaultRecipientFilter() {
@@ -226,13 +235,14 @@ export default class PublishOptions {
 
     // setup -------------------------------------------------------------------
 
-    constructor({config, limit, post, settings, store, user} = {}) {
+    constructor({config, limit, post, settings, store, user, membersCountCache} = {}) {
         this.config = config;
         this.limit = limit;
         this.post = post;
         this.settings = settings;
         this.store = store;
         this.user = user;
+        this.membersCountCache = membersCountCache;
 
         // this needs to be set here rather than a class-level property because
         // unlike Ember-based classes the services are not injected so can't be
@@ -277,8 +287,8 @@ export default class PublishOptions {
         // Only Admins/Owners have permission to browse members and get a count
         // for Editors/Authors set member count to 1 so email isn't disabled for not having any members
         if (this.user.isAdmin) {
-            promises.push(this.store.query('member', {limit: 1}).then((res) => {
-                this.totalMemberCount = res.meta.pagination.total;
+            promises.push(this.membersCountCache.count({}).then((res) => {
+                this.totalMemberCount = res;
             }));
         } else {
             this.totalMemberCount = 1;
@@ -290,7 +300,7 @@ export default class PublishOptions {
 
         // newsletters
         if (!this.user.isContributor) {
-            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
+            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.active_members'}));
         }
 
         yield Promise.all(promises);
@@ -332,6 +342,7 @@ export default class PublishOptions {
             }
 
             this.post.status = 'draft';
+            this.post.emailOnly = false;
 
             return yield this.post.save();
         } catch (e) {

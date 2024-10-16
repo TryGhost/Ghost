@@ -1,15 +1,18 @@
-const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString, anyContentLength, anyContentVersion} = matchers;
+const {agentProvider, fixtureManager, matchers, regexes, mockManager} = require('../../utils/e2e-framework');
+const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString, anyContentLength, anyContentVersion, anyObject} = matchers;
+const {anyMajorMinorVersion} = regexes;
 
 const settingsMatcher = {
     settings: {
-        version: anyString
+        version: anyString,
+        labs: anyObject
     }
 };
 
 describe('API Versioning', function () {
     describe('Admin API', function () {
         let agentAdminAPI;
+        let emailMockReceiver;
 
         before(async function () {
             agentAdminAPI = await agentProvider.getAdminAPIAgent();
@@ -18,14 +21,14 @@ describe('API Versioning', function () {
         });
 
         beforeEach(function () {
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
             mockManager.restore();
         });
 
-        it('responds with no content version header when accept version header is NOT PRESENT', async function () {
+        it('responds with content version header even when accept version header is NOT PRESENT', async function () {
             await agentAdminAPI
                 .get('site/')
                 .expectStatus(200)
@@ -36,6 +39,7 @@ describe('API Versioning', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-length': anyContentLength,
+                    'content-version': anyContentVersion,
                     etag: anyEtag
                 });
         });
@@ -129,11 +133,17 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            mockManager.assert.sentEmailCount(1);
-            mockManager.assert.sentEmail({
-                subject: 'Attention required: Your Zapier integration has failed',
-                to: 'jbloggs@example.com'
-            });
+            emailMockReceiver
+                .assertSentEmailCount(1)
+                .matchMetadataSnapshot()
+                .matchHTMLSnapshot([{
+                    pattern: anyMajorMinorVersion,
+                    replacement: 'v4.50'
+                }])
+                .matchPlaintextSnapshot([{
+                    pattern: anyMajorMinorVersion,
+                    replacement: 'v4.50'
+                }]);
         });
 
         it('responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times', async function () {
@@ -154,11 +164,17 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            mockManager.assert.sentEmailCount(1);
-            mockManager.assert.sentEmail({
-                subject: 'Attention required: Your Zapier integration has failed',
-                to: 'jbloggs@example.com'
-            });
+            emailMockReceiver
+                .assertSentEmailCount(1)
+                .matchMetadataSnapshot()
+                .matchHTMLSnapshot([{
+                    pattern: anyMajorMinorVersion,
+                    replacement: 'v4.50'
+                }])
+                .matchPlaintextSnapshot([{
+                    pattern: anyMajorMinorVersion,
+                    replacement: 'v4.50'
+                }]);
 
             await agentAdminAPI
                 .get('removed_endpoint')
@@ -177,7 +193,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('responds with 404 error when the resource cannot be found', async function () {
@@ -196,7 +212,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('Does an internal rewrite for canary URLs with accept version set', async function () {
@@ -270,9 +286,10 @@ describe('API Versioning', function () {
 
     describe('Content API', function () {
         let agentContentAPI;
+        let emailMockReceiver;
 
         beforeEach(function () {
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -290,7 +307,8 @@ describe('API Versioning', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-length': anyContentLength
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion
                 })
                 .matchBodySnapshot(settingsMatcher);
         });
@@ -339,7 +357,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 });

@@ -1,5 +1,5 @@
 const {RedirectEvent} = require('@tryghost/link-redirects');
-const LinkClick = require('./LinkClick');
+const LinkClick = require('./ClickEvent');
 const PostLink = require('./PostLink');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
@@ -105,9 +105,6 @@ class LinkClickTrackingService {
    * @throws {errors.BadRequestError}
    */
     #parseLinkFilter(filter) {
-        // decode filter to manage any encoded uri components
-        filter = decodeURIComponent(filter);
-
         try {
             const filterJson = nql(filter).parse();
             const postId = filterJson?.$and?.[0]?.post_id;
@@ -154,7 +151,7 @@ class LinkClickTrackingService {
 
         // manages transformation of current url to relative for comparision
         const transformedOldUrl = this.#urlUtils.absoluteToTransformReady(redirectUrl.href);
-        const filterQuery = `post_id:${postId}+to:'${transformedOldUrl}'`;
+        const filterQuery = `post_id:'${postId}'+to:'${transformedOldUrl}'`;
 
         const updatedFilterOptions = {
             ...filterOptions,

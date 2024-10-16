@@ -26,9 +26,12 @@
             </time>
         {{/if}}
     {{else if (or @post.isPublished @post.pastScheduledTime)}}
-        <span class="{{if (eq @post.email.status "failed") "newsletter-failed" ""}}">
-            Published
-        </span>
+        <a href={{@post.url}} class="view-post {{if (eq @post.email.status "failed") "newsletter-failed" ""}}" target="_blank" rel="noopener noreferrer">
+            Published 
+            {{#unless @post.email}}
+                {{svg-jar "arrow-top-right" title="View post"}}
+            {{/unless}}
+        </a>
         {{#if (or (eq @post.email.status "submitting") (eq @post.email.status "submitting"))}}
             and sending to {{gh-pluralize @post.email.emailCount "member"}}
         {{else if (eq @post.email.status "submitted")}}
@@ -43,7 +46,7 @@
                 {{on "click" @publishManagement.openPublishFlow}}
                 disabled={{@publishManagement.publishOptions.isLoading}}
             >
-                <span>Retry now</span>
+                <span>View details</span>
             </button>
         {{/if}}
     {{else if @post.isScheduled}}

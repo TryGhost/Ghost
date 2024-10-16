@@ -1,9 +1,21 @@
-const should = require('should');
+const sinon = require('sinon');
 const price = require('../../../../core/frontend/helpers/price');
 
-const {registerHelper, shouldCompileToError, shouldCompileToExpected} = require('./utils/handlebars');
+const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
+
+const logging = require('@tryghost/logging');
 
 describe('{{price}} helper', function () {
+    let logWarnStub;
+
+    beforeEach(function () {
+        logWarnStub = sinon.stub(logging, 'warn');
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
     before(function () {
         registerHelper('price');
     });
@@ -11,24 +23,22 @@ describe('{{price}} helper', function () {
     it('throws an error for no provided parameters', function () {
         const templateString = '{{price}}';
 
-        shouldCompileToError(templateString, {}, {
-            name: 'IncorrectUsageError'
-        });
+        shouldCompileToExpected(templateString, {}, '');
+        logWarnStub.calledOnce.should.be.true();
     });
 
     it('throws an error for undefined parameter', function () {
         const templateString = '{{price @dont.exist}}';
 
-        shouldCompileToError(templateString, {}, {
-            name: 'IncorrectUsageError'
-        });
+        shouldCompileToExpected(templateString, {}, '');
+        logWarnStub.calledOnce.should.be.true();
     });
 
     it('throws if argument is not a number', function () {
         const templateString = '{{price "not_a_number"}}';
-        shouldCompileToError(templateString, {}, {
-            name: 'IncorrectUsageError'
-        });
+
+        shouldCompileToExpected(templateString, {}, '');
+        logWarnStub.calledOnce.should.be.true();
     });
 
     it('will format decimal adjusted amount', function () {

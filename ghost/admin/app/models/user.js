@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import BaseModel from './base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import config from 'ghost-admin/config/environment';
 import {attr, hasMany} from '@ember-data/model';
 import {computed} from '@ember/object';
 import {equal, or} from '@ember/object/computed';
@@ -9,10 +10,19 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default BaseModel.extend(ValidationEngine, {
+    ajax: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    search: service(),
+    session: service(),
+
+    config: inject(),
+
     validationType: 'user',
 
     name: attr('string'),
     slug: attr('string'),
+    url: attr('string'),
     email: attr('string'),
     profileImage: attr('string'),
     coverImage: attr('string'),
@@ -40,13 +50,9 @@ export default BaseModel.extend(ValidationEngine, {
     freeMemberSignupNotification: attr(),
     paidSubscriptionStartedNotification: attr(),
     paidSubscriptionCanceledNotification: attr(),
-
-    ghostPaths: service(),
-    ajax: service(),
-    session: service(),
-    notifications: service(),
-
-    config: inject(),
+    mentionNotifications: attr(),
+    milestoneNotifications: attr(),
+    donationNotifications: attr(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.
@@ -88,14 +94,14 @@ export default BaseModel.extend(ValidationEngine, {
     profileImageUrl: computed('ghostPaths.assetRoot', 'profileImage', function () {
         // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-image.png';
-        let defaultPath = this.ghostPaths.assetRoot.replace(/\/$/, '') + defaultImage;
+        let defaultPath = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, '')) + defaultImage;
         return this.profileImage || defaultPath;
     }),
 
     coverImageUrl: computed('ghostPaths.assetRoot', 'coverImage', function () {
         // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-cover.png';
-        let defaultPath = this.ghostPaths.assetRoot.replace(/\/$/, '') + defaultImage;
+        let defaultPath = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, '')) + defaultImage;
         return this.coverImage || defaultPath;
     }),
 
@@ -138,5 +144,21 @@ export default BaseModel.extend(ValidationEngine, {
         } catch (error) {
             this.notifications.showAPIError(error, {key: 'user.change-password'});
         }
-    }).drop()
+    }).drop(),
+
+    save() {
+        const nameChanged = !!this.changedAttributes().name;
+
+        const {url} = this;
+
+        return this._super(...arguments).then((savedModel) => {
+            const urlChanged = url !== savedModel.url;
+
+            if (nameChanged || urlChanged || this.isDeleted) {
+                this.search.expireContent();
+            }
+
+            return savedModel;
+        });
+    }
 });

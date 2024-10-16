@@ -53,14 +53,18 @@ const loadConverters = () => {
             // Don't output hrs
             {selector: 'hr', format: 'skip'},
             // Don't output > in blockquotes
-            {selector: 'blockquote', format: 'block'}
+            {selector: 'blockquote', format: 'block'},
+            // Don't include signup cards in excerpts
+            {selector: '.kg-signup-card', format: 'skip'}
         ]
     });
 
     const emailSettings = mergeSettings({
         selectors: [
             // equiv hideLinkHrefIfSameAsText: true
-            {selector: 'a', options: {hideLinkHrefIfSameAsText: true}}
+            {selector: 'a', options: {hideLinkHrefIfSameAsText: true}},
+            // Don't include html .preheader in email
+            {selector: '.preheader', format: 'skip'}
         ]
     });
 

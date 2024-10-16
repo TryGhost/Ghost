@@ -1,6 +1,9 @@
 const path = require('path');
-const escapeRegExp = require('lodash/escapeRegExp');
 const {URL} = require('url');
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 const DEFAULT_HOST_ARG = /.*/;
 
@@ -89,7 +92,7 @@ const getContentPath = function getContentPath(type) {
     default:
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-        // eslint-disable-next-line no-restricted-syntax
+        // eslint-disable-next-line ghost/ghost-custom/no-native-error
         throw new Error('getContentPath was called with: ' + type);
     }
 };

@@ -20,14 +20,17 @@ module.exports = {
         // TODO: remove these custom rules and fix the problems in test files where appropriate
         camelcase: 'off',
         'no-prototype-builtins': 'off',
-        'no-unused-vars': 'off',
+        'no-unused-vars': [
+            'error',
+            {
+                varsIgnorePattern: '^should$'
+            }
+        ],
         'no-useless-escape': 'off',
 
         'ghost/mocha/no-skipped-tests': 'error',
 
         // TODO: remove these custom rules and fix problems in test files
-        'ghost/mocha/max-top-level-suites': 'off',
-        'ghost/mocha/no-identical-title': 'off',
         'ghost/mocha/no-setup-in-describe': 'off',
         'ghost/mocha/no-sibling-hooks': 'off'
     }

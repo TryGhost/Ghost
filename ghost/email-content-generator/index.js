@@ -1,1 +1,1 @@
-module.exports = require('./lib/email-content-generator');
+module.exports = require('./lib/EmailContentGenerator');

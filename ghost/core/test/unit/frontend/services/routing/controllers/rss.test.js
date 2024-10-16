@@ -18,7 +18,6 @@ function failTest(done) {
 describe('Unit - services/routing/controllers/rss', function () {
     let req;
     let res;
-    let next;
     let fetchDataStub;
     let posts;
 
@@ -40,7 +39,6 @@ describe('Unit - services/routing/controllers/rss', function () {
             }
         };
 
-        next = sinon.stub();
         fetchDataStub = sinon.stub();
 
         sinon.stub(dataService, 'fetchData').get(function () {

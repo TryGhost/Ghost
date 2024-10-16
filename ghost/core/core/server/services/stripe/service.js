@@ -9,6 +9,9 @@ const events = require('../../lib/common/events');
 const models = require('../../models');
 const {getConfig} = require('./config');
 const settingsHelpers = require('../settings-helpers');
+const donationService = require('../donations');
+const staffService = require('../staff');
+const labs = require('../../../shared/labs');
 
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
@@ -28,6 +31,7 @@ const debouncedConfigureApi = _.debounce(() => {
 }, 600);
 
 module.exports = new StripeService({
+    labs,
     membersService,
     models: _.pick(models, [
         'Product',
@@ -54,7 +58,9 @@ module.exports = new StripeService({
                 value: data.secret
             }]);
         }
-    }
+    },
+    donationService,
+    staffService
 });
 
 module.exports.init = async function init() {

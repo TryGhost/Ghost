@@ -1,0 +1,112 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Backend",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
+            "args": [
+                "--ghost"
+            ],
+            "autoAttachChildProcesses": true,
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Ghost core + Admin",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
+            "autoAttachChildProcesses": true,
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Full Dev",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
+            "args": [
+                "--all"
+            ],
+            "autoAttachChildProcesses": true,
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Full Offline Dev",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
+            "args": [
+                "--all",
+                "--offline"
+            ],
+            "autoAttachChildProcesses": true,
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+        },
+        {
+            "args": [
+                "--require",
+                "./test/utils/overrides.js",
+                "-u",
+                "bdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "./test/e2e-api/**/*.test.js"
+            ],
+            "cwd": "${workspaceFolder}/ghost/core",
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "E2E API Tests",
+            "program": "./node_modules/.bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "NODE_ENV": "testing-mysql"
+            },
+            "type": "node"
+        },
+        {
+            "args": [
+                "-u",
+                "bdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "./test/**/*.test.js"
+            ],
+            "cwd": "${workspaceFolder}/ghost/email-service/",
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "Email Service Unit Tests",
+            "program": "./node_modules/.bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "NODE_ENV": "testing-mysql"
+            },
+            "type": "node"
+        }
+    ]
+}

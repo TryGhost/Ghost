@@ -4,6 +4,7 @@ import classic from 'ember-classic-decorator';
 import BodyEventListener from 'ghost-admin/mixins/body-event-listener';
 import Evented from '@ember/object/evented';
 import Service from '@ember/service';
+import {action} from '@ember/object';
 
 @classic
 export default class DropdownService extends Service.extend(Evented, BodyEventListener) {
@@ -15,11 +16,13 @@ export default class DropdownService extends Service.extend(Evented, BodyEventLi
         }
     }
 
+    @action
     closeDropdowns() {
         this.trigger('close');
     }
 
-    toggleDropdown(dropdownName, dropdownButton) {
-        this.trigger('toggle', {target: dropdownName, button: dropdownButton});
+    @action
+    toggleDropdown(dropdownName, dropdownButton, options = {}) {
+        this.trigger('toggle', {target: dropdownName, button: dropdownButton, ...options});
     }
 }

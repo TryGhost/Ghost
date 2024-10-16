@@ -3,7 +3,6 @@ const {authenticateContentApiKey} = require('../../../../../../core/server/servi
 const models = require('../../../../../../core/server/models');
 const should = require('should');
 const sinon = require('sinon');
-const testUtils = require('../../../../../utils');
 
 describe('Content API Key Auth', function () {
     before(models.init);

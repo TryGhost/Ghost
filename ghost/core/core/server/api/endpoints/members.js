@@ -2,6 +2,7 @@
 // as it is a getter and may change during runtime.
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const models = require('../../models');
 const membersService = require('../../services/members');
 
@@ -11,6 +12,7 @@ const _ = require('lodash');
 
 const messages = {
     memberNotFound: 'Member not found.',
+    notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
     memberAlreadyExists: {
         message: 'Member already exists',
         context: 'Attempting to {action} member with existing email address.'
@@ -29,10 +31,14 @@ const messages = {
 
 const allowedIncludes = ['email_recipients', 'products', 'tiers'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'members',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -62,7 +68,9 @@ module.exports = {
         options: [
             'include'
         ],
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id',
             'email'
@@ -90,7 +98,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'send_email',
             'email_type'
@@ -107,6 +117,10 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
+            if (await membersService.verificationTrigger.checkVerificationRequired()) {
+                logging.warn(tpl(messages.notSendingWelcomeEmail));
+                frame.options.send_email = false;
+            }
             const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
 
             return member;
@@ -115,7 +129,9 @@ module.exports = {
 
     edit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -134,9 +150,36 @@ module.exports = {
         }
     },
 
+    logout: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const member = await membersService.api.memberBREADService.logout(frame.options);
+
+            return member;
+        }
+    },
+
     editSubscription: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'subscription_id'
@@ -196,7 +239,9 @@ module.exports = {
 
     createSubscription: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -238,7 +283,9 @@ module.exports = {
 
     destroy: {
         statusCode: 204,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'cancel'
@@ -262,7 +309,9 @@ module.exports = {
 
     bulkDestroy: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'all',
             'filter',
@@ -290,7 +339,9 @@ module.exports = {
 
     bulkEdit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'all',
             'filter',
@@ -329,7 +380,8 @@ module.exports = {
                     const datetime = (new Date()).toJSON().substring(0, 10);
                     return `members.${datetime}.csv`;
                 }
-            }
+            },
+            cacheInvalidate: false
         },
         response: {
             format: 'plain'
@@ -346,6 +398,9 @@ module.exports = {
     },
 
     importCSV: {
+        headers: {
+            cacheInvalidate: false
+        },
         statusCode(result) {
             if (result && result.meta && result.meta.stats && result.meta.stats.imported !== null) {
                 return 201;
@@ -367,6 +422,13 @@ module.exports = {
             const pathToCSV = frame.file.path;
             const headerMapping = frame.data.mapping;
 
+            let email;
+            if (frame.user) {
+                email = frame.user.get('email');
+            } else {
+                email = await models.User.getOwnerUser().get('email');
+            }
+
             return membersService.processImport({
                 pathToCSV,
                 headerMapping,
@@ -374,13 +436,16 @@ module.exports = {
                 importLabel,
                 LabelModel: models.Label,
                 user: {
-                    email: frame.user.get('email')
+                    email: email
                 }
             });
         }
     },
 
     memberStats: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },
@@ -403,6 +468,9 @@ module.exports = {
     },
 
     mrrStats: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },
@@ -427,6 +495,9 @@ module.exports = {
     },
 
     activityFeed: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'filter'
@@ -439,3 +510,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

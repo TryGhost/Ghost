@@ -9,6 +9,7 @@ const supertest = require('supertest');
 const cheerio = require('cheerio');
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
+const {DateTime} = require('luxon');
 let request;
 
 function assertCorrectFrontendHeaders(res) {
@@ -86,6 +87,38 @@ describe('Frontend Routing: Preview Routes', function () {
         await request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
             .expect(301)
             .expect('Location', '/short-and-sweet/')
+            .expect('Cache-Control', testUtils.cacheRules.year)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
+    it('should render scheduled email-only posts', async function () {
+        const scheduledEmail = await testUtils.fixtures.insertPosts([{
+            title: 'test newsletter',
+            status: 'scheduled',
+            published_at: DateTime.now().plus({days: 1}).toISODate(),
+            posts_meta: {
+                email_only: true
+            }
+        }]);
+
+        await request.get(`/p/${scheduledEmail[0].get('uuid')}/`)
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
+    it('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
+        const emailedPost = await testUtils.fixtures.insertPosts([{
+            title: 'test newsletter',
+            status: 'sent',
+            posts_meta: {
+                email_only: true
+            }
+        }]);
+
+        await request.get(`/p/${emailedPost[0].get('uuid')}/`)
+            .expect(301)
+            .expect('Location', `/email/${emailedPost[0].get('uuid')}/`)
             .expect('Cache-Control', testUtils.cacheRules.year)
             .expect(assertCorrectFrontendHeaders);
     });

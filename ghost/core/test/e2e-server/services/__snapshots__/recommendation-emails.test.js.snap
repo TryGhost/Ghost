@@ -1,0 +1,713 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Incoming Recommendation Emails Sends a different email if we receive a recommendation back 1: [html 1] 1`] = `
+"<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>👍 New recommendation</title>
+    <style>
+@media only screen and (max-width: 620px) {
+  table.body h1 {
+    font-size: 22px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td,
+table.body span,
+table.body a {
+    font-size: 16px !important;
+  }
+
+  table.body .wrapper,
+table.body .article {
+    padding: 10px !important;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table.body p.large,
+table.body p.large a {
+    font-size: 18px !important;
+  }
+
+  table.body p.small,
+table.body a.small {
+    font-size: 12px !important;
+  }
+
+  .new-mention-thumbnail {
+    display: none !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .text-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .text-link-accent a {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>
+  </head>
+  <body style=\\"background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; padding: 10px; width: 540px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                          <h1 style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15171A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 24px;\\">A site is now recommending you&nbsp;back</h1>
+
+                        <!--[if !mso !vml]-->
+                        <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;background:#F4F5F6;border-radius:8px;\\">
+                          <a style=\\"display: flex; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif; background: #F4F5F6; border-radius: 8px; color: #15171A; text-decoration: none;\\" href=\\"https://www.otherghostsite.com/\\">
+                            <div style=\\"display:inline-block; width:100%; padding:20px\\">
+                              <div style=\\"color:#15171A;font-size:13px;font-weight:400\\">
+                                
+                                <div style=\\"color:#15171A;font-size:15px;line-height:1.3em;font-weight:700\\">Other Ghost Site</div>
+                              </div>
+                            </div>
+                          </a>
+                        </figure>
+                        <!--[endif]-->
+
+                        <!--[if vml]>
+                        <table style=\\"border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; border: 1px solid #F4F5F6; font-family: -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, Oxygen, Ubuntu, Cantarell, \\"Open Sans\\", \\"Helvetica Neue\\", sans-serif; background-color:#F4F5F6;\\" class=\\"recommendation-card--outlook\\">
+                            <tr>
+                                <td width=\\"100%\\" style=\\"padding: 20px;background-color:#F4F5F6;\\">
+                                    <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                        <tr>
+                                            <td>
+                                              <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                                  <tr>
+                                                      <td><a style=\\"color: #15171A; font-size: 15px; line-height: 1.5em; font-weight: 700; text-decoration: none;\\" href=\\"https://www.otherghostsite.com/\\">Other Ghost Site</a></td>
+                                                  </tr>
+                                              </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <![endif]-->
+
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-top: 24px; padding-bottom: 12px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; border-radius: 8px; text-align: center;\\"> 
+                                          <a href=\\"http://127.0.0.1:2369/ghost/#/settings/recommendations\\" target=\\"_blank\\" style=\\"border: solid 1px #FF1A75; border-radius: 8px; box-sizing: border-box; display: inline-block; font-size: 15px; font-weight: normal; margin: 0; padding: 10px 20px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #ffffff;\\">View recommendations</a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"padding-top: 24px;\\">
+                                <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #7c8b9a; font-weight: normal; margin: 0; line-height: 25px;\\">Or copy and paste this URL into your browser:</p>
+                                <p class=\\"text-link\\" style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 25px; margin:0; color: #7c8b9a; font-weight: normal;\\">http://127.0.0.1:2369/ghost/#/settings/recommendations</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- START FOOTER -->
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top; padding-top: 56px;\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:jbloggs@example.com\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">jbloggs@example.com</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top;\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;\\">Don’t want to receive these emails? Manage your preferences <a class=\\"small\\" href=\\"http://127.0.0.1:2369/ghost/#/settings/staff/joe-bloggs\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">here</a>.</p>
+                      </td>
+                    </tr>
+
+                    <!-- END FOOTER -->
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+
+          <!-- END CENTERED CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Incoming Recommendation Emails Sends a different email if we receive a recommendation back 2: [text 1] 1`] = `
+"
+You have been recommended by Other Ghost Site.
+
+---
+
+Sent to jbloggs@example.com from 127.0.0.1.
+If you would no longer like to receive these notifications you can adjust your settings at http://127.0.0.1:2369/ghost/#/settings/staff/joe-bloggs.
+    "
+`;
+
+exports[`Incoming Recommendation Emails Sends a different email if we receive a recommendation back 3: [metadata 1] 1`] = `
+Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
+  "subject": "👍 New recommendation: Other Ghost Site",
+  "to": "jbloggs@example.com",
+}
+`;
+
+exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 1: [html 1] 1`] = `
+"<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>👍 New recommendation</title>
+    <style>
+@media only screen and (max-width: 620px) {
+  table.body h1 {
+    font-size: 22px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td,
+table.body span,
+table.body a {
+    font-size: 16px !important;
+  }
+
+  table.body .wrapper,
+table.body .article {
+    padding: 10px !important;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table.body p.large,
+table.body p.large a {
+    font-size: 18px !important;
+  }
+
+  table.body p.small,
+table.body a.small {
+    font-size: 12px !important;
+  }
+
+  .new-mention-thumbnail {
+    display: none !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .text-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .text-link-accent a {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>
+  </head>
+  <body style=\\"background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; padding: 10px; width: 540px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                          <h1 style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15171A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 12px;\\">A site is now recommending you to their&nbsp;audience</h1>
+                          <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #15171A; font-weight: normal; margin: 0; line-height: 1.3em; padding-bottom: 32px;\\">Every time someone new signs up on their site, they’ll see an option to check out Ghost as well.</p>
+
+                        <!--[if !mso !vml]-->
+                        <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;background:#F4F5F6;border-radius:8px;\\">
+                          <a style=\\"display: flex; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif; background: #F4F5F6; border-radius: 8px; color: #15171A; text-decoration: none;\\" href=\\"https://www.otherghostsite.com/\\">
+                            <div style=\\"display:inline-block; width:100%; padding:20px\\">
+                              <div style=\\"color:#15171A;font-size:13px;font-weight:400\\">
+                                
+                                <div style=\\"color:#15171A;font-size:15px;line-height:1.3em;font-weight:700\\">Other Ghost Site</div>
+                              </div>
+                            </div>
+                          </a>
+                        </figure>
+                        <!--[endif]-->
+
+                        <!--[if vml]>
+                        <table style=\\"border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; border: 1px solid #F4F5F6; font-family: -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, Oxygen, Ubuntu, Cantarell, \\"Open Sans\\", \\"Helvetica Neue\\", sans-serif; background-color:#F4F5F6;\\" class=\\"recommendation-card--outlook\\">
+                            <tr>
+                                <td width=\\"100%\\" style=\\"padding: 20px;background-color:#F4F5F6;\\">
+                                    <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                        <tr>
+                                            <td>
+                                              <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                                  <tr>
+                                                      <td><a style=\\"color: #15171A; font-size: 15px; line-height: 1.5em; font-weight: 700; text-decoration: none;\\" href=\\"https://www.otherghostsite.com/\\">Other Ghost Site</a></td>
+                                                  </tr>
+                                              </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <![endif]-->
+
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-top: 24px; padding-bottom: 12px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; border-radius: 8px; text-align: center;\\"> 
+                                          <a href=\\"http://127.0.0.1:2369/ghost/#/settings/recommendations/add?url=https%3A%2F%2Fwww.otherghostsite.com%2F\\" target=\\"_blank\\" style=\\"border: solid 1px #FF1A75; border-radius: 8px; box-sizing: border-box; display: inline-block; font-size: 15px; font-weight: normal; margin: 0; padding: 10px 20px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #ffffff;\\">Recommend back</a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"padding-top: 24px;\\">
+                                <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #7c8b9a; font-weight: normal; margin: 0; line-height: 25px;\\">Or copy and paste this URL into your browser:</p>
+                                <p class=\\"text-link\\" style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 25px; margin:0; color: #7c8b9a; font-weight: normal;\\">http://127.0.0.1:2369/ghost/#/settings/recommendations</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- START FOOTER -->
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top; padding-top: 56px;\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:jbloggs@example.com\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">jbloggs@example.com</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top;\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;\\">Don’t want to receive these emails? Manage your preferences <a class=\\"small\\" href=\\"http://127.0.0.1:2369/ghost/#/settings/staff/joe-bloggs\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">here</a>.</p>
+                      </td>
+                    </tr>
+
+                    <!-- END FOOTER -->
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+
+          <!-- END CENTERED CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 2: [html 2] 1`] = `
+"<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>👍 New recommendation</title>
+    <style>
+@media only screen and (max-width: 620px) {
+  table.body h1 {
+    font-size: 22px !important;
+    padding-bottom: 16px !important;
+  }
+
+  table.body p,
+table.body ul,
+table.body ol,
+table.body td,
+table.body span,
+table.body a {
+    font-size: 16px !important;
+  }
+
+  table.body .wrapper,
+table.body .article {
+    padding: 10px !important;
+  }
+
+  table.body .content {
+    padding: 0 !important;
+  }
+
+  table.body .container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  table.body .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  table.body .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  table.body p.large,
+table.body p.large a {
+    font-size: 18px !important;
+  }
+
+  table.body p.small,
+table.body a.small {
+    font-size: 12px !important;
+  }
+
+  .new-mention-thumbnail {
+    display: none !important;
+  }
+}
+@media all {
+  .ExternalClass {
+    width: 100%;
+  }
+
+  .ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+    line-height: 100%;
+  }
+
+  .text-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .text-link-accent a {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+  }
+
+  #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}
+</style>
+  </head>
+  <body style=\\"background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; padding: 10px; width: 540px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                          <h1 style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15171A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 12px;\\">A site is now recommending you to their&nbsp;audience</h1>
+                          <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #15171A; font-weight: normal; margin: 0; line-height: 1.3em; padding-bottom: 32px;\\">Every time someone new signs up on their site, they’ll see an option to check out Ghost as well.</p>
+
+                        <!--[if !mso !vml]-->
+                        <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;background:#F4F5F6;border-radius:8px;\\">
+                          <a style=\\"display: flex; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif; background: #F4F5F6; border-radius: 8px; color: #15171A; text-decoration: none;\\" href=\\"https://www.otherghostsite.com/\\">
+                            <div style=\\"display:inline-block; width:100%; padding:20px\\">
+                              <div style=\\"color:#15171A;font-size:13px;font-weight:400\\">
+                                
+                                <div style=\\"color:#15171A;font-size:15px;line-height:1.3em;font-weight:700\\">Other Ghost Site</div>
+                              </div>
+                            </div>
+                          </a>
+                        </figure>
+                        <!--[endif]-->
+
+                        <!--[if vml]>
+                        <table style=\\"border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; border: 1px solid #F4F5F6; font-family: -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, Oxygen, Ubuntu, Cantarell, \\"Open Sans\\", \\"Helvetica Neue\\", sans-serif; background-color:#F4F5F6;\\" class=\\"recommendation-card--outlook\\">
+                            <tr>
+                                <td width=\\"100%\\" style=\\"padding: 20px;background-color:#F4F5F6;\\">
+                                    <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                        <tr>
+                                            <td>
+                                              <table style=\\"margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;\\">
+                                                  <tr>
+                                                      <td><a style=\\"color: #15171A; font-size: 15px; line-height: 1.5em; font-weight: 700; text-decoration: none;\\" href=\\"https://www.otherghostsite.com/\\">Other Ghost Site</a></td>
+                                                  </tr>
+                                              </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <![endif]-->
+
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-top: 24px; padding-bottom: 12px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; border-radius: 8px; text-align: center;\\"> 
+                                          <a href=\\"http://127.0.0.1:2369/ghost/#/settings/recommendations/add?url=https%3A%2F%2Fwww.otherghostsite.com%2F\\" target=\\"_blank\\" style=\\"border: solid 1px #FF1A75; border-radius: 8px; box-sizing: border-box; display: inline-block; font-size: 15px; font-weight: normal; margin: 0; padding: 10px 20px; text-decoration: none; background-color: #FF1A75; border-color: #FF1A75; color: #ffffff;\\">Recommend back</a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"padding-top: 24px;\\">
+                                <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #7c8b9a; font-weight: normal; margin: 0; line-height: 25px;\\">Or copy and paste this URL into your browser:</p>
+                                <p class=\\"text-link\\" style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 25px; margin:0; color: #7c8b9a; font-weight: normal;\\">http://127.0.0.1:2369/ghost/#/settings/recommendations</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- START FOOTER -->
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top; padding-top: 56px;\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:swellingsworth@example.com\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">swellingsworth@example.com</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top;\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;\\">Don’t want to receive these emails? Manage your preferences <a class=\\"small\\" href=\\"http://127.0.0.1:2369/ghost/#/settings/staff/smith-wellingsworth\\" style=\\"text-decoration: underline; color: #7C8B9A; font-size: 12px;\\">here</a>.</p>
+                      </td>
+                    </tr>
+
+                    <!-- END FOOTER -->
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+
+          <!-- END CENTERED CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 3: [text 1] 1`] = `
+"
+You have been recommended by Other Ghost Site.
+
+---
+
+Sent to jbloggs@example.com from 127.0.0.1.
+If you would no longer like to receive these notifications you can adjust your settings at http://127.0.0.1:2369/ghost/#/settings/staff/joe-bloggs.
+    "
+`;
+
+exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 4: [metadata 1] 1`] = `
+Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
+  "subject": "👍 New recommendation: Other Ghost Site",
+  "to": "jbloggs@example.com",
+}
+`;

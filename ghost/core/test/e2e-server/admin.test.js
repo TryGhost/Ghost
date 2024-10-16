@@ -44,6 +44,31 @@ describe('Admin Routing', function () {
         });
     });
 
+    describe('Auth Frame', function () {
+        before(function () {
+            // ensure the admin-auth folder exists so serveStatic doesn't fall through
+            adminUtils.stubAuthFrameFiles(configUtils.config.getContentPath('public'));
+        });
+
+        it('Renders 204 with no admin session cookie', async function () {
+            await request
+                .get('/ghost/auth-frame/')
+                .set('Origin', config.get('url'))
+                .expect(204)
+                .expect('Cache-Control', 'public, max-age=0');
+        });
+
+        it('Renders static file with admin session cookie', async function () {
+            await request
+                .get('/ghost/auth-frame/')
+                .set('Origin', config.get('url'))
+                .set('Cookie', [
+                    'ghost-admin-api-session=abc; Path=/; HttpOnly; Secure; SameSite=Strict'
+                ])
+                .expect(200);
+        });
+    });
+
     describe('Admin Redirects', function () {
         it('should redirect /GHOST/ to /ghost/', async function () {
             await request.get('/GHOST/')
@@ -63,9 +88,9 @@ describe('Admin Routing', function () {
             request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
         });
 
-        after(function () {
+        after(async function () {
             urlUtils.restore();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         it('should redirect admin access over non-HTTPS', async function () {
@@ -90,8 +115,8 @@ describe('Admin Routing', function () {
             configUtils.set('paths', configPaths);
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('serves assets in production', async function () {

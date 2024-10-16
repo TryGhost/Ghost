@@ -250,4 +250,87 @@ describe('Pipeline', function () {
                 });
         });
     });
+
+    describe('caching', function () {
+        beforeEach(function () {
+            sinon.stub(shared.pipeline.STAGES.validation, 'input');
+            sinon.stub(shared.pipeline.STAGES.serialisation, 'input');
+            sinon.stub(shared.pipeline.STAGES.serialisation, 'output');
+            sinon.stub(shared.pipeline.STAGES, 'permissions');
+            sinon.stub(shared.pipeline.STAGES, 'query');
+        });
+
+        it('should set a cache if configured on endpoint level', async function () {
+            const apiController = {
+                browse: {
+                    cache: {
+                        get: sinon.stub().resolves(null),
+                        set: sinon.stub().resolves(true)
+                    }
+                }
+            };
+
+            const apiUtils = {};
+            const result = shared.pipeline(apiController, apiUtils);
+
+            shared.pipeline.STAGES.validation.input.resolves();
+            shared.pipeline.STAGES.serialisation.input.resolves();
+            shared.pipeline.STAGES.permissions.resolves();
+            shared.pipeline.STAGES.query.resolves('response');
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                frame.response = response;
+            });
+
+            const response = await result.browse();
+
+            response.should.eql('response');
+
+            // request went through all stages
+            shared.pipeline.STAGES.validation.input.calledOnce.should.be.true();
+            shared.pipeline.STAGES.serialisation.input.calledOnce.should.be.true();
+            shared.pipeline.STAGES.permissions.calledOnce.should.be.true();
+            shared.pipeline.STAGES.query.calledOnce.should.be.true();
+            shared.pipeline.STAGES.serialisation.output.calledOnce.should.be.true();
+
+            // cache was set
+            apiController.browse.cache.set.calledOnce.should.be.true();
+            apiController.browse.cache.set.args[0][1].should.equal('response');
+        });
+
+        it('should use cache if configured on endpoint level', async function () {
+            const apiController = {
+                browse: {
+                    cache: {
+                        get: sinon.stub().resolves('CACHED RESPONSE'),
+                        set: sinon.stub().resolves(true)
+                    }
+                }
+            };
+
+            const apiUtils = {};
+            const result = shared.pipeline(apiController, apiUtils);
+
+            shared.pipeline.STAGES.validation.input.resolves();
+            shared.pipeline.STAGES.serialisation.input.resolves();
+            shared.pipeline.STAGES.permissions.resolves();
+            shared.pipeline.STAGES.query.resolves('response');
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
+                frame.response = response;
+            });
+
+            const response = await result.browse();
+
+            response.should.eql('CACHED RESPONSE');
+
+            // request went through all stages
+            shared.pipeline.STAGES.validation.input.calledOnce.should.be.false();
+            shared.pipeline.STAGES.serialisation.input.calledOnce.should.be.false();
+            shared.pipeline.STAGES.permissions.calledOnce.should.be.false();
+            shared.pipeline.STAGES.query.calledOnce.should.be.false();
+            shared.pipeline.STAGES.serialisation.output.calledOnce.should.be.false();
+
+            // cache not set
+            apiController.browse.cache.set.calledOnce.should.be.false();
+        });
+    });
 });

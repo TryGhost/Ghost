@@ -12,6 +12,10 @@ module.exports = {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
 
+    get collections() {
+        return apiFramework.pipeline(require('./collections'), localUtils);
+    },
+
     get db() {
         return apiFramework.pipeline(require('./db'), localUtils);
     },
@@ -57,6 +61,10 @@ module.exports = {
         return apiFramework.pipeline(require('./posts'), localUtils);
     },
 
+    get mentions() {
+        return apiFramework.pipeline(require('./mentions'), localUtils);
+    },
+
     get invites() {
         return apiFramework.pipeline(require('./invites'), localUtils);
     },
@@ -71,6 +79,10 @@ module.exports = {
 
     get settings() {
         return apiFramework.pipeline(require('./settings'), localUtils);
+    },
+
+    get announcements() {
+        return apiFramework.pipeline(require('./announcements'), localUtils);
     },
 
     get membersStripeConnect() {
@@ -189,6 +201,18 @@ module.exports = {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
 
+    get mailEvents() {
+        return apiFramework.pipeline(require('./mail-events'), localUtils);
+    },
+
+    get recommendations() {
+        return apiFramework.pipeline(require('./recommendations'), localUtils);
+    },
+
+    get incomingRecommendations() {
+        return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
@@ -199,6 +223,10 @@ module.exports = {
      */
     get pagesPublic() {
         return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
+    },
+
+    get collectionsPublic() {
+        return apiFramework.pipeline(require('./collections-public'), localUtils);
     },
 
     get tagsPublic() {
@@ -235,5 +263,9 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
-    }   
+    },
+
+    get recommendationsPublic() {
+        return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
+    }
 };

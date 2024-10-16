@@ -1,0 +1,56 @@
+@import '@tryghost/admin-x-design-system/styles.css';
+
+.admin-x-base.admin-x-activitypub {
+    animation-name: none;
+}
+
+@keyframes bump {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+.bump {
+animation: bump 0.3s ease-in-out;
+}
+
+.ap-red-heart path {
+    fill: #F50B23;
+}
+
+.ap-note-content a, .ap-profile-content a {
+  color: rgb(236 72 153) !important;
+  word-break: break-all;
+}
+
+.ap-note-content a:hover, .ap-profile-content a:hover {
+  color: rgb(190, 25, 99) !important;
+  text-decoration: underline !important;
+}
+
+.ap-note-content p + p {
+  margin-top: 1.5rem !important;
+}
+
+.ap-likes .ellipsis::after {
+  content: "…";
+}
+
+.ap-likes .invisible {
+  display: inline-block;
+  font-size: 0;
+  height: 0;
+  line-height: 0;
+  position: absolute;
+  width: 0;
+}
+
+.ap-textarea {
+  field-sizing: content;
+}

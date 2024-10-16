@@ -63,7 +63,24 @@ function ping(post) {
         if (post.custom_excerpt) {
             description = post.custom_excerpt;
         } else if (post.html) {
-            description = `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`;
+            const membersContentIdx = post.html.indexOf('<!--members-only-->');
+            const substringEnd = membersContentIdx > -1 ? membersContentIdx : post.html.length;
+
+            description = `${
+                post.html
+                    // Remove members-only content
+                    .substring(0, substringEnd)
+                    // Strip out HTML
+                    .replace(/<[^>]+>/g, '')
+                    // Split into sentences
+                    .split('.')
+                    // Remove empty strings
+                    .filter(sentence => sentence.trim() !== '')
+                    // Get the first three sentences
+                    .slice(0, 3)
+                    // Join 'em back together
+                    .join('.')
+            }.`;
         } else {
             description = null;
         }
@@ -93,7 +110,7 @@ function ping(post) {
                 // if it is a post or a test message to check webhook working.
                 text: `Notification from *${blogTitle}* :ghost:`,
                 unfurl_links: true,
-                icon_url: blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl({absolute: true}),
                 username: slackSettings.username,
                 // We don't want to send attachment if it is a test notification.
                 attachments: [
@@ -124,7 +141,7 @@ function ping(post) {
                             }
                         ],
                         footer: blogTitle,
-                        footer_icon: blogIcon.getIconUrl(true),
+                        footer_icon: blogIcon.getIconUrl({absolute: true}),
                         ts: moment().unix()
                     }
                 ]
@@ -133,7 +150,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl({absolute: true}),
                 username: slackSettings.username
             };
         }
@@ -153,25 +170,33 @@ function ping(post) {
     }
 }
 
-function listener(model, options) {
+function slackListener(model, options) {
     // CASE: do not ping slack if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
         return;
     }
 
-    ping(model.toJSON());
+    ping({
+        ...model.toJSON(),
+        authors: model.related('authors').toJSON()
+    });
 }
 
-function testPing() {
+function slackTestPing() {
     ping({
         message: 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!'
     });
 }
 
 function listen() {
-    events.on('post.published', listener);
-    events.on('slack.test', testPing);
+    if (!events.hasRegisteredListener('post.published', 'slackListener')) {
+        events.on('post.published', slackListener);
+    }
+
+    if (!events.hasRegisteredListener('slack.test', 'slackTestPing')) {
+        events.on('slack.test', slackTestPing);
+    }
 }
 
 // Public API

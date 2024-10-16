@@ -1,5 +1,5 @@
 const should = require('should');
-const EventRepository = require('../../../../lib/repositories/event');
+const EventRepository = require('../../../../lib/repositories/EventRepository');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
@@ -17,6 +17,12 @@ describe('EventRepository', function () {
                 MemberPaidSubscriptionEvent: null,
                 labsService: null
             });
+        });
+
+        it('throws when using invalid filter', function () {
+            should.throws(() => {
+                eventRepository.getNQLSubset('undefined');
+            }, errors.BadRequestError);
         });
 
         it('throws when using properties that aren\'t in the allowlist', function () {

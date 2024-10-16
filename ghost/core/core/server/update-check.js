@@ -12,15 +12,24 @@ const UpdateCheckService = require('@tryghost/update-check-service');
 
 /**
  * Initializes and triggers update check
- *
+ * @param {Object} [options]
+ * @param {Boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
+ * @param {Boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
+ * @param {String} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
  * @returns {Promise<any>}
  */
-module.exports = async () => {
-    const allowedCheckEnvironments = ['development', 'production'];
+module.exports = async ({
+    rethrowErrors = false,
+    forceUpdate = config.get('updateCheck:forceUpdate'),
+    updateCheckUrl = config.get('updateCheck:url')
+} = {}) => {
+    if (!forceUpdate) {
+        const allowedCheckEnvironments = ['development', 'production'];
 
-    // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
-    if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-        return;
+        // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments
+        if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
+            return;
+        }
     }
 
     const {GhostMailer} = require('./services/mail');
@@ -46,12 +55,13 @@ module.exports = async () => {
             mail: config.get('mail'),
             env: config.get('env'),
             databaseType: databaseInfo.getEngine(),
-            checkEndpoint: config.get('updateCheck:url'),
+            checkEndpoint: updateCheckUrl,
             isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
             notificationGroups: config.get('notificationGroups'),
             siteUrl: urlUtils.urlFor('home', true),
-            forceUpdate: config.get('updateCheck:forceUpdate'),
-            ghostVersion: ghostVersion.original
+            forceUpdate,
+            ghostVersion: ghostVersion.original,
+            rethrowErrors
         },
         request,
         sendEmail: ghostMailer.send.bind(ghostMailer)

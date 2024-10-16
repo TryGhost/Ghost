@@ -17,7 +17,8 @@ describe('StripeCustomerSubscription Model', function run() {
         it('Is correctly mapped to the stripe customer', async function () {
             const context = testUtils.context.admin;
             const member = await Member.add({
-                email: 'test@test.member'
+                email: 'test@test.member',
+                email_disabled: false
             }, context);
             await MemberStripeCustomer.add({
                 member_id: member.get('id'),

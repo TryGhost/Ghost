@@ -1,7 +1,7 @@
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const tagsPublicService = require('../../services/tags-public');
 
 const ALLOWED_INCLUDES = ['count.posts'];
 
@@ -9,10 +9,15 @@ const messages = {
     tagNotFound: 'Tag not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'tags',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
+        cache: tagsPublicService.api?.cache,
         options: [
             'include',
             'filter',
@@ -36,6 +41,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -69,3 +77,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

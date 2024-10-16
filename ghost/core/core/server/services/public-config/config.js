@@ -6,7 +6,7 @@ const ghostVersion = require('@tryghost/version');
 
 module.exports = function getConfigProperties() {
     const configProperties = {
-        version: ghostVersion.full,
+        version: ghostVersion.original,
         environment: config.get('env'),
         database: databaseInfo.getEngine(),
         mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
@@ -19,12 +19,13 @@ module.exports = function getConfigProperties() {
         emailAnalytics: config.get('emailAnalytics'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
-        editor: config.get('editor')
+        pintura: config.get('pintura'),
+        signupForm: config.get('signupForm')
     };
 
-    const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';
-    if (billingUrl) {
-        configProperties.billingUrl = billingUrl;
+    // WIP tinybird stats feature - it's entirely config driven instead of using an alpha flag for now
+    if (config.get('tinybird') && config.get('tinybird:stats')) {
+        configProperties.stats = config.get('tinybird:stats');
     }
 
     return configProperties;

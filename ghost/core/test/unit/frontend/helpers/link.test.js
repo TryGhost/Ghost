@@ -34,8 +34,8 @@ describe('{{link}} helper', function () {
         };
     });
 
-    after(function () {
-        configUtils.restore();
+    after(async function () {
+        await configUtils.restore();
     });
 
     describe('basic behavior: simple links without context', function () {

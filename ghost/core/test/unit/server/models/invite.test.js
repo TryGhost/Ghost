@@ -1,6 +1,5 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
@@ -151,6 +150,21 @@ describe('Unit: models/invite', function () {
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof errors.NoPermissionError).should.eql(true);
+                        });
+                });
+
+                it('invite editor with staff token', function () {
+                    loadedPermissions.apiKey = {
+                        roles: [{name: 'Admin Integration'}]
+                    };
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    roleModel.get.withArgs('name').returns('Editor');
+
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true)
+                        .then(Promise.reject)
+                        .catch((err) => {
+                            (err instanceof errors.NoPermissionError).should.eql(true);
+                            delete loadedPermissions.apiKey;
                         });
                 });
 

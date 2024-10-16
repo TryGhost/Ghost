@@ -1,9 +1,8 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const megaService = require('../../services/mega');
 const emailService = require('../../services/email-service');
-const labs = require('../../../shared/labs');
+const emailAnalytics = require('../../services/email-analytics');
 
 const messages = {
     emailNotFound: 'Email not found.',
@@ -13,10 +12,14 @@ const messages = {
 const allowedBatchIncludes = ['count.recipients'];
 const allowedFailureIncludes = ['member', 'email_recipient'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'emails',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -31,6 +34,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'fields'
         ],
@@ -58,35 +64,22 @@ module.exports = {
     },
 
     retry: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],
         permissions: true,
-        // (complexity removed with new labs flag)
-        // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
         async query(frame) {
-            if (labs.isSet('emailStability')) {
-                return await emailService.controller.retryFailedEmail(frame);
-            }
-
-            const model = await models.Email.findOne(frame.data, frame.options);
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.emailNotFound)
-                });
-            }
-
-            if (model.get('status') !== 'failed') {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.retryNotAllowed)
-                });
-            }
-
-            return await megaService.mega.retryFailedEmail(model);
+            return await emailService.controller.retryFailedEmail(frame);
         }
     },
 
     browseBatches: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -115,6 +108,9 @@ module.exports = {
     },
 
     browseFailures: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -140,5 +136,50 @@ module.exports = {
             const filter = `email_id:'${frame.data.id}'` + (frame.options.filter ? `+(${frame.options.filter})` : '');
             return await models.EmailRecipientFailure.findPage({...frame.options, filter});
         }
+    },
+
+    analyticsStatus: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            return emailAnalytics.service.getStatus();
+        }
+    },
+
+    scheduleAnalytics: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'browse'
+        },
+        data: [
+            'id'
+        ],
+        async query(frame) {
+            const model = await models.Email.findOne(frame.data, frame.options);
+            return emailAnalytics.service.schedule({
+                begin: model.get('created_at'),
+                end: new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7))
+            });
+        }
+    },
+
+    cancelScheduledAnalytics: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            return emailAnalytics.service.cancelScheduled();
+        }
     }
 };
+
+module.exports = controller;

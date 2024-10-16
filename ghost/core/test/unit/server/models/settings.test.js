@@ -56,7 +56,7 @@ describe('Unit: models/settings', function () {
         });
 
         it('emits edit events', function () {
-            tracker.on('query', (query, step) => {
+            tracker.on('query', (query) => {
                 if (query.method === 'select') {
                     return query.response([{
                         id: 1, // NOTE: `id` imitates existing value for 'edit' event

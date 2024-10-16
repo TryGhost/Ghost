@@ -1,5 +1,9 @@
 {
     "core": {
+        "last_mentions_report_email_timestamp": {
+            "defaultValue": null,
+            "type": "number"
+        },
         "db_hash": {
             "defaultValue": null,
             "type": "string"
@@ -212,7 +216,7 @@
     },
     "theme": {
         "active_theme": {
-            "defaultValue": "casper",
+            "defaultValue": "source",
             "flags": "RO",
             "type": "string"
         }
@@ -326,6 +330,14 @@
             "defaultValue": "[\"free\"]",
             "type": "array"
         },
+        "portal_default_plan": {
+            "defaultValue": "yearly",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["yearly", "monthly"]]
+            },
+            "type": "string"
+        },
         "portal_products": {
             "defaultValue": "[]",
             "type": "array"
@@ -345,6 +357,18 @@
         "portal_button_signup_text": {
             "defaultValue": "Subscribe",
             "type": "string"
+        },
+        "portal_signup_terms_html": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "portal_signup_checkbox_required": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "email": {
@@ -467,6 +491,27 @@
             "type": "string"
         }
     },
+    "announcement": {
+        "announcement_content": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "announcement_visibility": {
+            "defaultValue": "[]",
+            "type": "array"
+        },
+        "announcement_background": {
+            "defaultValue": "dark",
+            "type": "string",
+            "isIn": [[
+                "accent",
+                "dark",
+                "light"
+            ]],
+            "flags": "PUBLIC"
+        }
+    },
     "comments": {
         "comments_enabled": {
             "type": "string",
@@ -479,6 +524,64 @@
                     "paid"
                 ]]
             }
+        }
+    },
+    "analytics": {
+        "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
+    "pintura": {
+        "pintura": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        },
+        "pintura_js_url": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "pintura_css_url": {
+            "defaultValue": null,
+            "type": "string"
+        }
+    },
+    "donations": {
+        "donations_currency": {
+            "defaultValue": "USD",
+            "validations": {
+                "isEmpty": false
+            },
+            "type": "string"
+        },
+        "donations_suggested_amount": {
+            "defaultValue": 500,
+            "validations": {
+                "isEmpty": false
+            },
+            "type": "number"
+        }
+    },
+    "recommendations": {
+        "recommendations_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     }
 }
