@@ -1,16 +1,19 @@
+name: ghost-development
 services:
   ghost:
+    image: ghost:local
     build:
       context: ../
       dockerfile: docker/Dockerfile
     volumes:
       - ../.yarncache:/home/ghost/.yarncache
-    develop:
-      watch:
+    container_name: ghost-development-ghost
+    develop: 
+      watch: 
         - path: ../
           action: sync
           target: /home/ghost
-          ignore:
+          ignore: 
             - node_modules/
             - .yarncache/
         - path: yarn.lock
@@ -20,16 +23,16 @@ services:
       - 2368:2368
       - 4200:4200
     environment:
+      - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-}
       - APP_FLAGS=${APP_FLAGS:-}
       - server__host=0.0.0.0
-      - server__port=2368
       - database__client=mysql2
-      - database__connection__host=ghost-full-mysql
+      - database__connection__host=ghost-development-mysql
       - database__connection__user=root
       - database__connection__password=root
       - database__connection__database=ghost
-      - adapters__Redis__host=ghost-full-redis
+      - adapters__Redis__host=ghost-development-redis
       - adapters__Redis__host=6379
     tty: true
     depends_on:
@@ -39,7 +42,7 @@ services:
         condition: service_healthy
   mysql:
     image: mysql:8.0.35
-    container_name: ghost-full-mysql
+    container_name: ghost-development-mysql
     # We'll need to look into how we can further fine tune the memory usage/performance here
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
@@ -56,7 +59,7 @@ services:
       retries: 120
   redis:
     image: redis:7.0
-    container_name: ghost-full-redis
+    container_name: ghost-development-redis
     ports:
       - "6379:6379"
     restart: always
@@ -64,6 +67,10 @@ services:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       interval: 1s
       retries: 120
+
+networks:
+  default:
+    name: ghost-development-network
 
 volumes:
   mysql-data:
