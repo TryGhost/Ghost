@@ -20,9 +20,6 @@ const Content = () => {
     }
     commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
 
-    const paidOnly = commentsEnabled === 'paid';
-    const isPaidMember = member && !!member.paid;
-
     useEffect(() => {
         const elem = document.getElementById(ROOT_DIV_ID);
 
@@ -41,7 +38,11 @@ const Content = () => {
         }
     }, []);
 
-    const hasOpenSecundaryForms = secundaryFormCount > 0;
+    const isPaidOnly = commentsEnabled === 'paid';
+    const isPaidMember = member && !!member.paid;
+
+    const showCTA = !member || (isPaidOnly && !isPaidMember);
+    const hasOpenReplyForms = secundaryFormCount > 0;
 
     return (
         labs.commentImprovements ? (
