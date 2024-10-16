@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Post-checkout hook"
+
+echo "End post-checkout hook"
