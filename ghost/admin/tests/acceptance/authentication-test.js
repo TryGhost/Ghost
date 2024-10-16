@@ -36,6 +36,14 @@ describe('Acceptance: Authentication', function () {
     describe('general page', function () {
         let newLocation;
 
+        async function completeSignIn() {
+            await invalidateSession();
+            await visit('/signin');
+            await fillIn('[data-test-input="email"]', 'my@email.com');
+            await fillIn('[data-test-input="password"]', 'password');
+            await click('[data-test-button="sign-in"]');
+        }
+
         beforeEach(function () {
             originalReplaceLocation = windowProxy.replaceLocation;
             windowProxy.replaceLocation = function (url) {
@@ -121,9 +129,9 @@ describe('Acceptance: Authentication', function () {
         it('has 2fa code happy path', async function () {
             this.server.post('/session', function () {
                 return new Response(403, {}, {
-                    errors: {
+                    errors: [{
                         code: '2FA_TOKEN_REQUIRED'
-                    }
+                    }]
                 });
             });
 
@@ -131,13 +139,9 @@ describe('Acceptance: Authentication', function () {
                 return new Response(201);
             });
 
-            await invalidateSession();
-            await visit('/signin');
-            await fillIn('[data-test-input="email"]', 'my@email.com');
-            await fillIn('[data-test-input="password"]', 'password');
-            await click('[data-test-button="sign-in"]');
+            await completeSignIn();
 
-            expect(currentURL(), 'url after u+p submit').to.equal('/signin/verify');
+            expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
 
             await fillIn('[data-test-input="token"]', 123456);
             await click('[data-test-button="verify"]');
@@ -148,30 +152,55 @@ describe('Acceptance: Authentication', function () {
         it('handles 2fa code verification errors', async function () {
             this.server.post('/session', function () {
                 return new Response(403, {}, {
-                    errors: {
+                    errors: [{
                         code: '2FA_TOKEN_REQUIRED'
-                    }
+                    }]
                 });
             });
 
             this.server.put('/session/verify', function () {
                 return new Response(401, {}, {
-                    errors: {
+                    errors: [{
                         message: 'Invalid or expired token'
-                    }
+                    }]
                 });
             });
 
-            await invalidateSession();
-            await visit('/signin');
-            await fillIn('[data-test-input="email"]', 'my@email.com');
-            await fillIn('[data-test-input="password"]', 'password');
-            await click('[data-test-button="sign-in"]');
+            await completeSignIn();
 
             await fillIn('[data-test-input="token"]', 123456);
             await click('[data-test-button="verify"]');
 
             expect(find('[data-test-flow-notification]')).to.have.trimmed.text('Invalid or expired token');
+        });
+
+        it('handles 2fa-required on a 2xx response', async function () {
+            this.server.post('/session', function () {
+                return new Response(200, {}, {
+                    errors: [{
+                        code: '2FA_TOKEN_REQUIRED'
+                    }]
+                });
+            });
+
+            await completeSignIn();
+
+            expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
+        });
+
+        it('handles non-2fa 403 response', async function () {
+            this.server.post('/session', function () {
+                return new Response(403, {}, {
+                    errors: [{
+                        message: 'Insufficient permissions'
+                    }]
+                });
+            });
+
+            await completeSignIn();
+
+            expect(currentURL(), 'url after email+password submit').to.equal('/signin');
+            expect(find('[data-test-flow-notification]')).to.have.trimmed.text('Insufficient permissions');
         });
     });
 
