@@ -20,12 +20,29 @@ type FormEditorProps = {
     editor: Editor | null;
     submitText: React.ReactNode;
     submitSize: SubmitSize;
-    hasContent: boolean;
 };
-const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize, hasContent}) => {
+const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
     const labs = useLabs();
     const {t} = useAppContext();
     let buttonIcon = null;
+    const [hasContent, setHasContent] = useState(false);
+
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                setHasContent(!editor.isEmpty);
+            };
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+            
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
 
     if (progress === 'sending') {
         submitText = null;
@@ -207,7 +224,6 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     const {member, dispatchAction} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
-    const [hasContent, setHasContent] = useState(false);
     const formEl = useRef(null);
 
     const memberName = member?.name ?? comment?.member?.name;
@@ -217,23 +233,6 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         // Force open
         isOpen = true;
     }
-
-    useEffect(() => {
-        if (editor) {
-            const checkContent = () => {
-                setHasContent(!editor.isEmpty);
-            };
-            editor.on('update', checkContent);
-            editor.on('transaction', checkContent);
-            
-            checkContent();
-
-            return () => {
-                editor.off('update', checkContent);
-                editor.off('transaction', checkContent);
-            };
-        }
-    }, [editor]);
 
     const preventIfFocused = (event: React.SyntheticEvent) => {
         if (editor?.isFocused) {
@@ -307,7 +306,6 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                     <FormEditor 
                         close={close} 
                         editor={editor} 
-                        hasContent={hasContent} 
                         isOpen={isOpen} 
                         progress={progress} 
                         reduced={reduced} 
