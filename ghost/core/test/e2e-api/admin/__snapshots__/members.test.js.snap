@@ -4451,7 +4451,7 @@ Object {
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest@test.com",
+      "email": "create-member-comped-test@email.com",
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
@@ -4463,7 +4463,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Any<Array>,
       "last_seen_at": null,
-      "name": "Name",
+      "name": "Test Member",
       "newsletters": Array [
         Object {
           "description": null,
@@ -4505,7 +4505,7 @@ Object {
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "create-member-comped-test@email.com",
+      "email": "compedtest4@test.com",
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
@@ -4517,7 +4517,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Any<Array>,
       "last_seen_at": null,
-      "name": "Test Member",
+      "name": "Name",
       "newsletters": Array [
         Object {
           "description": null,
@@ -4613,7 +4613,7 @@ Object {
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest4@test.com",
+      "email": "compedtest@test.com",
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
@@ -6101,6 +6101,7 @@ Object {
       "subscribed": true,
       "subscriptions": Any<Array>,
       "tiers": Array [],
+      "unsubscribe_url": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
@@ -6112,7 +6113,7 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "766",
+  "content-length": "855",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
