@@ -13,7 +13,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
     {offerTitle, tier, cadence, redemptions, type, amount, currency, offerId, offerCode, goToOfferEdit}) => {
     const {discountOffer} = getOfferDiscount(type, amount, cadence, currency || 'USD', tier);
     return <div className='group flex h-full cursor-pointer flex-col justify-between gap-4 break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[187px]' onClick={() => goToOfferEdit(offerId)}>
-        <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>{offerTitle}</span>
+        <span className='text-[1.65rem] font-bold leading-tight tracking-tight text-black dark:text-white'>{offerTitle}</span>
         <div className='flex flex-col'>
             <span className={`text-sm font-semibold uppercase`}>{discountOffer}</span>
             <div className='flex gap-1 text-xs'>
@@ -77,14 +77,14 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         offerButtonLink = openTiers;
         descriptionButtonText = '';
     } else if (paidActiveTiers.length > 0 && allOffers.length === 0) {
-        offerButtonText = 'Add offers';
+        offerButtonText = 'Add offer';
         offerButtonLink = openAddModal;
     }
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} link linkWithPadding onClick={offerButtonLink}/>}
-            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><br /><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
+            customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} size='sm' onClick={offerButtonLink}/>}
+            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
@@ -115,12 +115,9 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }
             {paidActiveTiers.length === 0 && allOffers.length === 0 ?
                 (<div>
-                    <div className='items-center-mt-1 flex justify-between'>
-                        <>You must have an active tier to create an offer.</>
-                    </div>
-                    <div className='items-center-mt-1 flex justify-between'>
-                        <Button color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
-                    </div>
+                    <span>You must have an active tier to create an offer.</span>
+                    {` `}
+                    <Button className='font-normal' color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
                 </div>
                 ) : ''
             }

@@ -4,6 +4,9 @@ const express = require('../../../shared/express');
 const compress = require('compression');
 const mw = require('./middleware');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupParentApp() {
     debug('ParentApp setup start');
     const parentApp = express('parent');
@@ -26,7 +29,7 @@ module.exports = function setupParentApp() {
     // Enable request queuing if configured
     const queueConfig = config.get('optimization:requestQueue');
 
-    if (queueConfig?.enabled === true) {
+    if (queueConfig) {
         parentApp.use(mw.queueRequest(queueConfig));
     }
 

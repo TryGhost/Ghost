@@ -17,6 +17,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
      * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
      * @param {Number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
+     * @param {Number} [config.getTimeoutMilliseconds] - default timeout for cache get operations in *milliseconds*
      * @param {Number} [config.refreshAheadFactor] - 0-1 number to use to determine how old (as a percentage of ttl) an entry should be before refreshing it
      * @param {String} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
      * @param {Boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
@@ -60,6 +61,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
 
         this.ttl = config.ttl;
         this.refreshAheadFactor = config.refreshAheadFactor || 0;
+        this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
         this.currentlyExecutingBackgroundRefreshes = new Set();
         this.keyPrefix = config.keyPrefix;
         this._keysPattern = config.keyPrefix ? `${config.keyPrefix}*` : '';
@@ -161,6 +163,30 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     /**
+     * Returns the specified key from the cache if it exists, otherwise returns null
+     * - If getTimeoutMilliseconds is set, the method will return a promise that resolves with the value or null if the timeout is exceeded
+     * 
+     * @param {string} key 
+     */
+    async _get(key) {
+        if (typeof this.getTimeoutMilliseconds !== 'number') {
+            return this.cache.get(key);
+        } else {
+            return new Promise((resolve) => {
+                const timer = setTimeout(() => {
+                    debug('get', key, 'timeout');
+                    resolve(null);
+                }, this.getTimeoutMilliseconds);
+    
+                this.cache.get(key).then((result) => {
+                    clearTimeout(timer);
+                    resolve(result);
+                });
+            });
+        }
+    }
+
+    /**
      *
      * @param {string} key
      * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
@@ -168,7 +194,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     async get(key, fetchData) {
         const internalKey = this._buildKey(key);
         try {
-            const result = await this.cache.get(internalKey);
+            const result = await this._get(internalKey);
             debug(`get ${internalKey}: Cache ${result ? 'HIT' : 'MISS'}`);
             if (!fetchData) {
                 return result;

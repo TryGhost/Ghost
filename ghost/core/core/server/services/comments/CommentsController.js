@@ -2,7 +2,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 /**
- * @typedef {import('../../api/shared/frame')} Frame
+ * @typedef {import('@tryghost/api-framework').Frame} Frame
  */
 
 const {MethodNotAllowedError} = require('@tryghost/errors');

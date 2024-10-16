@@ -1,0 +1,25 @@
+NODE analytics_pages_1
+DESCRIPTION >
+    Aggregate by pathname and calculate session and views
+
+SQL >
+    SELECT
+        site_uuid,
+        toDate(timestamp) AS date,
+        post_uuid,
+        device,
+        browser,
+        location,
+        source,
+        pathname,
+        maxIf(
+            member_status,
+            member_status IN ('paid', 'free', 'undefined')
+        ) AS member_status,
+        uniqState(session_id) AS visits,
+        countState() AS pageviews
+    FROM analytics_hits
+        GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
+
+TYPE MATERIALIZED
+DATASOURCE analytics_pages_mv

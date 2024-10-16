@@ -112,7 +112,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const buttons = (
-        <Button className='hidden md:!visible md:!block' color='green' label='Add recommendation' link={true} onClick={() => {
+        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add recommendation' size='sm' onClick={() => {
             openAddNewRecommendationModal();
         }} />
     );
@@ -130,7 +130,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
-                <Button color='green' label='Add recommendation' link onClick={() => {
+                <Button color='light-grey' label='Add recommendation' link onClick={() => {
                     openAddNewRecommendationModal();
                 }} />
             </div>

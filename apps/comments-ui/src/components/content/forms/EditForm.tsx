@@ -26,7 +26,6 @@ const EditForm: React.FC<Props> = ({comment, parent, close}) => {
     });
 
     // Instead of autofocusing, we focus and jump to end manually
-    // // jump to end manually
     useEffect(() => {
         if (!editor) {
             return;
@@ -68,7 +67,9 @@ const EditForm: React.FC<Props> = ({comment, parent, close}) => {
     }, [editor, close, comment.html]);
 
     return (
-        <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+        <div className='px-3 pb-2 pt-3'>
+            <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+        </div>
     );
 };
 

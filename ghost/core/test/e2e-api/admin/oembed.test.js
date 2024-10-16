@@ -260,7 +260,7 @@ describe('Oembed API', function () {
 
             const pageMock = nock('http://oembed.test.com')
                 .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"></head></html>');
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"><title>Title</title></head></html>');
 
             const oembedMock = nock('http://oembed.test.com')
                 .get('/my-embed')
@@ -284,7 +284,7 @@ describe('Oembed API', function () {
         it('fetches url and follows <link rel="alternate">', async function () {
             const pageMock = nock('http://test.com')
                 .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>');
 
             const oembedMock = nock('http://test.com')
                 .get('/oembed')
@@ -307,7 +307,7 @@ describe('Oembed API', function () {
         it('follows redirects when fetching <link rel="alternate">', async function () {
             const pageMock = nock('http://test.com')
                 .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>');
 
             const alternateRedirectMock = nock('http://test.com')
                 .get('/oembed')

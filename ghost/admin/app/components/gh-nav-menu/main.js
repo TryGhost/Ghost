@@ -23,10 +23,10 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @service router;
     @service session;
     @service ui;
-    @service whatsNew;
     @service membersStats;
     @service settings;
     @service explore;
+    @service notifications;
 
     @inject config;
 

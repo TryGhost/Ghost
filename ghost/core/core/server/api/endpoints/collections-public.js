@@ -6,7 +6,8 @@ const messages = {
     collectionNotFound: 'Collection not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'collections',
 
     readBySlug: {
@@ -51,3 +52,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

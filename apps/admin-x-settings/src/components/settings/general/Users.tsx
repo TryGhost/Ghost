@@ -127,7 +127,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                         setRevokeState('progress');
                         await deleteInvite(invite.id);
                         showToast({
-                            message: `Invitation revoked (${invite.email})`,
+                            title: `Invitation revoked`,
+                            message: invite.email,
                             type: 'success'
                         });
                     } catch (e) {
@@ -151,7 +152,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                             roleId: invite.role_id
                         });
                         showToast({
-                            message: `Invitation resent! (${invite.email})`,
+                            title: `Invitation resent`,
+                            message: invite.email,
                             type: 'success'
                         });
                     } catch (e) {
@@ -181,7 +183,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
                     <ListItem
                         key={user.id}
                         action={<UserInviteActions invite={user} />}
-                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
+                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={user.email.charAt(0).toUpperCase()} labelColor='white' />)}
                         className='min-h-[64px]'
                         detail={user.role}
                         hideActions={true}
@@ -219,7 +221,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     };
 
     const buttons = (
-        <Button color='green' label='Invite people' link={true} linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' color='clear' label='Invite people' size='sm' linkWithPadding onClick={() => {
             showInviteModal();
         }} />
     );

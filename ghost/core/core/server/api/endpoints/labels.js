@@ -9,7 +9,8 @@ const messages = {
 
 const ALLOWED_INCLUDES = ['count.members'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'labels',
 
     browse: {
@@ -161,3 +162,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

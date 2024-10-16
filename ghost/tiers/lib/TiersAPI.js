@@ -102,7 +102,7 @@ module.exports = class TiersAPI {
     }
 
     /**
-     * @param {string} id
+     * @param {string} idString
      * @param {object} data
      * @returns {Promise<Tier>}
      */

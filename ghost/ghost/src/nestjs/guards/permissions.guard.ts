@@ -18,9 +18,22 @@ export class PermissionsGuard implements CanActivate {
 
         const role = request.actor?.role;
 
-        if (role && roles.includes(role)) {
+        if (!roles) {
+            throw new Error('Missing @Roles decorator on Controller method');
+        }
+
+        if (roles.includes('Anon')) {
             return true;
         }
+
+        if (!role) {
+            return false;
+        }
+
+        if (roles.includes(role)) {
+            return true;
+        }
+
         return false;
     }
 }

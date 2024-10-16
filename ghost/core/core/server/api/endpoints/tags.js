@@ -8,7 +8,8 @@ const messages = {
     tagNotFound: 'Tag not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'tags',
 
     browse: {
@@ -156,3 +157,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

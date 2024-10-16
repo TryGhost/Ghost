@@ -12,23 +12,10 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
     beforeModel() {
         super.beforeModel(...arguments);
 
-        if (!this.session.user.isOwnerOnly) {
-            return;
-        }
-
-        if (this.feature.onboardingChecklist) {
+        if (this.session.user.isOwnerOnly) {
             this.onboarding.startChecklist();
-            return this.router.transitionTo('dashboard');
         }
-    }
 
-    model() {
-        this.themeManagement.setPreviewType('homepage');
-        this.themeManagement.updatePreviewHtmlTask.perform();
-    }
-
-    deactivate() {
-        // rollback any unsaved setting changes when leaving
-        this.settings.rollbackAttributes();
+        return this.router.transitionTo('dashboard');
     }
 }

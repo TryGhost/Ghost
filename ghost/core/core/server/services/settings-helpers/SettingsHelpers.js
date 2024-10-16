@@ -106,6 +106,16 @@ class SettingsHelpers {
         return domain;
     }
 
+    /**
+     * Retrieves the member validation key from the settings cache. The intent is for this key to be used where member 
+     *  auth is not required. For example, unsubscribe links in emails, which are required to be one-click unsubscribe.
+     *
+     * @returns {string} The member validation key.
+     */
+    getMembersValidationKey() {
+        return this.settingsCache.get('members_email_auth_secret');
+    }
+
     getMembersSupportAddress() {
         let supportAddress = this.settingsCache.get('members_support_address');
 

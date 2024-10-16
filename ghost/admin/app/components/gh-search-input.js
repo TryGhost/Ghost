@@ -25,7 +25,7 @@ export default class GhSearchInputComponent extends Component {
             this.router.transitionTo('lexical-editor.edit', 'page', id);
         }
 
-        if (selected.groupName === 'Users') {
+        if (selected.groupName === 'Staff') {
             let id = selected.id.replace('user.', '');
             this.router.transitionTo('settings-x.settings-x', `staff/${id}`);
         }

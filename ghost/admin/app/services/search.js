@@ -1,49 +1,29 @@
-import RSVP from 'rsvp';
 import Service from '@ember/service';
-import {isBlank, isEmpty} from '@ember/utils';
-import {pluralize} from 'ember-inflector';
+import {action} from '@ember/object';
+import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
-import {task, timeout, waitForProperty} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default class SearchService extends Service {
     @service ajax;
+    @service feature;
     @service notifications;
+    @service searchProviderBasic;
+    @service searchProviderFlex;
+    @service settings;
     @service store;
 
-    content = [];
-    contentExpiresAt = false;
-    contentExpiry = 30000;
+    isContentStale = true;
 
-    searchables = [
-        {
-            name: 'Posts',
-            model: 'post',
-            fields: ['id', 'url', 'title'],
-            idField: 'id',
-            titleField: 'title'
-        },
-        {
-            name: 'Pages',
-            model: 'page',
-            fields: ['id', 'url', 'title'],
-            idField: 'id',
-            titleField: 'title'
-        },
-        {
-            name: 'Users',
-            model: 'user',
-            fields: ['id', 'slug', 'url', 'name'], // id not used but required for API to have correct url
-            idField: 'slug',
-            titleField: 'name'
-        },
-        {
-            name: 'Tags',
-            model: 'tag',
-            fields: ['slug', 'url', 'name'],
-            idField: 'slug',
-            titleField: 'name'
-        }
-    ];
+    get provider() {
+        const isEnglish = this.settings.locale?.toLowerCase().startsWith('en') ?? true;
+        return isEnglish ? this.searchProviderFlex : this.searchProviderBasic;
+    }
+
+    @action
+    expireContent() {
+        this.isContentStale = true;
+    }
 
     @task({restartable: true})
     *searchTask(term) {
@@ -59,85 +39,22 @@ export default class SearchService extends Service {
 
         // wait for any on-going refresh to finish
         if (this.refreshContentTask.isRunning) {
-            yield waitForProperty(this, 'refreshContentTask.isIdle');
+            yield this.refreshContentTask.lastRunning;
         }
 
-        const searchResult = this._searchContent(term);
-
-        return searchResult;
-    }
-
-    _searchContent(term) {
-        const normalizedTerm = term.toString().toLowerCase();
-        const results = [];
-
-        this.searchables.forEach((searchable) => {
-            const matchedContent = this.content.filter((item) => {
-                const normalizedTitle = item.title.toString().toLowerCase();
-                return (
-                    item.groupName === searchable.name &&
-                    normalizedTitle.indexOf(normalizedTerm) >= 0
-                );
-            });
-
-            if (!isEmpty(matchedContent)) {
-                results.push({
-                    groupName: searchable.name,
-                    options: matchedContent
-                });
-            }
-        });
-
-        return results;
+        return yield this.provider.searchTask.perform(term);
     }
 
     @task({drop: true})
-    *refreshContentTask() {
-        const now = new Date();
-        const contentExpiresAt = this.contentExpiresAt;
-
-        if (contentExpiresAt > now) {
+    *refreshContentTask({forceRefresh = false} = {}) {
+        if (!forceRefresh && !this.isContentStale) {
             return true;
         }
 
-        const content = [];
-        const promises = this.searchables.map(searchable => this._loadSearchable(searchable, content));
+        this.isContentStale = true;
 
-        try {
-            yield RSVP.all(promises);
-            this.content = content;
-        } catch (error) {
-            // eslint-disable-next-line
-            console.error(error);
-        }
+        yield this.provider.refreshContentTask.perform();
 
-        this.contentExpiresAt = new Date(now.getTime() + this.contentExpiry);
-    }
-
-    async _loadSearchable(searchable, content) {
-        const url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        const maxSearchableLimit = '10000';
-        const query = {fields: searchable.fields, limit: maxSearchableLimit};
-
-        try {
-            const response = await this.ajax.request(url, {data: query});
-
-            const items = response[pluralize(searchable.model)].map(
-                item => ({
-                    id: `${searchable.model}.${item[searchable.idField]}`,
-                    url: item.url,
-                    title: item[searchable.titleField],
-                    groupName: searchable.name
-                })
-            );
-
-            content.push(...items);
-        } catch (error) {
-            console.error(error); // eslint-disable-line
-
-            this.notifications.showAPIError(error, {
-                key: `search.load${searchable.name}.error`
-            });
-        }
+        this.isContentStale = false;
     }
 }

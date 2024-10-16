@@ -73,7 +73,8 @@ function shouldInvalidateCacheAfterChange(model) {
     return false;
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'users',
 
     browse: {
@@ -287,3 +288,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

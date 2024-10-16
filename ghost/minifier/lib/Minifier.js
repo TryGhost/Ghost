@@ -1,8 +1,6 @@
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('minifier');
 const tpl = require('@tryghost/tpl');
-const csso = require('csso');
-const terser = require('terser');
 const glob = require('tiny-glob');
 const path = require('path');
 const fs = require('fs').promises;
@@ -53,6 +51,7 @@ class Minifier {
     }
 
     async minifyCSS(contents) {
+        const csso = require('csso');
         const result = await csso.minify(contents);
         if (result && result.css) {
             return result.css;
@@ -61,6 +60,7 @@ class Minifier {
     }
 
     async minifyJS(contents) {
+        const terser = require('terser');
         const result = await terser.minify(contents);
         if (result && result.code) {
             return result.code;
@@ -111,8 +111,8 @@ class Minifier {
 
     /**
      * Minify files
-     * 
-     * @param {Object} globs An object in the form of 
+     *
+     * @param {Object} globs An object in the form of
      * ```js
      * {
      *     'destination1.js': 'glob/*.js',

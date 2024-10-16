@@ -22,8 +22,8 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
 
     return (
         <span className={containerClassName}>
-            <span className="absolute inset-0 block rounded-full bg-pink opacity-20"></span>
-            <span className='dark:text-pink'>{trialDays} days free</span>
+            <span className="absolute inset-0 block rounded-full bg-accent opacity-20 dark:bg-pink"></span>
+            <span className="dark:text-pink">{trialDays} days free</span>
         </span>
     );
 };
@@ -96,7 +96,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
             <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
                 <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
                     <div className="min-h-[56px] w-full">
-                        <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || (isFreeTier ? 'Free' : 'Bronze')}</h4>
+                        <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-accent ${!name && 'opacity-30'}`}>{name || (isFreeTier ? 'Free' : 'Bronze')}</h4>
                         <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
                             <div className={`flex flex-wrap text-black ${((showingYearly && tier?.yearly_price === undefined) || (!showingYearly && tier?.monthly_price === undefined)) && !isFreeTier ? 'opacity-30' : ''}`}>
                                 <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>

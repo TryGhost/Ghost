@@ -11,7 +11,7 @@ const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
+            customButtons={<Button className='mt-[-5px]' color='clear' label='Customize' size='sm' onClick={openPreviewModal}/>}
             description="Customize the theme, colors, and layout of your site"
             keywords={keywords}
             navid='design'

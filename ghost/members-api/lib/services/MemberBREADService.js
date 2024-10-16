@@ -381,6 +381,10 @@ module.exports = class MemberBREADService {
             'newsletters'
         ];
 
+        if (options.limit === 'all' || options.limit > 100) {
+            options.limit = 100;
+        }
+
         const originalWithRelated = options.withRelated || [];
 
         const withRelated = new Set((originalWithRelated).concat(defaultWithRelated));
@@ -392,6 +396,9 @@ module.exports = class MemberBREADService {
         if (withRelated.has('email_recipients')) {
             withRelated.add('email_recipients.email');
         }
+
+        //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
+        options.useBasicCount = true;
 
         const page = await this.memberRepository.list({
             ...options,

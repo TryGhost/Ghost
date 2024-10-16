@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyArray, anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const postMatcher = {
     published_at: anyISODateTimeWithTZ,
@@ -21,6 +21,28 @@ const postMatcherShallowIncludes = Object.assign(
         authors: anyArray
     }
 );
+
+async function trackDb(fn, skip) {
+    const db = require('../../../core/server/data/db');
+    if (db?.knex?.client?.config?.client !== 'sqlite3') {
+        return skip();
+    }
+    /** @type {import('sqlite3').Database} */
+    const database = db.knex.client;
+
+    const queries = [];
+    function handler(/** @type {{sql: string}} */ query) {
+        queries.push(query);
+    }
+
+    database.on('query', handler);
+
+    await fn();
+
+    database.off('query', handler);
+
+    return queries;
+}
 
 describe('Posts Content API', function () {
     let agent;
@@ -93,6 +115,21 @@ describe('Posts Content API', function () {
             });
     });
 
+    it('Errors upon invalid filter value', async function () {
+        if (process.env.NODE_ENV !== 'testing-mysql') {
+            this.skip();
+        }
+
+        await agent
+            .get(`posts/?filter=published_at%3A%3C%271715091791890%27`)
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Can filter posts by tag', async function () {
         const res = await agent.get('posts/?filter=tag:kitchen-sink,featured:true&include=tags')
             .expectStatus(200)
@@ -144,7 +181,7 @@ describe('Posts Content API', function () {
 
         const jsonResponse = res.body;
 
-        assert.equal(jsonResponse.posts[0].slug, 'not-so-short-bit-complex', 'The API orders by number of matched authors');
+        assert.equal(jsonResponse.posts[0].slug, 'welcome', 'The API orders by number of matched authors, then by published_at desc, then by id desc');
 
         const primaryAuthors = jsonResponse.posts.map((post) => {
             return post.primary_author.slug;
@@ -404,5 +441,25 @@ describe('Posts Content API', function () {
             .get(`posts/${post.id}/`)
             .expectStatus(200);
         assert(response.body.posts[0].html.includes('<a href="https://example.com">Link</a><a href="invalid">Test</a>'), 'Html not expected: ' + response.body.posts[0].html);
+    });
+
+    it('Does not select * by default', async function () {
+        let queries = await trackDb(() => agent.get('posts/?limit=all').expectStatus(200), this.skip.bind(this));
+        let postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
+        for (const query of postsRelatedQueries) {
+            assert(!query.sql.includes('*'), 'Query should not select *');
+        }
+
+        queries = await trackDb(() => agent.get('posts/?limit=3').expectStatus(200), this.skip.bind(this));
+        postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
+        for (const query of postsRelatedQueries) {
+            assert(!query.sql.includes('*'), 'Query should not select *');
+        }
+
+        queries = await trackDb(() => agent.get('posts/?include=tags,authors').expectStatus(200), this.skip.bind(this));
+        postsRelatedQueries = queries.filter(q => q.sql.includes('`posts`'));
+        for (const query of postsRelatedQueries) {
+            assert(!query.sql.includes('*'), 'Query should not select *');
+        }
     });
 });

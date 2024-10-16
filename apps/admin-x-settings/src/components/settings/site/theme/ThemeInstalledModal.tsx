@@ -87,6 +87,7 @@ const ThemeInstalledModal: React.FC<{
                     const updatedTheme = resData.themes[0];
 
                     showToast({
+                        title: 'Theme activated',
                         type: 'success',
                         message: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>
                     });

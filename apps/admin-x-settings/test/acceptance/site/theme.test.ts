@@ -53,7 +53,7 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: 'Install Headline'}).click();
 
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/successfully installed/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/installed/);
 
         await page.getByRole('button', {name: 'Activate'}).click();
 
@@ -168,7 +168,7 @@ test.describe('Theme settings', async () => {
         expect(lastApiRequests.uploadTheme).toBeTruthy();
     });
 
-    test('Limits uploading new themes', async ({page}) => {
+    test('Limits uploading new themes and redirect to /pro', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
@@ -206,5 +206,55 @@ test.describe('Theme settings', async () => {
         await modal.getByRole('button', {name: 'Upload theme'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to enable custom themes/);
+
+        const limitModal = page.getByTestId('limit-modal');
+
+        await limitModal.getByRole('button', {name: 'Upgrade'}).click();
+
+        // The route should be updated
+        const newPageUrl = page.url();
+        const newPageUrlObject = new URL(newPageUrl);
+        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
+
+        // expect the route to be updated to /pro
+        await expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+    });
+
+    test('Prevents overwriting the default theme', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            uploadTheme: {method: 'POST', path: '/themes/upload/', response: {
+                themes: [{
+                    name: 'mytheme',
+                    package: {},
+                    active: false,
+                    templates: []
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const designSection = page.getByTestId('design');
+
+        await designSection.getByRole('button', {name: 'Customize'}).click();
+
+        const designModal = page.getByTestId('design-modal');
+
+        await designModal.getByTestId('change-theme').click();
+
+        const modal = page.getByTestId('theme-modal');
+
+        await modal.getByRole('button', {name: 'Upload theme'}).click();
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await page.getByTestId('confirmation-modal').locator('label[for=theme-upload]').click();
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(`${__dirname}/../../utils/responses/source.zip`);
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/Upload failed/);
     });
 });

@@ -5,6 +5,7 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const logging = require('@tryghost/logging');
 const MagicLink = require('@tryghost/magic-link');
 const verifyEmailTemplate = require('./emails/verify-email');
+const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];
 const messages = {
@@ -80,7 +81,8 @@ class SettingsBREADService {
             getSigninURL,
             getText,
             getHTML,
-            getSubject
+            getSubject,
+            sentry
         });
     }
 

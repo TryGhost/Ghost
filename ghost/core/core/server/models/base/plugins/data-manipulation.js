@@ -26,7 +26,7 @@ module.exports = function (Bookshelf) {
          * before we insert dates into the database, we have to normalize
          * date format is now in each db the same
          */
-        fixDatesWhenSave: function fixDates(attrs) {
+        fixDatesWhenSave: function fixDatesWhenSave(attrs) {
             const self = this;
 
             _.each(attrs, function each(value, key) {
@@ -49,22 +49,24 @@ module.exports = function (Bookshelf) {
          * mysql:
          *   - knex wraps the UTC value into a local JS Date
          */
-        fixDatesWhenFetch: function fixDates(attrs) {
-            const self = this;
-            let dateMoment;
+        fixDatesWhenFetch: function fixDatesWhenFetch(attrs) {
+            const tableDef = schema.tables[this.tableName];
 
-            _.each(attrs, function each(value, key) {
-                if (value !== null
-                && Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
-                && schema.tables[self.tableName][key].type === 'dateTime') {
-                    dateMoment = moment(value);
+            Object.keys(attrs).forEach((key) => {
+                if (attrs[key] && tableDef?.[key]?.type === 'dateTime') {
+                    const dateValue = new Date(attrs[key]);
 
                     // CASE: You are somehow able to store e.g. 0000-00-00 00:00:00
                     // Protect the code base and return the current date time.
-                    if (dateMoment.isValid()) {
-                        attrs[key] = dateMoment.startOf('seconds').toDate();
+                    if (!isNaN(dateValue.getTime())) {
+                        // Valid date: set to the start of the second
+                        dateValue.setMilliseconds(0);
+                        attrs[key] = dateValue;
                     } else {
-                        attrs[key] = moment().startOf('seconds').toDate();
+                        // Invalid date: use current date-time
+                        const currentDate = new Date();
+                        currentDate.setMilliseconds(0);
+                        attrs[key] = currentDate;
                     }
                 }
             });
@@ -74,12 +76,11 @@ module.exports = function (Bookshelf) {
 
         // Convert integers to real booleans
         fixBools: function fixBools(attrs) {
-            const self = this;
-            _.each(attrs, function each(value, key) {
-                const tableDef = schema.tables[self.tableName];
-                const columnDef = tableDef ? tableDef[key] : null;
-                if (columnDef?.type === 'boolean') {
-                    attrs[key] = value ? true : false;
+            const tableDef = schema.tables[this.tableName];
+
+            Object.keys(attrs).forEach((key) => {
+                if (tableDef?.[key]?.type === 'boolean') {
+                    attrs[key] = !!attrs[key];
                 }
             });
 

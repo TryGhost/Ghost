@@ -9,7 +9,7 @@
         <p class="gh-members-empty-secondary-cta">Have members already? <LinkTo @route="member.new">Add them manually</LinkTo> or <LinkTo @route="members.import">import from CSV</LinkTo></p>
     {{else}}
         <p>Memberships have been disabled. Adjust your Subscription Access settings to start adding members.</p>
-        <LinkTo @route="settings-x.settings-x" @model="access" class="gh-btn gh-btn-green">
+        <LinkTo @route="settings-x.settings-x" @model="members" class="gh-btn gh-btn-green">
             <span>Membership settings</span>
         </LinkTo>
     {{/if}}

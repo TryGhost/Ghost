@@ -12,6 +12,9 @@ const routes = require('./routes');
 const APIVersionCompatibilityService = require('../../../../services/api-version-compatibility');
 const GhostNestApp = require('@tryghost/ghost');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupApiApp() {
     debug('Admin API setup start');
     const apiApp = express('admin api');
@@ -35,12 +38,22 @@ module.exports = function setupApiApp() {
     // Routing
     apiApp.use(routes());
 
-    apiApp.use(async (req, res, next) => {
-        if (!labs.isSet('NestPlayground')) {
-            return next();
+    apiApp.use(async function nestApp(req, res, next) {
+        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK && labs.isSet('NestPlayground')) {
+            const originalExpressApp = req.app;
+            const app = await GhostNestApp.getApp();
+
+            const instance = app.getHttpAdapter().getInstance();
+            instance(Object.assign({}, req, {
+                url: req.originalUrl,
+                baseUrl: ''
+            }), res, function (err) {
+                req.app = originalExpressApp;
+                next(err);
+            });
+            return;
         }
-        const app = await GhostNestApp.getApp();
-        app.getHttpAdapter().getInstance()(req, res, next);
+        return next();
     });
 
     // API error handling

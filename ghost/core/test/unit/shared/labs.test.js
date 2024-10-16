@@ -143,3 +143,13 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet('publicAPI'), false);
     });
 });
+
+describe('Labs Service - Flag Integrity', function () {
+    it('should have no duplicate flags across categories', function () {
+        const allFlags = labs.getAllFlags();
+
+        const duplicates = allFlags.filter((flag, index) => allFlags.indexOf(flag) !== index);
+
+        assert.equal(duplicates.length, 0, `There are duplicate flags in the labs configuration: ${duplicates.join(', ')}`);
+    });
+});

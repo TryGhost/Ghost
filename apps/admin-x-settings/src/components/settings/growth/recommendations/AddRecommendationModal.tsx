@@ -131,8 +131,8 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         } catch (e) {
             const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
             showToast({
-                type: 'pageError',
-                message
+                type: 'error',
+                title: message
             });
         }
 
@@ -200,6 +200,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 autoFocus={true}
                 error={Boolean(errors.url)}
                 hint={errors.url || <>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</>}
+                maxLength={2000}
                 placeholder='https://www.example.com'
                 title='URL'
                 value={formState.url}

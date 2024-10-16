@@ -16,7 +16,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={membersSignupAccess === 'none'} label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
+            customButtons={<Button className='mt-[-5px]' color='clear' disabled={membersSignupAccess === 'none'} label='Customize' size='sm' onClick={openPreviewModal}/>}
             description="Customize members modal signup flow"
             keywords={keywords}
             navid='portal'

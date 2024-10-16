@@ -71,7 +71,8 @@ module.exports = function MembersAPI({
     newslettersService,
     memberAttributionService,
     emailSuppressionList,
-    settingsCache
+    settingsCache,
+    sentry
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -122,7 +123,8 @@ module.exports = function MembersAPI({
         EmailSpamComplaintEvent,
         Comment,
         labsService,
-        memberAttributionService
+        memberAttributionService,
+        MemberEmailChangeEvent
     });
 
     const memberBREADService = new MemberBREADService({
@@ -153,7 +155,8 @@ module.exports = function MembersAPI({
         getSigninURL,
         getText,
         getHTML,
-        getSubject
+        getSubject,
+        sentry
     });
 
     const paymentsService = new PaymentsService({
@@ -187,10 +190,10 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         sendEmailWithMagicLink,
-        createMemberFromToken,
         memberAttributionService,
         labsService,
-        newslettersService
+        newslettersService,
+        sentry
     });
 
     const wellKnownController = new WellKnownController({
@@ -248,12 +251,6 @@ module.exports = function MembersAPI({
             return member;
         }
 
-        // If spam prevention is enabled, we don't create the member via middleware upon clicking the magic link
-        // The member can only be created by following the link to /subscribe and sending a POST request to explicitly confirm
-        if (labsService.isSet('membersSpamPrevention')) {
-            return null;
-        }
-
         // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
         if (type && !['signup', 'subscribe'].includes(type)) {
             // Don't allow sign up
@@ -276,45 +273,6 @@ module.exports = function MembersAPI({
 
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
-    }
-
-    async function createMemberFromToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token);
-        if (!email) {
-            return null;
-        }
-
-        const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
-
-        if (member) {
-            const magicLink = getMagicLink(email, 'signin');
-            return magicLink;
-        }
-
-        // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
-        if (type && !['signup', 'subscribe'].includes(type)) {
-            // Don't allow sign up
-            // Note that we use the type from inside the magic token so this behaviour can't be changed
-            return null;
-        }
-
-        let geolocation;
-        if (reqIp) {
-            try {
-                geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(reqIp));
-            } catch (err) {
-                logging.warn(err);
-                // no-op, we don't want to stop anything working due to
-                // geolocation lookup failing
-            }
-        }
-
-        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
-        if (newMember) {
-            const magicLink = getMagicLink(email, 'signin');
-            return magicLink;
-        }
-        return null;
     }
 
     async function getMemberIdentityData(email) {
@@ -363,7 +321,7 @@ module.exports = function MembersAPI({
         return getMemberIdentityData(email);
     }
 
-    const forwardError = fn => async (req, res, next) => {
+    const forwardError = fn => async function forwardErrorMw(req, res, next) {
         try {
             await fn(req, res, next);
         } catch (err) {
@@ -375,11 +333,6 @@ module.exports = function MembersAPI({
         sendMagicLink: Router().use(
             body.json(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
-        ),
-        createMemberFromToken: Router().use(
-            body.urlencoded({extended: true}),
-            body.json(),
-            forwardError((req, res) => routerController.createMemberFromToken(req, res))
         ),
         createCheckoutSession: Router().use(
             body.json(),
@@ -428,7 +381,6 @@ module.exports = function MembersAPI({
         getMemberIdentityToken,
         getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
-        createMemberFromToken,
         cycleTransientId,
         setMemberGeolocationFromIp,
         getPublicConfig,

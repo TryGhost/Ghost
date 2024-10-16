@@ -1,0 +1,150 @@
+/* What's new modal */
+/* ---------------------------------------------------------- */
+.fullscreen-modal-whatsnew,
+.fullscreen-modal-whatsnew-featured {
+    max-height: calc(100vh - 12vw);
+    overflow-y: auto;
+    border-radius: 8px !important;
+}
+
+@media (max-height: 960px) {
+    .fullscreen-modal-whatsnew,
+    .fullscreen-modal-whatsnew-featured {
+        max-height: calc(100vh - 80px);
+    }
+}
+
+.fullscreen-modal-whatsnew {
+    max-width: 640px !important;
+}
+
+.fullscreen-modal-whatsnew a:focus {
+    outline: none;
+}
+
+.gh-whatsnew-modal-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.fullscreen-modal-whatsnew .modal-content,
+.fullscreen-modal-whatsnew-featured .modal-content {
+    padding: 0;
+}
+
+.gh-whatsnew-featured-container,
+.gh-whatsnew-modal-entries {
+    padding: 0 32px;
+}
+
+.gh-whatsnew-featured-subhead {
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.gh-whatsnew-featured-date {
+    font-weight: 500;
+    color: var(--midgrey);
+}
+
+.gh-whasnew-featured-title {
+    font-size: 2.8rem;
+}
+
+.gh-whatsnew-featured-excerpt {
+    margin: 0 0 24px;
+    font-size: 1.6rem;
+    line-height: 1.35em;
+}
+
+.gh-whatsnew-modal-footer {
+    z-index: 999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    bottom: 0px;
+    background: #fff;
+    padding: 32px;
+    margin-bottom: -32px;
+    box-shadow: 0px -7px 15px -10px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 900px) {
+    .gh-whatsnew-modal-footer {
+        bottom: -10px;
+    }
+}
+
+.gh-whatsnew-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gh-whasnew-modal-title {
+    font-size: 2.5rem;
+    padding: 32px 32px 28px;
+    margin: 0;
+}
+
+.gh-whatsnew-modal-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    color: var(--black);
+    margin: -8px;
+    padding: 8px;
+}
+
+.gh-whatsnew-modal-entry:hover {
+    background: var(--whitegrey-l2);
+    border-radius: 6px;
+}
+
+.gh-whatsnew-modal-entry-featureimage {
+    max-width: 160px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.gh-whatsnew-modal-entrycontent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 1.4rem;
+}
+
+.gh-whatsnew-modal-entrycontent h2 {
+    font-size: 1.7rem;
+    margin: 6px 0 0;
+}
+
+.gh-whatsnew-modal-entrycontent p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.45em;
+    margin: 0;
+}
+
+.gh-whatsnew-modal-entrycontent span {
+    color: var(--midgrey);
+}
+
+.gh-whatsnew-modal-entrycontent img {
+    height: auto;
+}
+
+.gh-whatsnew-banner-icon {
+    color: var(--yellow);
+}
+
+.dropdown-item .gh-whatsnew-banner-icon {
+    margin-right: 0 !important;
+}

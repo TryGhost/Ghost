@@ -38,7 +38,8 @@ function getCacheHeaderFromEventString(event, dto) {
     }
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'posts',
     browse: {
         headers: {
@@ -327,3 +328,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;
