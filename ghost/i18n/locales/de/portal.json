@@ -1,5 +1,5 @@
 {
-    "(save {{highestYearlyDiscount}}%)": "(jetzt {{highestYearlyDiscount}}% sparen)",
+    "(save {{highestYearlyDiscount}}%)": "({{highestYearlyDiscount}}% sparen)",
     "{{amount}} days free": "{{amount}} Tage kostenfrei",
     "{{amount}} off": "{{amount}} Rabatt",
     "{{amount}} off for first {{number}} months.": "{{amount}} Rabatt für die ersten {{number}} Monate.",
@@ -139,7 +139,7 @@
     "Something went wrong, please try again later.": "Etwas ist schief gelaufen, bitte versuche es später noch einmal.",
     "Sorry, that didn’t work.": "Entschuldige, das hat nicht funktioniert.",
     "Spam complaints": "Spam-Beschwerden",
-    "Start {{amount}}-day free trial": "Starte dein {{amount}}-tägiges kostenfreies Testabo",
+    "Start {{amount}}-day free trial": "Auswählen",
     "Starting {{startDate}}": "Beginnt am {{startDate}}",
     "Starting today": "Beginnt heute",
     "Submit feedback": "Feedback senden",
