@@ -197,17 +197,17 @@ type FormProps = {
     editor: Editor | null;
     submit: (data: {html: string}) => Promise<void>;
     submitText: React.ReactNode;
-    submitSize: 'small' | 'medium' | 'large';
+    submitSize: SubmitSize;
     close?: () => void;
     isOpen: boolean;
     reduced: boolean;
-    hasContent: boolean;
 };
 
-const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen, hasContent}) => {
+const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen}) => {
     const {member, dispatchAction} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
+    const [hasContent, setHasContent] = useState(false);
     const formEl = useRef(null);
 
     const memberName = member?.name ?? comment?.member?.name;
@@ -217,6 +217,23 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         // Force open
         isOpen = true;
     }
+
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                setHasContent(!editor.isEmpty);
+            };
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+            
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
 
     const preventIfFocused = (event: React.SyntheticEvent) => {
         if (editor?.isFocused) {

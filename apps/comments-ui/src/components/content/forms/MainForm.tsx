@@ -1,5 +1,5 @@
 import Form from './Form';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
@@ -10,7 +10,6 @@ type Props = {
 };
 const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction, t} = useAppContext();
-    const [hasContent, setHasContent] = useState(false);
 
     const config = {
         placeholder: (commentsCount === 0 ? t('Start the conversation') : t('Join the discussion')),
@@ -83,23 +82,6 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         };
     }, [editor]);
 
-    useEffect(() => {
-        if (editor) {
-            const checkContent = () => {
-                setHasContent(!editor.isEmpty);
-            };
-            editor.on('update', checkContent);
-            editor.on('transaction', checkContent);
-            
-            checkContent();
-
-            return () => {
-                editor.off('update', checkContent);
-                editor.off('transaction', checkContent);
-            };
-        }
-    }, [editor]);
-
     const submitProps = {
         submitText: (
             <>
@@ -107,8 +89,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             </>
         ),
         submitSize: 'large' as const,
-        submit,
-        hasContent
+        submit
     };
 
     const isOpen = editor?.isFocused ?? false;
