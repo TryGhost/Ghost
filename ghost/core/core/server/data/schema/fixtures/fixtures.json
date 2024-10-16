@@ -907,7 +907,8 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "member_signin_url": "read"
                 },
                 "Editor": {
                     "notification": "all",

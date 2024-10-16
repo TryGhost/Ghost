@@ -191,7 +191,7 @@ describe('Migration Fixture Utils', function () {
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
-                const FIXTURE_COUNT = 111;
+                const FIXTURE_COUNT = 112;
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', FIXTURE_COUNT);
