@@ -86,7 +86,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     const results = data?.profiles || [];
     const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0;
+    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
     const showSuggested = query === '' || (isFetched && results.length === 0);
 
     useEffect(() => {
@@ -141,7 +141,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                 {showLoading && (
                     <LoadingIndicator size='lg'/>
                 )}
-                {showNoResults && (query.length > 0) && (
+                {showNoResults && (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
