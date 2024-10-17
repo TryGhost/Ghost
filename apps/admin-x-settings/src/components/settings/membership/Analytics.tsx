@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
@@ -48,30 +48,37 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent columns={2}>
+        <SettingGroupContent className="!gap-y-4" columns={1}>
             <Toggle
                 checked={trackEmailOpens}
+                direction='rtl'
                 label='Newsletter opens'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
             />
+            <Separator />
             <Toggle
                 checked={trackEmailClicks}
+                direction='rtl'
                 label='Newsletter clicks'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
             />
+            <Separator />
             <Toggle
                 checked={trackMemberSources}
+                direction='rtl'
                 label='Member sources'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
                 }}
             />
+            <Separator />
             <Toggle
                 checked={outboundLinkTagging}
+                direction='rtl'
                 label='Outbound link tagging'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
