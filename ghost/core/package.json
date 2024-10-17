@@ -137,7 +137,7 @@
     "@tryghost/mw-version-match": "0.0.0",
     "@tryghost/mw-vhost": "0.0.0",
     "@tryghost/nodemailer": "0.3.45",
-    "@tryghost/nql": "0.12.6",
+    "@tryghost/nql": "0.12.7",
     "@tryghost/oembed-service": "0.0.0",
     "@tryghost/package-json": "0.0.0",
     "@tryghost/post-revisions": "0.0.0",
