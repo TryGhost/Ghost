@@ -1178,7 +1178,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <style>@import url(https://fonts.bunny.net/css?family=space-grotesk:700);@import url(https://fonts.bunny.net/css?family=poppins:400,700);.is-body {font-family: Poppins !important;}.is-title, .gh-content [id] {font-family: Space Grotesk !important;}</style>",
+    <style>@import url(https://fonts.bunny.net/css?family=space-grotesk:700);@import url(https://fonts.bunny.net/css?family=poppins:400,500,600);.gh-body-font {font-family: Poppins; font-size-adjust: none;}.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: Space Grotesk; font-size-adjust: none;}</style>",
 }
 `;
 
@@ -1253,7 +1253,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <style>@import url(https://fonts.bunny.net/css?family=playfair-display:400);@import url(https://fonts.bunny.net/css?family=lora:400,700);.is-body {font-family: Lora !important;}.is-title, .gh-content [id] {font-family: Playfair Display !important;}</style>",
+    <style>@import url(https://fonts.bunny.net/css?family=playfair-display:400);@import url(https://fonts.bunny.net/css?family=lora:400,700);.gh-body-font {font-family: Lora; font-size-adjust: none;}.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: Playfair Display; font-size-adjust: none;}</style>",
 }
 `;
 
