@@ -92,7 +92,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
-        isLoading // Add this to destructure isLoading from the hook
+        isLoading
     } = useActivitiesForUser({
         handle: user,
         includeOwn: true,
@@ -140,59 +140,65 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         <>
             <MainNavigation title='Activities' />
             <div className='z-0 flex w-full flex-col items-center'>
-                {isLoading ? (
-                    <div className='mt-8 flex flex-col items-center justify-center space-y-4 text-center'>
+                {
+                    isLoading && (<div className='mt-8 flex flex-col items-center justify-center space-y-4 text-center'>
                         <LoadingIndicator size='lg' />
-                    </div>
-                ) : activities.length === 0 ? (
-                    <div className='mt-8'>
-                        <NoValueLabel icon='bell'>
-                            When other Fediverse users interact with you, you&apos;ll see it here.
-                        </NoValueLabel>
-                    </div>
-                ) : (
-                    <>
-                        <div className='mt-8 flex w-full max-w-[560px] flex-col'>
-                            {activities?.map(activity => (
-                                <ActivityItem
-                                    key={activity.id}
-                                    url={getActivityUrl(activity) || getActorUrl(activity)}
-                                    onClick={
-                                        activity.type === ACTVITY_TYPE.CREATE ? () => {
-                                            NiceModal.show(ArticleModal, {
-                                                object: activity.object,
-                                                actor: activity.actor,
-                                                comments: activity.object.replies
-                                            });
-                                        } : undefined
-                                    }
-                                >
-                                    <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                    <div className='pt-[2px]'>
-                                        <div className='text-grey-600'>
-                                            <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
-                                            {getUsername(activity.actor)}
-                                        </div>
-                                        <div className=''>{getActivityDescription(activity)}</div>
-                                        {getExtendedDescription(activity)}
-                                    </div>
-                                    <FollowButton
-                                        className='ml-auto'
-                                        following={isFollower(activity.actor.id)}
-                                        handle={getUsername(activity.actor)}
-                                        type='link'
-                                    />
-                                </ActivityItem>
-                            ))}
+                    </div>)
+                }
+                {
+                    isLoading === false && activities.length === 0 && (
+                        <div className='mt-8'>
+                            <NoValueLabel icon='bell'>
+                                When other Fediverse users interact with you, you&apos;ll see it here.
+                            </NoValueLabel>
                         </div>
-                        <div ref={loadMoreRef} className='h-1'></div>
-                        {isFetchingNextPage && (
-                            <div className='flex flex-col items-center justify-center space-y-4 text-center'>
-                                <LoadingIndicator size='md' />
+                    )
+                }
+                {
+                    (isLoading === false && activities.length > 0) && (
+                        <>
+                            <div className='mt-8 flex w-full max-w-[560px] flex-col'>
+                                {activities?.map(activity => (
+                                    <ActivityItem
+                                        key={activity.id}
+                                        url={getActivityUrl(activity) || getActorUrl(activity)}
+                                        onClick={
+                                            activity.type === ACTVITY_TYPE.CREATE ? () => {
+                                                NiceModal.show(ArticleModal, {
+                                                    object: activity.object,
+                                                    actor: activity.actor,
+                                                    comments: activity.object.replies
+                                                });
+                                            } : undefined
+                                        }
+                                    >
+                                        <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
+                                        <div className='pt-[2px]'>
+                                            <div className='text-grey-600'>
+                                                <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
+                                                {getUsername(activity.actor)}
+                                            </div>
+                                            <div className=''>{getActivityDescription(activity)}</div>
+                                            {getExtendedDescription(activity)}
+                                        </div>
+                                        <FollowButton
+                                            className='ml-auto'
+                                            following={isFollower(activity.actor.id)}
+                                            handle={getUsername(activity.actor)}
+                                            type='link'
+                                        />
+                                    </ActivityItem>
+                                ))}
                             </div>
-                        )}
-                    </>
-                )}
+                            <div ref={loadMoreRef} className='h-1'></div>
+                            {isFetchingNextPage && (
+                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                    <LoadingIndicator size='md' />
+                                </div>
+                            )}
+                        </>
+                    )
+                }
             </div>
         </>
     );
