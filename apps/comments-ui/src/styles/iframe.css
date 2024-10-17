@@ -52,11 +52,11 @@ body {
 }
 
 .gh-comment-content p.is-editor-empty:first-child::before {
-    color: rgba(0,0,0,.25) !important;
+    color: rgba(0,0,0,.3) !important;
 }
 
 .dark .gh-comment-content p.is-editor-empty:first-child::before {
-    color: rgba(255,255,255,.35) !important;
+    color: rgba(255,255,255,.4) !important;
 }
 
 /* The following lines are needed for the editor */

@@ -27,7 +27,9 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             status: 'published',
             html
         });
-    }, [postId, dispatchAction]);
+        
+        editor?.commands.clearContent();
+    }, [postId, dispatchAction, editor]);
 
     // C keyboard shortcut to focus main form
     const formEl = useRef(null);
@@ -71,7 +73,6 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
                 return;
             }
         };
-
         // Note: normally we would need to attach this listener to the window + the iframe window. But we made listener
         // in the Iframe component that passes down all the keydown events to the main window to prevent that
         window.addEventListener('keydown', keyDownListener, {passive: true});
@@ -87,7 +88,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
                 <span className="hidden sm:inline">{t('Add comment')} </span><span className="sm:hidden">{t('Comment')}</span>
             </>
         ),
-        submitSize: 'large',
+        submitSize: 'large' as const,
         submit
     };
 
