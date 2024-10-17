@@ -15,6 +15,7 @@ Router.map(function () {
     this.route('setup.done', {path: '/setup/done'});
 
     this.route('signin');
+    this.route('signin-verify', {path: '/signin/verify'});
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
@@ -33,7 +34,7 @@ Router.map(function () {
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
-    
+
     this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
