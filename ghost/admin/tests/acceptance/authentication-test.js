@@ -36,12 +36,43 @@ describe('Acceptance: Authentication', function () {
     describe('general page', function () {
         let newLocation;
 
+        function setupVerificationRequired(server) {
+            server.post('/session', function () {
+                return new Response(403, {}, {
+                    errors: [{
+                        code: '2FA_TOKEN_REQUIRED'
+                    }]
+                });
+            });
+        }
+
+        function setupVerificationSuccess(server) {
+            server.put('/session/verify', function () {
+                return new Response(201);
+            });
+        }
+
+        function setupVerificationFailed(server) {
+            server.put('/session/verify', function () {
+                return new Response(401, {}, null);
+            });
+        }
+
         async function completeSignIn() {
             await invalidateSession();
             await visit('/signin');
             await fillIn('[data-test-input="email"]', 'my@email.com');
             await fillIn('[data-test-input="password"]', 'password');
             await click('[data-test-button="sign-in"]');
+        }
+
+        async function completeVerification() {
+            await fillIn('[data-test-input="token"]', 123456);
+            await click('[data-test-button="verify"]');
+        }
+
+        function testMainErrorMessage(expectedMessage) {
+            expect(find('[data-test-flow-notification]')).to.have.trimmed.text(expectedMessage);
         }
 
         beforeEach(function () {
@@ -104,7 +135,6 @@ describe('Acceptance: Authentication', function () {
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
-
             await visit('/');
 
             expect(currentURL(), 'current url').to.equal('/signin');
@@ -127,59 +157,57 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('has 2fa code happy path', async function () {
-            this.server.post('/session', function () {
-                return new Response(403, {}, {
-                    errors: [{
-                        code: '2FA_TOKEN_REQUIRED'
-                    }]
-                });
-            });
-
-            this.server.put('/session/verify', function () {
-                return new Response(201);
-            });
+            setupVerificationRequired(this.server);
+            setupVerificationSuccess(this.server);
 
             await completeSignIn();
-
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
-
-            await fillIn('[data-test-input="token"]', 123456);
-            await click('[data-test-button="verify"]');
-
+            await completeVerification();
             expect(currentURL()).to.equal('/dashboard');
         });
 
-        it('handles 2fa code verification errors', async function () {
-            this.server.post('/session', function () {
-                return new Response(403, {}, {
-                    errors: [{
-                        code: '2FA_TOKEN_REQUIRED'
-                    }]
-                });
-            });
+        it('handles 2fa code verification failure', async function () {
+            setupVerificationRequired(this.server);
+            setupVerificationFailed(this.server);
 
+            await completeSignIn();
+            await completeVerification();
+
+            testMainErrorMessage('Your verification code is incorrect.');
+        });
+
+        it('handles known 2fa code verification error', async function () {
+            setupVerificationRequired(this.server);
             this.server.put('/session/verify', function () {
-                return new Response(401, {}, {
+                return new Response(422, {}, {
                     errors: [{
-                        message: 'Invalid or expired token'
+                        message: 'Could not find session. Please try to signin again.'
                     }]
                 });
             });
 
             await completeSignIn();
+            await completeVerification();
 
-            await fillIn('[data-test-input="token"]', 123456);
-            await click('[data-test-button="verify"]');
-
-            expect(find('[data-test-flow-notification]')).to.have.trimmed.text('Invalid or expired token');
+            testMainErrorMessage('Could not find session. Please try to signin again.');
         });
 
-        it('handles 2fa-required on a 2xx response', async function () {
+        it('handles unknown 2fa code verification error', async function () {
+            setupVerificationRequired(this.server);
+            this.server.put('/session/verify', function () {
+                return new Response(400);
+            });
+
+            await completeSignIn();
+            await completeVerification();
+
+            testMainErrorMessage('There was a problem verifying the code. Please try again.');
+        });
+
+        it('handles 2fa-required on a 2xx response from signin', async function () {
             this.server.post('/session', function () {
                 return new Response(200, {}, {
-                    errors: [{
-                        code: '2FA_TOKEN_REQUIRED'
-                    }]
+                    errors: [{code: '2FA_TOKEN_REQUIRED'}]
                 });
             });
 
@@ -188,19 +216,17 @@ describe('Acceptance: Authentication', function () {
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
         });
 
-        it('handles non-2fa 403 response', async function () {
+        it('handles non-2fa 403 response on signin', async function () {
             this.server.post('/session', function () {
                 return new Response(403, {}, {
-                    errors: [{
-                        message: 'Insufficient permissions'
-                    }]
+                    errors: [{message: 'Insufficient permissions'}]
                 });
             });
 
             await completeSignIn();
 
             expect(currentURL(), 'url after email+password submit').to.equal('/signin');
-            expect(find('[data-test-flow-notification]')).to.have.trimmed.text('Insufficient permissions');
+            testMainErrorMessage('Insufficient permissions');
         });
     });
 
