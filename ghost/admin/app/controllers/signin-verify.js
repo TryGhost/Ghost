@@ -3,6 +3,7 @@ import Controller from '@ember/controller';
 import DS from 'ember-data';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {isUnauthorizedError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -77,11 +78,14 @@ export default class SigninVerifyController extends Controller {
             yield this.session.authenticate('authenticator:cookie', {token: this.verifyData.token});
             return true;
         } catch (error) {
-            if (error && error.payload && error.payload.errors) {
+            if (isUnauthorizedError(error)) {
+                this.flowErrors = 'Your verification code is incorrect.';
+            } else if (error && error.payload && error.payload.errors) {
                 this.flowErrors = error.payload.errors[0].message;
             } else {
-                this.flowErrors = 'There was a problem with the verification token.';
+                this.flowErrors = 'There was a problem verifying the code. Please try again.';
             }
+            return false;
         }
     }
 
