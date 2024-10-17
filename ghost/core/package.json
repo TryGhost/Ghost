@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.96.1",
+  "version": "5.96.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.119.0",
+    "@sentry/node": "7.119.2",
     "@slack/webhook": "7.0.3",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
@@ -126,6 +126,7 @@
     "@tryghost/members-stripe-service": "0.0.0",
     "@tryghost/mentions-email-report": "0.0.0",
     "@tryghost/metrics": "1.0.34",
+    "@tryghost/metrics-server": "0.0.0",
     "@tryghost/milestones": "0.0.0",
     "@tryghost/minifier": "0.0.0",
     "@tryghost/model-to-domain-event-interceptor": "0.0.0",
@@ -224,12 +225,12 @@
     "yjs": "13.6.20"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.119.0",
+    "@sentry/profiling-node": "7.119.2",
     "@tryghost/html-to-mobiledoc": "3.1.2",
     "sqlite3": "5.1.7"
   },
   "devDependencies": {
-    "@actions/core": "1.10.1",
+    "@actions/core": "1.11.1",
     "@playwright/test": "1.46.1",
     "@tryghost/express-test": "0.13.15",
     "@tryghost/webhook-mock-receiver": "0.2.14",
@@ -281,6 +282,71 @@
         ]
       },
       "dev": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:single": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:all": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:integration": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:regression": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:browser": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:browser:admin": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:browser:portal": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:e2e": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:ci:e2e": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:ci:regression": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:ci:integration": {
         "dependsOn": [
           "^build:ts"
         ]
