@@ -48,11 +48,12 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent className="!gap-y-4" columns={1}>
+        <SettingGroupContent className="!gap-y-0" columns={1}>
             <Toggle
                 checked={trackEmailOpens}
                 direction='rtl'
                 label='Newsletter opens'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
@@ -62,6 +63,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={trackEmailClicks}
                 direction='rtl'
                 label='Newsletter clicks'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
@@ -71,6 +73,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={trackMemberSources}
                 direction='rtl'
                 label='Member sources'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
                 }}
@@ -80,6 +83,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={outboundLinkTagging}
                 direction='rtl'
                 label='Outbound link tagging'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
                 }}
