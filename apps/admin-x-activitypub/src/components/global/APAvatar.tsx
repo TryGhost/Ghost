@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
@@ -18,6 +18,10 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     const badgeClass = `w-6 h-6 z-20 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
     let badgeColor = '';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
+
+    useEffect(() => {
+        setIconUrl(author?.icon?.url);
+    }, [author?.icon?.url]);
 
     switch (badge) {
     case 'user-fill':
