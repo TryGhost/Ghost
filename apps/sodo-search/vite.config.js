@@ -2,7 +2,6 @@ import {resolve} from 'path';
 import fs from 'fs/promises';
 
 import {defineConfig} from 'vitest/config';
-import commonjs from 'vite-plugin-commonjs';
 import reactPlugin from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
 
@@ -22,12 +21,7 @@ export default defineConfig((config) => {
         },
         plugins: [
             reactPlugin(),
-            svgrPlugin(),
-            /*commonjs({
-                dynamic: {
-                    loose: true
-                }
-            })*/
+            svgrPlugin()
         ],
         esbuild: {
             loader: 'jsx',
