@@ -103,7 +103,7 @@ describe('Account Email Page', () => {
         });
         const {getByText} = setup({site: siteData, member: getMemberData({newsletters: newsletterData, email_suppressions: {suppressed: false}})});
         expect(getByText('Not receiving emails?')).toBeInTheDocument();
-        expect(getByText('Get help →')).toBeInTheDocument();
+        expect(getByText('Get help')).toBeInTheDocument();
     });
 
     test('redirects to signin page if no member', async () => {
