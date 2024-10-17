@@ -3,7 +3,7 @@ const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {setupGhost, setupMailgun, enableLabs, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
-const {allowStripe, mockMail} = require('../../utils/e2e-framework-mock-manager');
+const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
 const MailgunClient = require('@tryghost/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
@@ -54,6 +54,42 @@ module.exports = base.test.extend({
     sharedPage: [async ({browser}, use) => {
         const page = await browser.newPage();
         await use(page);
+    }, {scope: 'worker'}],
+
+    // eslint-disable-next-line no-empty-pattern
+    verificationToken: [async ({}, use) => {
+        const getToken = async () => {
+            const tryGetToken = () => {
+                try {
+                    const email = assert.sentEmail({
+                        subject: /[0-9]{6} is your Ghost sign in verification code/
+                    });
+                    return email.subject.match(/[0-9]{6}/)[0];
+                } catch (error) {
+                    return null;
+                }
+            };
+
+            const timeout = ms => new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+            let timeoutMs = 10;
+            let timeoutRetries = 5;
+
+            while (timeoutRetries > 0) {
+                const token = tryGetToken();
+                if (token) {
+                    return token;
+                }
+                await timeout(timeoutMs);
+                timeoutMs *= 2;
+                timeoutRetries -= 1;
+            }
+
+            return null;
+        };
+
+        await use({getToken});
     }, {scope: 'worker'}],
 
     // eslint-disable-next-line no-empty-pattern
@@ -125,6 +161,8 @@ module.exports = base.test.extend({
 
         // StartGhost automatically disables network, so we need to re-enable it for Stripe
         allowStripe();
+
+        mockGeojs();
 
         const page = await browser.newPage({
             baseURL: `http://127.0.0.1:${port}/`,

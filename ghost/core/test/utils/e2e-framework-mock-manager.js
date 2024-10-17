@@ -78,6 +78,25 @@ const allowStripe = () => {
     allowedNetworkDomains.push('stripe.com');
 };
 
+const mockGeojs = () => {
+    disableNetwork();
+
+    nock(/get\.geojs\.io/)
+        .persist()
+        .get('/v1/ip/geo/127.0.0.1.json')
+        .reply(200, {
+            latitude: 'nil',
+            longitude: 'nil',
+            organization_name: 'Unknown',
+            ip: '127.0.0.1',
+            asn: 64512,
+            organization: 'AS64512 Unknown',
+            area_code: '0'
+        }, {
+            'Response-Type': 'application/json'
+        });
+};
+
 const mockStripe = () => {
     disableNetwork();
     stripeMocker.reset();
@@ -294,6 +313,7 @@ module.exports = {
     mockStripe,
     mockSlack,
     allowStripe,
+    mockGeojs,
     mockMailgun,
     mockLabsEnabled,
     mockLabsDisabled,
