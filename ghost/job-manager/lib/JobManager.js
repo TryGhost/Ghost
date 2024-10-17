@@ -10,6 +10,7 @@ const logging = require('@tryghost/logging');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
 const JobsRepository = require('./JobsRepository');
+const JobQueueManager = require('./JobQueueManager');
 
 const worker = async (task, callback) => {
     try {
@@ -27,9 +28,20 @@ const ALL_STATUSES = {
     queued: 'queued'
 };
 
+/**
+ * @typedef {Object} ScheduledJob
+ * @property {Function | string} job - Function or path to a module defining a job
+ * @property {string} [name] - Unique job name, if not provided takes function name or job script filename
+ * @property {string | Date} [at] - Date, cron or human readable schedule format
+ * @property {Object} [data] - Data to be passed into the job
+ * @property {boolean} [offloaded=true] - If true, creates an "offloaded" job running in a worker thread. If false, runs an "inline" job on the same event loop
+ */
 class JobManager {
     #domainEvents;
     #completionPromises = new Map();
+    #jobQueueManager = null;
+    #config;
+    #JobModel;
 
     /**
      * @param {Object} options
@@ -37,12 +49,17 @@ class JobManager {
      * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
      * @param {Object} [options.JobModel] - a model which can persist job data in the storage
      * @param {Object} [options.domainEvents] - domain events emitter
+     * @param {Object} [options.config] - config
+     * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
+     * @param {JobQueueManager} [options.jobQueueManager] - job queue manager instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents}) {
-        this.queue = fastq(this, worker, 3);
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null}) {
+        this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
         this.#domainEvents = domainEvents;
+        this.#config = config;
+        this.#JobModel = JobModel;
 
         const combinedMessageHandler = workerMessageHandler
             ? ({name, message}) => {
@@ -74,6 +91,19 @@ class JobManager {
         if (JobModel) {
             this._jobsRepository = new JobsRepository({JobModel});
         }
+
+        if (jobQueueManager) {
+            this.#jobQueueManager = jobQueueManager;
+        } else if (!isDuplicate) {
+            this.#initializeJobQueueManager();
+        }
+    }
+
+    #initializeJobQueueManager() {
+        if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
+            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config});
+            this.#jobQueueManager.init();
+        }
     }
 
     inlineJobHandler(jobName) {
@@ -92,6 +122,34 @@ class JobManager {
             // Can potentially standardize the result here
             return result;
         };
+    }
+
+    /**
+     * @typedef {Object} QueuedJob
+     * @property {string} name - The name or identifier of the job.
+     * @property {Object} metadata - Metadata associated with the job.
+     * @property {string} metadata.job - The absolute path to the job to execute.
+     * @property {Object} metadata.data - The data associated with the job.
+     */
+
+    /**
+     * @method addQueuedJob
+     * @async
+     * @description Adds a new job to the job repository, which will be polled and executed by the job queue manager.
+     * @param {QueuedJob} job - The job to be added to the queue.
+     * @returns {Promise<Object>} The added job model.
+     */
+    async addQueuedJob({name, metadata}) {
+        // Try to initialize JobQueueManager if it's missing
+        if (!this.#jobQueueManager) {
+            this.#initializeJobQueueManager();
+        }
+
+        if (this.#config?.get('services:jobs:queue:enabled') === true && this.#jobQueueManager) {
+            const model = await this.#jobQueueManager.addJob({name, metadata});
+            return model;
+        }
+        return undefined;
     }
 
     async _jobMessageHandler({name, message}) {
@@ -128,7 +186,7 @@ class JobManager {
                     this.#completionPromises.delete(name);
                 }
 
-                if (this.queue.length() <= 1) {
+                if (this.inlineQueue.length() <= 1) {
                     if (this.#completionPromises.has('all')) {
                         for (const listeners of this.#completionPromises.get('all')) {
                             listeners.resolve();
@@ -168,7 +226,7 @@ class JobManager {
             this.#completionPromises.delete(jobMeta.name);
         }
 
-        if (this.queue.length() <= 1) {
+        if (this.inlineQueue.length() <= 1) {
             if (this.#completionPromises.has('all')) {
                 for (const listeners of this.#completionPromises.get('all')) {
                     listeners.reject(error);
@@ -181,7 +239,7 @@ class JobManager {
 
     /**
      * By default schedules an "offloaded" job. If `offloaded: true` parameter is set,
-     * puts an "inline" immediate job into the queue.
+     * puts an "inline" immediate job into the inlineQueue.
      *
      * @param {Object} GhostJob - job options
      * @prop {Function | String} GhostJob.job - function or path to a module defining a job
@@ -192,7 +250,7 @@ class JobManager {
      */
     addJob({name, at, job, data, offloaded = true}) {
         if (offloaded) {
-            logging.info('Adding offloaded job to the queue');
+            logging.info('Adding offloaded job to the inline job queue');
             let schedule;
 
             if (!name) {
@@ -229,9 +287,9 @@ class JobManager {
             this.bree.add(breeJob);
             return this.bree.start(name);
         } else {
-            logging.info(`Adding one-off job to queue with current length = ${this.queue.length()} called '${name || 'anonymous'}'`);
+            logging.info(`Adding one-off job to inlineQueue with current length = ${this.inlineQueue.length()} called '${name || 'anonymous'}'`);
 
-            this.queue.push(async () => {
+            this.inlineQueue.push(async () => {
                 try {
                     // NOTE: setting the status here otherwise it is impossible to
                     //       distinguish between states when the job fails immediately
@@ -325,13 +383,11 @@ class JobManager {
     /**
      * Awaits completion of the offloaded one-off job.
      * CAUTION: it might take a long time to resolve!
-     * @param {String} name one-off job name
+     * @param {string} name one-off job name
      * @returns resolves with a Job model at current state
      */
     async awaitOneOffCompletion(name) {
-        const persistedJob = await this._jobsRepository.read({
-            name
-        });
+        const persistedJob = await this._jobsRepository.read(name);
 
         if (!persistedJob || ![ALL_STATUSES.finished, ALL_STATUSES.failed].includes(persistedJob.get('status'))) {
             // NOTE: can implement exponential backoff here if that's ever needed
@@ -366,7 +422,7 @@ class JobManager {
         const name = 'all';
 
         return new Promise((resolve, reject) => {
-            if (this.queue.idle()) {
+            if (this.inlineQueue.idle()) {
                 resolve();
                 return;
             }
@@ -379,7 +435,7 @@ class JobManager {
     }
 
     /**
-     * Removes an "offloaded" job from scheduled jobs queue.
+     * Removes an "offloaded" job from scheduled jobs inlineQueue.
      * It's NOT yet possible to remove "inline" jobs (will be possible when scheduling is added https://github.com/breejs/bree/issues/68).
      * The method will throw an Error if job with provided name does not exist.
      *
@@ -398,15 +454,19 @@ class JobManager {
     async shutdown(options) {
         await this.bree.stop();
 
-        if (this.queue.idle()) {
+        if (this.#jobQueueManager) {
+            await this.#jobQueueManager.shutdown();
+        }
+
+        if (this.inlineQueue.idle()) {
             return;
         }
 
-        logging.warn('Waiting for busy job queue');
+        logging.warn('Waiting for busy job in inline job queue');
 
-        await pWaitFor(() => this.queue.idle() === true, options);
+        await pWaitFor(() => this.inlineQueue.idle() === true, options);
 
-        logging.warn('Job queue finished');
+        logging.warn('Inline job queue finished');
     }
 }
 

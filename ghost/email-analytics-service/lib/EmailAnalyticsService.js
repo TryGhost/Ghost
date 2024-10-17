@@ -1,6 +1,7 @@
 const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const {MemberEmailAnalyticsUpdateEvent} = require('@tryghost/member-events');
 
 /**
  * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
@@ -73,13 +74,15 @@ module.exports = class EmailAnalyticsService {
      * @param {object} dependencies.queries
      * @param {EmailEventProcessor} dependencies.eventProcessor
      * @param {object} dependencies.providers
+     * @param {import('@tryghost/domain-events')} dependencies.domainEvents
      */
-    constructor({config, settings, queries, eventProcessor, providers}) {
+    constructor({config, settings, queries, eventProcessor, providers, domainEvents}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
         this.eventProcessor = eventProcessor;
         this.providers = providers;
+        this.domainEvents = domainEvents;
     }
 
     getStatus() {
@@ -511,7 +514,12 @@ module.exports = class EmailAnalyticsService {
         startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
         for (const memberId of memberIds) {
-            await this.aggregateMemberStats(memberId);
+            if (this.config?.get('services:jobs:queue:enabled')) {
+                // With the queue enabled we will dispatch an event to update the member email analytics on the background queue (multithreaded :))
+                await this.domainEvents.dispatch(MemberEmailAnalyticsUpdateEvent.create({memberId}));
+            } else {
+                await this.aggregateMemberStats(memberId);
+            }
         }
         endTime = Date.now() - startTime;
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
