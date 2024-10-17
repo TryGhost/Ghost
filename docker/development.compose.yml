@@ -23,7 +23,6 @@ services:
       - 2368:2368
       - 4200:4200
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
       - DEBUG=${DEBUG:-}
       - APP_FLAGS=${APP_FLAGS:-}
       - server__host=0.0.0.0

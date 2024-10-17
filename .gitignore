@@ -177,3 +177,4 @@ tsconfig.tsbuildinfo
 
 # Docker Yarn Cache
 .yarncache
+.yarncachecopy
