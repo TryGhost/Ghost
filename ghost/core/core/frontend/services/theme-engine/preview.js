@@ -22,7 +22,9 @@ function getPreviewData(previewHeader, customThemeSettingKeys = []) {
         logo: 'logo',
         cover: 'cover_image',
         custom: 'custom',
-        d: 'description'
+        d: 'description',
+        bf: 'body_font',
+        hf: 'heading_font'
     };
 
     let opts = new URLSearchParams(previewHeader);

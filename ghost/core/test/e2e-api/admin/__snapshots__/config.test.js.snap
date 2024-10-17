@@ -20,6 +20,7 @@ Object {
       "collectionsCard": true,
       "commentImprovements": true,
       "contentVisibility": true,
+      "customFonts": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "i18n": true,
