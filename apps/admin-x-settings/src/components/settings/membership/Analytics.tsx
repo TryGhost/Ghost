@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
@@ -48,28 +48,42 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent className='!gap-y-0' columns={1}>
-            {[
-                {key: 'email_track_opens', label: 'Newsletter opens', checked: trackEmailOpens},
-                {key: 'email_track_clicks', label: 'Newsletter clicks', checked: trackEmailClicks},
-                {key: 'members_track_sources', label: 'Member sources', checked: trackMemberSources},
-                {key: 'outbound_link_tagging', label: 'Outbound link tagging', checked: outboundLinkTagging}
-            ].map(({key, label, checked}, index, array) => (
-                <div 
-                    key={key} 
-                    className={`flex items-center justify-between py-3 ${
-                        index !== array.length - 1 ? 'border-b border-grey-200' : ''
-                    }`}
-                >
-                    <span>{label}</span>
-                    <Toggle
-                        checked={checked}
-                        onChange={(e) => {
-                            handleToggleChange(key, e);
-                        }}
-                    />
-                </div>
-            ))}
+        <SettingGroupContent className="!gap-y-4" columns={1}>
+            <Toggle
+                checked={trackEmailOpens}
+                direction='rtl'
+                label='Newsletter opens'
+                onChange={(e) => {
+                    handleToggleChange('email_track_opens', e);
+                }}
+            />
+            <Separator />
+            <Toggle
+                checked={trackEmailClicks}
+                direction='rtl'
+                label='Newsletter clicks'
+                onChange={(e) => {
+                    handleToggleChange('email_track_clicks', e);
+                }}
+            />
+            <Separator />
+            <Toggle
+                checked={trackMemberSources}
+                direction='rtl'
+                label='Member sources'
+                onChange={(e) => {
+                    handleToggleChange('members_track_sources', e);
+                }}
+            />
+            <Separator />
+            <Toggle
+                checked={outboundLinkTagging}
+                direction='rtl'
+                label='Outbound link tagging'
+                onChange={(e) => {
+                    handleToggleChange('outbound_link_tagging', e);
+                }}
+            />
         </SettingGroupContent>
     );
 
