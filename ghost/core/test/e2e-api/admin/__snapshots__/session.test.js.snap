@@ -27,7 +27,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "set-cookie": Array [
-    "ghost-admin-api-session=s%3AMgHbIHAiCElZ5ifcN6r2oqSZwQNZV9Px.AtWhxBoc2aXXmX8GdWikxDyflgYWJNdHqr1twJRN3oU; Path=/ghost; Expires=Thu, 17 Apr 2025 02:10:39 GMT; HttpOnly; SameSite=Lax",
+    StringMatching /\\^ghost-admin-api-session=/,
   ],
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
