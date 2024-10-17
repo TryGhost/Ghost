@@ -1,0 +1,16 @@
+{
+    "name": "Ghost",
+    "dockerComposeFile": ["../docker/development.compose.yml", "./docker-compose.extend.yml"],
+    "service": "ghost",
+    "workspaceFolder": "/home/ghost",
+    "shutdownAction": "stopCompose",
+    "mounts": [
+        "source=${localWorkspaceFolder}/ghost,target=/home/ghost/ghost,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/apps,target=/home/ghost/apps,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/docker,target=/home/ghost/docker,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/.devcontainer,target=/home/ghost/.devcontainer,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/.github,target=/home/ghost/.github,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/yarn.lock,target=/home/ghost/yarn.lock,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/package.json,target=/home/ghost/package.json,type=bind,consistency=cached",
+    ]
+}
