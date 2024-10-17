@@ -25,6 +25,6 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/nql": "0.12.6"
+    "@tryghost/nql": "0.12.7"
   }
 }
