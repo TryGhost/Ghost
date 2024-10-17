@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.96.1",
+  "version": "5.96.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -126,6 +126,7 @@
     "@tryghost/members-stripe-service": "0.0.0",
     "@tryghost/mentions-email-report": "0.0.0",
     "@tryghost/metrics": "1.0.34",
+    "@tryghost/metrics-server": "0.0.0",
     "@tryghost/milestones": "0.0.0",
     "@tryghost/minifier": "0.0.0",
     "@tryghost/model-to-domain-event-interceptor": "0.0.0",
@@ -281,6 +282,71 @@
         ]
       },
       "dev": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:single": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:all": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:integration": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:regression": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:browser": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:browser:admin": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:browser:portal": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:e2e": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:ci:e2e": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:ci:regression": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      },
+      "test:ci:integration": {
         "dependsOn": [
           "^build:ts"
         ]

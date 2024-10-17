@@ -33,7 +33,6 @@ module.exports = class Mention {
         // When an earlier mention is deleted, but then it gets verified again, we need to undelete it
         if (this.#deleted) {
             this.#deleted = false;
-            this.events.push(MentionCreatedEvent.create({mention: this}));
         }
     }
 
