@@ -15,11 +15,11 @@ export default (function viteConfig() {
         plugins: [
             svgr(),
             react(),
-            commonjs({
+            /*commonjs({
                 dynamic: {
                     loose: true
                 }
-            })
+            })*/
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
