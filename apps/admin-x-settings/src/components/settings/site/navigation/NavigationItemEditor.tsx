@@ -12,9 +12,17 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     unstyled?: boolean
     textFieldClasses?: string
     action?: ReactNode
+    onAddItem?: () => void; // New prop
 }
 
-const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, ...props}) => {
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, onAddItem,...props}) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            onAddItem?.();
+        }
+    };
+
     return (
         <div className={clsx('flex w-full items-start gap-3', className)} data-testid='navigation-item-editor' {...props}>
             <div className="flex flex-1 pt-1">
@@ -29,7 +37,10 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     value={item.label}
                     hideTitle
                     onChange={e => updateItem?.({label: e.target.value})}
-                    onKeyDown={() => clearError?.('label')}
+                    onKeyDown={(e) => {
+                        clearError?.('label');
+                        handleKeyDown(e);
+                    }}
                 />
             </div>
             <div className="flex flex-1 pt-1">
@@ -44,7 +55,10 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     value={item.url}
                     hideTitle
                     onChange={value => updateItem?.({url: value || ''})}
-                    onKeyDown={() => clearError?.('url')}
+                    onKeyDown={(e) => {
+                        clearError?.('url');
+                        handleKeyDown(e);
+                    }}
                 />
             </div>
             {action}
