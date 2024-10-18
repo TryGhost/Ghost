@@ -61,8 +61,18 @@ const controller = {
         });
     },
     delete() {
-        return Promise.resolve(function destroySessionMw(req, res, next) {
-            auth.session.destroySession(req, res, next);
+        return Promise.resolve(function logoutSessionMw(req, res, next) {
+            auth.session.logout(req, res, next);
+        });
+    },
+    sendVerification() {
+        return Promise.resolve(function sendAuthCodeMw(req, res, next) {
+            auth.session.sendAuthCode(req, res, next);
+        });
+    },
+    verify() {
+        return Promise.resolve(function verifyAuthCodeMw(req, res, next) {
+            auth.session.verifyAuthCode(req, res, next);
         });
     }
 };

@@ -29,6 +29,8 @@ let spamGlobalBlock = spam.global_block || {};
 let spamGlobalReset = spam.global_reset || {};
 let spamUserReset = spam.user_reset || {};
 let spamUserLogin = spam.user_login || {};
+let spamSendVerificationCode = spam.send_verification_code || {};
+let spamUserVerification = spam.user_verification || {};
 let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
@@ -44,6 +46,8 @@ let userLoginInstance;
 let membersAuthInstance;
 let membersAuthEnumerationInstance;
 let userResetInstance;
+let sendVerificationCodeInstance;
+let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
 
@@ -308,6 +312,58 @@ const userReset = function userReset() {
     return userResetInstance;
 };
 
+const userVerification = function userVerification() {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    userVerificationInstance = userVerificationInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: true,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: tpl(messages.tooManyAttempts)
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, pick(spamUserVerification, spamConfigKeys))
+    );
+
+    return userVerificationInstance;
+};
+
+const sendVerificationCode = function sendVerificationCode() {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    sendVerificationCodeInstance = sendVerificationCodeInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: true,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: tpl(messages.tooManyAttempts)
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, pick(spamSendVerificationCode, spamConfigKeys))
+    );
+
+    return sendVerificationCodeInstance;
+};
+
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
 // The endpoint is then locked for an hour
 const privateBlog = () => {
@@ -372,6 +428,8 @@ module.exports = {
     globalBlock: globalBlock,
     globalReset: globalReset,
     userLogin: userLogin,
+    sendVerificationCode: sendVerificationCode,
+    userVerification: userVerification,
     membersAuth: membersAuth,
     membersAuthEnumeration: membersAuthEnumeration,
     userReset: userReset,
@@ -389,6 +447,8 @@ module.exports = {
         membersAuthInstance = undefined;
         membersAuthEnumerationInstance = undefined;
         userResetInstance = undefined;
+        sendVerificationCodeInstance = undefined;
+        userVerificationInstance = undefined;
         contentApiKeyInstance = undefined;
 
         spam = config.get('spam') || {};
@@ -397,6 +457,8 @@ module.exports = {
         spamGlobalReset = spam.global_reset || {};
         spamUserReset = spam.user_reset || {};
         spamUserLogin = spam.user_login || {};
+        spamSendVerificationCode = spam.send_verification_code || {};
+        spamUserVerification = spam.user_verification || {};
         spamMemberLogin = spam.member_login || {};
         spamContentApiKey = spam.content_api_key || {};
     }
