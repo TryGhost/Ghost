@@ -91,7 +91,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         data,
         fetchNextPage,
         hasNextPage,
-        isFetchingNextPage
+        isFetchingNextPage,
+        isLoading // Add this to destructure isLoading from the hook
     } = useActivitiesForUser({
         handle: user,
         includeOwn: true,
@@ -139,14 +140,17 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         <>
             <MainNavigation title='Activities' />
             <div className='z-0 flex w-full flex-col items-center'>
-                {activities.length === 0 && (
+                {isLoading ? (
+                    <div className='mt-8 flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='lg' />
+                    </div>
+                ) : activities.length === 0 ? (
                     <div className='mt-8'>
                         <NoValueLabel icon='bell'>
                             When other Fediverse users interact with you, you&apos;ll see it here.
                         </NoValueLabel>
                     </div>
-                )}
-                {activities.length > 0 && (
+                ) : (
                     <>
                         <div className='mt-8 flex w-full max-w-[560px] flex-col'>
                             {activities?.map(activity => (

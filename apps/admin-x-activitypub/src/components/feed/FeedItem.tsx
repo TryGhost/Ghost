@@ -140,8 +140,8 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <div className='min-w-[160px]'>
-                <img className={`h-[100px] w-[160px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
+            return <div className='min-h-[80px]'>
+                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
             </div>;
         }
         return null;
@@ -169,7 +169,8 @@ const FeedItemStats: React.FC<{
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
 
-    const handleLikeClick = async () => {
+    const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
         setIsClicked(true);
         if (!isLiked) {
             likeMutation.mutate(object.id);
@@ -194,7 +195,9 @@ const FeedItemStats: React.FC<{
                 unstyled={true}
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
-                    handleLikeClick();
+                    if (e) {
+                        handleLikeClick(e);
+                    }
                 }}
             />
             {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
@@ -284,7 +287,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const UserMenuTrigger = (
         <Button
-            className={`relative z-10 ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
+            className={`relative z-[9998] ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
             iconColorClass={`(${layout === 'inbox' ? 'text-grey-900' : 'text-grey-600'}`}
@@ -303,20 +306,20 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
+                        <div className={`border-1 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
                             <APAvatar author={author}/>
                             <div className='flex justify-between'>
-                                <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                                <div className='relative z-10 flex w-full flex-col overflow-visible text-md'>
                                     <div className='flex justify-between'>
                                         <div className='flex'>
-                                            <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                            <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
                                             <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
                                         </div>
                                         {renderTimestamp(object)}
                                     </div>
                                 </div>
                             </div>
-                            <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
+                            <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
                                     <div className='mt-[-24px]'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
@@ -332,7 +335,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             size='md'
                                         />}
                                     </div>
-                                    <div className='space-between mt-5 flex'>
+                                    <div className='space-between relative z-[30] mt-5 flex'>
                                         <FeedItemStats
                                             commentCount={comments.length}
                                             layout={layout}
@@ -357,7 +360,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div>
-                        <div className={`group/article relative cursor-pointer`} onClick={onClick}>
+                        <div className={`group/article relative`} onClick={onClick}>
                             {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                                 <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                                 <span className='z-10'>{actor.name} reposted</span>
@@ -455,9 +458,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -mt-px flex cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' onClick={onClick}>
+                    <div className='group/article relative -mx-4 -my-px flex cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' onClick={onClick}>
                         <div className='flex w-full flex-col items-start justify-between gap-1 pr-4'>
-                            <div className='z-10 flex items-start justify-between gap-2 group-hover/article:border-transparent'>
+                            <div className='z-10 flex items-start gap-2 group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='xs'/>
                                 <div className='z-10 w-full text-sm'>
                                     <div>
@@ -471,7 +474,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content line-clamp-1 text-pretty text-[1.5rem] text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
-                        <div className='invisible absolute right-2 top-[9px] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
+                        <div className='invisible absolute right-2 top-[9px] z-[9998] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
                                 commentCount={comments.length}
                                 layout={layout}
