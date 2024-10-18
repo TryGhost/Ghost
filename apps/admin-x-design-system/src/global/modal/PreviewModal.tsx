@@ -220,11 +220,11 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         preview = (
             <div className={containerClasses}>
-                {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5" data-testid="design-toolbar">
-                    {leftToolbar && <div className='absolute left-5 flex h-full items-center'>
+                {previewToolbar && <header className="relative flex h-[80px] shrink-0 items-center justify-center px-8 py-5" data-testid="design-toolbar">
+                    {leftToolbar && <div className='absolute left-8 flex h-full items-center'>
                         {toolbarLeft}
                     </div>}
-                    {rightToolbar && <div className='absolute right-5 flex h-full items-center'>
+                    {rightToolbar && <div className='absolute right-8 flex h-full items-center'>
                         {toolbarRight}
                         {viewSiteButton}
                     </div>}
@@ -287,7 +287,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}
-                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[74px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
+                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[80px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
                             {sidebar}
                         </div>
                     </div>
