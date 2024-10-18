@@ -6,6 +6,23 @@ const exec = util.promisify(require('child_process').exec);
 const chalk = require('chalk');
 const concurrently = require('concurrently');
 
+const ALLOWED_FLAGS = {
+    'ghost': 'Run only Ghost server & frontend without Admin',
+    'admin': 'Run only Ghost Admin without Ghost server',
+    'portal': 'Run Ghost with the local version of Portal',
+    'adminX': 'Run Ghost with the local version of AdminX',
+    'lexical': 'Run Ghost with the local version of the Lexical editor',
+    'search': 'Run Ghost with the local version of Search',
+    'comments': 'Run Ghost with the local version of Comments',
+    'signup': 'Run Ghost with the local version of the signup form',
+    'announcementBar': 'Run Ghost with the local version of the announcement bar',
+    'all': 'Run Ghost with the local version of all apps',
+    'browser-tests': 'Run the browser test suite for Ghost',
+    'https': 'Use HTTPS to connect to portal, comments, lexical, etc.',
+    'offline': 'Run in offline mode',
+    'stripe': 'Run `stripe --listen` to work with Stripe Webhooks locally'
+}
+
 // check we're running on Node 18 and above
 const nodeVersion = parseInt(process.versions.node.split('.')[0]);
 if (nodeVersion < 18) {
@@ -34,7 +51,25 @@ const tsPackages = fs.readdirSync(path.resolve(__dirname, '../../ghost'), {withF
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 const siteUrl = config.getSiteUrl();
 
-const DASH_DASH_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
+// Accept flags from the command line and environment variables
+// e.g. `yarn dev --portal` or `APP_FLAGS=portal yarn dev`
+const CLI_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
+if (CLI_ARGS.length > 0) {
+    console.warn('Using dash dash flags is deprecated. Please use the APP_FLAGS environment variable instead.');
+}
+const ENV_ARGS = process.env.APP_FLAGS?.trim().split(',') || [];
+const APP_FLAGS = [...CLI_ARGS, ...ENV_ARGS].map((flag) => {
+    if (flag.trim() === '') {
+        return;
+    }
+    if (Object.keys(ALLOWED_FLAGS).includes(flag)) {
+        return flag;
+    } else {
+        console.warn(`${flag} is not a valid APP_FLAG.`);
+        console.log(`Valid values for APP_FLAGS include: ${Object.keys(ALLOWED_FLAGS)}`);
+        return;
+    }
+}).filter(flag => !!flag);
 
 let commands = [];
 
@@ -90,17 +125,17 @@ const COMMANDS_ADMINX = [{
     env: {}
 }];
 
-if (DASH_DASH_ARGS.includes('ghost')) {
+if (APP_FLAGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
-} else if (DASH_DASH_ARGS.includes('admin')) {
+} else if (APP_FLAGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
-} else if (DASH_DASH_ARGS.includes('browser-tests')) {
+} else if (APP_FLAGS.includes('browser-tests')) {
     commands = [COMMAND_BROWSERTESTS, COMMAND_TYPESCRIPT];
 } else {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
 
-if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
+if (APP_FLAGS.includes('portal') || APP_FLAGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'nx run @tryghost/portal:dev',
@@ -109,7 +144,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
         env: {}
     });
 
-    if (DASH_DASH_ARGS.includes('https')) {
+    if (APP_FLAGS.includes('https')) {
         // Safari needs HTTPS for it to work
         // To make this work, you'll need a CADDY server running in front
         // Note the port is different because of this extra layer. Use the following Caddyfile:
@@ -123,10 +158,10 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     }
 }
 
-if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
+if (APP_FLAGS.includes('signup') || APP_FLAGS.includes('all')) {
     commands.push({
         name: 'signup-form',
-        command: DASH_DASH_ARGS.includes('signup') ? 'nx run @tryghost/signup-form:dev' : 'nx run @tryghost/signup-form:preview',
+        command: APP_FLAGS.includes('signup') ? 'nx run @tryghost/signup-form:dev' : 'nx run @tryghost/signup-form:preview',
         cwd: path.resolve(__dirname, '../../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
@@ -134,7 +169,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     COMMAND_GHOST.env['signupForm__url'] = 'http://localhost:6174/signup-form.min.js';
 }
 
-if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('announcementBar') || DASH_DASH_ARGS.includes('announcementbar') || DASH_DASH_ARGS.includes('all')) {
+if (APP_FLAGS.includes('announcement-bar') || APP_FLAGS.includes('announcementBar') || APP_FLAGS.includes('announcementbar') || APP_FLAGS.includes('all')) {
     commands.push({
         name: 'announcement-bar',
         command: 'nx run @tryghost/announcement-bar:dev',
@@ -145,7 +180,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
     COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:4177/announcement-bar.min.js';
 }
 
-if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
+if (APP_FLAGS.includes('search') || APP_FLAGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'nx run @tryghost/sodo-search:dev',
@@ -157,8 +192,8 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:4178/main.css';
 }
 
-if (DASH_DASH_ARGS.includes('lexical')) {
-    if (DASH_DASH_ARGS.includes('https')) {
+if (APP_FLAGS.includes('lexical')) {
+    if (APP_FLAGS.includes('https')) {
         // Safari needs HTTPS for it to work
         // To make this work, you'll need a CADDY server running in front
         // Note the port is different because of this extra layer. Use the following Caddyfile:
@@ -172,8 +207,8 @@ if (DASH_DASH_ARGS.includes('lexical')) {
     }
 }
 
-if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
-    if (DASH_DASH_ARGS.includes('https')) {
+if (APP_FLAGS.includes('comments') || APP_FLAGS.includes('all')) {
+    if (APP_FLAGS.includes('https')) {
         // Safari needs HTTPS for it to work
         // To make this work, you'll need a CADDY server running in front
         // Note the port is different because of this extra layer. Use the following Caddyfile:
@@ -195,8 +230,8 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
 }
 
 async function handleStripe() {
-    if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
-        if (DASH_DASH_ARGS.includes('offline') || DASH_DASH_ARGS.includes('browser-tests')) {
+    if (APP_FLAGS.includes('stripe') || APP_FLAGS.includes('all')) {
+        if (APP_FLAGS.includes('offline') || APP_FLAGS.includes('browser-tests')) {
             return;
         }
 
@@ -234,8 +269,11 @@ async function handleStripe() {
     process.env.NX_DISABLE_DB = "true";
     await exec("yarn nx reset --onlyDaemon");
     await exec("yarn nx daemon --start");
-
+    
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
+    if (APP_FLAGS.length === 0) {
+        console.log(chalk.blue('Set the APP_FLAGS environment variable to run Ghost with the local version of Portal, Lexical, etc.'));
+    }
 
     const {result} = concurrently(commands, {
         prefix: 'name',

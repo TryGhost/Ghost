@@ -1,0 +1,12 @@
+name: ghost-devcontainer
+
+services:
+  ghost:
+    command: ["sleep", "infinity"]
+    container_name: ghost-devcontainer-ghost
+    environment:
+      - server__host=127.0.0.1
+    
+networks:
+  default:
+    name: ghost-devcontainer-network
