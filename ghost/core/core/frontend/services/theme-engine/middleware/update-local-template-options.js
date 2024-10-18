@@ -33,6 +33,7 @@ function updateLocalTemplateOptions(req, res, next) {
                 default_payment_card_last4: sub.default_payment_card_last4 || '****'
             });
         }),
+        labels: req.member.labels,
         paid: req.member.status !== 'free',
         status: req.member.status
     } : null;
