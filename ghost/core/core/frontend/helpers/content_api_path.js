@@ -8,6 +8,7 @@ module.exports = async function content_api_path(options) { // eslint-disable-li
 
     try {
         let path = urlUtils.urlFor('api', {type: 'content'}, absoluteUrlRequested);
+        //let path = urlUtils.getAdminUrl() + '/api/content/'
         result = new SafeString(path);
     } catch (error) {
         logging.error(error);
