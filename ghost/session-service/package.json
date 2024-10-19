@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "express": "4.21.0",
+    "express": "4.21.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"

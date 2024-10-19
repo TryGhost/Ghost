@@ -59,7 +59,7 @@ module.exports = createTransactionalMigration(
                 }
 
                 try {
-                    html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(mobiledoc));
+                    html = mobiledocLib.render(JSON.parse(mobiledoc));
                 } catch (err) {
                     logging.warn(`Invalid mobiledoc content structure for ${id}, unable to render. Skipping`);
                     continue;

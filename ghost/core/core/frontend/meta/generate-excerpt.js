@@ -1,5 +1,3 @@
-const downsize = require('downsize');
-
 function generateExcerpt(excerpt, truncateOptions) {
     truncateOptions = truncateOptions || {};
 
@@ -8,6 +6,7 @@ function generateExcerpt(excerpt, truncateOptions) {
     }
 
     // Just uses downsize to truncate, not format
+    const downsize = require('downsize');
     return downsize(excerpt, truncateOptions);
 }
 
