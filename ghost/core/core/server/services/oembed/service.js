@@ -1,9 +1,8 @@
 const config = require('../../../shared/config');
-const storage = require('../../adapters/storage');
 const externalRequest = require('../../lib/request-external');
 
 const OEmbed = require('@tryghost/oembed-service');
-const oembed = new OEmbed({config, externalRequest, storage});
+const oembed = new OEmbed({config, externalRequest});
 
 const NFT = require('./NFTOEmbedProvider');
 const nft = new NFT({

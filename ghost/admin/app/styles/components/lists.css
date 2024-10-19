@@ -507,6 +507,11 @@ ul.nostyle li {
         padding-left: 0;
         padding-right: 4vw;
     }
+    
+    .gh-list-scrolling thead {
+        position: relative;
+        z-index: 780;
+    }
 }
 
 @media (max-width: 450px) {

@@ -4,7 +4,6 @@ const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
-const path = require('path');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
@@ -50,12 +49,6 @@ const findUrlWithProvider = (url) => {
 /**
  * @typedef {Object} IConfig
  * @prop {(key: string) => string} get
- * @prop {(key: string) => string} getContentPath
- */
-
-/**
- * @typedef {Object} IStorage
- * @prop {(feature: string) => Object} getStorage
  */
 
 /**
@@ -73,12 +66,10 @@ class OEmbedService {
      *
      * @param {Object} dependencies
      * @param {IConfig} dependencies.config
-     * @param {IStorage} dependencies.storage
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest, storage}) {
+    constructor({config, externalRequest}) {
         this.config = config;
-        this.storage = storage;
 
         /** @type {IExternalRequest} */
         this.externalRequest = externalRequest;
@@ -125,55 +116,6 @@ class OEmbedService {
                 context: err.message
             });
         }
-    }
-
-    /**
-     * Fetches the image buffer from a URL using fetch
-     * @param {String} imageUrl - URL of the image to fetch
-     * @returns {Promise<Buffer>} - Promise resolving to the image buffer
-     */
-    async fetchImageBuffer(imageUrl) {
-        const response = await fetch(imageUrl);
-        
-        if (!response.ok) {
-            throw Error(`Failed to fetch image: ${response.statusText}`);
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        
-        const buffer = Buffer.from(arrayBuffer);
-        return buffer;
-    }
-
-    /**
-     * Process and store image from a URL
-     * @param {String} imageUrl - URL of the image to process
-     * @param {String} imageType - What is the image used for. Example - icon, thumbnail
-     * @returns {Promise<String>} - URL where the image is stored
-     */
-    async processImageFromUrl(imageUrl, imageType) {
-        // Fetch image buffer from the URL
-        const imageBuffer = await this.fetchImageBuffer(imageUrl);
-        const store = this.storage.getStorage('images');
-
-        // Extract file name from URL
-        const fileName = path.basename(new URL(imageUrl).pathname);
-        let ext = path.extname(fileName);
-        let name;
-
-        if (ext) {
-            name = store.getSanitizedFileName(path.basename(fileName, ext));
-        } else {
-            name = store.getSanitizedFileName(path.basename(fileName));
-        }
-
-        let targetDir = path.join(this.config.getContentPath('images'), imageType);
-        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
-        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
-
-        const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
-
-        return imageStoredUrl;
     }
 
     /**
@@ -329,20 +271,14 @@ class OEmbedService {
             });
         }
 
-        await this.processImageFromUrl(metadata.icon, 'icon')
-            .then((processedImageUrl) => {
-                metadata.icon = processedImageUrl;
-            }).catch((err) => {
+        if (metadata.icon) {
+            try {
+                await this.externalRequest.head(metadata.icon);
+            } catch (err) {
                 metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
                 logging.error(err);
-            });
-
-        await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
-            .then((processedImageUrl) => {
-                metadata.thumbnail = processedImageUrl;
-            }).catch((err) => {
-                logging.error(err);
-            });
+            }
+        }
 
         return {
             version: '1.0',

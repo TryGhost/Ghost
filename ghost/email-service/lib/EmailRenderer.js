@@ -8,7 +8,6 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
-const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
@@ -44,6 +43,12 @@ function formatDateLong(date, timezone) {
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// This aids with lazyloading the cheerio dependency
+function cheerioLoad(html) {
+    const cheerio = require('cheerio');
+    return cheerio.load(html);
 }
 
 /**
@@ -118,7 +123,7 @@ class EmailRenderer {
     /**
      * @param {object} dependencies
      * @param {object} dependencies.settingsCache
-     * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string}} dependencies.settingsHelpers
+     * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
@@ -253,7 +258,7 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const $ = cheerio.load(html);
+        const $ = cheerioLoad(html);
 
         let allSegments = $('[data-gh-segment]')
             .get()
@@ -316,7 +321,7 @@ class EmailRenderer {
             }
         }
 
-        let $ = cheerio.load(html);
+        let $ = cheerioLoad(html);
 
         // Remove parts of the HTML not applicable to the current segment - We do this
         // before rendering the template as the preheader for the email may be generated
@@ -412,7 +417,7 @@ class EmailRenderer {
         // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
         // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
         // Other clients will ignore the width/height attributes and use the inlined CSS instead
-        $ = cheerio.load(html);
+        $ = cheerioLoad(html);
         const originalImageSizes = $('img').get().map((image) => {
             const src = image.attribs.src;
             const width = image.attribs.width;
@@ -429,7 +434,7 @@ class EmailRenderer {
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        $ = cheerio.load(html);
+        $ = cheerioLoad(html);
 
         // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
         const imageTags = $('img').get();
@@ -500,27 +505,7 @@ class EmailRenderer {
      * @param {boolean} [options.comments] Unsubscribe from comment emails
      */
     createUnsubscribeUrl(uuid, options = {}) {
-        const siteUrl = this.#urlUtils.urlFor('home', true);
-        const unsubscribeUrl = new URL(siteUrl);
-        const key = this.#settingsHelpers.getMembersValidationKey();
-        unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-        if (uuid) {
-            // hash key with member uuid for verification (and to not leak uuid) - it's possible to update member email prefs without logging in
-            // @ts-ignore
-            const hmac = crypto.createHmac('sha256', key).update(`${uuid}`).digest('hex');
-            unsubscribeUrl.searchParams.set('uuid', uuid);
-            unsubscribeUrl.searchParams.set('key', hmac);
-        } else {
-            unsubscribeUrl.searchParams.set('preview', '1');
-        }
-        if (options.newsletterUuid) {
-            unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
-        }
-        if (options.comments) {
-            unsubscribeUrl.searchParams.set('comments', '1');
-        }
-
-        return unsubscribeUrl.href;
+        return this.#settingsHelpers.createUnsubscribeUrl(uuid, options);
     }
 
     /**
@@ -797,7 +782,7 @@ class EmailRenderer {
         // Actual template
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-    
+
         return this.#renderTemplate(data);
     }
 
