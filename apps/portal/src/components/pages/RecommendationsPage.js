@@ -2,6 +2,7 @@ import AppContext from '../../AppContext';
 import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
+import LoadingPage from './LoadingPage';
 import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
@@ -274,25 +275,6 @@ const RecommendationItem = (recommendation) => {
     );
 };
 
-const NoRecommendations = () => {
-    const {site, pageData, t} = useContext(AppContext);
-    const {title, icon} = site;
-    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
-    const subheading = pageData && pageData.signup ? t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.') : t('Sorry, no recommendations are available right now.');
-    // close portal 
-
-    return (
-        <div className='gh-portal-content with-footer'>
-            <CloseButton />
-            <div className="gh-portal-recommendations-header">
-                {icon && <img className="gh-portal-signup-logo" alt={title} src={icon} />}
-                <h1 className="gh-portal-main-title">{heading}</h1>
-            </div>
-            <p className="gh-portal-recommendations-description">{subheading}</p>
-        </div>
-    );
-};
-
 const RecommendationsPage = () => {
     const {api, site, pageData, t, onAction} = useContext(AppContext);
     const {title, icon} = site;
@@ -333,11 +315,27 @@ const RecommendationsPage = () => {
         };
     }, []);
 
-    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
-    const subheading = pageData && pageData.signup ? t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.') : t('Here are a few other sites you may enjoy.');
+    if (recommendations === null) {
+        return <LoadingPage/>;
+    }
 
-    if (!recommendationsEnabled || recommendations === null) {
-        return <NoRecommendations/>;
+    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
+
+    /* Possible cases: 
+    - no recommendations found - subhead says no recommendations are available.
+    - recommendations found - show generic message
+    - recommendations found and user just signed up - show specific message
+    */
+   
+    let subheading;
+    if (recommendationsEnabled && recommendations && recommendations.length > 0) {
+        if (pageData && pageData.signup) {
+            subheading = t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.');
+        } else {
+            subheading = t('Here are a few other sites you may enjoy.');
+        }
+    } else {
+        subheading = t('Sorry, no recommendations are available right now.');
     }
 
     return (
@@ -348,12 +346,13 @@ const RecommendationsPage = () => {
                 <h1 className="gh-portal-main-title">{heading}</h1>
             </div>
             <p className="gh-portal-recommendations-description">{subheading}</p>
-
-            <div className="gh-portal-list">
-                {recommendations.slice(0, numToShow).map((recommendation, index) => (
-                    <RecommendationItem key={index} {...recommendation} />
-                ))}
-            </div>
+            {recommendationsEnabled ?
+                <div className="gh-portal-list">
+                    {recommendations.slice(0, numToShow).map((recommendation, index) => (
+                        <RecommendationItem key={index} {...recommendation} />
+                    ))}
+                </div>
+                : null}
 
             {((numToShow < recommendations.length) || (pageData && pageData.signup)) && (
                 <footer className='gh-portal-action-footer'>
