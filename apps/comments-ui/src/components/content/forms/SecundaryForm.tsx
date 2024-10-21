@@ -13,6 +13,7 @@ type Props = {
     submitText: JSX.Element;
     submitSize: SubmitSize;
 };
+
 const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
     const {dispatchAction, secundaryFormCount} = useAppContext();
 
@@ -39,7 +40,15 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
 
     return (
         <div className='mt-[-16px] pr-3'>
-            <Form close={close} editor={editor} isOpen={true} reduced={reduced} submit={submit} submitSize={submitSize} submitText={submitText} />
+            <Form 
+                close={close} 
+                editor={editor} 
+                isOpen={true} 
+                reduced={reduced} 
+                submit={submit} 
+                submitSize={submitSize} 
+                submitText={submitText}
+            />
         </div>
     );
 };

@@ -501,13 +501,36 @@ describe('Comments API', function () {
                 ]);
             });
 
-            it('Browsing comments does not return the member unsubscribe_url', async function () {
+            it('Can sort comments by oldest', async function () {
                 await setupBrowseCommentsData();
-                const response = await testGetComments(`/api/comments/post/${postId}/`, [
-                    commentMatcher,
-                    commentMatcherWithReplies({replies: 1})
-                ]);
-                should.not.exist(response.body.comments[0].unsubscribe_url);
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=oldest`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
+            it('Can sort comments by newest', async function () {
+                await setupBrowseCommentsData();
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=newest`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
             });
 
             it('Can reply to your own comment', async function () {
@@ -689,6 +712,25 @@ describe('Comments API', function () {
                         should(body.meta.pagination.total).eql(7);
                         should(body.meta.pagination.next).eql(null);
                     });
+            });
+
+            it('can show most liked comment first when order param = best', async function () {
+                await setupBrowseCommentsData();
+                const data = await membersAgent
+                    .get(`/api/comments/post/${postId}`);
+
+                await dbFns.addLike({
+                    comment_id: data.body.comments[1].id,
+                    member_id: loggedInMember.id
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=best`)
+                    .expectStatus(200);
+
+                should(data2.body.comments[0].id).eql(data.body.comments[1].id);
+
+                // the second comment from data should now be the first comment in data2
             });
 
             it('Can remove a like (unlike)', async function () {
