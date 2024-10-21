@@ -48,7 +48,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent className="!gap-y-0" columns={1}>
+        <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
             <Toggle
                 checked={trackEmailOpens}
                 direction='rtl'

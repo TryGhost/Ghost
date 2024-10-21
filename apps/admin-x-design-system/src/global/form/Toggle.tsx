@@ -100,7 +100,7 @@ const Toggle: React.FC<ToggleProps> = ({
 
     return (
         <div>
-            <div className={`group flex items-center ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
+            <div className={`group flex items-start ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
                 <TogglePrimitive.Root className={clsx(
                     toggleBgClass,
                     'appearance-none rounded-full bg-grey-300 transition duration-100 dark:bg-grey-800',
