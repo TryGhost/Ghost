@@ -20,6 +20,7 @@ export default (function viteConfig() {
             'process.env.VITEST_SEGFAULT_RETRY': 3
         },
         preview: {
+            host: '0.0.0.0',
             port: 6174
         },
         build: {

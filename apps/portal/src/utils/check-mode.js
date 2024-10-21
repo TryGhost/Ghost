@@ -22,7 +22,7 @@ export const isDevMode = function ({customSiteUrl = ''} = {}) {
 };
 
 export const isTestMode = function () {
-    return (process.env.NODE_ENV === 'test');
+    return (process.env.NODE_ENV.startsWith('test'));
 };
 
 /* eslint-enable no-undef */
