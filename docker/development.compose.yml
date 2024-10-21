@@ -5,6 +5,8 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile
+      target: development
+    command: ["yarn", "dev"]
     volumes:
       - ../.yarncache:/home/ghost/.yarncache
     container_name: ghost-development-ghost
@@ -22,9 +24,19 @@ services:
     ports:
       - 2368:2368
       - 4200:4200
+      - 4173:4173
+      - 41730:41730
+      - 4175:4175
+      - 4176:4176
+      - 4177:4177
+      - 4178:4178
+      - 6174:6174
+      - 7173:7173
+      - 7174:7174
     environment:
       - DEBUG=${DEBUG:-}
       - APP_FLAGS=${APP_FLAGS:-}
+      - STRIPE_API_KEY=${STRIPE_API_KEY:-}
       - server__host=0.0.0.0
       - database__client=mysql2
       - database__connection__host=ghost-development-mysql
