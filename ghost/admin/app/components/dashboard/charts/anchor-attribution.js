@@ -224,7 +224,17 @@ export default class Anchor extends Component {
         } else if (this.selectedChartDisplay === 'mrr') {
             stats = this.dashboardStats.filledMrrStats;
             labels = stats.map(stat => stat.date);
-            data = stats.map(stat => stat.mrr);
+            
+            // Use mrrChartRange to calculate the chart range
+            const mrrRange = this.dashboardStats.mrrChartRange;
+            const minValue = mrrRange.min;
+            const maxValue = mrrRange.max;
+            
+            // Adjust the data points based on the calculated range
+            data = stats.map(stat => {
+                const normalizedValue = (stat.mrr - minValue) / (maxValue - minValue);
+                return minValue + (normalizedValue * (maxValue - minValue));
+            });
         } else {
             // total
             stats = this.dashboardStats.filledMemberCountStats;

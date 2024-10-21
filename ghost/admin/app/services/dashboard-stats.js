@@ -845,4 +845,36 @@ export default class DashboardStatsService extends Service {
         }
         return output;
     }
+
+    /**
+     * Calculate the Y-axis range for the MRR chart
+     * @returns {Object} An object with min and max values for the Y-axis
+     */
+    get mrrChartRange() {
+        if (!this.mrrStats || this.mrrStats.length === 0) {
+            return { min: 0, max: 100 };
+        }
+
+        const values = this.mrrStats.map(stat => stat.mrr);
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+
+        // Ensure a minimum range of 10% of the maximum value
+        const minRange = maxValue * 0.1;
+
+        let min = Math.floor(minValue * 0.9);
+        let max = Math.ceil(maxValue * 1.1);
+
+        // If the range is too small, adjust it
+        if (max - min < minRange) {
+            const middle = (max + min) / 2;
+            min = Math.floor(middle - minRange / 2);
+            max = Math.ceil(middle + minRange / 2);
+        }
+
+        // Ensure min is never negative for MRR
+        min = Math.max(0, min);
+
+        return { min, max };
+    }
 }
