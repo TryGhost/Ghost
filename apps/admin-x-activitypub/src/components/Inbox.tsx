@@ -38,9 +38,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@quillmatiq@mastodon.social', '@miaq@flipboard.social', '@mallory@techpolicy.social']);
     const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
-    const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
-        return !activity.object.inReplyTo;
-    });
+    const activities = (data?.pages.flatMap(page => page.data) ?? []);
 
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
         setArticleContent(object);

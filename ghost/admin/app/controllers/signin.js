@@ -1,23 +1,26 @@
-// TODO: bump lint rules to be able to take advantage of https://github.com/ember-cli/eslint-plugin-ember/issues/560
-/* eslint-disable ghost/ember/alias-model-in-controller */
-
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
+import {isTwoFactorTokenRequiredError} from '../services/ajax';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const SUCCESS = true;
+const FAILURE = false;
+
+/* eslint-disable ghost/ember/alias-model-in-controller */
 export default class SigninController extends Controller.extend(ValidationEngine) {
     @controller application;
 
     @service ajax;
     @service ghostPaths;
     @service notifications;
+    @service router;
     @service session;
     @service settings;
 
@@ -49,14 +52,20 @@ export default class SigninController extends Controller.extend(ValidationEngine
     }
 
     @task({drop: true})
-    *authenticateTask(authStrategy, authentication) {
+    *authenticateTask(authStrategy, {identification, password}) {
         try {
-            return yield this.session
-                .authenticate(authStrategy, ...authentication)
-                .then(() => true); // ensure task button transitions to "success" state
+            yield this.session.authenticate(authStrategy, {identification, password});
+            return SUCCESS;
         } catch (error) {
+            if (isTwoFactorTokenRequiredError(error)) {
+                // login was successful, but 2FA verification is required
+                this.router.transitionTo('signin-verify');
+                return SUCCESS;
+            }
+
             if (isVersionMismatchError(error)) {
-                return this.notifications.showAPIError(error);
+                this.notifications.showAPIError(error);
+                return FAILURE;
             }
 
             this.signin.errors.clear();
@@ -94,14 +103,13 @@ export default class SigninController extends Controller.extend(ValidationEngine
                 );
             }
 
-            return false;
+            return FAILURE;
         }
     }
 
     @task({drop: true})
     *validateAndAuthenticateTask() {
-        let signin = this.signin;
-        let authStrategy = 'authenticator:cookie';
+        const {identification, password} = this.signin;
 
         this.flowErrors = '';
 
@@ -111,9 +119,10 @@ export default class SigninController extends Controller.extend(ValidationEngine
         try {
             yield this.validate({property: 'signin'});
             return yield this.authenticateTask
-                .perform(authStrategy, [signin.identification, signin.password]);
+                .perform('authenticator:cookie', {identification, password});
         } catch (error) {
             this.flowErrors = 'Please fill out the form to sign in.';
+            return FAILURE;
         }
     }
 
@@ -132,15 +141,17 @@ export default class SigninController extends Controller.extend(ValidationEngine
             yield this.validate({property: 'forgotPassword'});
             yield this.ajax.post(forgottenUrl, {data: {password_reset: [{email}]}});
             this.flowNotification = 'An email with password reset instructions has been sent.';
-            return true;
+            return SUCCESS;
         } catch (error) {
             // ValidationEngine throws "undefined" for failed validation
             if (!error) {
-                return this.flowErrors = 'We need your email address to reset your password.';
+                this.flowErrors = 'We need your email address to reset your password.';
+                return FAILURE;
             }
 
             if (isVersionMismatchError(error)) {
-                return notifications.showAPIError(error);
+                notifications.showAPIError(error);
+                return FAILURE;
             }
 
             if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
@@ -154,6 +165,8 @@ export default class SigninController extends Controller.extend(ValidationEngine
             } else {
                 notifications.showAPIError(error, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
             }
+
+            return FAILURE;
         }
     }
 }

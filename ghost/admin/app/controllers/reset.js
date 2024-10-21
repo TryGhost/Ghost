@@ -66,7 +66,7 @@ export default class ResetController extends Controller.extend(ValidationEngine)
                     resp.password_reset[0].message,
                     {type: 'info', delayed: true, key: 'password.reset'}
                 );
-                this.session.authenticate('authenticator:cookie', email, newPassword);
+                this.session.authenticate('authenticator:cookie', {identification: email, password: newPassword});
                 return true;
             } catch (error) {
                 this.notifications.showAPIError(error, {key: 'password.reset'});
