@@ -8,7 +8,6 @@ import {Activity} from '../activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
-// import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -35,9 +34,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     object,
     focused,
     onNewReply,
-    // onChange,
-    // onFocus,
-    // onBlur,
     ...props
 }) => {
     const id = useId();

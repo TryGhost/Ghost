@@ -10,7 +10,6 @@ interface MainNavigationProps {
 }
 
 const MainNavigation: React.FC<MainNavigationProps> = ({
-    // title = 'Home',
     page = '',
     onLayoutChange
 }) => {
@@ -27,9 +26,6 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
     return (
         <MainHeader>
             <div className='col-[1/2] flex gap-8 px-8'>
-                {/* <h2 className='mt-1 text-xl font-bold'>
-                    {title}
-                </h2> */}
                 <Button className={` ${mainRoute === '' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Inbox' unstyled onClick={() => updateRoute('')} />
                 <Button className={` ${mainRoute === 'activity' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
                 <Button className={` ${mainRoute === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />

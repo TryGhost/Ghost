@@ -253,7 +253,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     };
 
     const handleCopyLink = async () => {
-        if (object?.url) { // Check if url is defined
+        if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
             showToast({
@@ -348,9 +348,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                 </div>
                             </div>
-                            {/* </div> */}
                         </div>
-                        {/* <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors ${(layout === 'feed') ? 'group-hover/article:bg-grey-75' : ''} `}></div> */}
                     </div>
                 )}
             </>
@@ -369,7 +367,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
                                 </div>
-                                {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
                                 <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
                                     <div className='flex'>
                                         <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
@@ -397,7 +394,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         </div>
                                     </div>
                                 </div>
-                                {/* </div> */}
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
