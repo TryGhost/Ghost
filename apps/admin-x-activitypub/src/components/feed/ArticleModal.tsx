@@ -146,7 +146,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                         </div>
                     )}
                     <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
-                        {/* <span className='text-lg font-semibold text-grey-900'>{object.type}</span> */}
                     </div>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
                         <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
