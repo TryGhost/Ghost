@@ -41,7 +41,7 @@ const Content = () => {
     const isPaidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
 
-    const showCTA = !member || (isPaidOnly && !isPaidMember);
+    // const showCTA = !member || (isPaidOnly && !isPaidMember);
     const hasOpenReplyForms = secundaryFormCount > 0;
 
     return (
@@ -49,7 +49,7 @@ const Content = () => {
             <>
                 <ContentTitle count={commentCount} showCount={showCount} title={title}/>
                 <div>
-                    {member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />}
+                    {member ? (isPaidMember || !isPaidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />}
                 </div>
                 <div className="z-20 mb-7 mt-3">
                     <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -60,6 +60,9 @@ const Content = () => {
                     {commentsElements}
                 </div>
                 <Pagination />
+                {
+                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
+                }
             </>
         ) : (
             <>
@@ -69,11 +72,14 @@ const Content = () => {
                     {commentsElements}
                 </div>
                 <div>
-                    {!hasOpenSecundaryForms
-                        ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
+                    {!hasOpenReplyForms
+                        ? (member ? (isPaidMember || !isPaidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />)
                         : null
                     }
                 </div>
+                {
+                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
+                }
             </>
         )
     );

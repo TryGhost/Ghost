@@ -154,7 +154,7 @@ test.describe('Actions', async () => {
         const replyReplyButton = replyComment.getByTestId('reply-button');
         await replyReplyButton.click();
 
-        const editor = frame.getByTestId('form-editor');
+        const editor = frame.getByTestId('form-editor').nth(1);
         await expect(editor).toBeVisible();
         await waitEditorFocused(editor);
 
