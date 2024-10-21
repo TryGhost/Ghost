@@ -10,6 +10,8 @@ import {tracked} from '@glimmer/tracking';
 
 const {Errors} = DS;
 
+const TASK_SUCCESS = true;
+const TASK_FAILURE = false;
 const DEFAULT_RESEND_TOKEN_COUNTDOWN = 15;
 
 // eslint-disable-next-line ghost/ember/alias-model-in-controller
@@ -20,13 +22,36 @@ class VerifyData {
     errors = Errors.create();
 
     validate() {
-        this.errors.clear();
-        this.hasValidated = new TrackedArray();
+        this.resetValidations();
 
         if (!this.token?.trim()) {
-            this.errors.add('token', 'Token is required');
+            this.errors.add('token', 'Verification code is required');
             this.hasValidated.push('token');
+            return false;
         }
+
+        if (!this.token?.trim().match(/^\d{6}$/)) {
+            this.errors.add('token', 'Verification code must be 6 numbers');
+            this.hasValidated.push('token');
+            return false;
+        }
+
+        return true;
+    }
+
+    setTokenError(message) {
+        this.resetValidations();
+        this.errors.add('token', message);
+        this.hasValidated.push('token');
+    }
+
+    resetValidations() {
+        this.errors.clear();
+        this.hasValidated = new TrackedArray();
+    }
+
+    get validationMessage() {
+        return this.errors.toArray()[0]?.message;
     }
 }
 
@@ -63,29 +88,31 @@ export default class SigninVerifyController extends Controller {
     }
 
     @action
-    validateToken() {
-        this.verifyData.validate();
-    }
-
-    @action
     handleTokenInput(event) {
+        this.resetErrorState();
         this.verifyData.token = event.target.value;
     }
 
     @task
     *verifyTokenTask() {
+        this.flowErrors = '';
+
+        if (!this.verifyData.validate()) {
+            return TASK_FAILURE;
+        }
+
         try {
             yield this.session.authenticate('authenticator:cookie', {token: this.verifyData.token});
-            return true;
+            return TASK_SUCCESS;
         } catch (error) {
             if (isUnauthorizedError(error)) {
-                this.flowErrors = 'Your verification code is incorrect.';
+                this.verifyData.setTokenError('Your verification code is incorrect.');
             } else if (error && error.payload && error.payload.errors) {
                 this.flowErrors = error.payload.errors[0].message;
             } else {
                 this.flowErrors = 'There was a problem verifying the code. Please try again.';
             }
-            return false;
+            return TASK_FAILURE;
         }
     }
 
@@ -94,19 +121,22 @@ export default class SigninVerifyController extends Controller {
         const resendTokenPath = `${this.ghostPaths.apiRoot}/session/verify`;
 
         try {
-            yield this.ajax.post(resendTokenPath, {
-                contentType: 'application/json;charset=utf-8',
-                // ember-ajax will try and parse the response as JSON if not explicitly set
-                dataType: 'text'
-            });
+            yield this.ajax.post(resendTokenPath);
             this.startResendTokenCountdown();
-            return true;
+            return TASK_SUCCESS;
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
                 this.flowErrors = error.payload.errors[0].message;
             } else {
                 this.flowErrors = 'There was a problem resending the verification token.';
             }
+            return TASK_FAILURE;
         }
+    }
+
+    resetErrorState() {
+        this.verifyTokenTask.last = null; // resets GhTaskButton state
+        this.flowErrors = '';
+        this.verifyData.resetValidations();
     }
 }

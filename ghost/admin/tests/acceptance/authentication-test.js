@@ -9,6 +9,28 @@ import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
+function setupVerificationRequired(server, responseCode = 403) {
+    server.post('/session', function () {
+        return new Response(responseCode, {}, {
+            errors: [{
+                code: '2FA_TOKEN_REQUIRED'
+            }]
+        });
+    });
+}
+
+function setupVerificationSuccess(server) {
+    server.put('/session/verify', function () {
+        return new Response(201);
+    });
+}
+
+function setupVerificationFailed(server) {
+    server.put('/session/verify', function () {
+        return new Response(401, {}, null);
+    });
+}
+
 describe('Acceptance: Authentication', function () {
     let originalReplaceLocation;
 
@@ -36,28 +58,6 @@ describe('Acceptance: Authentication', function () {
     describe('general page', function () {
         let newLocation;
 
-        function setupVerificationRequired(server) {
-            server.post('/session', function () {
-                return new Response(403, {}, {
-                    errors: [{
-                        code: '2FA_TOKEN_REQUIRED'
-                    }]
-                });
-            });
-        }
-
-        function setupVerificationSuccess(server) {
-            server.put('/session/verify', function () {
-                return new Response(201);
-            });
-        }
-
-        function setupVerificationFailed(server) {
-            server.put('/session/verify', function () {
-                return new Response(401, {}, null);
-            });
-        }
-
         async function completeSignIn() {
             await invalidateSession();
             await visit('/signin');
@@ -73,6 +73,22 @@ describe('Acceptance: Authentication', function () {
 
         function testMainErrorMessage(expectedMessage) {
             expect(find('[data-test-flow-notification]')).to.have.trimmed.text(expectedMessage);
+        }
+
+        function testTokenInputHasErrorState(expectHasError = true) {
+            if (expectHasError) {
+                expect(find('[data-test-input="token"]').closest('.form-group')).to.have.class('error');
+            } else {
+                expect(find('[data-test-input="token"]').closest('.form-group')).not.to.have.class('error');
+            }
+        }
+
+        function testButtonHasErrorState(expectHasError = true) {
+            if (expectHasError) {
+                expect(find('[data-test-button="verify"]')).to.have.class('gh-btn-red');
+            } else {
+                expect(find('[data-test-button="verify"]')).not.to.have.class('gh-btn-red');
+            }
         }
 
         beforeEach(function () {
@@ -205,12 +221,7 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('handles 2fa-required on a 2xx response from signin', async function () {
-            this.server.post('/session', function () {
-                return new Response(200, {}, {
-                    errors: [{code: '2FA_TOKEN_REQUIRED'}]
-                });
-            });
-
+            setupVerificationRequired(this.server, 200);
             await completeSignIn();
 
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
@@ -227,6 +238,38 @@ describe('Acceptance: Authentication', function () {
 
             expect(currentURL(), 'url after email+password submit').to.equal('/signin');
             testMainErrorMessage('Insufficient permissions');
+        });
+
+        it('has client-side validation of verification code', async function () {
+            setupVerificationRequired(this.server);
+            await completeSignIn();
+
+            // no error state when starting flow
+            testTokenInputHasErrorState(false);
+            testButtonHasErrorState(false);
+            testMainErrorMessage('');
+
+            // client-side validation of token presence
+            await click('[data-test-button="verify"]');
+            testTokenInputHasErrorState();
+            testMainErrorMessage('Verification code is required');
+
+            // resets validation state when typing
+            await fillIn('[data-test-input="token"]', '1234');
+            testTokenInputHasErrorState(false);
+            testButtonHasErrorState(false);
+            testMainErrorMessage('');
+
+            // client-side validation of token format
+            await click('[data-test-button="verify"]');
+            testTokenInputHasErrorState();
+            testButtonHasErrorState();
+            testMainErrorMessage('Verification code must be 6 numbers');
+
+            // can correctly submit after failed attempts
+            await fillIn('[data-test-input="token"]', '123456');
+            await click('[data-test-button="verify"]');
+            expect(currentURL()).to.equal('/dashboard');
         });
     });
 
