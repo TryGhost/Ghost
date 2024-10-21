@@ -6,6 +6,10 @@ services:
     container_name: ghost-devcontainer-ghost
     environment:
       - server__host=127.0.0.1
+  redis:
+    container_name: ghost-devcontainer-redis
+  mysql:
+    container_name: ghost-devcontainer-mysql
     
 networks:
   default:
