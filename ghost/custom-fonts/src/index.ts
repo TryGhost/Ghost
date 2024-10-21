@@ -9,65 +9,50 @@ export type FontSelection = {
 
 export function generateCustomFontCss(fonts: FontSelection) {
     let fontImports: string = '';
-    let bodyFontCSS: string = '';
-    let headingFontCSS: string = '';
+    let fontCSS: string = '';
 
     const importStrings = {
         'Space Grotesk': {
-            url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)'
         },
         'Playfair Display': {
-            url: '@import url(https://fonts.bunny.net/css?family=playfair-display:400)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=playfair-display:400)'
         },
         'Chakra Petch': {
-            url: '@import url(https://fonts.bunny.net/css?family=chakra-petch:400)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=chakra-petch:400)'
         },
         'Noto Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=noto-sans:400,700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=noto-sans:400,700)'
         },
         Poppins: {
-            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,500,600)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,500,600)'
         },
         'Fira Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)'
         },
         Inter: {
-            url: '@import url(https://fonts.bunny.net/css?family=inter:400,500,600)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=inter:400,500,600)'
         },
         'Noto Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=noto-serif:400,700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=noto-serif:400,700)'
         },
         Lora: {
-            url: '@import url(https://fonts.bunny.net/css?family=lora:400,700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=lora:400,700)'
         },
         'IBM Plex Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)'
         },
         'EB Garamond': {
-            url: '@import url(https://fonts.bunny.net/css?family=eb-garamond:400,700)',
-            adjust: 0.45
+            url: '@import url(https://fonts.bunny.net/css?family=eb-garamond:400,700)'
         },
         'Space Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=space-mono:400,700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=space-mono:400,700)'
         },
         'Fira Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-mono:400,700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=fira-mono:400,700)'
         },
         'JetBrains Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700)',
-            adjust: 'none'
+            url: '@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700)'
         }
     };
 
@@ -85,15 +70,21 @@ export function generateCustomFontCss(fonts: FontSelection) {
         }
     }
 
-    if (fonts?.body) {
-        bodyFontCSS = `.gh-body-font {font-family: ${fonts.body}; font-size-adjust: ${importStrings[fonts.body].adjust};}`;
+    if (fonts?.body || fonts?.heading) {
+        fontCSS = ':root {';
+
+        if (fonts?.heading) {
+            fontCSS += `--ghost-font-heading: ${fonts.heading};`;
+        }
+
+        if (fonts?.body) {
+            fontCSS += `--ghost-font-body: ${fonts.body};`;
+        }
+
+        fontCSS += '}';
     }
 
-    if (fonts?.heading) {
-        headingFontCSS = `.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: ${fonts.heading}; font-size-adjust: ${importStrings[fonts.heading].adjust};}`;
-    }
-
-    return `<style>${fontImports}${bodyFontCSS}${headingFontCSS}</style>`;
+    return `<style>${fontImports}${fontCSS}</style>`;
 }
 
 export const CUSTOM_FONTS: CustomFonts = {

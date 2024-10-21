@@ -37,8 +37,8 @@ describe('Custom Fonts', function () {
             const result = customFonts.generateCustomFontCss({body: 'Noto Sans'});
 
             assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);'), true, 'Includes the correct import for the body font');
-            assert.equal(result.includes('.gh-body-font {font-family: Noto Sans; font-size-adjust: none;}'), true, 'Includes the correct CSS for the body font');
-            assert.equal(result.includes('.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id]'), false, 'Does not include CSS for the title font');
+            assert.equal(result.includes(':root {--ghost-font-body: Noto Sans;}'), true, 'Includes the correct CSS for the body font');
+            assert.equal(result.includes('--ghost-font-heading'), false, 'Does not include CSS for the title font');
         });
 
         it('returns correct CSS for different heading and body fonts', function () {
@@ -46,14 +46,13 @@ describe('Custom Fonts', function () {
 
             assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=playfair-display:400);'), true, 'Includes the correct import for the heading font');
             assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=poppins:400,500,600);'), true, 'Includes the correct import for the body font');
-            assert.equal(result.includes('.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: Playfair Display; font-size-adjust: none;}'), true, 'Includes the correct CSS for the heading font');
-            assert.equal(result.includes('.gh-body-font {font-family: Poppins; font-size-adjust: none;}'), true, 'Includes the correct CSS for the body font');
+            assert.equal(result.includes(':root {--ghost-font-heading: Playfair Display;--ghost-font-body: Poppins;}'), true, 'Includes the correct CSS for the body and heading fonts');
         });
 
         it('returns correct CSS with only one import for equal heading and body fonts', function () {
             const result = customFonts.generateCustomFontCss({heading: 'Lora', body: 'Lora'});
 
-            assert.equal(result, '<style>@import url(https://fonts.bunny.net/css?family=lora:400,700);.gh-body-font {font-family: Lora; font-size-adjust: none;}.gh-heading-font, .gh-content :is(h1,h2,h3,h4,h5,h6)[id] {font-family: Lora; font-size-adjust: none;}</style>', 'Includes the correct CSS with only one import for equal heading and body fonts');
+            assert.equal(result, '<style>@import url(https://fonts.bunny.net/css?family=lora:400,700);:root {--ghost-font-heading: Lora;--ghost-font-body: Lora;}</style>', 'Includes the correct CSS with only one import for equal heading and body fonts');
         });
     });
 });
