@@ -74,11 +74,11 @@ export function generateCustomFontCss(fonts: FontSelection) {
         fontCSS = ':root {';
 
         if (fonts?.heading) {
-            fontCSS += `--ghost-font-heading: ${fonts.heading};`;
+            fontCSS += `--gh-font-heading: ${fonts.heading};`;
         }
 
         if (fonts?.body) {
-            fontCSS += `--ghost-font-body: ${fonts.body};`;
+            fontCSS += `--gh-font-body: ${fonts.body};`;
         }
 
         fontCSS += '}';
