@@ -52,6 +52,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Toggle
                 checked={trackEmailOpens}
                 direction='rtl'
+                gap='gap-0'
                 label='Newsletter opens'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -62,6 +63,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Toggle
                 checked={trackEmailClicks}
                 direction='rtl'
+                gap='gap-0'
                 label='Newsletter clicks'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -72,6 +74,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Toggle
                 checked={trackMemberSources}
                 direction='rtl'
+                gap='gap-0'
                 label='Member sources'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -82,6 +85,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Toggle
                 checked={outboundLinkTagging}
                 direction='rtl'
+                gap='gap-0'
                 label='Outbound link tagging'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
