@@ -10,7 +10,6 @@ interface MainNavigationProps {
 }
 
 const MainNavigation: React.FC<MainNavigationProps> = ({
-    title = 'Home',
     page = '',
     onLayoutChange
 }) => {
@@ -26,16 +25,11 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
 
     return (
         <MainHeader>
-            <div className='col-[1/2] px-8'>
-                <h2 className='mt-1 text-xl font-bold'>
-                    {title}
-                </h2>
-            </div>
-            <div className='col-[2/3] flex items-center justify-center gap-9'>
-                <Button icon='home' iconColorClass={mainRoute === '' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => updateRoute('')} />
-                <Button icon='magnifying-glass' iconColorClass={mainRoute === 'search' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => updateRoute('search')} />
-                <Button icon='bell' iconColorClass={mainRoute === 'activity' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => updateRoute('activity')} />
-                <Button icon='user' iconColorClass={mainRoute === 'profile' ? 'text-black' : 'text-grey-500'} iconSize={18} unstyled onClick={() => updateRoute('profile')} />
+            <div className='col-[1/2] flex gap-8 px-8'>
+                <Button className={` ${mainRoute === '' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Inbox' unstyled onClick={() => updateRoute('')} />
+                <Button className={` ${mainRoute === 'activity' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
+                <Button className={` ${mainRoute === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />
+                <Button className={` ${mainRoute === 'profile' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Profile' unstyled onClick={() => updateRoute('profile')} />
             </div>
             <div className='col-[3/4] flex items-center justify-end gap-2 px-8'>
                 {page === 'home' &&
@@ -52,9 +46,6 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
                     </Tooltip>
                 </div>
                 }
-                <Button color='black' icon='add' label="Follow" onClick={() => {
-                    updateRoute('follow-site');
-                }} />
             </div>
         </MainHeader>
     );
