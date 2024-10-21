@@ -770,12 +770,11 @@ export default class App extends React.Component {
     }
 
     /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path, useSite) {
+    getPageFromLinkPath(path) {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
-        const site = useSite ?? this.state.site ?? {};
 
         if (path === undefined || path === '') {
             return {
@@ -854,7 +853,7 @@ export default class App extends React.Component {
             return {
                 page: 'supportError'
             };
-        } else if (path === 'recommendations' && hasRecommendations({site})) {
+        } else if (path === 'recommendations') {
             return {
                 page: 'recommendations',
                 pageData: {
