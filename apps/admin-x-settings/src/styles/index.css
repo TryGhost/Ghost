@@ -9,6 +9,17 @@
     top: 48px;
 }
 
+.analytics-settings div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.analytics-settings div button {
+    align-self: center;
+}
+
 @media (max-width: 860px) {
     .gh-update-banner ~ * #admin-x-settings-sidebar-scroller {
         position: fixed;
