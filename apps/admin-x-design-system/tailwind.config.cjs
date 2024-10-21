@@ -91,7 +91,20 @@ module.exports = {
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, serif',
             mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
-            inherit: 'inherit'
+            inherit: 'inherit',
+            'space-grotesk': 'Space Grotesk',
+            'playfair-display': 'Playfair Display',
+            'chakra-petch': 'Chakra Petch',
+            'noto-sans': 'Noto Sans',
+            poppins: 'Poppins',
+            'fira-sans': 'Fira Sans',
+            'noto-serif': 'Noto Serif',
+            lora: 'Lora',
+            'ibm-plex-serif': 'IBM Plex Serif',
+            'eb-garamond': 'EB Garamond',
+            'space-mono': 'Space Mono',
+            'fira-mono': 'Fira Mono',
+            'jetbrains-mono': 'JetBrains Mono'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',

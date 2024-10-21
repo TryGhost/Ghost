@@ -38,7 +38,7 @@ type HeadingLabelProps = {
     level?: never,
     grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
-export const Heading6Styles = clsx('text-xs font-semibold tracking-normal');
+export const Heading6Styles = clsx('text-sm font-medium tracking-normal');
 export const Heading6StylesGrey = clsx(
     Heading6Styles,
     'text-grey-900 dark:text-grey-500'

@@ -34,7 +34,6 @@ const ThemePreview: React.FC<{
     isInstalling,
     installedTheme,
     onBack,
-    onClose,
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
@@ -101,7 +100,6 @@ const ThemePreview: React.FC<{
                 containerClassName='whitespace-nowrap'
                 itemClassName='hidden md:!block md:!visible'
                 items={[
-                    {label: 'Design', onClick: onClose},
                     {label: 'Change theme', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
@@ -163,7 +161,7 @@ const ThemePreview: React.FC<{
     return (
         <div className='absolute inset-0 z-[100]'>
             <PageHeader containerClassName='bg-grey-50 dark:bg-black z-[100]' left={left} right={right} sticky={false} />
-            <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
+            <div className='flex h-[calc(100%-92px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
                 {previewMode === 'desktop' ?
                     <DesktopChrome>
                         <iframe

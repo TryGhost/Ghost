@@ -167,6 +167,7 @@ const Sidebar: React.FC = () => {
 
                 <SettingNavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
                     <NavItem icon='palette' keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
+                    <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
                     <NavItem icon='navigation' keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
                     <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
                 </SettingNavSection>
