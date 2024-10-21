@@ -109,6 +109,9 @@ export function generateCustomFontBodyClass(fonts: FontSelection) {
 
     if (fonts?.heading) {
         bodyClass += `gh-font-heading-${classFontNames[fonts.heading]}`;
+        if (fonts?.body) {
+            bodyClass += ' ';
+        }
     }
 
     if (fonts?.body) {
