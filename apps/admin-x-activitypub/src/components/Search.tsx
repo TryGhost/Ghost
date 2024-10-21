@@ -86,7 +86,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     const results = data?.profiles || [];
     const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0;
+    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
     const showSuggested = query === '' || (isFetched && results.length === 0);
 
     useEffect(() => {
