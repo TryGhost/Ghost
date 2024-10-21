@@ -24,7 +24,7 @@ const workerMessageHandler = ({name, message}) => {
 const initTestMode = () => {
     // Output job queue length every 5 seconds
     setInterval(() => {
-        logging.warn(`${jobManager.queue.length()} jobs in the queue. Idle: ${jobManager.queue.idle()}`);
+        logging.warn(`${jobManager.inlineQueue.length()} jobs in the queue. Idle: ${jobManager.inlineQueue.idle()}`);
 
         const runningScheduledjobs = Object.keys(jobManager.bree.workers);
         if (Object.keys(jobManager.bree.workers).length) {
@@ -42,7 +42,7 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents});
+const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, isDuplicate: true});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;
