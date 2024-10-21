@@ -6,12 +6,12 @@ import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
-import FollowButton from './global/FollowButton';
+// import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import getUsername from '../utils/get-username';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
-import {useFollowersForUser} from '../MainContent';
+// import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
 
@@ -130,11 +130,11 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     // Retrieve followers for the user
-    const {data: followers = []} = useFollowersForUser(user);
+    // const {data: followers = []} = useFollowersForUser(user);
 
-    const isFollower = (id: string): boolean => {
-        return followers.includes(id);
-    };
+    // const isFollower = (id: string): boolean => {
+    //     return followers.includes(id);
+    // };
 
     return (
         <>
@@ -173,20 +173,20 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         }
                                     >
                                         <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                        <div className='pt-[2px]'>
-                                            <div className='text-grey-600'>
+                                        <div className='min-w-0'>
+                                            <div className='truncate text-grey-600'>
                                                 <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
                                                 {getUsername(activity.actor)}
                                             </div>
                                             <div className=''>{getActivityDescription(activity)}</div>
                                             {getExtendedDescription(activity)}
                                         </div>
-                                        <FollowButton
+                                        {/* <FollowButton
                                             className='ml-auto'
                                             following={isFollower(activity.actor.id)}
                                             handle={getUsername(activity.actor)}
                                             type='link'
-                                        />
+                                        /> */}
                                     </ActivityItem>
                                 ))}
                             </div>
