@@ -312,8 +312,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='flex min-w-0 justify-between'>
                                 <div className='relative z-10 flex w-full flex-col overflow-visible text-md'>
                                     <div className='flex justify-between'>
-                                        <div className='flex'>
-                                            <span className='line-clamp-1 min-w-0 break-all font-semibold' data-test-activity-heading>{author.name}</span>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
                                             <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
                                         </div>
                                         <div className='ml-2'>{renderTimestamp(object)}</div>
@@ -368,13 +368,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
                                 </div>
-                                <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                                    <div className='flex'>
-                                        <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                        {renderTimestamp(object)}
+                                <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
+                                    <div className='flex w-full'>
+                                        <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                        <div className='ml-2'>{renderTimestamp(object)}</div>
                                     </div>
-                                    <div className='flex'>
-                                        <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                                    <div className='flex w-full'>
+                                        <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
                                     </div>
                                 </div>
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
@@ -414,13 +414,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
                         <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
-                            <div className='relative z-10 pt-[3px]'>
+                            <div className='relative z-10 min-w-0 pt-[3px]'>
                                 <APAvatar author={author}/>
                             </div>
-                            <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                            <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex'>
-                                    <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                    {renderTimestamp(object)}
+                                    <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                    <div className='ml-2'>{renderTimestamp(object)}</div>
                                 </div>
                                 <div className='flex'>
                                     <span className='truncate text-grey-700'>{getUsername(author)}</span>
@@ -459,10 +459,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                         <div className='flex w-full min-w-0 flex-col items-start justify-between gap-1 pr-4'>
                             <div className='z-10 flex w-full min-w-0 items-start gap-2 group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='xs'/>
-                                <div className='flex gap-2'>
-                                    <span className='line-clamp-1 min-w-0 break-all font-semibold' data-test-activity-heading>{author.name}</span>
+                                <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
+                                <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
+                                {/* <div className='flex gap-2'>
+                                    <span className='truncate min-w-0 break-all font-semibold' data-test-activity-heading>{author.name}</span>
                                     <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
-                                </div>
+                                </div> */}
                                 <span className='shrink-0 whitespace-nowrap text-grey-700 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
                             <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>
