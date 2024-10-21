@@ -87,6 +87,37 @@ export function generateCustomFontCss(fonts: FontSelection) {
     return `<style>${fontImports}${fontCSS}</style>`;
 }
 
+export function generateCustomFontBodyClass(fonts: FontSelection) {
+    const classFontNames = {
+        'Space Grotesk': 'space-grotesk',
+        'Playfair Display': 'playfair-display',
+        'Chakra Petch': 'chakra-petch',
+        'Noto Sans': 'noto-sans',
+        Poppins: 'poppins',
+        'Fira Sans': 'fira-sans',
+        Inter: 'inter',
+        'Noto Serif': 'noto-serif',
+        Lora: 'lora',
+        'IBM Plex Serif': 'ibm-plex-serif',
+        'EB Garamond': 'eb-garamond',
+        'Space Mono': 'space-mono',
+        'Fira Mono': 'fira-mono',
+        'JetBrains Mono': 'jetbrains-mono'
+    };
+
+    let bodyClass = '';
+
+    if (fonts?.heading) {
+        bodyClass += `gh-font-heading-${classFontNames[fonts.heading]}`;
+    }
+
+    if (fonts?.body) {
+        bodyClass += `gh-font-body-${classFontNames[fonts.body]}`;
+    }
+
+    return bodyClass;
+}
+
 export const CUSTOM_FONTS: CustomFonts = {
     heading: [
         'Chakra Petch',
