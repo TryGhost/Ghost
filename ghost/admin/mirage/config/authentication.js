@@ -4,9 +4,19 @@ import {dasherize} from '@ember/string';
 import {isBlank} from '@ember/utils';
 
 export default function mockAuthentication(server) {
+    // Password sign-in
     server.post('/session', function () {
-        // Password sign-in
         return new Response(201);
+    });
+
+    // 2fa code verification
+    server.put('/session/verify', function () {
+        return new Response(201);
+    });
+
+    // 2fa code re-send
+    server.post('/session/verify', function () {
+        return new Response(200);
     });
 
     server.post('/authentication/password_reset', function (schema, request) {
