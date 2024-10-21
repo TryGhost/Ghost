@@ -11,6 +11,7 @@ const SUPPORTED_LOCALES = [
     'da', // Danish
     'de', // German
     'de-CH', // Swiss German
+    'dv', // Dhivehi
     'el', // Greek
     'en', // English
     'eo', // Esperanto
