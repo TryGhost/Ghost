@@ -303,7 +303,9 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer}>
-                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'>
+                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'
+                    dataDir={this.context.dir}
+                >
                     <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent isMobile={isMobile} />
                 </Frame>
