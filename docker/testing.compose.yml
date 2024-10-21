@@ -5,6 +5,7 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile
+      target: development
     volumes:
       - ../.yarncache:/home/ghost/.yarncache
     container_name: ghost-testing-ghost
