@@ -113,7 +113,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                     ) : activities.length > 0 ? (
                         <>
                             <div className={`mx-auto flex items-start ${layout === 'inbox' ? 'max-w-6xl gap-14' : 'gap-8'}`}>
-                                <div className='flex w-full items-start'>
+                                <div className='flex w-full min-w-0 items-start'>
                                     <ul className={`mx-auto flex ${layout === 'inbox' ? 'max-w-full' : 'max-w-[500px]'} flex-col`}>
                                         {activities.map((activity, index) => (
                                             <li
