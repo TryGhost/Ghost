@@ -35,6 +35,12 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     const layout = 'feed';
 
+    const [visibleFollowers, setVisibleFollowers] = useState(30);
+
+    const loadMoreFollowers = () => {
+        setVisibleFollowers(prev => prev + 30);
+    };
+
     const tabs = [
         {
             id: 'posts',
@@ -149,7 +155,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <List>
-                            {followers.map((item) => {
+                            {followers.slice(0, visibleFollowers).map((item) => {
                                 return (
                                     <ActivityItem key={item.id} url={item.url}>
                                         <APAvatar author={item} />
@@ -163,6 +169,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 );
                             })}
                         </List>
+                    )}
+                    {visibleFollowers < followers.length && (
+                        <Button
+                            className='mt-4'
+                            label='Load More'
+                            onClick={loadMoreFollowers}
+                        />
                     )}
                 </div>
             ),
