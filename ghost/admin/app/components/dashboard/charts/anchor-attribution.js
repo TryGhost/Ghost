@@ -815,15 +815,27 @@ export default class Anchor extends Component {
         return Math.round((to - from) / from * 100);
     }
 
-    getYAxisMin() {
-        const data = this.chartData.datasets[0].data;
-        const min = Math.min(...data);
-        return Math.floor(min * 0.95); // Start y-axis at 95% of the minimum value
-    }
-
     getYAxisMax() {
+        if (!this.chartData || !this.chartData.datasets || !this.chartData.datasets[0]) {
+            return null; // Let Chart.js handle it if data is not available
+        }
         const data = this.chartData.datasets[0].data;
+        if (!data || data.length === 0) {
+            return null; 
+        }
         const max = Math.max(...data);
         return Math.ceil(max * 1.05); // End y-axis at 105% of the maximum value for all chart types
+    }
+
+    getYAxisMin() {
+        if (!this.chartData || !this.chartData.datasets || !this.chartData.datasets[0]) {
+            return null; 
+        }
+        const data = this.chartData.datasets[0].data;
+        if (!data || data.length === 0) {
+            return null; 
+        }
+        const min = Math.min(...data);
+        return Math.floor(min * 0.95); // Start y-axis at 95% of the minimum value for all chart types
     }
 }
