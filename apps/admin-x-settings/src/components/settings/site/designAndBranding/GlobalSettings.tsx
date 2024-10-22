@@ -48,10 +48,26 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
     const fontClassName = (fontName: string) => {
-        if (fontName === 'Chakra Petch') {
+        if (fontName === 'Cardo') {
+            return 'font-cardo';
+        } else if (fontName === 'Manrope') {
+            return 'font-manrope';
+        } else if (fontName === 'Merriweather') {
+            return 'font-merriweather';
+        } else if (fontName === 'Nunito') {
+            return 'font-nunito';
+        } else if (fontName === 'Old Standard TT') {
+            return 'font-old-standard-tt';
+        } else if (fontName === 'Prata') {
+            return 'font-prata';
+        } else if (fontName === 'Roboto') {
+            return 'font-roboto';
+        } else if (fontName === 'Rufina') {
+            return 'font-rufina';
+        } else if (fontName === 'Tenor Sans') {
+            return 'font-tenor-sans';
+        } else if (fontName === 'Chakra Petch') {
             return 'font-chakra-petch';
-        } else if (fontName === 'EB Garamond') {
-            return 'font-eb-garamond';
         } else if (fontName === 'Fira Mono') {
             return 'font-fira-mono';
         } else if (fontName === 'Fira Sans') {

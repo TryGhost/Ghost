@@ -1,5 +1,5 @@
-export type BodyFont = 'Noto Sans' | 'Poppins' | 'Fira Sans' | 'Inter' | 'Noto Serif' | 'Lora' | 'IBM Plex Serif' | 'EB Garamond' | 'Space Mono' | 'Fira Mono' | 'JetBrains Mono';
-export type HeadingFont = 'Space Grotesk' | 'Playfair Display' | 'Chakra Petch' | BodyFont;
+export type BodyFont = 'Fira Mono' | 'Fira Sans' | 'IBM Plex Serif' | 'Inter' | 'JetBrains Mono' | 'Lora' | 'Manrope' | 'Merriweather' | 'Nunito' | 'Noto Sans' | 'Noto Serif' | 'Poppins' | 'Roboto' | 'Space Mono';
+export type HeadingFont = 'Cardo' | 'Chakra Petch' | 'Old Standard TT' | 'Prata' | 'Rufina' | 'Space Grotesk' | 'Tenor Sans' | BodyFont;
 export type CustomFonts = {heading: HeadingFont[], body: BodyFont[]};
 
 export type FontSelection = {
@@ -12,11 +12,35 @@ export function generateCustomFontCss(fonts: FontSelection) {
     let fontCSS: string = '';
 
     const importStrings = {
+        Cardo: {
+            url: '@import url(https://fonts.bunny.net/css?family=cardo:400,700)'
+        },
+        Manrope: {
+            url: '@import url(https://fonts.bunny.net/css?family=manrope:300,500,700)'
+        },
+        Merriweather: {
+            url: '@import url(https://fonts.bunny.net/css?family=merriweather:300,700)'
+        },
+        Nunito: {
+            url: '@import url(https://fonts.bunny.net/css?family=nunito:400,600,700)'
+        },
+        'Old Standard TT': {
+            url: '@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700)'
+        },
+        Prata: {
+            url: '@import url(https://fonts.bunny.net/css?family=prata:400)'
+        },
+        Roboto: {
+            url: '@import url(https://fonts.bunny.net/css?family=roboto:400,500,700)'
+        },
+        Rufina: {
+            url: '@import url(https://fonts.bunny.net/css?family=rufina:400,500,700)'
+        },
+        'Tenor Sans': {
+            url: '@import url(https://fonts.bunny.net/css?family=tenor-sans:400)'
+        },
         'Space Grotesk': {
             url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)'
-        },
-        'Playfair Display': {
-            url: '@import url(https://fonts.bunny.net/css?family=playfair-display:400)'
         },
         'Chakra Petch': {
             url: '@import url(https://fonts.bunny.net/css?family=chakra-petch:400)'
@@ -41,9 +65,6 @@ export function generateCustomFontCss(fonts: FontSelection) {
         },
         'IBM Plex Serif': {
             url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)'
-        },
-        'EB Garamond': {
-            url: '@import url(https://fonts.bunny.net/css?family=eb-garamond:400,700)'
         },
         'Space Mono': {
             url: '@import url(https://fonts.bunny.net/css?family=space-mono:400,700)'
@@ -89,8 +110,16 @@ export function generateCustomFontCss(fonts: FontSelection) {
 
 export function generateCustomFontBodyClass(fonts: FontSelection) {
     const classFontNames = {
+        Cardo: 'cardo',
+        Manrope: 'manrope',
+        Merriweather: 'merriweather',
+        Nunito: 'nunito',
+        'Old Standard TT': 'old-standard-tt',
+        Prata: 'prata',
+        Roboto: 'roboto',
+        Rufina: 'rufina',
+        'Tenor Sans': 'tenor-sans',
         'Space Grotesk': 'space-grotesk',
-        'Playfair Display': 'playfair-display',
         'Chakra Petch': 'chakra-petch',
         'Noto Sans': 'noto-sans',
         Poppins: 'poppins',
@@ -99,7 +128,6 @@ export function generateCustomFontBodyClass(fonts: FontSelection) {
         'Noto Serif': 'noto-serif',
         Lora: 'lora',
         'IBM Plex Serif': 'ibm-plex-serif',
-        'EB Garamond': 'eb-garamond',
         'Space Mono': 'space-mono',
         'Fira Mono': 'fira-mono',
         'JetBrains Mono': 'jetbrains-mono'
@@ -123,32 +151,42 @@ export function generateCustomFontBodyClass(fonts: FontSelection) {
 
 export const CUSTOM_FONTS: CustomFonts = {
     heading: [
+        'Cardo',
         'Chakra Petch',
-        'EB Garamond',
         'Fira Mono',
         'Fira Sans',
         'IBM Plex Serif',
         'Inter',
         'JetBrains Mono',
         'Lora',
+        'Manrope',
+        'Merriweather',
         'Noto Sans',
         'Noto Serif',
-        'Playfair Display',
+        'Nunito',
+        'Old Standard TT',
         'Poppins',
+        'Prata',
+        'Roboto',
+        'Rufina',
         'Space Grotesk',
-        'Space Mono'
+        'Space Mono',
+        'Tenor Sans'
     ],
     body: [
-        'EB Garamond',
         'Fira Mono',
         'Fira Sans',
         'IBM Plex Serif',
         'Inter',
         'JetBrains Mono',
         'Lora',
+        'Manrope',
+        'Merriweather',
         'Noto Sans',
         'Noto Serif',
+        'Nunito',
         'Poppins',
+        'Roboto',
         'Space Mono'
     ]
 };
