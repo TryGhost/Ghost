@@ -24,8 +24,6 @@ services:
     environment:
       - DEBUG=${DEBUG:-}
       - APP_FLAGS=${APP_FLAGS:-}
-    env_file:
-      - .env
     tty: true
     depends_on:
       mysql:
