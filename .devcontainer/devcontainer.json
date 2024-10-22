@@ -104,5 +104,25 @@
                 "Oracle.mysql-shell-for-vs-code"
             ]
         }
+    },
+    "secrets": {
+        "STRIPE_SECRET_KEY": {
+            "description": "Your Stripe account's test secret API key",
+            "documentationUrl": "https://dashboard.stripe.com/test/apikeys"
+        },
+        "STRIPE_PUBLISHABLE_KEY": {
+            "description": "Your Stripe account's test publishable key",
+            "documentationUrl": "https://dashboard.stripe.com/test/apikeys"
+        },
+        "STRIPE_ACCOUNT_ID": {
+            "description": "Your Stripe Account ID",
+            "documentationUrl": "https://dashboard.stripe.com/settings/account"
+        }
+    },
+    "remoteEnv": {
+        "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
+        "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
+        "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
+        "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}"
     }
 }
