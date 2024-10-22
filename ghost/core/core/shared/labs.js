@@ -30,11 +30,11 @@ const BETA_FEATURES = [
     'activitypub',
     'stripeAutomaticTax',
     'webmentions',
-    'editorExcerpt'
+    'editorExcerpt',
+    'ActivityPub'
 ];
 
 const ALPHA_FEATURES = [
-    'ActivityPub',
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
