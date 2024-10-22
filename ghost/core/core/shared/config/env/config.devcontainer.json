@@ -1,4 +1,5 @@
 {
+    "url": "http://localhost:2368",
     "database": {
         "client": "mysql2",
         "connection": {
