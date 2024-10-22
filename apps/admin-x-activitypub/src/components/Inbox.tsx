@@ -28,6 +28,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     } = useActivitiesForUser({
         handle: 'index',
         includeReplies: true,
+        excludeNonFollowers: true,
         filter: {
             type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
         }

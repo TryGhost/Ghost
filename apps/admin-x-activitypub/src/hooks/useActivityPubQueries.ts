@@ -218,11 +218,13 @@ export function useActivitiesForUser({
     handle,
     includeOwn = false,
     includeReplies = false,
+    excludeNonFollowers = false,
     filter = null
 }: {
     handle: string;
     includeOwn?: boolean;
     includeReplies?: boolean;
+    excludeNonFollowers?: boolean;
     filter?: {type?: string[]} | null;
 }) {
     return useInfiniteQuery({
@@ -230,7 +232,7 @@ export function useActivitiesForUser({
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getActivities(includeOwn, includeReplies, filter, pageParam);
+            return api.getActivities(includeOwn, includeReplies, excludeNonFollowers, filter, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.nextCursor;
