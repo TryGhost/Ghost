@@ -432,7 +432,7 @@ class StaffServiceEmails {
         if (this.settingsHelpers.useNewEmailAddresses()) {
             return EmailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
         }
-        return `ghost@${this.defaultEmailDomain}`;
+        return `noreply@${this.defaultEmailDomain}`;
     }
 
     extractInitials(name = '') {
