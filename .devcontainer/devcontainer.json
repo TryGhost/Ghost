@@ -92,6 +92,8 @@
     "mounts": [
         "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
     ],
+    "onCreateCommand": ["./.devcontainer/hooks/onCreateCommand.sh"],
+    "updateContentCommand": ["./.devcontainer/hooks/updateContentCommand.sh"],
     "postCreateCommand": ["./.devcontainer/hooks/postCreateCommand.sh"],
     "customizations": {
         "vscode": {
