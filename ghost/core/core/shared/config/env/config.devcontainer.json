@@ -1,0 +1,17 @@
+{
+    "database": {
+        "client": "mysql2",
+        "connection": {
+            "host": "ghost-devcontainer-mysql",
+            "user": "root",
+            "password": "root",
+            "database": "ghost"
+        }
+    },
+    "adapters": {
+        "Redis": {
+            "host": "ghost-devcontainer-redis",
+            "port": 6379
+        }
+    }
+}

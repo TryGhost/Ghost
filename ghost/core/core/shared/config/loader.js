@@ -5,7 +5,14 @@ const debug = _debug('ghost:config');
 const localUtils = require('./utils');
 const helpers = require('./helpers');
 const urlHelpers = require('@tryghost/config-url-helpers');
-const env = process.env.NODE_ENV || 'development';
+
+function getEnv() {
+    return process.env.NODE_ENV || 'development';
+}
+
+function getIsDevContainer() {
+    return process.env.IS_DEVCONTAINER === 'true';
+}
 
 /**
  * @param {object} options
@@ -14,28 +21,52 @@ const env = process.env.NODE_ENV || 'development';
 function loadNconf(options) {
     debug('config start');
     options = options || {};
+    
+    const env = getEnv();
+    const isDevContainer = getIsDevContainer();
+    const isNotTesting = !env.startsWith('testing');
 
     const baseConfigPath = options.baseConfigPath || __dirname;
     const customConfigPath = options.customConfigPath || process.cwd();
     const nconf = new Nconf.Provider();
 
+    const configFilePaths = {
+        overrides: path.join(baseConfigPath, 'overrides.json'),
+        defaults: path.join(baseConfigPath, 'defaults.json'),
+        devcontainerEnv: path.join(baseConfigPath, 'env', 'config.devcontainer.json'),
+        defaultEnv: path.join(baseConfigPath, 'env', 'config.' + env + '.json'),
+        customEnv: path.join(customConfigPath, 'config.' + env + '.json'),
+        localEnv: path.join(customConfigPath, 'config.local.json')
+    };
+
     // ## Load Config
+    // ### Strongest to weakest
 
     // no channel can override the overrides
-    nconf.file('overrides', path.join(baseConfigPath, 'overrides.json'));
+    nconf.file('overrides', configFilePaths.overrides);
 
     // command line arguments take precedence, then environment variables
     nconf.argv();
     nconf.env({separator: '__', parseValues: true});
 
     // Now load various config json files
-    nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
-    if (!env.startsWith('testing')) {
-        nconf.file('local-env', path.join(customConfigPath, 'config.local.json'));
+    // Custom environment config first
+    nconf.file('custom-env', configFilePaths.customEnv);
+
+    // Devcontainer environment config only if not testing
+    // Local config should not override devcontainer config (database, redis, etc.)
+    if (isNotTesting) {
+        if (isDevContainer) {
+            nconf.file('devcontainer-env', configFilePaths.devcontainerEnv);
+        }
+        nconf.file('local-env', configFilePaths.localEnv);
     }
-    nconf.file('default-env', path.join(baseConfigPath, 'env', 'config.' + env + '.json'));
+
+    // Default environment configs
+    nconf.file('default-env', configFilePaths.defaultEnv);
+
     // Finally, we load defaults, if nothing else has a value this will
-    nconf.file('defaults', path.join(baseConfigPath, 'defaults.json'));
+    nconf.file('defaults', configFilePaths.defaults);
 
     // ## Config Methods
 

@@ -28,10 +28,6 @@ describe('Config Loader', function () {
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
-
-            // database__client is set in docker-compose
-            // reset to undefined to ensure consistent test setup
-            process.env.database__client = undefined;
         });
 
         afterEach(function () {
@@ -87,6 +83,42 @@ describe('Config Loader', function () {
             customConfig.get('url').should.eql('http://localhost:2368');
             customConfig.get('logging:level').should.eql('error');
             customConfig.get('logging:transports').should.eql(['stdout']);
+        });
+
+        it('custom-env is stronger than default-env', function () {
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            customConfig.get('logging:level').should.eql('error');
+        });
+
+        it('devcontainer-env is stronger than local-env if in devcontainer', function () {
+            const revertEnv = loader.__set__('getEnv', () => 'devcontainer');
+            const revertIsDevContainer = loader.__set__('getIsDevContainer', () => true);
+
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            customConfig.get('placeholder').should.eql('devcontainer');
+            revertEnv();
+            revertIsDevContainer();
+        });
+
+        it('devcontainer-env is not included if not in devcontainer', function () {
+            const revertEnv = loader.__set__('getEnv', () => 'development');
+            const revertIsDevContainer = loader.__set__('getIsDevContainer', () => false);
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            customConfig.get('placeholder').should.eql('local');
+            revertEnv();
+            revertIsDevContainer();
         });
     });
 

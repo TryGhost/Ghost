@@ -1,0 +1,7 @@
+{
+    "url": "http://docker:2368",
+    "logging": {
+        "level": "none"
+    },
+    "placeholder": "devcontainer"
+}
