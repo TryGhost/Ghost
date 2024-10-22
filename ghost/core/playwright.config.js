@@ -7,7 +7,8 @@ const config = {
     },
     // save trace on fail
     retries: process.env.CI ? 2 : 0,
-    workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
+    // Stripe limits to 5 new accounts per second, so we need to limit the number of workers
+    workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : 5),
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         trace: 'retain-on-failure',
