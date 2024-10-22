@@ -92,9 +92,9 @@
     "mounts": [
         "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
     ],
-    "onCreateCommand": ["./.devcontainer/hooks/onCreateCommand.sh"],
-    "updateContentCommand": ["./.devcontainer/hooks/updateContentCommand.sh"],
-    "postCreateCommand": ["./.devcontainer/hooks/postCreateCommand.sh"],
+    "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
+    "updateContentCommand": ["./.devcontainer/updateContentCommand.sh"],
+    "postCreateCommand": ["./.devcontainer/postCreateCommand.sh"],
     "customizations": {
         "vscode": {
             "settings": {
@@ -119,12 +119,32 @@
         "STRIPE_ACCOUNT_ID": {
             "description": "Your Stripe Account ID",
             "documentationUrl": "https://dashboard.stripe.com/settings/account"
+        },
+        "MAILGUN_SMTP_PASS": {
+            "description": "Your Mailgun account's SMTP password",
+            "documentationUrl": ""
+        },
+        "MAILGUN_SMTP_USER": {
+            "description": "Your Mailgun account's SMTP username, e.g. postmaster@sandbox1234567890.mailgun.org",
+            "documentationUrl": ""
+        },
+        "MAILGUN_API_KEY": {
+            "description": "Your Mailgun account's API key",
+            "documentationUrl": ""
+        },
+        "MAILGUN_DOMAIN": {
+            "description": "Your Mailgun account's domain, e.g. sandbox1234567890.mailgun.org",
+            "documentationUrl": ""
         }
     },
     "remoteEnv": {
         "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
         "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
         "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
-        "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}"
+        "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
+        "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
+        "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
+        "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
+        "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     }
 }

@@ -3,18 +3,7 @@
 set -e
 
 echo "Setting up local config file..."
-if [ "$CODESPACES" = "true" ]; then
-    CONFIG_FILE="ghost/core/config.local.json"
-    if [ ! -f "$CONFIG_FILE" ]; then
-        echo "Creating $CONFIG_FILE..."
-        URL="https://$CODESPACE_NAME-2368.$GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN"
-        echo "{
-    \"url\": \"$URL\"
-}" > "$CONFIG_FILE"
-    else
-        echo "$CONFIG_FILE already exists. Skipping creation."
-    fi
-fi
+node .devcontainer/createLocalConfig.js
 
 echo "Updating git submodules..."
 git submodule update --init --recursive
