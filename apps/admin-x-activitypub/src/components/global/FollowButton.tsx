@@ -55,6 +55,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         <Button
             className={className}
             color='black'
+            disabled={isFollowing}
             label={isFollowing ? 'Following' : 'Follow'}
             link={type === 'link'}
             onClick={(event) => {
