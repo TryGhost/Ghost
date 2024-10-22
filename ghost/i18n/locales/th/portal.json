@@ -137,6 +137,7 @@
     "Sign up": "สมัครใช้งาน",
     "Signup error: Invalid link": "มีข้อผิดพลาดในการสมัครใช้งาน: ลิงก์ไม่ถูกต้อง",
     "Something went wrong, please try again later.": "",
+    "Sorry, no recommendations are available right now.": "",
     "Sorry, that didn’t work.": "ขออภัย, ไม่สามารถส่งได้",
     "Spam complaints": "การร้องเรียนเกี่ยวกับสแปม",
     "Start {{amount}}-day free trial": "เริ่มทดลองใช้ฟรี {{amount}} วัน",

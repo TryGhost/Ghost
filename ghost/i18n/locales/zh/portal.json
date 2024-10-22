@@ -137,6 +137,7 @@
     "Sign up": "注册",
     "Signup error: Invalid link": "注册错误：链接无效",
     "Something went wrong, please try again later.": "出了点问题，请稍后再试。",
+    "Sorry, no recommendations are available right now.": "",
     "Sorry, that didn’t work.": "抱歉，该操作无法完成。",
     "Spam complaints": "垃圾邮件",
     "Start {{amount}}-day free trial": "开始 {{amount}}-天免费试用",
