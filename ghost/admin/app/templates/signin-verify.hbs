@@ -35,12 +35,12 @@
                             @type="button"
                             @successClass=""
                             @failureClass=""
-                            @disabled={{this.resendTokenCountdownStarted}}
+                            @disabled={{or this.resendTokenTask.isRunning this.delayResendAvailabilityTask.isRunning}}
                             data-test-button="resend-token"
                             as |task|
                         >
-                            {{#if this.resendTokenCountdownStarted}}
-                                <span>Resend again in {{this.resendTokenCountdown}}s</span>
+                            {{#if this.delayResendAvailabilityTask.isRunning}}
+                                <span>Sent</span>
                             {{else}}
                                 <span>{{#if task.isRunning}}{{svg-jar "spinner" class="gh-spinner"}}&nbsp;Sending{{else}}Resend{{/if}}</span>
                             {{/if}}
