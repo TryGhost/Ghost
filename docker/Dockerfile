@@ -21,8 +21,6 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
         stripe \
         zsh \
         default-mysql-client && \
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
-    sed -i 's/plugins=(git)/plugins=(git yarn stripe)/' ~/.zshrc && \
     npx -y playwright@1.46.1 install --with-deps
 
 ENV NX_DAEMON=true
