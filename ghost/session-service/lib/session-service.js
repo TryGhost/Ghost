@@ -166,7 +166,7 @@ module.exports = function createSessionService({
      */
     async function getGeolocationFromIP(ip) {
         if (!ip || (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip))) {
-            return;
+            return 'Unknown Location';
         }
 
         const gotOpts = {
@@ -178,27 +178,20 @@ module.exports = function createSessionService({
         }
 
         const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ip)}.json`;
-        const response = await got(geojsUrl, gotOpts).json();
 
-        const {
-            city = '',
-            region = '',
-            country = ''
-        } = response || {};
+        try {
+            const response = await got(geojsUrl, gotOpts).json();
 
-        const locationParts = [];
+            const {city, region, country} = response || {};
 
-        if (city) {
-            locationParts.push(city);
+            // Only include non-empty parts in the result
+            const locationParts = [city, region, country].filter(Boolean);
+
+            // If no valid parts, return 'Unknown Location'
+            return locationParts.length > 0 ? locationParts.join(', ').trim() : 'Unknown Location';
+        } catch (error) {
+            return 'Unknown Location';
         }
-        if (region) {
-            locationParts.push(region);
-        }
-        if (country) {
-            locationParts.push(country);
-        }
-
-        return locationParts.join(', ').trim() || 'Unknown Location';
     }
 
     async function getDeviceDetails(userAgent, ip) {
