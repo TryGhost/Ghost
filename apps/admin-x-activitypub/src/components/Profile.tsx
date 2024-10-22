@@ -96,10 +96,10 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                                 <div className='text-sm'>{getUsername(item)}</div>
                                             </div>
                                         </div>
-                                        <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
+                                        {/* <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
                                             e?.preventDefault();
                                             alert('Implement me!');
-                                        }} />
+                                        }} /> */}
                                     </ActivityItem>
                                 );
                             })}
