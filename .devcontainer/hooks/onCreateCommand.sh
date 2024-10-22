@@ -5,8 +5,9 @@ set -e
 echo "Setting up environment variables..."
 if [ "$CODESPACES" = "true" ]; then
     echo "Adding Ghost URL to ~/.zshrc for Codespaces environment..."
-    echo "url=https://\${CODESPACE_NAME}-2368.\${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}" >> ~/.zshrc
+    echo "export url=https://\${CODESPACE_NAME}-2368.\${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}" >> ~/.zshrc
 fi
+source ~/.zshrc
 
 echo "Updating git submodules..."
 git submodule update --init --recursive
