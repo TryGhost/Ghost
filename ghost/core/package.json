@@ -320,17 +320,20 @@
       },
       "test:browser": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "ghost-admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "ghost-admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "ghost-admin:build"
         ]
       },
       "test:e2e": {
