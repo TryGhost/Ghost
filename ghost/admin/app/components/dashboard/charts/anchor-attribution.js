@@ -374,7 +374,10 @@ export default class Anchor extends Component {
                         zeroLineWidth: 1
                     },
                     ticks: {
-                        display: false
+                        display: false,
+                        beginAtZero: false,
+                        suggestedMin: this.getYAxisMin(),
+                        suggestedMax: this.getYAxisMax()
                     }
                 }],
                 xAxes: [{
@@ -810,5 +813,23 @@ export default class Anchor extends Component {
         }
 
         return Math.round((to - from) / from * 100);
+    }
+
+    getYAxisMin() {
+        if (this.selectedChartDisplay !== 'mrr') {
+            return 0;
+        }
+        const data = this.chartData.datasets[0].data;
+        const min = Math.min(...data);
+        return Math.floor(min * 0.95); // Start y-axis at 95% of the minimum value
+    }
+
+    getYAxisMax() {
+        if (this.selectedChartDisplay !== 'mrr') {
+            return null; // Let Chart.js decide the max for other chart types
+        }
+        const data = this.chartData.datasets[0].data;
+        const max = Math.max(...data);
+        return Math.ceil(max * 1.05); // End y-axis at 105% of the maximum value
     }
 }
