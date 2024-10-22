@@ -30,8 +30,17 @@ WORKDIR /home/ghost
 
 # Enable NX daemon to speed up builds
 ENV NX_DAEMON=true
+ENV YARN_CACHE_FOLDER=/home/ghost/.yarncache
 
-# Expose ports for local development (Ghost + Apps)
+COPY ../ .
+
+# Delete all node_modules folders then install dependencies
+RUN find . -name "node_modules" -type d -prune -exec rm -rf '{}' + && \
+    yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER && \
+    cp -r .yarncache .yarncachecopy && \
+    rm -Rf .yarncachecopy/.tmp && \
+    yarn cache clean
+
 EXPOSE 2368
 EXPOSE 4200
 EXPOSE 4173
@@ -44,19 +53,11 @@ EXPOSE 6174
 EXPOSE 7173
 EXPOSE 7174
 
-COPY ../ .
+ENTRYPOINT ["./docker/entry.sh"]
 
 # Development Stage: full development build with all dependencies installed
 FROM devcontainer AS development
 
 # Install node dependencies
 WORKDIR /home/ghost
-ENV YARN_CACHE_FOLDER=/home/ghost/.yarncache
-
-RUN yarn install --frozen-lockfile --perfer-offline --cache-folder $YARN_CACHE_FOLDER && \
-    cp -r .yarncache .yarncachecopy && \
-    rm -Rf .yarncachecopy/.tmp && \
-    yarn cache clean
-
-ENTRYPOINT ["./docker/entry.sh"]
 CMD ["yarn", "dev"]
