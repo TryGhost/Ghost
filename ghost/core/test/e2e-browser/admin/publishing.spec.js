@@ -365,7 +365,6 @@ test.describe('Publishing', () => {
 
             const editorUrl = await sharedPage.url();
 
-
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
             await closePublishFlow(sharedPage);
