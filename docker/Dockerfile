@@ -26,9 +26,6 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     sed -i 's/plugins=(git)/plugins=(git yarn stripe)/' ~/.zshrc && \
     npx -y playwright@1.46.1 install --with-deps
 
-# Install Playwright
-RUN 
-
 WORKDIR /home/ghost
 
 # Enable NX daemon to speed up builds
@@ -47,6 +44,8 @@ EXPOSE 6174
 EXPOSE 7173
 EXPOSE 7174
 
+COPY ../ .
+
 # Development Stage: full development build with all dependencies installed
 FROM devcontainer AS development
 
@@ -54,7 +53,6 @@ FROM devcontainer AS development
 WORKDIR /home/ghost
 ENV YARN_CACHE_FOLDER=/home/ghost/.yarncache
 
-COPY ../ .
 RUN yarn install --frozen-lockfile --perfer-offline --cache-folder $YARN_CACHE_FOLDER && \
     cp -r .yarncache .yarncachecopy && \
     rm -Rf .yarncachecopy/.tmp && \
