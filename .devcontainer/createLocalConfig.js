@@ -19,8 +19,7 @@ if (process.env.CODESPACES === 'true') {
                     secure: true,
                     port: 465,
                     auth: {
-                        user: process.env.MAILGUN_SMTP_USER,
-                        pass: process.env.MAILGUN_SMTP_PASS
+                        user: process.env.MAILGUN_SMTP_USER
                     }
                 }
             }

@@ -6,13 +6,6 @@
     "shutdownAction": "stopCompose",
     "forwardPorts": [2368,4200,4173,41730,4175,4176,4177,4178,6174,7173,7174],
     "portsAttributes": {
-        // onAutoForward options:
-        // - notify: (Default) Forward the port and notify the user
-        // - openBrowser: Opens the port in the default browser
-        // - openBrowserOnce: Opens the port in the default browser only one time
-        // - preview: Opens the port in a preview window inside VSCode
-        // - silent: Forward the port, but do not notify the user
-        // - ignore: Do not forward the port
         "80": {
             "onAutoForward": "ignore"
         },
@@ -79,16 +72,12 @@
             "protocol": "https"
         },
         "5173": {
-            // Suppress notifications when running unit tests
             "onAutoForward": "silent"
         },
         "5368": {
-            // Suppress notifications when running unit tests
             "onAutoForward": "silent"
         }
     },
-    // Mount all the code into the container, so changes made in the devcontainer are reflected locally
-    // No clean way to ignore all node_modules folders, so we have to list all the other files
     "mounts": [
         "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
     ],
@@ -120,13 +109,13 @@
             "description": "Your Stripe Account ID",
             "documentationUrl": "https://dashboard.stripe.com/settings/account"
         },
+        "MAILGUN_SMTP_USER": {
+            "description": "Your Mailgun account's SMTP username, e.g. postmaster@sandbox1234567890.mailgun.org. You can find this in the Mailgun dashboard under Sending -> Domains -> Select your domain -> SMTP.",
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
+        },
         "MAILGUN_SMTP_PASS": {
             "description": "Your Mailgun account's SMTP password",
-            "documentationUrl": ""
-        },
-        "MAILGUN_SMTP_USER": {
-            "description": "Your Mailgun account's SMTP username, e.g. postmaster@sandbox1234567890.mailgun.org",
-            "documentationUrl": ""
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
         },
         "MAILGUN_API_KEY": {
             "description": "Your Mailgun account's API key",
@@ -142,8 +131,8 @@
         "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
         "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
         "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
-        "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
         "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
+        "mail__options__auth__pass": "${localEnv:MAILGUN_SMTP_PASS}",
         "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
         "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     }
