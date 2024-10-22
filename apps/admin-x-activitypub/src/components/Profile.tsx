@@ -35,10 +35,30 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     const layout = 'feed';
 
-    const [visibleFollowers, setVisibleFollowers] = useState(30);
+    const INCREMENT_VISIBLE_POSTS = 40;
+    const INCREMENT_VISIBLE_LIKES = 40;
+    const INCREMENT_VISIBLE_FOLLOWING = 40;
+    const INCREMENT_VISIBLE_FOLLOWERS = 40;
+
+    const [visiblePosts, setVisiblePosts] = useState(INCREMENT_VISIBLE_POSTS);
+    const [visibleLikes, setVisibleLikes] = useState(INCREMENT_VISIBLE_LIKES);
+    const [visibleFollowing, setVisibleFollowing] = useState(INCREMENT_VISIBLE_FOLLOWING);
+    const [visibleFollowers, setVisibleFollowers] = useState(INCREMENT_VISIBLE_FOLLOWERS);
+
+    const loadMorePosts = () => {
+        setVisiblePosts(prev => prev + INCREMENT_VISIBLE_POSTS);
+    };
+
+    const loadMoreLikes = () => {
+        setVisibleLikes(prev => prev + INCREMENT_VISIBLE_LIKES);
+    };
+
+    const loadMoreFollowing = () => {
+        setVisibleFollowing(prev => prev + INCREMENT_VISIBLE_FOLLOWING);
+    };
 
     const loadMoreFollowers = () => {
-        setVisibleFollowers(prev => prev + 30);
+        setVisibleFollowers(prev => prev + INCREMENT_VISIBLE_FOLLOWERS);
     };
 
     const tabs = [
@@ -53,7 +73,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <ul className='mx-auto flex max-w-[640px] flex-col'>
-                            {posts.map((activity, index) => (
+                            {posts.slice(0, visiblePosts).map((activity, index) => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
@@ -72,6 +92,16 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                             ))}
                         </ul>
                     )}
+                    {visiblePosts < posts.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMorePosts}
+                        />
+                    )}
                 </div>
             ),
             counter: posts.length
@@ -87,7 +117,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <ul className='mx-auto flex max-w-[640px] flex-col'>
-                            {liked.map((activity, index) => (
+                            {liked.slice(0, visibleLikes).map((activity, index) => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
@@ -106,6 +136,16 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                             ))}
                         </ul>
                     )}
+                    {visibleLikes < liked.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMoreLikes}
+                        />
+                    )}
                 </div>
             ),
             counter: liked.length
@@ -121,7 +161,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <List>
-                            {following.map((item) => {
+                            {following.slice(0, visibleFollowing).map((item) => {
                                 return (
                                     <ActivityItem key={item.id} url={item.url}>
                                         <APAvatar author={item} />
@@ -139,6 +179,16 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 );
                             })}
                         </List>
+                    )}
+                    {visibleFollowing < following.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMoreFollowing}
+                        />
                     )}
                 </div>
             ),
@@ -172,8 +222,11 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     )}
                     {visibleFollowers < followers.length && (
                         <Button
-                            className='mt-4'
-                            label='Load More'
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
                             onClick={loadMoreFollowers}
                         />
                     )}
