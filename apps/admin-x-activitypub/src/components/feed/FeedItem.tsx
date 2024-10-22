@@ -249,9 +249,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const handleDelete = () => {
-        // Handle delete action
-    };
+    // const handleDelete = () => {
+    //     // Handle delete action
+    // };
 
     const handleCopyLink = async () => {
         if (object?.url) {
@@ -279,12 +279,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
-    menuItems.push({
-        id: 'delete',
-        label: 'Delete',
-        destructive: true,
-        onClick: handleDelete
-    });
+    // menuItems.push({
+    //     id: 'delete',
+    //     label: 'Delete',
+    //     destructive: true,
+    //     onClick: handleDelete
+    // });
 
     const UserMenuTrigger = (
         <Button
