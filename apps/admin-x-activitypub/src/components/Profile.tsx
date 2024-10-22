@@ -12,6 +12,7 @@ import {
     useFollowingCountForUser,
     useFollowingForUser,
     useLikedForUser,
+    useOutboxForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
 
@@ -23,6 +24,8 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     const {data: following = []} = useFollowingForUser('index');
     const {data: followers = []} = useFollowersForUser('index');
     const {data: liked = []} = useLikedForUser('index');
+    const {data: posts = []} = useOutboxForUser('index');
+
     // Replace 'index' with the actual handle of the user
     const {data: userProfile} = useUserDataForUser('index') as {data: ActorProperties | null};
 
@@ -36,10 +39,36 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         {
             id: 'posts',
             title: 'Posts',
-            contents: (<div><NoValueLabel icon='pen'>
-                You haven&apos;t posted anything yet.
-            </NoValueLabel></div>),
-            counter: 240
+            contents: (
+                <div className='ap-posts'>
+                    {posts.length === 0 ? (
+                        <NoValueLabel icon='pen'>
+                            You haven&apos;t posted anything yet.
+                        </NoValueLabel>
+                    ) : (
+                        <ul className='mx-auto flex max-w-[640px] flex-col'>
+                            {posts.map((activity, index) => (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.object?.attributedTo || activity.actor}
+                                        layout={layout}
+                                        object={activity.object}
+                                        type={activity.type}
+                                        onCommentClick={() => {}}
+                                    />
+                                    {index < posts.length - 1 && (
+                                        <div className="h-px w-full bg-grey-200"></div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            ),
+            counter: posts.length
         },
         {
             id: 'likes',
