@@ -2,6 +2,12 @@
 
 set -e
 
+echo "Setting up environment variables..."
+if [ "$CODESPACES" = "true" ]; then
+    echo "Adding Ghost URL to ~/.zshrc for Codespaces environment..."
+    echo "url=https://\${CODESPACE_NAME}-2368.\${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}" >> ~/.zshrc
+fi
+
 echo "Updating git submodules..."
 git submodule update --init --recursive
 
@@ -11,3 +17,6 @@ yarn nx reset --only-workspace-data
 
 echo "Building typescript packages..."
 yarn nx run-many -t build:ts
+
+echo "Building Ghost admin..."
+yarn nx run ghost-admin:build
