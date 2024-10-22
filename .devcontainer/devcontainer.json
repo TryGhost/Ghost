@@ -4,13 +4,105 @@
     "service": "ghost",
     "workspaceFolder": "/home/ghost",
     "shutdownAction": "stopCompose",
+    "forwardPorts": [2368,4200,4173,41730,4175,4176,4177,4178,6174,7173,7174],
+    "portsAttributes": {
+        // onAutoForward options:
+        // - notify: (Default) Forward the port and notify the user
+        // - openBrowser: Opens the port in the default browser
+        // - openBrowserOnce: Opens the port in the default browser only one time
+        // - preview: Opens the port in a preview window inside VSCode
+        // - silent: Forward the port, but do not notify the user
+        // - ignore: Do not forward the port
+        "80": {
+            "onAutoForward": "ignore"
+        },
+        "2368": {
+            "label": "Ghost"
+        },
+        "2369": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2370": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2371": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2372": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2373": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "4200": {
+            "label": "Admin",
+            "onAutoForward": "silent"
+        },
+        "4201": {
+            "label": "Admin Live Reload",
+            "onAutoForward": "silent"
+        },
+        "4175": {
+            "label": "Portal",
+        },
+        "4176": {
+            "label": "Portal (HTTPS)",
+            "protocol": "https"
+        },
+        "4177": {
+            "label": "Announcement Bar"
+        },
+        "4178": {
+            "label": "Search"
+        },
+        "4173": {
+            "label": "Lexical"
+        },
+        "41730": {
+            "label": "Lexical (HTTPS)",
+            "protocol": "https"
+        },
+        "6174": {
+            "label": "Signup Form",
+            "onAutoForward": "silent"
+        },
+        "7173": {
+            "label": "Comments"
+        },
+        "7174": {
+            "label": "Comments (HTTPS)",
+            "protocol": "https"
+        },
+        "5173": {
+            // Suppress notifications when running unit tests
+            "onAutoForward": "silent"
+        },
+        "5368": {
+            // Suppress notifications when running unit tests
+            "onAutoForward": "silent"
+        }
+    },
+    // Mount all the code into the container, so changes made in the devcontainer are reflected locally
+    // No clean way to ignore all node_modules folders, so we have to list all the other files
     "mounts": [
-        "source=${localWorkspaceFolder}/ghost,target=/home/ghost/ghost,type=bind,consistency=cached",
-        "source=${localWorkspaceFolder}/apps,target=/home/ghost/apps,type=bind,consistency=cached",
-        "source=${localWorkspaceFolder}/docker,target=/home/ghost/docker,type=bind,consistency=cached",
-        "source=${localWorkspaceFolder}/.devcontainer,target=/home/ghost/.devcontainer,type=bind,consistency=cached",
-        "source=${localWorkspaceFolder}/.github,target=/home/ghost/.github,type=bind,consistency=cached",
-        "source=${localWorkspaceFolder}/yarn.lock,target=/home/ghost/yarn.lock,type=bind,consistency=cached",
-        "source=${localWorkspaceFolder}/package.json,target=/home/ghost/package.json,type=bind,consistency=cached",
-    ]
+        "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
+    ],
+    "postCreateCommand": ["./.devcontainer/hooks/postCreateCommand.sh"],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+            },
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "Oracle.mysql-shell-for-vs-code"
+            ]
+        }
+    }
 }
