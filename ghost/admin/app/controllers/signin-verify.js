@@ -1,11 +1,12 @@
 import Controller from '@ember/controller';
 // eslint-disable-next-line
 import DS from 'ember-data';
+import config from 'ghost-admin/config/environment';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {isUnauthorizedError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const {Errors} = DS;
@@ -63,19 +64,6 @@ export default class SigninVerifyController extends Controller {
     @tracked flowErrors = '';
     @tracked verifyData = new VerifyData();
     @tracked resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
-    @tracked resendTokenCountdownStarted = false;
-
-    startResendTokenCountdown() {
-        this.resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
-        this.resendTokenCountdownStarted = true;
-        this.resendTokenCountdownInterval = setInterval(() => {
-            if (this.resendTokenCountdown > 0) {
-                this.resendTokenCountdown = this.resendTokenCountdown - 1;
-            } else {
-                this.resetResendTokenCountdown();
-            }
-        }, 1000);
-    }
 
     resetResendTokenCountdown() {
         clearInterval(this.resendTokenCountdownInterval);
@@ -93,7 +81,7 @@ export default class SigninVerifyController extends Controller {
         this.verifyData.token = event.target.value;
     }
 
-    @task
+    @task({drop: true})
     *verifyTokenTask() {
         this.flowErrors = '';
 
@@ -116,21 +104,17 @@ export default class SigninVerifyController extends Controller {
         }
     }
 
-    @task
+    @task({drop: true})
     *resendTokenTask() {
         const resendTokenPath = `${this.ghostPaths.apiRoot}/session/verify`;
 
         try {
-            try {
-                yield this.ajax.post(resendTokenPath);
-            } catch (error) {
-                // HACK: For some reason, the server returns 200: OK and sends the email but the client still throws an error
-                // So we need to catch the error and throw it if it's not 'OK'
-                if (error !== 'OK') {
-                    throw error;
-                }
-            }
-            this.startResendTokenCountdown();
+            yield this.ajax.post(resendTokenPath, {
+                contentType: 'application/json;charset=utf-8',
+                // API responds with "OK" which will throw if we do a default JSON parse
+                dataType: 'text'
+            });
+            this.delayResendAvailabilityTask.perform();
             return TASK_SUCCESS;
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
@@ -139,6 +123,15 @@ export default class SigninVerifyController extends Controller {
                 this.flowErrors = 'There was a problem resending the verification token.';
             }
             return TASK_FAILURE;
+        }
+    }
+
+    @task
+    *delayResendAvailabilityTask() {
+        this.resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
+        while (this.resendTokenCountdown > 0) {
+            yield timeout(config.environment === 'test' ? 10 : 1000);
+            this.resendTokenCountdown = this.resendTokenCountdown - 1;
         }
     }
 

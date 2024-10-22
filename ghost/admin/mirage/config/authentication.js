@@ -16,7 +16,7 @@ export default function mockAuthentication(server) {
 
     // 2fa code re-send
     server.post('/session/verify', function () {
-        return new Response(200);
+        return new Response(200, {}, 'OK');
     });
 
     server.post('/authentication/password_reset', function (schema, request) {

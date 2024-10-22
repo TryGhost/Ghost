@@ -9,28 +9,28 @@
     {{#if this.isRunning}}
         <span data-test-task-button-state="running">
             {{#if this.showIcon}}
-                {{svg-jar "spinner" class="gh-icon-spinner"}} 
+                {{svg-jar "spinner" class="gh-icon-spinner"}}
             {{/if}}
             {{this.runningText}}
         </span>
     {{/if}}
 
     {{#if (and this.isIdle (not (or this.isRunning this.isSuccess this.isFailure)))}}
-    <span data-test-task-button-state="idle">
-        {{#if this.showIcon}}
-            {{#if this.idleIcon}}
-                {{svg-jar this.idleIcon}}
+        <span data-test-task-button-state="idle">
+            {{#if this.showIcon}}
+                {{#if this.idleIcon}}
+                    {{svg-jar this.idleIcon}}
+                {{/if}}
             {{/if}}
-        {{/if}}
-        {{this.buttonText}}
-    </span>
-{{/if}}
+            {{this.buttonText}}
+        </span>
+    {{/if}}
 
 
     {{#if this.isSuccess}}
         <span {{did-insert this.handleReset}} data-test-task-button-state="success">
             {{#if this.showIcon}}
-                {{svg-jar "check-circle"}} 
+                {{svg-jar "check-circle"}}
             {{/if}}
             {{this.successText}}
         </span>
@@ -38,7 +38,7 @@
     {{#if this.isFailure}}
         <span data-test-task-button-state="failure">
             {{#if this.showIcon}}
-                {{svg-jar "retry"}} 
+                {{svg-jar "retry"}}
             {{/if}}
             {{this.failureText}}
         </span>
