@@ -18,10 +18,9 @@ interface ArticleModalProps {
     focusReply: boolean;
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
+const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string}> = ({heading, image, excerpt, html}) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
-
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
@@ -34,11 +33,14 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, html: str
   <body>
     <header class='gh-article-header gh-canvas'>
         <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
-${image &&
-        `<figure class='gh-article-image'>
+        ${excerpt ? `
+            <p class='gh-article-excerpt'>${excerpt}</p>
+            ` : ''}
+        ${image ? `
+        <figure class='gh-article-image'>
             <img src='${image}' alt='${heading}' />
-        </figure>`
-}
+        </figure>
+        ` : ''}
     </header>
     <div class='gh-content gh-canvas is-body'>
       ${html}
@@ -214,7 +216,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                     </div>
                 )}
                 {object.type === 'Article' && (
-                    <ArticleBody heading={object.name} html={object.content} image={object?.image} />
+                    <ArticleBody excerpt={object?.preview?.content} heading={object.name} html={object.content} image={object?.image} />
                 )}
             </div>
         </Modal>
