@@ -54,5 +54,43 @@ describe('Custom Fonts', function () {
 
             assert.equal(result, '<style>@import url(https://fonts.bunny.net/css?family=lora:400,700);:root {--gh-font-heading: Lora;--gh-font-body: Lora;}</style>', 'Includes the correct CSS with only one import for equal heading and body fonts');
         });
+
+        it('generates CSS when only body font is provided', function () {
+            const result = customFonts.generateCustomFontCss({body: 'Noto Sans'});
+
+            assert.equal(result.includes(':root {'), true, 'Includes :root selector when only body font is provided');
+            assert.equal(result.includes('--gh-font-body: Noto Sans;'), true, 'Includes body font CSS');
+            assert.equal(result.includes('--gh-font-heading'), false, 'Does not include heading font CSS when not provided');
+        });
+
+        it('generates CSS when only heading font is provided', function () {
+            const result = customFonts.generateCustomFontCss({heading: 'Space Grotesk'});
+
+            assert.equal(result.includes(':root {'), true, 'Includes :root selector when only heading font is provided');
+            assert.equal(result.includes('--gh-font-heading: Space Grotesk;'), true, 'Includes heading font CSS');
+            assert.equal(result.includes('--gh-font-body'), false, 'Does not include body font CSS when not provided');
+        });
+    });
+
+    describe('generateCustomFontBodyClass', function () {
+        it('returns the correct class for a single font', function () {
+            const result = customFonts.generateCustomFontBodyClass({body: 'Noto Sans'});
+            assert.equal(result, 'gh-font-body-noto-sans', 'Returns the correct class for a single font');
+        });
+
+        it('returns the correct class for different heading and body fonts', function () {
+            const result = customFonts.generateCustomFontBodyClass({heading: 'Playfair Display', body: 'Poppins'});
+            assert.equal(result, 'gh-font-heading-playfair-display gh-font-body-poppins', 'Returns the correct class for different heading and body fonts');
+        });
+
+        it('returns the correct class with only a heading font', function () {
+            const result = customFonts.generateCustomFontBodyClass({heading: 'Playfair Display'});
+            assert.equal(result, 'gh-font-heading-playfair-display', 'Returns the correct class with only a heading font');
+        });
+
+        it('returns empty string with no fonts', function () {
+            const result = customFonts.generateCustomFontBodyClass({});
+            assert.equal(result, '', 'Returns an empty string with no fonts');
+        });
     });
 });
