@@ -362,3 +362,14 @@ export function useProfileForUser(handle: string, fullHandle: string) {
         }
     });
 }
+
+export function useOutboxForUser(handle: string) {
+    return useQuery({
+        queryKey: [`outbox:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getOutbox();
+        }
+    });
+}
