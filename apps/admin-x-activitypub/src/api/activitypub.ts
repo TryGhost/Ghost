@@ -245,6 +245,7 @@ export class ActivityPubAPI {
     async getActivities(
         includeOwn: boolean = false,
         includeReplies: boolean = false,
+        excludeNonFollowers: boolean = false,
         filter: {type?: string[]} | null = null,
         cursor?: string
     ): Promise<{data: Activity[], nextCursor: string | null}> {
@@ -257,6 +258,9 @@ export class ActivityPubAPI {
         }
         if (includeReplies) {
             url.searchParams.set('includeReplies', includeReplies.toString());
+        }
+        if (excludeNonFollowers) {
+            url.searchParams.set('excludeNonFollowers', excludeNonFollowers.toString());
         }
         if (filter) {
             url.searchParams.set('filter', JSON.stringify(filter));

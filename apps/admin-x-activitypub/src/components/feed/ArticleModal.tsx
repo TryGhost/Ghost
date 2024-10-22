@@ -75,7 +75,7 @@ const FeedItemDivider: React.FC = () => (
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 2800;
+    // const MODAL_SIZE_LG = 2800;
     const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
@@ -86,7 +86,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
         }
     }
 
-    const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
+    const [modalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
 
     // Navigation stack to navigate between comments - This could probably use a
@@ -120,9 +120,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
             comments: nextComments
         });
     };
-    const toggleModalSize = () => {
-        setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
-    };
+    // const toggleModalSize = () => {
+    //     setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
+    // };
 
     function handleNewReply(activity: Activity) {
         setCommentsState(prev => [activity].concat(prev));
@@ -148,7 +148,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                     <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                     </div>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
+                        {/* <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/> */}
                         <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>

@@ -203,7 +203,7 @@ const FeedItemStats: React.FC<{
             />
             {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
         </div>
-        <div className='flex gap-1'>
+        {(layout !== 'modal') && (<div className='flex gap-1'>
             <Button
                 className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
                 hideLabel={true}
@@ -219,7 +219,7 @@ const FeedItemStats: React.FC<{
             {commentCount > 0 && (layout !== 'inbox') && (
                 <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
             )}
-        </div>
+        </div>)}
     </div>);
 };
 
@@ -249,9 +249,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const handleDelete = () => {
-        // Handle delete action
-    };
+    // const handleDelete = () => {
+    //     // Handle delete action
+    // };
 
     const handleCopyLink = async () => {
         if (object?.url) {
@@ -279,12 +279,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
-    menuItems.push({
-        id: 'delete',
-        label: 'Delete',
-        destructive: true,
-        onClick: handleDelete
-    });
+    // menuItems.push({
+    //     id: 'delete',
+    //     label: 'Delete',
+    //     destructive: true,
+    //     onClick: handleDelete
+    // });
 
     const UserMenuTrigger = (
         <Button
@@ -479,7 +479,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full truncate text-[1.5rem] text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
-                        <div className='invisible absolute right-2 top-[9px] z-[9998] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
+                        <div className='invisible absolute right-2 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
                                 commentCount={comments.length}
                                 layout={layout}

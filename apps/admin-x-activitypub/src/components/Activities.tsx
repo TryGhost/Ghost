@@ -33,8 +33,10 @@ const getActivityDescription = (activity: Activity): string => {
     case ACTVITY_TYPE.FOLLOW:
         return 'Followed you';
     case ACTVITY_TYPE.LIKE:
-        if (activity.object) {
+        if (activity.object && activity.object.type === 'Article') {
             return `Liked your article "${activity.object.name}"`;
+        } else if (activity.object && activity.object.type === 'Note') {
+            return `${activity.object.content}`;
         }
     }
 
@@ -136,6 +138,28 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     //     return followers.includes(id);
     // };
 
+    const handleActivityClick = (activity: Activity) => {
+        switch (activity.type) {
+        case ACTVITY_TYPE.CREATE:
+            NiceModal.show(ArticleModal, {
+                object: activity.object,
+                actor: activity.actor,
+                comments: activity.object.replies
+            });
+            break;
+        case ACTVITY_TYPE.LIKE:
+            NiceModal.show(ArticleModal, {
+                object: activity.object,
+                actor: activity.actor,
+                comments: activity.object.replies
+            });
+            break;
+        case ACTVITY_TYPE.FOLLOW:
+            break;
+        default:
+        }
+    };
+
     return (
         <>
             <MainNavigation title='Activities' />
@@ -162,15 +186,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                     <ActivityItem
                                         key={activity.id}
                                         url={getActivityUrl(activity) || getActorUrl(activity)}
-                                        onClick={
-                                            activity.type === ACTVITY_TYPE.CREATE ? () => {
-                                                NiceModal.show(ArticleModal, {
-                                                    object: activity.object,
-                                                    actor: activity.actor,
-                                                    comments: activity.object.replies
-                                                });
-                                            } : undefined
-                                        }
+                                        onClick={() => handleActivityClick(activity)}
                                     >
                                         <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
                                         <div className='min-w-0'>
