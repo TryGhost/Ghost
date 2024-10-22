@@ -8,6 +8,7 @@ import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
 // import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
+import ProfileSearchResultModal from './search/ProfileSearchResultModal';
 
 import getUsername from '../utils/get-username';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
@@ -136,6 +137,33 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     //     return followers.includes(id);
     // };
 
+    const handleActivityClick = (activity: Activity) => {
+        if (activity.type === ACTVITY_TYPE.CREATE) {
+            NiceModal.show(ArticleModal, {
+                object: activity.object,
+                actor: activity.actor,
+                comments: activity.object.replies
+            });
+        } else if (activity.type === ACTVITY_TYPE.FOLLOW) {
+            NiceModal.show(ProfileSearchResultModal, {
+                profile: {
+                    actor: activity.actor,
+                    handle: getUsername(activity.actor),
+                    followerCount: activity.actor.followers?.totalItems || 0,
+                    followingCount: activity.actor.following?.totalItems || 0,
+                    isFollowing: false, // You might need to determine this
+                    posts: [] // You might need to fetch this separately
+                },
+                onFollow: () => {
+                    // Implement follow logic
+                },
+                onUnfollow: () => {
+                    // Implement unfollow logic
+                }
+            });
+        }
+    };
+
     return (
         <>
             <MainNavigation title='Activities' />
@@ -162,15 +190,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                     <ActivityItem
                                         key={activity.id}
                                         url={getActivityUrl(activity) || getActorUrl(activity)}
-                                        onClick={
-                                            activity.type === ACTVITY_TYPE.CREATE ? () => {
-                                                NiceModal.show(ArticleModal, {
-                                                    object: activity.object,
-                                                    actor: activity.actor,
-                                                    comments: activity.object.replies
-                                                });
-                                            } : undefined
-                                        }
+                                        onClick={() => handleActivityClick(activity)}
                                     >
                                         <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
                                         <div className='min-w-0'>
