@@ -5,7 +5,7 @@ services:
     image: ghost-devcontainer
     build:
       context: ../
-      dockerfile: docker/Dockerfile
+      dockerfile: .devcontainer/Dockerfile
       target: devcontainer
     command: ["sleep", "infinity"]
     container_name: ghost-devcontainer-ghost

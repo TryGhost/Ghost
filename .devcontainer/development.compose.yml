@@ -4,7 +4,7 @@ services:
     image: ghost:local
     build:
       context: ../
-      dockerfile: docker/Dockerfile
+      dockerfile: .devcontainer/Dockerfile
       target: development
     command: ["yarn", "dev"]
     volumes:

@@ -55,5 +55,5 @@ RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_F
     rm -Rf .yarncachecopy/.tmp && \
     yarn cache clean
 
-ENTRYPOINT ["./docker/entry.sh"]
+ENTRYPOINT ["./.devcontainer/entry.sh"]
 CMD ["yarn", "dev"]
