@@ -153,7 +153,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         )}
                                     </ul>
                                 </div>
-                                <div className={`sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden ${layout === 'inbox' ? '' : ' xxl:fixed xxl:right-[40px]'}`}>
+                                <div className={`sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden ${layout === 'inbox' ? '' : ' xxxl:fixed xxxl:right-[40px]'}`}>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like...</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
