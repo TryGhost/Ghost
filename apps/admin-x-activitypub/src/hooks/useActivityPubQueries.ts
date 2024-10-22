@@ -323,9 +323,14 @@ export function useSuggestedProfiles(handle: string, handles: string[]) {
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return Promise.all(
+
+            return Promise.allSettled(
                 handles.map(h => api.getProfile(h))
-            );
+            ).then((results) => {
+                return results
+                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                    .map(result => result.value);
+            });
         }
     });
 
