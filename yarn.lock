@@ -4113,6 +4113,44 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.0.tgz#d03eba68273dc0f7509e2a3d5cba21eae10379fe"
   integrity sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==
 
+"@otplib/core@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@otplib/core/-/core-12.0.1.tgz#73720a8cedce211fe5b3f683cd5a9c098eaf0f8d"
+  integrity sha512-4sGntwbA/AC+SbPhbsziRiD+jNDdIzsZ3JUyfZwjtKyc/wufl1pnSIaG4Uqx8ymPagujub0o92kgBnB89cuAMA==
+
+"@otplib/plugin-crypto@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@otplib/plugin-crypto/-/plugin-crypto-12.0.1.tgz#2b42c624227f4f9303c1c041fca399eddcbae25e"
+  integrity sha512-qPuhN3QrT7ZZLcLCyKOSNhuijUi9G5guMRVrxq63r9YNOxxQjPm59gVxLM+7xGnHnM6cimY57tuKsjK7y9LM1g==
+  dependencies:
+    "@otplib/core" "^12.0.1"
+
+"@otplib/plugin-thirty-two@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@otplib/plugin-thirty-two/-/plugin-thirty-two-12.0.1.tgz#5cc9b56e6e89f2a1fe4a2b38900ca4e11c87aa9e"
+  integrity sha512-MtT+uqRso909UkbrrYpJ6XFjj9D+x2Py7KjTO9JDPhL0bJUYVu5kFP4TFZW4NFAywrAtFRxOVY261u0qwb93gA==
+  dependencies:
+    "@otplib/core" "^12.0.1"
+    thirty-two "^1.0.2"
+
+"@otplib/preset-default@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@otplib/preset-default/-/preset-default-12.0.1.tgz#cb596553c08251e71b187ada4a2246ad2a3165ba"
+  integrity sha512-xf1v9oOJRyXfluBhMdpOkr+bsE+Irt+0D5uHtvg6x1eosfmHCsCC6ej/m7FXiWqdo0+ZUI6xSKDhJwc8yfiOPQ==
+  dependencies:
+    "@otplib/core" "^12.0.1"
+    "@otplib/plugin-crypto" "^12.0.1"
+    "@otplib/plugin-thirty-two" "^12.0.1"
+
+"@otplib/preset-v11@^12.0.1":
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/@otplib/preset-v11/-/preset-v11-12.0.1.tgz#4c7266712e7230500b421ba89252963c838fc96d"
+  integrity sha512-9hSetMI7ECqbFiKICrNa4w70deTUfArtwXykPUvSHWOdzOlfa9ajglu7mNCntlvxycTiOAXkQGwjQCzzDEMRMg==
+  dependencies:
+    "@otplib/core" "^12.0.1"
+    "@otplib/plugin-crypto" "^12.0.1"
+    "@otplib/plugin-thirty-two" "^12.0.1"
+
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
@@ -7658,21 +7696,14 @@
     nodemailer-mailgun-transport "^2.1.5"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@0.6.3", "@tryghost/nql-lang@^0.6.3":
+"@tryghost/nql-lang@0.6.3", "@tryghost/nql-lang@^0.6.2", "@tryghost/nql-lang@^0.6.3":
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.6.3.tgz#3fe9015d5ebcfdf50be409bf1b0f6cc22cfb47a1"
   integrity sha512-NnSdAjN3TIcm8g1/QW/EKLeGKAYIQR6CQZULMt1mbV+lVWnNjrgZNZchg4a90CdC5e0owOps+rz+2dmpDEC/Iw==
   dependencies:
     date-fns "^2.28.0"
 
-"@tryghost/nql-lang@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.6.2.tgz#529d4fc06840dd0d4f120610d3d081f5df51c12c"
-  integrity sha512-woIgIi89fpRnuBZQjZNF4MHbwp2IwYGQ/vEuvCGhHmOE47qhtEadvd0dCUnzOYSszgsFcp+xtOe6ZrICVEdUmw==
-  dependencies:
-    date-fns "^2.28.0"
-
-"@tryghost/nql@0.12.6", "@tryghost/nql@^0.12.5":
+"@tryghost/nql@0.12.6":
   version "0.12.6"
   resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.6.tgz#18c8b57f73d37269e2c0ab23b6c3f4f4030804b4"
   integrity sha512-IIcfxSgK++O/6om42T+waIjuJCeZ0Ma88ITp/DRbaqgGzUpd9tRAyOzsTTxQkZ7OUbHXd165+ee4myHTh7fmSw==
@@ -7682,7 +7713,7 @@
     "@tryghost/nql-lang" "^0.6.2"
     mingo "^2.2.2"
 
-"@tryghost/nql@0.12.7":
+"@tryghost/nql@0.12.7", "@tryghost/nql@^0.12.5":
   version "0.12.7"
   resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.7.tgz#4ef56984809cb39416b9b21b9cd7ae976720f5e3"
   integrity sha512-O58X36ug6KZ8n0/a/mkhb0My3vDO/xbH3HlK+U0t6houwQN7xUEOsZxBq7E0w/h4dXXwQCFeW5mIfuRD3FHWIg==
@@ -19335,10 +19366,10 @@ i18next-parser@8.13.0:
     vinyl-fs "^4.0.0"
     vue-template-compiler "^2.6.11"
 
-i18next@23.16.0, i18next@^23.5.1:
-  version "23.16.0"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.16.0.tgz#6127b49a30c19ba5caf0de8aeb3e15df60f7f01e"
-  integrity sha512-Ni3CG6c14teOogY19YNRl+kYaE/Rb59khy0VyHVn4uOZ97E2E/Yziyi6r3C3s9+wacjdLZiq/LLYyx+Cgd+FCw==
+i18next@23.16.2, i18next@^23.5.1:
+  version "23.16.2"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.16.2.tgz#ef6868ef6ac7bcaee4f5fe35132021d44e8d1063"
+  integrity sha512-dFyxwLXxEQK32f6tITBMaRht25mZPJhQ0WbC0p3bO2mWBal9lABTMqSka5k+GLSRWLzeJBKDpH7BeIA9TZI7Jg==
   dependencies:
     "@babel/runtime" "^7.23.2"
 
@@ -24554,6 +24585,15 @@ osenv@^0.1.3:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
+
+otplib@12.0.1:
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/otplib/-/otplib-12.0.1.tgz#c1d3060ab7aadf041ed2960302f27095777d1f73"
+  integrity sha512-xDGvUOQjop7RDgxTQ+o4pOol0/3xSZzawTiPKRrHnQWAy0WjhNs/5HdIDJCrqC4MBynmjXgULc6YfioaxZeFgg==
+  dependencies:
+    "@otplib/core" "^12.0.1"
+    "@otplib/preset-default" "^12.0.1"
+    "@otplib/preset-v11" "^12.0.1"
 
 p-cancelable@^1.0.0:
   version "1.1.0"
@@ -29888,6 +29928,11 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
+thirty-two@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/thirty-two/-/thirty-two-1.0.2.tgz#4ca2fffc02a51290d2744b9e3f557693ca6b627a"
+  integrity sha512-OEI0IWCe+Dw46019YLl6V10Us5bi574EvlJEOcAkB29IzQ/mYD1A6RyNHLjZPiHCmuodxvgF6U+vZO1L15lxVA==
+
 through2@^2.0.0, through2@^2.0.1, through2@^2.0.3:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/through2/-/through2-2.0.5.tgz#01c1e39eb31d07cb7d03a96a70823260b23132cd"
@@ -30445,6 +30490,11 @@ typescript@5.6.2, typescript@^5.0.4:
   version "5.6.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.6.2.tgz#d1de67b6bef77c41823f822df8f0b3bcff60a5a0"
   integrity sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw==
+
+ua-parser-js@1.0.39:
+  version "1.0.39"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-1.0.39.tgz#bfc07f361549bf249bd8f4589a4cccec18fd2018"
+  integrity sha512-k24RCVWlEcjkdOxYmVJgeD/0a1TiSpqLg+ZalVGV9lsnr4yqu0w7tX/x2xX6G4zpkgQnRf89lxuZ1wsbjXM8lw==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
