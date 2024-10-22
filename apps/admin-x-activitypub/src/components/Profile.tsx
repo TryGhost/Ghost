@@ -8,7 +8,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {
     useFollowersCountForUser,
-    useFollowersForUser,
+    useFollowersExpandedForUser,
     useFollowingCountForUser,
     useFollowingForUser,
     useLikedForUser,
@@ -22,7 +22,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     const {data: followersCount = 0} = useFollowersCountForUser('index');
     const {data: followingCount = 0} = useFollowingCountForUser('index');
     const {data: following = []} = useFollowingForUser('index');
-    const {data: followers = []} = useFollowersForUser('index');
+    const {data: followers = []} = useFollowersExpandedForUser('index');
     const {data: liked = []} = useLikedForUser('index');
     const {data: posts = []} = useOutboxForUser('index');
 

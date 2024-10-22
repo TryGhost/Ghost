@@ -159,6 +159,21 @@ export class ActivityPubAPI {
         return 0;
     }
 
+    get followersExpandedApiUrl() {
+        return new URL(`.ghost/activitypub/followers-expanded/${this.handle}`, this.apiUrl);
+    }
+
+    async getFollowersExpanded(): Promise<Activity[]> {
+        const json = await this.fetchJSON(this.followersExpandedApiUrl);
+        if (json === null) {
+            return [];
+        }
+        if ('orderedItems' in json) {
+            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+        }
+        return [];
+    }
+
     async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
         if (next) {
