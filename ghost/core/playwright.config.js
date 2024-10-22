@@ -17,7 +17,7 @@ const getWorkerCount = () => {
     }
     // Stripe limits to 5 new accounts per second
     // If we go higher than 5, we'll get rate limited and tests will fail
-    return Math.min(5, cpuCount-1);
+    return Math.min(5, cpuCount - 1);
 };
 
 const config = {
