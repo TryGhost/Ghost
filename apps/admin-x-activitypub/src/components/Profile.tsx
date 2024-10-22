@@ -58,7 +58,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                     data-test-view-article
                                 >
                                     <FeedItem
-                                        actor={activity.actor}
+                                        actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
