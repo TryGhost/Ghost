@@ -36,7 +36,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     const {updateRoute} = useRouting();
 
-    const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@quillmatiq@mastodon.social', '@miaq@flipboard.social', '@mallory@techpolicy.social']);
+    const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
     const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
     const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
