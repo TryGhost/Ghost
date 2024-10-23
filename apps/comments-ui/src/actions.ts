@@ -17,6 +17,17 @@ async function loadMoreComments({state, api, options}: {state: EditableAppContex
     };
 }
 
+async function setOrder({data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
+    const data = await api.comments.browse({page: 1, postId: options.postId, order: order});
+
+    // replace comments in state with new ones
+    return {
+        comments: data.comments,
+        pagination: data.meta.pagination,
+        order
+    };
+}
+
 async function loadMoreReplies({state, api, data: {comment, limit}}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}}): Promise<Partial<EditableAppContext>> {
     const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
 
@@ -372,7 +383,8 @@ export const Actions = {
     addReply,
     loadMoreComments,
     loadMoreReplies,
-    updateMember
+    updateMember,
+    setOrder
 };
 
 export type ActionType = keyof typeof Actions;
