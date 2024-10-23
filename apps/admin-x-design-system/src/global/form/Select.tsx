@@ -82,7 +82,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="select-option" data-value={optionProps.data.value}>{children}</span>
+        <span className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : ''} data-testid="select-option" data-value={optionProps.data.value}>{children}{optionProps.isSelected && <span><Icon name='check' size={14} /></span>}</span>
         {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );

@@ -93,6 +93,7 @@ module.exports = {
             manrope: 'Manrope',
             merriweather: 'Merriweather',
             nunito: 'Nunito',
+            'tenor-sans': 'Tenor Sans',
             'old-standard-tt': 'Old Standard TT',
             prata: 'Prata',
             roboto: 'Roboto',

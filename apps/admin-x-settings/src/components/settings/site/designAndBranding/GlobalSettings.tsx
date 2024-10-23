@@ -1,6 +1,7 @@
 import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
+import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
@@ -14,7 +15,8 @@ import type {BodyFont, HeadingFont} from '@tryghost/custom-fonts';
 
 type BodyFontOption = {
     value: BodyFont | typeof DEFAULT_FONT,
-    label: BodyFont | typeof DEFAULT_FONT
+    label: BodyFont | typeof DEFAULT_FONT,
+    className?: string
 };
 type HeadingFontOption = {
     value: HeadingFont | typeof DEFAULT_FONT,
@@ -47,64 +49,72 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [headingFont, setHeadingFont] = useState(values.headingFont || DEFAULT_FONT);
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
-    const fontClassName = (fontName: string) => {
+    const fontClassName = (fontName: string, heading: boolean = true) => {
+        let className = '';
         if (fontName === 'Cardo') {
-            return 'font-cardo';
+            className = clsx('font-cardo', heading && 'font-bold');
         } else if (fontName === 'Manrope') {
-            return 'font-manrope';
+            className = clsx('font-manrope', heading && 'font-bold');
         } else if (fontName === 'Merriweather') {
-            return 'font-merriweather';
+            className = clsx('font-merriweather', heading && 'font-bold');
         } else if (fontName === 'Nunito') {
-            return 'font-nunito';
+            className = clsx('font-nunito', heading && 'font-semibold');
         } else if (fontName === 'Old Standard TT') {
-            return 'font-old-standard-tt';
+            className = clsx('font-old-standard-tt', heading && 'font-bold');
         } else if (fontName === 'Prata') {
-            return 'font-prata';
+            className = clsx('font-prata', heading && 'font-normal');
         } else if (fontName === 'Roboto') {
-            return 'font-roboto';
+            className = clsx('font-roboto', heading && 'font-bold');
         } else if (fontName === 'Rufina') {
-            return 'font-rufina';
+            className = clsx('font-rufina', heading && 'font-bold');
         } else if (fontName === 'Tenor Sans') {
-            return 'font-tenor-sans';
+            className = clsx('font-tenor-sans', heading && 'font-normal');
         } else if (fontName === 'Chakra Petch') {
-            return 'font-chakra-petch';
+            className = clsx('font-chakra-petch', heading && 'font-normal');
         } else if (fontName === 'Fira Mono') {
-            return 'font-fira-mono';
+            className = clsx('font-fira-mono', heading && 'font-bold');
         } else if (fontName === 'Fira Sans') {
-            return 'font-fira-sans';
+            className = clsx('font-fira-sans', heading && 'font-bold');
         } else if (fontName === 'IBM Plex Serif') {
-            return 'font-ibm-plex-serif';
+            className = clsx('font-ibm-plex-serif', heading && 'font-bold');
         } else if (fontName === 'JetBrains Mono') {
-            return 'font-jetbrains-mono';
+            className = clsx('font-jetbrains-mono', heading && 'font-bold');
         } else if (fontName === 'Lora') {
-            return 'font-lora';
+            className = clsx('font-lora', heading && 'font-bold');
         } else if (fontName === 'Noto Sans') {
-            return 'font-noto-sans';
+            className = clsx('font-noto-sans', heading && 'font-bold');
         } else if (fontName === 'Noto Serif') {
-            return 'font-noto-serif';
+            className = clsx('font-noto-serif', heading && 'font-bold');
         } else if (fontName === 'Poppins') {
-            return 'font-poppins';
+            className = clsx('font-poppins', heading && 'font-bold');
         } else if (fontName === 'Space Grotesk') {
-            return 'font-space-grotesk';
+            className = clsx('font-space-grotesk', heading && 'font-bold');
         } else if (fontName === 'Space Mono') {
-            return 'font-space-mono';
+            className = clsx('font-space-mono', heading && 'font-bold');
         }
-        return '';
+        return className;
     };
 
     // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
     // between heading and body fonts
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
-        let className = fontClassName(x);
+        let className = fontClassName(x, true);
         return {label: x, value: x, className};
     });
-    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
+    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, className: 'font-sans font-normal'});
 
     const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map((x) => {
-        let className = fontClassName(x);
+        let className = fontClassName(x, false);
         return {label: x, value: x, className};
     });
-    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT});
+    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, className: 'font-sans font-normal'});
+
+    const selectFont = (fontName: string, heading: boolean) => {
+        if (fontName === DEFAULT_FONT) {
+            return '';
+        }
+        return fontClassName(fontName, heading);
+    };
 
     const selectedHeadingFont = {label: headingFont, value: headingFont};
     const selectedBodyFont = {label: bodyFont, value: bodyFont};
@@ -248,7 +258,9 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
             <BehindFeatureFlag flag="customFonts">
                 <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
                     <Select
+                        className={selectFont(selectedHeadingFont.label, true)}
                         hint={''}
+                        menuShouldScrollIntoView={true}
                         options={customHeadingFonts}
                         selectedOption={selectedHeadingFont}
                         title={'Heading font'}
@@ -263,9 +275,11 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         }}
                     />
                     <Select
+                        className={selectFont(selectedBodyFont.label, false)}
                         hint={''}
                         maxMenuHeight={200}
                         menuPosition='fixed'
+                        menuShouldScrollIntoView={true}
                         options={customBodyFonts}
                         selectedOption={selectedBodyFont}
                         title={'Body font'}
