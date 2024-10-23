@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:generator');
 const localUtils = require('../../../shared/url-utils');
@@ -121,16 +120,14 @@ class UrlGenerator {
      * @private
      */
     _onInit() {
-        debug('_onInit', this.resourceType);
-
         // @NOTE: get the resources of my type e.g. posts.
         const resources = this.resources.getAllByType(this.resourceType);
 
-        debug(resources.length);
+        debug('_onInit', this.resourceType, resources.length);
 
-        _.each(resources, (resource) => {
+        for (const resource of resources) {
             this._try(resource);
-        });
+        }
     }
 
     /**
@@ -141,7 +138,7 @@ class UrlGenerator {
      * @private
      */
     _onAdded(event) {
-        debug('onAdded', this.toString());
+        debug('_onAdded', this.toString());
 
         // CASE: you are type "pages", but the incoming type is "users"
         if (event.type !== this.resourceType) {
@@ -149,7 +146,6 @@ class UrlGenerator {
         }
 
         const resource = this.resources.getByIdAndType(event.type, event.id);
-
         this._try(resource);
     }
 

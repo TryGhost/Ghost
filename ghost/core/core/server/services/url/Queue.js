@@ -93,7 +93,7 @@ class Queue extends EventEmitter {
             };
         }
 
-        debug('add', options.event, options.tolerance);
+        debug('register', options.event, options.tolerance);
 
         this.queue[options.event].subscribers.push(fn);
     }
@@ -103,19 +103,20 @@ class Queue extends EventEmitter {
      * @param {Object} options
      */
     run(options) {
-        const event = options.event;
-        const action = options.action;
-        const eventData = options.eventData;
+        const {event, action, eventData} = options;
 
         clearTimeout(this.toNotify[action].timeout);
         this.toNotify[action].timeout = null;
 
-        debug('run', action, event, this.queue[event].subscribers.length, this.toNotify[action].notified.length);
+        const subscribers = this.queue[event].subscribers;
+        const notified = this.toNotify[action].notified;
 
-        if (this.queue[event].subscribers.length && this.queue[event].subscribers.length !== this.toNotify[action].notified.length) {
-            const fn = this.queue[event].subscribers[this.toNotify[action].notified.length];
+        debug('run', action, event, subscribers.length, notified.length);
 
-            debug('execute', action, event, this.toNotify[action].notified.length);
+        if (subscribers.length && subscribers.length !== notified.length) {
+            const fn = subscribers[notified.length];
+
+            debug('run.execute', action, event, notified.length);
 
             /**
              * @NOTE: Currently no async operations happen in the subscribers functions.
@@ -124,7 +125,7 @@ class Queue extends EventEmitter {
             try {
                 fn(eventData);
 
-                debug('executed', action, event, this.toNotify[action].notified.length);
+                debug('run.executed', action, event, notified.length);
                 this.toNotify[action].notified.push(fn);
                 this.run(options);
             } catch (err) {
@@ -144,15 +145,15 @@ class Queue extends EventEmitter {
             // CASE 3: wait for more subscribers, i am still tolerant
             if (this.queue[event].tolerance === 0) {
                 delete this.toNotify[action];
-                debug('ended (1)', event, action);
+                debug('run.ended (1)', event, action);
                 this.emit('ended', event);
-            } else if (this.queue[options.event].subscribers.length >= this.queue[options.event].requiredSubscriberCount &&
+            } else if (subscribers.length >= this.queue[event].requiredSubscriberCount &&
                 this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
                 delete this.toNotify[action];
-                debug('ended (2)', event, action);
+                debug('run.ended (2)', event, action);
                 this.emit('ended', event);
             } else {
-                debug('retry', event, action, this.toNotify[action].timeoutInMS);
+                debug('run.retry', event, action, this.toNotify[action].timeoutInMS);
 
                 this.toNotify[action].timeoutInMS = this.toNotify[action].timeoutInMS * 1.1;
 
