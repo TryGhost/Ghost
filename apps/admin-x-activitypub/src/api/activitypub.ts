@@ -7,6 +7,7 @@ export interface Profile {
     actor: Actor;
     handle: string;
     followerCount: number;
+    followingCount: number;
     isFollowing: boolean;
     posts: Activity[];
 }

@@ -363,9 +363,10 @@ export function useSuggestedProfiles(handle: string, handles: string[]) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-export function useProfileForUser(handle: string, fullHandle: string) {
+export function useProfileForUser(handle: string, fullHandle: string, enabled: boolean = true) {
     return useQuery({
         queryKey: [`profile:${fullHandle}`],
+        enabled,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);

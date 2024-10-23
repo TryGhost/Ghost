@@ -6,6 +6,7 @@ import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
+import ViewProfileModal from './global/ViewProfileModal';
 import getUsername from '../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
@@ -165,7 +166,11 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                 // const isFollowing = profile.isFollowing;
                                                 return (
                                                     <li key={actor.id}>
-                                                        <ActivityItem url={actor.url}>
+                                                        <ActivityItem url={actor.url} onClick={() => NiceModal.show(ViewProfileModal, {
+                                                            profile: getUsername(actor),
+                                                            onFollow: () => {},
+                                                            onUnfollow: () => {}
+                                                        })}>
                                                             <APAvatar author={actor} />
                                                             <div>
                                                                 <div className='text-grey-600'>

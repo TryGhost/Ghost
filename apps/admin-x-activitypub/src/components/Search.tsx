@@ -10,7 +10,7 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ProfileSearchResultModal from './search/ProfileSearchResultModal';
+import ViewProfileModal from './global/ViewProfileModal';
 
 import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
@@ -49,7 +49,7 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
         <ActivityItem
             key={result.actor.id}
             onClick={() => {
-                NiceModal.show(ProfileSearchResultModal, {profile: result, onFollow, onUnfollow});
+                NiceModal.show(ViewProfileModal, {profile: result, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={result.actor}/>
