@@ -5,7 +5,7 @@
     "workspaceFolder": "/home/ghost",
     "shutdownAction": "stopCompose",
     "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
-    "updateContentCommand": ["./.devcontainer/updateContentCommand.sh"],
+    "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
     "postCreateCommand": ["yarn", "knex-migrator", "init"],
     "remoteEnv": {
         "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
