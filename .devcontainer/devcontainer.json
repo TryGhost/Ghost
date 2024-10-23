@@ -1,15 +1,12 @@
 {
-    "name": "Ghost Local",
-    "dockerComposeFile": ["../.docker/base.compose.yml", "../.docker/devcontainer.compose.yml"],
+    "name": "Codespaces",
+    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/codespaces.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/home/ghost",
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
-    ],
     "shutdownAction": "stopCompose",
-    "onCreateCommand": ["./.devcontainer/local/onCreateCommand.sh"],
-    "updateContentCommand": ["./.devcontainer/local/updateContentCommand.sh"],
-    "postCreateCommand": ["./.devcontainer/local/postCreateCommand.sh"],
+    "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
+    "updateContentCommand": ["./.devcontainer/updateContentCommand.sh"],
+    "postCreateCommand": ["./.devcontainer/postCreateCommand.sh"],
     "remoteEnv": {
         "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
         "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",

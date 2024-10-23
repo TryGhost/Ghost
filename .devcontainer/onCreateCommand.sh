@@ -3,7 +3,7 @@
 set -e
 
 echo "Setting up local config file..."
-node .devcontainer/codespaces/createLocalConfig.js
+node .devcontainer/createLocalConfig.js
 
 echo "Updating git submodules..."
 git submodule update --init --recursive
