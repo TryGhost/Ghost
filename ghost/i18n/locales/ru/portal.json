@@ -137,6 +137,7 @@
     "Sign up": "Зарегистрироваться",
     "Signup error: Invalid link": "Ошибка регистрации: Неверная или просроченная ссылка",
     "Something went wrong, please try again later.": "Что-то пошло не так, попробуйте ещё раз позже.",
+    "Sorry, no recommendations are available right now.": "",
     "Sorry, that didn’t work.": "Извините, это не сработало.",
     "Spam complaints": "Жалобы на спам",
     "Start {{amount}}-day free trial": "Начать {{amount}}-дневный пробный период",

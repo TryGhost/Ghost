@@ -32,7 +32,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='absolute -bottom-1 -right-1 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -bottom-1 -right-1 z-10 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>

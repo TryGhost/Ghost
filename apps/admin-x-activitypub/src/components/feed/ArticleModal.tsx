@@ -18,11 +18,11 @@ interface ArticleModalProps {
     focusReply: boolean;
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
+const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string}> = ({heading, image, excerpt, html}) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
-
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [iframeHeight, setIframeHeight] = useState('0px');
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
 
@@ -30,15 +30,34 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, html: str
   <html>
   <head>
     ${cssContent}
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-y: hidden;
+      }
+    </style>
+    <script>
+      function resizeIframe() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({type: 'resize', height: height}, '*');
+      }
+      window.addEventListener('load', resizeIframe);
+      window.addEventListener('resize', resizeIframe);
+      new MutationObserver(resizeIframe).observe(document.body, { subtree: true, childList: true });
+    </script>
   </head>
   <body>
     <header class='gh-article-header gh-canvas'>
         <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
-${image &&
-        `<figure class='gh-article-image'>
+        ${excerpt ? `
+            <p class='gh-article-excerpt'>${excerpt}</p>
+            ` : ''}
+        ${image ? `
+        <figure class='gh-article-image'>
             <img src='${image}' alt='${heading}' />
-        </figure>`
-}
+        </figure>
+        ` : ''}
     </header>
     <div class='gh-content gh-canvas is-body'>
       ${html}
@@ -51,20 +70,35 @@ ${image &&
         const iframe = iframeRef.current;
         if (iframe) {
             iframe.srcdoc = htmlContent;
+
+            const handleMessage = (event: MessageEvent) => {
+                if (event.data.type === 'resize') {
+                    setIframeHeight(`${event.data.height}px`);
+                    iframe.style.height = `${event.data.height}px`;
+                }
+            };
+
+            window.addEventListener('message', handleMessage);
+
+            return () => {
+                window.removeEventListener('message', handleMessage);
+            };
         }
     }, [htmlContent]);
 
     return (
-        <div>
+        <div className="w-full border-b border-grey-200">
             <iframe
                 ref={iframeRef}
-                className={`h-[calc(100vh_-_3vmin_-_4.8rem_-_2px)]`}
-                height='100%'
                 id='gh-ap-article-iframe'
+                style={{
+                    width: '100%',
+                    border: 'none',
+                    height: iframeHeight,
+                    overflow: 'hidden'
+                }}
                 title='Embedded Content'
-                width='100%'
-            >
-            </iframe>
+            />
         </div>
     );
 };
@@ -75,7 +109,7 @@ const FeedItemDivider: React.FC = () => (
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 2800;
+    // const MODAL_SIZE_LG = 2800;
     const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
@@ -86,7 +120,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
         }
     }
 
-    const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
+    const [modalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
 
     // Navigation stack to navigate between comments - This could probably use a
@@ -120,9 +154,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
             comments: nextComments
         });
     };
-    const toggleModalSize = () => {
-        setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
-    };
+    // const toggleModalSize = () => {
+    //     setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
+    // };
 
     function handleNewReply(activity: Activity) {
         setCommentsState(prev => [activity].concat(prev));
@@ -138,35 +172,38 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
             size='bleed'
             width={modalSize}
         >
-            <div className='sticky top-0 z-50 border-grey-200 bg-white py-3'>
-                <div className='grid h-8 grid-cols-3'>
-                    {canNavigateBack && (
-                        <div className='col-[1/2] flex items-center justify-between px-8'>
-                            <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+            <div className='flex h-full flex-col'>
+                <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-3'>
+                    <div className='grid h-8 grid-cols-3'>
+                        {canNavigateBack && (
+                            <div className='col-[1/2] flex items-center justify-between px-8'>
+                                <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                            </div>
+                        )}
+                        <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                         </div>
-                    )}
-                    <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
-                        {/* <span className='text-lg font-semibold text-grey-900'>{object.type}</span> */}
-                    </div>
-                    <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
-                        <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
+                            {/* <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/> */}
+                            <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className='mt-10 w-auto'>
-                {object.type === 'Note' && (
-                    <div className='mx-auto max-w-[580px] pb-16'>
-                        <FeedItem
-                            actor={actor}
-                            comments={comments}
-                            layout='modal'
-                            object={object}
-                            type='Note'
-                            onCommentClick={() => {
-                                setReplyBoxFocused(true);
-                            }}
-                        />
+                <div className='grow overflow-y-auto'>
+                    <div className='mx-auto max-w-[580px] py-10'>
+                        {object.type === 'Note' && (
+                            <FeedItem
+                                actor={actor}
+                                comments={comments}
+                                layout='modal'
+                                object={object}
+                                type='Note'
+                                onCommentClick={() => {
+                                    setReplyBoxFocused(true);
+                                }}
+                            />)}
+                        {object.type === 'Article' && (
+                            <ArticleBody excerpt={object?.preview?.content} heading={object.name} html={object.content} image={object?.image} />
+                        )}
                         <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
                         <FeedItemDivider />
 
@@ -213,10 +250,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                             );
                         })}
                     </div>
-                )}
-                {object.type === 'Article' && (
-                    <ArticleBody heading={object.name} html={object.content} image={object?.image} />
-                )}
+                </div>
             </div>
         </Modal>
     );

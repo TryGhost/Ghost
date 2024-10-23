@@ -1,4 +1,3 @@
-import commonjs from 'vite-plugin-commonjs';
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -14,12 +13,7 @@ export default (function viteConfig() {
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             svgr(),
-            react(),
-            commonjs({
-                dynamic: {
-                    loose: true
-                }
-            })
+            react()
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
