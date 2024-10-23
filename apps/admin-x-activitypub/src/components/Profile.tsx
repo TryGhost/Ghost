@@ -1,10 +1,14 @@
 import APAvatar from './global/APAvatar';
-import ActivityItem from './activities/ActivityItem';
+import ActivityItem, {type Activity} from './activities/ActivityItem';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+
+import ArticleModal from './feed/ArticleModal';
+import ViewProfileModal from './global/ViewProfileModal';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {
     useFollowersCountForUser,
@@ -61,6 +65,22 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         setVisibleFollowers(prev => prev + INCREMENT_VISIBLE_FOLLOWERS);
     };
 
+    const handleUserClick = (actor: ActorProperties) => {
+        NiceModal.show(ViewProfileModal, {
+            profile: getUsername(actor),
+            onFollow: () => {},
+            onUnfollow: () => {}
+        });
+    };
+
+    const handlePostClick = (activity: Activity) => {
+        NiceModal.show(ArticleModal, {
+            object: activity.object,
+            actor: activity.actor,
+            comments: activity.object.replies || []
+        });
+    };
+
     const tabs = [
         {
             id: 'posts',
@@ -77,6 +97,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
+                                    onClick={() => handlePostClick(activity)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
@@ -121,6 +142,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
+                                    onClick={() => handlePostClick(activity)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
@@ -163,7 +185,11 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         <List>
                             {following.slice(0, visibleFollowing).map((item) => {
                                 return (
-                                    <ActivityItem key={item.id} url={item.url}>
+                                    <ActivityItem
+                                        key={item.id}
+                                        url={item.url}
+                                        onClick={() => handleUserClick(item)}
+                                    >
                                         <APAvatar author={item} />
                                         <div>
                                             <div className='text-grey-600'>
@@ -207,7 +233,11 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         <List>
                             {followers.slice(0, visibleFollowers).map((item) => {
                                 return (
-                                    <ActivityItem key={item.id} url={item.url}>
+                                    <ActivityItem
+                                        key={item.id}
+                                        url={item.url}
+                                        onClick={() => handleUserClick(item)}
+                                    >
                                         <APAvatar author={item} />
                                         <div>
                                             <div className='text-grey-600'>
