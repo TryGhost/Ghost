@@ -36,6 +36,14 @@ animation: bump 0.3s ease-in-out;
   text-decoration: underline !important;
 }
 
+.ap-note-content span.invisible {
+  display: none;
+}
+
+.ap-note-content a:not(.hashtag) span.ellipsis:after {
+  content: "…";
+}
+
 .ap-note-content p + p {
   margin-top: 1.5rem !important;
 }
