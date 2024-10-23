@@ -40,7 +40,7 @@ const databaseConfig = {
     }
 }
 // Merge the original database config with the new database config
-config.database = {...config.database, ...databaseConfig};
+config.database = {...config?.database, ...databaseConfig};
 
 // Update the Redis connection settings
 const redisConfig = {
