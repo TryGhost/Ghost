@@ -4,7 +4,7 @@ services:
     image: ghost-base
     build:
       context: ../../
-      dockerfile: .devcontainer/docker/Dockerfile
+      dockerfile: .devcontainer/.docker/Dockerfile
       target: base
     tty: true
     depends_on:

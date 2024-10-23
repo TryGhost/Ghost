@@ -1,9 +1,25 @@
 {
-    "name": "Ghost",
-    "dockerComposeFile": ["./docker/base.compose.yml", "./docker/devcontainer.compose.yml"],
+    "name": "Ghost Local",
+    "dockerComposeFile": ["../.docker/base.compose.yml", "../.docker/devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/home/ghost",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
+    ],
     "shutdownAction": "stopCompose",
+    "onCreateCommand": ["./.devcontainer/local/onCreateCommand.sh"],
+    "updateContentCommand": ["./.devcontainer/local/updateContentCommand.sh"],
+    "postCreateCommand": ["./.devcontainer/local/postCreateCommand.sh"],
+    "remoteEnv": {
+        "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
+        "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
+        "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
+        "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
+        "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
+        "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
+        "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
+        "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
+    },
     "forwardPorts": [2368,4200,4173,41730,4175,4176,4177,4178,6174,7173,7174,9174],
     "portsAttributes": {
         "80": {
@@ -82,12 +98,6 @@
             "onAutoForward": "silent"
         }
     },
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
-    ],
-    "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
-    "updateContentCommand": ["./.devcontainer/updateContentCommand.sh"],
-    "postCreateCommand": ["./.devcontainer/postCreateCommand.sh"],
     "customizations": {
         "vscode": {
             "settings": {
@@ -95,8 +105,7 @@
                 "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
             },
             "extensions": [
-                "ms-azuretools.vscode-docker",
-                "Oracle.mysql-shell-for-vs-code"
+                "ms-azuretools.vscode-docker"
             ]
         }
     },
@@ -129,15 +138,5 @@
             "description": "Your Mailgun account's domain, e.g. sandbox1234567890.mailgun.org",
             "documentationUrl": ""
         }
-    },
-    "remoteEnv": {
-        "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
-        "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
-        "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
-        "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
-        "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
-        "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
-        "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
-        "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     }
 }

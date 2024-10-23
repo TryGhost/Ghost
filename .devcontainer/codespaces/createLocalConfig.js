@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 if (process.env.CODESPACES === 'true') {
-    const configFile = path.join(__dirname, '..', 'ghost', 'core', 'config.local.json');
+    const configFile = path.join(__dirname, '..', '..', 'ghost', 'core', 'config.local.json');
     console.log(configFile);
     const config = {};
     if (!fs.existsSync(configFile)) {

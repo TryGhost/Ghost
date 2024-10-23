@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Clean yarn cache
 echo "Cleaning yarn cache..."
 if [ "$DEVCONTAINER" = "true" ]; then
@@ -19,6 +21,6 @@ find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
 echo "Deleting all build artifacts..."
 find ./ghost -type d -name "build" -exec rm -rf '{}' +
-find ./ghost -type d -name "tsconfig.tsbuildinfo" -exec rm -rf '{}' +
+find ./ghost -type f -name "tsconfig.tsbuildinfo" -delete
 
 echo "Cleanup complete!"
