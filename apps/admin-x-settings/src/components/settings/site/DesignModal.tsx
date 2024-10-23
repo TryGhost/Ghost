@@ -33,13 +33,16 @@ const Sidebar: React.FC<{
             id: 'global',
             title: 'Global',
             contents: <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
-        },
-        {
+        }
+    ];
+
+    if (themeSettingSections.length > 0) {
+        tabs.push({
             id: 'theme-settings',
             title: 'Theme settings',
             contents: <ThemeSettings sections={themeSettingSections} updateSetting={updateThemeSetting} />
-        }
-    ];
+        });
+    }
 
     const handleTabChange = (id: string) => {
         setSelectedTab(id);
@@ -49,7 +52,7 @@ const Sidebar: React.FC<{
     return (
         <div className='flex h-full flex-col justify-between'>
             <div className='grow p-7 pt-2' data-testid="design-setting-tabs">
-                {tabs.length > 1 ? 
+                {tabs.length > 1 ?
                     <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
                     :
                     <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />

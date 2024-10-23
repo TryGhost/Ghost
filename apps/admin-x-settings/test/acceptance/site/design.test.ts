@@ -45,16 +45,6 @@ test.describe('Design settings', async () => {
         await modal.getByRole('button', {name: 'Desktop'}).click();
 
         await expect(modal.getByTestId('preview-mobile')).not.toBeVisible();
-
-        // Switching preview based on settings tab
-
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Homepage'}).click();
-
-        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
-
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'}).click();
-
-        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('post preview')).toHaveCount(1);
     });
 
     test('Warns when leaving without saving', async ({page}) => {
@@ -75,7 +65,9 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByLabel('Site description').fill('new description');
+        const accentColorPicker = modal.getByTestId('accent-color-picker');
+        await accentColorPicker.getByRole('button').click();
+        await accentColorPicker.getByRole('textbox').fill('#cd5786');
         // set timeout of 500ms to wait for the debounce
         await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Close'}).click();
@@ -90,7 +82,7 @@ test.describe('Design settings', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'}).click();
+        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Theme settings'}).click();
 
         await modal.getByLabel('Email signup text').fill('test');
 
@@ -128,17 +120,19 @@ test.describe('Design settings', async () => {
 
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
-        await modal.getByLabel('Site description').fill('new description');
+        const accentColorPicker = modal.getByTestId('accent-color-picker');
+        await accentColorPicker.getByRole('button').click();
+        await accentColorPicker.getByRole('textbox').fill('#cd5786');
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         // set timeout of 500ms to wait for the debounce
         await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);
+        expect(lastPreviewRequest.previewHeader).toMatch(/c=\%23cd5786\&d/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
-                {key: 'description', value: 'new description'}
+                {key: 'accent_color', value: '#cd5786'}
             ]
         });
     });
@@ -177,7 +171,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Site wide'}).click();
+        await modal.getByRole('tab', {name: 'Theme settings'}).click();
 
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
@@ -215,12 +209,16 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Brand'})).toBeVisible();
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Site wide'})).toBeHidden();
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Homepage'})).toBeHidden();
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'})).toBeHidden();
+        const designSettingTabs = modal.getByTestId('design-setting-tabs');
+
+        await expect(designSettingTabs.getByRole('tab', {name: 'Global'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Theme settings'})).toBeHidden();
+
+        // The tabs are not visible, but the global settings are still rendered
+        await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
+
         expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
@@ -265,7 +263,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Site wide'}).click();
+        await modal.getByRole('tab', {name: 'Theme settings'}).click();
 
         const showFeaturedPostsCustomThemeSetting = modal.getByLabel('Show featured posts');
 
