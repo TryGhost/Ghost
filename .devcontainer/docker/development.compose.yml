@@ -1,0 +1,22 @@
+name: ghost-development
+services:
+  ghost:
+    image: ghost-development
+    build:
+      target: development
+    command: ["yarn", "dev"]
+    volumes:
+      - ../.yarncache:/home/ghost/.yarncache
+    develop: 
+      watch: 
+        - path: ../
+          action: sync
+          target: /home/ghost
+          ignore: 
+            - node_modules/
+            - .yarncache/
+        - path: yarn.lock
+          action: rebuild
+    environment:
+      - DEBUG=${DEBUG:-}
+      - APP_FLAGS=${APP_FLAGS:-}

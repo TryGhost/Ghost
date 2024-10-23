@@ -1,0 +1,9 @@
+name: ghost-codespace-default
+
+services:
+  ghost:
+    build:
+      target: devcontainer
+    command: ["sleep", "infinity"]
+    environment:
+      - DEVCONTAINER=true

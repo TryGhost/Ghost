@@ -11,7 +11,7 @@ function getEnv() {
 }
 
 function getIsDevContainer() {
-    return process.env.IS_DEVCONTAINER === 'true';
+    return process.env.DEVCONTAINER === 'true';
 }
 
 /**

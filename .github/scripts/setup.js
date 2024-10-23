@@ -36,7 +36,7 @@ async function runAndStream(command, args, options) {
         return;
     }
 
-    if (process.env.IS_DEVCONTAINER === 'true') {
+    if (process.env.DEVCONTAINER === 'true') {
         console.log(chalk.yellow(`Devcontainer detected, skipping setup`));
         return;
     }

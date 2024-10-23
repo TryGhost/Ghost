@@ -1,29 +1,11 @@
-name: ghost-development
+name: ghost-base
 services:
   ghost:
-    image: ghost:local
+    image: ghost-base
     build:
-      context: ../
-      dockerfile: .devcontainer/Dockerfile
-      target: development
-    command: ["yarn", "dev"]
-    volumes:
-      - ../.yarncache:/home/ghost/.yarncache
-    container_name: ghost-development-ghost
-    develop: 
-      watch: 
-        - path: ../
-          action: sync
-          target: /home/ghost
-          ignore: 
-            - node_modules/
-            - .yarncache/
-        - path: yarn.lock
-          action: rebuild
-    restart: always
-    environment:
-      - DEBUG=${DEBUG:-}
-      - APP_FLAGS=${APP_FLAGS:-}
+      context: ../../
+      dockerfile: .devcontainer/docker/Dockerfile
+      target: base
     tty: true
     depends_on:
       mysql:
@@ -32,7 +14,6 @@ services:
         condition: service_healthy
   mysql:
     image: mysql:8.0.35
-    container_name: ghost-development-mysql
     # We'll need to look into how we can further fine tune the memory usage/performance here
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
@@ -49,7 +30,6 @@ services:
       retries: 120
   redis:
     image: redis:7.0
-    container_name: ghost-development-redis
     ports:
       - "6379:6379"
     restart: always
@@ -57,10 +37,6 @@ services:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       interval: 1s
       retries: 120
-
-networks:
-  default:
-    name: ghost-development-network
 
 volumes:
   mysql-data:

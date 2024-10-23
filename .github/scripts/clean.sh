@@ -2,7 +2,7 @@
 
 # Clean yarn cache
 echo "Cleaning yarn cache..."
-if [ "$IS_DEVCONTAINER" = "true" ]; then
+if [ "$DEVCONTAINER" = "true" ]; then
     # In devcontainer, these directories are mounted from the host so we can't delete them — only their contents
     rm -rf .yarncache/* .yarncachecopy/*
 else

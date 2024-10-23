@@ -42,11 +42,11 @@ EXPOSE 7174
 # DevContainer Stage: Install dependencies
 FROM devbase AS devcontainer
 WORKDIR /home/ghost
-COPY ../ .
+COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
 # Development Stage: Install dependencies with some optimizations
-FROM devcontainer AS development
+FROM devbase AS development
 
 WORKDIR /home/ghost
 
@@ -55,5 +55,5 @@ RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_F
     rm -Rf .yarncachecopy/.tmp && \
     yarn cache clean
 
-ENTRYPOINT ["./.devcontainer/entry.sh"]
+ENTRYPOINT ["./.devcontainer/docker/development.entrypoint.sh"]
 CMD ["yarn", "dev"]

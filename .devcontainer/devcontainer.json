@@ -1,10 +1,10 @@
 {
     "name": "Ghost",
-    "dockerComposeFile": ["./development.compose.yml", "./docker-compose.extend.yml"],
+    "dockerComposeFile": ["./docker/base.compose.ynl", "./docker/devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/home/ghost",
     "shutdownAction": "stopCompose",
-    "forwardPorts": [2368,4200,4173,41730,4175,4176,4177,4178,6174,7173,7174],
+    "forwardPorts": [2368,4200,4173,41730,4175,4176,4177,4178,6174,7173,7174,9174],
     "portsAttributes": {
         "80": {
             "onAutoForward": "ignore"
@@ -70,6 +70,10 @@
         "7174": {
             "label": "Comments (HTTPS)",
             "protocol": "https"
+        },
+        "9174": {
+            "label": "Prometheus Metrics Exporter",
+            "onAutoForward": "silent"
         },
         "5173": {
             "onAutoForward": "silent"
