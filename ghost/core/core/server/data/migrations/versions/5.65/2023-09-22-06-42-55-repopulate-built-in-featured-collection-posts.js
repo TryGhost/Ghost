@@ -14,7 +14,7 @@ const insertPostCollections = async (knex, collectionId, postIds) => {
         };
     });
 
-    await knex.batchInsert('collections_posts', collectionPosts, 1000);
+    await knex.batchInsert('collections_posts', collectionPosts, 450);
 };
 
 module.exports = createTransactionalMigration(
