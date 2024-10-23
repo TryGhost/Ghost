@@ -257,13 +257,14 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 </div>
             </Form>
             <BehindFeatureFlag flag="customFonts">
-                <Form className='-mt-4' data-testid='custom-fonts-section' gap='sm' margins='lg' title='Typography'>
+                <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
                     <Select
                         className={selectFont(selectedHeadingFont.label, true)}
                         hint={''}
                         menuShouldScrollIntoView={true}
                         options={customHeadingFonts}
                         selectedOption={selectedHeadingFont}
+                        testId='heading-font-select'
                         title={'Heading font'}
                         onSelect={(option) => {
                             if (option?.value === DEFAULT_FONT) {
@@ -283,6 +284,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         menuShouldScrollIntoView={true}
                         options={customBodyFonts}
                         selectedOption={selectedBodyFont}
+                        testId='body-font-select'
                         title={'Body font'}
                         onSelect={(option) => {
                             if (option?.value === DEFAULT_FONT) {

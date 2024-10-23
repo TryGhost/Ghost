@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, mockApi, mockSitePreview, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
@@ -285,5 +285,52 @@ test.describe('Design settings', async () => {
                 {key: 'show_featured_posts', value: 'false'}
             ]
         });
+    });
+
+    test('Custom fonts', async ({page}) => {
+        toggleLabsFlag('customFonts', true);
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: []
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        const designSettingTabs = modal.getByTestId('design-setting-tabs');
+
+        await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
+
+        await expect(designSettingTabs.getByText('Typography')).toBeVisible();
+        await expect(designSettingTabs.getByTestId('heading-font-select')).toBeVisible();
+        await expect(designSettingTabs.getByTestId('body-font-select')).toBeVisible();
+
+        // select a different heading font
+        const headingFontSelect = designSettingTabs.getByTestId('heading-font-select');
+        await headingFontSelect.click();
+        await headingFontSelect.getByText('Cardo').click();
+
+        // select a different body font
+        const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
+        await bodyFontSelect.click();
+        await bodyFontSelect.getByText('Inter').click();
+
+        const expectedEncoded = new URLSearchParams([['bf', 'Inter'], ['hf', 'Cardo']]).toString();
+
+        // Preview should have the new fonts
+        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 });
