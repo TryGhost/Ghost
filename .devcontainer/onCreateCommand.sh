@@ -11,6 +11,10 @@ node .devcontainer/createLocalConfig.js
 echo "Updating git submodules..."
 git submodule update --init --recursive
 
+echo "Resetting NX cache..."
+yarn nx reset --cache-only
+yarn nx reset --workspace-only
+
 echo "Building typescript packages..."
 yarn nx run-many -t build:ts
 
