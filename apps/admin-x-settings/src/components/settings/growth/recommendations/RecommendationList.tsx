@@ -36,21 +36,21 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 
     return (
         <TableRow className='group' testId='recommendation-list-item'>
-            <TableCell onClick={showDetails}>
+            <TableCell className='w-80' onClick={showDetails}>
                 <div className='flex items-center gap-3 hover:cursor-pointer'>
                     <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
                     <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
                 </div>
             </TableCell>
             <TableCell 
-                className='hidden w-[1%] whitespace-nowrap text-right align-middle md:!visible md:!table-cell' 
+                className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell' 
                 onClick={showDetails}
             >
                 {count === 0 ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
                 ) : (
                     <>
-                        <div className='flex items-center justify-end'>
+                        <div className='flex items-center'>
                             <div className='mr-2'>
                                 <span>{numberWithCommas(count)}</span>
                             </div>
