@@ -9,7 +9,7 @@ echo "Installing dependencies..."
 yarn install
 
 echo "Setting up local config file..."
-node .devcontainer/local/createLocalConfig.js
+node .devcontainer/localMount/createLocalConfig.js
 
 echo "Updating git submodules..."
 git submodule update --init --recursive
