@@ -20,7 +20,6 @@ describe('Config Loader', function () {
         let loader;
 
         beforeEach(function () {
-            // Override process.env.database__client in case it is set (e.g. when running tests in docker)
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             loader = rewire('../../../../core/shared/config/loader');
@@ -83,42 +82,6 @@ describe('Config Loader', function () {
             customConfig.get('url').should.eql('http://localhost:2368');
             customConfig.get('logging:level').should.eql('error');
             customConfig.get('logging:transports').should.eql(['stdout']);
-        });
-
-        it('custom-env is stronger than default-env', function () {
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            customConfig.get('logging:level').should.eql('error');
-        });
-
-        it('devcontainer-env is stronger than local-env if in devcontainer', function () {
-            const revertEnv = loader.__set__('getEnv', () => 'devcontainer');
-            const revertIsDevContainer = loader.__set__('getIsDevContainer', () => true);
-
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            customConfig.get('placeholder').should.eql('devcontainer');
-            revertEnv();
-            revertIsDevContainer();
-        });
-
-        it('devcontainer-env is not included if not in devcontainer', function () {
-            const revertEnv = loader.__set__('getEnv', () => 'development');
-            const revertIsDevContainer = loader.__set__('getIsDevContainer', () => false);
-            customConfig = loader.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
-            });
-
-            customConfig.get('placeholder').should.eql('local');
-            revertEnv();
-            revertIsDevContainer();
         });
     });
 

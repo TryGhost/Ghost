@@ -1,10 +1,9 @@
+# For use in a Dev Container where your local code is mounted into the container
 name: ghost-devcontainer
-
 services:
   ghost:
-    image: ghost-devcontainer
     build:
-      target: devbase
+      target: base-devcontainer
     command: ["sleep", "infinity"]
     environment:
       - DEVCONTAINER=true

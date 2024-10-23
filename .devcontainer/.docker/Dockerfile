@@ -10,8 +10,9 @@ RUN apt-get update && \
         python3 \
         tar
 
-# DevBase Stage: setup environment for development, but no code or node dependencies yet
-FROM base AS devbase
+# Base DevContainer: for use in a Dev Container where your local code is mounted into the container
+### Adding code and installing dependencies gets overridden by your local code/dependencies, so this is done in onCreateCommand
+FROM base AS base-devcontainer
 # Install Stripe CLI, zsh, playwright
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
@@ -39,8 +40,10 @@ EXPOSE 7173
 EXPOSE 7174
 
 
-# DevContainer Stage: Add the code and install dependencies
-FROM devbase AS devcontainer
+# Full Devcontainer Stage: Add the code and install dependencies
+### This is a full devcontainer with all the code and dependencies installed
+### Useful in an environment like Github Codespaces where you don't mount your local code into the container
+FROM base-devcontainer AS full-devcontainer
 WORKDIR /home/ghost
 COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER

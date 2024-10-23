@@ -1,9 +1,8 @@
 name: ghost-development
 services:
   ghost:
-    image: ghost-development
     build:
-      target: development
+      target: full-devcontainer
     command: ["yarn", "dev"]
     volumes:
       - ../.yarncache:/home/ghost/.yarncache

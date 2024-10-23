@@ -1,8 +1,11 @@
 {
-    "name": "Codespaces",
-    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/codespaces.compose.yml"],
+    "name": "Ghost Local DevContainer",
+    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/home/ghost",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/home/ghost,type=bind,consistency=cached"
+    ],
     "shutdownAction": "stopCompose",
     "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
     "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
@@ -17,6 +20,7 @@
         "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
         "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     },
+    "forwardPorts": [2368,4200],
     "portsAttributes": {
         "80": {
             "onAutoForward": "ignore"
