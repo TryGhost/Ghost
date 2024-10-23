@@ -25,3 +25,4 @@ function getAbsoluteOption(options) {
         return false;
     }
 }
+
