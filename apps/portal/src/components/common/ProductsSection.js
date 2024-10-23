@@ -353,7 +353,7 @@ export const ProductsSectionStyles = () => {
             z-index: 800;
         }
 
-        .gh-portal-btn-product .gh-portal-btn {
+        .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) .gh-portal-btn {
             background: var(--brandcolor);
             color: var(--white);
             border: none;
@@ -361,11 +361,11 @@ export const ProductsSectionStyles = () => {
             z-index: 900;
         }
 
-        .gh-portal-btn-product .gh-portal-btn:hover {
+        .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) .gh-portal-btn:hover {
             opacity: 0.9;
         }
 
-        .gh-portal-btn-product .gh-portal-btn {
+        .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) .gh-portal-btn {
             background: var(--brandcolor);
             color: var(--white);
             border: none;
