@@ -8,8 +8,8 @@
     ],
     "shutdownAction": "stopCompose",
     "onCreateCommand": ["./.devcontainer/localMount/onCreateCommand.sh"],
-    "updateContentCommand": ["./.devcontainer/localMount/updateContentCommand.sh"],
-    "postCreateCommand": ["./.devcontainer/localMount/postCreateCommand.sh"],
+    "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
+    "postCreateCommand": ["yarn", "knex-migrator", "init"],
     "remoteEnv": {
         "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
         "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
