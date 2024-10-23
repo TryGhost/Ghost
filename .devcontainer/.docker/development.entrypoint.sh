@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$(ls -A ".yarncache")" ]; then
-    cp -r /home/ghost/.yarncachecopy/* /home/ghost/.yarncache/
+    cp -r /workspaces/ghost/.yarncachecopy/* /workspaces/ghost/.yarncache/
 fi
 
 exec "$@"

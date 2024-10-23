@@ -25,7 +25,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     npx -y playwright@1.46.1 install --with-deps
 
 ENV NX_DAEMON=true
-ENV YARN_CACHE_FOLDER=/home/ghost/.yarncache
+ENV YARN_CACHE_FOLDER=/workspaces/ghost/.yarncache
 
 EXPOSE 2368
 EXPOSE 4200
@@ -44,14 +44,14 @@ EXPOSE 7174
 ### This is a full devcontainer with all the code and dependencies installed
 ### Useful in an environment like Github Codespaces where you don't mount your local code into the container
 FROM base-devcontainer AS full-devcontainer
-WORKDIR /home/ghost
+WORKDIR /workspaces/ghost
 COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
 # Development Stage: alternative entrypoint for development with some caching optimizations
 FROM devbase AS development
 
-WORKDIR /home/ghost
+WORKDIR /workspaces/ghost
 
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER && \
     cp -r .yarncache .yarncachecopy && \

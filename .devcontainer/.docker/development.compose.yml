@@ -5,12 +5,12 @@ services:
       target: full-devcontainer
     command: ["yarn", "dev"]
     volumes:
-      - ../.yarncache:/home/ghost/.yarncache
+      - ../.yarncache:/workspaces/ghost/.yarncache
     develop: 
       watch: 
         - path: ../
           action: sync
-          target: /home/ghost
+          target: /workspaces/ghost
           ignore: 
             - node_modules/
             - .yarncache/
