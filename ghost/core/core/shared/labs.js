@@ -30,11 +30,11 @@ const BETA_FEATURES = [
     'activitypub',
     'stripeAutomaticTax',
     'webmentions',
-    'editorExcerpt'
+    'editorExcerpt',
+    'ActivityPub'
 ];
 
 const ALPHA_FEATURES = [
-    'ActivityPub',
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
@@ -45,7 +45,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
-    'commentImprovements'
+    'commentImprovements',
+    'staff2fa'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

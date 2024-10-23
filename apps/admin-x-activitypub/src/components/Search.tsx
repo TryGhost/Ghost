@@ -73,7 +73,7 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@quillmatiq@mastodon.social', '@miaq@flipboard.social', '@mallory@techpolicy.social']);
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
     const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
     // Initialise search query
@@ -86,7 +86,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     const results = data?.profiles || [];
     const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0;
+    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
     const showSuggested = query === '' || (isFetched && results.length === 0);
 
     useEffect(() => {
