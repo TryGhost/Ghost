@@ -6,7 +6,7 @@
     "shutdownAction": "stopCompose",
     "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
     "updateContentCommand": ["./.devcontainer/updateContentCommand.sh"],
-    "postCreateCommand": ["./.devcontainer/postCreateCommand.sh"],
+    "postCreateCommand": ["yarn", "knex-migrator", "init"],
     "remoteEnv": {
         "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
         "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
