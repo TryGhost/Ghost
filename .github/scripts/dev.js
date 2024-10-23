@@ -269,11 +269,8 @@ async function handleStripe() {
     process.env.NX_DISABLE_DB = "true";
     await exec("yarn nx reset --onlyDaemon");
     await exec("yarn nx daemon --start");
-    
+
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
-    if (APP_FLAGS.length === 0) {
-        console.log(chalk.blue('Set the APP_FLAGS environment variable to run Ghost with the local version of Portal, Lexical, etc.'));
-    }
 
     const {result} = concurrently(commands, {
         prefix: 'name',
