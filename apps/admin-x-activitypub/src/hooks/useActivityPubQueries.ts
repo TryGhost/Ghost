@@ -193,6 +193,17 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
+export function useFollowersExpandedForUser(handle: string) {
+    return useQuery({
+        queryKey: [`followers_expanded:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getFollowersExpanded();
+        }
+    });
+}
+
 export function useAllActivitiesForUser({
     handle,
     includeOwn = false,
@@ -359,6 +370,17 @@ export function useProfileForUser(handle: string, fullHandle: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
             return api.getProfile(fullHandle);
+        }
+    });
+}
+
+export function useOutboxForUser(handle: string) {
+    return useQuery({
+        queryKey: [`outbox:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getOutbox();
         }
     });
 }
