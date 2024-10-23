@@ -2,7 +2,7 @@ const {SafeString} = require('../services/handlebars');
 const logging = require('@tryghost/logging');
 const {urlUtils} = require('../services/proxy');
 
-module.exports = async function content_api_path(options) { // eslint-disable-line camelcase
+module.exports = async function content_api_url(options) { // eslint-disable-line camelcase
     let result;
     const absoluteUrlRequested = getAbsoluteOption(options);
 
@@ -26,4 +26,4 @@ function getAbsoluteOption(options) {
     }
 }
 
-module.exports= true;
+module.exports = true;

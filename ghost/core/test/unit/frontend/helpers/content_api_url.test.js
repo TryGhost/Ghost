@@ -4,10 +4,10 @@ const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
 
 // Stuff we are testing
-const content_api_path = require('../../../../core/frontend/helpers/content_api_path');
+const content_api_url = require('../../../../core/frontend/helpers/content_api_url');
 const logging = require('@tryghost/logging');
     
-describe('{{content_api_path}} helper', function () {
+describe('{{content_api_url}} helper', function () {
     let logWarnStub;
 
     beforeEach(function () {
@@ -28,21 +28,21 @@ describe('{{content_api_path}} helper', function () {
         });
 
         it('should output an absolute url', async function () {
-            let result = await content_api_path();
+            let result = await content_api_url();
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('https://admin.tld:65535/ghost/api/content/');
             logWarnStub.called.should.be.false();
         });
         it('should output an absolute url when passed true', async function () {
-            let result = await content_api_path(true);
+            let result = await content_api_url(true);
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('https://admin.tld:65535/ghost/api/content/');
             logWarnStub.called.should.be.false();
         });
         it('should output a relative url when passed false', async function () {
-            let result = await content_api_path(false);
+            let result = await content_api_url(false);
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('/ghost/api/content/');
@@ -59,21 +59,21 @@ describe('{{content_api_path}} helper', function () {
         });
     
         it('should output an absolute url', async function () {
-            let result = await content_api_path();
+            let result = await content_api_url();
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('https://admin.tld:65535/blog/ghost/api/content/');
             logWarnStub.called.should.be.false();
         });
         it('should output an absolute url when passed true', async function () {
-            let result = await content_api_path(true);
+            let result = await content_api_url(true);
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('https://admin.tld:65535/blog/ghost/api/content/');
             logWarnStub.called.should.be.false();
         });
         it('should output a relative url when passed false', async function () {
-            let result = await content_api_path(false);
+            let result = await content_api_url(false);
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('/blog/ghost/api/content/');
@@ -90,7 +90,7 @@ describe('{{content_api_path}} helper', function () {
         });
 
         it('gives the site url without a subdirectory', async function () {
-            let result = await content_api_path();
+            let result = await content_api_url();
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('http://localhost:65535/ghost/api/content/');
@@ -98,7 +98,7 @@ describe('{{content_api_path}} helper', function () {
         });
         it('gives the site url with a subdirectory', async function () {
             configUtils.set({url: 'http://localhost:65535/blog', 'admin:url': undefined});
-            let result = await content_api_path();
+            let result = await content_api_url();
             const rendered = new String(result);
             should.exist(rendered);
             rendered.should.equal('http://localhost:65535/blog/ghost/api/content/');
