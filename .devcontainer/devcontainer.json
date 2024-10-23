@@ -132,7 +132,7 @@
         "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
         "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
         "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
-        "mail__options__auth__pass": "${localEnv:MAILGUN_SMTP_PASS}",
+        "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
         "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
         "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     }
