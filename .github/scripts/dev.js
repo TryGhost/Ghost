@@ -54,9 +54,6 @@ const siteUrl = config.getSiteUrl();
 // Accept flags from the command line and environment variables
 // e.g. `yarn dev --portal` or `APP_FLAGS=portal yarn dev`
 const CLI_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
-if (CLI_ARGS.length > 0) {
-    console.warn('Using dash dash flags is deprecated. Please use the APP_FLAGS environment variable instead.');
-}
 const ENV_ARGS = process.env.APP_FLAGS?.trim().split(',') || [];
 const APP_FLAGS = [...CLI_ARGS, ...ENV_ARGS].map((flag) => {
     if (flag.trim() === '') {
