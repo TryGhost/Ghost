@@ -128,12 +128,13 @@ class Resources {
             modelOptions.limit = options.limit;
         }
 
+        const now = Date.now();
         const objects = await models.Base.Model.raw_knex.fetchAll(modelOptions);
-        debug('fetched', resourceConfig.type, objects.length);
+        debug('_fetch.fetched', resourceConfig.type, objects.length, `${Date.now() - now}ms`);
 
-        _.each(objects, (object) => {
+        for (const object of objects) {
             this.data[resourceConfig.type].push(new Resource(resourceConfig.type, object));
-        });
+        }
 
         if (objects.length && isSQLite) {
             options.offset = options.offset + options.limit;
