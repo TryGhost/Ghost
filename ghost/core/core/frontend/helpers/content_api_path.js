@@ -26,4 +26,4 @@ function getAbsoluteOption(options) {
     }
 }
 
-module.exports.async = true;
+module.exports= true;
