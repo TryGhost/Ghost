@@ -1068,4 +1068,4 @@ jobs:
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: |
-            https://cdn.jsdelivr.net/npm/@tryghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
+            https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
