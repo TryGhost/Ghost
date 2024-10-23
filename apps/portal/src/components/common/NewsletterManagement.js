@@ -183,21 +183,23 @@ export default function NewsletterManagement({
                     />
                 </div>
             </div>
+            <div className='gh-portal-btn-product gh-portal-btn-unsubscribe' style={{marginTop: '-48px', marginBottom: 0}}>
+                <ActionButton
+                    isRunning={false}
+                    onClick={() => {
+                        unsubscribeAll();
+                    }}
+                    disabled={isDisabled}
+                    brandColor={brandColor}
+                    isPrimary={false}
+                    label={t('Unsubscribe from all emails')}
+                    isDestructive={true}
+                    style={{width: '100%', zIndex: 900}}
+                    dataTestId="unsubscribe-from-all-emails"
+                />
+            </div>
             <footer className={'gh-portal-action-footer' + (hasMemberGotEmailSuppression({member}) ? ' gh-feature-suppressions' : '')}>
                 <div style={{width: '100%'}}>
-                    <ActionButton
-                        isRunning={false}
-                        onClick={() => {
-                            unsubscribeAll();
-                        }}
-                        disabled={isDisabled}
-                        brandColor={brandColor}
-                        isPrimary={false}
-                        label={t('Unsubscribe from all emails')}
-                        isDestructive={true}
-                        style={{width: '100%'}}
-                        dataTestId="unsubscribe-from-all-emails"
-                    />
                     <ShowPaidMemberMessage isPaid={isPaidMember} site={site} />
                 </div>
                 {hasMemberGotEmailSuppression({member}) && !isDisabled &&
