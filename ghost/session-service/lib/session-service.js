@@ -162,11 +162,11 @@ module.exports = function createSessionService({
     /**
      * Get a readable location string from an IP address.
      * @param {string} ip - The IP address to look up.
-     * @returns {Promise<string>} - A readable location string or 'Unknown Location'.
+     * @returns {Promise<string>} - A readable location string or 'Unknown'.
      */
     async function getGeolocationFromIP(ip) {
         if (!ip || (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip))) {
-            return;
+            return 'Unknown';
         }
 
         const gotOpts = {
@@ -178,27 +178,20 @@ module.exports = function createSessionService({
         }
 
         const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ip)}.json`;
-        const response = await got(geojsUrl, gotOpts).json();
 
-        const {
-            city = '',
-            region = '',
-            country = ''
-        } = response || {};
+        try {
+            const response = await got(geojsUrl, gotOpts).json();
 
-        const locationParts = [];
+            const {city, region, country} = response || {};
 
-        if (city) {
-            locationParts.push(city);
+            // Only include non-empty parts in the result
+            const locationParts = [city, region, country].filter(Boolean);
+
+            // If no valid parts, return 'Unknown'
+            return locationParts.length > 0 ? locationParts.join(', ').trim() : 'Unknown';
+        } catch (error) {
+            return 'Unknown';
         }
-        if (region) {
-            locationParts.push(region);
-        }
-        if (country) {
-            locationParts.push(country);
-        }
-
-        return locationParts.join(', ').trim() || 'Unknown Location';
     }
 
     async function getDeviceDetails(userAgent, ip) {
