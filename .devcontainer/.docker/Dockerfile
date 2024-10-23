@@ -1,5 +1,5 @@
 ARG NODE_VERSION=20.15.1
-## Base Image used for all images
+## Base Image used for all targets
 FROM node:$NODE_VERSION-bullseye-slim AS base
 RUN apt-get update && \
     apt-get install -y \
@@ -10,7 +10,7 @@ RUN apt-get update && \
         python3 \
         tar
 
-# DevBase Stage: Setup dev environment and add some goodies
+# DevBase Stage: setup environment for development, but no code or node dependencies yet
 FROM base AS devbase
 # Install Stripe CLI, zsh, playwright
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
@@ -39,13 +39,13 @@ EXPOSE 7173
 EXPOSE 7174
 
 
-# DevContainer Stage: Install dependencies
+# DevContainer Stage: Add the code and install dependencies
 FROM devbase AS devcontainer
 WORKDIR /home/ghost
 COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
-# Development Stage: Install dependencies with some optimizations
+# Development Stage: alternative entrypoint for development with some caching optimizations
 FROM devbase AS development
 
 WORKDIR /home/ghost
