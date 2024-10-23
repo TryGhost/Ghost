@@ -50,12 +50,14 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                     <span className="text-grey-500 dark:text-grey-900">-</span>
                 ) : (
                     <>
-                        <div className='text-right'>
-                            <span>{numberWithCommas(count)}</span>
-                        </div>
-                        <div className='text-sm lowercase text-grey-700'>
-                            <span>{showSubscribers ? newMembers : clicks}</span>
-                            <span className='invisible group-hover:visible'> from you</span>
+                        <div className='flex items-center justify-end'>
+                            <div className='mr-2'>
+                                <span>{numberWithCommas(count)}</span>
+                            </div>
+                            <div className='text-sm lowercase text-grey-700'>
+                                <span>{showSubscribers ? newMembers : clicks}</span>
+                                <span className='invisible group-hover:visible'> from you</span>
+                            </div>
                         </div>
                     </>
                 )}
