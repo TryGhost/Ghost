@@ -18,10 +18,9 @@ interface ArticleModalProps {
     focusReply: boolean;
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, html: string}> = ({heading, image, html}) => {
+const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string}> = ({heading, image, excerpt, html}) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
-
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
@@ -34,11 +33,14 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, html: str
   <body>
     <header class='gh-article-header gh-canvas'>
         <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
-${image &&
-        `<figure class='gh-article-image'>
+        ${excerpt ? `
+            <p class='gh-article-excerpt'>${excerpt}</p>
+            ` : ''}
+        ${image ? `
+        <figure class='gh-article-image'>
             <img src='${image}' alt='${heading}' />
-        </figure>`
-}
+        </figure>
+        ` : ''}
     </header>
     <div class='gh-content gh-canvas is-body'>
       ${html}
@@ -75,7 +77,7 @@ const FeedItemDivider: React.FC = () => (
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 2800;
+    // const MODAL_SIZE_LG = 2800;
     const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
@@ -86,7 +88,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
         }
     }
 
-    const [modalSize, setModalSize] = useState<number>(MODAL_SIZE_SM);
+    const [modalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
 
     // Navigation stack to navigate between comments - This could probably use a
@@ -120,9 +122,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
             comments: nextComments
         });
     };
-    const toggleModalSize = () => {
-        setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
-    };
+    // const toggleModalSize = () => {
+    //     setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
+    // };
 
     function handleNewReply(activity: Activity) {
         setCommentsState(prev => [activity].concat(prev));
@@ -148,7 +150,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                     <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                     </div>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/>
+                        {/* <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/> */}
                         <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
@@ -214,7 +216,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                     </div>
                 )}
                 {object.type === 'Article' && (
-                    <ArticleBody heading={object.name} html={object.content} image={object?.image} />
+                    <ArticleBody excerpt={object?.preview?.content} heading={object.name} html={object.content} image={object?.image} />
                 )}
             </div>
         </Modal>

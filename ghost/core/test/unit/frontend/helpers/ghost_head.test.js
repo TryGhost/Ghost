@@ -1138,6 +1138,30 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
+        it('includes portal when recommendations enabled', async function () {
+            settingsCache.get.withArgs('recommendations_enabled').returns(true);
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('includes portal when donations enabled', async function () {
+            settingsCache.get.withArgs('donations_enabled').returns(true);
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
         it('includes stripe when connected', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);

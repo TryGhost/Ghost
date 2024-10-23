@@ -8,10 +8,11 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {
     useFollowersCountForUser,
-    useFollowersForUser,
+    useFollowersExpandedForUser,
     useFollowingCountForUser,
     useFollowingForUser,
     useLikedForUser,
+    useOutboxForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
 
@@ -21,8 +22,10 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     const {data: followersCount = 0} = useFollowersCountForUser('index');
     const {data: followingCount = 0} = useFollowingCountForUser('index');
     const {data: following = []} = useFollowingForUser('index');
-    const {data: followers = []} = useFollowersForUser('index');
+    const {data: followers = []} = useFollowersExpandedForUser('index');
     const {data: liked = []} = useLikedForUser('index');
+    const {data: posts = []} = useOutboxForUser('index');
+
     // Replace 'index' with the actual handle of the user
     const {data: userProfile} = useUserDataForUser('index') as {data: ActorProperties | null};
 
@@ -32,14 +35,76 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     const layout = 'feed';
 
+    const INCREMENT_VISIBLE_POSTS = 40;
+    const INCREMENT_VISIBLE_LIKES = 40;
+    const INCREMENT_VISIBLE_FOLLOWING = 40;
+    const INCREMENT_VISIBLE_FOLLOWERS = 40;
+
+    const [visiblePosts, setVisiblePosts] = useState(INCREMENT_VISIBLE_POSTS);
+    const [visibleLikes, setVisibleLikes] = useState(INCREMENT_VISIBLE_LIKES);
+    const [visibleFollowing, setVisibleFollowing] = useState(INCREMENT_VISIBLE_FOLLOWING);
+    const [visibleFollowers, setVisibleFollowers] = useState(INCREMENT_VISIBLE_FOLLOWERS);
+
+    const loadMorePosts = () => {
+        setVisiblePosts(prev => prev + INCREMENT_VISIBLE_POSTS);
+    };
+
+    const loadMoreLikes = () => {
+        setVisibleLikes(prev => prev + INCREMENT_VISIBLE_LIKES);
+    };
+
+    const loadMoreFollowing = () => {
+        setVisibleFollowing(prev => prev + INCREMENT_VISIBLE_FOLLOWING);
+    };
+
+    const loadMoreFollowers = () => {
+        setVisibleFollowers(prev => prev + INCREMENT_VISIBLE_FOLLOWERS);
+    };
+
     const tabs = [
         {
             id: 'posts',
             title: 'Posts',
-            contents: (<div><NoValueLabel icon='pen'>
-                You haven&apos;t posted anything yet.
-            </NoValueLabel></div>),
-            counter: 240
+            contents: (
+                <div className='ap-posts'>
+                    {posts.length === 0 ? (
+                        <NoValueLabel icon='pen'>
+                            You haven&apos;t posted anything yet.
+                        </NoValueLabel>
+                    ) : (
+                        <ul className='mx-auto flex max-w-[640px] flex-col'>
+                            {posts.slice(0, visiblePosts).map((activity, index) => (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.object?.attributedTo || activity.actor}
+                                        layout={layout}
+                                        object={activity.object}
+                                        type={activity.type}
+                                        onCommentClick={() => {}}
+                                    />
+                                    {index < posts.length - 1 && (
+                                        <div className="h-px w-full bg-grey-200"></div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    {visiblePosts < posts.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMorePosts}
+                        />
+                    )}
+                </div>
+            ),
+            counter: posts.length
         },
         {
             id: 'likes',
@@ -52,13 +117,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <ul className='mx-auto flex max-w-[640px] flex-col'>
-                            {liked.map((activity, index) => (
+                            {liked.slice(0, visibleLikes).map((activity, index) => (
                                 <li
                                     key={activity.id}
                                     data-test-view-article
                                 >
                                     <FeedItem
-                                        actor={activity.actor}
+                                        actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
@@ -70,6 +135,16 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 </li>
                             ))}
                         </ul>
+                    )}
+                    {visibleLikes < liked.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMoreLikes}
+                        />
                     )}
                 </div>
             ),
@@ -86,7 +161,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <List>
-                            {following.map((item) => {
+                            {following.slice(0, visibleFollowing).map((item) => {
                                 return (
                                     <ActivityItem key={item.id} url={item.url}>
                                         <APAvatar author={item} />
@@ -96,14 +171,24 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                                 <div className='text-sm'>{getUsername(item)}</div>
                                             </div>
                                         </div>
-                                        <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
+                                        {/* <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
                                             e?.preventDefault();
                                             alert('Implement me!');
-                                        }} />
+                                        }} /> */}
                                     </ActivityItem>
                                 );
                             })}
                         </List>
+                    )}
+                    {visibleFollowing < following.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMoreFollowing}
+                        />
                     )}
                 </div>
             ),
@@ -120,7 +205,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <List>
-                            {followers.map((item) => {
+                            {followers.slice(0, visibleFollowers).map((item) => {
                                 return (
                                     <ActivityItem key={item.id} url={item.url}>
                                         <APAvatar author={item} />
@@ -134,6 +219,16 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 );
                             })}
                         </List>
+                    )}
+                    {visibleFollowers < followers.length && (
+                        <Button
+                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                            color='grey'
+                            fullWidth={true}
+                            label='Show more'
+                            size='md'
+                            onClick={loadMoreFollowers}
+                        />
                     )}
                 </div>
             ),

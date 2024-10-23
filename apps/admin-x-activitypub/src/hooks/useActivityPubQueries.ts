@@ -193,6 +193,17 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
+export function useFollowersExpandedForUser(handle: string) {
+    return useQuery({
+        queryKey: [`followers_expanded:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getFollowersExpanded();
+        }
+    });
+}
+
 export function useAllActivitiesForUser({
     handle,
     includeOwn = false,
@@ -218,11 +229,13 @@ export function useActivitiesForUser({
     handle,
     includeOwn = false,
     includeReplies = false,
+    excludeNonFollowers = false,
     filter = null
 }: {
     handle: string;
     includeOwn?: boolean;
     includeReplies?: boolean;
+    excludeNonFollowers?: boolean;
     filter?: {type?: string[]} | null;
 }) {
     return useInfiniteQuery({
@@ -230,7 +243,7 @@ export function useActivitiesForUser({
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getActivities(includeOwn, includeReplies, filter, pageParam);
+            return api.getActivities(includeOwn, includeReplies, excludeNonFollowers, filter, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.nextCursor;
@@ -321,9 +334,14 @@ export function useSuggestedProfiles(handle: string, handles: string[]) {
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return Promise.all(
+
+            return Promise.allSettled(
                 handles.map(h => api.getProfile(h))
-            );
+            ).then((results) => {
+                return results
+                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                    .map(result => result.value);
+            });
         }
     });
 
@@ -352,6 +370,17 @@ export function useProfileForUser(handle: string, fullHandle: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
             return api.getProfile(fullHandle);
+        }
+    });
+}
+
+export function useOutboxForUser(handle: string) {
+    return useQuery({
+        queryKey: [`outbox:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getOutbox();
         }
     });
 }

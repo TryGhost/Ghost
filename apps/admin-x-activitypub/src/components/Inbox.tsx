@@ -28,6 +28,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     } = useActivitiesForUser({
         handle: 'index',
         includeReplies: true,
+        excludeNonFollowers: true,
         filter: {
             type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
         }
@@ -35,10 +36,12 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     const {updateRoute} = useRouting();
 
-    const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@quillmatiq@mastodon.social', '@miaq@flipboard.social', '@mallory@techpolicy.social']);
+    const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
     const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
-    const activities = (data?.pages.flatMap(page => page.data) ?? []);
+    const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
+        return !activity.object.inReplyTo;
+    });
 
     const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
         setArticleContent(object);
@@ -151,7 +154,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         )}
                                     </ul>
                                 </div>
-                                <div className={`sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden ${layout === 'inbox' ? '' : ' xxl:fixed xxl:right-[40px]'}`}>
+                                <div className={`sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden ${layout === 'inbox' ? '' : ' xxxl:fixed xxxl:right-[40px]'}`}>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like...</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
@@ -197,15 +200,15 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     src={ActivityPubWelcomeImage}
                                 />
                                 <Heading className='text-balance' level={2}>
-                        Welcome to ActivityPub
+                                    Welcome to ActivityPub Beta
                                 </Heading>
-                                <p className='text-pretty text-grey-800'>
-                        We&apos;re so glad to have you on board! At the moment, you can follow other Ghost sites and enjoy their content right here inside Ghost.
+                                <p className="text-pretty text-grey-800">
+                                    Here you&apos;ll find the latest posts from accounts you&apos;re following, so go ahead and find the ones you like using the &quot;Search&quot; tab.
                                 </p>
-                                <p className='text-pretty text-grey-800'>
-                        You can see all of the users on the right—find your favorite ones and give them a follow.
+                                <p className="text-pretty text-grey-800">
+                                    For more information about what you can and can&apos;t (yet) do in the beta version, check out the onboarding guide:
                                 </p>
-                                <Button color='green' label='Learn more' link={true} />
+                                <a className='font-semibold text-green' href='https://forum.ghost.org/t/activitypub-beta-start-here/51780' rel='noopener noreferrer' target='_blank'>Learn more</a>
                             </div>
                         </div>
                     )}

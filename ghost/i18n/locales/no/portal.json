@@ -137,6 +137,7 @@
     "Sign up": "Opprett bruker",
     "Signup error: Invalid link": "En feil oppstod: Ugyldig lenke",
     "Something went wrong, please try again later.": "Noe gikk galt. Prøv igjen senere.",
+    "Sorry, no recommendations are available right now.": "",
     "Sorry, that didn’t work.": "Beklager, det fungerte ikke",
     "Spam complaints": "Klager om søppelpost",
     "Start {{amount}}-day free trial": "Start gratis prøveperiode på {{amount}} dager",
