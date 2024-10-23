@@ -136,7 +136,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
-interface ProfileSearchResultModalProps {
+interface ViewProfileModalProps {
     profile: {
         actor: ActorProperties;
         handle: string;
@@ -151,7 +151,7 @@ interface ProfileSearchResultModalProps {
 
 type ProfileTab = 'posts' | 'following' | 'followers';
 
-const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
+const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
     profile: initialProfile,
     onFollow = noop,
     onUnfollow = noop
@@ -316,4 +316,4 @@ const ProfileSearchResultModal: React.FC<ProfileSearchResultModalProps> = ({
     );
 };
 
-export default NiceModal.create(ProfileSearchResultModal);
+export default NiceModal.create(ViewProfileModal);

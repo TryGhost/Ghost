@@ -8,7 +8,7 @@ import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
 // import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
-import ProfileSearchResultModal from './search/ProfileSearchResultModal';
+import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
@@ -156,7 +156,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             });
             break;
         case ACTVITY_TYPE.FOLLOW:
-            NiceModal.show(ProfileSearchResultModal, {
+            NiceModal.show(ViewProfileModal, {
                 profile: getUsername(activity.actor),
                 onFollow: () => {},
                 onUnfollow: () => {}
