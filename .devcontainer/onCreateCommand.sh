@@ -2,6 +2,9 @@
 
 set -e
 
+echo "Installing dependencies..."
+yarn install
+
 echo "Setting up local config file..."
 node .devcontainer/createLocalConfig.js
 

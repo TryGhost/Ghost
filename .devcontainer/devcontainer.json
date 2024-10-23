@@ -1,6 +1,6 @@
 {
     "name": "Ghost",
-    "dockerComposeFile": ["./docker/base.compose.ynl", "./docker/devcontainer.compose.yml"],
+    "dockerComposeFile": ["./docker/base.compose.yml", "./docker/devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/home/ghost",
     "shutdownAction": "stopCompose",
