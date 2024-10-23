@@ -25,6 +25,17 @@ if (process.env.CODESPACES === 'true') {
                 }
             }
         }
+        // bulkEmail
+        if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
+            config.bulkEmail = {
+                mailgun: {
+                    baseUrl: 'https://api.mailgun.net/v3',
+                    apiKey: process.env.MAILGUN_API_KEY,
+                    domain: process.env.MAILGUN_DOMAIN,
+                    tag: 'bulk-email'
+                }
+            }
+        }
     }
     fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
 }
