@@ -17,8 +17,9 @@ const Content = () => {
     if (labs && labs.commentImprovements) {
         // this is now managed by the api
         commentsElements = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
+    } else {
+        commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
     }
-    commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
 
     useEffect(() => {
         const elem = document.getElementById(ROOT_DIV_ID);
@@ -56,7 +57,7 @@ const Content = () => {
                         {t('Sort by')}: <SortingForm/>
                     </span>
                 </div>
-                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements">
+                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements" data-testid="comments-sorting-form">
                     {commentsElements}
                 </div>
                 <Pagination />

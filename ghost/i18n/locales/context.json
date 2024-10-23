@@ -198,6 +198,7 @@
     "Something went wrong, please try again.": "Error message when subscribing to a newsletter fails in the signup form embed",
     "Sorry, no recommendations are available right now.": "",
     "Sorry, that didn’t work.": "Title of a page when an error occured while submitting feedback",
+    "Sort by": "",
     "Spam complaints": "A title in the email suppression FAQ",
     "Start the conversation": "Title of the CTA section of comments when not signed in and when there are no comments yet",
     "Start {{amount}}-day free trial": "A button for starting a free trial",

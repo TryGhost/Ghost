@@ -8,7 +8,7 @@ import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AdminApi, setupAdminAPI} from './utils/adminApi';
-import {AppContext, DispatchActionType, EditableAppContext} from './AppContext';
+import {AppContext, DispatchActionType, EditableAppContext, LabsContextType} from './AppContext';
 import {CommentsFrame} from './components/Frame';
 import {useOptions} from './utils/options';
 
@@ -120,9 +120,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async () => {
+    const fetchComments = async (labs: LabsContextType) => {
         let dataPromise;
-        if (state.labs && state.labs.commentImprovements) {
+        if (labs?.commentImprovements) {
             dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
         } else {
             dataPromise = api.comments.browse({page: 1, postId: options.postId});
@@ -144,7 +144,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         try {
             // Fetch data from API, links, preview, dev sources
             const {member, labs} = await api.init();
-            const {comments, pagination, count} = await fetchComments();
+            const {comments, pagination, count} = await fetchComments(labs);
             const state = {
                 member,
                 initStatus: 'success',

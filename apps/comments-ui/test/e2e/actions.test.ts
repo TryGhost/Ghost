@@ -154,7 +154,7 @@ test.describe('Actions', async () => {
         const replyReplyButton = replyComment.getByTestId('reply-button');
         await replyReplyButton.click();
 
-        const editor = frame.getByTestId('form-editor');
+        const editor = frame.getByTestId('form-editor').nth(1);
         await expect(editor).toBeVisible();
         await waitEditorFocused(editor);
 
@@ -211,5 +211,80 @@ test.describe('Actions', async () => {
         await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
         await expect(frame.getByTestId('expertise-button')).toHaveText('·Software development');
     });
-});
 
+    test.describe('Sorting - flag needs to be enabled', () => {
+        test('Renders Sorting Form dropdown', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>'
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                liked: true,
+                count: {
+                    likes: 52
+                }
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 4</p>'
+            });
+
+            mockedApi.addComment({
+                html: '<p>This is comment 5</p>'
+            });
+
+            mockedApi.addComment({
+                html: '<p>This is comment 6</p>'
+            });
+    
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const sortingForm = frame.getByTestId('comments-sorting-form');
+
+            await expect(sortingForm).toBeVisible();
+        });
+
+        test('Defaut sorting is by Best', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>',
+                count: {
+                    likes: 5
+                }
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                count: {
+                    likes: 10
+                }
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 3</p>',
+                count: {
+                    likes: 15
+                }
+            });
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const sortingForm = frame.getByTestId('comments-sorting-form');
+
+            // Check default sorting is by Best
+
+            await expect(sortingForm).toHaveText('Best');
+        });
+        // test('Renders Sorting Form dropdown', async ({page}) => {
+    });
+});
