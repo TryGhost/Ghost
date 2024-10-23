@@ -5,5 +5,18 @@ services:
     build:
       target: devcontainer
     command: ["sleep", "infinity"]
+    ports:
+      - 2368:2368
+      - 4200:4200
+      - 4173:4173
+      - 41730:41730
+      - 4175:4175
+      - 4176:4176
+      - 4177:4177
+      - 4178:4178
+      - 6174:6174
+      - 7173:7173
+      - 7174:7174
+      - 9174:9174
     environment:
       - DEVCONTAINER=true

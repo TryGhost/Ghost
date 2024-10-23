@@ -13,6 +13,3 @@ git submodule update --init --recursive
 
 echo "Building typescript packages..."
 yarn nx run-many -t build:ts
-
-echo "Running unit tests..."
-yarn nx run-many -t test:unit

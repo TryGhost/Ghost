@@ -20,7 +20,6 @@
         "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
         "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     },
-    "forwardPorts": [2368,4200,4173,41730,4175,4176,4177,4178,6174,7173,7174,9174],
     "portsAttributes": {
         "80": {
             "onAutoForward": "ignore"

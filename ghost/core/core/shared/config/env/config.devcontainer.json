@@ -1,4 +1,7 @@
 {
+    "server": {
+        "host": "0.0.0.0"
+    },
     "database": {
         "client": "mysql2",
         "connection": {
