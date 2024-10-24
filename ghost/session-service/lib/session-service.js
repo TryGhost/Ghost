@@ -41,6 +41,7 @@ totp.options = {
  * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
+ * @prop {(req: Req, res: Res) => Promise<void>} createSetupSession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} isVerifiedSession
@@ -119,6 +120,28 @@ module.exports = function createSessionService({
         if (!labs.isSet('staff2fa')) {
             session.verified = true;
         }
+    }
+
+    /**
+     * createSetupSession
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @returns {Promise<void>}
+     */
+    async function createSetupSession(req, res) {
+        const session = await getSession(req, res);
+        const origin = getOriginOfRequest(req);
+        if (!origin) {
+            throw new BadRequestError({
+                message: 'Could not determine origin of request. Please ensure an Origin or Referrer header is present.'
+            });
+        }
+
+        session.origin = origin;
+        session.user_agent = req.get('user-agent');
+        session.ip = req.ip;
+        session.verified = true;
     }
 
     /**
@@ -320,6 +343,7 @@ module.exports = function createSessionService({
     return {
         getUserForSession,
         createSessionForUser,
+        createSetupSession,
         removeUserForSession,
         verifySession,
         isVerifiedSession,

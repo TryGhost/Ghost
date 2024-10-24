@@ -21,6 +21,18 @@ function SessionMiddleware({sessionService}) {
         }
     }
 
+    /**
+     * Create a verified, unauthenticated session during setup
+     * Used to bypass email verification immediately following setup
+     */
+    async function createSetupSession(req, res, next) {
+        try {
+            await sessionService.createSetupSession(req, res);
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async function logout(req, res, next) {
         try {
             await sessionService.removeUserForSession(req, res);
@@ -80,6 +92,7 @@ function SessionMiddleware({sessionService}) {
 
     return {
         createSession: createSession,
+        createSetupSession: createSetupSession,
         logout: logout,
         authenticate: authenticate,
         sendAuthCode: sendAuthCode,

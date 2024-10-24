@@ -1,7 +1,8 @@
 const nock = require('nock');
 const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
+const {mockLabsEnabled, mockLabsDisabled} = require('../../../utils/e2e-framework-mock-manager');
+const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId, stringMatching} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
@@ -21,7 +22,7 @@ async function waitForEmailSent(emailMockReceiver, number = 1) {
     }
 }
 
-describe('Authentication API', function () {
+describe.only('Authentication API', function () {
     let emailMockReceiver;
     let agent;
 
@@ -247,6 +248,60 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     assert.deepEqual(body.notifications, [], 'The setup should not create notifications');
+                });
+        });
+    });
+
+    describe('2FA', function () {
+        before(async function () {
+            agent = await agentProvider.getAdminAPIAgent();
+            mockLabsEnabled('staff2fa');
+        });
+
+        after(function () {
+            mockLabsDisabled('staff2fa');
+        });
+
+        beforeEach(async function () {
+            await mockManager.disableStripe();
+            emailMockReceiver = mockManager.mockMail();
+        });
+
+        afterEach(function () {
+            mockManager.restore();
+            nock.cleanAll();
+        });
+
+        it('Can bypass 2fa during setup', async function () {
+            const email = 'test@example.com';
+            const password = 'thisissupersafe';
+
+            await agent
+                .post('authentication/setup')
+                .body({
+                    setup: [{
+                        name: 'test user',
+                        email,
+                        password,
+                        blogTitle: 'a test blog',
+                        theme: 'TryGhost/Dawn',
+                        accentColor: '#85FF00',
+                        description: 'Custom Site Description on Setup &mdash; great for everyone'
+                    }]
+                })
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    users: [{
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    'set-cookie': [
+                        stringMatching(/^ghost-admin-api-session=/)
+                    ]
                 });
         });
     });
