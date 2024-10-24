@@ -17,7 +17,7 @@ services:
     # We'll need to look into how we can further fine tune the memory usage/performance here
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
-      - "3306:3306"
+      - "3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ghost
@@ -31,7 +31,7 @@ services:
   redis:
     image: redis:7.0
     ports:
-      - "6379:6379"
+      - "6379"
     restart: always
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
