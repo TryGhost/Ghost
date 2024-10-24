@@ -216,11 +216,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 }
 
 .gh-portal-signup-terms {
-    margin: -16px 0 36px;
+    margin: 0 0 36px;
 }
 
 .gh-portal-signup-terms-wrapper.free-only .gh-portal-signup-terms {
-    margin: -16px 0 24px;
+    margin: 0 0 24px;
 }
 
 .gh-portal-products:has(.gh-portal-product-card) + .gh-portal-signup-terms-wrapper.free-only {
@@ -244,7 +244,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 
 .gh-portal-signup-terms .checkbox {
     position: relative;
-    top: 1px;
+    top: -1px;
     flex-shrink: 0;
     display: inline-block;
     float: left;
@@ -295,14 +295,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     box-shadow: none;
 }
 
-.gh-portal-signup-terms-content {
-    color: var(--grey4);
-    font-size: 1.5rem;
-    line-height: 1.5em;
-}
-
 .gh-portal-signup-terms-content p {
     margin-bottom: 0;
+    color: var(--grey4);
+    font-size: 1.4rem;
+    line-height: 1.25em;
 }
 
 .gh-portal-error .gh-portal-signup-terms-content {
