@@ -239,7 +239,8 @@ async function handleStripe() {
 
     const {result} = concurrently(commands, {
         prefix: 'name',
-        killOthers: ['failure', 'success']
+        killOthers: ['failure', 'success'],
+        successCondition: 'first'
     });
 
     try {
