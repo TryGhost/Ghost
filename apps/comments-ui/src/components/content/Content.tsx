@@ -15,7 +15,6 @@ const Content = () => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     let commentsElements;
     if (labs && labs.commentImprovements) {
-        // this is now managed by the api
         commentsElements = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
     } else {
         commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);

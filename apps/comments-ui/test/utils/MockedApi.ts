@@ -61,64 +61,72 @@ export class MockedApi {
         };
     }
 
-    browseComments({limit = 5, filter, page, order}: {limit?: number, filter?: string, page: number, order: string}) {
-        let filteredComments = this.comments;
-        // Parse NQL filter
-    
-        // Sort based on order value
-        if (order === 'best') {
+    browseComments({limit = 5, filter, page, order}: {limit?: number, filter?: string, page: number, order?: string}) {
+        // Sort comments on created at + id
+        const setOrder = order || 'default';
+
+        if (setOrder === 'best' && page === 1) {
             // Sort by likes (desc) first, then by created_at (asc)
-            filteredComments.sort((a, b) => {
+            this.comments.sort((a, b) => {
                 const likesDiff = b.count.likes - a.count.likes;
                 if (likesDiff !== 0) {
                     return likesDiff;
                 } // Prioritize by likes
-    
+
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
                 return aDate - bDate; // For the rest, sort by date asc
             });
-        } else if (order === 'created_at desc') {
+        }
+
+        if (setOrder === 'created_at desc') {
             // Sort by created_at (newest first)
-            filteredComments.sort((a, b) => {
+            this.comments.sort((a, b) => {
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
                 return bDate - aDate; // Newest first
             });
-        } else if (order === 'created_at asc') {
+        }
+
+        if (setOrder === 'created_at asc') {
             // Sort by created_at (oldest first)
-            filteredComments.sort((a, b) => {
+            this.comments.sort((a, b) => {
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
                 return aDate - bDate; // Oldest first
             });
-        } else {
-            // Default sorting: Sort by created_at (desc) and id (desc)
-            filteredComments.sort((a, b) => {
+        } 
+
+        if (setOrder === 'default') {
+            this.comments.sort((a, b) => {
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
-    
+
                 if (aDate === bDate) {
                     return a.id > b.id ? -1 : 1;
                 }
-    
+
                 return aDate > bDate ? -1 : 1;
             });
         }
-    
-        // Splice based on page and limit
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const comments = filteredComments.slice(startIndex, endIndex);
 
+        let filteredComments = this.comments;
+
+        // Parse NQL filter
         if (filter) {
             const parsed = nql(filter);
             filteredComments = this.comments.filter((comment) => {
                 return parsed.queryJSON(comment);
             });
         }
-    
+
+        // Splice based on page and limit
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const comments = filteredComments.slice(startIndex, endIndex);
+
         return {
+
             comments: comments.map((comment) => {
                 return {
                     ...comment,

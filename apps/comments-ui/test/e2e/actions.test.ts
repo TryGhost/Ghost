@@ -262,13 +262,15 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 2</p>',
                 count: {
                     likes: 10
-                }
+                },
+                created_at: new Date('2023-01-01T00:00:00Z')
             });
             mockedApi.addComment({
                 html: '<p>This is comment 3</p>',
                 count: {
                     likes: 15
-                }
+                },
+                created_at: new Date('2022-02-01T00:00:00Z')
             });
 
             const {frame} = await initialize({
@@ -285,6 +287,10 @@ test.describe('Actions', async () => {
             // Check default sorting is by Best
 
             await expect(sortingForm).toHaveText('Best');
+
+            const comments = await frame.getByTestId('comment-component');
+
+            await expect(comments.nth(0)).toContainText('This is comment 3');
         });
         test('Renders Sorting Form dropdown, with Best, Newest Oldest', async ({page}) => {
             mockedApi.addComment({

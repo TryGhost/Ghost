@@ -123,7 +123,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             },
             browse({page, postId, order}: {page: number, postId: string, order?: string}) {
                 let filter = null;
-                if (firstCommentCreatedAt) {
+                if (firstCommentCreatedAt && !order) {
                     filter = `created_at:<=${firstCommentCreatedAt}`;
                 }
 
