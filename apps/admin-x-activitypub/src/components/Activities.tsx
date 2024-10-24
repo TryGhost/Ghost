@@ -11,6 +11,7 @@ import MainNavigation from './navigation/MainNavigation';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
+import stripHtml from '../utils/strip-html';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 // import {useFollowersForUser} from '../MainContent';
 
@@ -37,7 +38,7 @@ const getActivityDescription = (activity: Activity): string => {
         if (activity.object && activity.object.type === 'Article') {
             return `Liked your article "${activity.object.name}"`;
         } else if (activity.object && activity.object.type === 'Note') {
-            return `${activity.object.content}`;
+            return `${stripHtml(activity.object.content)}`;
         }
     }
 
