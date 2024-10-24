@@ -52,9 +52,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [headingFont, setHeadingFont] = useState(values.headingFont || DEFAULT_FONT);
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
-    const fontClassName = (fontName: string, heading: boolean = true) => {
-        return clsx(getCSSFriendlyFontClassName(fontName), heading && 'font-bold');
-    };
+    const fontClassName = (fontName: string, heading: boolean = true) => clsx(`font-${getCSSFriendlyFontClassName(fontName)}`, heading && 'font-bold');
 
     // Populate the heading and body font options
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
