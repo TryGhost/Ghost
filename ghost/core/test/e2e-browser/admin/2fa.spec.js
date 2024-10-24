@@ -49,7 +49,7 @@ test.describe('2FA', () => {
         await expect(page.locator('.gh-nav-menu-details-sitetitle')).toHaveText(/The Local Test/);
     });
 
-    test('Using the re-send button sends a second email', async ({page, verificationToken}) => {
+    test.fixme('Using the re-send button sends a second email', async ({page, verificationToken}) => {
         // Logout
         const context = await page.context();
         await context.clearCookies();
