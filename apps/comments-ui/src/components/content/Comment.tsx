@@ -123,7 +123,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
             <div className="mt-[-3px] flex items-start">
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
-                    <p className="text-md mt-[4px] font-sans italic leading-normal text-[rgba(0,0,0,0.2)] sm:text-lg dark:text-[rgba(255,255,255,0.35)]">{notPublishedMessage}</p>
+                    <p className="text-md mt-[4px] font-sans italic leading-normal text-black/20 sm:text-lg dark:text-white/35">{notPublishedMessage}</p>
                     <div className="mt-[4px]">
                         <MoreButton comment={comment} toggleEdit={openEditMode} />
                     </div>
@@ -200,7 +200,7 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     const {t} = useAppContext();
     const name = getMemberNameFromComment(comment, t);
     return (
-        <h4 className="text-[rgb(23,23,23] font-sans text-base font-bold leading-snug sm:text-sm dark:text-[rgba(255,255,255,0.85)]">
+        <h4 className="font-sans text-base font-bold leading-snug text-neutral-900 sm:text-sm dark:text-white/85">
             {name}
         </h4>
     );
@@ -214,7 +214,7 @@ const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
     return (
         <div className={`mb-2 mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
             <AuthorName comment={comment} />
-            <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-[rgba(0,0,0,0.5)] sm:text-sm dark:text-[rgba(255,255,255,0.5)]">
+            <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
                 <span>
                     <MemberExpertise comment={comment}/>
                     <span title={formatExplicitTime(comment.created_at)}><span className="mx-[0.3em]">·</span>{createdAtRelative}</span>
@@ -229,7 +229,7 @@ const CommentBody: React.FC<{html: string}> = ({html}) => {
     const dangerouslySetInnerHTML = {__html: html};
     return (
         <div className="mt mb-2 flex flex-row items-center gap-4 pr-4">
-            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md text-pretty font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
+            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md text-pretty font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
         </div>
     );
 };
@@ -269,7 +269,7 @@ const RepliesLine: React.FC<{hasReplies: boolean}> = ({hasReplies}) => {
         return null;
     }
 
-    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-[rgba(0,0,0,0.08)] via-[rgba(0,0,0,0.08)] to-transparent dark:from-[rgba(255,255,255,0.08)] dark:via-[rgba(255,255,255,0.08)]" />);
+    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/10 via-neutral-900/10 to-transparent dark:from-white/10 dark:via-white/10" />);
 };
 
 type CommentLayoutProps = {

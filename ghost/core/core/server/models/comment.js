@@ -235,7 +235,7 @@ const Comment = ghostBookshelf.Model.extend({
 
         // if options.order === 'best', we findMostLikedComment
         // then we remove it from the result set and add it as the first element
-        if (options.order === 'best') {
+        if (options.order === 'best' && options.page === '1') {
             const mostLikedComment = await this.findMostLikedComment(options);
             if (mostLikedComment) {
                 result.data = result.data.filter(comment => comment.id !== mostLikedComment.id);

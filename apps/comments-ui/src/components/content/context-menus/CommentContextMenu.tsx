@@ -77,7 +77,7 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
 
     return (
         <div ref={element} onClick={stopPropagation}>
-            <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-[150px] dark:bg-zinc-900 dark:text-white">
+            <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-36 dark:bg-neutral-800 dark:text-white">
                 {contextMenu}
             </div>
         </div>

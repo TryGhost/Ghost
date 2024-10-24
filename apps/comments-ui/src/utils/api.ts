@@ -121,9 +121,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return json;
             },
-            browse({page, postId}: {page: number, postId: string}) {
+            browse({page, postId, order}: {page: number, postId: string, order?: string}) {
                 let filter = null;
-                if (firstCommentCreatedAt) {
+                if (firstCommentCreatedAt && !order) {
                     filter = `created_at:<=${firstCommentCreatedAt}`;
                 }
 
@@ -134,6 +134,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     params.set('filter', filter);
                 }
                 params.set('page', page.toString());
+                if (order) {
+                    params.set('order', order);
+                }
                 const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
                 const response = makeRequest({
                     url,

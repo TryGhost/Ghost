@@ -126,9 +126,12 @@ module.exports = {
         },
         boxShadow: {
             lg: [
-                '0px 0px 1px rgba(0, 0, 0, 0.12)', 
-                '0px 4px 8px rgba(0, 0, 0, 0.04)', 
-                '0px 8px 48px rgba(0, 0, 0, 0.05)'
+                'rgba(0, 0, 0, 0.06) 0px 0px 0px 1px',
+                'rgba(0, 0, 0, 0.04) 0px 2px 2px -1px',
+                'rgba(0, 0, 0, 0.04) 0px 3px 3px -1px',
+                'rgba(0, 0, 0, 0.03) 0px 5px 5px -2px',
+                'rgba(0, 0, 0, 0.03) 0px 10px 10px -3px',
+                'rgba(0, 0, 0, 0.03) 0px 24px 24px -8px'
             ],
             xl: [
                 '0px 0px 1px rgba(0, 0, 0, 0.12)', 
