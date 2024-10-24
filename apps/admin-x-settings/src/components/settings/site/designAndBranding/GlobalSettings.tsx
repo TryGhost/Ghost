@@ -4,7 +4,7 @@ import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
+import {CUSTOM_FONTS, getCSSFriendlyFontClassName} from '@tryghost/custom-fonts';
 import {ColorPickerField, Form, Hint, ImageUpload, Select} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -33,7 +33,10 @@ export interface GlobalSettingValues {
     headingFont: string
     bodyFont: string
 }
-
+/**
+ * All custom fonts are maintained in the @tryghost/custom-fonts package.
+ * If you need to change a font, you'll need to update the @tryghost/custom-fonts package.
+ */
 const DEFAULT_FONT = 'Theme default';
 
 const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
@@ -50,53 +53,10 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const [bodyFont, setBodyFont] = useState(values.bodyFont || DEFAULT_FONT);
 
     const fontClassName = (fontName: string, heading: boolean = true) => {
-        let className = '';
-        if (fontName === 'Cardo') {
-            className = clsx('font-cardo', heading && 'font-bold');
-        } else if (fontName === 'Manrope') {
-            className = clsx('font-manrope', heading && 'font-bold');
-        } else if (fontName === 'Merriweather') {
-            className = clsx('font-merriweather', heading && 'font-bold');
-        } else if (fontName === 'Nunito') {
-            className = clsx('font-nunito', heading && 'font-semibold');
-        } else if (fontName === 'Old Standard TT') {
-            className = clsx('font-old-standard-tt', heading && 'font-bold');
-        } else if (fontName === 'Prata') {
-            className = clsx('font-prata', heading && 'font-normal');
-        } else if (fontName === 'Roboto') {
-            className = clsx('font-roboto', heading && 'font-bold');
-        } else if (fontName === 'Rufina') {
-            className = clsx('font-rufina', heading && 'font-bold');
-        } else if (fontName === 'Tenor Sans') {
-            className = clsx('font-tenor-sans', heading && 'font-normal');
-        } else if (fontName === 'Chakra Petch') {
-            className = clsx('font-chakra-petch', heading && 'font-normal');
-        } else if (fontName === 'Fira Mono') {
-            className = clsx('font-fira-mono', heading && 'font-bold');
-        } else if (fontName === 'Fira Sans') {
-            className = clsx('font-fira-sans', heading && 'font-bold');
-        } else if (fontName === 'IBM Plex Serif') {
-            className = clsx('font-ibm-plex-serif', heading && 'font-bold');
-        } else if (fontName === 'JetBrains Mono') {
-            className = clsx('font-jetbrains-mono', heading && 'font-bold');
-        } else if (fontName === 'Lora') {
-            className = clsx('font-lora', heading && 'font-bold');
-        } else if (fontName === 'Noto Sans') {
-            className = clsx('font-noto-sans', heading && 'font-bold');
-        } else if (fontName === 'Noto Serif') {
-            className = clsx('font-noto-serif', heading && 'font-bold');
-        } else if (fontName === 'Poppins') {
-            className = clsx('font-poppins', heading && 'font-bold');
-        } else if (fontName === 'Space Grotesk') {
-            className = clsx('font-space-grotesk', heading && 'font-bold');
-        } else if (fontName === 'Space Mono') {
-            className = clsx('font-space-mono', heading && 'font-bold');
-        }
-        return className;
+        return clsx(getCSSFriendlyFontClassName(fontName), heading && 'font-bold');
     };
 
-    // TODO: replace with getCustomFonts() once custom-fonts is updated and differentiates
-    // between heading and body fonts
+    // Populate the heading and body font options
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
         let className = fontClassName(x, true);
         return {label: x, value: x, className};
