@@ -17,6 +17,7 @@ export default defineConfig((config) => {
             'process.env.NODE_ENV': JSON.stringify(config.mode)
         },
         preview: {
+            host: '0.0.0.0',
             port: 4177
         },
         plugins: [

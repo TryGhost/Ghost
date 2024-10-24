@@ -1,0 +1,139 @@
+{
+    "name": "Ghost Local DevContainer",
+    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
+    "service": "ghost",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "shutdownAction": "stopCompose",
+    "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
+    "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
+    "postCreateCommand": ["yarn", "knex-migrator", "init"],
+    "remoteEnv": {
+        "STRIPE_SECRET_KEY": "${localEnv:STRIPE_SECRET_KEY}",
+        "STRIPE_API_KEY": "${localEnv:STRIPE_SECRET_KEY}",
+        "STRIPE_PUBLISHABLE_KEY": "${localEnv:STRIPE_PUBLISHABLE_KEY}",
+        "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
+        "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
+        "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
+        "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
+        "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
+    },
+    "forwardPorts": [2368,4200],
+    "portsAttributes": {
+        "80": {
+            "onAutoForward": "ignore"
+        },
+        "2368": {
+            "label": "Ghost"
+        },
+        "2369": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2370": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2371": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2372": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "2373": {
+            "label": "Ghost (Test Server)",
+            "onAutoForward": "silent"
+        },
+        "4200": {
+            "label": "Admin",
+            "onAutoForward": "silent"
+        },
+        "4201": {
+            "label": "Admin Live Reload",
+            "onAutoForward": "silent"
+        },
+        "4175": {
+            "label": "Portal",
+        },
+        "4176": {
+            "label": "Portal (HTTPS)",
+            "protocol": "https"
+        },
+        "4177": {
+            "label": "Announcement Bar"
+        },
+        "4178": {
+            "label": "Search"
+        },
+        "4173": {
+            "label": "Lexical"
+        },
+        "41730": {
+            "label": "Lexical (HTTPS)",
+            "protocol": "https"
+        },
+        "6174": {
+            "label": "Signup Form",
+            "onAutoForward": "silent"
+        },
+        "7173": {
+            "label": "Comments"
+        },
+        "7174": {
+            "label": "Comments (HTTPS)",
+            "protocol": "https"
+        },
+        "9174": {
+            "label": "Prometheus Metrics Exporter",
+            "onAutoForward": "silent"
+        },
+        "5173": {
+            "onAutoForward": "silent"
+        },
+        "5368": {
+            "onAutoForward": "silent"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+            },
+            "extensions": [
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "secrets": {
+        "STRIPE_SECRET_KEY": {
+            "description": "Your Stripe account's test secret API key",
+            "documentationUrl": "https://dashboard.stripe.com/test/apikeys"
+        },
+        "STRIPE_PUBLISHABLE_KEY": {
+            "description": "Your Stripe account's test publishable key",
+            "documentationUrl": "https://dashboard.stripe.com/test/apikeys"
+        },
+        "STRIPE_ACCOUNT_ID": {
+            "description": "Your Stripe Account ID",
+            "documentationUrl": "https://dashboard.stripe.com/settings/account"
+        },
+        "MAILGUN_SMTP_USER": {
+            "description": "Your Mailgun account's SMTP username, e.g. postmaster@sandbox1234567890.mailgun.org. You can find this in the Mailgun dashboard under Sending -> Domains -> Select your domain -> SMTP.",
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
+        },
+        "MAILGUN_SMTP_PASS": {
+            "description": "Your Mailgun account's SMTP password",
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
+        },
+        "MAILGUN_API_KEY": {
+            "description": "Your Mailgun account's API key",
+            "documentationUrl": ""
+        },
+        "MAILGUN_DOMAIN": {
+            "description": "Your Mailgun account's domain, e.g. sandbox1234567890.mailgun.org",
+            "documentationUrl": ""
+        }
+    }
+}
