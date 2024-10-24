@@ -4,7 +4,7 @@ const path = require('path');
 // Reads the config.local.json file and updates it with environments variables for devcontainer setup
 const configBasePath = path.join(__dirname, '..', 'ghost', 'core');
 const configFile = path.join(configBasePath, 'config.local.json');
-let config;
+let config = {};
 if (fs.existsSync(configFile)) {
     try {
         // Backup the user's config.local.json file just in case
