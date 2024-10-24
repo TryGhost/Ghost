@@ -1126,7 +1126,7 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('custom fonts', function () {
-        it('includes custom font when set in options data object', async function () {
+        it('includes custom font when set in options data object and preview is set', async function () {
             sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
 
             const renderObject = {
@@ -1136,7 +1136,8 @@ describe('{{ghost_head}} helper', function () {
             const templateOptions = {
                 site: {
                     heading_font: 'Space Grotesk',
-                    body_font: 'Poppins'
+                    body_font: 'Poppins',
+                    _preview: 'test'
                 }
             };
 
@@ -1151,7 +1152,7 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
-        it('includes custom font when set in settings cache', async function () {
+        it('includes custom font when set in settings cache and no preview', async function () {
             sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
             settingsCache.get.withArgs('heading_font').returns('Playfair Display');
             settingsCache.get.withArgs('body_font').returns('Lora');
@@ -1211,6 +1212,56 @@ describe('{{ghost_head}} helper', function () {
 
             await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not inject custom fonts when preview is set and default font was selected (empty string)', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {
+                    heading_font: '',
+                    body_font: '',
+                    _preview: 'test'
+                }},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('can handle preview being set and custom font keys missing', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {
+                    // No keys for custom fonts set
+                    _preview: 'test'
+                }},
                 renderObject,
                 locals: {
                     relativeUrl: '/post/',
