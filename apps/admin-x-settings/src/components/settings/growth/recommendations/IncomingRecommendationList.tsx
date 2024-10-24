@@ -53,22 +53,22 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                 </div>
             )
         } testId='incoming-recommendation-list-item' hideActions>
-            <TableCell onClick={showDetails}>
+            <TableCell className='w-80' onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
-                        <div className="mb-0.5 flex items-center gap-3">
+                        <div className="flex items-center gap-3">
                             <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
                             <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
                         </div>
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-left align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
+            <TableCell className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
                 {(signups === 0) ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
                 ) : (
-                    <div className='-mt-px text-right'>
-                        <span className='text-left'>{numberWithCommas(signups)}</span>
+                    <div className='mr-2'>
+                        <span>{numberWithCommas(signups)}</span>
                     </div>
                 )}
             </TableCell>
