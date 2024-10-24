@@ -22,7 +22,7 @@ export const InputFieldStyles = `
         width: 100%;
         height: 44px;
         padding: 0 12px;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
         letter-spacing: 0.2px;
         transition: border-color 0.25s ease-in-out;
     }
