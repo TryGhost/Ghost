@@ -4,6 +4,7 @@ services:
   ghost:
     build:
       target: full-devcontainer
+    pull_policy: never
     command: ["sleep", "infinity"]
     environment:
       - DEVCONTAINER=true
