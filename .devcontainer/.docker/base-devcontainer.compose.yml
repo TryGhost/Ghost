@@ -2,6 +2,7 @@
 name: ghost-devcontainer
 services:
   ghost:
+    image: ghost-base-devcontainer
     build:
       target: base-devcontainer
     command: ["sleep", "infinity"]

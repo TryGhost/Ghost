@@ -1,3 +1,7 @@
+# Base container and services for running Ghost
+## Intended to be extended by another compose file
+## e.g. docker compose -f base.compose.yml -f development.compose.yml up
+## Does not include development dependencies, Ghost code, or any other dependencies
 name: ghost-base
 services:
   ghost:
@@ -6,6 +10,7 @@ services:
       context: ../../
       dockerfile: .devcontainer/.docker/Dockerfile
       target: base
+    pull_policy: never
     tty: true
     depends_on:
       mysql:

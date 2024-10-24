@@ -1,9 +1,10 @@
-# For use in a Dev Container where your local code is mounted into the container
-name: ghost-devcontainer
+# Dev Container with all Ghost code and dependencies pre-installed
+name: ghost-full-devcontainer
 services:
   ghost:
+    image: ghost-full-devcontainer
     build:
-      target: base-devcontainer
+      target: full-devcontainer
     command: ["sleep", "infinity"]
     environment:
       - DEVCONTAINER=true

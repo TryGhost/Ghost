@@ -1,14 +1,18 @@
+# Development container with Ghost code and dependencies pre-installed
+## Watches your local filesystem and syncs changes to the container
+## Intended for use with raw docker compose commands
 name: ghost-development
 services:
   ghost:
+    image: ghost-development
     build:
-      target: full-devcontainer
+      target: development
     command: ["yarn", "dev"]
     volumes:
-      - ../.yarncache:/workspaces/ghost/.yarncache
+      - ../../.yarncache:/workspaces/ghost/.yarncache
     develop: 
       watch: 
-        - path: ../
+        - path: ../../
           action: sync
           target: /workspaces/ghost
           ignore: 

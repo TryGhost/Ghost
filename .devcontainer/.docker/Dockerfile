@@ -49,9 +49,11 @@ COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
 # Development Stage: alternative entrypoint for development with some caching optimizations
-FROM devbase AS development
+FROM base-devcontainer AS development
 
 WORKDIR /workspaces/ghost
+
+COPY ../../ .
 
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER && \
     cp -r .yarncache .yarncachecopy && \
