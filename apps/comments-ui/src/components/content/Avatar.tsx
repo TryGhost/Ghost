@@ -10,7 +10,7 @@ export const BlankAvatar = () => {
     const dimensionClasses = getDimensionClasses();
     return (
         <figure className={`relative ${dimensionClasses}`}>
-            <div className={`flex items-center justify-center rounded-full bg-[rgba(0,0,0,0.085)] dark:bg-[rgba(255,255,255,0.15)] ${dimensionClasses}`}>
+            <div className={`flex items-center justify-center rounded-full bg-black/10 dark:bg-white/15 ${dimensionClasses}`}>
                 <AvatarIcon className="stroke-white opacity-80" />
             </div>
         </figure>
@@ -78,8 +78,8 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} data-testid="avatar-background" style={avatarStyle}>
                     <p className="font-sans text-base font-semibold text-white">{memberInitials}</p>
                 </div>) :
-                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`} data-testid="avatar-background" >
-                    <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
+                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
+                    <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
             {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
         </>
