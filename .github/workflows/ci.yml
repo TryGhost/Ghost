@@ -355,7 +355,7 @@ jobs:
       run: yarn nx run ghost-admin:build:dev
 
     - name: Run Playwright tests locally
-      run: yarn test:browser
+      run: yarn test:browser:ci
       env:
         CI: true
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
