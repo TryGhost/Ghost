@@ -41,11 +41,13 @@ totp.options = {
  * @prop {(req: Req, res: Res) => Promise<User | null>} getUserForSession
  * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
- * @prop {(req: Req, res: Res) => Promise<void>} createVerifiedSessionForUser
+ * @prop {(req: Req, res: Res, user: User) => Promise<void>} createVerifiedSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
+ * @prop {(req: Req, res: Res) => Promise<void>} createSetupSession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} isVerifiedSession
+ * @prop {(req: Req, res: Res) => Promise<string>} generateAuthCodeForUser
  */
 
 /**
@@ -134,6 +136,28 @@ module.exports = function createSessionService({
     async function createVerifiedSessionForUser(req, res, user) {
         await createSessionForUser(req, res, user);
         await verifySession(req, res);
+    }
+
+    /**
+     * createSetupSession
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @returns {Promise<void>}
+     */
+    async function createSetupSession(req, res) {
+        const session = await getSession(req, res);
+        const origin = getOriginOfRequest(req);
+        if (!origin) {
+            throw new BadRequestError({
+                message: 'Could not determine origin of request. Please ensure an Origin or Referrer header is present.'
+            });
+        }
+
+        session.origin = origin;
+        session.user_agent = req.get('user-agent');
+        session.ip = req.ip;
+        session.verified = true;
     }
 
     /**
@@ -343,6 +367,7 @@ module.exports = function createSessionService({
         getUserForSession,
         createSessionForUser,
         createVerifiedSessionForUser,
+        createSetupSession,
         removeUserForSession,
         verifySession,
         isVerifiedSession,

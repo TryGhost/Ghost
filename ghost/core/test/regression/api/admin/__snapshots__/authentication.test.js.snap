@@ -1,5 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Authentication API 2FA Can bypass 2fa during setup 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "accessibility": null,
+      "bio": null,
+      "comment_notifications": true,
+      "cover_image": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "donation_notifications": true,
+      "email": "test@example.com",
+      "facebook": null,
+      "free_member_signup_notification": true,
+      "id": "1",
+      "last_seen": null,
+      "location": null,
+      "mention_notifications": true,
+      "meta_description": null,
+      "meta_title": null,
+      "milestone_notifications": true,
+      "name": "test user",
+      "paid_subscription_canceled_notification": false,
+      "paid_subscription_started_notification": true,
+      "profile_image": null,
+      "recommendation_notifications": true,
+      "slug": "test",
+      "status": "active",
+      "tour": null,
+      "twitter": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+    },
+  ],
+}
+`;
+
 exports[`Authentication API Blog setup complete setup 1: [body] 1`] = `
 Object {
   "users": Array [
