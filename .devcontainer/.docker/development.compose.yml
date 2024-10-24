@@ -4,7 +4,6 @@
 name: ghost-development
 services:
   ghost:
-    image: ghost-development
     build:
       target: development
     command: ["yarn", "dev"]

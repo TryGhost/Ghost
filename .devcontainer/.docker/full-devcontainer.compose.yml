@@ -2,7 +2,6 @@
 name: ghost-full-devcontainer
 services:
   ghost:
-    image: ghost-full-devcontainer
     build:
       target: full-devcontainer
     command: ["sleep", "infinity"]
