@@ -16,7 +16,9 @@ The Dockerfile in this directory uses a multi-stage build to allow for multiple 
 Similarly, the docker compose configuration relies on merging compose files to create the final configuration. The `base.compose.yml` file contains the bare minimum configuration, and can be extended by specifying additional services or modifying the existing ones by supplying additional compose files. For example, to run the `development.compose.yml` file, you would use the following command:
 
 ```
-yarn compose -f .devcontainer/docker/base.compose.yml -f .devcontainer/docker/development.compose.yml up
+docker compose -f .devcontainer/docker/base.compose.yml -f .devcontainer/docker/development.compose.yml up
 ```
 
-This gives us the flexibility to create multiple different docker compose configurations, while ensuring a base level of consistency across configurations.
+There is an alias `yarn compose` script in the top level `package.json` which points to the appropriate `compose.yml` files for local development.
+
+This setup gives us the flexibility to create multiple different docker compose configurations, while ensuring a base level of consistency across configurations.
