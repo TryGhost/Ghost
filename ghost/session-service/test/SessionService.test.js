@@ -366,4 +366,49 @@ describe('SessionService', function () {
         const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
         should.notEqual(authCodeFirst, authCodeSecond);
     });
+
+    it('Can create a verified session for SSO', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+        const labs = {
+            isSet: () => false
+        };
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            labs
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        await sessionService.createVerifiedSessionForUser(req, res, user);
+
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, true);
+    });
 });

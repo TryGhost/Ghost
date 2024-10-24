@@ -40,6 +40,7 @@ totp.options = {
  * @prop {(req: Req, res: Res) => Promise<User | null>} getUserForSession
  * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
+ * @prop {(req: Req, res: Res) => Promise<void>} createVerifiedSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
@@ -119,6 +120,19 @@ module.exports = function createSessionService({
         if (!labs.isSet('staff2fa')) {
             session.verified = true;
         }
+    }
+
+    /**
+     * createVerifiedSessionForUser
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @param {User} user
+     * @returns {Promise<void>}
+     */
+    async function createVerifiedSessionForUser(req, res, user) {
+        await createSessionForUser(req, res, user);
+        await verifySession(req, res);
     }
 
     /**
@@ -320,6 +334,7 @@ module.exports = function createSessionService({
     return {
         getUserForSession,
         createSessionForUser,
+        createVerifiedSessionForUser,
         removeUserForSession,
         verifySession,
         isVerifiedSession,
