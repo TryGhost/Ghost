@@ -363,12 +363,13 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
+            const editorUrl = await sharedPage.url();
+
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
             await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
-            const editorUrl = await sharedPage.url();
 
             // Go to the homepage and check if the post is not yet visible there
             await checkPostNotPublished(sharedPage, postData);
@@ -394,11 +395,11 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
+            const editorUrl = await sharedPage.url();
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
-            const editorUrl = await sharedPage.url();
 
             // Check not published yet
             await checkPostNotPublished(sharedPage, postData);
@@ -425,12 +426,12 @@ test.describe('Publishing', () => {
 
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
-
+            const editorUrl = await sharedPage.url();
+            
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {type: 'send', time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
-            const editorUrl = await sharedPage.url();
 
             // Check not published yet
             await checkPostNotPublished(sharedPage, postData);
