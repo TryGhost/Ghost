@@ -66,7 +66,7 @@ const COMMAND_BROWSERTESTS = {
     env: {}
 };
 
-const COMMAND_TYPESCRIPT = {
+const COMMAND_TYPESCRIPT_WATCH = {
     name: 'ts',
     command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
     cwd: path.resolve(__dirname, '../../'),
