@@ -7,6 +7,72 @@ export type FontSelection = {
     body?: BodyFont
 };
 
+export const CUSTOM_FONTS: CustomFonts = {
+    heading: [
+        'Cardo',
+        'Chakra Petch',
+        'Fira Mono',
+        'Fira Sans',
+        'IBM Plex Serif',
+        'Inter',
+        'JetBrains Mono',
+        'Lora',
+        'Manrope',
+        'Merriweather',
+        'Noto Sans',
+        'Noto Serif',
+        'Nunito',
+        'Old Standard TT',
+        'Poppins',
+        'Prata',
+        'Roboto',
+        'Rufina',
+        'Space Grotesk',
+        'Space Mono',
+        'Tenor Sans'
+    ],
+    body: [
+        'Fira Mono',
+        'Fira Sans',
+        'IBM Plex Serif',
+        'Inter',
+        'JetBrains Mono',
+        'Lora',
+        'Manrope',
+        'Merriweather',
+        'Noto Sans',
+        'Noto Serif',
+        'Nunito',
+        'Poppins',
+        'Roboto',
+        'Space Mono'
+    ]
+};
+
+const classFontNames = {
+    Cardo: 'cardo',
+    Manrope: 'manrope',
+    Merriweather: 'merriweather',
+    Nunito: 'nunito',
+    'Old Standard TT': 'old-standard-tt',
+    Prata: 'prata',
+    Roboto: 'roboto',
+    Rufina: 'rufina',
+    'Tenor Sans': 'tenor-sans',
+    'Space Grotesk': 'space-grotesk',
+    'Chakra Petch': 'chakra-petch',
+    'Noto Sans': 'noto-sans',
+    Poppins: 'poppins',
+    'Fira Sans': 'fira-sans',
+    Inter: 'inter',
+    'Noto Serif': 'noto-serif',
+    Lora: 'lora',
+    'IBM Plex Serif': 'ibm-plex-serif',
+    'Space Mono': 'space-mono',
+    'Fira Mono': 'fira-mono',
+    'JetBrains Mono': 'jetbrains-mono'
+};
+
 export function generateCustomFontCss(fonts: FontSelection) {
     let fontImports: string = '';
     let fontCSS: string = '';
@@ -109,87 +175,35 @@ export function generateCustomFontCss(fonts: FontSelection) {
 }
 
 export function generateCustomFontBodyClass(fonts: FontSelection) {
-    const classFontNames = {
-        Cardo: 'cardo',
-        Manrope: 'manrope',
-        Merriweather: 'merriweather',
-        Nunito: 'nunito',
-        'Old Standard TT': 'old-standard-tt',
-        Prata: 'prata',
-        Roboto: 'roboto',
-        Rufina: 'rufina',
-        'Tenor Sans': 'tenor-sans',
-        'Space Grotesk': 'space-grotesk',
-        'Chakra Petch': 'chakra-petch',
-        'Noto Sans': 'noto-sans',
-        Poppins: 'poppins',
-        'Fira Sans': 'fira-sans',
-        Inter: 'inter',
-        'Noto Serif': 'noto-serif',
-        Lora: 'lora',
-        'IBM Plex Serif': 'ibm-plex-serif',
-        'Space Mono': 'space-mono',
-        'Fira Mono': 'fira-mono',
-        'JetBrains Mono': 'jetbrains-mono'
-    };
-
     let bodyClass = '';
 
     if (fonts?.heading) {
-        bodyClass += `gh-font-heading-${classFontNames[fonts.heading]}`;
+        bodyClass += getCustomFontClassName({font: fonts.heading, heading: true});
         if (fonts?.body) {
             bodyClass += ' ';
         }
     }
 
     if (fonts?.body) {
-        bodyClass += `gh-font-body-${classFontNames[fonts.body]}`;
+        bodyClass += getCustomFontClassName({font: fonts.body, heading: false});
     }
 
     return bodyClass;
 }
 
-export const CUSTOM_FONTS: CustomFonts = {
-    heading: [
-        'Cardo',
-        'Chakra Petch',
-        'Fira Mono',
-        'Fira Sans',
-        'IBM Plex Serif',
-        'Inter',
-        'JetBrains Mono',
-        'Lora',
-        'Manrope',
-        'Merriweather',
-        'Noto Sans',
-        'Noto Serif',
-        'Nunito',
-        'Old Standard TT',
-        'Poppins',
-        'Prata',
-        'Roboto',
-        'Rufina',
-        'Space Grotesk',
-        'Space Mono',
-        'Tenor Sans'
-    ],
-    body: [
-        'Fira Mono',
-        'Fira Sans',
-        'IBM Plex Serif',
-        'Inter',
-        'JetBrains Mono',
-        'Lora',
-        'Manrope',
-        'Merriweather',
-        'Noto Sans',
-        'Noto Serif',
-        'Nunito',
-        'Poppins',
-        'Roboto',
-        'Space Mono'
-    ]
-};
+export function getCSSFriendlyFontClassName(font: string) {
+    return classFontNames[font as keyof typeof classFontNames] || '';
+}
+
+export function getCustomFontClassName({font, heading}: {font: string, heading: boolean}) {
+    const cssFriendlyFontClassName = getCSSFriendlyFontClassName(font);
+
+    if (!cssFriendlyFontClassName) {
+        return '';
+    }
+
+    return `gh-font-${heading ? 'heading' : 'body'}-${cssFriendlyFontClassName}`;
+}
 
 export function getCustomFonts(): CustomFonts {
     return CUSTOM_FONTS;

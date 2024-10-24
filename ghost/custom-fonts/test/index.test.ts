@@ -9,6 +9,34 @@ describe('Custom Fonts', function () {
         });
     });
 
+    describe('getCSSFriendlyFontClassName', function () {
+        it('returns the correct class name for a font', function () {
+            assert.equal(customFonts.getCSSFriendlyFontClassName('Inter'), 'inter');
+        });
+
+        it('returns the correct class name for a font with a space', function () {
+            assert.equal(customFonts.getCSSFriendlyFontClassName('Fira Sans'), 'fira-sans');
+        });
+
+        it('returns empty string for an invalid font', function () {
+            assert.equal(customFonts.getCSSFriendlyFontClassName('Invalid Font'), '');
+        });
+    });
+
+    describe('getCustomFontClassName', function () {
+        it('returns the correct class name for a valid heading font', function () {
+            assert.equal(customFonts.getCustomFontClassName({font: 'Space Grotesk', heading: true}), 'gh-font-heading-space-grotesk');
+        });
+
+        it('returns the correct class name for a valid body font', function () {
+            assert.equal(customFonts.getCustomFontClassName({font: 'Noto Sans', heading: false}), 'gh-font-body-noto-sans');
+        });
+
+        it('returns empty string for an invalid font', function () {
+            assert.equal(customFonts.getCustomFontClassName({font: 'Invalid Font', heading: true}), '');
+        });
+    });
+
     describe('isValidCustomFont', function () {
         it('returns true for valid body fonts', function () {
             assert.equal(customFonts.isValidCustomFont('Inter'), true);
