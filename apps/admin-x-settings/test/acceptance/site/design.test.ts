@@ -1,4 +1,11 @@
-import {chooseOptionInSelect, mockApi, mockSitePreview, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {
+    chooseOptionInSelect,
+    mockApi,
+    mockSitePreview,
+    responseFixtures,
+    toggleLabsFlag,
+    updatedSettingsResponse
+} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
@@ -331,6 +338,54 @@ test.describe('Design settings', async () => {
         const expectedEncoded = new URLSearchParams([['bf', 'Inter'], ['hf', 'Cardo']]).toString();
 
         // Preview should have the new fonts
+        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+    });
+
+    test('Custom fonts setting back to default', async ({page}) => {
+        toggleLabsFlag('customFonts', true);
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
+                {key: 'heading_font', value: 'Caro'},
+                {key: 'body_font', value: 'Inter'}
+            ])},
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: []
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        // The fonts should be set to the values in the settings
+        await expect(modal.getByTestId('heading-font-select')).toHaveText('Caro');
+        await expect(modal.getByTestId('body-font-select')).toHaveText('Inter');
+
+        const designSettingTabs = modal.getByTestId('design-setting-tabs');
+        // select a different heading font
+        const headingFontSelect = designSettingTabs.getByTestId('heading-font-select');
+        await headingFontSelect.click();
+        await headingFontSelect.getByText('Theme default').click();
+
+        // select a different body font
+        const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
+        await bodyFontSelect.click();
+        await bodyFontSelect.getByText('Theme default').click();
+
+        const expectedEncoded = new URLSearchParams([['bf', ''], ['hf', '']]).toString();
+
+        // Preview should have the old fonts back
         await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 });
