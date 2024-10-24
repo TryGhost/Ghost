@@ -342,10 +342,13 @@ test.describe('Newsletter settings', async () => {
                 }]
             }}
         }});
+        
+        const awesomeNewsletterRow = section.getByRole('row', {name: /Awesome newsletter/});
+        await awesomeNewsletterRow.hover();
 
-        const awesomeNewsletter = section.getByText('Awesome newsletter').locator('..');
-        await awesomeNewsletter.hover();
-        await awesomeNewsletter.getByRole('button', {name: 'Edit'}).click();
+        const editButton = awesomeNewsletterRow.getByTestId('edit-newsletter-button');
+        await editButton.waitFor({state: 'visible', timeout: 5000});
+        await editButton.click();
 
         const activeNewsletterModal = page.getByTestId('newsletter-modal');
         await activeNewsletterModal.getByRole('button', {name: 'Archive newsletter'}).click();
