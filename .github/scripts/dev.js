@@ -66,7 +66,7 @@ const COMMAND_BROWSERTESTS = {
     env: {}
 };
 
-const COMMAND_TYPESCRIPT = {
+const COMMAND_TYPESCRIPT_WATCH = {
     name: 'ts',
     command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
     cwd: path.resolve(__dirname, '../../'),
@@ -250,5 +250,6 @@ async function handleStripe() {
         console.error(chalk.red(`If you've recently done a \`yarn main\`, dependencies might be out of sync. Try running \`${chalk.green('yarn fix')}\` to fix this.`));
         console.error(chalk.red(`If not, something else went wrong. Please report this to the Ghost team.`));
         console.error();
+        process.exit(1);
     }
 })();
