@@ -3,12 +3,12 @@ import {AdminApi} from './utils/adminApi';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
-async function loadMoreComments({state, api, options}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions}): Promise<Partial<EditableAppContext>> {
+async function loadMoreComments({state, api, options, order}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions, order?:string}): Promise<Partial<EditableAppContext>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
     }
-    const data = await api.comments.browse({page, postId: options.postId});
+    const data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
 
     // Note: we store the comments from new to old, and show them in reverse order
     return {
@@ -17,12 +17,12 @@ async function loadMoreComments({state, api, options}: {state: EditableAppContex
     };
 }
 
-async function setOrder({data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
+async function setOrder({data: {order}, state, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
     const data = await api.comments.browse({page: 1, postId: options.postId, order: order});
-
     // replace comments in state with new ones
+    
     return {
-        comments: data.comments,
+        comments: [...data.comments],
         pagination: data.meta.pagination,
         order
     };

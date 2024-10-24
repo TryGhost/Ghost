@@ -255,7 +255,8 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 1</p>',
                 count: {
                     likes: 5
-                }
+                },
+                createdAt: '2021-01-01T00:00:00Z'
             });
             mockedApi.addComment({
                 html: '<p>This is comment 2</p>',
@@ -285,6 +286,129 @@ test.describe('Actions', async () => {
 
             await expect(sortingForm).toHaveText('Best');
         });
-        // test('Renders Sorting Form dropdown', async ({page}) => {
+        test('Renders Sorting Form dropdown, with Best, Newest Oldest', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>'
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                liked: true,
+                count: {
+                    likes: 52
+                }
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 4</p>'
+            });
+
+            mockedApi.addComment({
+                html: '<p>This is comment 5</p>'
+            });
+
+            mockedApi.addComment({
+                html: '<p>This is comment 6</p>'
+            });
+    
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const sortingForm = frame.getByTestId('comments-sorting-form');
+
+            await expect(sortingForm).toBeVisible();
+
+            await sortingForm.click();
+
+            const sortingDropdown = frame.getByTestId('comments-sorting-form-dropdown');
+            await expect(sortingDropdown).toBeVisible();
+
+            // check if inner options are visible
+
+            const bestOption = sortingDropdown.getByText('Best');
+            const newestOption = sortingDropdown.getByText('Newest');
+            const oldestOption = sortingDropdown.getByText('Oldest');
+            await expect(bestOption).toBeVisible();
+            await expect(newestOption).toBeVisible();
+            await expect(oldestOption).toBeVisible();
+        });
+
+        test('Sorts by Newest', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is the oldest</p>',
+                created_at: new Date('2024-02-01T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                created_at: new Date('2024-03-02T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is the newest comment</p>',
+                created_at: new Date('2024-04-03T00:00:00Z')
+            });
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const sortingForm = await frame.getByTestId('comments-sorting-form');
+
+            await sortingForm.click();
+
+            const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
+
+            const newestOption = await sortingDropdown.getByText('Newest');
+            await newestOption.click();
+
+            const comments = await frame.getByTestId('comment-component');
+
+            await expect(comments.nth(0)).toContainText('This is the newest comment');
+        });
+
+        test('Sorts by oldest', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is the oldest</p>',
+                created_at: new Date('2024-02-01T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                created_at: new Date('2024-03-02T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is the newest comment</p>',
+                created_at: new Date('2024-04-03T00:00:00Z')
+            });
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const sortingForm = await frame.getByTestId('comments-sorting-form');
+
+            await sortingForm.click();
+
+            const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
+
+            const newestOption = await sortingDropdown.getByText('Oldest');
+            await newestOption.click();
+
+            const comments = await frame.getByTestId('comment-component');
+
+            await expect(comments.nth(0)).toContainText('This is the oldest');
+        });
     });
 });

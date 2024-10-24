@@ -57,7 +57,7 @@ const Content = () => {
                         {t('Sort by')}: <SortingForm/>
                     </span>
                 </div>
-                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements" data-testid="comments-sorting-form">
+                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements">
                     {commentsElements}
                 </div>
                 <Pagination />

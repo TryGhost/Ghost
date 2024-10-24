@@ -62,17 +62,8 @@ export class MockedApi {
     }
 
     browseComments({limit = 5, filter, page, order}: {limit?: number, filter?: string, page: number, order: string}) {
-        console.log('briwse comments order: ', order);
-    
         let filteredComments = this.comments;
-    
         // Parse NQL filter
-        if (filter) {
-            const parsed = nql(filter);
-            filteredComments = this.comments.filter((comment) => {
-                return parsed.queryJSON(comment);
-            });
-        }
     
         // Sort based on order value
         if (order === 'best') {
@@ -87,8 +78,22 @@ export class MockedApi {
                 const bDate = new Date(b.created_at).getTime();
                 return aDate - bDate; // For the rest, sort by date asc
             });
+        } else if (order === 'created_at desc') {
+            // Sort by created_at (newest first)
+            filteredComments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return bDate - aDate; // Newest first
+            });
+        } else if (order === 'created_at asc') {
+            // Sort by created_at (oldest first)
+            filteredComments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return aDate - bDate; // Oldest first
+            });
         } else {
-            // Sort by created_at (desc) and id (desc) for the default order
+            // Default sorting: Sort by created_at (desc) and id (desc)
             filteredComments.sort((a, b) => {
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
@@ -105,6 +110,13 @@ export class MockedApi {
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const comments = filteredComments.slice(startIndex, endIndex);
+
+        if (filter) {
+            const parsed = nql(filter);
+            filteredComments = this.comments.filter((comment) => {
+                return parsed.queryJSON(comment);
+            });
+        }
     
         return {
             comments: comments.map((comment) => {

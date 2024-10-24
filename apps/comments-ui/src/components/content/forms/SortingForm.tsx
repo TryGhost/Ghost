@@ -10,8 +10,8 @@ export const SortingForm: React.FC = () => {
 
     const options = [
         {value: 'best', label: 'Best'},
-        {value: 'newest', label: 'Newest'},
-        {value: 'oldest', label: 'Oldest'}
+        {value: 'created_at desc', label: 'Newest'},
+        {value: 'created_at asc', label: 'Oldest'}
     ];
 
     const handleOptionClick = (value: string) => {
@@ -47,7 +47,7 @@ export const SortingForm: React.FC = () => {
     };
 
     return (
-        <div ref={dropdownRef} className="relative" onClick={stopPropagation}>
+        <div ref={dropdownRef} className="relative" data-testid="comments-sorting-form" onClick={stopPropagation}>
             <button
                 className="flex w-full items-center justify-between gap-2 text-sm font-medium text-neutral-900 focus-visible:outline-none dark:text-neutral-100"
                 type="button"
@@ -59,7 +59,7 @@ export const SortingForm: React.FC = () => {
 
             {isOpen && (
                 <div className="absolute -left-4 mt-1.5 w-36 origin-top-right rounded-md bg-white shadow-lg dark:bg-neutral-800">
-                    <div aria-labelledby="options-menu" aria-orientation="vertical" className="py-1" role="menu">
+                    <div aria-labelledby="options-menu" aria-orientation="vertical" className="py-1" data-testid="comments-sorting-form-dropdown" role="menu">
                         {options.map(option => (
                             <button
                                 key={option.value}
