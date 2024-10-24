@@ -161,6 +161,7 @@ export default class App extends React.Component {
             const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
 
             const i18n = i18nLib(i18nLanguage, 'portal');
+            
             const state = {
                 site,
                 member,
@@ -171,6 +172,7 @@ export default class App extends React.Component {
                 pageData,
                 popupNotification,
                 t: i18n.t,
+                dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success'
             };
@@ -924,7 +926,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -941,6 +943,7 @@ export default class App extends React.Component {
             popupNotification,
             customSiteUrl,
             t,
+            dir,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
