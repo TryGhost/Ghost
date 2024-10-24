@@ -3,9 +3,6 @@
     "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/workspaces/Ghost,type=bind,consistency=cached"
-    ],
     "shutdownAction": "stopCompose",
     "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
     "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
