@@ -35,16 +35,15 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow className='group' testId='recommendation-list-item'>
-            <TableCell className='w-80' onClick={showDetails}>
-                <div className='flex items-center gap-3 hover:cursor-pointer'>
+        <TableRow className='group hover:cursor-pointer' testId='recommendation-list-item' onClick={showDetails}>
+            <TableCell className='w-80'>
+                <div className='flex items-center gap-3'>
                     <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
                     <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
                 </div>
             </TableCell>
             <TableCell 
-                className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell' 
-                onClick={showDetails}
+                className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell'
             >
                 {count === 0 ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
