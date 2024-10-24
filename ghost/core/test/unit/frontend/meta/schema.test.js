@@ -487,6 +487,7 @@ describe('getSchema', function () {
                 height: 500
             },
             mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
+            name: 'Site Title',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
