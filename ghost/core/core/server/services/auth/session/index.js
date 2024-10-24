@@ -63,7 +63,7 @@ const ssoAdapter = adapterManager.getAdapter('sso');
 // Looks funky but this is a "custom" piece of middleware
 module.exports.createSessionFromToken = sessionFromToken({
     callNextWithError: false,
-    createSession: sessionService.createSessionForUser,
+    createSession: sessionService.createVerifiedSessionForUser,
     findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
     getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
     getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
