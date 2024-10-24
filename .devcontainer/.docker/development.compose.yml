@@ -6,6 +6,7 @@ services:
   ghost:
     build:
       target: development
+    pull_policy: never
     command: ["yarn", "dev"]
     volumes:
       - ../../.yarncache:/workspaces/ghost/.yarncache
