@@ -343,8 +343,10 @@ test.describe('Newsletter settings', async () => {
             }}
         }});
 
-        await section.getByText('Awesome newsletter').hover();
-        await section.getByRole('button', {name: 'Edit'}).click();
+        await section.getByText('Awesome newsletter')
+            .locator('..')
+            .getByRole('button', {name: 'Edit'})
+            .click();
 
         const activeNewsletterModal = page.getByTestId('newsletter-modal');
         await activeNewsletterModal.getByRole('button', {name: 'Archive newsletter'}).click();
