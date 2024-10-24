@@ -89,11 +89,31 @@ module.exports = {
             }
         },
         fontFamily: {
+            cardo: 'Cardo',
+            manrope: 'Manrope',
+            merriweather: 'Merriweather',
+            nunito: 'Nunito',
+            'tenor-sans': 'Tenor Sans',
+            'old-standard-tt': 'Old Standard TT',
+            prata: 'Prata',
+            roboto: 'Roboto',
+            rufina: 'Rufina',
             inter: 'Inter',
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, serif',
             mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
-            inherit: 'inherit'
+            inherit: 'inherit',
+            'space-grotesk': 'Space Grotesk',
+            'chakra-petch': 'Chakra Petch',
+            'noto-sans': 'Noto Sans',
+            poppins: 'Poppins',
+            'fira-sans': 'Fira Sans',
+            'noto-serif': 'Noto Serif',
+            lora: 'Lora',
+            'ibm-plex-serif': 'IBM Plex Serif',
+            'space-mono': 'Space Mono',
+            'fira-mono': 'Fira Mono',
+            'jetbrains-mono': 'JetBrains Mono'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',

@@ -327,6 +327,14 @@
         {
             "key": "support_email_address",
             "value": "support@example.com"
+        },
+        {
+            "key": "heading_font",
+            "value": null
+        },
+        {
+            "key": "body_font",
+            "value": null
         }
     ],
     "meta": {

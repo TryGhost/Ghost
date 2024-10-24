@@ -60,9 +60,9 @@ const features = [{
     description: 'Enables new comment features',
     flag: 'commentImprovements'
 }, {
-    title: 'Staff 2FA',
-    description: 'Enables email verification for staff logins',
-    flag: 'staff2fa'
+    title: 'Custom Fonts',
+    description: 'Enables new custom font settings',
+    flag: 'customFonts'
 }];
 
 const AlphaFeatures: React.FC = () => {

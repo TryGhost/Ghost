@@ -239,6 +239,8 @@ export default class ThemeManagementService extends Service {
         params.append('icon', this.settings.icon);
         params.append('logo', this.settings.logo);
         params.append('cover', this.settings.coverImage);
+        params.append('bf', this.settings.bodyFont);
+        params.append('hf', this.settings.headingFont);
 
         if (this.settings.announcementContent) {
             params.append('announcement', this.settings.announcementContent);

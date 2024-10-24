@@ -1,4 +1,11 @@
-import {chooseOptionInSelect, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {
+    chooseOptionInSelect,
+    mockApi,
+    mockSitePreview,
+    responseFixtures,
+    toggleLabsFlag,
+    updatedSettingsResponse
+} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
@@ -45,16 +52,6 @@ test.describe('Design settings', async () => {
         await modal.getByRole('button', {name: 'Desktop'}).click();
 
         await expect(modal.getByTestId('preview-mobile')).not.toBeVisible();
-
-        // Switching preview based on settings tab
-
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Homepage'}).click();
-
-        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
-
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'}).click();
-
-        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('post preview')).toHaveCount(1);
     });
 
     test('Warns when leaving without saving', async ({page}) => {
@@ -75,7 +72,9 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByLabel('Site description').fill('new description');
+        const accentColorPicker = modal.getByTestId('accent-color-picker');
+        await accentColorPicker.getByRole('button').click();
+        await accentColorPicker.getByRole('textbox').fill('#cd5786');
         // set timeout of 500ms to wait for the debounce
         await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Close'}).click();
@@ -90,7 +89,7 @@ test.describe('Design settings', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'}).click();
+        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Theme settings'}).click();
 
         await modal.getByLabel('Email signup text').fill('test');
 
@@ -128,17 +127,19 @@ test.describe('Design settings', async () => {
 
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
-        await modal.getByLabel('Site description').fill('new description');
+        const accentColorPicker = modal.getByTestId('accent-color-picker');
+        await accentColorPicker.getByRole('button').click();
+        await accentColorPicker.getByRole('textbox').fill('#cd5786');
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         // set timeout of 500ms to wait for the debounce
         await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);
+        expect(lastPreviewRequest.previewHeader).toMatch(/c=\%23cd5786\&d/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
-                {key: 'description', value: 'new description'}
+                {key: 'accent_color', value: '#cd5786'}
             ]
         });
     });
@@ -177,7 +178,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Site wide'}).click();
+        await modal.getByRole('tab', {name: 'Theme settings'}).click();
 
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
@@ -215,12 +216,16 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Brand'})).toBeVisible();
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Site wide'})).toBeHidden();
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Homepage'})).toBeHidden();
-        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'})).toBeHidden();
+        const designSettingTabs = modal.getByTestId('design-setting-tabs');
+
+        await expect(designSettingTabs.getByRole('tab', {name: 'Global'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Theme settings'})).toBeHidden();
+
+        // The tabs are not visible, but the global settings are still rendered
+        await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
+
         expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
@@ -265,7 +270,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Site wide'}).click();
+        await modal.getByRole('tab', {name: 'Theme settings'}).click();
 
         const showFeaturedPostsCustomThemeSetting = modal.getByLabel('Show featured posts');
 
@@ -287,5 +292,100 @@ test.describe('Design settings', async () => {
                 {key: 'show_featured_posts', value: 'false'}
             ]
         });
+    });
+
+    test('Custom fonts', async ({page}) => {
+        toggleLabsFlag('customFonts', true);
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: []
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        const designSettingTabs = modal.getByTestId('design-setting-tabs');
+
+        await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
+
+        await expect(designSettingTabs.getByText('Typography')).toBeVisible();
+        await expect(designSettingTabs.getByTestId('heading-font-select')).toBeVisible();
+        await expect(designSettingTabs.getByTestId('body-font-select')).toBeVisible();
+
+        // select a different heading font
+        const headingFontSelect = designSettingTabs.getByTestId('heading-font-select');
+        await headingFontSelect.click();
+        await headingFontSelect.getByText('Cardo').click();
+
+        // select a different body font
+        const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
+        await bodyFontSelect.click();
+        await bodyFontSelect.getByText('Inter').click();
+
+        const expectedEncoded = new URLSearchParams([['bf', 'Inter'], ['hf', 'Cardo']]).toString();
+
+        // Preview should have the new fonts
+        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+    });
+
+    test('Custom fonts setting back to default', async ({page}) => {
+        toggleLabsFlag('customFonts', true);
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
+                {key: 'heading_font', value: 'Caro'},
+                {key: 'body_font', value: 'Inter'}
+            ])},
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: []
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        // The fonts should be set to the values in the settings
+        await expect(modal.getByTestId('heading-font-select')).toHaveText('Caro');
+        await expect(modal.getByTestId('body-font-select')).toHaveText('Inter');
+
+        const designSettingTabs = modal.getByTestId('design-setting-tabs');
+        // select a different heading font
+        const headingFontSelect = designSettingTabs.getByTestId('heading-font-select');
+        await headingFontSelect.click();
+        await headingFontSelect.getByText('Theme default').click();
+
+        // select a different body font
+        const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
+        await bodyFontSelect.click();
+        await bodyFontSelect.getByText('Theme default').click();
+
+        const expectedEncoded = new URLSearchParams([['bf', ''], ['hf', '']]).toString();
+
+        // Preview should have the old fonts back
+        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 });

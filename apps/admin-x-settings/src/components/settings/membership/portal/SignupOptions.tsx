@@ -118,15 +118,15 @@ const SignupOptions: React.FC<{
     return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalName)}
+            direction='rtl'
             disabled={isDisabled}
             label='Display name in signup form'
-            labelStyle='heading'
             onChange={e => updateSetting('portal_name', e.target.checked)}
         />
 
         <CheckboxGroup
             checkboxes={tiersCheckboxes}
-            title='Tiers available at signup'
+            title='Available tiers'
         />
 
         {arePaidTiersVisible && (
@@ -152,7 +152,7 @@ const SignupOptions: React.FC<{
                             }
                         }
                     ]}
-                    title='Prices available at signup'
+                    title='Available prices'
                 />
                 {(portalPlans.includes('yearly') && portalPlans.includes('monthly')) &&
                     <Select

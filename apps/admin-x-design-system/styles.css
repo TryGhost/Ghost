@@ -4,6 +4,28 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+@import url(https://fonts.bunny.net/css?family=cardo:400,700);
+@import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
+@import url(https://fonts.bunny.net/css?family=merriweather:300,700);
+@import url(https://fonts.bunny.net/css?family=nunito:400,600,700);
+@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700);
+@import url(https://fonts.bunny.net/css?family=prata:400);
+@import url(https://fonts.bunny.net/css?family=roboto:400,500,700);
+@import url(https://fonts.bunny.net/css?family=rufina:400,500,700);
+@import url(https://fonts.bunny.net/css?family=tenor-sans:400);
+@import url(https://fonts.bunny.net/css?family=space-grotesk:700);
+@import url(https://fonts.bunny.net/css?family=chakra-petch:400);
+@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=poppins:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=inter:400,700);
+@import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=lora:400,700);
+@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=space-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+
 /* Defaults */
 @layer base {
     /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */

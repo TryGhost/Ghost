@@ -1,0 +1,43 @@
+{
+  "name": "@tryghost/custom-fonts",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/custom-fonts",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "./build/cjs/index.js",
+  "module": "./build/esm/index.js",
+  "types": "./build/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "types": "./build/types/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput --sourceMap",
+    "build": "yarn build:cjs && yarn build:esm && yarn build:ts",
+    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly --declaration --declarationDir ./build/types",
+    "build:cjs": "tsc -p tsconfig.json --outDir ./build/cjs --module CommonJS",
+    "build:esm": "tsc -p tsconfig.esm.json --outDir ./build/esm --module ES2020",
+    "build:ts": "yarn build:cjs && yarn build:esm && yarn build:types",
+    "prepare": "yarn build",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "test": "yarn test:ts && yarn test:unit",
+    "test:ts": "tsc --noEmit",
+    "lint:code": "eslint src/ --ext .ts --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
+  },
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
+    "c8": "10.1.2",
+    "mocha": "10.7.3",
+    "sinon": "19.0.2",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.2"
+  },
+  "dependencies": {}
+}

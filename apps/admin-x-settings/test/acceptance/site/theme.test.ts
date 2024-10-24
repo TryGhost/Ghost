@@ -27,13 +27,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -77,13 +73,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -142,13 +134,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -193,13 +181,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -236,13 +220,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 

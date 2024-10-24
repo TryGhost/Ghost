@@ -1,8 +1,13 @@
 const should = require('should');
 const themeList = require('../../../../core/server/services/themes/list');
+const sinon = require('sinon');
 
 // Stuff we are testing
 const body_class = require('../../../../core/frontend/helpers/body_class');
+
+// Stubs
+const proxy = require('../../../../core/frontend/services/proxy');
+const {settingsCache, labs} = proxy;
 
 describe('{{body_class}} helper', function () {
     let options = {};
@@ -153,6 +158,117 @@ describe('{{body_class}} helper', function () {
             );
 
             rendered.string.should.equal('page-template page-about');
+        });
+    });
+
+    describe('custom fonts', function () {
+        let settingsCacheStub;
+        let labsStub;
+
+        function callBodyClassWithContext(context, self) {
+            options.data.root.context = context;
+            return body_class.call(
+                self,
+                options
+            );
+        }
+
+        beforeEach(function () {
+            labsStub = sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+            settingsCacheStub = sinon.stub(settingsCache, 'get');
+            options = {
+                data: {
+                    root: {
+                        context: [],
+                        settings: {active_theme: 'casper'}
+                    },
+                    site: {}
+                }
+            };
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('includes custom font for post when set in options data object', function () {
+            options.data.site.heading_font = 'Space Grotesk';
+            options.data.site.body_font = 'Noto Sans';
+            options.data.site._preview = 'test';
+
+            const rendered = callBodyClassWithContext(
+                ['post'],
+                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
+            );
+
+            rendered.string.should.equal('post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
+        });
+
+        it('includes custom font for post when set in settings cache and no preview', function () {
+            settingsCacheStub.withArgs('heading_font').returns('Space Grotesk');
+            settingsCacheStub.withArgs('body_font').returns('Noto Sans');
+
+            const rendered = callBodyClassWithContext(
+                ['post'],
+                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
+            );
+
+            rendered.string.should.equal('post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
+        });
+
+        it('does not include custom font classes when custom fonts are not enabled', function () {
+            labsStub.withArgs('customFonts').returns(false);
+
+            const rendered = callBodyClassWithContext(
+                ['post'],
+                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
+            );
+
+            rendered.string.should.equal('post-template tag-foo tag-bar');
+        });
+
+        it('includes custom font classes for home page when set in options data object', function () {
+            options.data.site.heading_font = 'Space Grotesk';
+            options.data.site.body_font = '';
+            options.data.site._preview = 'test';
+
+            const rendered = callBodyClassWithContext(
+                ['home'],
+                {relativeUrl: '/'}
+            );
+
+            rendered.string.should.equal('home-template gh-font-heading-space-grotesk');
+        });
+
+        it('does not inject custom fonts when preview is set and default font was selected (empty string)', function () {
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCacheStub.withArgs('heading_font').returns('Space Grotesk');
+            settingsCacheStub.withArgs('body_font').returns('Noto Sans');
+
+            options.data.site.heading_font = '';
+            options.data.site.body_font = '';
+            options.data.site._preview = 'test';
+
+            const rendered = callBodyClassWithContext(
+                ['home'],
+                {relativeUrl: '/'}
+            );
+
+            rendered.string.should.equal('home-template');
+        });
+
+        it('can handle preview being set and custom font keys missing', function () {
+            options.data.site._preview = 'test';
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCacheStub.withArgs('heading_font').returns('Space Grotesk');
+            settingsCacheStub.withArgs('body_font').returns('Noto Sans');
+
+            const rendered = callBodyClassWithContext(
+                ['post'],
+                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
+            );
+
+            rendered.string.should.equal('post-template tag-foo tag-bar');
         });
     });
 });

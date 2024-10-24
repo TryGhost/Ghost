@@ -6,7 +6,7 @@ import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useQueryParams from '../../../hooks/useQueryParams';
-import {Breadcrumbs, Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -54,11 +54,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     setCurrentTab,
     themes
 }) => {
+    const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const limiter = useLimiter();
     const handleError = useHandleError();
-    const refParam = useQueryParams().getParam('ref');
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
 
@@ -80,11 +80,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     }, [limiter]);
 
     const onClose = () => {
-        if (refParam) {
-            updateRoute(`design/edit?ref=${refParam}`);
-        } else {
-            updateRoute('design/edit');
-        }
+        updateRoute('/');
     };
 
     const onThemeUpload = async (file: File) => {
@@ -169,7 +165,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 title,
                 prompt,
                 fatalErrors,
-                onRetry: async (modal) => {
+                onRetry: async () => {
                     modal?.remove();
                     handleUpload();
                 }
@@ -219,17 +215,18 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     };
 
     const left =
-        <Breadcrumbs
-            activeItemClassName='hidden md:!block md:!visible'
-            itemClassName='hidden md:!block md:!visible'
-            items={[
-                {label: 'Design', onClick: onClose},
-                {label: 'Change theme'}
+    <div className='hidden md:!visible md:!block'>
+        <TabView
+            border={false}
+            selectedTab={currentTab}
+            tabs={[
+                {id: 'official', title: 'Official themes'},
+                {id: 'installed', title: 'Installed'}
             ]}
-            separatorClassName='hidden md:!block md:!visible'
-            backIcon
-            onBack={onClose}
-        />;
+            onTabChange={(id: string) => {
+                setCurrentTab(id);
+            }} />
+    </div>;
 
     const handleUpload = () => {
         if (uploadConfig?.enabled) {
@@ -250,19 +247,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const right =
         <div className='flex items-center gap-14'>
-            <div className='hidden md:!visible md:!block'>
-                <TabView
-                    border={false}
-                    selectedTab={currentTab}
-                    tabs={[
-                        {id: 'official', title: 'Official themes'},
-                        {id: 'installed', title: 'Installed'}
-                    ]}
-                    onTabChange={(id: string) => {
-                        setCurrentTab(id);
-                    }} />
-            </div>
             <div className='flex items-center gap-3'>
+                <Button label='Close' onClick={() => {
+                    modal.remove();
+                    onClose();
+                }} />
                 <Button color='black' label='Upload theme' loading={isUploading} onClick={handleUpload} />
             </div>
         </div>;
@@ -372,11 +361,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                             });
                         }
                         confirmModal?.remove();
-                        if (refParam) {
-                            updateRoute(`design/edit?ref=${refParam}`);
-                        } else {
-                            updateRoute('design/edit');
-                        }
+                        updateRoute('');
                     } catch (e) {
                         handleError(e);
                     }
@@ -457,11 +442,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 prompt,
                 installedTheme: installedTheme!,
                 onActivate: () => {
-                    if (refParam) {
-                        updateRoute(`design/edit?ref=${refParam}`);
-                    } else {
-                        updateRoute('design/edit');
-                    }
+                    updateRoute('');
                 }
             });
         };
@@ -470,11 +451,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     return (
         <Modal
             afterClose={() => {
-                if (refParam) {
-                    updateRoute(`design/edit?ref=${refParam}`);
-                } else {
-                    updateRoute('design/edit');
-                }
+                updateRoute('');
             }}
             animate={false}
             cancelLabel=''
@@ -500,7 +477,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                                 setSelectedTheme(null);
                             }}
                             onClose={() => {
-                                updateRoute('design/edit');
+                                updateRoute('');
                             }}
                             onInstall={onInstall} />
                     }

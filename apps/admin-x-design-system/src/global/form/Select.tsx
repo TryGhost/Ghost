@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React, {useId, useMemo, useEffect} from 'react';
-import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
+import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, MenuPlacement, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import AsyncSelect from 'react-select/async';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 import Heading from '../Heading';
@@ -82,7 +82,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="select-option" data-value={optionProps.data.value}>{children}</span>
+        <span className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : ''} data-testid="select-option" data-value={optionProps.data.value}>{children}{optionProps.isSelected && <span><Icon name='check' size={14} /></span>}</span>
         {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
@@ -190,7 +190,13 @@ const Select: React.FC<SelectProps> = ({
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,
             menu: () => customClasses.menu,
-            option: () => customClasses.option,
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            option: (state: any) => {
+                if (state.data.className) {
+                    return clsx(customClasses.option, state.data.className);
+                }
+                return customClasses.option;
+            },
             noOptionsMessage: () => customClasses.noOptionsMessage,
             groupHeading: () => customClasses.groupHeading,
             clearIndicator: () => customClasses.clearIndicator
@@ -206,7 +212,8 @@ const Select: React.FC<SelectProps> = ({
         unstyled: true,
         onChange: onSelect,
         onFocus: handleFocus,
-        onBlur: handleBlur
+        onBlur: handleBlur,
+        menuPlacement: 'auto' as MenuPlacement
     };
 
     const select = (

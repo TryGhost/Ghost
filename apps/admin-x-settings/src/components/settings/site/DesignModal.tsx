@@ -1,52 +1,48 @@
-import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
+import GlobalSettings, {GlobalSettingValues} from './designAndBranding/GlobalSettings';
 import React, {useEffect, useState} from 'react';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useQueryParams from '../../../hooks/useQueryParams';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
-import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Sidebar: React.FC<{
-    brandSettings: BrandSettingValues
+    globalSettings: GlobalSettingValues
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
-    updateBrandSetting: (key: string, value: SettingValue) => void
+    updateGlobalSetting: (key: string, value: SettingValue) => void
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
     handleSave: () => Promise<boolean>
 }> = ({
-    brandSettings,
+    globalSettings,
     themeSettingSections,
-    updateBrandSetting,
+    updateGlobalSetting,
     updateThemeSetting,
-    onTabChange,
-    handleSave
+    onTabChange
 }) => {
-    const {updateRoute} = useRouting();
-    const [selectedTab, setSelectedTab] = useState('brand');
-    const {data: {themes} = {}} = useBrowseThemes();
-    const refParam = useQueryParams().getParam('ref');
-
-    const activeTheme = themes?.find(theme => theme.active);
+    const [selectedTab, setSelectedTab] = useState('global');
 
     const tabs: Tab[] = [
         {
-            id: 'brand',
-            title: 'Brand',
-            contents: <BrandSettings updateSetting={updateBrandSetting} values={brandSettings} />
-        },
-        ...themeSettingSections.map(({id, title, settings}) => ({
-            id,
-            title,
-            contents: <ThemeSettings settings={settings} updateSetting={updateThemeSetting} />
-        }))
+            id: 'global',
+            title: 'Global',
+            contents: <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
+        }
     ];
+
+    if (themeSettingSections.length > 0) {
+        tabs.push({
+            id: 'theme-settings',
+            title: 'Theme settings',
+            contents: <ThemeSettings sections={themeSettingSections} updateSetting={updateThemeSetting} />
+        });
+    }
 
     const handleTabChange = (id: string) => {
         setSelectedTab(id);
@@ -55,27 +51,13 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex h-full flex-col justify-between'>
-            <div className='p-7' data-testid="design-setting-tabs">
-                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+            <div className='grow p-7 pt-2' data-testid="design-setting-tabs">
+                {tabs.length > 1 ?
+                    <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+                    :
+                    <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
+                }
             </div>
-            <StickyFooter height={74}>
-                <div className='w-full px-7'>
-                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
-                        await handleSave();
-                        if (refParam) {
-                            updateRoute(`design/change-theme?ref=${refParam}`);
-                        } else {
-                            updateRoute('design/change-theme');
-                        }
-                    }}>
-                        <div className='text-left'>
-                            <div className='font-semibold'>Change theme</div>
-                            <div className='font-sm text-grey-700'>Current theme: {activeTheme?.name} - v{activeTheme?.package.version}</div>
-                        </div>
-                        <Icon className='mr-2 transition-all group-hover:translate-x-2 dark:text-white' name='chevron-right' size='sm' />
-                    </button>
-                </div>
-            </StickyFooter>
         </div>
     );
 };
@@ -132,7 +114,7 @@ const DesignModal: React.FC = () => {
         }
     }, [setFormState, themeSettings]);
 
-    const updateBrandSetting = (key: string, value: SettingValue) => {
+    const updateGlobalSetting = (key: string, value: SettingValue) => {
         updateForm(state => ({...state, settings: state.settings.map(setting => (
             setting.key === key ? {...setting, value, dirty: true} : setting
         ))}));
@@ -144,7 +126,7 @@ const DesignModal: React.FC = () => {
         ))}));
     };
 
-    const [description, accentColor, icon, logo, coverImage] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
+    const [description, accentColor, icon, logo, coverImage, headingFont, bodyFont] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image', 'heading_font', 'body_font']) as string[];
 
     const themeSettingGroups = (formState.themeSettings || []).reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
@@ -201,16 +183,18 @@ const DesignModal: React.FC = () => {
                 icon,
                 logo,
                 coverImage,
-                themeSettings: formState.themeSettings
+                themeSettings: formState.themeSettings,
+                headingFont,
+                bodyFont
             }}
             url={selectedTabURL}
         />;
     const sidebarContent =
         <Sidebar
-            brandSettings={{description, accentColor, icon, logo, coverImage}}
+            globalSettings={{description, accentColor, icon, logo, coverImage, headingFont, bodyFont}}
             handleSave={handleSave}
             themeSettingSections={themeSettingSections}
-            updateBrandSetting={updateBrandSetting}
+            updateGlobalSetting={updateGlobalSetting}
             updateThemeSetting={updateThemeSetting}
             onTabChange={onTabChange}
         />;
