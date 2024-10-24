@@ -1,4 +1,9 @@
-# Docker Setup
+# Dev Container Setup
+
+## devcontainer.json
+This file contains the configuration for the dev container. It is used to define the setup of the container, including things like port bindings, environment variables, and other dev container specific features.
+
+It points to a docker compose file in the `.devcontainer/.docker` directory, which in turn relies on a Dockerfile in the same directory.
 
 ## Dockerfile
 The Dockerfile in this directory uses a multi-stage build to allow for multiple types of builds without duplicating code and ensuring maximum consistency. The following targets are available:
@@ -14,4 +19,4 @@ Similarly, the docker compose configuration relies on merging compose files to c
 yarn compose -f .devcontainer/docker/base.compose.yml -f .devcontainer/docker/development.compose.yml up
 ```
 
-This gives us the flexibility to create multiple different docker compose environments, while ensuring a base level of consistency across configurations.
+This gives us the flexibility to create multiple different docker compose configurations, while ensuring a base level of consistency across configurations.
