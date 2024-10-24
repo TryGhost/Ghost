@@ -26,11 +26,11 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     };
 
     const container = (
-        <TableRow
-            ref={setRef}
+        <TableRow ref={setRef}
             action={<Button color='green' label='Edit' link onClick={showDetails} />}
             className={isDragging ? 'opacity-75' : ''}
             style={style}
+            hideActions
             onClick={showDetails}
         >
             {(props.dragHandleAttributes || isDragging) && <TableCell className='w-10 !align-middle' >
