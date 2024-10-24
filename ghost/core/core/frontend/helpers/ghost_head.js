@@ -4,7 +4,7 @@
 // Outputs scripts and other assets at the top of a Ghost theme
 const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
-
+const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
 // @TODO fix this require
 const {cardAssets} = require('../services/assets-minification');
@@ -14,6 +14,10 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+
+/**
+ * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
+ */
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
@@ -338,6 +342,31 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
+            }
+
+            if (labs.isSet('customFonts')) {
+                // Check if if the request is for a site preview, in which case we **always** use the custom font values
+                // from the passed in data, even when they're empty strings or settings cache has values.
+                const isSitePreview = options.data.site._preview;
+                // Taking the fonts straight from the passed in data, as they can't be used from the
+                // settings cache for the theme preview until the settings are saved. Once saved,
+                // we need to use the settings cache to provide the correct CSS injection.
+                const headingFont = isSitePreview ? options.data.site.heading_font : settingsCache.get('heading_font');
+                const bodyFont = isSitePreview ? options.data.site.body_font : settingsCache.get('body_font');
+                if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+                    (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+                    /** @type FontSelection */
+                    const fontSelection = {};
+
+                    if (headingFont) {
+                        fontSelection.heading = headingFont;
+                    }
+                    if (bodyFont) {
+                        fontSelection.body = bodyFont;
+                    }
+                    const customCSS = generateCustomFontCss(fontSelection);
+                    head.push(new SafeString(customCSS));
+                }
             }
         }
 
