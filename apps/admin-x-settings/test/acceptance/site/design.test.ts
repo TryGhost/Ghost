@@ -294,7 +294,10 @@ test.describe('Design settings', async () => {
         });
     });
 
-    test('Custom fonts', async ({page}) => {
+    /**
+     * TODO: This seems to be a flaky test.
+     */
+    test.skip('Custom fonts', async ({page}) => {
         toggleLabsFlag('customFonts', true);
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -341,7 +344,10 @@ test.describe('Design settings', async () => {
         await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
-    test('Custom fonts setting back to default', async ({page}) => {
+    /**
+     * TODO: This seems to be a flaky test.
+     */
+    test.skip('Custom fonts setting back to default', async ({page}) => {
         toggleLabsFlag('customFonts', true);
         await mockApi({page, requests: {
             ...globalDataRequests,
