@@ -19082,10 +19082,10 @@ html-to-text@8.2.1:
     minimist "^1.2.6"
     selderee "^0.6.0"
 
-html-validate@8.24.1:
-  version "8.24.1"
-  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.24.1.tgz#09525b66574c1135889a9cc74e08e2c6b345105d"
-  integrity sha512-WDV/JI4sVdX0QW4cupodsuMfI8vDygw3dMXD76OHKNMf7qhKxUsLDnNVKG7GLeAkRP0e0Y6H8AOrlaatob+g4Q==
+html-validate@8.24.2:
+  version "8.24.2"
+  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.24.2.tgz#d3cc29573b80dba55e8b74607020b9fd406fe6c0"
+  integrity sha512-PpZLlH3gpOSBLRBID4QovOyZ97Ka5dCIhHMPjUxQlMGqk5pc+mgG5enCXbC8ngdjG0jpkTvM8AMhnPv1EiU9Pw==
   dependencies:
     "@html-validate/stylish" "^4.1.0"
     "@sidvind/better-ajv-errors" "3.0.1"
