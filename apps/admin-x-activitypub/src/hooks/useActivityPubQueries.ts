@@ -193,17 +193,6 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useFollowersExpandedForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followers_expanded:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowersExpanded();
-        }
-    });
-}
-
 export function useAllActivitiesForUser({
     handle,
     includeOwn = false,
