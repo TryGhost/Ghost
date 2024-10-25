@@ -102,7 +102,8 @@
                 "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
             },
             "extensions": [
-                "ms-azuretools.vscode-docker"
+                "ms-azuretools.vscode-docker",
+                "github.vscode-github-actions"
             ]
         }
     },

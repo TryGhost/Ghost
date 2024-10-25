@@ -1,0 +1,19 @@
+name: Dev Container
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, closed]
+  push:
+    branches:
+      - main
+      - v5.*
+jobs:
+  build:
+    name: Dev Container Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Pre-build dev container image and run unit tests
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: yarn test:unit
