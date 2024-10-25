@@ -5,7 +5,6 @@
 name: ghost-base
 services:
   ghost:
-    image: ghost-base
     build:
       context: ../../
       dockerfile: .devcontainer/.docker/Dockerfile

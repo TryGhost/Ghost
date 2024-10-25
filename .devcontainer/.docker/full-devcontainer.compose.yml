@@ -2,9 +2,9 @@
 name: ghost-full-devcontainer
 services:
   ghost:
-    image: ghost-full-devcontainer
     build:
       target: full-devcontainer
+    pull_policy: never
     command: ["sleep", "infinity"]
     environment:
       - DEVCONTAINER=true

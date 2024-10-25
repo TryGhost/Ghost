@@ -4,9 +4,9 @@
 name: ghost-development
 services:
   ghost:
-    image: ghost-development
     build:
       target: development
+    pull_policy: never
     command: ["yarn", "dev"]
     volumes:
       - ../../.yarncache:/workspaces/ghost/.yarncache
