@@ -21,6 +21,7 @@ export default defineConfig((config) => {
             REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
         },
         preview: {
+            host: '0.0.0.0',
             port: 4175
         },
         server: {

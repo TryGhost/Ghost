@@ -21,7 +21,7 @@
   "license": "MIT",
   "scripts": {
     "archive": "npm pack",
-    "dev": "node --watch index.js",
+    "dev": "nodemon index.js",
     "build:assets": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:base": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
@@ -80,6 +80,7 @@
     "@tryghost/debug": "0.1.32",
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/donations": "0.0.0",
+    "@tryghost/custom-fonts": "0.0.0",
     "@tryghost/dynamic-routing-events": "0.0.0",
     "@tryghost/email-analytics-provider-mailgun": "0.0.0",
     "@tryghost/email-analytics-service": "0.0.0",
@@ -249,6 +250,7 @@
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
     "nock": "13.3.3",
+    "nodemon": "^3.1.7",
     "papaparse": "5.3.2",
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.4.39",
@@ -318,17 +320,20 @@
       },
       "test:browser": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "ghost-admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "ghost-admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "ghost-admin:build"
         ]
       },
       "test:e2e": {

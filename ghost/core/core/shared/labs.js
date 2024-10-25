@@ -46,7 +46,8 @@ const ALPHA_FEATURES = [
     'adminXDemo',
     'contentVisibility',
     'commentImprovements',
-    'staff2fa'
+    'staff2fa',
+    'customFonts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
