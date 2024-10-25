@@ -568,8 +568,8 @@ test.describe('Updating post access', () => {
 
         // publish
         await publishPost(sharedPage);
-        await closePublishFlow(sharedPage);
         const frontendPage = await openPublishedPostBookmark(sharedPage);
+        await closePublishFlow(sharedPage);
 
         // non-member doesn't have access
         await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
