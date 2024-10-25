@@ -64,7 +64,7 @@ test.describe('2FA', () => {
         await page.getByRole('button', {name: 'Sign in'}).click();
 
         await page.getByRole('button', {name: 'Resend'}).click();
-        await expect(page.locator('.forgotten-link')).toHaveText(/Resend again in [0-9]+s/);
+        await expect(page.locator('.forgotten-link')).toHaveText(/Sent/);
 
         const token = await verificationToken.getToken();
 
