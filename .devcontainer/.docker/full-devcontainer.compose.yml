@@ -3,6 +3,8 @@ name: ghost-full-devcontainer
 services:
   ghost:
     build:
+      context: ../../
+      dockerfile: .devcontainer/.docker/Dockerfile
       target: full-devcontainer
     pull_policy: never
     command: ["sleep", "infinity"]

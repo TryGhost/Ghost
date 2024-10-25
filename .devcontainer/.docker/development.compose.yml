@@ -5,6 +5,8 @@ name: ghost-development
 services:
   ghost:
     build:
+      context: ../../
+      dockerfile: .devcontainer/.docker/Dockerfile
       target: development
     pull_policy: never
     command: ["yarn", "dev"]
