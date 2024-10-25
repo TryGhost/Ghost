@@ -44,7 +44,7 @@ EXPOSE 7174
 ### This is a full devcontainer with all the code and dependencies installed
 ### Useful in an environment like Github Codespaces where you don't mount your local code into the container
 FROM base-devcontainer AS full-devcontainer
-WORKDIR /workspaces/ghost
+WORKDIR /workspaces/Ghost
 COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
