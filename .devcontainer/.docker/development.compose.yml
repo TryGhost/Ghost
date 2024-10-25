@@ -33,6 +33,7 @@ services:
       - 7173:7173
       - 7174:7174
       - 9174:9174
+      - 9323:9323
     environment:
       - DEBUG=${DEBUG:-}
       - APP_FLAGS=${APP_FLAGS:-}

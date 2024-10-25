@@ -93,6 +93,10 @@
         },
         "5368": {
             "onAutoForward": "silent"
+        },
+        "9323" : {
+            "label": "Comments Tests Report",
+            "onAutoForward": "silent"
         }
     },
     "customizations": {
