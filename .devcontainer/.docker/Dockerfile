@@ -51,7 +51,7 @@ RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_F
 # Development Stage: alternative entrypoint for development with some caching optimizations
 FROM base-devcontainer AS development
 
-WORKDIR /workspaces/ghost
+WORKDIR /workspaces/Ghost
 
 COPY ../../ .
 
