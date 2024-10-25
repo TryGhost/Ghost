@@ -22,12 +22,15 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
         padding: 4px 24px 4px 0px;
     }
+    html[dir="rtl"] .gh-portal-recommendation-item .gh-portal-list-detail {
+        padding: 4px 0px 4px 24px;
+    }
 
     .gh-portal-recommendation-item-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
     }
 
     .gh-portal-recommendation-item-favicon {
@@ -53,7 +56,7 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-item .gh-portal-recommendation-description-container p {
         font-size: 1.35rem;
-        padding-left: 30px;
+        padding-inline-start: 30px;
         font-weight: 400;
         letter-spacing: 0.1px;
         margin-top: 4px;
@@ -75,7 +78,7 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-arrow-icon {
     height: 12px;
     opacity: 0;
-    margin-left: -6px;
+    margin-inline-start: -6px;
     transition: 0.2s ease-in opacity;
     }
 
@@ -94,7 +97,7 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-subscribed {
         display: flex;
-        padding-left: 30px;
+        padding-inline-start: 30px;
         align-items: center;
         gap: 4px;
         font-size: 1.35rem;

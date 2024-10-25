@@ -17,6 +17,10 @@ export const SignupPageStyles = `
     top: 35px;
     left: 32px;
 }
+html[dir="rtl"] .gh-portal-back-sitetitle {
+    left: unset;
+    right: 32px;
+}
 
 .gh-portal-back-sitetitle .gh-portal-btn {
     padding: 0;
@@ -109,7 +113,7 @@ export const SignupPageStyles = `
 .gh-portal-signup-message button {
     font-size: 1.4rem;
     font-weight: 600;
-    margin-left: 4px !important;
+    margin-inline-start: 4px !important;
     margin-bottom: -1px;
 }
 
@@ -216,11 +220,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 }
 
 .gh-portal-signup-terms {
-    margin: -16px 0 36px;
+    margin: 0 0 36px;
 }
 
 .gh-portal-signup-terms-wrapper.free-only .gh-portal-signup-terms {
-    margin: -16px 0 24px;
+    margin: 0 0 24px;
 }
 
 .gh-portal-products:has(.gh-portal-product-card) + .gh-portal-signup-terms-wrapper.free-only {
@@ -244,7 +248,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 
 .gh-portal-signup-terms .checkbox {
     position: relative;
-    top: 1px;
+    top: -1px;
     flex-shrink: 0;
     display: inline-block;
     float: left;
@@ -255,6 +259,9 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     border: 1px solid var(--grey10);
     border-radius: 4px;
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+html[dir=rtl] .gh-portal-signup-terms .checkbox {
+    float: right;
 }
 
 .gh-portal-signup-terms label:hover input:not(:checked) + .checkbox {
@@ -274,6 +281,10 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
     transform: rotate(-45deg);
+}
+html[dir=rtl] .gh-portal-signup-terms .checkbox:before {
+    left: unset;
+    right: 3px;
 }
 
 .gh-portal-signup-terms input:checked + .checkbox {
@@ -295,14 +306,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     box-shadow: none;
 }
 
-.gh-portal-signup-terms-content {
-    color: var(--grey4);
-    font-size: 1.5rem;
-    line-height: 1.5em;
-}
-
 .gh-portal-signup-terms-content p {
     margin-bottom: 0;
+    color: var(--grey4);
+    font-size: 1.4rem;
+    line-height: 1.25em;
 }
 
 .gh-portal-error .gh-portal-signup-terms-content {

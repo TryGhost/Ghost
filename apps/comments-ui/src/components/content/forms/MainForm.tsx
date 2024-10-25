@@ -27,7 +27,9 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             status: 'published',
             html
         });
-    }, [postId, dispatchAction]);
+    
+        editor?.commands.clearContent();
+    }, [postId, dispatchAction, editor]);
 
     // C keyboard shortcut to focus main form
     const formEl = useRef(null);
@@ -87,7 +89,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
                 <span className="hidden sm:inline">{t('Add comment')} </span><span className="sm:hidden">{t('Comment')}</span>
             </>
         ),
-        submitSize: 'large',
+        submitSize: 'large' as const,
         submit
     };
 
