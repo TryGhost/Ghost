@@ -9,7 +9,7 @@ const ExitSettingsButton: React.FC = () => {
     };
 
     return (
-        <Button className='text-grey-700 hover:!text-black' data-testid="exit-settings" icon='close' id="done-button" label='' link={true} title='Close (ESC)' onClick={() => confirmIfDirty(isDirty, navigateAway)} />
+        <Button className='text-grey-700 hover:!text-grey-900' data-testid="exit-settings" icon='close' id="done-button" label='' link={true} title='Close (ESC)' onClick={() => confirmIfDirty(isDirty, navigateAway)} />
     );
 };
 
