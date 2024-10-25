@@ -87,6 +87,8 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
             className = clsx('font-fira-sans', heading && 'font-bold');
         } else if (fontName === 'IBM Plex Serif') {
             className = clsx('font-ibm-plex-serif', heading && 'font-bold');
+        } else if (fontName === 'Inter') {
+            className = clsx('font-inter', heading && 'font-bold');
         } else if (fontName === 'JetBrains Mono') {
             className = clsx('font-jetbrains-mono', heading && 'font-bold');
         } else if (fontName === 'Lora') {
