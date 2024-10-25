@@ -484,6 +484,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -599,6 +600,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -713,6 +715,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -764,6 +767,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -878,6 +882,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -1727,6 +1732,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -1778,6 +1784,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -1829,6 +1836,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -1942,6 +1950,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -2056,6 +2065,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -2169,6 +2179,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -2283,6 +2294,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -2333,6 +2345,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -2447,6 +2460,7 @@ Object {
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
@@ -2698,6 +2712,7 @@ Object {
         }
     },
     \\"url\\": \\"http://localhost:65530/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
@@ -2784,6 +2799,7 @@ Object {
         }
     },
     \\"url\\": \\"http://localhost:65530/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
@@ -2835,6 +2851,7 @@ Object {
         }
     },
     \\"url\\": \\"http://localhost:65530/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
@@ -2973,6 +2990,7 @@ Object {
         }
     },
     \\"url\\": \\"http://localhost:65530/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
@@ -3347,6 +3365,7 @@ Object {
         }
     },
     \\"url\\": \\"http://localhost:65530/\\",
+    \\"name\\": \\"Ghost\\",
     \\"image\\": {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/site-cover.png\\"
