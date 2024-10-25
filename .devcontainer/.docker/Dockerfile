@@ -38,6 +38,7 @@ EXPOSE 4178
 EXPOSE 6174
 EXPOSE 7173
 EXPOSE 7174
+EXPOSE 9323
 
 
 # Full Devcontainer Stage: Add the code and install dependencies
