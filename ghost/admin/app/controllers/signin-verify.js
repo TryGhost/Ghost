@@ -121,7 +121,15 @@ export default class SigninVerifyController extends Controller {
         const resendTokenPath = `${this.ghostPaths.apiRoot}/session/verify`;
 
         try {
-            yield this.ajax.post(resendTokenPath);
+            try {
+                yield this.ajax.post(resendTokenPath);
+            } catch (error) {
+                // HACK: For some reason, the server returns 200: OK and sends the email but the client still throws an error
+                // So we need to catch the error and throw it if it's not 'OK'
+                if (error !== 'OK') {
+                    throw error;
+                }
+            }
             this.startResendTokenCountdown();
             return TASK_SUCCESS;
         } catch (error) {
