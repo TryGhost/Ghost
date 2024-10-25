@@ -51,6 +51,10 @@ export const PopupNotificationStyles = `
         width: 20px;
         height: 20px;
     }
+    html[dir="rtl"] .gh-portal-popupnotification-icon {
+        left: unset;
+        right: 12px;
+    } 
 
     .gh-portal-popupnotification-icon.success {
         color: var(--green);
@@ -72,6 +76,10 @@ export const PopupNotificationStyles = `
         padding: 12px;
         transition: all 0.15s ease-in-out forwards;
         opacity: 0.8;
+    }
+    html[dir="rtl"] .gh-portal-popupnotification .closeicon {
+        right: unset;
+        left: 3px;
     }
 
     .gh-portal-popupnotification .closeicon:hover {

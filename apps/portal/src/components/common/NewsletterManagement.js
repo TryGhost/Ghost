@@ -210,7 +210,7 @@ export default function NewsletterManagement({
                             onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ', pageData: {direct: false}})}
                         >
                             {/* eslint-disable-next-line i18next/no-literal-string */}
-                            {t('Get help')} &rarr;
+                            {t('Get help')} <span className="right-arrow">&rarr;</span>
                         </button>
                     </div>
                 }

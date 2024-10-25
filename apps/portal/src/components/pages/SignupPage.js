@@ -17,6 +17,10 @@ export const SignupPageStyles = `
     top: 35px;
     left: 32px;
 }
+html[dir="rtl"] .gh-portal-back-sitetitle {
+    left: unset;
+    right: 32px;
+}
 
 .gh-portal-back-sitetitle .gh-portal-btn {
     padding: 0;
@@ -109,7 +113,7 @@ export const SignupPageStyles = `
 .gh-portal-signup-message button {
     font-size: 1.4rem;
     font-weight: 600;
-    margin-left: 4px !important;
+    margin-inline-start: 4px !important;
     margin-bottom: -1px;
 }
 
@@ -256,6 +260,9 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     border-radius: 4px;
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
+html[dir=rtl] .gh-portal-signup-terms .checkbox {
+    float: right;
+}
 
 .gh-portal-signup-terms label:hover input:not(:checked) + .checkbox {
     border-color: var(--grey9);
@@ -274,6 +281,10 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
     transform: rotate(-45deg);
+}
+html[dir=rtl] .gh-portal-signup-terms .checkbox:before {
+    left: unset;
+    right: 3px;
 }
 
 .gh-portal-signup-terms input:checked + .checkbox {

@@ -37,11 +37,11 @@ footer.gh-portal-account-footer {
 }
 
 .gh-portal-account-footermenu li {
-    margin-right: 16px;
+    margin-inline-end: 16px;
 }
 
 .gh-portal-account-footermenu li:last-of-type {
-    margin-right: 0;
+    margin-inline-end: 0;
 }
 
 .gh-portal-freeaccount-newsletter {
@@ -84,13 +84,13 @@ footer.gh-portal-account-footer {
 .gh-portal-billing-button-loader {
     width: 32px;
     height: 32px;
-    margin-right: -3px;
+    margin-inline-end: -3px;
     opacity: 0.6;
 }
 
 .gh-portal-product-icon {
     width: 52px;
-    margin-right: 12px;
+    margin-inline-end: 12px;
     border-radius: 2px;
 }
 
@@ -109,7 +109,7 @@ footer.gh-portal-account-footer {
     width: 16px;
     height: 16px;
     color: var(--brandcolor);
-    margin-right: 5px;
+    margin-inline-end: 5px;
     z-index: 999;
 }
 

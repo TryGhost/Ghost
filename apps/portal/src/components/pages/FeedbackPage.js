@@ -82,6 +82,10 @@ export const FeedbackPageStyles = `
         background: currentColor;
         opacity: 0.10;
     }
+    html[dir="rtl"] .gh-feedback-button::before {
+        right: 0;
+        left: unset;
+    }
 
     .gh-feedback-button-selected {
         box-shadow: inset 0 0 0 2px currentColor;
@@ -111,8 +115,8 @@ export const FeedbackPageStyles = `
         }
 
         .gh-portal-feedback .gh-portal-text-center {
-            padding-left: 8px;
-            padding-right: 8px;
+            padding-inline-start: 8px;
+            padding-inline-end: 8px;
         }
 
         .gh-portal-popup-wrapper.feedback {
@@ -120,7 +124,7 @@ export const FeedbackPageStyles = `
             position: relative;
             width: 100%;
             background: none;
-            padding-right: 0 !important;
+            padding-inline-end: 0 !important;
             overflow: hidden;
             overflow-y: hidden !important;
             animation: none;

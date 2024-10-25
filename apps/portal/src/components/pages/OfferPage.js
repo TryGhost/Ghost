@@ -53,6 +53,9 @@ export const OfferPageStyles = () => {
     margin: 0 110px 0 0;
     width: 100%;
 }
+html[dir="rtl"] .gh-portal-offer-title h4 {
+    margin: 0 0 0 110px;
+}
 
 .gh-portal-offer-title h4.placeholder {
     opacity: 0.4;
@@ -75,7 +78,7 @@ export const OfferPageStyles = () => {
 
 .gh-portal-offer-details .gh-portal-plan-name,
 .gh-portal-offer-details p {
-    margin-right: 8px;
+    margin-inline-end: 8px;
 }
 
 .gh-portal-offer .footnote {

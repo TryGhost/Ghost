@@ -41,10 +41,17 @@ export const ProductsSectionStyles = () => {
             border-radius: 999px;
             transition: all 0.15s ease-in-out;
         }
+        html[dir="rtl"] .gh-portal-products-pricetoggle:before {
+            left: 4px;
+            right: unset;
+    }
 
         .gh-portal-products-pricetoggle.left:before {
             transform: translateX(calc(-100% + 8px));
         }
+        html[dir="rtl"] .gh-portal-products-pricetoggle.left:before {
+            transform: translateX(calc(100% - 8px));
+    }
 
         .gh-portal-products-pricetoggle .gh-portal-btn {
             border: 0;
@@ -80,7 +87,7 @@ export const ProductsSectionStyles = () => {
 
         .gh-portal-maximum-discount {
             font-weight: 400;
-            margin-left: 4px;
+            margin-inline-start: 4px;
             opacity: 0.5;
         }
 
@@ -193,7 +200,7 @@ export const ProductsSectionStyles = () => {
             text-align: center;
             white-space: nowrap;
             border-radius: 999px;
-            margin-right: -4px;
+            margin-inline-end: -4px;
             max-height: 24.5px;
         }
 
@@ -243,7 +250,7 @@ export const ProductsSectionStyles = () => {
         }
 
         .gh-portal-product-price .currency-sign.long {
-            margin-right: 5px;
+            margin-inline-end: 5px;
         }
 
         .gh-portal-product-price .amount {
@@ -264,7 +271,7 @@ export const ProductsSectionStyles = () => {
             line-height: 1.6em;
             color: var(--grey5);
             letter-spacing: 0.3px;
-            margin-left: 5px;
+            margin-inline-start: 5px;
         }
 
         .gh-portal-product-alternative-price {
@@ -315,6 +322,9 @@ export const ProductsSectionStyles = () => {
             min-width: 14px;
             margin: 3px 10px 0 0;
             overflow: visible;
+        }
+        html[dir="rtl"] .gh-portal-benefit-checkmark {
+            margin: 3px 0 0 10px;
         }
 
         .gh-portal-benefit-checkmark polyline,

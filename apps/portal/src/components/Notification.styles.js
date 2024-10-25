@@ -28,6 +28,12 @@ const NotificationStyles = `
         animation: notification-slidein 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000);
     }
 
+    html[dir="rtl"] .gh-portal-notification {
+        right: unset;
+        left: 12px;
+        padding: 14px 20px 18px 44px;
+    }
+
     .gh-portal-notification.slideout {
         animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
     }
@@ -40,10 +46,11 @@ const NotificationStyles = `
         flex-grow: 1;
         font-size: 1.4rem;
         line-height: 1.5em;
-        text-align: left;
+        text-align: start;
         margin: 0;
-        padding: 0 0 0 40px;
+        padding: 0;
         color: var(--grey13);
+        padding-inline-start: 40px;
     }
 
     .gh-portal-notification p strong {
@@ -67,6 +74,10 @@ const NotificationStyles = `
         left: 17px;
         width: 28px;
         height: 28px;
+    }
+    html[dir="rtl"] .gh-portal-notification-icon {
+        right: 17px;
+        left: unset;
     }
 
     .gh-portal-notification-icon.success {
@@ -124,6 +135,10 @@ const NotificationStyles = `
             left: 12px;
             max-width: calc(100% - 24px);
             animation-name: notification-slidein-mobile;
+        }
+        html[dir="rtl"] .gh-portal-notification {
+            right: 12px;
+            left: unset;
         }
 
         .gh-portal-notification.slideout {

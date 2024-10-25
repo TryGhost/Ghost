@@ -13,6 +13,9 @@ const TriggerButtonStyles = `
         line-height: 1;
         padding: 10px 28px 0 17px;
     }
+    html[dir="rtl"] .gh-portal-triggerbtn-wrapper {
+        padding: 10px 17px 0 28px;
+    }
     
     .gh-portal-triggerbtn-wrapper span {
         margin-bottom: 1px;
@@ -58,6 +61,9 @@ const TriggerButtonStyles = `
 
     .gh-portal-triggerbtn-container.with-label {
         padding: 0 12px 0 16px;
+    }
+    html[dir="rtl"] .gh-portal-triggerbtn-container.with-label {
+        padding: 0 16px 0 12px;
     }
 
     .gh-portal-triggerbtn-label {
