@@ -6,7 +6,7 @@ services:
       context: ../../
       dockerfile: .devcontainer/.docker/Dockerfile
       target: full-devcontainer
-    pull_policy: never
+    pull_policy: build
     command: ["sleep", "infinity"]
     environment:
       - DEVCONTAINER=true

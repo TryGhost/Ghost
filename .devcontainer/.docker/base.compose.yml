@@ -9,7 +9,7 @@ services:
       context: ../../
       dockerfile: .devcontainer/.docker/Dockerfile
       target: base
-    pull_policy: never
+    pull_policy: build
     tty: true
     depends_on:
       mysql:

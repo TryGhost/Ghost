@@ -7,7 +7,7 @@ services:
       dockerfile: .devcontainer/.docker/Dockerfile
       target: base-devcontainer
       no_cache: true
-    pull_policy: never
+    pull_policy: build
     command: ["sleep", "infinity"]
     environment:
       - DEVCONTAINER=true
