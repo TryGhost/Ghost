@@ -53,25 +53,31 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                 </div>
             )
         } testId='incoming-recommendation-list-item' hideActions>
-            <TableCell onClick={showDetails}>
+            <TableCell className='w-80' onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
-                        <div className="mb-0.5 flex items-center gap-3">
+                        <div className="flex items-center gap-3">
                             <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
                             <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
                         </div>
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
-                {(signups === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px text-right'>
-                    <span className='text-right'>{numberWithCommas(signups)}</span>
-                </div>)}
+            <TableCell className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
+                {(signups === 0) ? (
+                    <span className="text-grey-500 dark:text-grey-900">-</span>
+                ) : (
+                    <div className='mr-2'>
+                        <span>{numberWithCommas(signups)}</span>
+                    </div>
+                )}
             </TableCell>
             <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(signups === 0) ? (null) : (<div className='-mt-px text-left'>
-                    <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
-                </div>)}
+                {(signups === 0) ? (null) : (
+                    <div className='-mt-px text-left'>
+                        <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
+                    </div>
+                )}
             </TableCell>
             {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending</div></TableCell>}
         </TableRow>

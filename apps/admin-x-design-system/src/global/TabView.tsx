@@ -78,7 +78,7 @@ export const TabList: React.FC<TabListProps> = ({
     topRightContent
 }) => {
     const containerClasses = clsx(
-        'no-scrollbar flex w-full overflow-x-auto',
+        'no-scrollbar mb-px flex w-full overflow-x-auto',
         width === 'narrow' && 'gap-3',
         width === 'normal' && 'gap-5',
         width === 'wide' && 'gap-7',

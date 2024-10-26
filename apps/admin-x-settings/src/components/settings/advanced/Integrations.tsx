@@ -40,7 +40,10 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 }) => {
     const {updateRoute} = useRouting();
 
-    const handleClick = () => {
+    const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
+        // Prevent the click event from bubbling up when clicking the delete button
+        e?.stopPropagation();
+        
         if (disabled) {
             updateRoute({route: 'pro', isExternal: true});
         } else {
@@ -48,8 +51,13 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         }
     };
 
+    const handleDelete = (e?: React.MouseEvent<HTMLElement>) => {
+        e?.stopPropagation(); 
+        onDelete?.();
+    };
+
     const buttons = custom ?
-        <Button color='red' label='Delete' link onClick={onDelete} />
+        <Button color='red' label='Delete' link onClick={handleDelete} />
         :
         (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
