@@ -1471,10 +1471,8 @@ describe('{{ghost_head}} helper', function () {
         it('when excludes is empty', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            let templateOptions = {};
 
             let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
-                templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1489,13 +1487,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            let templateOptions = {
-                hash: {
-                    exclude: 'search'
-                }
-            };
             let rendered = await testGhostHead({hash: {exclude: 'search'}, ...testUtils.createHbsResponse({
-                templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1510,9 +1502,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            let templateOptions = {};
             let rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
-                templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1527,9 +1517,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            let templateOptions = {};
             let rendered = await testGhostHead({hash: {exclude: 'portal,search'}, ...testUtils.createHbsResponse({
-                templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1595,7 +1583,7 @@ describe('{{ghost_head}} helper', function () {
             // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
             sinon.stub(cardAssets, 'hasFile').returns(true);
 
-            let rendered = await testGhostHead({ ...testUtils.createHbsResponse({
+            let rendered = await testGhostHead({...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],

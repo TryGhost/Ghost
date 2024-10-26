@@ -205,10 +205,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
     if (options.data.root.statusCode >= 500) {
         return;
     }
-    let tmpArray = options?.hash?.exclude?.split(',') || [];
-    debug('temparray', tmpArray);
-    const excludeList = new Set(tmpArray);
-    debug('excludeList', excludeList);
+    const excludeList = new Set(options?.hash?.exclude?.split(',') || []);
     const head = [];
     const dataRoot = options.data.root;
     const context = dataRoot._locals.context ? dataRoot._locals.context : null;
