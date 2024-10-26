@@ -1,6 +1,6 @@
 {
     "name": "Ghost Local DevContainer",
-    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/full-devcontainer.compose.yml"],
+    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     "shutdownAction": "stopCompose",
