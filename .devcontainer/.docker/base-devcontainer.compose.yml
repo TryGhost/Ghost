@@ -6,6 +6,7 @@ services:
       context: ../../
       dockerfile: .devcontainer/.docker/Dockerfile
       target: base-devcontainer
+      no_cache: true
     pull_policy: never
     command: ["sleep", "infinity"]
     environment:
