@@ -45,7 +45,6 @@ function SentryErrorBoundary({site, children}) {
 export default class App extends React.Component {
     constructor(props) {
         super(props);
-        console.log('props is', props)
         this.setupCustomTriggerButton(props);
 
         this.state = {
@@ -552,8 +551,7 @@ export default class App extends React.Component {
 
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
-        const {siteUrl, customSiteUrl, apiUrl, apiKey, locale} = this.props;
-        console.log('props locale is', locale);
+        const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {site, member} = await this.GhostApi.init();
