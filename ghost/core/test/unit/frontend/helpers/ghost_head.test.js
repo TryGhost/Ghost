@@ -1467,471 +1467,199 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
     });
-    describe('respects values from head_excludes: ', function () {
-        it('when head_excludes is empty', async function () {
+    describe('respects values from excludes: ', function () {
+        it('when excludes is empty', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
-            let templateOptions = {
-                config: {
-                    head_excludes: []
-                }
-            };
+            let templateOptions = {};
 
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
+            let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            }));
+            })});
             rendered.should.match(/portal@/);
             rendered.should.match(/sodo-search@/);
             rendered.should.match(/js.stripe.com/);
         });
-        it('when head_excludes contains search', async function () {
+        it('when exclude contains search', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
             let templateOptions = {
-                config: {
-                    head_excludes: ['search']
+                hash: {
+                    exclude: 'search'
                 }
             };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
+            let rendered = await testGhostHead({hash: {exclude: 'search'}, ...testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/sodo-search@/);
             rendered.should.match(/portal@/);
             rendered.should.match(/js.stripe.com/);
         });
-        it('when head_excludes contains portal', async function () {
+        it('when exclude contains portal', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            let templateOptions = {
-                config: {
-                    head_excludes: ['portal']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-
+            let templateOptions = {};
+            let rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            }));
+            })});
             rendered.should.match(/sodo-search@/);
             rendered.should.not.match(/portal@/);
             rendered.should.match(/js.stripe.com/);
         });
-        it('can handle multiple head_excludes', async function () {
+        it('can handle multiple excludes', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            let templateOptions = {
-                config: {
-                    head_excludes: ['portal', 'search']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
+            let templateOptions = {};
+            let rendered = await testGhostHead({hash: {exclude: 'portal,search'}, ...testUtils.createHbsResponse({
                 templateOptions,
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/sodo-search@/);
             rendered.should.not.match(/portal@/);
             rendered.should.match(/js.stripe.com/);
         });
-        it('can exclude all', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
-
-            let templateOptions = {
-                config: {
-                    head_excludes: ['all']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-            rendered.should.not.match(/sodo-search@/);
-            rendered.should.not.match(/portal@/);
-            rendered.should.not.match(/js.stripe.com/);
-        });
-        it('when head excludes contains stripe', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('paid_members_enabled').returns(true);
-
-            let templateOptions = {
-                config: {
-                    head_excludes: ['stripe']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-            rendered.should.match(/sodo-search@/);
-            rendered.should.match(/portal@/);
-            rendered.should.not.match(/js.stripe.com/);
-        });
-        it('shows the announcement when head_excludes does not contain announcement', async function () {
+        
+        it('shows the announcement when exclude does not contain announcement', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
             settingsCache.get.withArgs('announcement_content').returns('Hello world');
             settingsCache.get.withArgs('announcement_visibility').returns('visitors');
 
-            let templateOptions = {
-                config: {
-                    head_excludes: []
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            }));
+            })});
             rendered.should.match(/sodo-search@/);
             rendered.should.match(/portal@/);
             rendered.should.match(/js.stripe.com/);
             rendered.should.match(/announcement-bar@/);
         });
-        it('does not show the announcement when head_excludes contains announcement', async function () {
+        it('does not show the announcement when exclude contains announcement', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
             settingsCache.get.withArgs('announcement_content').returns('Hello world');
             settingsCache.get.withArgs('announcement_visibility').returns('visitors');
 
-            let templateOptions = {
-                config: {
-                    head_excludes: ['announcement']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: 'announcement'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            }));
+            })});
             rendered.should.match(/sodo-search@/);
             rendered.should.match(/portal@/);
             rendered.should.match(/js.stripe.com/);
             rendered.should.match(/generator/);
             rendered.should.not.match(/announcement-bar@/);
         });
-        it('does not show the generator (Ghost version) when head_excludes contains generator', async function () {
-            let templateOptions = {
-                config: {
-                    head_excludes: ['generator']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-            rendered.should.not.match(/generator/);
-            rendered.should.match(/webmention/);
-        });
-        it('does not show the webmention when head_excludes contains webmention', async function () {
-            let templateOptions = {
-                config: {
-                    head_excludes: ['webmention']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-            rendered.should.not.match(/webmention/);
-        });
-        it('does not show the rss link when head_excludes contains rss', async function () {
-            let templateOptions = {
-                config: {
-                    head_excludes: ['rss']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-            rendered.should.not.match(/application\/rss\+xml/);
-        });
-        it('does not load the comments script when head_excludes contains commentcounts', async function () {
+        
+        it('does not load the comments script when exclude contains comment_counts', async function () {
             settingsCache.get.withArgs('comments_enabled').returns('all');
-            let templateOptions = {
-                config: {
-                    head_excludes: ['commentcounts']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: 'comment_counts'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/comment-counts.min.js/);
         });
-        it('does not load the member attribution script when head_excludes contains memberattribution', async function () {
-            settingsCache.get.withArgs('members_enabled').returns(true);
-            let templateOptions = {
-                config: {
-                    head_excludes: ['memberattribution']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3'
-                }
-            }));
-            rendered.should.not.match(/member-attribution.min.js/);
-        });
-        it('does not load the tinybird tracker script when head_excludes contains tinybirdtracker', async function () {
-            configUtils.set({
-                tinybird: {
-                    tracker: {
-                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
-                        endpoint: 'https://api.tinybird.co',
-                        token: 'tinybird_token',
-                        id: 'tb_test_site_uuid'
-                    }
-                }
-            });
-            let templateOptions = {
-                config: {
-                    head_excludes: ['tinybirdtracker']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3'
-                }
-            }));
-            rendered.should.not.match(/flock.js/);
-        });
+        
         it('loads card assets when not excluded', async function () {
             // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
             sinon.stub(cardAssets, 'hasFile').returns(true);
 
-            let templateOptions = {
-                config: {
-                    head_excludes: []
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({ ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.match(/cards.min.js/);
             rendered.should.match(/cards.min.css/);
         });
-        it('does not load card assets when excluded with cardassets', async function () {
+        it('does not load card assets when excluded with card_assets', async function () {
             sinon.stub(cardAssets, 'hasFile').returns(true);
-            let templateOptions = {
-                config: {
-                    head_excludes: ['cardassets']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: 'card_assets'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/cards.min.js/);
             rendered.should.not.match(/cards.min.css/);
         });
         it('does not load meta tags when excluded with metadata', async function () {
-            let templateOptions = {
-                config: {
-                    head_excludes: ['metadata']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: 'metadata'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/<link rel="canonical"/);
         });
         it('does not load schema when excluded with schema', async function () {
-            let templateOptions = {
-                config: {
-                    head_excludes: ['schema']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: 'schema'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/<script type="application\/ld\+json"/);
         });
-        it('does not load og: or twitter: attributes when excludd with socialdata', async function () {
-            let templateOptions = {
-                config: {
-                    head_excludes: ['socialdata']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+        it('does not load og: or twitter: attributes when excludd with social_data', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'social_data'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/<meta property="og:/);
             rendered.should.not.match(/<meta property="twitter:/);
         });
-        it('does not load cta styles when excluded with ctastyles', async function () {
+        it('does not load cta styles when excluded with cta_styles', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
-
-            let templateOptions = {
-                config: {
-                    head_excludes: ['ctastyles']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
+            let rendered = await testGhostHead({hash: {exclude: 'cta_styles'}, ...testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            }));
+            })});
             rendered.should.not.match(/.gh-post-upgrade-cta-content/);
-        });
-        it('does not load the code injection when excluded with codeinjectionhead', async function () {
-            settingsCache.get.withArgs('codeinjection_head').returns('<style>body {background: red;}</style>');
-
-            let templateOptions = {
-                config: {
-                    head_excludes: ['codeinjectionhead']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '0.3'
-                }
-            }));
-            rendered.should.not.match(/<style>body {background: red;}<\/style>/);
-        });
-        it('excludes the amp link when excluded with amp', async function () {
-            settingsCache.get.withArgs('amp').returns(true);
-            let templateOptions = {
-                config: {
-                    head_excludes: ['amp']
-                }
-            };
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions,
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index', 'amp'],
-                    safeVersion: '0.3'
-                }
-            }));
-            rendered.should.not.match(/<link rel="amphtml"/);
-        });
-        it('includes prev/next when not excluded', async function () {
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions: {
-                    config: {
-                        head_excludes: []
-                    }
-                },
-                renderObject: {
-                    pagination: {total: 4, page: 3, next: 4, prev: 2}
-                },
-                locals: {
-                    relativeUrl: '/page/3/',
-                    context: ['paged', 'index'],
-                    safeVersion: '0.3'
-                }
-            }));
-            rendered.should.match(/<link rel="next"/);
-            rendered.should.match(/<link rel="prev"/);
-        });
-        it('excludes prev/next when excluded', async function () {
-            let rendered = await testGhostHead(testUtils.createHbsResponse({
-                templateOptions: {
-                    config: {
-                        head_excludes: ['prevnext']
-                    }
-                },
-                renderObject: {
-                    pagination: {total: 4, page: 3, next: 4, prev: 2}
-                },
-                locals: {
-                    relativeUrl: '/page/3/',
-                    context: ['paged', 'index'],
-                    safeVersion: '0.3'
-                }
-            }));
-            rendered.should.not.match(/<link rel="next"/);
-            rendered.should.not.match(/<link rel="prev"/);
-        });
+        });    
     });
 });
 

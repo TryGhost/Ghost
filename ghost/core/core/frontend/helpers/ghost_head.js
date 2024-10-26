@@ -48,7 +48,6 @@ function finaliseStructuredData(meta) {
     return head;
 }
 
-
 function getMembersHelper(data, frontendKey, excludeList) {
     // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
@@ -71,10 +70,10 @@ function getMembersHelper(data, frontendKey, excludeList) {
         const dataAttributes = getDataAttributes(attributes);   
         membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
-    if (!excludeList.has('ctastyles')) {
+    if (!excludeList.has('cta_styles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
-    if (!excludeList.has('stripe') && settingsCache.get('paid_members_enabled')) {
+    if (settingsCache.get('paid_members_enabled')) {
         // disable fraud detection for e2e tests to reduce waiting time
         const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
 
@@ -202,41 +201,14 @@ function getTinybirdTrackerScript(dataRoot) {
 // We use the name ghost_head to match the helper for consistency:
 module.exports = async function ghost_head(options) { // eslint-disable-line camelcase
     debug('begin');
-
     // if server error page do nothing
     if (options.data.root.statusCode >= 500) {
         return;
     }
-
-    /* Read the head_excludes settings from the them's package.json.  Possible values:
-        - all - opt entirely out of ghost_head (probably a bad idea)
-        - search - required for sodo-search, including adding the click event listener on buttons
-        - portal - required for member management, including logging in via magic link. 
-        - announcement - the announcement bar javascript
-        - webmention
-        - generator - reveals that your site is a Ghost site and what version
-        - metadata (the html tags) - important for SEO
-        - rss - your rss feed link
-        - schema - important for SEO
-        - cardassets - required to make cards work and style them (needed on any page with a post body, unless your theme replaces)
-        - commentcounts - no need to load if you aren't going to use it on that page!
-        - memberattribution (required for tracking new sign-ups)
-        - tinybirdtracker (new feature! TODO: write something about this)
-        - prevnext - required for prev/next links
-        - socialdata - produces the og: and twitter: attributes for social media sharing and previews (aka structuredData)
-        - stripe - removes the stripe script loading - used for fraud prevention
-        - ctastyles - removes the call to action (CTA) styles - used for member signup
-        - codeinjectionhead - removes all codeinjection from the head.  (All sources, not just global.)
-        - amp - the amp link 
-    */
-
-    const excludeList = new Set(options.data.config?.head_excludes ?? []);
-
-    if (excludeList.has('all')) {
-        // if totally opting out of ghost_head - probably no one will want to do this, but it seems like we should make it available.
-        return '';
-    }
-
+    let tmpArray = options?.hash?.exclude?.split(',') || [];
+    debug('temparray', tmpArray);
+    const excludeList = new Set(tmpArray);
+    debug('excludeList', excludeList);
     const head = [];
     const dataRoot = options.data.root;
     const context = dataRoot._locals.context ? dataRoot._locals.context : null;
@@ -288,25 +260,23 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
             }
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-            if (!excludeList.has('amp') && _.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
+            if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
                     escapeExpression(meta.ampUrl) + '">');
             }
 
-            if (!excludeList.has('prevnext')) {
-                if (meta.previousUrl) {
-                    head.push('<link rel="prev" href="' +
-                        escapeExpression(meta.previousUrl) + '">');
-                }
+            if (meta.previousUrl) {
+                head.push('<link rel="prev" href="' +
+                    escapeExpression(meta.previousUrl) + '">');
+            }
 
-                if (meta.nextUrl) {
-                    head.push('<link rel="next" href="' +
-                        escapeExpression(meta.nextUrl) + '">');
-                }
+            if (meta.nextUrl) {
+                head.push('<link rel="next" href="' +
+                    escapeExpression(meta.nextUrl) + '">');
             }
 
             if (!_.includes(context, 'paged') && useStructuredData) {
-                if (!excludeList.has('socialdata')) {
+                if (!excludeList.has('social_data')) {
                     head.push('');
                     head.push.apply(head, finaliseStructuredData(meta));
                     head.push('');
@@ -319,16 +289,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
             }
         }
-        
-        if (!excludeList.has('generator')) {
-            head.push('<meta name="generator" content="Ghost ' +
-                escapeExpression(safeVersion) + '">');
-        }
-        if (!excludeList.has('rss')) {
-            head.push('<link rel="alternate" type="application/rss+xml" title="' +
-                escapeExpression(meta.site.title) + '" href="' +
-                escapeExpression(meta.rssUrl) + '">');
-        }
+        head.push('<meta name="generator" content="Ghost ' +
+            escapeExpression(safeVersion) + '">');
+        head.push('<link rel="alternate" type="application/rss+xml" title="' +
+            escapeExpression(meta.site.title) + '" href="' +
+            escapeExpression(meta.rssUrl) + '">');
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
@@ -339,16 +304,14 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getAnnouncementBarHelper(options.data));
             }
             try {
-                if (!excludeList.has('webmention')) {
-                    head.push(getWebmentionDiscoveryLink());
-                }
+                head.push(getWebmentionDiscoveryLink());
             } catch (err) {
                 logging.warn(err);
             }
             
             // @TODO do this in a more "frameworky" way
 
-            if (!excludeList.has('cardassets')) {
+            if (!excludeList.has('card_assets')) {
                 if (cardAssets.hasFile('js')) {
                     head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
                 }
@@ -357,11 +320,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
             }
 
-            if (!excludeList.has('commentcounts') && settingsCache.get('comments_enabled') !== 'off') {
+            if (!excludeList.has('comment_counts') && settingsCache.get('comments_enabled') !== 'off') {
                 head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
             }
 
-            if (!excludeList.has('memberattribution') && settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
+            if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
             }
 
@@ -376,20 +339,19 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(styleTag);
                 }
             }
-            if (!excludeList.has('codeinjectionhead')) {
-                if (!_.isEmpty(globalCodeinjection)) {
-                    head.push(globalCodeinjection);
-                }
-
-                if (!_.isEmpty(postCodeInjection)) {
-                    head.push(postCodeInjection);
-                }
-
-                if (!_.isEmpty(tagCodeInjection)) {
-                    head.push(tagCodeInjection);
-                }
+            if (!_.isEmpty(globalCodeinjection)) {
+                head.push(globalCodeinjection);
             }
-            if (!excludeList.has('tinybirdtracker') && config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+
+            if (!_.isEmpty(postCodeInjection)) {
+                head.push(postCodeInjection);
+            }
+
+            if (!_.isEmpty(tagCodeInjection)) {
+                head.push(tagCodeInjection);
+            }
+            
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
