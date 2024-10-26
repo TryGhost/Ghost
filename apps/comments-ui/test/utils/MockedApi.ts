@@ -61,18 +61,54 @@ export class MockedApi {
         };
     }
 
-    browseComments({limit = 5, filter, page}: {limit?: number, filter?: string, page: number}) {
+    browseComments({limit = 5, filter, page, order}: {limit?: number, filter?: string, page: number, order?: string}) {
         // Sort comments on created at + id
-        this.comments.sort((a, b) => {
-            const aDate = new Date(a.created_at).getTime();
-            const bDate = new Date(b.created_at).getTime();
+        const setOrder = order || 'default';
 
-            if (aDate === bDate) {
-                return a.id > b.id ? -1 : 1;
-            }
+        if (setOrder === 'best' && page === 1) {
+            // Sort by likes (desc) first, then by created_at (asc)
+            this.comments.sort((a, b) => {
+                const likesDiff = b.count.likes - a.count.likes;
+                if (likesDiff !== 0) {
+                    return likesDiff;
+                } // Prioritize by likes
 
-            return aDate > bDate ? -1 : 1;
-        });
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return aDate - bDate; // For the rest, sort by date asc
+            });
+        }
+
+        if (setOrder === 'created_at desc') {
+            // Sort by created_at (newest first)
+            this.comments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return bDate - aDate; // Newest first
+            });
+        }
+
+        if (setOrder === 'created_at asc') {
+            // Sort by created_at (oldest first)
+            this.comments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return aDate - bDate; // Oldest first
+            });
+        } 
+
+        if (setOrder === 'default') {
+            this.comments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+
+                if (aDate === bDate) {
+                    return a.id > b.id ? -1 : 1;
+                }
+
+                return aDate > bDate ? -1 : 1;
+            });
+        }
 
         let filteredComments = this.comments;
 
@@ -90,6 +126,7 @@ export class MockedApi {
         const comments = filteredComments.slice(startIndex, endIndex);
 
         return {
+
             comments: comments.map((comment) => {
                 return {
                     ...comment,
@@ -203,13 +240,14 @@ export class MockedApi {
             const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const filter = url.searchParams.get('filter') ?? '';
-
+            const order = url.searchParams.get('order') ?? '';
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseComments({
                     page: p,
                     limit,
-                    filter
+                    filter,
+                    order
                 }))
             });
         });
@@ -242,7 +280,8 @@ export class MockedApi {
                 body: JSON.stringify(this.browseComments({
                     limit: 1,
                     filter: `id:'${commentId}'`,
-                    page: 1
+                    page: 1,
+                    order: ''
                 }))
             });
         });
@@ -257,7 +296,8 @@ export class MockedApi {
                 body: JSON.stringify(this.browseComments({
                     limit: 1,
                     filter: `id:'${commentId}'`,
-                    page: 1
+                    page: 1,
+                    order: ''
                 }))
             });
         });

@@ -11,6 +11,7 @@ const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
 const {cardAssets} = require('../../../../core/frontend/services/assets-minification');
+const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
@@ -394,12 +395,19 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('without Code Injection', function () {
+        let loggingErrorStub; // assert # of calls if test throws errors, do not globally stub
+
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
         });
 
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -407,6 +415,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
@@ -772,19 +781,27 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('outputs structured data but not schema for custom collection', async function () {
@@ -952,6 +969,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not contain amphtml link', async function () {
+            let loggingErrorStub = sinon.stub(logging, 'error');
+
             const renderObject = {
                 post: posts[1]
             };
@@ -964,6 +983,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+
+            sinon.assert.calledOnce(loggingErrorStub);
         });
     });
 
@@ -1105,9 +1126,180 @@ describe('{{ghost_head}} helper', function () {
         });
     });
 
+    describe('custom fonts', function () {
+        it('includes custom font when set in options data object and preview is set', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    heading_font: 'Space Grotesk',
+                    body_font: 'Poppins',
+                    _preview: 'test'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('includes custom font when set in settings cache and no preview', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not include custom font when not set', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not include custom font when invalid', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('Wendy Sans');
+
+            const templateOptions = {
+                site: {
+                    heading_font: 'Comic Sans',
+                    body_font: ''
+                }
+            };
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not inject custom fonts when preview is set and default font was selected (empty string)', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {
+                    heading_font: '',
+                    body_font: '',
+                    _preview: 'test'
+                }},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('can handle preview being set and custom font keys missing', async function () {
+            sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
+
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {
+                    // No keys for custom fonts set
+                    _preview: 'test'
+                }},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+    });
+
     describe('members scripts', function () {
         it('includes portal when members enabled', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('includes portal when recommendations enabled', async function () {
+            settingsCache.get.withArgs('recommendations_enabled').returns(true);
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('includes portal when donations enabled', async function () {
+            settingsCache.get.withArgs('donations_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {

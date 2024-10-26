@@ -34,7 +34,7 @@ export type AddComment = {
 }
 
 export type LabsContextType = {
-    [key: string]: boolean
+    [key: string]: boolean | undefined
 }
 
 export type CommentsOptions = {
@@ -67,7 +67,8 @@ export type EditableAppContext = {
     commentCount: number,
     secundaryFormCount: number,
     popup: Page | null,
-    labs: LabsContextType
+    labs: LabsContextType,
+    order: string
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
@@ -87,7 +88,13 @@ export const AppContextProvider = AppContext.Provider;
 
 export const useAppContext = () => useContext(AppContext);
 
-// create a hook that will only get labs data from the context
+export const useOrderChange = () => {
+    const context = useAppContext();
+    const dispatchAction = context.dispatchAction;
+    return (order: string) => {
+        dispatchAction('setOrder', {order});
+    };
+};
 
 export const useLabs = () => {
     try {

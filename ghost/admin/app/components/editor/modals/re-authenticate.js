@@ -87,13 +87,12 @@ export default class ReAuthenticateModal extends Component {
     }
 
     async _authenticate() {
-        const authStrategy = 'authenticator:cookie';
         const {identification, password} = this.signin;
 
         this.session.skipAuthSuccessHandler = true;
 
         try {
-            await this.session.authenticate(authStrategy, identification, password);
+            await this.session.authenticate('authenticator:cookie', {identification, password});
         } finally {
             this.session.skipAuthSuccessHandler = undefined;
         }
