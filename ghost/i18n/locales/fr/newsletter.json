@@ -12,7 +12,7 @@
     "Name": "Nom",
     "paid": "payé",
     "Subscription details": "Détails de l'abonnement",
-    "trialing": "",
+    "trialing": "en essai gratuit",
     "Unsubscribe": "Se désabonner",
     "View in browser": "Voir dans le navigateur",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Vous recevez ceci parce que vous êtes un(e) <strong>abonné(e) %%{status}%%</strong> de {site}.",

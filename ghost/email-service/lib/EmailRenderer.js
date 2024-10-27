@@ -25,6 +25,15 @@ const messages = {
     }
 };
 
+// this is required to trigger the t parser
+/* 
+t('Your subscription has expired.');
+t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.');
+t('Your subscription will renew on {date}.');
+t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.');
+t('Your subscription will expire on {date}.');
+*/
+
 function escapeHtml(unsafe) {
     return unsafe
         .replace(/&/g, '&amp;')
@@ -552,7 +561,7 @@ class EmailRenderer {
     getMemberStatusText(member) {
         if (member.status === 'free') {
             // Not really used, but as a backup
-            return tpl(messages.subscriptionStatus.free);
+            return t(messages.subscriptionStatus.free);
         }
 
         // Do we have an active subscription?
@@ -565,12 +574,12 @@ class EmailRenderer {
 
             if (!activeSubscription && !member.tiers.length) {
                 // No subscription?
-                return tpl(messages.subscriptionStatus.expired);
+                return t(messages.subscriptionStatus.expired);
             }
 
             if (!activeSubscription) {
                 if (!member.tiers[0]?.expiry_at) {
-                    return tpl(messages.subscriptionStatus.complimentaryInfinite);
+                    return t(messages.subscriptionStatus.complimentaryInfinite);
                 }
                 // Create one manually that is expiring
                 activeSubscription = {
@@ -585,15 +594,14 @@ class EmailRenderer {
             // Translate to a human readable string
             if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
                 const date = formatDateLong(activeSubscription.trial_end_at, timezone);
-                return tpl(messages.subscriptionStatus.trial, {date});
+                return t(messages.subscriptionStatus.trial, {date});
             }
 
             const date = formatDateLong(activeSubscription.current_period_end, timezone);
             if (activeSubscription.cancel_at_period_end) {
-                return tpl(messages.subscriptionStatus.canceled, {date});
+                return t(messages.subscriptionStatus.canceled, {date});
             }
-
-            return tpl(messages.subscriptionStatus.active, {date});
+            return t(messages.subscriptionStatus.active, {date});
         }
 
         const expires = member.tiers[0]?.expiry_at ?? null;
@@ -601,10 +609,10 @@ class EmailRenderer {
         if (expires) {
             const timezone = this.#settingsCache.get('timezone');
             const date = formatDateLong(expires, timezone);
-            return tpl(messages.subscriptionStatus.complimentaryExpires, {date});
+            return t(messages.subscriptionStatus.complimentaryExpires, {date});
         }
 
-        return tpl(messages.subscriptionStatus.complimentaryInfinite);
+        return t(messages.subscriptionStatus.complimentaryInfinite);
     }
 
     /**

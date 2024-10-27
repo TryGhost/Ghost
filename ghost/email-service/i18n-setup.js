@@ -7,9 +7,8 @@ const i18nLanguage = locale;
 const i18n = i18nLib(i18nLanguage, 'newsletter');
 
 function t(key, options) {
-    console.log('key is', key, "hash is", options?.hash );
     let hash = options?.hash;
-    return i18n.t(key, hash);
+    return i18n.t(key, hash || options || {});
 }
 
-module.exports = { t }
+module.exports = {t};
