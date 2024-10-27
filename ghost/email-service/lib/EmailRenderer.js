@@ -11,6 +11,7 @@ const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
+const {t} = require('../i18n-setup');
 
 const messages = {
     subscriptionStatus: {
@@ -671,15 +672,17 @@ class EmailRenderer {
                 id: 'status',
                 getValue: (member) => {
                     if (member.status === 'comped') {
-                        return 'complimentary';
+                        return t('complimentary');
                     }
                     if (this.isMemberTrialing(member)) {
-                        return 'trialing';
+                        return t('trialing');
                     }
-                    return member.status;
+                    // other possible statuses: t('free'), t('paid') //
+                    return t(member.status);
                 }
             },
             {
+                //TODO i18n
                 id: 'status_text',
                 getValue: (member) => {
                     return this.getMemberStatusText(member);
@@ -748,7 +751,6 @@ class EmailRenderer {
             }
             delete replacement.originalId;
         }
-
         return replacements;
     }
 

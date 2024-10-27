@@ -51,5 +51,10 @@ module.exports = {
                 return options.inverse(this);
             }
         });
+
+        handlebars.registerHelper('t', function (key, options) {
+            let i18n = require('../../i18n-setup');
+            return i18n.t(key, options);
+        });
     }
 };
