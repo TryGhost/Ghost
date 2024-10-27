@@ -46,7 +46,6 @@ function getHashPath(basePath: string, urlPath: string | undefined) {
     }
     const regex = new RegExp(`/${basePath}/(.*)`);
     const match = urlPath?.match(regex);
-
     if (match) {
         const afterSettingsX = match[1];
         return afterSettingsX;
@@ -84,7 +83,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
-    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)') + '$');
+    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/g, '(?<$1>[^/]+)') + '/?$');
     const match = pathname.match(regex);
     if (match) {
         return match.groups || {};
@@ -97,7 +96,7 @@ export interface RoutingProviderProps {
     children: React.ReactNode;
 }
 
-const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
+export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
     const {externalNavigate} = useFramework();
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
@@ -111,7 +110,7 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, chil
             return;
         }
 
-        const newPath = options.route;
+        const newPath = options.route.replace(/^\//, '');
 
         if (newPath === route) {
             // No change
@@ -171,8 +170,6 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, chil
         </RouteContext.Provider>
     );
 };
-
-export default RoutingProvider;
 
 export function useRouting() {
     return useContext(RouteContext);

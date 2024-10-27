@@ -8,7 +8,7 @@ import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AdminApi, setupAdminAPI} from './utils/adminApi';
-import {AppContext, DispatchActionType, EditableAppContext} from './AppContext';
+import {AppContext, DispatchActionType, EditableAppContext, LabsContextType} from './AppContext';
 import {CommentsFrame} from './components/Frame';
 import {useOptions} from './utils/options';
 
@@ -26,8 +26,12 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         pagination: null,
         commentCount: 0,
         secundaryFormCount: 0,
-        popup: null
+        popup: null,
+        labs: null,
+        order: 'best'
     });
+
+    const iframeRef = React.createRef<HTMLIFrameElement>();
 
     const api = React.useMemo(() => {
         return setupGhostApi({
@@ -116,8 +120,14 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId});
+    const fetchComments = async (labs: LabsContextType) => {
+        let dataPromise;
+        if (labs?.commentImprovements) {
+            dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+        } else {
+            dataPromise = api.comments.browse({page: 1, postId: options.postId});
+        }
+
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -129,19 +139,19 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         };
     };
 
-    /** Initialize comments setup on load, fetch data and setup state*/
+    /** Initialize comments setup once in viewport, fetch data and setup state*/
     const initSetup = async () => {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {member} = await api.init();
-            const {comments, pagination, count} = await fetchComments();
-
+            const {member, labs} = await api.init();
+            const {comments, pagination, count} = await fetchComments(labs);
             const state = {
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
-                commentCount: count
+                commentCount: count,
+                labs: labs
             };
 
             setState(state);
@@ -155,18 +165,42 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         }
     };
 
+    /** Delay initialization until comments block is in viewport */
     useEffect(() => {
-        initSetup();
-    }, []);
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    initSetup();
+                    if (iframeRef.current) {
+                        observer.unobserve(iframeRef.current);
+                    }
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        });
+
+        if (iframeRef.current) {
+            observer.observe(iframeRef.current);
+        }
+
+        return () => {
+            if (iframeRef.current) {
+                observer.unobserve(iframeRef.current);
+            }
+        };
+    }, [iframeRef.current]);
 
     const done = state.initStatus === 'success';
 
     return (
         <AppContext.Provider value={context}>
-            <CommentsFrame>
+            <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>
+            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
             <PopupBox />
         </AppContext.Provider>
     );

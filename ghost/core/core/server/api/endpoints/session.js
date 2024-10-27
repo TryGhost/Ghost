@@ -8,7 +8,8 @@ const messages = {
     accessDenied: 'Access Denied.'
 };
 
-const session = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     read(frame) {
         /*
          * TODO
@@ -31,7 +32,7 @@ const session = {
             email: object.username,
             password: object.password
         }).then((user) => {
-            return Promise.resolve((req, res, next) => {
+            return Promise.resolve(function sessionMiddleware(req, res, next) {
                 req.brute.reset(function (err) {
                     if (err) {
                         return next(err);
@@ -60,10 +61,20 @@ const session = {
         });
     },
     delete() {
-        return Promise.resolve((req, res, next) => {
-            auth.session.destroySession(req, res, next);
+        return Promise.resolve(function logoutSessionMw(req, res, next) {
+            auth.session.logout(req, res, next);
+        });
+    },
+    sendVerification() {
+        return Promise.resolve(function sendAuthCodeMw(req, res, next) {
+            auth.session.sendAuthCode(req, res, next);
+        });
+    },
+    verify() {
+        return Promise.resolve(function verifyAuthCodeMw(req, res, next) {
+            auth.session.verifyAuthCode(req, res, next);
         });
     }
 };
 
-module.exports = session;
+module.exports = controller;

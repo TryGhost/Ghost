@@ -40,16 +40,24 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 }) => {
     const {updateRoute} = useRouting();
 
-    const handleClick = () => {
+    const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
+        // Prevent the click event from bubbling up when clicking the delete button
+        e?.stopPropagation();
+        
         if (disabled) {
-            updateRoute({route: 'pro'});
+            updateRoute({route: 'pro', isExternal: true});
         } else {
             action();
         }
     };
 
+    const handleDelete = (e?: React.MouseEvent<HTMLElement>) => {
+        e?.stopPropagation(); 
+        onDelete?.();
+    };
+
     const buttons = custom ?
-        <Button color='red' label='Delete' link onClick={onDelete} />
+        <Button color='red' label='Delete' link onClick={handleDelete} />
         :
         (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
@@ -81,7 +89,13 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter', 'slack_url', 'slack_username']);
+    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
+        'amp',
+        'unsplash',
+        'firstpromoter',
+        'slack_url',
+        'slack_username'
+    ]);
 
     return (
         <List titleSeparator={false}>
@@ -102,6 +116,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={slackUrl && slackUsername}
                 detail='A messaging app for teams'
                 icon={<SlackIcon className='h-8 w-8' />}
+                testId='slack-integration'
                 title='Slack' />
 
             <IntegrationItem
@@ -111,6 +126,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={ampEnabled}
                 detail='Google AMP will be removed in Ghost 6.0'
                 icon={<AmpIcon className='h-8 w-8' />}
+                testId='amp-integration'
                 title='AMP' />
 
             <IntegrationItem
@@ -120,6 +136,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={unsplashEnabled}
                 detail='Beautiful, free photos'
                 icon={<UnsplashIcon className='h-8 w-8' />}
+                testId='unsplash-integration'
                 title='Unsplash' />
 
             <IntegrationItem
@@ -129,6 +146,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={firstPromoterEnabled}
                 detail='Launch your member referral program'
                 icon={<FirstPromoterIcon className='h-8 w-8' />}
+                testId='firstpromoter-integration'
                 title='FirstPromoter' />
 
             <IntegrationItem
@@ -136,9 +154,10 @@ const BuiltInIntegrations: React.FC = () => {
                     openModal('integrations/pintura');
                 }}
                 active={pinturaEditor.isEnabled}
-                detail='Advanced image editing' icon=
-                    {<PinturaIcon className='h-8 w-8' />} title
-                    ='Pintura' />
+                detail='Advanced image editing'
+                icon={<PinturaIcon className='h-8 w-8' />}
+                testId='pintura-integration'
+                title='Pintura' />
         </List>
     );
 };
@@ -173,8 +192,11 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                                         await deleteIntegration(integration.id);
                                         confirmModal?.remove();
                                         showToast({
-                                            message: 'Integration deleted',
-                                            type: 'success'
+                                            title: 'Integration deleted',
+                                            type: 'info',
+                                            options: {
+                                                position: 'bottom-left'
+                                            }
                                         });
                                     } catch (e) {
                                         handleError(e);
@@ -212,7 +234,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link linkWithPadding onClick={() => {
+        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add custom integration' size='sm' onClick={() => {
             updateRoute('integrations/new');
             setSelectedTab('custom');
         }} />

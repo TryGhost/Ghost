@@ -114,9 +114,9 @@ describe('Migrations', function () {
 
             permissions.should.havePermission('Browse posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
             permissions.should.havePermission('Read posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Edit posts', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Edit posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
             permissions.should.havePermission('Add posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Delete posts', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Delete posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
             permissions.should.havePermission('Publish posts', ['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration']);
 
             permissions.should.havePermission('Browse settings', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
@@ -242,6 +242,7 @@ describe('Migrations', function () {
             permissions.should.havePermission('Edit collections', ['Administrator', 'Editor', 'Admin Integration']);
             permissions.should.havePermission('Add collections', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Delete collections', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Read member signin urls', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {

@@ -1,17 +1,19 @@
 import nql from '@tryghost/nql';
-import {buildComment, buildMember, buildReply} from './fixtures';
+import {buildComment, buildMember, buildReply, buildSettings} from './fixtures';
 
 export class MockedApi {
     comments: any[];
     postId: string;
     member: any;
+    settings: any;
 
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
 
-    constructor({postId = 'ABC', comments = [], member = undefined}: {postId?: string, comments?: any[], member?: any}) {
+    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}}: {postId?: string, comments?: any[], member?: any, settings?: any}) {
         this.postId = postId;
         this.comments = comments;
         this.member = member;
+        this.settings = settings;
     }
 
     addComment(overrides: any = {}) {
@@ -49,24 +51,64 @@ export class MockedApi {
         this.member = buildMember(overrides);
     }
 
+    setSettings(overrides) {
+        this.settings = buildSettings(overrides);
+    }
+
     commentsCounts() {
         return {
             [this.postId]: this.comments.length
         };
     }
 
-    browseComments({limit = 5, filter, page}: {limit?: number, filter?: string, page: number}) {
+    browseComments({limit = 5, filter, page, order}: {limit?: number, filter?: string, page: number, order?: string}) {
         // Sort comments on created at + id
-        this.comments.sort((a, b) => {
-            const aDate = new Date(a.created_at).getTime();
-            const bDate = new Date(b.created_at).getTime();
+        const setOrder = order || 'default';
 
-            if (aDate === bDate) {
-                return a.id > b.id ? 1 : -1;
-            }
+        if (setOrder === 'best' && page === 1) {
+            // Sort by likes (desc) first, then by created_at (asc)
+            this.comments.sort((a, b) => {
+                const likesDiff = b.count.likes - a.count.likes;
+                if (likesDiff !== 0) {
+                    return likesDiff;
+                } // Prioritize by likes
 
-            return aDate > bDate ? 1 : -1;
-        });
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return aDate - bDate; // For the rest, sort by date asc
+            });
+        }
+
+        if (setOrder === 'created_at desc') {
+            // Sort by created_at (newest first)
+            this.comments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return bDate - aDate; // Newest first
+            });
+        }
+
+        if (setOrder === 'created_at asc') {
+            // Sort by created_at (oldest first)
+            this.comments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return aDate - bDate; // Oldest first
+            });
+        } 
+
+        if (setOrder === 'default') {
+            this.comments.sort((a, b) => {
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+
+                if (aDate === bDate) {
+                    return a.id > b.id ? -1 : 1;
+                }
+
+                return aDate > bDate ? -1 : 1;
+            });
+        }
 
         let filteredComments = this.comments;
 
@@ -84,6 +126,7 @@ export class MockedApi {
         const comments = filteredComments.slice(startIndex, endIndex);
 
         return {
+
             comments: comments.map((comment) => {
                 return {
                     ...comment,
@@ -159,6 +202,14 @@ export class MockedApi {
                 });
             }
 
+            if (route.request().method() === 'PUT') {
+                const payload = JSON.parse(route.request().postData());
+                this.member = {
+                    ...this.member,
+                    ...payload
+                };
+            }
+
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.member)
@@ -166,44 +217,43 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*`, async (route) => {
-            if (route.request().method() === 'POST') {
-                const payload = JSON.parse(route.request().postData());
+            const payload = JSON.parse(route.request().postData());
 
-                this.#lastCommentDate = new Date();
-                this.addComment({
-                    ...payload.comments[0],
-                    member: this.member
-                });
-                return await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({
-                        comments: [
-                            this.comments[this.comments.length - 1]
-                        ]
-                    })
-                });
-            }
+            this.#lastCommentDate = new Date();
+            this.addComment({
+                ...payload.comments[0],
+                member: this.member
+            });
+            return await route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    comments: [
+                        this.comments[this.comments.length - 1]
+                    ]
+                })
+            });
+        });
 
+        await page.route(`${path}/members/api/comments/post/*/*`, async (route) => {
             const url = new URL(route.request().url());
 
             const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
-            const order = url.searchParams.get('order') ?? '';
             const filter = url.searchParams.get('filter') ?? '';
-
+            const order = url.searchParams.get('order') ?? '';
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseComments({
                     page: p,
                     limit,
-                    order,
-                    filter
+                    filter,
+                    order
                 }))
             });
         });
 
-         // LIKE a single comment
-         await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
+        // LIKE a single comment
+        await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
 
@@ -230,11 +280,11 @@ export class MockedApi {
                 body: JSON.stringify(this.browseComments({
                     limit: 1,
                     filter: `id:'${commentId}'`,
-                    page: 1
+                    page: 1,
+                    order: ''
                 }))
             });
         });
-
 
         // GET a single comment
         await page.route(`${path}/members/api/comments/*/`, async (route) => {
@@ -246,7 +296,8 @@ export class MockedApi {
                 body: JSON.stringify(this.browseComments({
                     limit: 1,
                     filter: `id:'${commentId}'`,
-                    page: 1
+                    page: 1,
+                    order: ''
                 }))
             });
         });
@@ -274,6 +325,15 @@ export class MockedApi {
                 body: JSON.stringify(
                     this.commentsCounts()
                 )
+            });
+        });
+
+        // get settings from content api
+
+        await page.route(`${path}/settings/*`, async (route) => {
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.settings)
             });
         });
     }

@@ -1,4 +1,4 @@
-import {Comment, TranslationFunction} from '../AppContext';
+import {Comment, Member, TranslationFunction} from '../AppContext';
 
 export function formatNumber(number: number): string {
     if (number !== 0 && !number) {
@@ -27,9 +27,9 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     diff = diff / 60;
     if (diff < 60) {
         if (Math.floor(diff) === 1) {
-            return t(`One minute ago`);
+            return t(`One min ago`);
         }
-        return t('{{amount}} minutes ago', {amount: Math.floor(diff)});
+        return t('{{amount}} mins ago', {amount: Math.floor(diff)});
     }
 
     // First check for yesterday
@@ -45,7 +45,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         if (Math.floor(diff) === 1) {
             return t(`One hour ago`);
         }
-        return t('{{amount}} hours ago', {amount: Math.floor(diff)});
+        return t('{{amount}} hrs ago', {amount: Math.floor(diff)});
     }
 
     // Diff in days
@@ -114,6 +114,26 @@ export function getInitials(name: string): string {
     }
 
     return parts[0].substring(0, 1).toLocaleUpperCase() + parts[parts.length - 1].substring(0, 1).toLocaleUpperCase();
+}
+
+export function getMemberName(member: Member | null, t: TranslationFunction) {
+    if (!member) {
+        return t('Deleted member');
+    }
+
+    if (!member.name) {
+        return t('Anonymous');
+    }
+
+    return member.name;
+}
+
+export function getMemberNameFromComment(comment: Comment, t: TranslationFunction) {
+    return getMemberName(comment.member, t);
+}
+
+export function getMemberInitialsFromComment(comment: Comment, t: TranslationFunction) {
+    return getInitials(getMemberName(comment.member, t));
 }
 
 // Rudimentary check for screen width

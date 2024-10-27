@@ -19,17 +19,13 @@
                         {{#if this.ui.isFullScreen}}
                             {{#if this.fromAnalytics }}
                                 <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
-                                    <span>
-                                        {{svg-jar "arrow-left"}}
-                                        Analytics
-                                    </span>
+                                    {{svg-jar "arrow-left"}}
+                                    <span>Analytics</span>
                                 </LinkTo>
                             {{else}}
                                 <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
-                                    <span>
-                                        {{svg-jar "arrow-left"}}
-                                        {{capitalize (pluralize this.post.displayName)}}
-                                    </span>
+                                    {{svg-jar "arrow-left"}}
+                                    <span>{{capitalize (pluralize this.post.displayName)}}</span>
                                 </LinkTo>
                             {{/if}}
                         {{/if}}
@@ -48,7 +44,7 @@
                         {{/if}}
                     </div>
 
-                    <section class="flex items-center pe-auto h-100">
+                    <section class="gh-editor-publish-buttons">
                         {{#unless this.post.isNew}}
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
                             {{#unless this.showSettingsMenu}}
@@ -65,19 +61,27 @@
             --}}
             <GhKoenigEditorLexical
                 @title={{readonly this.post.titleScratch}}
-                @titleAutofocus={{this.shouldFocusTitle}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
+                @titleAutofocus={{this.shouldFocusTitle}}
+                @titleHasTk={{this.titleHasTk}}
                 @onTitleChange={{this.updateTitleScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
+                @excerpt={{readonly this.post.customExcerpt}}
+                @excerptHasTk={{this.excerptHasTk}}
+                @setExcerpt={{this.updateExcerpt}}
+                @onExcerptBlur={{perform this.saveExcerptTask}}
+                @excerptErrorMessage={{this.excerptErrorMessage}}
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
                 @onBodyChange={{this.updateScratch}}
+                @updateSecondaryInstanceModel={{this.updateSecondaryInstanceModel}}
                 @headerOffset={{editor.headerHeight}}
                 @scrollContainerSelector=".gh-koenig-editor"
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{this.setKoenigEditor}}
                 @updateWordCount={{this.updateWordCount}}
-                @updateTkCount={{this.updateTkCount}}
+                @updatePostTkCount={{this.updatePostTkCount}}
+                @updateFeatureImageTkCount={{this.updateFeatureImageTkCount}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
@@ -95,6 +99,8 @@
                 }}
                 @postType={{this.post.displayName}}
                 @registerAPI={{this.registerEditorAPI}}
+                @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
+                @savePostTask={{this.savePostTask}}
             />
 
             <div class="gh-editor-wordcount-container">
@@ -102,6 +108,26 @@
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
                 <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
+            </div>
+
+            <div class="gh-editor-mobile-menu">
+                <Editor::PublishManagement
+                    @post={{this.post}}
+                    @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @beforePublish={{perform this.beforeSaveTask}}
+                    @afterPublish={{this.afterSave}}
+                    @saveTask={{this.saveTask}}
+                    as |publishManagement|
+                >
+                    <div class="gh-editor-wordcount">
+                        {{gh-pluralize this.wordCount "word"}}
+                    </div>
+                    <section class="gh-editor-publish-buttons">
+                        {{#unless this.post.isNew}}
+                            <Editor::PublishButtons @publishManagement={{publishManagement}} />
+                        {{/unless}}
+                    </section>
+                </Editor::PublishManagement>
             </div>
 
         </GhEditor>
@@ -113,6 +139,7 @@
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
                 @editorAPI={{this.editorAPI}}
+                @secondaryEditorAPI={{this.secondaryEditorAPI}}
                 @toggleSettingsMenu={{this.toggleSettingsMenu}}
             />
         {{/if}}

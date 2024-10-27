@@ -16,8 +16,8 @@ export const searchKeywords = {
     timeZone: ['general', 'time', 'date', 'site timezone', 'time zone'],
     publicationLanguage: ['general', 'publication language', 'locale'],
     metadata: ['general', 'metadata', 'title', 'description', 'search', 'engine', 'google', 'meta data'],
-    twitter: ['general', 'twitter card', 'structured data', 'rich cards', 'x card'],
-    facebook: ['general', 'facebook card', 'structured data', 'rich cards'],
+    twitter: ['general', 'twitter card', 'structured data', 'rich cards', 'x card', 'social'],
+    facebook: ['general', 'facebook card', 'structured data', 'rich cards', 'social'],
     socialAccounts: ['general', 'social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
     lockSite: ['general', 'password protection', 'lock site', 'make this site private'],
     users: ['general', 'users and permissions', 'roles', 'staff', 'invite people', 'contributors', 'editors', 'authors', 'administrators']

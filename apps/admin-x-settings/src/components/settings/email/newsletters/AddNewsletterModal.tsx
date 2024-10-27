@@ -1,10 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
-import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {numberWithCommas} from '../../../../utils/helpers';
-import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -40,7 +39,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             return newErrors;
@@ -53,7 +52,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
             if (error instanceof HostLimitError) {
                 NiceModal.show(LimitModal, {
-                    prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
                 });
                 modal.remove();
                 updateRoute('newsletters');
@@ -77,14 +77,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         testId='add-newsletter-modal'
         title='Create newsletter'
         onOk={async () => {
-            toast.remove();
             if (await handleSave()) {
                 modal.remove();
-            } else {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
             }
         }}
     >
@@ -96,6 +90,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
+                maxLength={191}
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
@@ -103,6 +98,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 onKeyDown={() => clearError('name')}
             />
             <TextArea
+                maxLength={2000}
                 title='Description'
                 value={formState.description}
                 onChange={e => updateForm(state => ({...state, description: e.target.value}))}

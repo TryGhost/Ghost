@@ -254,6 +254,42 @@ async function initExpressApps({frontend, backend, config}) {
 }
 
 /**
+ * Initialize prometheus client
+ */
+function initPrometheusClient({config}) {
+    if (config.get('metrics_server:enabled')) {
+        debug('Begin: initPrometheusClient');
+        const prometheusClient = require('./shared/prometheus-client');
+        debug('End: initPrometheusClient');
+        return prometheusClient;
+    }
+    return null;
+}
+
+/**
+ * Starts the standalone metrics server and registers a cleanup task to stop it when the ghost server shuts down
+ * @param {object} ghostServer 
+ */
+async function initMetricsServer({prometheusClient, ghostServer, config}) {
+    debug('Begin: initMetricsServer');
+    if (ghostServer && config.get('metrics_server:enabled')) {
+        const {MetricsServer} = require('@tryghost/metrics-server');
+        const serverConfig = {
+            host: config.get('metrics_server:host') || '127.0.0.1',
+            port: config.get('metrics_server:port') || 9416
+        };
+        const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
+        const metricsServer = new MetricsServer({serverConfig, handler});
+        await metricsServer.start();
+        // Ensure the metrics server is cleaned up when the ghost server is shut down
+        ghostServer.registerCleanupTask(async () => {
+            await metricsServer.shutdown();
+        });
+    }
+    debug('End: initMetricsServer');
+}
+
+/**
  * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
@@ -292,11 +328,8 @@ async function initAppService() {
  * Services are components that make up part of Ghost and need initializing on boot
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
- *
- * @param {object} options
- * @param {object} options.config
  */
-async function initServices({config}) {
+async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -331,6 +364,7 @@ async function initServices({config}) {
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
+    const statsService = require('./server/services/stats');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -375,16 +409,47 @@ async function initServices({config}) {
         mediaInliner.init(),
         mailEvents.init(),
         donationService.init(),
-        recommendationsService.init()
+        recommendationsService.init(),
+        statsService.init()
     ]);
     debug('End: Services');
 
-    // Initialize analytics events
-    if (config.get('segment:key')) {
-        require('./server/services/segment').init();
-    }
-
     debug('End: initServices');
+}
+
+/**
+ * Set up an dependencies that need to be injected into NestJS
+ */
+async function initNestDependencies() {
+    debug('Begin: initNestDependencies');
+    const GhostNestApp = require('@tryghost/ghost');
+    const providers = [];
+    providers.push({
+        provide: 'logger',
+        useValue: require('@tryghost/logging')
+    }, {
+        provide: 'SessionService',
+        useValue: require('./server/services/auth/session').sessionService
+    }, {
+        provide: 'AdminAuthenticationService',
+        useValue: require('./server/services/auth/api-key').admin
+    }, {
+        provide: 'DomainEvents',
+        useValue: require('@tryghost/domain-events')
+    }, {
+        provide: 'SettingsCache',
+        useValue: require('./shared/settings-cache')
+    }, {
+        provide: 'knex',
+        useValue: require('./server/data/db').knex
+    }, {
+        provide: 'UrlUtils',
+        useValue: require('./shared/url-utils')
+    });
+    for (const provider of providers) {
+        GhostNestApp.addProvider(provider);
+    }
+    debug('End: initNestDependencies');
 }
 
 /**
@@ -483,8 +548,12 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
-        require('./shared/sentry');
+        const sentry = require('./shared/sentry');
         debug('End: Load sentry');
+
+        // Initialize prometheus client early to enable metrics collection during boot
+        // Note: this does not start the metrics server yet to avoid increasing boot time
+        const prometheusClient = initPrometheusClient({config});
 
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
@@ -502,6 +571,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
+        const connection = require('./server/data/db/connection');
+        sentry.initQueryTracing(
+            connection
+        );
         debug('End: Get DB ready');
 
         // Step 4 - Load Ghost with all its services
@@ -521,16 +594,19 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // TODO: move this to the correct place once we figure out where that is
         if (ghostServer) {
-            //  NOTE: changes in this labs setting requires server reboot since we don't re-init services after changes a labs flag
-            const websockets = require('./server/services/websockets');
-            await websockets.init(ghostServer);
-
             const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
             await lexicalMultiplayer.init(ghostServer);
             await lexicalMultiplayer.enable();
         }
 
         await initServices({config});
+
+        // Gate the NestJS framework behind an env var to prevent it from being loaded (and slowing down boot)
+        // If we ever ship the new framework, we can remove this
+        // Using an env var because you can't use labs flags here
+        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK) {
+            await initNestDependencies();
+        }
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
@@ -546,6 +622,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
+
+        // Step 8 - Init our metrics server, we don't wait for this to finish
+        initMetricsServer({prometheusClient, ghostServer, config});
 
         // If we pass the env var, kill Ghost
         if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

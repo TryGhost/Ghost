@@ -45,7 +45,7 @@ const Sidebar: React.FC<{
         {
             id: 'accountPage',
             title: 'Account page',
-            contents: <AccountPage updateSetting={updateSetting} />
+            contents: <AccountPage errors={errors} setError={setError} updateSetting={updateSetting} />
         }
     ];
 
@@ -95,7 +95,7 @@ const PortalModal: React.FC = () => {
                 let prompt = 'There was an error verifying your email address. Please try again.';
 
                 if (e?.message === 'Token expired') {
-                    prompt = 'The verification link has expired. Please try again.';
+                    prompt = 'Verification link has expired.';
                 }
                 NiceModal.show(ConfirmationModal, {
                     title: 'Error verifying support address',
@@ -153,6 +153,12 @@ const PortalModal: React.FC = () => {
 
         onSaveError: handleError
     });
+
+    useEffect(() => {
+        if (!formState.tiers.length && allTiers?.length) {
+            setFormState(state => ({...state, tiers: allTiers}));
+        }
+    }, [allTiers, formState.tiers, setFormState]);
 
     const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 

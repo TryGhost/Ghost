@@ -48,10 +48,14 @@ describe('IncomingRecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'nottesting';
                 await service.init();
                 clock.tick(1000 * 60 * 60 * 24);
                 assert(refreshMentions.calledOnce);
+                assert(refreshMentions.calledWith({
+                    filter: `source:~$'/.well-known/recommendations.json'+deleted:[true,false]`,
+                    limit: 100
+                }));
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -61,7 +65,7 @@ describe('IncomingRecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'nottesting';
 
                 refreshMentions.rejects(new Error('test'));
                 await service.init();

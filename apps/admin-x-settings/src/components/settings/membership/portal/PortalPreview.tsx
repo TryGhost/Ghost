@@ -36,7 +36,7 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
     case 'account':
         tabContents = (
             <>
-                <PortalFrame href={href || ''} selectedTab={selectedTab} />
+                <PortalFrame href={href || ''} portalParent='preview' selectedTab={selectedTab} />
             </>
         );
         break;
@@ -46,7 +46,7 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
     default:
         tabContents = (
             <>
-                <PortalFrame href={href || ''} selectedTab={selectedTab} />
+                <PortalFrame href={href || ''} portalParent='preview' selectedTab={selectedTab} />
             </>
         );
         break;

@@ -16,11 +16,7 @@ const features = [{
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
 },{
-    title: 'Websockets',
-    description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
-    flag: 'websockets'
-},{
-    title: 'Stripe Automatic Tax',
+    title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 },{
@@ -44,29 +40,33 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 },{
-    title: 'Tips & donations',
-    description: 'Enables publishers to collect one-time payments',
-    flag: 'tipsAndDonations'
-},{
-    title: 'AdminX Offers',
-    description: 'Enables the new offers UI in AdminX settings',
-    flag: 'adminXOffers'
-},{
-    title: 'Filter by email disabled',
-    description: 'Allows filtering members by email disabled',
-    flag: 'filterEmailDisabled'
-},{
     title: 'AdminX Demo',
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
 },{
-    title: 'TK Reminders',
-    description: 'Enables the TK Reminders feature in the editor',
-    flag: 'tkReminders'
+    title: 'NestJS Playground',
+    description: 'Wires up the Ghost NestJS App to the Admin API (also needs GHOST_ENABLE_NEST_FRAMEWORK=1 env var)',
+    flag: 'NestPlayground'
 },{
-    title: 'New email addresses',
-    description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
-    flag: 'newEmailAddresses'
+    title: 'ActivityPub',
+    description: '(Highly) Experimental support for ActivityPub.',
+    flag: 'ActivityPub'
+},{
+    title: 'Content Visibility',
+    description: 'Enables content visibility in Emails',
+    flag: 'contentVisibility'
+}, {
+    title: 'Comment Improvements',
+    description: 'Enables new comment features',
+    flag: 'commentImprovements'
+}, {
+    title: 'Staff 2FA',
+    description: 'Enables email verification for staff logins',
+    flag: 'staff2fa'
+}, {
+    title: 'Custom Fonts',
+    description: 'Enables new custom font settings',
+    flag: 'customFonts'
 }];
 
 const AlphaFeatures: React.FC = () => {

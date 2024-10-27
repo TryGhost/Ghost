@@ -4,7 +4,7 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const uuid = require('uuid');
+const crypto = require('crypto');
 
 // Ghost Internals
 const boot = require('../../core/boot');
@@ -213,7 +213,7 @@ const startGhost = async (options) => {
         forceStart: false,
         copyThemes: false,
         copySettings: false,
-        contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
+        contentFolder: path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test'),
         subdir: false
     }, options);
 

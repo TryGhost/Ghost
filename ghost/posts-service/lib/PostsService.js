@@ -8,6 +8,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
+    PostsBulkUnscheduledEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
@@ -108,7 +109,7 @@ class PostsService {
 
     /**
      *
-     * @param {any} frame
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @param {object} [options]
      * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
      * @returns
@@ -243,6 +244,19 @@ class PostsService {
         if (data.action === 'unpublish') {
             const updateResult = await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
             DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
+
+            return updateResult;
+        }
+        if (data.action === 'unschedule') {
+            const updateResult = await this.#updatePosts({status: 'draft', published_at: null}, {filter: this.#mergeFilters('status:scheduled', options.filter), context: options.context, actionName: 'unscheduled'});
+            // makes sure `email_only` value is reverted for the unscheduled posts
+            await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
+                data: {email_only: false},
+                column: 'post_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+            DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
 
             return updateResult;
         }

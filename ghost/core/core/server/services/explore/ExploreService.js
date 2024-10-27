@@ -24,7 +24,7 @@ module.exports = class ExploreService {
      */
     async fetchData() {
         const totalMembers = await this.MembersService.stats.getTotalMembers();
-        const mrrStats = await this.StatsService.getMRRHistory();
+        const mrrStats = await this.StatsService.api.getMRRHistory();
 
         const {description, icon, title, url, accent_color: accentColor, locale} = this.PublicConfigService.site;
 

@@ -41,7 +41,7 @@ describe('Recommendation', function () {
             assert.throws(() => {
                 Recommendation.validate({
                     title: 'Test',
-                    description: 'a'.repeat(2001),
+                    description: 'a'.repeat(201),
                     excerpt: null,
                     featuredImage: null,
                     favicon: null,
@@ -50,24 +50,7 @@ describe('Recommendation', function () {
                 });
             }, {
                 name: 'ValidationError',
-                message: 'Description must be less than 2000 characters'
-            });
-        });
-
-        it('Throws for a long excerpt', function () {
-            assert.throws(() => {
-                Recommendation.validate({
-                    title: 'Test',
-                    description: null,
-                    excerpt: 'a'.repeat(2001),
-                    featuredImage: null,
-                    favicon: null,
-                    url: 'https://example.com',
-                    oneClickSubscribe: false
-                });
-            }, {
-                name: 'ValidationError',
-                message: 'Excerpt must be less than 2000 characters'
+                message: 'Description must be less than 200 characters'
             });
         });
     });
@@ -118,7 +101,37 @@ describe('Recommendation', function () {
             assert.equal(recommendation.description, null);
         });
 
-        it('removes search and hash params', function () {
+        it('sets empty excerpt to null', function () {
+            const recommendation = Recommendation.create({
+                title: 'Test',
+                description: null,
+                excerpt: '',
+                featuredImage: null,
+                favicon: null,
+                url: 'https://example.com',
+                oneClickSubscribe: false,
+                updatedAt: new Date('2021-01-01T00:00:05Z')
+            });
+
+            assert.equal(recommendation.excerpt, null);
+        });
+
+        it('truncates long excerpts', function () {
+            const recommendation = Recommendation.create({
+                title: 'Test',
+                description: null,
+                excerpt: 'a'.repeat(2001),
+                featuredImage: null,
+                favicon: null,
+                url: 'https://example.com',
+                oneClickSubscribe: false,
+                updatedAt: new Date('2021-01-01T00:00:05Z')
+            });
+
+            assert.equal(recommendation.excerpt?.length, 2000);
+        });
+
+        it('keeps search and hash params', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
                 description: '',
@@ -130,7 +143,7 @@ describe('Recommendation', function () {
                 updatedAt: new Date('2021-01-01T00:00:05Z')
             });
 
-            assert.equal(recommendation.url.toString(), 'https://example.com/');
+            assert.equal(recommendation.url.toString(), 'https://example.com/?query=1#hash');
         });
     });
 

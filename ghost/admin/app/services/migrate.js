@@ -1,4 +1,5 @@
 import Service, {inject as service} from '@ember/service';
+import config from 'ghost-admin/config/environment';
 import {SignJWT} from 'jose';
 import {tracked} from '@glimmer/tracking';
 
@@ -15,6 +16,7 @@ export default class MigrateService extends Service {
     @tracked siteData = null;
     @tracked previousRoute = null;
     @tracked isIframeTransition = false;
+    @tracked platform = null;
 
     get apiUrl() {
         const origin = window.location.origin;
@@ -65,12 +67,20 @@ export default class MigrateService extends Service {
         return (this.settings.stripeConnectAccountId && this.settings.stripeConnectPublishableKey && this.settings.stripeConnectLivemode) ? true : false;
     }
 
+    get ghostVersion() {
+        return config.APP.version;
+    }
+
     constructor() {
         super(...arguments);
     }
 
     getIframeURL() {
         let url = this.migrateUrl;
+        const params = this.router.currentRoute.params;
+        if (params.platform) {
+            url = url + '?platform=' + params.platform;
+        }
 
         return url;
     }

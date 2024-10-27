@@ -31,7 +31,7 @@ const PaidAccountActions = () => {
         let label = '';
         if (price) {
             const {amount = 0, currency, interval} = price;
-            label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
+            label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${t(interval)}`;
         }
         let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate, t});
         const compExpiry = getCompExpiry({member});

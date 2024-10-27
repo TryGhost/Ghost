@@ -1,9 +1,8 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import toast from 'react-hot-toast';
 import validator from 'validator';
 import webhookEventOptions from './webhookEventOptions';
-import {Form, Modal, Select, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Form, Modal, Select, TextField} from '@tryghost/admin-x-design-system';
 import {Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -18,7 +17,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
     const {mutateAsync: editWebhook} = useEditWebhook();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, errors, clearError, validate} = useForm<Partial<Webhook>>({
+    const {formState, updateForm, handleSave, errors, clearError} = useForm<Partial<Webhook>>({
         initialState: webhook || {},
         onSave: async () => {
             if (formState.id) {
@@ -32,19 +31,19 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Enter a name';
             }
 
             if (!formState.event) {
-                newErrors.event = 'Please select an event';
+                newErrors.event = 'Select an event';
             }
 
             if (!formState.target_url) {
-                newErrors.target_url = 'Please enter a target URL';
+                newErrors.target_url = 'Enter a target URL';
             }
 
             if (formState.target_url && !validator.isURL(formState.target_url)) {
-                newErrors.target_url = 'Please enter a valid URL';
+                newErrors.target_url = 'Enter a valid URL';
             }
 
             return newErrors;
@@ -59,14 +58,8 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         title='Add webhook'
         formSheet
         onOk={async () => {
-            toast.remove();
             if (await handleSave()) {
                 modal.remove();
-            } else {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save webhook, please double check that you\'ve filled all mandatory fields.'
-                });
             }
         }}
     >
@@ -78,10 +71,10 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 <TextField
                     error={Boolean(errors.name)}
                     hint={errors.name}
+                    maxLength={191}
                     placeholder='Custom webhook'
                     title='Name'
                     value={formState.name}
-                    onBlur={validate}
                     onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     onKeyDown={() => clearError('name')}
                 />
@@ -102,15 +95,16 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 <TextField
                     error={Boolean(errors.target_url)}
                     hint={errors.target_url}
+                    maxLength={2000}
                     placeholder='https://example.com'
                     title='Target URL'
                     type='url'
                     value={formState.target_url}
-                    onBlur={validate}
                     onChange={e => updateForm(state => ({...state, target_url: e.target.value}))}
                     onKeyDown={() => clearError('target_url')}
                 />
                 <TextField
+                    maxLength={191}
                     placeholder='https://example.com'
                     title='Secret'
                     value={formState.secret || undefined}

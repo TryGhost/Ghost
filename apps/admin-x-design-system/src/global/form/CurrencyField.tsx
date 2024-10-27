@@ -26,7 +26,7 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
 
     // The saved value is strictly a number with 2 decimal places
     const forceCurrencyValue = (input: string) => {
-        return Math.floor(parseFloat(input.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '0') * 100);
+        return Math.round(parseFloat(input.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '0') * 100);
     };
 
     return <TextField

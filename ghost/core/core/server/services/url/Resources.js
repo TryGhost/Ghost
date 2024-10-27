@@ -116,7 +116,7 @@ class Resources {
      * @returns {Promise}
      * @private
      */
-    _fetch(resourceConfig, options = {offset: 0, limit: 999}) {
+    async _fetch(resourceConfig, options = {offset: 0, limit: 999}) {
         debug('_fetch', resourceConfig.type, resourceConfig.modelOptions);
 
         let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
@@ -128,19 +128,20 @@ class Resources {
             modelOptions.limit = options.limit;
         }
 
-        return models.Base.Model.raw_knex.fetchAll(modelOptions)
-            .then((objects) => {
-                debug('fetched', resourceConfig.type, objects.length);
+        const now = Date.now();
+        const objects = await models.Base.Model.raw_knex.fetchAll(modelOptions);
+        debug('_fetch.fetched', resourceConfig.type, objects.length, `${Date.now() - now}ms`);
 
-                _.each(objects, (object) => {
-                    this.data[resourceConfig.type].push(new Resource(resourceConfig.type, object));
-                });
+        for (const object of objects) {
+            this.data[resourceConfig.type].push(new Resource(resourceConfig.type, object));
+        }
 
-                if (objects.length && isSQLite) {
-                    options.offset = options.offset + options.limit;
-                    return this._fetch(resourceConfig, {offset: options.offset, limit: options.limit});
-                }
-            });
+        if (objects.length && isSQLite) {
+            options.offset = options.offset + options.limit;
+            return this._fetch(resourceConfig, {offset: options.offset, limit: options.limit});
+        }
+
+        return objects;
     }
 
     /**

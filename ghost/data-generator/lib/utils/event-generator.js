@@ -7,6 +7,10 @@ const generateEvents = ({
     startTime = new Date(),
     endTime = new Date()
 } = {}) => {
+    if (total <= 0) {
+        return [];
+    }
+
     let alpha = 0;
     let beta = 0;
     let positiveTrend = trend === 'positive';
@@ -29,6 +33,7 @@ const generateEvents = ({
         beta = 1;
         break;
     }
+
     const data = probabilityDistributions.rbeta(total, alpha, beta, 0);
     const startTimeValue = startTime.valueOf();
     const timeDifference = endTime.valueOf() - startTimeValue;

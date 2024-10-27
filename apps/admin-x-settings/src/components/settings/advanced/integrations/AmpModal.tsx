@@ -13,11 +13,11 @@ const AmpModal = NiceModal.create(() => {
     const {settings} = useGlobalData();
     const [ampEnabled] = getSettingValues<boolean>(settings, ['amp']);
     const [ampId] = getSettingValues<string>(settings, ['amp_gtag_id']);
-    const modal = NiceModal.useModal();
-    const [enabled, setEnabled] = useState(false);
     const [trackingId, setTrackingId] = useState<string | null>('');
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
+    const [okLabel, setOkLabel] = useState('Save');
+    const [enabled, setEnabled] = useState<boolean>(!!ampEnabled);
 
     useEffect(() => {
         setEnabled(ampEnabled || false);
@@ -30,26 +30,36 @@ const AmpModal = NiceModal.create(() => {
             {key: 'amp_gtag_id', value: trackingId}
         ];
         try {
-            await editSettings(updates);
+            setOkLabel('Saving...');
+            await Promise.all([
+                editSettings(updates),
+                new Promise((resolve) => {
+                    setTimeout(resolve, 1000);
+                })
+            ]);
+            setOkLabel('Saved');
         } catch (e) {
             handleError(e);
+        } finally {
+            setTimeout(() => setOkLabel('Save'), 1000);
         }
     };
+
+    const isDirty = !(enabled === ampEnabled) || !(trackingId === ampId);
 
     return (
         <Modal
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            dirty={!(enabled === ampEnabled) || !(trackingId === ampId)}
-            okColor='black'
-            okLabel='Save & close'
+            cancelLabel='Close'
+            dirty={isDirty}
+            okColor={okLabel === 'Saved' ? 'green' : 'black'}
+            okLabel={okLabel}
             testId='amp-modal'
             title=''
             onOk={async () => {
                 await handleSave();
-                modal.remove();
-                updateRoute('integrations');
             }}
         >
             <IntegrationHeader

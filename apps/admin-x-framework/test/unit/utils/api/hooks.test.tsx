@@ -1,7 +1,7 @@
 import {InfiniteData, QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {act, renderHook, waitFor} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import FrameworkProvider from '../../../../src/providers/FrameworkProvider';
+import {FrameworkProvider} from '../../../../src/providers/FrameworkProvider';
 import {createInfiniteQuery, createMutation, createPaginatedQuery, createQuery, createQueryWithId} from '../../../../src/utils/api/hooks';
 import {withMockFetch} from '../../../utils/mockFetch';
 
@@ -60,12 +60,47 @@ describe('API hooks', function () {
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
                     credentials: 'include',
+                    dataType: 'test',
                     headers: {
                         'app-pragma': 'no-cache',
                         'x-ghost-version': '5.x'
                     },
                     method: 'GET',
                     mode: 'cors',
+                    path: '/test/',
+                    signal: expect.any(AbortSignal)
+                }]);
+            });
+        });
+
+        it('can add custom headers', async function () {
+            await withMockFetch({
+                json: {test: 1}
+            }, async (mock) => {
+                const useTestQuery = createQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    headers: {'Content-Type': 'ALOHA'}
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+                expect(result.current.data).toEqual({test: 1});
+
+                expect(mock.calls.length).toBe(1);
+                expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
+                    credentials: 'include',
+                    dataType: 'test',
+                    headers: {
+                        'Content-Type': 'ALOHA',
+                        'app-pragma': 'no-cache',
+                        'x-ghost-version': '5.x'
+                    },
+                    method: 'GET',
+                    mode: 'cors',
+                    path: '/test/',
                     signal: expect.any(AbortSignal)
                 }]);
             });

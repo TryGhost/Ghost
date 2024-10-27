@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
@@ -64,6 +64,7 @@ DataGenerator.Content = {
             id: '618ba1ffbe2896088840a6e7',
             title: 'Not so short, bit complex',
             slug: 'not-so-short-bit-complex',
+            // NOTE: this has some invalid HTML, has a missing `</p>` after `</nav>`
             mobiledoc: DataGenerator.markdownToMobiledoc('<p><nav><ul><li><a href=\"#nowhere\" title=\"Anchor URL\">Lorem</a></li><li><a href=\"__GHOST_URL__/about#nowhere\" title=\"Relative URL\">Aliquam</a></li><li><a href=\"//somewhere.com/link#nowhere\" title=\"Protocol Relative URL\">Tortor</a></li><li><a href=\"http://somewhere.com/link#nowhere\" title=\"Absolute URL\">Morbi</a></li><li><a href=\"#nowhere\" title=\"Praesent dapibus, neque id cursus faucibus\">Praesent</a></li><li><a href=\"#nowhere\" title=\"Pellentesque fermentum dolor\">Pellentesque</a></li></ul></nav><p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p><table><thead><tr><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>a</td><td>b</td><td>c</td><td>d</td></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr><tr><td>i</td><td>j</td><td>k</td><td>l</td></tr></tbody></table><dl><dt>Definition list</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd><dt>Lorem ipsum dolor sit amet</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd></dl><ul><li>Morbi in sem quis dui placerat ornare. Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu. Cras consequat.</li><li>Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus.</li><li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li><li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li></ul></p>'),
             published_at: new Date('2015-01-04'),
             featured: true
@@ -132,7 +133,8 @@ DataGenerator.Content = {
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
             password: 'Sl1m3rson99',
-            profile_image: 'https://example.com/super_photo.jpg'
+            profile_image: 'https://example.com/super_photo.jpg',
+            paid_subscription_canceled_notification: true
         },
         {
             // admin
@@ -303,7 +305,8 @@ DataGenerator.Content = {
             name: 'Mr Egg',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(8, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -311,7 +314,8 @@ DataGenerator.Content = {
             email_open_rate: 50,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(7, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -320,7 +324,8 @@ DataGenerator.Content = {
             email_open_rate: 80,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(6, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -328,7 +333,8 @@ DataGenerator.Content = {
             name: 'Ray Stantz',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(5, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -336,7 +342,8 @@ DataGenerator.Content = {
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(4, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -344,7 +351,8 @@ DataGenerator.Content = {
             name: 'Winston Zeddemore',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(3, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -353,7 +361,8 @@ DataGenerator.Content = {
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
             status: 'paid',
             subscribed: false,
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(2, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -362,7 +371,8 @@ DataGenerator.Content = {
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
             status: 'paid',
             subscribed: false,
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(1, 'day').toDate()
         }
     ],
 
@@ -730,7 +740,7 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
             status: 'submitted',
-            email_count: 2,
+            email_count: 0, // match the number of email_recipients relations below
             recipient_filter: 'all',
             subject: 'You got mailed!',
             html: '<p>Look! I\'m an email</p>',
@@ -744,7 +754,7 @@ DataGenerator.Content = {
             uuid: '365daa11-4bf0-4614-ad43-6346387ffa00',
             status: 'failed',
             error: 'Everything went south',
-            email_count: 3,
+            email_count: 3, // doesn't match the number of email_recipients relations below, some calculations may be off
             subject: 'You got mailed! Again!',
             html: '<p>What\'s that? Another email!</p>',
             plaintext: 'yes this is an email',
@@ -1035,7 +1045,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             title: 'title',
             status: 'published',
             feature_image: null,
@@ -1105,7 +1115,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
             client_uri: 'http://localhost:9000',
@@ -1154,7 +1164,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
@@ -1297,7 +1307,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             expires: Date.now() + constants.ONE_DAY_MS
         });
     }
@@ -1307,7 +1317,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),

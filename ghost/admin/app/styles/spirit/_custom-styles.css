@@ -184,9 +184,9 @@ button, .btn-base {
     bottom: calc(100% + 4px);
     left: 50%;
     white-space: nowrap;
-    padding: 3px 7px;
-    border-radius: 3px;
-    background-color: var(--darkgrey);
+    padding: 4px 10px;
+    border-radius: 6px;
+    background-color: var(--black);
     color: var(--white);
     content: attr(data-tooltip);
     text-align: center;

@@ -77,6 +77,7 @@ export default [
     setting('portal', 'portal_name', true),
     setting('portal', 'portal_button', true),
     setting('portal', 'portal_plans', JSON.stringify(['free'])),
+    setting('portal', 'portal_default_plan', 'yearly'),
     setting('portal', 'portal_products', JSON.stringify([])),
     setting('portal', 'portal_button_style', 'icon-and-text'),
     setting('portal', 'portal_button_icon', null),
@@ -128,6 +129,6 @@ export default [
     setting('editor', 'editor_default_email_recipients_filter', 'all'),
 
     // DONATIONS
-    setting('donations_suggested_amount', 'donations', 0),
+    setting('donations_suggested_amount', 'donations', 500),
     setting('donations_currency', 'donations', 'USD')
 ];

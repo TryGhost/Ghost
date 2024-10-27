@@ -100,27 +100,21 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             autoFocus={true}
             error={Boolean(errors.title)}
             hint={errors.title}
+            maxLength={2000}
             title="Title"
             value={formState.title ?? ''}
-            onBlur={() => setErrors(
-                validateDescriptionFormField(errors, 'title', formState.title)
-            )}
             onChange={(e) => {
                 clearError?.('title');
                 updateForm(state => ({...state, title: e.target.value}));
             }}
         />
         <TextArea
-            clearBg={true}
             error={Boolean(errors.description)}
             // Note: we don't show the error text here, because errors are related to the character count
             hint={<>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={descriptionLengthColor}>{descriptionLength}</strong></>}
             rows={4}
             title="Short description"
             value={formState.description ?? ''}
-            onBlur={() => setErrors(
-                validateDescriptionFormField(errors, 'description', formState.description)
-            )}
             onChange={(e) => {
                 clearError?.('description');
                 setDescriptionLength(e.target.value.length);

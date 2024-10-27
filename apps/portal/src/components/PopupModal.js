@@ -131,6 +131,15 @@ class PopupContent extends React.Component {
         );
     }
 
+    sendPortalPreviewReadyEvent() {
+        if (window.self !== window.parent) {
+            window.parent.postMessage({
+                type: 'portal-preview-ready',
+                payload: {}
+            }, '*');
+        }
+    }
+
     render() {
         const {page, pageQuery, site, customSiteUrl} = this.context;
         const products = getSiteProducts({site});
@@ -202,6 +211,7 @@ class PopupContent extends React.Component {
         }
 
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
+        this.sendPortalPreviewReadyEvent();
         return (
             <>
                 <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
@@ -293,7 +303,9 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer}>
-                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'>
+                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'
+                    dataDir={this.context.dir}
+                >
                     <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent isMobile={isMobile} />
                 </Frame>

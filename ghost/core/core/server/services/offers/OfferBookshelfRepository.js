@@ -33,12 +33,12 @@ const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer
 
 /**
  * @typedef {object} BaseOptions
- * @prop {import('knex').Transaction} transacting
+ * @prop {import('knex').Knex.Transaction} transacting
  */
 
 /**
  * @typedef {object} ListOptions
- * @prop {import('knex').Transaction} transacting
+ * @prop {import('knex').Knex.Transaction} transacting
  * @prop {string} filter
  */
 
@@ -56,7 +56,7 @@ class OfferBookshelfRepository {
 
     /**
      * @template T
-     * @param {(t: import('knex').Transaction) => Promise<T>} cb
+     * @param {(t: import('knex').Knex.Transaction) => Promise<T>} cb
      * @returns {Promise<T>}
      */
     async createTransaction(cb) {

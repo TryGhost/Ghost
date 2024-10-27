@@ -1,0 +1,58 @@
+
+<div class="gh-stats-tabs-header" {{did-update this.fetchDataIfNeeded @chartRange @audience @device @browser @location @source @pathname}}>
+    <div class="gh-stats-tabs">
+        <button type="button" class="gh-stats-tab min-width {{if this.uniqueVisitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToUniqueVisits}}>
+            <Stats::Parts::Metric
+                @label="Unique visits"
+                @value={{this.totals.visits}} />
+        </button>
+
+        <button type="button" class="gh-stats-tab min-width {{if this.pageviewsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPageviews}}>
+            <Stats::Parts::Metric
+                @label="Pageviews"
+                @value={{this.totals.pageviews}} />
+        </button>
+
+        <button type="button" class="gh-stats-tab min-width {{if this.bounceRateTabSelected 'is-selected'}}" {{on "click" this.changeTabToBounceRate}}>
+            <Stats::Parts::Metric
+                @label="Bounce rate"
+                @value="{{this.totals.bounce_rate}}%" />
+        </button>
+
+        <button type="button" class="gh-stats-tab min-width {{if this.avgVisitTimeTabSelected 'is-selected'}}" {{on "click" this.changeTabToAvgVisitTime}}>
+            <Stats::Parts::Metric
+                @label="Visit duration"
+                @value="{{this.totals.avg_session_sec}}m" />
+        </button>
+    </div>
+    {{!-- <div class="gh-stats-kpi-granularity">
+        {{#if this.showGranularity}}
+            <PowerSelect
+                @selected={{this.granularity}}
+                @options={{this.granularityOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onGranularityChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn gh-stats-section-dropdown"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
+            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+        {{/if}}
+    </div> --}}
+</div>
+<div class="gh-stats-kpis-chart-container">
+    <Stats::Charts::Kpis
+        @chartRange={{@chartRange}}
+        @audience={{@audience}}
+        @device={{@device}}
+        @browser={{@browser}}
+        @location={{@location}}
+        @source={{@source}}
+        @pathname={{@pathname}}
+        @selected={{this.selected}}
+    />
+</div>

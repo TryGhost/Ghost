@@ -1,6 +1,7 @@
 const statsService = require('../../services/stats');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'stats',
     memberCountHistory: {
         headers: {
@@ -10,8 +11,14 @@ module.exports = {
             docName: 'members',
             method: 'browse'
         },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'memberCountHistory'
+            };
+        },
         async query() {
-            return await statsService.getMemberCountHistory();
+            return await statsService.api.getMemberCountHistory();
         }
     },
     mrr: {
@@ -22,8 +29,14 @@ module.exports = {
             docName: 'members',
             method: 'browse'
         },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'mrr'
+            };
+        },
         async query() {
-            return await statsService.getMRRHistory();
+            return await statsService.api.getMRRHistory();
         }
     },
     subscriptions: {
@@ -34,8 +47,15 @@ module.exports = {
             docName: 'members',
             method: 'browse'
         },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'subscriptions'
+
+            };
+        },
         async query() {
-            return await statsService.getSubscriptionCountHistory();
+            return await statsService.api.getSubscriptionCountHistory();
         }
     },
     postReferrers: {
@@ -49,8 +69,18 @@ module.exports = {
             docName: 'posts',
             method: 'browse'
         },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'postReferrers',
+                data: {
+                    id: frame.data.id
+                }
+
+            };
+        },
         async query(frame) {
-            return await statsService.getPostReferrers(frame.data.id);
+            return await statsService.api.getPostReferrers(frame.data.id);
         }
     },
     referrersHistory: {
@@ -64,8 +94,16 @@ module.exports = {
             docName: 'posts',
             method: 'browse'
         },
+        cache: statsService.cache,
+        generateCacheKeyData() {
+            return {
+                method: 'referrersHistory'
+            };
+        },
         async query() {
-            return await statsService.getReferrersHistory();
+            return await statsService.api.getReferrersHistory();
         }
     }
 };
+
+module.exports = controller;

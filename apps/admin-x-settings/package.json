@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
-  "version": "0.0.20",
+  "version": "0.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,10 +20,7 @@
       "require": "./dist/admin-x-settings.umd.cjs"
     }
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "private": true,
   "scripts": {
     "dev": "vite build --watch",
     "dev:start": "vite",
@@ -37,57 +34,46 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@codemirror/lang-html": "^6.4.5",
-    "@tryghost/color-utils": "0.2.0",
-    "@tryghost/limit-service": "^1.2.10",
-    "@tryghost/nql": "0.12.0",
-    "@tryghost/timezone-data": "0.4.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "@codemirror/lang-html": "6.4.9",
+    "@tryghost/color-utils": "0.2.2",
+    "@tryghost/kg-unsplash-selector": "0.2.5",
+    "@tryghost/limit-service": "1.2.14",
+    "@tryghost/nql": "0.12.7",
+    "@tryghost/timezone-data": "0.4.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "validator": "7.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.38.1",
-    "@testing-library/react": "14.1.0",
+    "@playwright/test": "1.46.1",
+    "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
-    "@types/react": "18.2.41",
-    "@types/react-dom": "18.2.17",
-    "@types/validator": "13.11.7",
-    "@vitejs/plugin-react": "4.2.0",
+    "@tryghost/custom-fonts": "0.0.0",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@types/validator": "13.12.0",
+    "@vitejs/plugin-react": "4.2.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
     "stylelint": "15.10.3",
-    "vite": "4.5.1",
+    "vite": "4.5.3",
     "vite-plugin-css-injected-by-js": "^3.3.0",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"
   },
   "nx": {
     "targets": {
-      "build": {
+      "dev": {
         "dependsOn": [
-          "build",
-          {
-            "projects": [
-              "@tryghost/admin-x-design-system",
-              "@tryghost/admin-x-framework"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "test:acceptance": {
         "dependsOn": [
           "test:acceptance",
-          {
-            "projects": [
-              "@tryghost/admin-x-design-system",
-              "@tryghost/admin-x-framework"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       }
     }

@@ -36,7 +36,7 @@ export const Left: Story = {
     args: {
         content: 'Hello tooltip on the left',
         children: <Button color='outline' label="Hover me" />,
-        origin: 'left'
+        origin: 'start'
     }
 };
 
@@ -52,7 +52,7 @@ export const Right: Story = {
     args: {
         content: 'Hello right tooltip',
         children: <Button color='outline' label="Hover me" />,
-        origin: 'right'
+        origin: 'end'
     }
 };
 
@@ -61,7 +61,7 @@ export const Long: Story = {
         content: `You're the best evil son an evil dad could ever ask for.`,
         children: <Button color='outline' label="Hover me" />,
         size: 'md',
-        origin: 'left'
+        origin: 'start'
     }
 };
 

@@ -1,0 +1,16 @@
+email,name,note,subscribed_to_emails,stripe_customer_id,complimentary_plan,labels,created_at
+member_subscribed_true@example.com,Test Email,This is a test template for importing your members list to Ghost,true,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_subscribed_false@example.com,Test Email,This is a test template for importing your members list to Ghost,false,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_subscribed_null@example.com,Test Email,This is a test template for importing your members list to Ghost,null,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_subscribed_empty@example.com,Test Email,This is a test template for importing your members list to Ghost,,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_subscribed_invalid@example.com,Test Email,This is a test template for importing your members list to Ghost,asdfasdf,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_not_subscribed_true@example.com,Test Email,This is a test template for importing your members list to Ghost,true,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_not_subscribed_false@example.com,Test Email,This is a test template for importing your members list to Ghost,false,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_not_subscribed_null@example.com,Test Email,This is a test template for importing your members list to Ghost,null,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_not_subscribed_empty@example.com,Test Email,This is a test template for importing your members list to Ghost,,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+member_not_subscribed_invalid@example.com,Test Email,This is a test template for importing your members list to Ghost,asdfasdf,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+new_member_true@example.com,Test Email,This is a test template for importing your members list to Ghost,true,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+new_member_false@example.com,Test Email,This is a test template for importing your members list to Ghost,false,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+new_member_null@example.com,Test Email,This is a test template for importing your members list to Ghost,null,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+new_member_empty@example.com,Test Email,This is a test template for importing your members list to Ghost,,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z
+new_member_invalid@example.com,Test Email,This is a test template for importing your members list to Ghost,asdfasdf,Example: cus_GdsYH4fZbHx9hF,false,"vip,promotion",2019-10-30T14:52:08.000Z

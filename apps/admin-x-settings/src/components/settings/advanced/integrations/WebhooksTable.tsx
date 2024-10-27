@@ -22,7 +22,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                     confirmModal?.remove();
                     showToast({
                         message: 'Webhook deleted',
-                        type: 'success'
+                        type: 'info'
                     });
                 } catch (e) {
                     handleError(e);

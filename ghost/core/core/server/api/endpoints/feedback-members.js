@@ -1,6 +1,7 @@
 const feedbackService = require('../../services/audience-feedback');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'feedback',
 
     add: {
@@ -24,3 +25,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

@@ -42,7 +42,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         let mockDate = moment.utc().subtract(1, 'hour');
         this.set('mockDate', mockDate);
 
-        await render(hbs`{{gh-format-post-time mockDate draft=true}}`);
+        await render(hbs`{{gh-format-post-time mockDate relative=true}}`);
         expect(this.element).to.have.trimmed.text('an hour ago');
     });
 
@@ -50,7 +50,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         let mockDate = moment.utc().subtract(13, 'minutes');
         this.set('mockDate', mockDate);
 
-        await render(hbs`{{gh-format-post-time mockDate published=true}}`);
+        await render(hbs`{{gh-format-post-time mockDate absolute=true}}`);
         expect(this.element).to.have.trimmed.text('13 minutes ago');
     });
 
@@ -70,7 +70,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         });
         this.set('mockDate', mockDate);
 
-        await render(hbs`{{gh-format-post-time mockDate published=true}}`);
+        await render(hbs`{{gh-format-post-time mockDate absolute=true}}`);
         expect(this.element).to.have.trimmed.text(`${expectedTime} (UTC) Today`);
     });
 
@@ -93,8 +93,19 @@ describe('Integration: Helper: gh-format-post-time', function () {
         });
         this.set('mockDate', mockDate);
 
-        await render(hbs`{{gh-format-post-time mockDate published=true}}`);
-        expect(this.element).to.have.trimmed.text(`${expectedTime} (UTC) Yesterday`);
+        await render(hbs`{{gh-format-post-time mockDate absolute=true}}`);
+        expect(this.element).to.have.trimmed.text(`${expectedTime} (UTC) yesterday`);
+    });
+
+    it('returns correct short format if post was published yesterday', async function () {
+        let {mockDate} = setupMockDate({
+            date: '2017-09-05T16:00:00Z',
+            utcDate: '2017-09-06T18:00:00Z'
+        });
+        this.set('mockDate', mockDate);
+
+        await render(hbs`{{gh-format-post-time mockDate absolute=true short=true}}`);
+        expect(this.element).to.have.trimmed.text(`Yesterday`);
     });
 
     it('returns correct format if post is scheduled for tomorrow', async function () {
@@ -115,7 +126,18 @@ describe('Integration: Helper: gh-format-post-time', function () {
         });
         this.set('mockDate', mockDate);
 
-        await render(hbs`{{gh-format-post-time mockDate published=true}}`);
+        await render(hbs`{{gh-format-post-time mockDate absolute=true}}`);
+        expect(this.element).to.have.trimmed.text('16:00 (UTC) 02 Sep 2017');
+    });
+
+    it('returns correct short format if post was published prior to yesterday', async function () {
+        let {mockDate} = setupMockDate({
+            date: '2017-09-02T16:00:00Z',
+            utcDate: '2017-09-06T18:00:00Z'
+        });
+        this.set('mockDate', mockDate);
+
+        await render(hbs`{{gh-format-post-time mockDate absolute=true short=true}}`);
         expect(this.element).to.have.trimmed.text('02 Sep 2017');
     });
 

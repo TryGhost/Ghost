@@ -1,4 +1,7 @@
 const sinon = require('sinon');
+const assert = require('assert').strict;
+const errors = require('@tryghost/errors');
+
 const RouterController = require('../../../../lib/controllers/RouterController');
 
 describe('RouterController', function () {
@@ -86,6 +89,153 @@ describe('RouterController', function () {
             })).should.be.true();
         });
 
+        describe('_getSubscriptionCheckoutData', function () {
+            it('returns a BadRequestError if both offerId and tierId are missing', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({body: {}});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected offerId or tierId, received none');
+                }
+            });
+
+            it('returns a BadRequestError if both offerId and tierId are provided', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'tier_123', offerId: 'offer_123'});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected offerId or tierId, received both');
+                }
+            });
+
+            it('returns a BadRequestError if tierId is provided wihout a cadence', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'tier_123'});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected cadence to be "month" or "year", received undefined');
+                }
+            });
+
+            it('returns a BadRequestError if tierId is provided wihout a valid cadence', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'tier_123', cadence: 'day'});
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Expected cadence to be "month" or "year", received "day"');
+                }
+            });
+
+            it('returns a BadRequestError if offer is not found by offerId', async function () {
+                offersAPI = {
+                    getOffer: sinon.stub().resolves(null)
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({offerId: 'invalid'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Offer with id "invalid" not found');
+                }
+            });
+
+            it('returns a BadRequestError if tier is not found by tierId', async function () {
+                tiersService = {
+                    api: {
+                        read: sinon.stub().resolves(null)
+                    }
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'invalid', cadence: 'year'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Tier with id "invalid" not found');
+                }
+            });
+
+            it('returns a BadRequestError if fetching tier by tierId throws', async function () {
+                tiersService = {
+                    api: {
+                        read: sinon.stub().rejects(new Error('Fail to fetch tier'))
+                    }
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({tierId: 'invalid', cadence: 'year'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Tier with id "invalid" not found');
+                }
+            });
+        });
+
         afterEach(function () {
             sinon.restore();
         });
@@ -146,10 +296,10 @@ describe('RouterController', function () {
                 const newsletterNames = newsletters.map(newsletter => newsletter.name);
                 const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
                 const newslettersServiceStub = {
-                    browse: sinon.stub()
+                    getAll: sinon.stub()
                 };
 
-                newslettersServiceStub.browse
+                newslettersServiceStub.getAll
                     .withArgs({
                         filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
@@ -181,10 +331,10 @@ describe('RouterController', function () {
                 ];
 
                 const newslettersServiceStub = {
-                    browse: sinon.stub()
+                    getAll: sinon.stub()
                 };
 
-                newslettersServiceStub.browse
+                newslettersServiceStub.getAll
                     .withArgs({
                         filter: `name:['${INVALID_NEWSLETTER_NAME}']`,
                         columns: ['id','name','status']
@@ -221,10 +371,10 @@ describe('RouterController', function () {
 
                 const newsletterNames = newsletters.map(newsletter => `'${newsletter.name}'`);
                 const newslettersServiceStub = {
-                    browse: sinon.stub()
+                    getAll: sinon.stub()
                 };
 
-                newslettersServiceStub.browse
+                newslettersServiceStub.getAll
                     .withArgs({
                         filter: `name:[${newsletterNames}]`,
                         columns: ['id', 'name','status']
@@ -236,6 +386,53 @@ describe('RouterController', function () {
                 });
 
                 await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to archived newsletters Newsletter 2`);
+            });
+        });
+
+        describe('honeypot', function () {
+            let req, res, sendEmailWithMagicLinkStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'signup'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves();
+            });
+
+            it('Sends emails when honeypot is not filled', async function () {
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
+            });
+
+            it('Does not send emails when honeypot is filled', async function () {
+                const controller = createRouterController();
+
+                req.body.honeypot = 'filled!';
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
+                sendEmailWithMagicLinkStub.notCalled.should.be.true();
             });
         });
     });

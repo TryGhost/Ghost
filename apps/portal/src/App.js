@@ -5,12 +5,13 @@ import Notification from './components/Notification';
 import PopupModal from './components/PopupModal';
 import setupGhostApi from './utils/api';
 import AppContext from './AppContext';
-import {hasMode} from './utils/check-mode';
+import NotificationParser from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
+import {hasMode} from './utils/check-mode';
+import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
-import NotificationParser from './utils/notifications';
 import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
@@ -160,6 +161,7 @@ export default class App extends React.Component {
             const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
 
             const i18n = i18nLib(i18nLanguage, 'portal');
+            
             const state = {
                 site,
                 member,
@@ -170,6 +172,7 @@ export default class App extends React.Component {
                 pageData,
                 popupNotification,
                 t: i18n.t,
+                dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success'
             };
@@ -184,10 +187,9 @@ export default class App extends React.Component {
             };
             window.addEventListener('hashchange', this.hashHandler, false);
 
-            // spike ship - to test if we can show / hide signup forms inside post / page
+            // the signup card will ship hidden by default,
+            // so we need to show it if the member is not logged in
             if (!member) {
-                // the signup card will ship hidden by default, so we need to show it if the user is not logged in
-                // not sure why a user would have more than one form on a post, but just in case we'll find them all
                 const formElements = document.querySelectorAll('[data-lexical-signup-form]');
                 if (formElements.length > 0){
                     formElements.forEach((element) => {
@@ -195,7 +197,11 @@ export default class App extends React.Component {
                     });
                 }
             }
+
             this.setupRecommendationButtons();
+
+            // avoid portal links switching to homepage (e.g. from absolute link copy/pasted from Admin)
+            this.transformPortalLinksToRelative();
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
@@ -211,7 +217,7 @@ export default class App extends React.Component {
     async fetchData() {
         const {site: apiSiteData, member} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
-        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData);
+        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
@@ -311,7 +317,10 @@ export default class App extends React.Component {
         // Handle the query params key/value pairs
         for (let pair of qsParams.entries()) {
             const key = pair[0];
+
+            // Note: this needs to be cleaned up, there is no reason why we need to double encode/decode
             const value = decodeURIComponent(pair[1]);
+
             if (key === 'button') {
                 data.site.portal_button = JSON.parse(value);
             } else if (key === 'name') {
@@ -357,6 +366,8 @@ export default class App extends React.Component {
                 data.site.allow_self_signup = JSON.parse(value);
             } else if (key === 'membersSignupAccess' && value) {
                 data.site.members_signup_access = value;
+            } else if (key === 'portalDefaultPlan' && value) {
+                data.site.portal_default_plan = value;
             }
         }
         data.site.portal_plans = allowedPlans;
@@ -389,6 +400,7 @@ export default class App extends React.Component {
                 }
             ];
         }
+
         return data;
     }
 
@@ -414,18 +426,32 @@ export default class App extends React.Component {
     }
 
     /** Fetch state from Portal Links */
-    fetchLinkData(site) {
+    fetchLinkData(site, member) {
         const qParams = new URLSearchParams(window.location.search);
-        if (qParams.get('uuid') && qParams.get('action') === 'unsubscribe') {
-            return {
-                showPopup: true,
-                page: 'unsubscribe',
-                pageData: {
-                    uuid: qParams.get('uuid'),
-                    newsletterUuid: qParams.get('newsletter'),
-                    comments: qParams.get('comments')
-                }
-            };
+        if (qParams.get('action') === 'unsubscribe') {
+            // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
+            if (qParams.get('key') && qParams.get('uuid')) {
+                return {
+                    showPopup: true,
+                    page: 'unsubscribe',
+                    pageData: {
+                        uuid: qParams.get('uuid'),
+                        key: qParams.get('key'),
+                        newsletterUuid: qParams.get('newsletter'),
+                        comments: qParams.get('comments')
+                    }
+                };
+            } else { // any malformed unsubscribe links should simply go to email prefs
+                return {
+                    showPopup: true,
+                    page: 'accountEmail',
+                    pageData: {
+                        newsletterUuid: qParams.get('newsletter'),
+                        action: 'unsubscribe',
+                        redirect: site.url + '#/portal/account/newsletters'
+                    }
+                };
+            }
         }
 
         if (hasRecommendations({site}) && qParams.get('action') === 'signup' && qParams.get('success') === 'true') {
@@ -447,19 +473,31 @@ export default class App extends React.Component {
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
-        if (path && feedbackRegex.test(path) && hashQuery.get('uuid')) {
+        if (path && feedbackRegex.test(path)) {
             const [, postId, scoreString] = path.match(feedbackRegex);
             const score = parseInt(scoreString);
             if (score === 1 || score === 0) {
-                return {
-                    showPopup: true,
-                    page: 'feedback',
-                    pageData: {
-                        uuid: hashQuery.get('uuid'),
-                        postId,
-                        score
-                    }
-                };
+                // if logged in, submit feedback
+                if (member || (hashQuery.get('uuid') && hashQuery.get('key'))) {
+                    return {
+                        showPopup: true,
+                        page: 'feedback',
+                        pageData: {
+                            uuid: member ? null : hashQuery.get('uuid'),
+                            key: member ? null : hashQuery.get('key'),
+                            postId,
+                            score
+                        }
+                    };
+                } else {
+                    return {
+                        showPopup: true,
+                        page: 'signin',
+                        pageData: {
+                            redirect: site.url + `#/feedback/${postId}/${score}/`
+                        }
+                    };
+                }
             }
         }
         if (path && linkRegex.test(path)) {
@@ -734,12 +772,11 @@ export default class App extends React.Component {
     }
 
     /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path, useSite) {
+    getPageFromLinkPath(path) {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
-        const site = useSite ?? this.state.site ?? {};
 
         if (path === undefined || path === '') {
             return {
@@ -818,14 +855,29 @@ export default class App extends React.Component {
             return {
                 page: 'supportError'
             };
-        } else if (path === 'recommendations' && hasRecommendations({site})) {
+        } else if (path === 'recommendations') {
             return {
                 page: 'recommendations',
                 pageData: {
                     signup: false
                 }
             };
+        } else if (path === 'account/newsletters/help') {
+            return {
+                page: 'emailReceivingFAQ',
+                pageData: {
+                    direct: true
+                }
+            };
+        } else if (path === 'account/newsletters/disabled') {
+            return {
+                page: 'emailSuppressionFAQ',
+                pageData: {
+                    direct: true
+                }
+            };
         }
+
         return {
             page: 'default'
         };
@@ -874,7 +926,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -891,6 +943,7 @@ export default class App extends React.Component {
             popupNotification,
             customSiteUrl,
             t,
+            dir,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
@@ -922,6 +975,16 @@ export default class App extends React.Component {
         for (const element of elements) {
             element.addEventListener('click', clickHandler, {passive: true});
         }
+    }
+
+    /**
+     * Transform any portal links to use relative paths
+     *
+     * Prevents unwanted/unnecessary switches to the home page when opening the
+     * portal. Especially useful for copy/pasted links from Admin screens.
+     */
+    transformPortalLinksToRelative() {
+        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {

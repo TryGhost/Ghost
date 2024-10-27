@@ -58,6 +58,31 @@ describe('Oembed API', function () {
         should.exist(res.body.html);
     });
 
+    it('does not use http preferentially to https', async function () {
+        const httpMock = nock('https://odysee.com')
+            .get('/$/oembed')
+            .query({url: 'http://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json'})
+            .reply(200, 'The URL is invalid or is not associated with any claim.');
+
+        const httpsMock = nock('https://odysee.com')
+            .get('/$/oembed')
+            .query({url: 'https://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json'})
+            .reply(200, {
+                html: '<iframe></iframe>',
+                type: 'rich',
+                version: '1.0'
+            });
+
+        const res = await request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fodysee.com%2F%40BarnabasNagy%3A5%2FAt-Last-%28Playa%29%3A2'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        httpMock.isDone().should.be.false();
+        httpsMock.isDone().should.be.true();
+        should.exist(res.body.html);
+    });
+
     it('errors with a useful message when embedding is disabled', async function () {
         const requestMock = nock('https://www.youtube.com')
             .get('/oembed')
@@ -82,7 +107,7 @@ describe('Oembed API', function () {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(401);
+            .expect(422);
 
         requestMock.isDone().should.be.true();
         should.exist(res.body.errors);
@@ -196,6 +221,35 @@ describe('Oembed API', function () {
 
             should.exist(res.body.errors);
         });
+
+        it('should replace icon URL when it returns 404', async function () {
+            // Mock the page so it contains a readable icon URL
+            const pageMock = nock('http://example.com')
+                .get('/page-with-icon')
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/icon.svg"></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            // Mock the icon URL to return 404
+            nock('http://example.com/')
+                .head('/icon.svg')
+                .reply(404);
+
+            const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
+            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            // Check that the icon URL mock was loaded
+            pageMock.isDone().should.be.true();
+
+            // Check that the substitute icon URL is returned in place of the original
+            res.body.metadata.icon.should.eql('https://static.ghost.org/v5.0.0/images/link-icon.svg');
+        });
     });
 
     describe('with unknown provider', function () {
@@ -206,7 +260,7 @@ describe('Oembed API', function () {
 
             const pageMock = nock('http://oembed.test.com')
                 .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"></head></html>');
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"><title>Title</title></head></html>');
 
             const oembedMock = nock('http://oembed.test.com')
                 .get('/my-embed')
@@ -230,7 +284,7 @@ describe('Oembed API', function () {
         it('fetches url and follows <link rel="alternate">', async function () {
             const pageMock = nock('http://test.com')
                 .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>');
 
             const oembedMock = nock('http://test.com')
                 .get('/oembed')
@@ -253,7 +307,7 @@ describe('Oembed API', function () {
         it('follows redirects when fetching <link rel="alternate">', async function () {
             const pageMock = nock('http://test.com')
                 .get('/')
-                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"><title>Title</title></head></html>');
 
             const alternateRedirectMock = nock('http://test.com')
                 .get('/oembed')

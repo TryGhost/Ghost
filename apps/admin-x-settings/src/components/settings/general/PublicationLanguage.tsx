@@ -13,8 +13,20 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleCancel,
         updateSetting,
         focusRef,
+        errors,
+        clearError,
         handleEditingChange
-    } = useSettingGroup();
+    } = useSettingGroup({
+        onValidate: () => {
+            if (!publicationLanguage) {
+                return {
+                    publicationLanguage: 'Enter a value'
+                };
+            }
+
+            return {};
+        }
+    });
 
     const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
 
@@ -42,12 +54,14 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputFields = (
         <SettingGroupContent columns={1}>
             <TextField
-                hint={hint}
+                error={!!errors.publicationLanguage}
+                hint={errors.publicationLanguage || hint}
                 inputRef={focusRef}
                 placeholder="Site language"
                 title='Site language'
                 value={publicationLanguage}
                 onChange={handleLanguageChange}
+                onKeyDown={() => clearError('password')}
             />
         </SettingGroupContent>
     );

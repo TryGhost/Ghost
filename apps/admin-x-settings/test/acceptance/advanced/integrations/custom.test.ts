@@ -127,7 +127,7 @@ test.describe('Custom integrations', async () => {
         // Validation
 
         await createModal.getByRole('button', {name: 'Add'}).click();
-        await expect(createModal).toHaveText(/Please enter a name/);
+        await expect(createModal).toHaveText(/Name is required/);
 
         // Successful creation
 
@@ -140,7 +140,7 @@ test.describe('Custom integrations', async () => {
 
         await modal.getByLabel('Description').fill('Test description');
 
-        await modal.getByRole('button', {name: 'Cancel'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
 
@@ -190,7 +190,8 @@ test.describe('Custom integrations', async () => {
         // Edit integration
 
         await modal.getByLabel('Description').fill('Test description');
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(integrationsSection).toHaveText(/Test description/);
 

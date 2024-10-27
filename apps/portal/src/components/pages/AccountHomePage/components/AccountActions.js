@@ -1,6 +1,6 @@
 import AppContext from '../../../../AppContext';
 import {useContext} from 'react';
-import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed} from '../../../../utils/helpers';
+import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsletterSendingEnabled} from '../../../../utils/helpers';
 
 import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';
@@ -19,12 +19,14 @@ const AccountActions = () => {
 
     const showEmailPreferences = hasMultipleNewsletters({site}) || hasCommentsEnabled({site}) || isEmailSuppressed({member});
 
+    const showEmailUnsubscribe = hasNewsletterSendingEnabled({site});
+
     return (
         <div>
             <div className='gh-portal-list'>
                 <section>
                     <div className='gh-portal-list-detail'>
-                        <h3>{(name ? name : 'Account')}</h3>
+                        <h3>{(name ? name : t('Account'))}</h3>
                         <p>{email}</p>
                     </div>
                     <button
@@ -40,7 +42,13 @@ const AccountActions = () => {
                 {
                     showEmailPreferences
                         ? <EmailPreferencesAction />
-                        : <EmailNewsletterAction />
+                        : <></>
+                }
+
+                {
+                    showEmailUnsubscribe && !showEmailPreferences
+                        ? <EmailNewsletterAction />
+                        : <></>
                 }
 
             </div>

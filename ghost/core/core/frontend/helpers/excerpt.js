@@ -23,6 +23,8 @@ module.exports = function excerpt(options) {
         excerptText = '';
     }
 
+    excerptText = _.escape(excerptText);
+
     truncateOptions = _.reduce(truncateOptions, (_truncateOptions, value, key) => {
         if (['words', 'characters'].includes(key)) {
             _truncateOptions[key] = parseInt(value, 10);
@@ -30,8 +32,9 @@ module.exports = function excerpt(options) {
         return _truncateOptions;
     }, {});
 
+    // For custom excerpts, make sure we truncate them only based on length
     if (!_.isEmpty(this.custom_excerpt)) {
-        truncateOptions.characters = this.custom_excerpt.length;
+        truncateOptions.characters = excerptText.length; // length is expanded by use of escaped characters
         if (truncateOptions.words) {
             delete truncateOptions.words;
         }

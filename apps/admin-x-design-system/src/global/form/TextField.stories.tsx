@@ -11,7 +11,7 @@ const meta = {
     component: TextField,
     tags: ['autodocs'],
     decorators: [(_story: () => ReactNode) => (
-        <div style={{maxWidth: '400px'}}>
+        <div style={{maxWidth: '400px', padding: '20px'}}>
             {_story()}
         </div>
     )],

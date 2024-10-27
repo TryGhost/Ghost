@@ -25,7 +25,7 @@ describe('MembersCSVImporter', function () {
         email: 'email',
         name: 'name',
         note: 'note',
-        subscribed_to_emails: 'subscribed',
+        subscribed_to_emails: 'subscribed_to_emails',
         created_at: 'created_at',
         complimentary_plan: 'complimentary_plan',
         stripe_customer_id: 'stripe_customer_id',
@@ -221,6 +221,222 @@ describe('MembersCSVImporter', function () {
             }]);
             should.deepEqual(membersRepositoryStub.update.args[0][1].id, 'test_member_id');
         });
+
+        it('should subscribe or unsubscribe members as per the `subscribe_to_emails` column', async function () {
+            /**
+             * @NOTE This tests all the different scenarios for the `subscribed_to_emails` column for existing and new members
+             * For existing members with at least one newsletter subscription:
+             * CASE 1: If `subscribe_to_emails` is `true`, the member should remain subscribed (but not added to any additional newsletters)
+             * CASE 2: If `subscribe_to_emails` is `false`, the member should be unsubscribed from all newsletters
+             * CASE 3: If `subscribe_to_emails` is NULL, the member should remain subscribed (but not added to any additional newsletters)
+             * CASE 4: If `subscribe_to_emails` is empty, the member should remain subscribed (but not added to any additional newsletters)
+             * CASE 5: If `subscribe_to_emails` is invalid, the member should remain subscribed (but not added to any additional newsletters)
+             * 
+             * 
+             * For existing members with no newsletter subscriptions:
+             * CASE 6: If `subscribe_to_emails` is `true`, the member should remain unsubscribed (as they likely have previously unsubscribed)
+             * CASE 7: If `subscribe_to_emails` is `false`, the member should remain unsubscribed
+             * CASE 8: If `subscribe_to_emails` is NULL, the member should remain unsubscribed
+             * CASE 9: If `subscribe_to_emails` is empty, the member should remain unsubscribed
+             * CASE 10: If `subscribe_to_emails` is invalid, the member should remain unsubscribed
+             *
+             * - In summary, an existing member with no pre-existing newsletter subscriptions should _never_ be subscribed to newsletters upon import
+             * 
+             * For new members:
+             * CASE 11: If `subscribe_to_emails` is `true`, the member should be created and subscribed
+             * CASE 12: If `subscribe_to_emails` is `false`, the member should be created but not subscribed
+             * CASE 13: If `subscribe_to_emails` is NULL, the member should be created and subscribed
+             * CASE 14: If `subscribe_to_emails` is empty, the member should be created and subscribed
+             * CASE 15: If `subscribe_to_emails` is invalid, the member should be created and subscribed
+             */
+
+            const internalLabel = {
+                name: 'Test Subscription Import'
+            };
+            const LabelModelStub = {
+                findOne: sinon.stub()
+                    .withArgs({
+                        name: 'Test Subscription Import'
+                    })
+                    .resolves({
+                        name: 'Test Subscription Import'
+                    })
+            };
+
+            const importer = buildMockImporterInstance();
+
+            const defaultNewsletters = [
+                {id: 'newsletter_1'},
+                {id: 'newsletter_2'}
+            ];
+
+            const existingMembers = [
+                {email: 'member_subscribed_true@example.com', newsletters: defaultNewsletters},
+                {email: 'member_subscribed_null@example.com', newsletters: defaultNewsletters},
+                {email: 'member_subscribed_false@example.com', newsletters: defaultNewsletters},
+                {email: 'member_subscribed_empty@example.com', newsletters: defaultNewsletters},
+                {email: 'member_subscribed_invalid@example.com', newsletters: defaultNewsletters},
+                {email: 'member_not_subscribed_true@example.com', newsletters: []},
+                {email: 'member_not_subscribed_null@example.com', newsletters: []},
+                {email: 'member_not_subscribed_false@example.com', newsletters: []},
+                {email: 'member_not_subscribed_empty@example.com', newsletters: []},
+                {email: 'member_not_subscribed_invalid@example.com', newsletters: []}
+            ];
+
+            membersRepositoryStub.get = sinon.stub();
+
+            for (const existingMember of existingMembers) {
+                const newslettersCollection = {
+                    length: existingMember.newsletters.length,
+                    toJSON: sinon.stub().returns(existingMember.newsletters)
+                };
+                const memberRecord = {
+                    related: sinon.stub()
+                };
+                memberRecord.related.withArgs('labels').returns(null);
+                memberRecord.related.withArgs('newsletters').returns(newslettersCollection);
+                membersRepositoryStub.get.withArgs({email: existingMember.email}).resolves(memberRecord);
+            }
+
+            const result = await importer.process({
+                pathToCSV: `${csvPath}/subscribed-to-emails-cases.csv`,
+                headerMapping: defaultAllowedFields,
+                importLabel: {
+                    name: 'Test Subscription Import'
+                },
+                user: {
+                    email: 'test@example.com'
+                },
+                LabelModel: LabelModelStub,
+                forceInline: true,
+                verificationTrigger: {
+                    testImportThreshold: () => {}
+                }
+            });
+
+            should.exist(result.meta);
+            should.exist(result.meta.stats);
+            should.exist(result.meta.stats.imported);
+            result.meta.stats.imported.should.equal(5);
+
+            should.exist(result.meta.stats.invalid);
+            should.deepEqual(result.meta.import_label, internalLabel);
+
+            should.exist(result.meta.originalImportSize);
+            result.meta.originalImportSize.should.equal(15);
+
+            fsWriteSpy.calledOnce.should.be.true();
+
+            // member records get inserted
+            should.equal(membersRepositoryStub.create.callCount, 5);
+
+            should.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
+
+            // CASE 1: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is true
+            // Member's newsletter subscriptions should not change
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            should.equal(membersRepositoryStub.update.args[0][0].email, 'member_subscribed_true@example.com');
+            should.equal(membersRepositoryStub.update.args[0][0].subscribed, true);
+            should.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, defaultNewsletters);
+
+            // CASE 2: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is false
+            // Member's newsletter subscriptions should be removed
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.update.args[1][0].email, 'member_subscribed_false@example.com');
+            should.equal(membersRepositoryStub.update.args[1][0].subscribed, false);
+            should.equal(membersRepositoryStub.update.args[1][0].newsletters, undefined);
+
+            // CASE 3: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is NULL
+            // Member's newsletter subscriptions should not change
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            should.equal(membersRepositoryStub.update.args[2][0].email, 'member_subscribed_null@example.com');
+            should.equal(membersRepositoryStub.update.args[2][0].subscribed, true);
+            should.deepEqual(membersRepositoryStub.update.args[2][0].newsletters, defaultNewsletters);
+
+            // CASE 4: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is empty
+            // Member's newsletter subscriptions should not change
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            should.equal(membersRepositoryStub.update.args[3][0].email, 'member_subscribed_empty@example.com');
+            should.equal(membersRepositoryStub.update.args[3][0].subscribed, true);
+            should.deepEqual(membersRepositoryStub.update.args[3][0].newsletters, defaultNewsletters);
+
+            // CASE 5: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is invalid
+            // Member's newsletter subscriptions should not change
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            should.equal(membersRepositoryStub.update.args[4][0].email, 'member_subscribed_invalid@example.com');
+            should.equal(membersRepositoryStub.update.args[4][0].subscribed, true);
+            should.deepEqual(membersRepositoryStub.update.args[4][0].newsletters, defaultNewsletters);
+
+            // CASE 6: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is true
+            // Member should remain unsubscribed and not added to any newsletters
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[5][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.update.args[5][0].email, 'member_not_subscribed_true@example.com');
+            should.equal(membersRepositoryStub.update.args[5][0].subscribed, false);
+            should.equal(membersRepositoryStub.update.args[5][0].newsletters, undefined);
+
+            // CASE 7: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is false
+            // Member should remain unsubscribed and not added to any newsletters
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[6][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.update.args[6][0].email, 'member_not_subscribed_false@example.com');
+            should.equal(membersRepositoryStub.update.args[6][0].subscribed, false);
+            should.equal(membersRepositoryStub.update.args[6][0].newsletters, undefined);
+
+            // CASE 8: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is NULL
+            // Member should remain unsubscribed and not added to any newsletters
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[7][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.update.args[7][0].email, 'member_not_subscribed_null@example.com');
+            should.equal(membersRepositoryStub.update.args[7][0].subscribed, false);
+            should.equal(membersRepositoryStub.update.args[7][0].newsletters, undefined);
+
+            // CASE 9: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is empty
+            // Member should remain unsubscribed and not added to any newsletters
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[8][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.update.args[8][0].email, 'member_not_subscribed_empty@example.com');
+            should.equal(membersRepositoryStub.update.args[8][0].subscribed, false);
+            should.equal(membersRepositoryStub.update.args[8][0].newsletters, undefined);
+
+            // CASE 10: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is invalid
+            // Member should remain unsubscribed and not added to any newsletters
+            should.deepEqual(Object.keys(membersRepositoryStub.update.args[9][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.update.args[9][0].email, 'member_not_subscribed_invalid@example.com');
+            should.equal(membersRepositoryStub.update.args[9][0].subscribed, false);
+            should.equal(membersRepositoryStub.update.args[9][0].newsletters, undefined);
+
+            // CASE 11: New member, `subscribed_to_emails` column is true
+            // Member should be created and subscribed
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[0][0].email, 'new_member_true@example.com');
+            should.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            should.equal(membersRepositoryStub.create.args[0][0].newsletters, undefined);
+
+            // CASE 12: New member, `subscribed_to_emails` column is false
+            // Member should be created but not subscribed
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[1][0].email, 'new_member_false@example.com');
+            should.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
+            should.equal(membersRepositoryStub.create.args[1][0].newsletters, undefined);
+
+            // CASE 13: New member, `subscribed_to_emails` column is NULL
+            // Member should be created but not subscribed
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[2][0].email, 'new_member_null@example.com');
+            should.equal(membersRepositoryStub.create.args[2][0].subscribed, true);
+            should.equal(membersRepositoryStub.create.args[2][0].newsletters, undefined);
+
+            // CASE 14: New member, `subscribed_to_emails` column is empty
+            // Member should be created but not subscribed
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[3][0].email, 'new_member_empty@example.com');
+            should.equal(membersRepositoryStub.create.args[3][0].subscribed, true);
+            should.equal(membersRepositoryStub.create.args[3][0].newsletters, undefined);
+
+            // CASE 15: New member, `subscribed_to_emails` column is invalid
+            // Member should be created but not subscribed
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[4][0].email, 'new_member_invalid@example.com');
+            should.equal(membersRepositoryStub.create.args[4][0].subscribed, true);
+            should.equal(membersRepositoryStub.create.args[4][0].newsletters, undefined);
+        });
     });
 
     describe('sendErrorEmail', function () {
@@ -392,6 +608,30 @@ describe('MembersCSVImporter', function () {
             await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, newsletters);
+        });
+
+        it('does not overwrite name or note fields for existing members when left blank in the import file', async function () {
+            const importer = buildMockImporterInstance();
+
+            const member = {
+                name: 'John Bloggs',
+                note: 'A note',
+                related: sinon.stub()
+            };
+
+            member.related.withArgs('labels').returns(null);
+            member.related.withArgs('newsletters').returns({length: 0});
+
+            membersRepositoryStub.get = sinon.stub();
+
+            membersRepositoryStub.get
+                .withArgs({email: 'test@example.com'})
+                .resolves(member);
+
+            await importer.perform(`${csvPath}/single-column-with-header.csv`);
+
+            assert.equal(membersRepositoryStub.update.args[0][0].name, 'John Bloggs');
+            assert.equal(membersRepositoryStub.update.args[0][0].note, 'A note');
         });
 
         it('does not add subscriptions for existing member when they do not have any subscriptions', async function () {

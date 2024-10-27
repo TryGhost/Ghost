@@ -25,7 +25,7 @@ class MembersLabelsImporter extends TableImporter {
         }
         // TODO: Ensure we don't generate the same member label twice
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: this.model.id,
             label_id: this.labels[faker.datatype.number({
                 min: 0,

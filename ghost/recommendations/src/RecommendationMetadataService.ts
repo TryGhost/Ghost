@@ -40,25 +40,31 @@ export class RecommendationMetadataService {
     }
 
     async #fetchJSON(url: URL, options?: {timeout?: number}) {
-        // default content type is application/x-www-form-encoded which is what we need for the webmentions spec
-        const response = await this.#externalRequest.get(url.toString(), {
-            throwHttpErrors: false,
-            maxRedirects: 10,
-            followRedirect: true,
-            timeout: 15000,
-            retry: {
-                // Only retry on network issues, or specific HTTP status codes
-                limit: 3
-            },
-            ...options
-        });
+        // Even though we have throwHttpErrors: false, we still need to catch DNS errors
+        // that can arise from externalRequest, otherwise we'll return a HTTP 500 to the user
+        try {
+            // default content type is application/x-www-form-encoded which is what we need for the webmentions spec
+            const response = await this.#externalRequest.get(url.toString(), {
+                throwHttpErrors: false,
+                maxRedirects: 10,
+                followRedirect: true,
+                timeout: 15000,
+                retry: {
+                    // Only retry on network issues, or specific HTTP status codes
+                    limit: 3
+                },
+                ...options
+            });
 
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-            try {
-                return JSON.parse(response.body);
-            } catch (e) {
-                return undefined;
+            if (response.statusCode >= 200 && response.statusCode < 300) {
+                try {
+                    return JSON.parse(response.body);
+                } catch (e) {
+                    return undefined;
+                }
             }
+        } catch (e) {
+            return undefined;
         }
     }
 
@@ -108,6 +114,7 @@ export class RecommendationMetadataService {
 
         // Use the oembed service to fetch metadata
         const oembed = await this.#oembedService.fetchOembedDataFromUrl(url.toString(), 'mention');
+
         return {
             title: oembed?.metadata?.title || null,
             excerpt: oembed?.metadata?.description || null,

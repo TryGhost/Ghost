@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
 const {sequence} = require('@tryghost/promise');
@@ -160,7 +160,7 @@ const fixtures = {
         let i;
 
         for (i = 0; i < max; i += 1) {
-            tagName = uuid.v4().split('-')[0];
+            tagName = crypto.randomUUID().split('-')[0];
             tags.push(DataGenerator.forKnex.createBasic({name: tagName, slug: tagName}));
         }
 
@@ -713,7 +713,10 @@ const fixtures = {
     },
 
     async enableAllLabsFeatures() {
-        const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST.map(key => [key, true]));
+        const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST
+            // TODO: should test with 2fa enabled
+            .filter(key => key !== 'staff2fa')
+            .map(key => [key, true]));
         const labsSetting = DataGenerator.forKnex.createSetting({
             key: 'labs',
             group: 'labs',

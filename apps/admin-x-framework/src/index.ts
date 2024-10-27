@@ -1,4 +1,4 @@
-export {default as FrameworkProvider, useFramework} from './providers/FrameworkProvider';
+export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 export type {FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/FrameworkProvider';
 
 export {useQueryClient} from '@tanstack/react-query';

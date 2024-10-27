@@ -102,14 +102,12 @@ describe('NewslettersService', function () {
 
     // @TODO replace this with a specific function for fetching all available newsletters
     describe('browse', function () {
-        it('lists all newsletters by calling findAll and toJSON', async function () {
-            const toJSONStub = sinon.stub();
-            const findAllStub = sinon.stub(models.Newsletter, 'findAll').returns({toJSON: toJSONStub});
+        it('lists all newsletters by calling findPage', async function () {
+            const findAllStub = sinon.stub(models.Newsletter, 'findPage').returns({data: []});
 
             await newsletterService.browse({});
 
             sinon.assert.calledOnce(findAllStub);
-            sinon.assert.calledOnce(toJSONStub);
         });
     });
 

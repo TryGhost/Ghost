@@ -1,15 +1,18 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const cheerio = require('cheerio');
 const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
+
+// Some sites block non-standard user agents so we need to mimic a typical browser
+const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
     unknownProvider: 'No provider found for supplied URL.',
+    unableToFetchOembed: 'Unable to fetch requested embed.',
     unauthorized: 'URL contains a private resource.'
 };
 
@@ -26,10 +29,10 @@ const findUrlWithProvider = (url) => {
     // providers list is not always up to date with scheme or www vs non-www
     let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
     let testUrls = [
-        `http://${baseUrl}`,
         `https://${baseUrl}`,
-        `http://www.${baseUrl}`,
-        `https://www.${baseUrl}`
+        `https://www.${baseUrl}`,
+        `http://${baseUrl}`,
+        `http://www.${baseUrl}`
     ];
 
     for (let testUrl of testUrls) {
@@ -101,15 +104,17 @@ class OEmbedService {
         try {
             return await extract(url);
         } catch (err) {
-            if (err.message === 'Request failed with error code 401') {
-                throw new errors.UnauthorizedError({
-                    message: messages.unauthorized
-                });
-            } else {
-                throw new errors.InternalServerError({
-                    message: err.message
+            if (err.message === 'Request failed with error code 401' || err.message === 'Request failed with error code 403') {
+                throw new errors.ValidationError({
+                    message: tpl(messages.unableToFetchOembed),
+                    context: messages.unauthorized
                 });
             }
+
+            throw new errors.ValidationError({
+                message: tpl(messages.unableToFetchOembed),
+                context: err.message
+            });
         }
     }
 
@@ -123,6 +128,9 @@ class OEmbedService {
         return this.externalRequest(
             url,
             {
+                headers: {
+                    'user-agent': USER_AGENT
+                },
                 timeout: 2000,
                 followRedirect: true,
                 ...options
@@ -202,7 +210,11 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchBookmarkData(url, html) {
-        const gotOpts = {};
+        const gotOpts = {
+            headers: {
+                'User-Agent': USER_AGENT
+            }
+        };
 
         if (process.env.NODE_ENV?.startsWith('test')) {
             gotOpts.retry = 0;
@@ -235,11 +247,11 @@ class OEmbedService {
             scraperResponse = await metascraper({
                 html,
                 url,
-                // In development, allow non-standard tlds
+                // In development, allow non-standard TLDs
                 validateUrl: this.config.get('env') !== 'development'
             });
         } catch (err) {
-            // Log to avoid being blind to errors happenning in metascraper
+            // Log to avoid being blind to errors happening in metascraper
             logging.error(err);
             return this.unknownProvider(url);
         }
@@ -259,6 +271,15 @@ class OEmbedService {
             });
         }
 
+        if (metadata.icon) {
+            try {
+                await this.externalRequest.head(metadata.icon);
+            } catch (err) {
+                metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+                logging.error(err);
+            }
+        }
+
         return {
             version: '1.0',
             type: 'bookmark',
@@ -275,6 +296,9 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedData(url, html, cardType) {
+        // Lazy require the library to keep boot quick
+        const cheerio = require('cheerio');
+
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
@@ -318,11 +342,16 @@ class OEmbedService {
                 ];
                 const oembed = _.pick(body, knownFields);
 
+                // Fallback to bookmark if it's a link type
+                if (oembed.type === 'link') {
+                    return;
+                }
+
                 // ensure we have required data for certain types
                 if (oembed.type === 'photo' && !oembed.url) {
                     return;
                 }
-                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width || !oembed.height)) {
+                if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width)) {
                     return;
                 }
 
@@ -343,6 +372,18 @@ class OEmbedService {
     async fetchOembedDataFromUrl(url, type, options = {}) {
         try {
             const urlObject = new URL(url);
+
+            // YouTube has started not returning oembed <link>tags for some live URLs
+            // when fetched from an IP address that's in a non-EN region.
+            // We convert live URLs to watch URLs so we can go straight to the
+            // oembed request via a known provider rather than going through the page fetch routine.
+            const ytLiveRegex = /^\/live\/([a-zA-Z0-9_-]+)$/;
+            if (urlObject.hostname.match(/(?:www\.)?youtube\.com/) && ytLiveRegex.test(urlObject.pathname)) {
+                const videoId = ytLiveRegex.exec(urlObject.pathname)[1];
+                urlObject.pathname = '/watch';
+                urlObject.searchParams.set('v', videoId);
+                url = urlObject.toString();
+            }
 
             // Trimming solves the difference of url validation between `new URL(url)`
             // and metascraper.

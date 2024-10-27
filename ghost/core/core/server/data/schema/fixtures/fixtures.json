@@ -907,7 +907,8 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "member_signin_url": "read"
                 },
                 "Editor": {
                     "notification": "all",
@@ -929,7 +930,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Author": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
@@ -946,7 +947,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read"],

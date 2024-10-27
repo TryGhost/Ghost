@@ -28,6 +28,7 @@ export interface TableProps {
     pagination?: PaginationData;
     showMore?: ShowMoreData;
     fillContainer?: boolean;
+    horizontalScroll?: boolean;
     paddingXClassName?: string;
 }
 
@@ -65,6 +66,7 @@ const Table: React.FC<TableProps> = ({
     showMore,
     isLoading,
     fillContainer = false,
+    horizontalScroll = false,
     paddingXClassName
 }) => {
     const table = React.useRef<HTMLTableSectionElement>(null);
@@ -145,7 +147,7 @@ const Table: React.FC<TableProps> = ({
     );
 
     const mainContainerClasses = clsx(
-        'overflow-x-auto',
+        horizontalScroll ? 'overflow-x-auto' : '',
         fillContainer ? 'absolute inset-0 min-w-full' : 'w-full'
     );
 
@@ -155,7 +157,7 @@ const Table: React.FC<TableProps> = ({
     );
 
     const footerClasses = clsx(
-        'sticky bottom-0 -mt-px bg-white pb-3',
+        'sticky bottom-0 -mt-px bg-white pb-3 dark:bg-black',
         paddingXClassName
     );
 
@@ -180,14 +182,14 @@ const Table: React.FC<TableProps> = ({
                 {isLoading && <div className='p-5'><LoadingIndicator delay={200} size='lg' style={loadingStyle} /></div>}
 
                 {(hint || pagination || showMore) &&
-                <footer className={footerClasses}>
-                    {(hintSeparator || pagination) && <Separator />}
-                    <div className="mt-1 flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
-                        <OptionalShowMore showMore={showMore} />
-                        <Hint>{hint ?? ' '}</Hint>
-                        <OptionalPagination pagination={pagination} />
-                    </div>
-                </footer>}
+                    <footer className={footerClasses}>
+                        {(hintSeparator || pagination) && <Separator />}
+                        <div className="mt-1 flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
+                            <OptionalShowMore showMore={showMore} />
+                            <Hint>{hint ?? ' '}</Hint>
+                            <OptionalPagination pagination={pagination} />
+                        </div>
+                    </footer>}
             </div>
         </>
     );

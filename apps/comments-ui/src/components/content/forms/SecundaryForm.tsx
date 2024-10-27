@@ -38,8 +38,16 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
     const reduced = isMobile();
 
     return (
-        <div className='mt-[-20px]'>
-            <Form close={close} editor={editor} isOpen={true} reduced={reduced} submit={submit} submitSize={submitSize} submitText={submitText} />
+        <div className='mt-[-16px] pr-3'>
+            <Form 
+                close={close} 
+                editor={editor} 
+                isOpen={true} 
+                reduced={reduced} 
+                submit={submit} 
+                submitSize={submitSize} 
+                submitText={submitText}
+            />
         </div>
     );
 };

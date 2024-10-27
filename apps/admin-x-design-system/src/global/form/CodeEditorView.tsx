@@ -1,5 +1,5 @@
 import {Extension} from '@codemirror/state';
-import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef, BasicSetupOptions} from '@uiw/react-codemirror';
 import clsx from 'clsx';
 import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
@@ -27,7 +27,8 @@ const codeMirrorClasses = [
     '[&_.cm-gutters]:bg-grey-75 dark:[&_.cm-gutters]:bg-grey-950',
     '[&_.cm-gutters]:text-grey-600 dark:[&_.cm-gutters]:text-grey-500',
     '[&_.cm-gutters]:border-grey-500 dark:[&_.cm-gutters]:border-grey-800',
-    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-75'
+    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-75',
+    'dark:[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-grey-975'
 ].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
@@ -49,6 +50,9 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const sizeRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState(100);
     const [resolvedExtensions, setResolvedExtensions] = React.useState<Extension[] | null>(null);
+    const [basicSetup, setBasicSetup] = useState<BasicSetupOptions>({
+        crosshairCursor: false
+    });
     const {setFocusState} = useFocusContext();
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
@@ -63,6 +67,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
     useEffect(() => {
         Promise.all(extensions).then(setResolvedExtensions);
+        setBasicSetup(setup => ({setup, searchKeymap: false}));
     }, [extensions]);
 
     useEffect(() => {
@@ -90,6 +95,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         {resolvedExtensions && <div className={height === 'full' ? 'h-full' : ''} style={{width}}>
             <CodeMirror
                 ref={ref}
+                basicSetup={basicSetup}
                 className={styles}
                 extensions={resolvedExtensions}
                 height={height === 'full' ? '100%' : height}

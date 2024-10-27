@@ -4,16 +4,20 @@
 // Outputs scripts and other assets at the top of a Ghost theme
 const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
-
+const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
 // @TODO fix this require
-const cardAssetService = require('../services/card-assets');
+const {cardAssets} = require('../services/assets-minification');
 
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+
+/**
+ * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
+ */
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
@@ -45,8 +49,8 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-    // Do not load Portal if both Memberships and Tips & Donations are disabled
-    if (!settingsCache.get('members_enabled') && !(settingsCache.get('donations_enabled') && labs.isSet('tipsAndDonations'))) {
+    // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
         return '';
     }
 
@@ -86,7 +90,8 @@ function getSearchHelper(frontendKey) {
     const attrs = {
         key: frontendKey,
         styles: stylesUrl,
-        'sodo-search': adminUrl
+        'sodo-search': adminUrl,
+        locale: settingsCache.get('locale') || 'en'
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -139,6 +144,21 @@ function getWebmentionDiscoveryLink() {
         logging.warn(err);
         return '';
     }
+}
+
+function getTinybirdTrackerScript(dataRoot) {
+    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
+    const endpoint = config.get('tinybird:tracker:endpoint');
+    const token = config.get('tinybird:tracker:token');
+
+    const tbParams = _.map({
+        site_uuid: config.get('tinybird:tracker:id'),
+        post_uuid: dataRoot.post?.uuid,
+        member_uuid: dataRoot.member?.uuid,
+        member_status: dataRoot.member?.status
+    }, (value, key) => `tb_${key}="${value}"`).join(' ');
+
+    return `<script defer src="${scriptUrl}" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 /**
@@ -281,10 +301,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             // @TODO do this in a more "frameworky" way
-            if (cardAssetService.hasFile('js')) {
+            if (cardAssets.hasFile('js')) {
                 head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
             }
-            if (cardAssetService.hasFile('css')) {
+            if (cardAssets.hasFile('css')) {
                 head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
             }
 
@@ -294,6 +314,18 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
                 head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
+            }
+
+            if (options.data.site.accent_color) {
+                const accentColor = escapeExpression(options.data.site.accent_color);
+                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+
+                if (existingScriptIndex !== -1) {
+                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+                } else {
+                    head.push(styleTag);
+                }
             }
 
             if (!_.isEmpty(globalCodeinjection)) {
@@ -307,18 +339,34 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-        }
 
-        // AMP template has style injected directly because there can only be one <style amp-custom> tag
-        if (options.data.site.accent_color && !_.includes(context, 'amp')) {
-            const accentColor = escapeExpression(options.data.site.accent_color);
-            const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+                head.push(getTinybirdTrackerScript(dataRoot));
+            }
 
-            if (existingScriptIndex !== -1) {
-                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
-            } else {
-                head.push(styleTag);
+            if (labs.isSet('customFonts')) {
+                // Check if if the request is for a site preview, in which case we **always** use the custom font values
+                // from the passed in data, even when they're empty strings or settings cache has values.
+                const isSitePreview = options.data.site._preview;
+                // Taking the fonts straight from the passed in data, as they can't be used from the
+                // settings cache for the theme preview until the settings are saved. Once saved,
+                // we need to use the settings cache to provide the correct CSS injection.
+                const headingFont = isSitePreview ? options.data.site.heading_font : settingsCache.get('heading_font');
+                const bodyFont = isSitePreview ? options.data.site.body_font : settingsCache.get('body_font');
+                if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+                    (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+                    /** @type FontSelection */
+                    const fontSelection = {};
+
+                    if (headingFont) {
+                        fontSelection.heading = headingFont;
+                    }
+                    if (bodyFont) {
+                        fontSelection.body = bodyFont;
+                    }
+                    const customCSS = generateCustomFontCss(fontSelection);
+                    head.push(new SafeString(customCSS));
+                }
             }
         }
 

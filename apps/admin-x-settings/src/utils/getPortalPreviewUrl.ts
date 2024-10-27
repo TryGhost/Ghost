@@ -39,7 +39,12 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     settingsParam.append('allowSelfSignup', allowSelfSignup ? 'true' : 'false');
     settingsParam.append('signupTermsHtml', getSettingValue(settings, 'portal_signup_terms_html') || '');
     settingsParam.append('signupCheckboxRequired', getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false');
-    settingsParam.append('portalProducts', encodeURIComponent(portalTiers.join(','))); // assuming that it might be more than 1
+    settingsParam.append('portalProducts', portalTiers.join(',')); // assuming that it might be more than 1
+
+    const portalDefaultPlan = getSettingValue<string>(settings, 'portal_default_plan');
+    if (portalDefaultPlan) {
+        settingsParam.append('portalDefaultPlan', portalDefaultPlan);
+    }
 
     if (portalPlans && portalPlans.length) {
         settingsParam.append('portalPrices', encodeURIComponent(portalPlans.join(',')));
