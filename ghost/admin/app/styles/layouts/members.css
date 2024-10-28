@@ -472,10 +472,6 @@ p.gh-members-list-email {
         min-height: 120px;
     }
 
-    .members-header.gh-canvas-header.break.tablet .gh-canvas-header-content {
-        height: 140px;
-    }
-
     .members-header.gh-canvas-header.break.tablet .view-actions {
         top: 0;
     }
@@ -2819,13 +2815,14 @@ a.gh-members-emailpreview-subscription-link {
 
 @media (max-width: 690px) {
     .gh-members-filter-builder {
-        width: calc(100vw - 20px);
-        min-width: calc(100vw - 20px);
-        max-width: calc(100vw - 20px);
-        left: 0 !important;
-        right: 0 !important;
-        margin-left: 10px;
-        margin-right: 10px;
+        position: fixed;
+        top: 9vh !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
     }
 }
 
