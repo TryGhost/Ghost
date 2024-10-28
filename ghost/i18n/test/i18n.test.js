@@ -90,4 +90,10 @@ describe('i18n', function () {
             }
         });
     });
+    describe('newsletter i18n', function () {
+        it('should have a prefix and suffix for the newsletter interpolation', async function () {
+            const t = i18n('fr', 'newsletter').t;
+            assert.equal(t('Your subscription will renew on {date}.', {date: '8 Oct 2024'}), 'Votre abonnement sera renouvelé le 8 Oct 2024.');
+        });
+    });
 });
