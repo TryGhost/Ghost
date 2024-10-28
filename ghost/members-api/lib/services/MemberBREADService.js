@@ -249,7 +249,7 @@ module.exports = class MemberBREADService {
             info: suppressionData.info
         };
 
-        const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.id);
+        const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
         return member;
@@ -432,7 +432,7 @@ module.exports = class MemberBREADService {
                 suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),
                 info: bulkSuppressionData[index].info
             };
-            member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.id);
+            member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
             return member;
         });
 
