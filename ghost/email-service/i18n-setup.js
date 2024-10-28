@@ -1,5 +1,5 @@
 const i18nLib = require('../i18n');
-const {settingsCache} = require('../core/core/frontend/services/proxy');
+const settingsCache = require('../core/core/frontend/services/proxy').settingsCache;
 
 const locale = settingsCache.get('locale') || 'en';
 
