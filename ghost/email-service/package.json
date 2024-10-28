@@ -15,7 +15,8 @@
   },
   "files": [
     "index.js",
-    "lib"
+    "lib",
+    "i18n-setup.js"
   ],
   "devDependencies": {
     "c8": "8.0.1",

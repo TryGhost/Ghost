@@ -11,7 +11,7 @@ const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
-const {t, locale} = require('./../i18n-setup');
+const {t, locale} = require('../i18n-setup');
 
 const messages = {
     subscriptionStatus: {
