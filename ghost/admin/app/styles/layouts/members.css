@@ -472,10 +472,6 @@ p.gh-members-list-email {
         min-height: 120px;
     }
 
-    .members-header.gh-canvas-header.break.tablet .gh-canvas-header-content {
-        height: 140px;
-    }
-
     .members-header.gh-canvas-header.break.tablet .view-actions {
         top: 0;
     }
