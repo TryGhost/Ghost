@@ -236,6 +236,7 @@ export function meWithRole(name: string) {
 
 export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
     const lastRequest: {previewHeader?: string} = {};
+    const previewRequests: string[] = [];
 
     await page.route(url, async (route) => {
         if (route.request().method() !== 'POST') {
@@ -246,6 +247,10 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
             return route.continue();
         }
 
+        if (route.request().headers()['x-ghost-preview']) {
+            previewRequests.push(route.request().headers()['x-ghost-preview']);
+        }
+
         lastRequest.previewHeader = route.request().headers()['x-ghost-preview'];
 
         await route.fulfill({
@@ -254,7 +259,10 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
         });
     });
 
-    return lastRequest;
+    return {
+        lastRequest,
+        previewRequests
+    };
 }
 
 export async function chooseOptionInSelect(select: Locator, optionText: string | RegExp) {
