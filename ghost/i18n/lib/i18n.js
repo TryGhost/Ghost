@@ -69,10 +69,10 @@ module.exports = (lng = 'en', ns = 'portal') => {
     let interpolation = {};
     if (ns === 'newsletter') {
         interpolation = {
-            prefix: "{",
-            suffix: "}",
+            prefix: '{',
+            suffix: '}'
         }
-    }
+    };
     i18nextInstance.init({
         lng,
 
