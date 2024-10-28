@@ -75,7 +75,7 @@ test.describe('Design settings', async () => {
         const accentColorPicker = modal.getByTestId('accent-color-picker');
         await accentColorPicker.getByRole('button').click();
         await accentColorPicker.getByRole('textbox').fill('#cd5786');
-        // set timeout of 500ms to wait for the debounce
+        // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Close'}).click();
 
@@ -130,8 +130,8 @@ test.describe('Design settings', async () => {
         const accentColorPicker = modal.getByTestId('accent-color-picker');
         await accentColorPicker.getByRole('button').click();
         await accentColorPicker.getByRole('textbox').fill('#cd5786');
+        // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
-        // Check if any of the stored headers contain the updated color
         const matchingHeader = previewRequests.find(header => header.includes('cd5786'));
         expect(matchingHeader).toBeDefined(); // Ensure the header with the updated color is found
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
@@ -182,6 +182,7 @@ test.describe('Design settings', async () => {
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
+        // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
         const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header)
         );
@@ -215,7 +216,7 @@ test.describe('Design settings', async () => {
         const section = page.getByTestId('design');
 
         await section.getByRole('button', {name: 'Customize'}).click();
-
+        await page.waitForLoadState('networkidle');
         const modal = page.getByTestId('design-modal');
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
@@ -227,7 +228,6 @@ test.describe('Design settings', async () => {
         await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
-
         expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
@@ -279,7 +279,7 @@ test.describe('Design settings', async () => {
         await expect(showFeaturedPostsCustomThemeSetting).toBeVisible();
 
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
-
+        // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
 
         const expectedSettings = {navigation_layout: 'Logo in the middle', show_featured_posts: null};
@@ -387,6 +387,7 @@ test.describe('Design settings', async () => {
         const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
         await bodyFontSelect.click();
         await bodyFontSelect.getByText('Theme default').click();
+        // set timeout of 1000ms to wait for the debounce
         await page.waitForTimeout(1000);
         const expectedEncoded = new URLSearchParams([['bf', ''], ['hf', '']]).toString();
         expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
