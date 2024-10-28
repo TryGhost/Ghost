@@ -1,24 +1,23 @@
 import APAvatar from './global/APAvatar';
-import ActivityItem, {type Activity} from './activities/ActivityItem';
+import ActivityItem from './activities/ActivityItem';
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
-import ArticleModal from './feed/ArticleModal';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import ViewProfileModal from './global/ViewProfileModal';
 import getUsername from '../utils/get-username';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {getContentAuthor} from '../utils/content-helpers';
 import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
+import {useArticleModal} from '../hooks/useArticleModal';
 import {useLayout} from '../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface InboxProps {}
 
 const Inbox: React.FC<InboxProps> = ({}) => {
-    const [, setArticleContent] = useState<ObjectProperties | null>(null);
-    const [, setArticleActor] = useState<ActorProperties | null>(null);
+    const {handleViewContent} = useArticleModal();
     const {layout} = useLayout();
 
     const {
@@ -44,36 +43,6 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
         return !activity.object.inReplyTo;
     });
-
-    const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
-        setArticleContent(object);
-        setArticleActor(actor);
-        NiceModal.show(ArticleModal, {object, actor, comments, focusReply});
-    };
-
-    function getContentAuthor(activity: Activity) {
-        const actor = activity.actor;
-        const attributedTo = activity.object.attributedTo;
-
-        if (!attributedTo) {
-            return actor;
-        }
-
-        if (typeof attributedTo === 'string') {
-            return actor;
-        }
-
-        if (Array.isArray(attributedTo)) {
-            const found = attributedTo.find(item => typeof item !== 'string');
-            if (found) {
-                return found;
-            } else {
-                return actor;
-            }
-        }
-
-        return attributedTo;
-    }
 
     // Intersection observer to fetch more activities when the user scrolls
     // to the bottom of the page
@@ -123,7 +92,8 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                 onClick={() => handleViewContent(
                                                     activity.object,
                                                     getContentAuthor(activity),
-                                                    activity.object.replies
+                                                    activity.object.replies,
+                                                    false
                                                 )}
                                             >
                                                 <FeedItem

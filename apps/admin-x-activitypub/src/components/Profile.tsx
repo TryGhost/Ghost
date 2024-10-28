@@ -7,9 +7,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
-import ArticleModal from './feed/ArticleModal';
 import ViewProfileModal from './global/ViewProfileModal';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {useArticleModal} from '../hooks/useArticleModal';
 import {
     useFollowersCountForUser,
     useFollowersExpandedForUser,
@@ -73,12 +73,36 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         });
     };
 
-    const handlePostClick = (activity: Activity) => {
-        NiceModal.show(ArticleModal, {
-            object: activity.object,
-            actor: activity.actor,
-            comments: activity.object.replies || []
-        });
+    const {handleViewContent} = useArticleModal();
+
+    const handlePostClick = (activity: Activity, focusReply: boolean) => {
+        const object = activity.object;
+        let author: ActorProperties;
+
+        // Handle different possible formats of attributedTo
+        if (object?.attributedTo) {
+            if (Array.isArray(object.attributedTo)) {
+                // If it's an array, find the first non-string item
+                const foundAuthor = object.attributedTo.find(item => typeof item !== 'string');
+                author = foundAuthor as ActorProperties || activity.actor;
+            } else if (typeof object.attributedTo === 'string') {
+                // If it's a string, use the activity actor
+                author = activity.actor;
+            } else {
+                // If it's an object, use it directly
+                author = object.attributedTo as ActorProperties;
+            }
+        } else {
+            // Fallback to activity actor if no attributedTo
+            author = activity.actor;
+        }
+        
+        handleViewContent(
+            object,
+            author,
+            object.replies || [],
+            focusReply
+        );
     };
 
     const tabs = [
@@ -97,14 +121,14 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handlePostClick(activity)}
+                                    onClick={() => handlePostClick(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
-                                        onCommentClick={() => {}}
+                                        onCommentClick={() => handlePostClick(activity, true)}
                                     />
                                     {index < posts.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
@@ -142,14 +166,14 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handlePostClick(activity)}
+                                    onClick={() => handlePostClick(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
-                                        onCommentClick={() => {}}
+                                        onCommentClick={() => handlePostClick(activity, true)}
                                     />
                                     {index < liked.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
