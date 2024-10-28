@@ -354,6 +354,8 @@ class SignupPage extends React.Component {
             showNewsletterSelection: false,
             termsCheckboxChecked: false
         };
+    
+        this.termsRef = React.createRef();
     }
 
     componentDidMount() {
@@ -407,6 +409,16 @@ class SignupPage extends React.Component {
             const {site, onAction} = this.context;
             const {name, email, plan, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+            
+            // Only scroll checkbox into view if it's the only error
+            const otherErrors = {...errors};
+            delete otherErrors.checkbox;
+            const hasOnlyCheckboxError = errors?.checkbox && Object.values(otherErrors).every(error => !error);
+            
+            if (hasOnlyCheckboxError && this.termsRef.current) {
+                this.termsRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }
+
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
@@ -566,7 +578,7 @@ class SignupPage extends React.Component {
         const className = `gh-portal-signup-terms ${errorClassName}`;
 
         return (
-            <div className={className} onClick={interceptAnchorClicks}>
+            <div className={className} onClick={interceptAnchorClicks} ref={this.termsRef}>
                 {signupTerms}
             </div>
         );
@@ -622,7 +634,7 @@ class SignupPage extends React.Component {
 
         // If we have at least one error, set an error message for the current selected plan
         if (Object.keys(errors).length > 0 && this.state.plan) {
-            priceErrors[this.state.plan] = t('Please fill in required fields');
+            priceErrors[this.state.plan] = t('Please fill in the required fields');
         }
 
         return (
@@ -755,7 +767,7 @@ class SignupPage extends React.Component {
                             </>)}
 
                         {(hasOnlyFree ?
-                            <div className={'gh-portal-btn-container' + (sticky ? ' sticky m24' : '')}>
+                            <div className='gh-portal-btn-container'>
                                 <div className='gh-portal-logged-out-form-container'>
                                     {this.renderSubmitButton()}
                                     {this.renderLoginMessage()}
