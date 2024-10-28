@@ -71,8 +71,8 @@ module.exports = (lng = 'en', ns = 'portal') => {
         interpolation = {
             prefix: '{',
             suffix: '}'
-        }
-    };
+        };
+    }
     i18nextInstance.init({
         lng,
 
