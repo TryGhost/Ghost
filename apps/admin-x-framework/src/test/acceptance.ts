@@ -234,7 +234,7 @@ export function meWithRole(name: string) {
     };
 };
 
-export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string, debounce?: number}) {
+export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
     const lastRequest: {previewHeader?: string} = {};
     const previewRequests: string[] = [];
 
