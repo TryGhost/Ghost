@@ -79,81 +79,85 @@ export function generateCustomFontCss(fonts: FontSelection) {
 
     const importStrings = {
         Cardo: {
-            url: '@import url(https://fonts.bunny.net/css?family=cardo:400,700)'
+            family: 'cardo:400,700'
         },
         Manrope: {
-            url: '@import url(https://fonts.bunny.net/css?family=manrope:300,500,700)'
+            family: 'manrope:300,500,700'
         },
         Merriweather: {
-            url: '@import url(https://fonts.bunny.net/css?family=merriweather:300,700)'
+            family: 'merriweather:300,700'
         },
         Nunito: {
-            url: '@import url(https://fonts.bunny.net/css?family=nunito:400,600,700)'
+            family: 'nunito:400,600,700'
         },
         'Old Standard TT': {
-            url: '@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700)'
+            family: 'old-standard-tt:400,700'
         },
         Prata: {
-            url: '@import url(https://fonts.bunny.net/css?family=prata:400)'
+            family: 'prata:400'
         },
         Roboto: {
-            url: '@import url(https://fonts.bunny.net/css?family=roboto:400,500,700)'
+            family: 'roboto:400,500,700'
         },
         Rufina: {
-            url: '@import url(https://fonts.bunny.net/css?family=rufina:400,500,700)'
+            family: 'rufina:400,500,700'
         },
         'Tenor Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=tenor-sans:400)'
+            family: 'tenor-sans:400'
         },
         'Space Grotesk': {
-            url: '@import url(https://fonts.bunny.net/css?family=space-grotesk:700)'
+            family: 'space-grotesk:700'
         },
         'Chakra Petch': {
-            url: '@import url(https://fonts.bunny.net/css?family=chakra-petch:400)'
+            family: 'chakra-petch:400'
         },
         'Noto Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=noto-sans:400,700)'
+            family: 'noto-sans:400,700'
         },
         Poppins: {
-            url: '@import url(https://fonts.bunny.net/css?family=poppins:400,500,600)'
+            family: 'poppins:400,500,600'
         },
         'Fira Sans': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-sans:400,500,600)'
+            family: 'fira-sans:400,500,600'
         },
         Inter: {
-            url: '@import url(https://fonts.bunny.net/css?family=inter:400,500,600)'
+            family: 'inter:400,500,600'
         },
         'Noto Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=noto-serif:400,700)'
+            family: 'noto-serif:400,700'
         },
         Lora: {
-            url: '@import url(https://fonts.bunny.net/css?family=lora:400,700)'
+            family: 'lora:400,700'
         },
         'IBM Plex Serif': {
-            url: '@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,500,600)'
+            family: 'ibm-plex-serif:400,500,600'
         },
         'Space Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=space-mono:400,700)'
+            family: 'space-mono:400,700'
         },
         'Fira Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=fira-mono:400,700)'
+            family: 'fira-mono:400,700'
         },
         'JetBrains Mono': {
-            url: '@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700)'
+            family: 'jetbrains-mono:400,700'
         }
     };
 
     if (fonts?.heading && fonts?.body && fonts?.heading === fonts?.body) {
-        fontImports = `${importStrings[fonts?.heading]?.url};`;
+        fontImports = `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}">`;
     } else {
         fontImports = '';
 
-        if (fonts?.heading) {
-            fontImports += `${importStrings[fonts?.heading]?.url};`;
-        }
+        if (fonts?.heading && fonts?.body) {
+            fontImports += `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}|${importStrings[fonts?.body]?.family}">`;
+        } else {
+            if (fonts?.heading) {
+                fontImports += `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}">`;
+            }
 
-        if (fonts?.body) {
-            fontImports += `${importStrings[fonts?.body]?.url};`;
+            if (fonts?.body) {
+                fontImports += `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.body]?.family}">`;
+            }
         }
     }
 
@@ -171,7 +175,7 @@ export function generateCustomFontCss(fonts: FontSelection) {
         fontCSS += '}';
     }
 
-    return `<style>${fontImports}${fontCSS}</style>`;
+    return `<link rel="preconnect" href="https://fonts.bunny.net">${fontImports}<style>${fontCSS}</style>`;
 }
 
 export function generateCustomFontBodyClass(fonts: FontSelection) {

@@ -64,7 +64,7 @@ describe('Custom Fonts', function () {
         it('returns correct CSS for single font', function () {
             const result = customFonts.generateCustomFontCss({body: 'Noto Sans'});
 
-            assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);'), true, 'Includes the correct import for the body font');
+            assert.equal(result.includes('<link rel="preconnect" href="https://fonts.bunny.net"><link rel="stylesheet" href="https://fonts.bunny.net/css?family=noto-sans:400,700">'), true, 'Includes the correct import for the body font');
             assert.equal(result.includes(':root {--gh-font-body: Noto Sans;}'), true, 'Includes the correct CSS for the body font');
             assert.equal(result.includes('--gh-font-heading'), false, 'Does not include CSS for the title font');
         });
@@ -72,15 +72,15 @@ describe('Custom Fonts', function () {
         it('returns correct CSS for different heading and body fonts', function () {
             const result = customFonts.generateCustomFontCss({heading: 'Chakra Petch', body: 'Poppins'});
 
-            assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=chakra-petch:400);'), true, 'Includes the correct import for the heading font');
-            assert.equal(result.includes('@import url(https://fonts.bunny.net/css?family=poppins:400,500,600);'), true, 'Includes the correct import for the body font');
+            assert.equal(result.includes('<link rel="preconnect" href="https://fonts.bunny.net"><link rel="stylesheet" href="https://fonts.bunny.net/css?family=chakra-petch:400|poppins:400,500,600">'), true, 'Includes the correct import for the heading font');
             assert.equal(result.includes(':root {--gh-font-heading: Chakra Petch;--gh-font-body: Poppins;}'), true, 'Includes the correct CSS for the body and heading fonts');
         });
 
         it('returns correct CSS with only one import for equal heading and body fonts', function () {
             const result = customFonts.generateCustomFontCss({heading: 'Lora', body: 'Lora'});
 
-            assert.equal(result, '<style>@import url(https://fonts.bunny.net/css?family=lora:400,700);:root {--gh-font-heading: Lora;--gh-font-body: Lora;}</style>', 'Includes the correct CSS with only one import for equal heading and body fonts');
+            assert.equal(result.includes('<link rel="preconnect" href="https://fonts.bunny.net"><link rel="stylesheet" href="https://fonts.bunny.net/css?family=lora:400,700">'), true, 'Includes the correct CSS with only one import for equal heading and body fonts');
+            assert.equal(result.includes(':root {--gh-font-heading: Lora;--gh-font-body: Lora;}'), true, 'Includes the correct CSS for the body and heading fonts');
         });
 
         it('generates CSS when only body font is provided', function () {
