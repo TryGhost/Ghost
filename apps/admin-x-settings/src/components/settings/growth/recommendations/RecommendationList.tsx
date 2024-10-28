@@ -35,26 +35,31 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow testId='recommendation-list-item'>
-            <TableCell onClick={showDetails}>
-                <div className='group flex items-center gap-3 hover:cursor-pointer'>
-                    <div className={`flex grow flex-col`}>
-                        <div className="mb-0.5 flex items-center gap-3">
-                            <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
-                            <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
-                        </div>
-                    </div>
+        <TableRow className='group hover:cursor-pointer' testId='recommendation-list-item' onClick={showDetails}>
+            <TableCell className='w-80'>
+                <div className='flex items-center gap-3'>
+                    <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
+                    <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
-                {(count === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px items-end gap-1 text-right'>
-                    <span className='text-right'>{numberWithCommas(count)}</span>
-                </div>)}
-            </TableCell>
-            <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (null) : (<div className=''>
-                    <span className='min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span><span className='whitespace-nowrap text-left text-sm lowercase text-grey-700 opacity-0 transition-opacity group-hover/table-row:opacity-100'> from you</span>
-                </div>)}
+            <TableCell 
+                className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell'
+            >
+                {count === 0 ? (
+                    <span className="text-grey-500 dark:text-grey-900">-</span>
+                ) : (
+                    <>
+                        <div className='flex items-center'>
+                            <div className='mr-2'>
+                                <span>{numberWithCommas(count)}</span>
+                            </div>
+                            <div className='text-sm lowercase text-grey-700'>
+                                <span>{showSubscribers ? newMembers : clicks}</span>
+                                <span className='invisible group-hover:visible'> from you</span>
+                            </div>
+                        </div>
+                    </>
+                )}
             </TableCell>
         </TableRow>
     );
