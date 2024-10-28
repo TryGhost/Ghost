@@ -111,7 +111,7 @@ test.describe('Design settings', async () => {
             browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: responseFixtures.customThemeSettings},
             browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
-        const {previewRequests} = await mockSitePreview({
+        await mockSitePreview({
             page,
             url: responseFixtures.site.site.url,
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
@@ -130,10 +130,14 @@ test.describe('Design settings', async () => {
         const accentColorPicker = modal.getByTestId('accent-color-picker');
         await accentColorPicker.getByRole('button').click();
         await accentColorPicker.getByRole('textbox').fill('#cd5786');
-        // set timeout of 1000ms to wait for the debounce
-        await page.waitForTimeout(1000);
-        const matchingHeader = previewRequests.find(header => header.includes('cd5786'));
-        expect(matchingHeader).toBeDefined(); // Ensure the header with the updated color is found
+
+        const previewHeaders = await page.waitForRequest((request) => {
+            const headers = request.headers();
+            return headers['x-ghost-preview'] !== undefined;
+        });
+
+        const matchingHeader = previewHeaders.headers()['x-ghost-preview'];
+        expect(matchingHeader).toContain('cd5786');
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -182,10 +186,8 @@ test.describe('Design settings', async () => {
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
-        // set timeout of 1000ms to wait for the debounce
-        await page.waitForTimeout(1000);
-        const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header)
-        );
+
+        const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header));
     
         expect(matchingHeader).toBeDefined(); 
 
@@ -205,7 +207,7 @@ test.describe('Design settings', async () => {
             }},
             browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
-        const {previewRequests} = await mockSitePreview({
+        await mockSitePreview({
             page,
             url: responseFixtures.site.site.url,
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
@@ -216,8 +218,14 @@ test.describe('Design settings', async () => {
         const section = page.getByTestId('design');
 
         await section.getByRole('button', {name: 'Customize'}).click();
-        // set timeout of 1000ms to wait for full load
-        await page.waitForTimeout(1000);
+        const previewHeaders = await page.waitForRequest((request) => {
+            const headers = request.headers();
+            return headers['x-ghost-preview'] !== undefined;
+        });
+        const previewHeader = previewHeaders.headers()['x-ghost-preview'];
+        const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
+        expect(previewHeader).toContain(expectedEncoded);
+
         const modal = page.getByTestId('design-modal');
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
@@ -225,15 +233,7 @@ test.describe('Design settings', async () => {
         await expect(designSettingTabs.getByRole('tab', {name: 'Global'})).toBeHidden();
         await expect(designSettingTabs.getByRole('tab', {name: 'Theme settings'})).toBeHidden();
 
-        // The tabs are not visible, but the global settings are still rendered
         await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
-
-        const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
-        const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header)
-        );
-
-        expect(matchingHeader).toBeDefined();
-        // expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
     test('Custom theme setting visibility', async ({page}) => {
@@ -285,7 +285,7 @@ test.describe('Design settings', async () => {
 
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         // set timeout of 1000ms to wait for the debounce
-        await page.waitForTimeout(1000);
+        // await page.waitForTimeout(1000);
 
         const expectedSettings = {navigation_layout: 'Logo in the middle', show_featured_posts: null};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
@@ -364,7 +364,7 @@ test.describe('Design settings', async () => {
             }},
             browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
-        const {lastRequest} = await mockSitePreview({
+        const {previewRequests} = await mockSitePreview({
             page,
             url: responseFixtures.site.site.url,
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
@@ -392,9 +392,11 @@ test.describe('Design settings', async () => {
         const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
         await bodyFontSelect.click();
         await bodyFontSelect.getByText('Theme default').click();
-        // set timeout of 1000ms to wait for the debounce
-        await page.waitForTimeout(1000);
+
         const expectedEncoded = new URLSearchParams([['bf', ''], ['hf', '']]).toString();
-        expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+
+        const matchingHeader = previewRequests.find(header => header.includes(expectedEncoded));
+        expect(matchingHeader).toBeDefined();
+        // expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 });
