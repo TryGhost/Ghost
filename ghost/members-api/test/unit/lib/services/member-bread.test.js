@@ -6,6 +6,7 @@ const moment = require('moment');
 describe('MemberBreadService', function () {
     describe('read', function () {
         const MEMBER_ID = 123;
+        const MEMBER_UUID = 'abcd-efgh';
         const DEFAULT_RELATIONS = [
             'labels',
             'stripeSubscriptions',
@@ -27,7 +28,7 @@ describe('MemberBreadService', function () {
         const getService = () => {
             return new MemberBreadService({
                 settingsHelpers: {
-                    createUnsubscribeUrl: sinon.stub().returns('https://example.com/unsubscribe/?uuid=123&key=456')
+                    createUnsubscribeUrl: sinon.stub().callsFake(uuid => `https://example.com/unsubscribe/?uuid=${uuid}&key=456`)
                 },
                 memberRepository: memberRepositoryStub,
                 memberAttributionService: memberAttributionServiceStub,
@@ -38,6 +39,7 @@ describe('MemberBreadService', function () {
         beforeEach(function () {
             memberModelJSON = {
                 id: MEMBER_ID,
+                uuid: MEMBER_UUID,
                 name: 'foo bar',
                 email: 'foo@bar.baz',
                 subscriptions: []
@@ -294,7 +296,7 @@ describe('MemberBreadService', function () {
             const memberBreadService = getService();
             const member = await memberBreadService.read({id: MEMBER_ID});
 
-            assert.equal(member.unsubscribe_url, 'https://example.com/unsubscribe/?uuid=123&key=456');
+            assert.equal(member.unsubscribe_url, `https://example.com/unsubscribe/?uuid=${MEMBER_UUID}&key=456`);
         });
     });
 });
