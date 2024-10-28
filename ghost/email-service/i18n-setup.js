@@ -1,7 +1,7 @@
 const i18nLib = require('../i18n');
 const {settingsCache} = require('../core/core/frontend/services/proxy');
 
-let locale = settingsCache.get('locale') || 'en';
+const locale = settingsCache.get('locale') || 'en';
 
 const i18nLanguage = locale;
 const i18n = i18nLib(i18nLanguage, 'newsletter');
@@ -12,4 +12,4 @@ function t(key, options) {
     return i18n.t(key, hash || options || {});
 }
 
-module.exports = {t};
+module.exports = {t, locale};

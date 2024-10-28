@@ -11,7 +11,7 @@ const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
-const {t} = require('../i18n-setup');
+const {t, locale} = require('../i18n-setup');
 
 const messages = {
     subscriptionStatus: {
@@ -44,7 +44,11 @@ function escapeHtml(unsafe) {
 }
 
 function formatDateLong(date, timezone) {
-    return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
+    let dateLocale = 'en-gb'
+    if (!locale || locale == 'en') {
+        dateLocale = 'en-gb';
+    }
+    return DateTime.fromJSDate(date).setZone(timezone).setLocale(dateLocale).toLocaleString({
         year: 'numeric',
         month: 'long',
         day: 'numeric'
