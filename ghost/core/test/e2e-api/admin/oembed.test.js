@@ -6,6 +6,8 @@ const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
 const localUtils = require('./utils');
 const {mockManager} = require('../../utils/e2e-framework');
+const oembed = require('../../../../core/core/server/services/oembed');
+const urlUtils = require('../../../core/shared/url-utils');
 
 // for sinon stubs
 const dnsPromises = require('dns').promises;
@@ -19,9 +21,18 @@ describe('Oembed API', function () {
         await localUtils.doAuth(request);
     });
 
+    let processImageFromUrlStub;
+
     beforeEach(function () {
         // ensure sure we're not network dependent
         mockManager.disableNetwork();
+        processImageFromUrlStub = sinon.stub(oembed, 'processImageFromUrl');
+        processImageFromUrlStub.callsFake(async function (imageUrl, imageType) {
+            if (imageUrl === 'http://example.com/bad-image') {
+                throw new Error('Failed to process image');
+            }
+            return `/content/images/${imageType}/image-01.png`;
+        });
     });
 
     afterEach(function () {
@@ -228,14 +239,9 @@ describe('Oembed API', function () {
                 .get('/page-with-icon')
                 .reply(
                     200,
-                    '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/icon.svg"></head><body></body></html>',
+                    '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/bad-image"></head><body></body></html>',
                     {'content-type': 'text/html'}
                 );
-
-            // Mock the icon URL to return 404
-            nock('http://example.com/')
-                .head('/icon.svg')
-                .reply(404);
 
             const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
             const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
@@ -250,6 +256,54 @@ describe('Oembed API', function () {
             // Check that the substitute icon URL is returned in place of the original
             res.body.metadata.icon.should.eql('https://static.ghost.org/v5.0.0/images/link-icon.svg');
         });
+    });
+
+    it('should fetch and store icons', async function () {
+        // Mock the page to contain a readable icon URL
+        const pageMock = nock('http://example.com')
+            .get('/page-with-icon')
+            .reply(
+                200,
+                '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/icon.svg"></head><body></body></html>',
+                {'content-type': 'text/html'}
+            );
+
+        const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
+        const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check that the icon URL mock was loaded
+        pageMock.isDone().should.be.true();
+
+        // Check that the substitute icon URL is returned in place of the original
+        res.body.metadata.icon.should.eql(`${urlUtils.urlFor('home', true)}content/images/icon/image-01.png`);
+    });
+
+    it('should fetch and store thumbnails', async function () {
+        // Mock the page to contain a readable icon URL
+        const pageMock = nock('http://example.com')
+            .get('/page-with-thumbnail')
+            .reply(
+                200,
+                '<html><head><title>TESTING</title><link rel="thumbnail" href="http://example.com/thumbnail.svg"></head><body></body></html>',
+                {'content-type': 'text/html'}
+            );
+
+        const url = encodeURIComponent(' http://example.com/page-with-thumbnail\t '); // Whitespaces are to make sure urls are trimmed
+        const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check that the thumbnail URL mock was loaded
+        pageMock.isDone().should.be.true();
+
+        // Check that the substitute thumbnail URL is returned in place of the original
+        res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
     });
 
     describe('with unknown provider', function () {
