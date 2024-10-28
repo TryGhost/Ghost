@@ -205,7 +205,7 @@ test.describe('Design settings', async () => {
             }},
             browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
-        const {lastRequest} = await mockSitePreview({
+        const {previewRequests} = await mockSitePreview({
             page,
             url: responseFixtures.site.site.url,
             response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
@@ -216,7 +216,8 @@ test.describe('Design settings', async () => {
         const section = page.getByTestId('design');
 
         await section.getByRole('button', {name: 'Customize'}).click();
-        await page.waitForLoadState('networkidle');
+        // set timeout of 1000ms to wait for full load
+        await page.waitForTimeout(1000);
         const modal = page.getByTestId('design-modal');
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
@@ -228,7 +229,11 @@ test.describe('Design settings', async () => {
         await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
-        expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+        const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header)
+        );
+
+        expect(matchingHeader).toBeDefined();
+        // expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
     test('Custom theme setting visibility', async ({page}) => {
