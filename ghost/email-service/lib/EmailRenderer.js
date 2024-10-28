@@ -11,7 +11,6 @@ const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
-const {t, locale} = require('../i18n-setup');
 
 const messages = {
     subscriptionStatus: {
@@ -133,6 +132,7 @@ class EmailRenderer {
     #emailAddressService;
     #labs;
     #models;
+    #t;
 
     /**
      * @param {object} dependencies
@@ -153,6 +153,7 @@ class EmailRenderer {
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
+     * 
      */
     constructor({
         settingsCache,
@@ -169,7 +170,8 @@ class EmailRenderer {
         emailAddressService,
         outboundLinkTagger,
         labs,
-        models
+        models,
+        t
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -186,8 +188,9 @@ class EmailRenderer {
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
         this.#models = models;
+        this.#t = t;
     }
-
+    
     getSubject(post, isTestEmail = false) {
         const subject = post.related('posts_meta')?.get('email_subject') || post.get('title');
         return isTestEmail ? `[TEST] ${subject}` : subject;
@@ -775,7 +778,7 @@ class EmailRenderer {
         this.#handlebars = require('handlebars').create();
 
         // Register helpers
-        registerHelpers(this.#handlebars, labs);
+        registerHelpers(this.#handlebars, labs, this.#t);
 
         // Partials
         const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
