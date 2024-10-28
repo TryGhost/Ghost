@@ -114,8 +114,7 @@ test.describe('Design settings', async () => {
         const {previewRequests} = await mockSitePreview({
             page,
             url: responseFixtures.site.site.url,
-            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>',
-            debounce: 1000
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
         });
 
         await page.goto('/');
@@ -131,7 +130,7 @@ test.describe('Design settings', async () => {
         const accentColorPicker = modal.getByTestId('accent-color-picker');
         await accentColorPicker.getByRole('button').click();
         await accentColorPicker.getByRole('textbox').fill('#cd5786');
-        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1000);
         // Check if any of the stored headers contain the updated color
         const matchingHeader = previewRequests.find(header => header.includes('cd5786'));
         expect(matchingHeader).toBeDefined(); // Ensure the header with the updated color is found
@@ -183,7 +182,7 @@ test.describe('Design settings', async () => {
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
-        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1000);
         const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header)
         );
     
@@ -281,7 +280,7 @@ test.describe('Design settings', async () => {
 
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
 
-        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1000);
 
         const expectedSettings = {navigation_layout: 'Logo in the middle', show_featured_posts: null};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
@@ -388,7 +387,7 @@ test.describe('Design settings', async () => {
         const bodyFontSelect = designSettingTabs.getByTestId('body-font-select');
         await bodyFontSelect.click();
         await bodyFontSelect.getByText('Theme default').click();
-        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1000);
         const expectedEncoded = new URLSearchParams([['bf', ''], ['hf', '']]).toString();
         expect(lastRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
