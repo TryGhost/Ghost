@@ -106,7 +106,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation title='Search' />
+            <MainNavigation page='search' />
             <div className='z-0 flex w-full flex-col items-center pt-8'>
                 <div className='relative flex w-full max-w-[560px] items-center '>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />

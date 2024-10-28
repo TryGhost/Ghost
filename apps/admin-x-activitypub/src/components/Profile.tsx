@@ -285,7 +285,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation title='Profile' />
+            <MainNavigation page='profile' />
             <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {userProfile?.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
