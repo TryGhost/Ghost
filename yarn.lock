@@ -26973,10 +26973,10 @@ react-remove-scroll@2.5.7:
     use-callback-ref "^1.3.0"
     use-sidecar "^1.1.2"
 
-react-select@5.8.1:
-  version "5.8.1"
-  resolved "https://registry.yarnpkg.com/react-select/-/react-select-5.8.1.tgz#3284a93b7633b5e893306b2a8007ea0f793e62b9"
-  integrity sha512-RT1CJmuc+ejqm5MPgzyZujqDskdvB9a9ZqrdnVLsvAHjJ3Tj0hELnLeVPQlmYdVKCdCpxanepl6z7R5KhXhWzg==
+react-select@5.8.2:
+  version "5.8.2"
+  resolved "https://registry.yarnpkg.com/react-select/-/react-select-5.8.2.tgz#0d7ccb1895d61aafcd090fbf65aa9e506225a854"
+  integrity sha512-a/LkOckoI62710gGPQSQqUp7A10fGbH/ya3/IR49qaq3XoBvwymgD5mJgtiHxBDsutyEQfdKNycWVh8Cg8UCjw==
   dependencies:
     "@babel/runtime" "^7.12.0"
     "@emotion/cache" "^11.4.0"
