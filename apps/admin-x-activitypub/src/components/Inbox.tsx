@@ -11,6 +11,7 @@ import getUsername from '../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
+import {useLayout} from '../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface InboxProps {}
@@ -18,7 +19,7 @@ interface InboxProps {}
 const Inbox: React.FC<InboxProps> = ({}) => {
     const [, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
-    const [layout, setLayout] = useState('inbox');
+    const {layout} = useLayout();
 
     const {
         data,
@@ -74,10 +75,6 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         return attributedTo;
     }
 
-    const handleLayoutChange = (newLayout: string) => {
-        setLayout(newLayout);
-    };
-
     // Intersection observer to fetch more activities when the user scrolls
     // to the bottom of the page
     const observerRef = useRef<IntersectionObserver | null>(null);
@@ -107,7 +104,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation page='home' title="Home" onLayoutChange={handleLayoutChange} />
+            <MainNavigation page='home'/>
             <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
                     {isLoading ? (

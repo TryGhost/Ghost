@@ -1,27 +1,19 @@
 import MainHeader from './MainHeader';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Button, Tooltip} from '@tryghost/admin-x-design-system';
+import {useLayout} from '../../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface MainNavigationProps {
-    title?: string;
-    page?: string;
-    onLayoutChange?: (layout: string) => void;
+    page: string;
 }
 
 const MainNavigation: React.FC<MainNavigationProps> = ({
-    page = '',
-    onLayoutChange
+    page = ''
 }) => {
     const {route, updateRoute} = useRouting();
     const mainRoute = route.split('/')[0];
-    const [layout, setLayout] = useState('inbox');
-
-    useEffect(() => {
-        if (onLayoutChange) {
-            onLayoutChange(layout);
-        }
-    }, [layout, onLayoutChange]);
+    const {layout, setFeed, setInbox} = useLayout();
 
     return (
         <MainHeader>
@@ -35,14 +27,10 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
                 {page === 'home' &&
                 <div className='mr-3'>
                     <Tooltip content="Inbox">
-                        <Button className='!px-2' icon='listview' iconColorClass={layout === 'inbox' ? 'text-black' : 'text-grey-400'} size='sm' onClick={() => {
-                            setLayout('inbox');
-                        }} />
+                        <Button className='!px-2' icon='listview' iconColorClass={layout === 'inbox' ? 'text-black' : 'text-grey-400'} size='sm' onClick={setInbox} />
                     </Tooltip>
                     <Tooltip content="Feed">
-                        <Button className='!px-2' icon='card-list' iconColorClass={layout === 'feed' ? 'text-black' : 'text-grey-400'} size='sm' onClick={() => {
-                            setLayout('feed');
-                        }} />
+                        <Button className='!px-2' icon='card-list' iconColorClass={layout === 'feed' ? 'text-black' : 'text-grey-400'} size='sm' onClick={setFeed} />
                     </Tooltip>
                 </div>
                 }
