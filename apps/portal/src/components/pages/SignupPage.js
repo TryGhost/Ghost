@@ -733,7 +733,6 @@ class SignupPage extends React.Component {
         const freeDescription = getFreeTierDescription({site});
         const showOnlyFree = pageQuery === 'free';
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
-        const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
         const signupTerms = this.renderSignupTerms();
 
