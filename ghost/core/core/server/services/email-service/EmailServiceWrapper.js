@@ -76,7 +76,7 @@ class EmailServiceWrapper {
             emailAddressService: emailAddressService.service,
             labs,
             models: {Post},
-            t: i18n.t.bind(i18n)
+            t: i18n.t
         });
 
         const sendingService = new SendingService({

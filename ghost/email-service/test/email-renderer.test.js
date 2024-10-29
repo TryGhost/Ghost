@@ -71,9 +71,21 @@ const getMembersValidationKey = () => {
 
 describe('Email renderer', function () {
     let logStub;
+    // stub the t function so that we don't need to load the i18n module
+    // actually, no, this is a terrible option, because then we don't actually get interpolation.
+    // we should probably just load the i18n module
+
+    // load the i18n module
+    const i18nLib = require('@tryghost/i18n');
+    const i18n = i18nLib('en', 'newsletter');
+
+    const t = (key, options) => {
+        return i18n.t(key, options);
+    };
 
     beforeEach(function () {
         logStub = sinon.stub(logging, 'error');
+
     });
 
     afterEach(function () {
@@ -102,7 +114,8 @@ describe('Email renderer', function () {
                         }
                     }
                 },
-                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl}
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
             });
             newsletter = createModel({
                 uuid: 'newsletteruuid'
@@ -114,7 +127,7 @@ describe('Email renderer', function () {
                 email: 'test@example.com',
                 createdAt: new Date(2023, 2, 13, 12, 0),
                 status: 'free'
-            };
+            };  
         });
 
         it('returns the unsubscribe header replacement by default', function () {
@@ -213,6 +226,7 @@ describe('Email renderer', function () {
         it('returns mapped complimentary status', function () {
             member.status = 'comped';
             const html = 'Hello %%{status}%%,';
+            console.log('start emailRenderer')
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
@@ -355,7 +369,8 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -458,7 +473,8 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -1059,7 +1075,8 @@ describe('Email renderer', function () {
 
                         return labsEnabled;
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -1258,7 +1275,6 @@ describe('Email renderer', function () {
                 segment,
                 options
             );
-
             assert.match(response.html, /By A &amp; 2 others/);
             assert.match(response.plaintext, /By A & 2 others/);
         });
@@ -1924,7 +1940,8 @@ describe('Email renderer', function () {
                             }
                         ]
                     })
-                }
+                },
+                t: t
             });
         });
 

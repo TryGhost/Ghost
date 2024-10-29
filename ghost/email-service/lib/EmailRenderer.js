@@ -42,12 +42,9 @@ function escapeHtml(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
-function formatDateLong(date, timezone) {
-    let dateLocale = 'en-gb';
-    if (!locale || locale === 'en') {
-        dateLocale = 'en-gb';
-    }
-    return DateTime.fromJSDate(date).setZone(timezone).setLocale(dateLocale).toLocaleString({
+function formatDateLong(date, timezone, locale = 'en-gb') {
+
+    return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -153,7 +150,7 @@ class EmailRenderer {
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
-     * 
+     * @param {Function} dependencies.t
      */
     constructor({
         settingsCache,
@@ -566,6 +563,7 @@ class EmailRenderer {
      * @returns {string}
      */
     getMemberStatusText(member) {
+        const t = this.#t;
         if (member.status === 'free') {
             // Not really used, but as a backup
             return t(messages.subscriptionStatus.free);
@@ -627,6 +625,7 @@ class EmailRenderer {
      * @returns {ReplacementDefinition[]}
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
+        const t = this.#t;
         const baseDefinitions = [
             {
                 id: 'unsubscribe_url',
