@@ -48,7 +48,7 @@ function setupGitRemotes() {
 
         if (GHOST_UPSTREAM) {
             // Check if the upstream remote already exists
-            if (!remotes.includes(GHOST_UPSTREAM)) {
+            if (!remotes.includes(GHOST_UPSTREAM) && remotes.includes('origin')) {
                 log(`Renaming the default remote from origin to ${GHOST_UPSTREAM}...`, colors.blue);
                 execSync(`git remote rename origin ${GHOST_UPSTREAM}`);
             }
