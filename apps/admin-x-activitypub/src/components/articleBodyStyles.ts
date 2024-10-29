@@ -2025,7 +2025,7 @@ Search                         LOGO                    Login Subscribe
     line-height: 1.2;
     letter-spacing: -0.87px;
     font-weight: 600;
-    text-wrap: balance;
+    text-wrap: pretty;
 }
 
 .gh-article-excerpt {
@@ -2033,7 +2033,7 @@ Search                         LOGO                    Login Subscribe
     font-size: 2.1rem;
     line-height: 1.25;
     letter-spacing: -0.63px;
-    text-wrap: balance;
+    text-wrap: pretty;
 }
 
 .gh-article-meta {
