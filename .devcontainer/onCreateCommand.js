@@ -7,6 +7,7 @@ const { execSync } = require('child_process');
 
 // Main function that runs all the setup steps
 function main() {
+    setupGitRemotes();
     setupLocalConfig();
     runCleanHard();
     runInstall();
@@ -33,6 +34,52 @@ function log(message, color = colors.reset) {
 
 function logError(message, error) {
     console.error(`${colors.red}${message}${colors.reset}`, error);
+}
+
+// Sets up the git remotes for the dev container based on environment variables
+function setupGitRemotes() {
+    const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
+    const GHOST_FORK_REMOTE_URL = process.env.GHOST_FORK_REMOTE_URL;
+    const GHOST_FORK_REMOTE_NAME = process.env.GHOST_FORK_REMOTE_NAME;
+    const GHOST_FORCE_SSH = process.env.GHOST_FORCE_SSH;
+    try {
+        if (GHOST_UPSTREAM) {
+            log(`Renaming the default remote from origin to ${GHOST_UPSTREAM}...`, colors.blue);
+            execSync(`git remote rename origin ${GHOST_UPSTREAM}`);
+
+        }
+
+        if (GHOST_FORK_REMOTE_URL && GHOST_FORK_REMOTE_NAME) {
+            log(`Adding fork remote ${GHOST_FORK_REMOTE_URL} as ${GHOST_FORK_REMOTE_NAME}...`, colors.blue);
+            execSync(`git remote add ${GHOST_FORK_REMOTE_NAME} ${GHOST_FORK_REMOTE_URL}`);
+        }
+
+        if (GHOST_FORCE_SSH) {
+            log('Forcing SSH for all remotes...', colors.blue);
+            // Get all remotes
+            const remotes = execSync('git remote').toString().trim().split('\n');
+            
+            for (const remote of remotes) {
+                // Get the current URL for this remote
+                const url = execSync(`git remote get-url ${remote}`).toString().trim();
+                
+                // Only convert if it's an HTTPS URL
+                if (url.startsWith('https://')) {
+                    // Convert HTTPS to SSH format
+                    // https://github.com/user/repo.git -> git@github.com:user/repo.git
+                    const sshUrl = url
+                        .replace(/^https:\/\//, 'git@')
+                        .replace(/\//, ':');
+                    
+                    log(`Converting ${remote} from HTTPS to SSH...`, colors.dim);
+                    execSync(`git remote set-url ${remote} ${sshUrl}`);
+                }
+            }
+        }
+
+    } catch (error) {
+        logError('Error setting up git remotes:', error);
+    }
 }
 
 // Creates config.local.json file with the correct values for the devcontainer
@@ -157,6 +204,29 @@ function runSubmoduleUpdate() {
     try {
         log('Updating git submodules...', colors.blue);
         execSync('git submodule update --init --recursive', { stdio: 'inherit' });
+        // Rename the default remote to $GHOST_UPSTREAM if it's set
+        const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
+        if (GHOST_UPSTREAM) {
+            // Get a list of all submodules
+            const submodules = execSync('git submodule --quiet foreach "echo $PWD"', { encoding: 'utf8' })
+                .trim()
+                .split('\n');
+
+            // For each submodule, rename the origin remote
+            for (const submodulePath of submodules) {
+                try {
+                    process.chdir(submodulePath);
+                    execSync(`git remote rename origin ${GHOST_UPSTREAM}`, { stdio: 'inherit' });
+                } catch (error) {
+                    logError(`Error renaming remote in ${submodulePath}:`, error);
+                    // Continue with other submodules even if one fails
+                }
+            }
+
+            // Return to the original directory
+            process.chdir(process.env.INIT_CWD || process.cwd());
+        }
+
         log('Successfully ran git submodule update', colors.dim);
     } catch (error) {
         logError('Error running git submodule update:', error);
