@@ -563,6 +563,8 @@ class EmailRenderer {
      */
     getMemberStatusText(member) {
         const t = this.#t;
+        const locale = this.#settingsCache.get('locale');
+
         if (member.status === 'free') {
             // Not really used, but as a backup
             return t(messages.subscriptionStatus.free);
@@ -594,14 +596,13 @@ class EmailRenderer {
                 };
             }
             const timezone = this.#settingsCache.get('timezone');
-
             // Translate to a human readable string
             if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
-                const date = formatDateLong(activeSubscription.trial_end_at, timezone);
+                const date = formatDateLong(activeSubscription.trial_end_at, timezone, locale);
                 return t(messages.subscriptionStatus.trial, {date});
             }
 
-            const date = formatDateLong(activeSubscription.current_period_end, timezone);
+            const date = formatDateLong(activeSubscription.current_period_end, timezone, locale);
             if (activeSubscription.cancel_at_period_end) {
                 return t(messages.subscriptionStatus.canceled, {date});
             }
@@ -612,7 +613,7 @@ class EmailRenderer {
 
         if (expires) {
             const timezone = this.#settingsCache.get('timezone');
-            const date = formatDateLong(expires, timezone);
+            const date = formatDateLong(expires, timezone, locale);
             return t(messages.subscriptionStatus.complimentaryExpires, {date});
         }
 
@@ -625,6 +626,8 @@ class EmailRenderer {
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
         const t = this.#t;
+        const locale = this.#settingsCache.get('locale');
+
         const baseDefinitions = [
             {
                 id: 'unsubscribe_url',
@@ -678,7 +681,7 @@ class EmailRenderer {
                 id: 'created_at',
                 getValue: (member) => {
                     const timezone = this.#settingsCache.get('timezone');
-                    return member.createdAt ? formatDateLong(member.createdAt, timezone) : '';
+                    return member.createdAt ? formatDateLong(member.createdAt, timezone, locale) : '';
                 }
             },
             {
