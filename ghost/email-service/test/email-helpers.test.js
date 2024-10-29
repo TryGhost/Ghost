@@ -196,7 +196,7 @@ describe('registerHelpers', function () {
 
         registerHelpers(handlebars, labs, t);
 
-        const result = handlebars.t('By {authors}', {hash: {authors: "fred"}});
+        const result = handlebars.t('By {authors}', {hash: {authors: 'fred'}});
         assert.equal(result, 'Par fred');
     });
     it('t helper returns translation with options', function () {
@@ -213,7 +213,7 @@ describe('registerHelpers', function () {
 
         registerHelpers(handlebars, labs, t);
 
-        const result = handlebars.t('By {authors}', {authors: "fred"});
+        const result = handlebars.t('By {authors}', {authors: 'fred'});
         assert.equal(result, 'Par fred');
     });
 });
