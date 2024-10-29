@@ -11,6 +11,7 @@ import MainNavigation from './navigation/MainNavigation';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 // import {useFollowersForUser} from '../MainContent';
 
@@ -151,7 +152,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         case ACTVITY_TYPE.LIKE:
             NiceModal.show(ArticleModal, {
                 object: activity.object,
-                actor: activity.actor,
+                actor: activity.object.attributedTo as ActorProperties,
                 comments: activity.object.replies
             });
             break;
