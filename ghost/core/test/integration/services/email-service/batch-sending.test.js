@@ -831,7 +831,7 @@ describe('Batch sending tests', function () {
             });
 
             // Currently the link is not present in plaintext version (because no text)
-            assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have 2 buttons to comments');
+            assert.equal(html.match(/#ghost-comments/g).length, 1, 'Every email should have 1 button to comments');
             await matchEmailSnapshot();
         });
 
@@ -850,7 +850,7 @@ describe('Batch sending tests', function () {
                 });
 
                 // Currently the link is not present in plaintext version (because no text)
-                assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have 2 buttons to comments');
+                assert.equal(html.match(/#ghost-comments/g).length, 1, 'Every email should have 1 button to comments');
                 await matchEmailSnapshot();
             } finally {
                 // undo
