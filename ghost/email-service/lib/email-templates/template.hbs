@@ -165,17 +165,6 @@
                                                 {{/if}}
                                             </tr>
                                         </table>
-                                        <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                {{#if feedbackButtons }}
-                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
-                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
-                                                {{/if}}
-                                                {{#if newsletter.showCommentCta}}
-                                                    {{> feedbackButtonMobile href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42" }}
-                                                {{/if}}
-                                            </tr>
-                                        </table>
                                     </td>
                                 </tr>
                             {{/if}}

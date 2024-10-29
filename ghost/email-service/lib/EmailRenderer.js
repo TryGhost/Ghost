@@ -794,9 +794,6 @@ class EmailRenderer {
         const feedbackButtonPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button.hbs`), 'utf8');
         this.#handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
 
-        const feedbackButtonMobilePartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button-mobile.hbs`), 'utf8');
-        this.#handlebars.registerPartial('feedbackButtonMobile', feedbackButtonMobilePartial);
-
         const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
