@@ -312,16 +312,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -779,7 +782,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24776",
+  "content-length": "24870",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1005,16 +1008,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -1494,7 +1500,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "29556",
+  "content-length": "29650",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1751,16 +1757,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -2225,7 +2234,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24530",
+  "content-length": "24624",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2811,16 +2820,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -3299,7 +3311,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25313",
+  "content-length": "25407",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3911,16 +3923,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -4399,7 +4414,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25313",
+  "content-length": "25407",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
