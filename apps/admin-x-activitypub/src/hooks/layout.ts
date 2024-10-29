@@ -14,5 +14,5 @@ export function useLayout() {
     const setFeed = () => setLayout('feed');
     const setInbox = () => setLayout('inbox');
 
-    return {layout, setInbox, setFeed};
+    return {layout, setInbox, setFeed} as {layout: Layout, setInbox: () => void, setFeed: () => void};
 }

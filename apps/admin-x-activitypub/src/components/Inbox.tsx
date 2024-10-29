@@ -19,7 +19,7 @@ interface InboxProps {}
 const Inbox: React.FC<InboxProps> = ({}) => {
     const [, setArticleContent] = useState<ObjectProperties | null>(null);
     const [, setArticleActor] = useState<ActorProperties | null>(null);
-    const {layout} = useLayout();
+    const {layout, setFeed, setInbox} = useLayout();
 
     const {
         data,
@@ -104,7 +104,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation page='home'/>
+            <MainNavigation layout={layout} page='home' setFeed={setFeed} setInbox={setInbox}/>
             <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
                     {isLoading ? (

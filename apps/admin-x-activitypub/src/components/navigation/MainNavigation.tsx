@@ -1,19 +1,23 @@
 import MainHeader from './MainHeader';
 import React from 'react';
 import {Button, Tooltip} from '@tryghost/admin-x-design-system';
-import {useLayout} from '../../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface MainNavigationProps {
     page: string;
+    layout?: 'feed' | 'inbox';
+    setFeed?: () => void;
+    setInbox?: () => void;
 }
 
 const MainNavigation: React.FC<MainNavigationProps> = ({
-    page = ''
+    page = '',
+    layout,
+    setFeed,
+    setInbox
 }) => {
     const {route, updateRoute} = useRouting();
     const mainRoute = route.split('/')[0];
-    const {layout, setFeed, setInbox} = useLayout();
 
     return (
         <MainHeader>
