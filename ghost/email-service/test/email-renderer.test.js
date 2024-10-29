@@ -75,9 +75,13 @@ const getMembersValidationKey = () => {
 // load the i18n module
 const i18nLib = require('@tryghost/i18n');
 const i18n = i18nLib('en', 'newsletter');
-
 const t = (key, options) => {
     return i18n.t(key, options);
+};
+
+const i18nFr = i18nLib('fr', 'newsletter');
+const tFr = (key, options) => {
+    return i18nFr.t(key, options);
 };
 
 describe('Email renderer', function () {
@@ -350,6 +354,80 @@ describe('Email renderer', function () {
         });
     });
 
+    describe('buildReplacementDefinitions with locales', function () {
+        let emailRenderer;
+        let newsletter;
+        let member;
+        let labsEnabled = true;
+        beforeEach(function () {
+            labsEnabled = false;
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => labsEnabled
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            newsletter = createModel({
+                uuid: 'newsletteruuid'
+            });
+            member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };  
+        });
+
+        it('handles dates when the locale is en', function () {
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+        it('handles dates when the locale is fr', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => labsEnabled
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'fr';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: tFr
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 mars 2023');
+        });
+    });
     describe('isMemberTrialing', function () {
         let emailRenderer;
 

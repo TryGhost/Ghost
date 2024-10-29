@@ -43,7 +43,9 @@ function escapeHtml(unsafe) {
 }
 
 function formatDateLong(date, timezone, locale = 'en-gb') {
-    if (locale === 'en') { locale = 'en-gb'; }
+    if (locale === 'en') { 
+        locale = 'en-gb'; 
+    }
     return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
         month: 'long',
