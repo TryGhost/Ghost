@@ -217,7 +217,7 @@ function runSubmoduleUpdate() {
         // Otherwise `yarn main:submodules` will fail
         const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
         if (GHOST_UPSTREAM) {
-            execSync(`git submodule foreach "git remote get-url ${GHOST_UPSTREAM} 2>/dev/null || git remote rename origin ${GHOST_UPSTREAM}"`);
+            execSync(`git submodule foreach "git remote | grep -q '^${GHOST_UPSTREAM}$' || (git remote | grep -q '^origin$' && git remote rename origin ${GHOST_UPSTREAM})"`);
         }
 
         log('Successfully ran git submodule update', colors.dim);
