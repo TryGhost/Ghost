@@ -4,7 +4,7 @@
     "service": "ghost",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     "shutdownAction": "stopCompose",
-    "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
+    "onCreateCommand": ["node", "./.devcontainer/onCreateCommand.js"],
     "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
     "postCreateCommand": ["yarn", "knex-migrator", "init"],
     "remoteEnv": {
