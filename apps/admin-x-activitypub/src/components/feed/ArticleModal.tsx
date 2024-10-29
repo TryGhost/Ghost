@@ -38,10 +38,49 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
       }
     </style>
     <script>
+      let isFullyLoaded = false;
+
       function resizeIframe() {
-        const height = document.body.scrollHeight;
-        window.parent.postMessage({type: 'resize', height: height}, '*');
+        const finalHeight = Math.max(
+          document.body.scrollHeight,
+          document.body.offsetHeight,
+          document.documentElement.scrollHeight
+        );
+        window.parent.postMessage({
+          type: 'resize',
+          height: finalHeight,
+          isLoaded: isFullyLoaded
+        }, '*');
       }
+
+      function waitForImages() {
+        const images = document.getElementsByTagName('img');
+        const imagePromises = Array.from(images).map(img => {
+          if (img.complete) {
+            return Promise.resolve();
+          }
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        });
+        return Promise.all(imagePromises);
+      }
+
+      function initializeResize() {
+        document.body.style.opacity = '0.5';
+        document.body.style.transition = 'opacity 0.3s ease';
+
+        resizeIframe();
+
+        waitForImages().then(() => {
+          isFullyLoaded = true;
+          document.body.style.opacity = '1';
+          resizeIframe();
+        });
+      }
+
+      window.addEventListener('DOMContentLoaded', initializeResize);
       window.addEventListener('load', resizeIframe);
       window.addEventListener('resize', resizeIframe);
       new MutationObserver(resizeIframe).observe(document.body, { subtree: true, childList: true });
@@ -87,7 +126,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
     }, [htmlContent]);
 
     return (
-        <div className="w-full border-b border-grey-200">
+        <div className='w-full border-b border-grey-200 pb-10'>
             <iframe
                 ref={iframeRef}
                 id='gh-ap-article-iframe'
@@ -109,7 +148,6 @@ const FeedItemDivider: React.FC = () => (
 
 const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, focusReply}) => {
     const MODAL_SIZE_SM = 640;
-    // const MODAL_SIZE_LG = 2800;
     const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
@@ -154,9 +192,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
             comments: nextComments
         });
     };
-    // const toggleModalSize = () => {
-    //     setModalSize(modalSize === MODAL_SIZE_SM ? MODAL_SIZE_LG : MODAL_SIZE_SM);
-    // };
 
     function handleNewReply(activity: Activity) {
         setCommentsState(prev => [activity].concat(prev));
@@ -183,7 +218,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                         <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                         </div>
                         <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                            {/* <Button icon='angle-brackets' size='md' unstyled onClick={toggleModalSize}/> */}
                             <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
