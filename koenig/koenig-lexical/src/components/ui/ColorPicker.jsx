@@ -3,7 +3,6 @@ import React, {Fragment, useCallback, useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import {Button} from './Button';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
-import {INPUT_CLASSES} from './Input';
 import {getAccentColor} from '../../utils/getAccentColor';
 
 export function ColorPicker({value, eyedropper, hasTransparentOption, onChange}) {
@@ -79,7 +78,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange})
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
             <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex gap-2">
-                <div ref={inputWrapperRef} className={`relative flex w-full items-center ${INPUT_CLASSES}`} onClick={focusHexInputOnClick}>
+                <div ref={inputWrapperRef} className={`relative flex w-full items-center rounded-lg border border-grey-100 bg-grey-100 px-3 py-1.5 font-sans text-sm font-normal text-grey-900 transition-colors placeholder:text-grey-500 focus-within:border-green focus-within:bg-white focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-within:outline-none dark:border-transparent dark:bg-grey-900 dark:text-white dark:selection:bg-grey-800 dark:placeholder:text-grey-700 dark:focus-within:border-green dark:hover:bg-grey-925 dark:focus:bg-grey-925`} onClick={focusHexInputOnClick}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
                     <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (

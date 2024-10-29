@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const INPUT_CLASSES = 'rounded-md border border-grey-300 py-2 px-3 font-sans text-sm font-normal text-grey-900 focus:border-green focus:shadow-insetgreen focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-700 dark:selection:bg-grey-800';
+export const INPUT_CLASSES = 'h-9 rounded-lg border border-grey-100 bg-grey-100 dark:bg-grey-900 dark:border-transparent dark:focus:border-green dark:hover:bg-grey-925 dark:focus:bg-grey-925 transition-colors px-3 py-1.5 font-sans text-sm font-normal text-grey-900 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-visible:outline-none dark:text-white dark:selection:bg-grey-800 placeholder:text-grey-500 md:h-[38px] md:py-2 dark:placeholder:text-grey-700';
 
 export function Input({autoFocus, className, dataTestId, value, onChange, ...props}) {
     const inputRef = React.useRef(null);

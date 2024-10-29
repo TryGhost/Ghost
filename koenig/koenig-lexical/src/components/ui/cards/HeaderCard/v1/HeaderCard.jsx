@@ -4,7 +4,7 @@ import React from 'react';
 import clsx from 'clsx';
 import {BackgroundImagePicker} from '../../../BackgroundImagePicker';
 import {Button} from '../../../Button';
-import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
+import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
 import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
 
@@ -192,7 +192,6 @@ export function HeaderCard({isEditing,
                         type={type}
                         onFileChange={onFileChange}
                     />
-                    <SettingsDivider />
                     <ToggleSetting
                         dataTestId='header-button-toggle'
                         isChecked={button}

@@ -30,7 +30,7 @@ function superSub(value) {
 export function Td({value}) {
     return (
         <td className={`p-2 font-normal ${(value === 'Bold' ? '!font-bold' : (value === 'Emphasize') ? 'italic' : (value === 'Strike-through') ? 'line-through' : (value === 'Link') ? 'cursor-pointer text-green' : '')}`}>
-            <span className={` ${(value === 'Inline code') ? 'rounded-sm border border-grey-300 bg-grey-100 p-[.2rem] font-mono text-xs' : (value === 'Highlight') ? 'bg-[#ff0]' : ''}`}>
+            <span className={` ${(value === 'Inline code') ? 'rounded-sm border border-grey-300 bg-grey-100 p-[.2rem] font-mono text-2xs' : (value === 'Highlight') ? 'bg-[#ff0]' : ''}`}>
                 {superSub(value)}
             </span>
         </td>

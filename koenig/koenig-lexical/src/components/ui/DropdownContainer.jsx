@@ -11,9 +11,9 @@ import debounce from 'lodash/debounce';
  */
 export function DropdownContainer({
     dataTestId,
-    className = 'z-[-1] max-h-[30vh] w-full overflow-y-auto border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900',
-    placementTopClass = 'top-[2px] -translate-y-full rounded-t-md border-b-0',
-    placementBottomClass = 'mt-[-2px] rounded-b-md border-t-0',
+    className = 'z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white shadow rounded-lg dark:border-grey-800 dark:bg-grey-900',
+    placementTopClass = '-top-0.5 -translate-y-full',
+    placementBottomClass = 'mt-0.5',
     children,
     ...props
 }) {

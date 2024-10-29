@@ -15,6 +15,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessa
             {isEditing
                 ? (
                     <>
+                        {isContentVisibilityEnabled && <CardVisibilityMessage message={visibilityMessage} />}
                         <HtmlEditor
                             darkMode={darkMode}
                             html={html}

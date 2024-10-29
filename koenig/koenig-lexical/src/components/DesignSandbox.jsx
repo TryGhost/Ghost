@@ -222,7 +222,7 @@ const DesignSandbox = () => {
 
     function CardMenuSection({label, ...props}) {
         return (
-            <div className="mb-2 flex shrink-0 flex-col justify-center px-4 pt-3 text-xs font-medium uppercase tracking-[.06rem] text-grey" style={{minWidth: 'calc(100% - 3.2rem)'}} {...props}>
+            <div className="mb-2 flex shrink-0 flex-col justify-center px-4 pt-3 text-2xs font-medium uppercase tracking-[.06rem] text-grey" style={{minWidth: 'calc(100% - 3.2rem)'}} {...props}>
                 {label}
             </div>
         );
@@ -236,7 +236,7 @@ const DesignSandbox = () => {
                 </div>
                 <div className="flex flex-col">
                     <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.333em] tracking-[.02rem] text-grey-900">{label}</div>
-                    <div className="m-0 ml-4 truncate text-xs font-normal leading-[1.333em] tracking-[.02rem] text-grey">{desc}</div>
+                    <div className="m-0 ml-4 truncate text-2xs font-normal leading-[1.333em] tracking-[.02rem] text-grey">{desc}</div>
                 </div>
             </div>
         );

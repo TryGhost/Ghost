@@ -64,7 +64,7 @@ export function BackgroundImagePicker({onFileChange,
                                             </div>
                                         </>
                                         :
-                                        <button className="group flex h-[120px] w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-grey-300 bg-grey-50 dark:border-grey-800 dark:bg-grey-900" type="button" onClick={openFilePicker}>
+                                        <button className="group flex h-[120px] w-full cursor-pointer flex-col items-center justify-center rounded-md border border-grey-100 bg-grey-50 dark:border-grey-800 dark:bg-grey-900" type="button" onClick={openFilePicker}>
                                             <FileUploadIcon className="size-5 fill-grey-700 stroke-[3px] transition-all ease-linear group-hover:scale-105" />
                                             <span className="px-1 text-[1.35rem] font-medium text-grey-700">Click to upload background image</span>
                                         </button>

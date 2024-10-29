@@ -55,21 +55,21 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
             message = `Only shown to ${segmentLabel} in email`;
         }
     }
-
-    const toggleEmail = (e) => {
+    
+    const toggleEmail = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.visibility = {...node.visibility, showOnEmail: e.target.checked};
+            node.visibility = {...node.visibility, showOnEmail: !node.visibility.showOnEmail};
         });
     };
-
-    const toggleWeb = (e) => {
+    
+    const toggleWeb = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.visibility = {...node.visibility, showOnWeb: e.target.checked};
+            node.visibility = {...node.visibility, showOnWeb: !node.visibility.showOnWeb};
         });
     };
-
+    
     const toggleSegment = (name) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);

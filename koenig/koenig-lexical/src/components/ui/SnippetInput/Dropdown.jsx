@@ -13,7 +13,7 @@ export const Dropdown = ({
 }) => {
     return (
         <ul
-            className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow dark:border-grey-900 dark:bg-grey-950"
+            className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow-md dark:border-grey-900 dark:bg-grey-950"
             tabIndex={0}
             onKeyDown={onKeyDown}
         >

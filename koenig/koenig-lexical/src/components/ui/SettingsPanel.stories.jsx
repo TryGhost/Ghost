@@ -6,12 +6,12 @@ import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
 import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
 import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
 import LeftAlignIcon from '../../assets/icons/kg-align-left.svg?react';
-import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, DropdownSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from './SettingsPanel';
+import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, DropdownSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsPanel, ToggleSetting} from './SettingsPanel';
 
 const story = {
     title: 'Settings panel/Settings panel',
     component: SettingsPanel,
-    subcomponents: {ToggleSetting, InputSetting, SettingsDivider, ButtonGroupSetting},
+    subcomponents: {ToggleSetting, InputSetting, ButtonGroupSetting},
     parameters: {
         status: {
             type: 'uiReady'
@@ -83,10 +83,8 @@ EmailCtaCard.args = {
             menu={[{label: 'Free members', name: 'status:free'}, {label: 'Paid members', name: 'status:-free'}]}
             value='status:free'
         />,
-        <SettingsDivider />,
         <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,
         <ToggleSetting label='Separators' />,
-        <SettingsDivider />,
         <ToggleSetting label='Button' />,
         <InputSetting label='Button text' placeholder='Add button text' />,
         <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
@@ -114,7 +112,6 @@ export const ButtonCard = Template.bind({});
 ButtonCard.args = {
     children: [
         <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,
-        <SettingsDivider />,
         <InputSetting label='Button text' placeholder='Add button text' />,
         <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
     ]
@@ -188,7 +185,7 @@ VideoCard.args = {
             label='Loop'
         />,
         <MediaUploadSetting
-            borderStyle='dashed'
+            borderStyle='rounded'
             desc=''
             icon='file'
             label='Custom thumbnail'
@@ -201,7 +198,6 @@ export const ProductCard = Template.bind({});
 ProductCard.args = {
     children: [
         <ToggleSetting label='Rating' />,
-        <SettingsDivider />,
         <ToggleSetting label='Button' />,
         <InputSetting label='Button text' placeholder='Add button text' />,
         <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
@@ -228,7 +224,6 @@ HeaderCard.args = {
     children: [
         <ButtonGroupSetting buttons={sizeButtonGroup} label='Size' />,
         <ColorOptionSetting buttons={headerColorPicker} label='Style' />,
-        <SettingsDivider />,
         <ToggleSetting label='Button' />,
         <InputSetting label='Button text' placeholder='Add button text' />,
         <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />

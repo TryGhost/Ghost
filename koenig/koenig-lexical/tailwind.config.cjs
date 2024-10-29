@@ -18,6 +18,7 @@ module.exports = {
             grey: {
                 DEFAULT: '#ABB4BE',
                 50: '#FAFAFB',
+                75: '#F9FAFB',
                 100: '#F4F5F6',
                 150: '#F1F3F4',
                 200: '#EBEEF0',
@@ -29,7 +30,9 @@ module.exports = {
                 700: '#7C8B9A',
                 800: '#626D79',
                 900: '#394047',
-                950: '#23292F'
+                925: '#2E3338',
+                950: '#23292F',
+                975: '#191B1E'
             },
             green: {
                 DEFAULT: '#30CF43',
@@ -87,10 +90,10 @@ module.exports = {
             mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
         },
         boxShadow: {
-            DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
+            DEFAULT: '0 0 1px rgba(0,0,0,.15), 0px 13px 27px -5px rgba(50, 50, 93, 0.08), 0px 8px 16px -8px rgba(0, 0, 0, 0.12)',
             sm: '0px 2px 5px -1px rgba(50, 50, 93, 0.2), 0px 1px 3px -1px rgba(0, 0, 0, 0.25)',
             md: '0px 13px 27px -5px rgba(50, 50, 93, 0.25), 0px 8px 16px -8px rgba(0, 0, 0, 0.3)',
-            lg: '0px 40px 80px -20px rgba(50, 50, 93, 0.2), 0px 20px 40px -20px rgba(0, 0, 0, 0.25)',
+            lg: '0px 50px 100px -25px rgba(50, 50, 93, 0.2), 0px 30px 60px -20px rgba(0, 0, 0, 0.25)',
             xl: '0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07)',
             inner: 'inset 0 0 4px 0 rgb(0 0 0 / 0.08)',
             insetgreen: '0px 0px 0px 1px inset var(--green)',
@@ -167,7 +170,8 @@ module.exports = {
                 full: '9999px'
             },
             fontSize: {
-                xs: '1.2rem',
+                '2xs': '1.2rem',
+                xs: '1.25rem',
                 sm: '1.4rem',
                 md: '1.5rem',
                 lg: '1.8rem',

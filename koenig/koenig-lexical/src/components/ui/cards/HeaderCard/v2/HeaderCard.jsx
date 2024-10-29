@@ -13,7 +13,7 @@ import ShrinkIcon from '../../../../../assets/icons/kg-shrink.svg?react';
 import clsx from 'clsx';
 import trackEvent from '../../../../../utils/analytics';
 import {Button} from '../../../Button';
-import {ButtonGroupSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
 import {Color, textColorForBackgroundColor} from '@tryghost/color-utils';
 import {FastAverageColor} from 'fast-average-color';
 import {IconButton} from '../../../IconButton';
@@ -374,13 +374,7 @@ export function HeaderCard({alignment,
                         selectedName={layout}
                         onClick={handleLayout}
                     />
-                    <ButtonGroupSetting
-                        buttons={alignmentChildren}
-                        label='Alignment'
-                        selectedName={alignment}
-                        onClick={handleAlignment}
-                    />
-
+                                        
                     {
                         layout === 'split' && (
                             <ToggleSetting
@@ -392,6 +386,13 @@ export function HeaderCard({alignment,
 
                         )
                     }
+
+                    <ButtonGroupSetting
+                        buttons={alignmentChildren}
+                        label='Alignment'
+                        selectedName={alignment}
+                        onClick={handleAlignment}
+                    />
 
                     <ColorPickerSetting
                         dataTestId='header-background-color'
@@ -450,9 +451,8 @@ export function HeaderCard({alignment,
                     />
                     <MediaUploadSetting
                         alt='Background image'
-                        borderStyle={'dashed'}
+                        borderStyle={'rounded'}
                         className={(!showBackgroundImage || layout === 'split') && 'hidden'}
-                        desc='Click to upload'
                         errors={fileUploader?.errors}
                         hideLabel={layout !== 'split'}
                         icon='file'
@@ -475,7 +475,6 @@ export function HeaderCard({alignment,
                     />
 
                     {/* Button settings */}
-                    <SettingsDivider />
                     <ToggleSetting
                         dataTestId='header-button-toggle'
                         isChecked={buttonEnabled}

@@ -186,8 +186,8 @@ test.describe('Header card V1', async () => {
         await createHeaderCard({page});
 
         // Check that the default size is small
-        await expect(page.getByLabel('S')).toHaveClass(/ bg-white /);
-        await expect(page.getByLabel('M')).not.toHaveClass(/ bg-white /);
+        await expect(page.getByLabel('S')).toHaveClass(/ bg-grey-150 /);
+        await expect(page.getByLabel('M')).not.toHaveClass(/ bg-grey-150 /);
 
         // Get height of the card
         const box = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
@@ -195,7 +195,7 @@ test.describe('Header card V1', async () => {
 
         // Click on the medium button
         await page.getByLabel('M').click();
-        await expect(page.getByLabel('M')).toHaveClass(/ bg-white /);
+        await expect(page.getByLabel('M')).toHaveClass(/ bg-grey-150 /);
 
         // Check that the height has changed
         const box2 = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
@@ -206,7 +206,7 @@ test.describe('Header card V1', async () => {
         // Switch to large
         const largeButton = page.locator('[aria-label="L"]');
         await largeButton.click();
-        await expect(largeButton).toHaveClass(/ bg-white /);
+        await expect(largeButton).toHaveClass(/ bg-grey-150 /);
 
         // Check that the height has changed
         const box3 = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();

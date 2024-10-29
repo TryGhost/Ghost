@@ -4,7 +4,7 @@ export function CardVisibilityMessage({message}) {
     }
 
     return (
-        <div className="py-[.6rem] font-sans text-xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800" data-testid="visibility-message">
+        <div className="py-[.6rem] font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800" data-testid="visibility-message">
             {message}
         </div>
     );

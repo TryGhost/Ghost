@@ -19,8 +19,8 @@ function Item({item, selected, onChange}) {
     };
 
     return (
-        <li key={item.name} className={`${selectionClass} !mb-1 hover:bg-grey-100 dark:hover:bg-grey-950`}>
-            <button className="size-full cursor-pointer px-3 py-1 text-left dark:text-white" data-test-value={item.name} type="button" onMouseDownCapture={event => handleOptionMouseDown(event, item.name)}>{item.label}</button>
+        <li key={item.name} className={`${selectionClass} m-0 hover:bg-grey-100 dark:hover:bg-grey-950`}>
+            <button className="size-full cursor-pointer px-3 py-[7px] text-left dark:text-white" data-test-value={item.name} type="button" onMouseDownCapture={event => handleOptionMouseDown(event, item.name)}>{item.label}</button>
         </li>
     );
 }
@@ -66,7 +66,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
     return (
         <div className={`relative ${zIndex} font-sans text-sm font-normal`} data-testid={dataTestId}>
             <button
-                className={`relative w-full cursor-pointer border border-grey-300 px-3 py-2 text-left font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${open ? 'rounded-t-md' : 'rounded-md'}`}
+                className="relative h-9 w-full cursor-pointer rounded-lg border border-grey-150 bg-grey-150 px-3 py-1 pr-5 text-left font-sans font-normal leading-[1.5] text-grey-900 hover:border-grey-100 hover:bg-grey-100 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 md:h-[38px] md:py-2"
                 data-testid={`${dataTestId}-value`}
                 type="button"
                 onBlur={handleBlur}
@@ -74,7 +74,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
                 onMouseDownCapture={preventLoseFocus}
             >
                 {trigger}
-                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600 ${open && 'rotate-180'}`} />
+                <ArrowIcon className={`absolute right-3 top-[1.5rem] size-2 text-grey-900 ${open && 'rotate-180'}`} />
             </button>
             {open && (
                 <DropdownContainer>

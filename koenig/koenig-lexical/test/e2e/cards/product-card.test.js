@@ -314,7 +314,6 @@ test.describe('Product card', async () => {
                                     </label>
                                 </div>
                             </label>
-                            <hr />
                             <label>
                                 <div><div>Button</div></div>
                                 <div>

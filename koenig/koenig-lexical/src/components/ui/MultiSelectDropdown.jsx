@@ -8,7 +8,7 @@ function Item({item, selected, onChange}) {
     let selectionClass = '';
 
     if (selected) {
-        selectionClass = 'bg-grey-100 dark:bg-grey-950';
+        selectionClass = 'bg-grey-100 dark:bg-grey-900';
     }
 
     // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
@@ -20,9 +20,9 @@ function Item({item, selected, onChange}) {
     };
 
     return (
-        <li key={item.name} className={`${selectionClass} !mb-1 hover:bg-grey-100 dark:hover:bg-grey-950`} >
+        <li key={item.name} className={`${selectionClass} m-0 hover:bg-grey-100 dark:hover:bg-grey-900`} >
             <button
-                className="size-full cursor-pointer px-3 py-1 text-left dark:text-white"
+                className="size-full cursor-pointer px-3 py-[7px] text-left dark:text-white"
                 data-testid="multiselect-dropdown-item"
                 type="button"
                 onMouseDownCapture={handleOptionMouseDown}
@@ -36,6 +36,7 @@ function Item({item, selected, onChange}) {
 export function MultiSelectDropdown({placeholder = '', items = [], availableItems = [], onChange, dataTestId, allowAdd = true}) {
     const [open, setOpen] = React.useState(false);
     const [filter, setFilter] = React.useState('');
+    const [isFocused, setIsFocused] = React.useState(false);
     const inputRef = React.useRef(null);
 
     const handleOpen = (event) => {
@@ -50,6 +51,12 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
     const handleBlur = () => {
         setOpen(false);
         setFilter('');
+        setIsFocused(false);
+    };
+
+    const handleFocus = () => {
+        setIsFocused(true);
+        handleOpen();
     };
 
     const handleSelect = (item) => {
@@ -96,27 +103,25 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
         if (!exactMatch) {
             filteredItems.unshift({name: filter, label: <>Add <strong>&quot;{filter}&quot;...</strong></>});
         }
-    } else if (!filter) {
-        prefixItem = getItem({name: '', label: 'Type to search'}, false);
     }
 
     return (
         <div className="relative z-0 font-sans text-sm font-normal" data-testid={dataTestId}>
             <div
-                className={`relative flex w-full cursor-text flex-wrap gap-1 rounded-md border border-grey-300 bg-white py-2 pl-3 pr-5 text-left font-sans font-normal text-grey-900 focus-within:border-green focus-within:shadow-insetgreen focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800`}
+                className={`relative flex w-full cursor-text flex-wrap gap-1 rounded-lg border ${isFocused ? 'border-green bg-white shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-grey-925' : 'border-grey-100 bg-grey-100 dark:border-transparent dark:bg-grey-900 dark:hover:bg-grey-925'} px-[10px] py-2 pr-5 font-sans text-sm font-normal leading-[1.5] text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:text-white dark:selection:bg-grey-800 dark:placeholder:text-grey-700`}
                 type="button"
                 onClick={() => inputRef.current.focus()}
             >
                 {selectedItems.map(item => (
                     <button
                         key={item.name}
-                        className="flex cursor-pointer items-center rounded-sm bg-black px-[1rem] py-[.6rem] leading-none text-white dark:bg-grey-100 dark:text-grey-900"
+                        className="flex cursor-pointer items-center gap-1.5 rounded bg-black py-px pl-2 pr-1 leading-[1.5] text-white dark:bg-grey-100 dark:text-grey-900"
                         data-testid="multiselect-dropdown-selected"
                         type="button"
                         onMouseDownCapture={event => handleDeselect(event, item)}
                     >
                         {item.label}
-                        <CloseIcon className="ml-2 mt-[1px] size-2" />
+                        <CloseIcon className="mt-px size-[1rem] stroke-[3]" />
                     </button>
                 ))}
 
@@ -128,12 +133,12 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
                         value={filter}
                         onBlur={handleBlur}
                         onChange={event => setFilter(event.target.value)}
-                        onFocus={handleOpen}
+                        onFocus={handleFocus}
                         onKeyDown={handleBackspace}
                     />
                 </div>
 
-                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600 ${open && 'rotate-180'}`} />
+                <ArrowIcon className={`absolute right-3 top-4 size-2 text-grey-900 ${open && 'rotate-180'}`} />
             </div>
             {open && !!filteredItems.length && (
                 <DropdownContainer>

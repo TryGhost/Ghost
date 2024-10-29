@@ -2,7 +2,7 @@ import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
-import {InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ProductCardImage} from './ProductCard/ProductCardImage';
 import {RatingButton} from './ProductCard/RatingButton';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
@@ -105,7 +105,6 @@ export function ProductCard({
                         label='Rating'
                         onChange={onRatingToggle}
                     />
-                    <SettingsDivider />
                     <ToggleSetting
                         dataTestId="product-button-toggle"
                         isChecked={isButtonEnabled}

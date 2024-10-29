@@ -44,7 +44,7 @@ export function ColorButton({onClick, label, name, color, selectedName}) {
                 onMouseDown={handleMousedown}
             >
                 <span
-                    className={`${color} size-5 rounded-full border-2 border-black/5`}
+                    className={`${color} size-5 rounded-full border border-black/5`}
                 ></span>
             </button>
         </li>

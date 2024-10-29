@@ -106,7 +106,7 @@ function AudioThumbnail({
         );
     } else if (errors && errors.length > 0) {
         return (
-            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-md bg-grey-200 px-1 text-center font-sans text-xs font-semibold leading-snug text-red" data-testid="thumbnail-errors">
+            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-md bg-grey-200 px-1 text-center font-sans text-2xs font-semibold leading-snug text-red" data-testid="thumbnail-errors">
                 {errors[0].message}
             </span>
         );
@@ -131,7 +131,7 @@ function AudioThumbnail({
         return (
             <div className="group flex aspect-square h-20 items-center justify-center rounded-md bg-purple">
                 <button
-                    className="flex size-20 items-center justify-center"
+                    className="flex size-20 cursor-pointer items-center justify-center"
                     data-testid="upload-thumbnail"
                     type="button"
                     onClick={() => openFileSelection({fileInputRef: fileInputRef})}

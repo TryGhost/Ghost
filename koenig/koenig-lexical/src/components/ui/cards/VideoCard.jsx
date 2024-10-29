@@ -97,7 +97,7 @@ function PopulatedVideoCard({
                         {!isLoopChecked && (
                             <MediaUploadSetting
                                 alt='Custom thumbnail'
-                                borderStyle={'dashed'}
+                                borderStyle={'rounded'}
                                 dataTestId="custom-thumbnail-replace"
                                 errors={customThumbnailUploader.errors}
                                 icon='file'

@@ -7,7 +7,7 @@ import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 export function ButtonGroup({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
-            <ul className="flex items-center justify-evenly rounded-lg bg-grey-100 font-sans text-md font-normal text-white dark:bg-black">
+            <ul className="flex items-center justify-evenly gap-[.6rem] rounded-lg font-sans text-md font-normal text-white">
                 {buttons.map(({label, name, Icon, dataTestId}) => (
                     <IconButton
                         key={`${name}-${label}`}
@@ -33,13 +33,13 @@ export function IconButton({dataTestId, onClick, label, name, selectedName, Icon
         <li className="mb-0">
             <button
                 aria-label={label}
-                className={`group relative m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded-md bg-white text-black shadow-sm dark:bg-grey-900 dark:text-white' : 'text-grey-700 dark:text-white' } ${Icon || 'text-[1.3rem] font-bold'}`}
+                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-grey-150 dark:hover:bg-grey-900 ${isActive ? 'bg-grey-150 text-green-600 dark:bg-grey-900 dark:text-white' : 'text-black dark:text-white' } ${Icon || 'text-[1.3rem] font-bold'}`}
                 data-testid={dataTestId}
                 type="button"
                 onClick={handleClick}
                 onMouseDown={handleMousedown}
             >
-                {Icon ? <Icon className="size-4 stroke-2 text-black dark:text-white" /> : label}
+                {Icon ? <Icon className="size-4 stroke-2" /> : label}
                 {(Icon && label) && <Tooltip label={label} />}
             </button>
         </li>

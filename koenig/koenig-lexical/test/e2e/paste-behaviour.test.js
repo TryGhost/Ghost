@@ -518,40 +518,77 @@ test.describe('Paste behaviour', async () => {
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                  <div><svg></svg></div>
-                  <div
-                    data-kg-card-editing="true"
-                    data-kg-card-selected="true"
-                    data-kg-card="html">
-                    <div>
-                      <div>
+                    <div><svg></svg></div>
+                    <div
+                        data-kg-card-editing="true"
+                        data-kg-card-selected="true"
+                        data-kg-card="html">
                         <div>
-                          <div aria-live="polite"></div>
-                          <div tabindex="-1">
-                            <div aria-hidden="true">
-                              <div>
-                                <div>9</div>
-                                <div>1</div>
-                              </div>
+                            <div>
+                                <div>
+                                    <div aria-live="polite"></div>
+                                    <div tabindex="-1">
+                                        <div aria-hidden="true">
+                                            <div>
+                                                <div>9</div>
+                                                <div>1</div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            spellcheck="false"
+                                            autocorrect="off"
+                                            autocapitalize="off"
+                                            translate="no"
+                                            contenteditable="true"
+                                            role="textbox"
+                                            aria-multiline="true"
+                                            data-language="html">
+                                            <div>ignore default Lexical behaviour</div>
+                                        </div>
+                                        <div aria-hidden="true"><div></div></div>
+                                        <div aria-hidden="true"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div
-                              spellcheck="false"
-                              autocorrect="off"
-                              autocapitalize="off"
-                              translate="no"
-                              contenteditable="true"
-                              role="textbox"
-                              aria-multiline="true"
-                              data-language="html">
-                              <div>ignore default Lexical behaviour</div>
-                            </div>
-                            <div aria-hidden="true"><div></div></div>
-                            <div aria-hidden="true"></div>
-                          </div>
                         </div>
-                      </div>
+                        <div>
+                            <div draggable="true">
+                                <div>
+                                    <button type="button">Design</button>
+                                    <button type="button">Visibility</button>
+                                </div>
+                                <div>
+                                    <label>
+                                        <div><div>Show on web</div></div>
+                                        <div>
+                                            <label id="visibility-show-on-web">
+                                                <input type="checkbox" checked="" />
+                                                <div></div>
+                                            </label>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <div><div>Show in email</div></div>
+                                        <div>
+                                            <label id="visibility-show-on-email">
+                                                <input type="checkbox" checked="" />
+                                                <div></div>
+                                            </label>
+                                        </div>
+                                    </label>
+                                    <div>
+                                        <div>Email audience</div>
+                                        <div>
+                                            <button type="button">
+                                                All members
+                                                <svg></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
                 <p><br /></p>
             `, {ignoreCardContents: false});
