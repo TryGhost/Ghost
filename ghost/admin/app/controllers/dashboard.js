@@ -59,7 +59,7 @@ export default class DashboardController extends Controller {
         return true;
     }
 
-    checkHasNewMentionsDuplicated() {
+    checkHasNewMentions() {
         if (!this.mentions) {
             return false;
         }
