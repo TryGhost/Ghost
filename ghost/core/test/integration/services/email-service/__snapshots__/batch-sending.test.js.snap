@@ -7328,26 +7328,6 @@ table.body h2 span {
                                     </td>
                                 </tr>
 
-                                <tr>
-                                    <td class=\\"subscription-box\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; padding: 32px 0; border-bottom: 1px solid #e5eff5; color: #15212A;\\" valign=\\"top\\">
-                                        <h3 style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; font-size: 14px; font-weight: 700; text-transform: uppercase; margin: 0 0 18px;\\">Subscription details</h3>
-                                        <p style=\\"margin: 0 0 1.5em 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; margin-bottom: 16px; color: #15212A;\\">
-                                            <span>You are receiving this because you are a <strong style=\\"font-weight: 700;\\">paid subscriber</strong> to Ghost.</span> Your subscription has been canceled and will expire on November 29, 2024. You can resume your subscription via your account settings.
-                                        </p>
-                                        <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
-                                            <tr>
-                                                <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
-                                                    <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Name: not provided</p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">canceled-paid@example.com</a></p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: October 29, 2024</p>
-                                                </td>
-                                                <td align=\\"right\\" valign=\\"bottom\\" class=\\"manage-subscription\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; white-space: nowrap; font-size: 15px; font-weight: 600; text-align: right; line-height: 1.45em; vertical-align: bottom; color: #FF1A75;\\">
-                                                    <a href=\\"http://127.0.0.1:2369/#/portal/account\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"> Manage subscription &#x2192;</a>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
 
                             <tr>
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
@@ -7554,41 +7534,6 @@ Hello world [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
-
-
-
-
-
-
-
-
-
-
-Subscription details
-
-
-
-You are receiving this because you are a paid subscriber to Ghost. Your subscription has been canceled and will expire on November 29, 2024. You can resume your subscription via your account settings.
-
-
-
-
-
-
-
-
-Name: not provided
-
-
-Email: canceled-paid@example.com
-
-
-Member since: October 29, 2024
-
-
-
-
-Manage subscription → [http://127.0.0.1:2369/#/portal/account]
 
 
 
@@ -8851,7 +8796,7 @@ table.body h2 span {
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                                                     <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Name: not provided</p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">subscription-box-comped@example.com</a></p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: October 11, 2024</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
                                                 <td align=\\"right\\" valign=\\"bottom\\" class=\\"manage-subscription\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; white-space: nowrap; font-size: 15px; font-weight: 600; text-align: right; line-height: 1.45em; vertical-align: bottom; color: #FF1A75;\\">
                                                     <a href=\\"http://127.0.0.1:2369/#/portal/account\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"> Manage subscription &#x2192;</a>
@@ -9009,7 +8954,7 @@ Name: not provided
 Email: subscription-box-comped@example.com
 
 
-Member since: October 11, 2024
+Member since: date
 
 
 
@@ -9564,7 +9509,7 @@ table.body h2 span {
                                                 <td class=\\"subscription-details\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A;\\" valign=\\"top\\">
                                                     <p class=\\"hidden\\" style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Name: not provided</p>
                                                     <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Email: <a href=\\"#\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #15212A;\\" target=\\"_blank\\">subscription-box-1@example.com</a></p>
-                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: October 11, 2024</p>
+                                                    <p style=\\"margin: 0 0 1.5em 0; margin-bottom: 0; font-size: 15px; font-weight: 400; line-height: 1.45em; text-decoration: none; color: #15212A;\\">Member since: date</p>
                                                 </td>
                                                 <td align=\\"right\\" valign=\\"bottom\\" class=\\"manage-subscription\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; white-space: nowrap; font-size: 15px; font-weight: 600; text-align: right; line-height: 1.45em; vertical-align: bottom; color: #FF1A75;\\">
                                                     <a href=\\"http://127.0.0.1:2369/#/portal/account\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"> Manage subscription &#x2192;</a>
@@ -9722,7 +9667,7 @@ Name: not provided
 Email: subscription-box-1@example.com
 
 
-Member since: October 11, 2024
+Member since: date
 
 
 
