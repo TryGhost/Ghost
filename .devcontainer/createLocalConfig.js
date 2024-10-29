@@ -51,9 +51,10 @@ newConfig.adapters = {
 
 
 // Only update the mail settings if they aren't already set
-if (!originalConfig.mail && process.env.MAILGUN_SMTP_PASS && process.env.MAILGUN_SMTP_USER) {
+if (!originalConfig.mail && process.env.MAILGUN_SMTP_PASS && process.env.MAILGUN_SMTP_USER && process.env.MAILGUN_FROM_ADDRESS) {
     newConfig.mail = {
         transport: 'SMTP',
+        from: process.env.MAILGUN_FROM_ADDRESS,
         options: {
             service: 'Mailgun',
             host: 'smtp.mailgun.org',

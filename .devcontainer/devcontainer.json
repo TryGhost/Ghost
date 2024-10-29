@@ -14,6 +14,7 @@
         "STRIPE_ACCOUNT_ID": "${localEnv:STRIPE_ACCOUNT_ID}",
         "MAILGUN_SMTP_USER": "${localEnv:MAILGUN_SMTP_USER}",
         "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
+        "MAILGUN_FROM_ADDRESS": "${localEnv:MAILGUN_FROM_ADDRESS}",
         "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
         "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
     },
@@ -127,13 +128,17 @@
             "description": "Your Mailgun account's SMTP password",
             "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
         },
+        "MAILGUN_FROM_ADDRESS": {
+            "description": "The email address that will be used as the `from` address when sending emails via Mailgun",
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
+        },
         "MAILGUN_API_KEY": {
             "description": "Your Mailgun account's API key",
-            "documentationUrl": ""
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
         },
         "MAILGUN_DOMAIN": {
             "description": "Your Mailgun account's domain, e.g. sandbox1234567890.mailgun.org",
-            "documentationUrl": ""
+            "documentationUrl": "https://app.mailgun.com/mg/sending/domains"
         }
     }
 }
