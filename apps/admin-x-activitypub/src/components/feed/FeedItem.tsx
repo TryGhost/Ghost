@@ -7,7 +7,6 @@ import APAvatar from '../global/APAvatar';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
-import {type Activity} from '../activities/ActivityItem';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 function getAttachment(object: ObjectProperties) {
@@ -228,7 +227,7 @@ interface FeedItemProps {
     object: ObjectProperties;
     layout: string;
     type: string;
-    comments?: Activity[];
+    commentCount: number;
     last?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
@@ -236,7 +235,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, last, onClick = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -338,7 +337,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                     <div className='space-between relative z-[30] mt-5 flex'>
                                         <FeedItemStats
-                                            commentCount={comments.length}
+                                            commentCount={commentCount}
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
@@ -384,7 +383,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         {renderFeedAttachment(object, layout)}
                                         <div className='space-between mt-5 flex'>
                                             <FeedItemStats
-                                                commentCount={comments.length}
+                                                commentCount={commentCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
@@ -433,7 +432,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     {renderFeedAttachment(object, layout)}
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
-                                            commentCount={comments.length}
+                                            commentCount={commentCount}
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
@@ -470,8 +469,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>
                                 {object.name ? object.name : (
                                     <span dangerouslySetInnerHTML={{
-                                        __html: object.content.length > 30 
-                                            ? stripHtml(object.content).substring(0, 50) + '...' 
+                                        __html: object.content.length > 30
+                                            ? stripHtml(object.content).substring(0, 50) + '...'
                                             : stripHtml(object.content)
                                     }}></span>
                                 )}
@@ -481,7 +480,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                         {renderInboxAttachment(object)}
                         <div className='invisible absolute right-2 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
-                                commentCount={comments.length}
+                                commentCount={commentCount}
                                 layout={layout}
                                 likeCount={1}
                                 object={object}
