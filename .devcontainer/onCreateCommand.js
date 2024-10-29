@@ -38,27 +38,35 @@ function logError(message, error) {
 
 // Sets up the git remotes for the dev container based on environment variables
 function setupGitRemotes() {
-    const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
-    const GHOST_FORK_REMOTE_URL = process.env.GHOST_FORK_REMOTE_URL;
-    const GHOST_FORK_REMOTE_NAME = process.env.GHOST_FORK_REMOTE_NAME;
-    const GHOST_FORCE_SSH = process.env.GHOST_FORCE_SSH;
+    log('Configuring git remotes...', colors.blue);
     try {
-        if (GHOST_UPSTREAM) {
-            log(`Renaming the default remote from origin to ${GHOST_UPSTREAM}...`, colors.blue);
-            execSync(`git remote rename origin ${GHOST_UPSTREAM}`);
+        const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
+        const GHOST_FORK_REMOTE_URL = process.env.GHOST_FORK_REMOTE_URL;
+        const GHOST_FORK_REMOTE_NAME = process.env.GHOST_FORK_REMOTE_NAME;
+        const GHOST_FORCE_SSH = process.env.GHOST_FORCE_SSH;
+        let remotes = execSync('git remote').toString().trim().split('\n');
 
+        if (GHOST_UPSTREAM) {
+            // Check if the upstream remote already exists
+            if (!remotes.includes(GHOST_UPSTREAM)) {
+                log(`Renaming the default remote from origin to ${GHOST_UPSTREAM}...`, colors.blue);
+                execSync(`git remote rename origin ${GHOST_UPSTREAM}`);
+            }
         }
 
         if (GHOST_FORK_REMOTE_URL) {
             const remoteName = GHOST_FORK_REMOTE_NAME || 'origin';
-            log(`Adding fork remote ${GHOST_FORK_REMOTE_URL} as ${remoteName}...`, colors.blue);
-            execSync(`git remote add ${remoteName} ${GHOST_FORK_REMOTE_URL}`);
+            // Check if the fork remote already exists
+            if (!remotes.includes(remoteName)) {
+                log(`Adding fork remote ${GHOST_FORK_REMOTE_URL} as ${remoteName}...`, colors.blue);
+                execSync(`git remote add ${remoteName} ${GHOST_FORK_REMOTE_URL}`);
+            }
         }
 
         if (GHOST_FORCE_SSH) {
             log('Forcing SSH for all remotes...', colors.blue);
             // Get all remotes
-            const remotes = execSync('git remote').toString().trim().split('\n');
+            remotes = execSync('git remote').toString().trim().split('\n');
             
             for (const remote of remotes) {
                 // Get the current URL for this remote
@@ -209,24 +217,7 @@ function runSubmoduleUpdate() {
         // Otherwise `yarn main:submodules` will fail
         const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
         if (GHOST_UPSTREAM) {
-            // Get a list of all submodules
-            const submodules = execSync('git submodule --quiet foreach "echo $PWD"', { encoding: 'utf8' })
-                .trim()
-                .split('\n');
-
-            // For each submodule, rename the origin remote
-            for (const submodulePath of submodules) {
-                try {
-                    process.chdir(submodulePath);
-                    execSync(`git remote rename origin ${GHOST_UPSTREAM}`, { stdio: 'inherit' });
-                } catch (error) {
-                    logError(`Error renaming remote in ${submodulePath}:`, error);
-                    // Continue with other submodules even if one fails
-                }
-            }
-
-            // Return to the original directory
-            process.chdir(process.env.INIT_CWD || process.cwd());
+            execSync(`git submodule foreach "git remote get-url ${GHOST_UPSTREAM} 2>/dev/null || git remote rename origin ${GHOST_UPSTREAM}"`);
         }
 
         log('Successfully ran git submodule update', colors.dim);
