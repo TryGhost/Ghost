@@ -182,4 +182,38 @@ describe('registerHelpers', function () {
         const result = handlebars.t('Name');
         assert.equal(result, 'Nom');
     });
+    it('t helper returns translation with hash', function () {
+        const labs = {
+            isSet: function () {
+                return false;
+            }
+        };
+        const handlebars = {
+            registerHelper: function (name, fn) {
+                this[name] = fn;
+            }
+        };
+
+        registerHelpers(handlebars, labs, t);
+
+        const result = handlebars.t('By {authors}', {hash: {authors: "fred"}});
+        assert.equal(result, 'Par fred');
+    });
+    it('t helper returns translation with options', function () {
+        const labs = {
+            isSet: function () {
+                return false;
+            }
+        };
+        const handlebars = {
+            registerHelper: function (name, fn) {
+                this[name] = fn;
+            }
+        };
+
+        registerHelpers(handlebars, labs, t);
+
+        const result = handlebars.t('By {authors}', {authors: "fred"});
+        assert.equal(result, 'Par fred');
+    });
 });
