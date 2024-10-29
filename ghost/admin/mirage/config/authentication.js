@@ -5,7 +5,12 @@ import {isBlank} from '@ember/utils';
 
 export default function mockAuthentication(server) {
     // Password sign-in
-    server.post('/session', function () {
+    server.post('/session', function (schema, request) {
+        const data = JSON.parse(request.requestBody);
+        if (!data.username || !data.password) {
+            return new Response(401);
+        }
+
         return new Response(201);
     });
 
