@@ -85,7 +85,6 @@ describe('Email renderer', function () {
 
     beforeEach(function () {
         logStub = sinon.stub(logging, 'error');
-
     });
 
     afterEach(function () {
@@ -226,7 +225,7 @@ describe('Email renderer', function () {
         it('returns mapped complimentary status', function () {
             member.status = 'comped';
             const html = 'Hello %%{status}%%,';
-            console.log('start emailRenderer')
+            console.log('start emailRenderer');
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');

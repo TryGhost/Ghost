@@ -139,4 +139,31 @@ describe('registerHelpers', function () {
 
         assert.equal(result, false);
     });
+    it('can translate', function () {
+        const handlebars = {
+            registerHelper: function (name, fn) {
+                this[name] = fn;
+            }
+        };
+        const labs = {
+            isSet: function () {
+                return true;
+            }
+        };
+        const thist = function (key, options) {
+            return key;
+        };
+        registerHelpers(handlebars, labs, thist);
+
+        const result = handlebars.t('test', {
+            fn: function () {
+                return true;
+            },
+            inverse: function () {
+                return false;
+            }
+        });
+
+        assert.equal(result, 'test');
+    });
 });
