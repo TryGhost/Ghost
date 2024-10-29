@@ -1,7 +1,7 @@
 const should = require('should');
 const path = require('path');
 const t = require('../../../../core/frontend/helpers/t');
-const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');
+const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n-off');
 
 describe('{{t}} helper', function () {
     let ogBasePath = themeI18n.basePath;

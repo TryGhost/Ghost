@@ -62,7 +62,7 @@ const SUPPORTED_LOCALES = [
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'|'theme'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
@@ -72,6 +72,28 @@ module.exports = (lng = 'en', ns = 'portal') => {
             prefix: '{',
             suffix: '}'
         };
+    }
+    let resources;
+    if (ns !== 'theme') {
+        resources = SUPPORTED_LOCALES.reduce((acc, locale) => {
+            const res = require(`../locales/${locale}/${ns}.json`);
+
+            // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
+            // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
+            acc[locale] = {
+                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
+            };
+            return acc;
+        }, {});
+    } else {
+        resources = {
+            "en": {
+                "theme": require(`../locales/en/theme.json`)
+            },
+            "fr": {
+                "theme": require(`../locales/fr/theme.json`)
+            }
+        }
     }
     i18nextInstance.init({
         lng,
@@ -92,16 +114,7 @@ module.exports = (lng = 'en', ns = 'portal') => {
         // separators
         interpolation,
 
-        resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
-            const res = require(`../locales/${locale}/${ns}.json`);
-
-            // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
-            // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
-            acc[locale] = {
-                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
-            };
-            return acc;
-        }, {})
+        resources
     });
 
     return i18nextInstance;
