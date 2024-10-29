@@ -183,5 +183,58 @@ test.describe('Auth Frame', async () => {
         await moreButtons.nth(1).getByText('Show comment').click();
         await expect(secondComment).toContainText('This is comment 2');
     });
+
+    test('admin can see hidden comments', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is a naughty comment and should be hidden</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+        mockedApi.setMember({});
+
+        await mockAdminAuthFrame({
+            admin,
+            page
+        });
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            admin,
+            labs: {
+                commentsImprovements: true
+            }
+        });
+
+        const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
+
+        await expect(iframeElement).toHaveCount(1);
+
+        const comments = await frame.getByTestId('comment-component');
+
+        await expect(comments).toHaveCount(3);
+
+        // click on the 2nd comment's more button
+
+        const moreButtons = await frame.getByTestId('more-button');
+
+        await moreButtons.nth(1).click();
+
+        // hide the comment
+
+        await moreButtons.nth(1).getByText('Hide comment').click();
+
+        // check if the comment is hidden
+
+        const secondComment = comments.nth(1);
+
+        await expect(secondComment).toContainText('This is a naughty comment and should be hidden');
+        await expect(secondComment).toContainText('Hidden - not visible to members');
+    });
 });
 
