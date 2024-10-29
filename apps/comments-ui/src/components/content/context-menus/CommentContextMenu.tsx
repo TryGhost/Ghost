@@ -1,7 +1,7 @@
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
-import {Comment, useAppContext} from '../../../AppContext';
+import {Comment, useAppContext, useLabs} from '../../../AppContext';
 import {useEffect, useRef} from 'react';
 
 type Props = {
@@ -11,6 +11,7 @@ type Props = {
 };
 const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     const {member, admin} = useAppContext();
+    const labs = useLabs();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
     const element = useRef<HTMLDivElement>(null);
@@ -57,21 +58,34 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     };
 
     let contextMenu = null;
-    if (comment.status === 'published') {
-        if (isAuthor) {
-            contextMenu = <AuthorContextMenu close={close} comment={comment} toggleEdit={toggleEdit} />;
+    
+    if (labs?.commentImprovements) {
+        if (comment.status === 'published') {
+            if (isAuthor) {
+                contextMenu = <AuthorContextMenu close={close} comment={comment} toggleEdit={toggleEdit} />;
+            } else if (!isAdmin) {
+                contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
+            }
+        } else if (!isAdmin) {
+            contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
+        }
+    } else {
+        if (comment.status === 'published') {
+            if (isAuthor) {
+                contextMenu = <AuthorContextMenu close={close} comment={comment} toggleEdit={toggleEdit} />;
+            } else {
+                if (isAdmin) {
+                    contextMenu = <AdminContextMenu close={close} comment={comment}/>;
+                } else {
+                    contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
+                }
+            }
         } else {
             if (isAdmin) {
                 contextMenu = <AdminContextMenu close={close} comment={comment}/>;
             } else {
-                contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
+                return null;
             }
-        }
-    } else {
-        if (isAdmin) {
-            contextMenu = <AdminContextMenu close={close} comment={comment}/>;
-        } else {
-            return null;
         }
     }
 

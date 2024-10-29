@@ -1,3 +1,4 @@
+import AdminButton from './buttons/AdminButton';
 import EditForm from './forms/EditForm';
 import LikeButton from './buttons/LikeButton';
 import MoreButton from './buttons/MoreButton';
@@ -92,10 +93,11 @@ const PublishedComment: React.FC<CommentProps> = ({comment, parent, openEditMode
 
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
-            <CommentHeader comment={comment} />
-            <CommentBody html={comment.html} />
-            <CommentMenu comment={comment} isInReplyMode={isInReplyMode} openEditMode={openEditMode} parent={parent} toggleReplyMode={toggleReplyMode} />
-
+            <div className="group">
+                <CommentHeader comment={comment} />
+                <CommentBody html={comment.html} />
+                <CommentMenu comment={comment} isInReplyMode={isInReplyMode} openEditMode={openEditMode} parent={parent} toggleReplyMode={toggleReplyMode} />
+            </div>
             <RepliesContainer comment={comment} toggleReplyMode={toggleReplyMode} />
             <ReplyFormBox closeReplyMode={closeReplyMode} comment={comment} isInReplyMode={isInReplyMode} />
         </CommentLayout>
@@ -208,9 +210,29 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 
 const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
     const createdAtRelative = useRelativeTime(comment.created_at);
-    const {member} = useAppContext();
+    const labs = useLabs();
+    const {member, admin} = useAppContext();
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
+    const isAdmin = !!admin;
+    const isAuthor = member && comment.member?.uuid === member?.uuid;
 
+    if (labs.commentImprovements) {
+        return (
+            <div className={`mb-2 mt-0.5 flex flex-wrap items-start justify-between sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
+                <div className="flex flex-col sm:flex-row sm:items-baseline">
+                    <AuthorName comment={comment} />
+                    <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
+                        <span>
+                            <MemberExpertise comment={comment}/>
+                            <span title={formatExplicitTime(comment.created_at)}><span className="mx-[0.3em]">·</span>{createdAtRelative}</span>
+                            <EditedInfo comment={comment} />
+                        </span>
+                    </div>
+                </div>
+                {isAdmin && !isAuthor && <AdminButton comment={comment} />}
+            </div>
+        );
+    }
     return (
         <div className={`mb-2 mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
             <AuthorName comment={comment} />
@@ -242,8 +264,6 @@ type CommentMenuProps = {
     parent?: Comment;
 };
 const CommentMenu: React.FC<CommentMenuProps> = ({comment, toggleReplyMode, isInReplyMode, openEditMode, parent}) => {
-    // If this comment is from the current member, always override member
-    // with the member from the context, so we update the expertise in existing comments when we change it
     const {member, commentsEnabled} = useAppContext();
     const labs = useLabs();
 
@@ -255,7 +275,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, toggleReplyMode, isIn
         <div className="flex items-center gap-4">
             {<LikeButton comment={comment} />}
             {(canReply && <ReplyButton isReplying={isInReplyMode} toggleReply={toggleReplyMode} />)}
-            {<MoreButton comment={comment} toggleEdit={openEditMode} />}
+            <MoreButton comment={comment} toggleEdit={openEditMode} />
         </div>
     );
 };
