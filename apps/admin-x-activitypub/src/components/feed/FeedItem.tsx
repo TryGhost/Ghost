@@ -371,7 +371,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                     <div className='flex w-full'>
                                         <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                        <div className='ml-2'>{renderTimestamp(object)}</div>
+                                        <div>{renderTimestamp(object)}</div>
                                     </div>
                                     <div className='flex w-full'>
                                         <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
@@ -420,7 +420,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex'>
                                     <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                    <div className='ml-2'>{renderTimestamp(object)}</div>
+                                    <div>{renderTimestamp(object)}</div>
                                 </div>
                                 <div className='flex'>
                                     <span className='truncate text-grey-700'>{getUsername(author)}</span>
