@@ -54,6 +54,7 @@ function setupGitRemotes() {
             }
         }
 
+        remotes = execSync('git remote').toString().trim().split('\n');
         if (GHOST_FORK_REMOTE_URL) {
             const remoteName = GHOST_FORK_REMOTE_NAME || 'origin';
             // Check if the fork remote already exists
