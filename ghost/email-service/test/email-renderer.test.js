@@ -68,20 +68,20 @@ const createUnsubscribeUrl = (uuid) => {
 const getMembersValidationKey = () => {
     return 'members-key';
 };
+// stub the t function so that we don't need to load the i18n module
+// actually, no, this is a terrible option, because then we don't actually get interpolation.
+// we should probably just load the i18n module
+
+// load the i18n module
+const i18nLib = require('@tryghost/i18n');
+const i18n = i18nLib('en', 'newsletter');
+
+const t = (key, options) => {
+    return i18n.t(key, options);
+};
 
 describe('Email renderer', function () {
     let logStub;
-    // stub the t function so that we don't need to load the i18n module
-    // actually, no, this is a terrible option, because then we don't actually get interpolation.
-    // we should probably just load the i18n module
-
-    // load the i18n module
-    const i18nLib = require('@tryghost/i18n');
-    const i18n = i18nLib('en', 'newsletter');
-
-    const t = (key, options) => {
-        return i18n.t(key, options);
-    };
 
     beforeEach(function () {
         logStub = sinon.stub(logging, 'error');
@@ -225,7 +225,6 @@ describe('Email renderer', function () {
         it('returns mapped complimentary status', function () {
             member.status = 'comped';
             const html = 'Hello %%{status}%%,';
-            console.log('start emailRenderer');
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
