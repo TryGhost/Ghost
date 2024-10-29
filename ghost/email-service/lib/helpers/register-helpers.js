@@ -52,7 +52,8 @@ module.exports = {
             }
         });
         handlebars.registerHelper('t', function (key, options) {
-            return thist(key, options);
+            let hash = options?.hash;
+            return thist(key, hash || options || {});
         });
     }
 };
