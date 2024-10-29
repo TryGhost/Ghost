@@ -49,9 +49,10 @@ function setupGitRemotes() {
 
         }
 
-        if (GHOST_FORK_REMOTE_URL && GHOST_FORK_REMOTE_NAME) {
-            log(`Adding fork remote ${GHOST_FORK_REMOTE_URL} as ${GHOST_FORK_REMOTE_NAME}...`, colors.blue);
-            execSync(`git remote add ${GHOST_FORK_REMOTE_NAME} ${GHOST_FORK_REMOTE_URL}`);
+        if (GHOST_FORK_REMOTE_URL) {
+            const remoteName = GHOST_FORK_REMOTE_NAME || 'origin';
+            log(`Adding fork remote ${GHOST_FORK_REMOTE_URL} as ${remoteName}...`, colors.blue);
+            execSync(`git remote add ${remoteName} ${GHOST_FORK_REMOTE_URL}`);
         }
 
         if (GHOST_FORCE_SSH) {
@@ -205,6 +206,7 @@ function runSubmoduleUpdate() {
         log('Updating git submodules...', colors.blue);
         execSync('git submodule update --init --recursive', { stdio: 'inherit' });
         // Rename the default remote to $GHOST_UPSTREAM if it's set
+        // Otherwise `yarn main:submodules` will fail
         const GHOST_UPSTREAM = process.env.GHOST_UPSTREAM;
         if (GHOST_UPSTREAM) {
             // Get a list of all submodules
