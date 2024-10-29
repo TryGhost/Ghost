@@ -59,6 +59,24 @@ export default class DashboardController extends Controller {
         return true;
     }
 
+    checkHasNewMentionsDuplicated() {
+        if (!this.mentions) {
+            return false;
+        }
+        const firstMention = this.mentions.firstObject;
+        if (!firstMention) {
+            return false;
+        }
+
+        try {
+            const lastId = localStorage.getItem('lastMentionRead');
+            return firstMention.id !== lastId;
+        } catch (e) {
+            // localstorage disabled or not supported
+        }
+        return true;
+    }
+
     @action
     markMentionsRead() {
         try {
