@@ -1,6 +1,6 @@
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
 import {Comment, useAppContext} from '../../AppContext';
-import {getMemberInitialsFromComment} from '../../utils/helpers';
+import {getInitials, getMemberInitialsFromComment} from '../../utils/helpers';
 
 function getDimensionClasses() {
     return 'w-8 h-8';
@@ -64,7 +64,8 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         return `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
     };
 
-    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) || '';
+    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) || 
+        (member && getInitials(member.name || '')) || '';
     const commentMember = (comment ? comment.member : member);
 
     const bgColor = HSLtoString(generateHSL());
