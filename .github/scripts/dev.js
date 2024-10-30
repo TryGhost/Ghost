@@ -95,7 +95,7 @@ if (DASH_DASH_ARGS.includes('ghost')) {
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
 } else if (DASH_DASH_ARGS.includes('browser-tests')) {
-    commands = [COMMAND_BROWSERTESTS, COMMAND_TYPESCRIPT];
+    commands = [COMMAND_BROWSERTESTS];
 } else {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
