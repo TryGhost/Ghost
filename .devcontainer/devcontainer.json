@@ -1,10 +1,16 @@
 {
     "name": "Ghost Local DevContainer",
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+            "plugins": "git yarn gh"
+        }
+    },
     "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     "shutdownAction": "stopCompose",
-    "onCreateCommand": ["./.devcontainer/onCreateCommand.sh"],
+    "onCreateCommand": ["node", "./.devcontainer/onCreateCommand.js"],
     "updateContentCommand": ["git", "submodule", "update", "--init", "--recursive"],
     "postCreateCommand": ["yarn", "knex-migrator", "init"],
     "remoteEnv": {
@@ -16,7 +22,11 @@
         "MAILGUN_SMTP_PASS": "${localEnv:MAILGUN_SMTP_PASS}",
         "MAILGUN_FROM_ADDRESS": "${localEnv:MAILGUN_FROM_ADDRESS}",
         "MAILGUN_API_KEY": "${localEnv:MAILGUN_API_KEY}",
-        "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}"
+        "MAILGUN_DOMAIN": "${localEnv:MAILGUN_DOMAIN}",
+        "GHOST_UPSTREAM": "${localEnv:GHOST_UPSTREAM}",
+        "GHOST_FORK_REMOTE_URL": "${localEnv:GHOST_FORK_REMOTE_URL}",
+        "GHOST_FORK_REMOTE_NAME": "${localEnv:GHOST_FORK_REMOTE_NAME}",
+        "GHOST_FORCE_SSH": "${localEnv:GHOST_FORCE_SSH}"
     },
     "forwardPorts": [2368,4200],
     "portsAttributes": {
