@@ -187,7 +187,7 @@ test.describe('Publishing', () => {
         // Post should be available on web and sent as a newsletter
         test('Publish and Email', async ({sharedPage}) => {
             const postData = {
-                title: 'Publish and email post',
+                title: 'Publish and email post test failure',
                 body: 'This is my post body.'
             };
 
