@@ -7,31 +7,30 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 
-const messages = {
-    subscriptionStatus: {
-        free: '',
-        expired: 'Your subscription has expired.',
-        canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
-        active: 'Your subscription will renew on {date}.',
-        trial: 'Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.',
-        complimentaryExpires: 'Your subscription will expire on {date}.',
-        complimentaryInfinite: ''
+function setupi18nStringsHack() {
+    const messages = {
+        subscriptionStatus: {
+            free: '',
+            complimentaryInfinite: ''
+        }
+    };
+    function t(string, key) {
+        // note: fake t function required to make i18next-parser pick up these definitions.  Do not remove. 
+        messages.subscriptionStatus[key] = string;
     }
-};
-
-// this is required to trigger the t parser
-/* 
-t('Your subscription has expired.');
-t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.');
-t('Your subscription will renew on {date}.');
-t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.');
-t('Your subscription will expire on {date}.');
-*/
+    // Yes, this feels 100% backwards, but it allows these strings to exist in only one place, and to be picked up by the i18next-parser.
+    t('Your subscription has expired.', 'expired');
+    t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.', 'canceled');
+    t('Your subscription will renew on {date}.', 'active');
+    t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.', 'trial');
+    t('Your subscription will expire on {date}.', 'complimentaryExpires');    
+    return messages;
+}
+const messages = setupi18nStringsHack();
 
 function escapeHtml(unsafe) {
     return unsafe
