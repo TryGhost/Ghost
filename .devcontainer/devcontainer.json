@@ -1,5 +1,11 @@
 {
     "name": "Ghost Local DevContainer",
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+            "plugins": "git yarn gh"
+        }
+    },
     "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
