@@ -198,7 +198,7 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
             await closePublishFlow(sharedPage);
-            await checkPostPublished(sharedPage, {title: 'incorrect title', body: 'incorrect body'});
+            await checkPostPublished(sharedPage, postData);
         });
 
         // Post should only be available on web
