@@ -202,7 +202,7 @@ const FeedItemStats: React.FC<{
             />
             {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
         </div>
-        {(layout !== 'modal') && (<div className='flex gap-1'>
+        <div className='flex gap-1'>
             <Button
                 className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
                 hideLabel={true}
@@ -218,7 +218,7 @@ const FeedItemStats: React.FC<{
             {commentCount > 0 && (layout !== 'inbox') && (
                 <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
             )}
-        </div>)}
+        </div>
     </div>);
 };
 

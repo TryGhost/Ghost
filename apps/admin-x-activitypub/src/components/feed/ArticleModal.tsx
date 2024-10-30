@@ -291,7 +291,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 </>
                             );
                         })}
-
+                
                         {object.type === 'Note' && (
                             <FeedItem
                                 actor={actor}
