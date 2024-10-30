@@ -679,12 +679,14 @@ test.describe('Header card V2', () => {
 
     test('can swap split layout sides on image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
-        const fileChooserPromise = page.waitForEvent('filechooser');
         await createHeaderCard({page, version: 2});
+        // Mouse position from earlier test can mean a tooltip is covering the split layout button
+        await page.mouse.move(0, 0);
         await page.locator('[data-testid="header-layout-split"]').click();
         await expect(page.locator('[data-testid="header-background-image-toggle"]')).toHaveCount(0);
-        await page.click('[data-testid="media-upload-placeholder"]');
         // Set files
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.click('[data-testid="media-upload-placeholder"]');
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
         await expect(page.locator('[data-testid="header-card-container"] [data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
