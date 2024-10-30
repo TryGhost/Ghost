@@ -96,7 +96,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
     const isOpen = editor?.isFocused ?? false;
 
     return (
-        <div ref={formEl} className='mt-[-4px] px-3 pb-2 pt-3' data-testid="main-form">
+        <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
             <Form editor={editor} isOpen={isOpen} reduced={false} {...submitProps} />
         </div>
     );
