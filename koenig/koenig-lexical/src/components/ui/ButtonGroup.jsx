@@ -33,7 +33,7 @@ export function IconButton({dataTestId, onClick, label, name, selectedName, Icon
         <li className="mb-0">
             <button
                 aria-label={label}
-                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-grey-150 dark:hover:bg-grey-900 ${isActive ? 'bg-grey-150 text-green-600 dark:bg-grey-900 dark:text-white' : 'text-black dark:text-white' } ${Icon || 'text-[1.3rem] font-bold'}`}
+                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-grey-150 dark:hover:bg-grey-900 ${isActive ? 'bg-grey-150 text-green-600 dark:bg-grey-900 dark:text-white' : 'text-black dark:text-white' } ${Icon ? '' : 'text-[1.3rem] font-bold'}`}
                 data-testid={dataTestId}
                 type="button"
                 onClick={handleClick}
