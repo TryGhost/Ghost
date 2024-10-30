@@ -68,14 +68,10 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
       }
 
       function initializeResize() {
-        document.body.style.opacity = '0.5';
-        document.body.style.transition = 'opacity 0.3s ease';
-
         resizeIframe();
 
         waitForImages().then(() => {
           isFullyLoaded = true;
-          document.body.style.opacity = '1';
           resizeIframe();
         });
       }
@@ -197,6 +193,16 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
         setCommentsState(prev => [activity].concat(prev));
     }
 
+    const replyBoxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (focusReply && replyBoxRef.current) {
+            setTimeout(() => {
+                replyBoxRef.current?.scrollIntoView({block: 'center'});
+            }, 100);
+        }
+    }, [focusReply]);
+
     return (
         <Modal
             align='right'
@@ -238,7 +244,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                         {object.type === 'Article' && (
                             <ArticleBody excerpt={object?.preview?.content} heading={object.name} html={object.content} image={object?.image} />
                         )}
-                        <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
+                        <div ref={replyBoxRef}>
+                            <APReplyBox 
+                                focused={isFocused} 
+                                object={object} 
+                                onNewReply={handleNewReply}
+                            />
+                        </div>
                         <FeedItemDivider />
 
                         {commentsState.map((comment, index) => {
