@@ -263,17 +263,15 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     </div>
                 </div>
                 <div className='grow overflow-y-auto'>
-                    <div className='mx-auto max-w-[580px] py-10'>
-                        {activityThreadParents.map((item, index) => {
-                            const showDivider = index !== activityThreadParents.length - 1;
-
+                    <div className='mx-auto max-w-[580px] pb-10'>
+                        {activityThreadParents.map((item) => {
                             return (
                                 <>
                                     <FeedItem
                                         actor={item.actor}
                                         commentCount={item.object.replyCount ?? 0}
-                                        last={true}
-                                        layout='modal'
+                                        last={false}
+                                        layout='reply'
                                         object={item.object}
                                         type='Note'
                                         onClick={() => {
@@ -281,7 +279,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         }}
                                         onCommentClick={() => {}}
                                     />
-                                    {showDivider && <FeedItemDivider />}
                                 </>
                             );
                         })}
@@ -290,7 +287,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             <FeedItem
                                 actor={actor}
                                 commentCount={object.replyCount ?? 0}
-                                layout='modal'
+                                last={true}
+                                layout={activityThreadParents.length > 0 ? 'modal' : 'modal'}
                                 object={object}
                                 type='Note'
                                 onCommentClick={() => {
