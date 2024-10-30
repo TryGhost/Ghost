@@ -35,6 +35,10 @@ module.exports = class CommentsController {
      * @param {Frame} frame
      */
     async browse(frame) {
+        if (frame.options.order === 'best') {
+            console.warn('Ordering by "best" is not supported for comments');
+            return this.service.getBestComments(frame.options);
+        }
         if (frame.options.post_id) {
             if (frame.options.filter) {
                 frame.options.mongoTransformer = function (query) {
@@ -51,6 +55,7 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
+
         return this.service.getComments(frame.options);
     }
 

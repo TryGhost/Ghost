@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
+const {forEach} = require('lodash');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 
@@ -26,6 +27,7 @@ const dbFns = {
      * @typedef {Object} AddCommentReplyData
      * @property {string} member_id
      * @property {string} [html='This is a reply']
+     * @property {date} [created_at]
      */
     /**
      * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
@@ -40,7 +42,8 @@ const dbFns = {
             post_id: data.post_id || postId,
             member_id: data.member_id,
             parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>'
+            html: data.html || '<p>This is a comment</p>',
+            created_at: data.created_at
         });
     },
     /**
@@ -511,20 +514,109 @@ describe('Comments API', function () {
             });
 
             it('can show most liked comment first when order param = best', async function () {
-                await setupBrowseCommentsData();
-                const data = await membersAgent
-                    .get(`/api/comments/post/${postId}`);
+                // await setupBrowseCommentsData();
+                // add another comment
+                await dbFns.addComment({
+                    html: 'This is the newest comment',
+                    member_id: fixtureManager.get('members', 2).id,
+                    created_at: new Date('2024-08-18')
+                });
+
+                const secondBest = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: 'This will be the second best comment',
+                    created_at: new Date('2022-01-01')
+                });
+
+                await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    created_at: new Date('2023-01-01')
+                });
+
+                const bestComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This will be the best comment',
+                    created_at: new Date('2021-01-01')
+                });
+
+                const oldestComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: 'ancient comment',
+                    created_at: new Date('2019-01-01')
+                });
 
                 await dbFns.addLike({
-                    comment_id: data.body.comments[1].id,
+                    comment_id: secondBest.id,
                     member_id: loggedInMember.id
                 });
 
+                await dbFns.addLike({
+                    comment_id: bestComment.id,
+                    member_id: loggedInMember.id
+                });
+
+                await dbFns.addLike({
+                    comment_id: bestComment.id,
+                    member_id: fixtureManager.get('members', 0).id
+                });
+
+                await dbFns.addLike({
+                    comment_id: bestComment.id,
+                    member_id: fixtureManager.get('members', 1).id
+                });
+
                 const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}/?order=best`)
+                    .get(`/api/comments/post/${postId}/?page=1&order=best`)
                     .expectStatus(200);
 
-                should(data2.body.comments[0].id).eql(data.body.comments[1].id);
+                should(data2.body.comments[0].id).eql(bestComment.id);
+
+                // check oldest comment
+                should(data2.body.comments[4].id).eql(oldestComment.id);
+            });
+
+            it.only('checks that pagination is working when order param = best', async function () {
+                // create 20 comments
+
+                forEach(new Array(12).fill(0), async (item, index) => {
+                    await dbFns.addComment({
+                        member_id: fixtureManager.get('members', 1).id,
+                        html: `This is comment ${index}`,
+                        created_at: new Date(`2021-01-${index + 1}`)
+                    });
+                });
+
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: 'This is the best comment',
+                    created_at: new Date('2021-01-10')
+                });
+
+                // console.log('comment', comment);
+
+                await dbFns.addLike({
+                    comment_id: comment.id,
+                    member_id: loggedInMember.id
+                });
+
+                await dbFns.addLike({
+                    comment_id: comment.id,
+                    member_id: fixtureManager.get('members', 1).id
+                });
+
+                const data = await membersAgent
+                    .get(`/api/comments/post/${postId}/?limit=5&page=1&order=best`)
+                    .expectStatus(200);
+
+                should(data.body.comments.length).eql(5);
+                should(data.body.meta.pagination.total).eql(13);
+                should(data.body.meta.pagination.pages).eql(3);
+                should(data.body.meta.pagination.next).eql(2);
+                should(data.body.meta.pagination.limit).eql(5);
+
+                // check that first comment is the best comment 
+                console.log(data.body.comments);
+                should(data.body.comments[0].id).eql(comment.id);
             });
 
             it('does not most liked comment first when order param and keeps normal order', async function () {

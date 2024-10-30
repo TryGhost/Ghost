@@ -173,6 +173,73 @@ class CommentsService {
         return page;
     }
 
+    async getBestComments(options) {
+        this.checkEnabled();
+        const commentCount = await this.models.Comment.commentCount(options);
+
+        if (commentCount === 0) {
+            return {
+                comments: [],
+                meta: {
+                    pagination: {
+                        page: options.page,
+                        limit: options.limit,
+                        pages: 1,
+                        total: 0,
+                        next: null,
+                        prev: null
+                    }
+                }
+            };
+        }
+
+        const Comment = this.models.Comment;
+
+        // Step 1: Use `findPage` with a custom query to include like count and ordering
+        const result = await Comment.findPage({
+            ...options,
+            query: (qb) => {
+                qb.leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
+                    .count('comment_likes.id as count__likes')
+                    .groupBy('comments.id')
+                    .orderByRaw(`
+                        CASE WHEN count(comment_likes.id) > 0 THEN 1 ELSE 2 END,
+                        count__likes DESC,
+                        comments.created_at DESC
+                    `);
+            }
+        });
+    
+        return result; // `findPage` returns paginated data and metadata
+
+        // {
+        //     "comments": [],
+        //     "meta": {
+        //         "pagination": {
+        //             "page": 1,
+        //             "limit": 20,
+        //             "pages": 1,
+        //             "total": 0,
+        //             "next": null,
+        //             "prev": null
+        //         }
+        //     }
+        // }
+
+        // const orderedIds = await this.models.Comment.findMostLikedComments({...options, parentId: null});
+        // if (!orderedIds.length) {
+        //     return await this.models.Comment.findPage({...options, parentId: null});
+        // }
+        // const page = await this.models.Comment.findPage({
+        //     filter: `id:[${orderedIds.join(',')}]`,
+        //     withRelated: options.withRelated
+        // });
+
+        // page.data = orderedIds.map(id => page.data.find(comment => comment.id === id));
+
+        // return page;
+    }
+
     /**
      * @param {string} id - The ID of the Comment to get replies from
      * @param {any} options
