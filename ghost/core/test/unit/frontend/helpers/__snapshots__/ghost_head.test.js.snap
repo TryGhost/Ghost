@@ -1406,7 +1406,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <style>@import url(https://fonts.bunny.net/css?family=space-grotesk:700);@import url(https://fonts.bunny.net/css?family=poppins:400,500,600);:root {--gh-font-heading: Space Grotesk;--gh-font-body: Poppins;}</style>",
+    <link rel=\\"preconnect\\" href=\\"https://fonts.bunny.net\\"><link rel=\\"stylesheet\\" href=\\"https://fonts.bunny.net/css?family=space-grotesk:700|poppins:400,500,600\\"><style>:root {--gh-font-heading: Space Grotesk;--gh-font-body: Poppins;}</style>",
 }
 `;
 
@@ -1556,7 +1556,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <style>undefined;@import url(https://fonts.bunny.net/css?family=lora:400,700);:root {--gh-font-heading: Playfair Display;--gh-font-body: Lora;}</style>",
+    <link rel=\\"preconnect\\" href=\\"https://fonts.bunny.net\\"><link rel=\\"stylesheet\\" href=\\"https://fonts.bunny.net/css?family=undefined|lora:400,700\\"><style>:root {--gh-font-heading: Playfair Display;--gh-font-body: Lora;}</style>",
 }
 `;
 
