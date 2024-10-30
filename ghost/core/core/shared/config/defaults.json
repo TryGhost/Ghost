@@ -197,12 +197,12 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.45"
+        "version": "2.46"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
         "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
-        "version": "1.4"
+        "version": "1.5"
     },
     "announcementBar": {
         "url": "https://cdn.jsdelivr.net/ghost/announcement-bar@~{version}/umd/announcement-bar.min.js",
