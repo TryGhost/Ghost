@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
@@ -11,26 +12,22 @@ const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 
-function setupi18nStringsHack() {
-    const messages = {
-        subscriptionStatus: {
-            free: '',
-            complimentaryInfinite: ''
-        }
-    };
-    function t(string, key) {
-        // note: fake t function required to make i18next-parser pick up these definitions.  Do not remove. 
-        messages.subscriptionStatus[key] = string;
+// Wrapper function so that i18next-parser can find these strings
+const t = (x) => { 
+    return x;
+};
+
+const messages = {
+    subscriptionStatus: {
+        free: t(''),
+        expired: t('Your subscription has expired.'),
+        canceled: t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.'),
+        active: t('Your subscription will renew on {date}.'),
+        trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
+        complimentaryExpires: t('Your subscription will expire on {date}.'),
+        complimentaryInfinite: t('')
     }
-    // Yes, this feels 100% backwards, but it allows these strings to exist in only one place, and to be picked up by the i18next-parser.
-    t('Your subscription has expired.', 'expired');
-    t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.', 'canceled');
-    t('Your subscription will renew on {date}.', 'active');
-    t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.', 'trial');
-    t('Your subscription will expire on {date}.', 'complimentaryExpires');    
-    return messages;
-}
-const messages = setupi18nStringsHack();
+};
 
 function escapeHtml(unsafe) {
     return unsafe
@@ -564,7 +561,7 @@ class EmailRenderer {
      * @returns {string}
      */
     getMemberStatusText(member) {
-        const t = this.#t;
+        const t = this.#t; 
         const locale = this.#settingsCache.get('locale');
 
         if (member.status === 'free') {
@@ -627,7 +624,7 @@ class EmailRenderer {
      * @returns {ReplacementDefinition[]}
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
-        const t = this.#t;
+        const t = this.#t; // es-lint-disable-line no-shadow
         const locale = this.#settingsCache.get('locale');
 
         const baseDefinitions = [
