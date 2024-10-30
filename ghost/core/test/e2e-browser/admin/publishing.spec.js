@@ -187,7 +187,7 @@ test.describe('Publishing', () => {
         // Post should be available on web and sent as a newsletter
         test('Publish and Email', async ({sharedPage}) => {
             const postData = {
-                title: 'Publish and email post test failure',
+                title: 'Publish and email post',
                 body: 'This is my post body.'
             };
 
@@ -198,7 +198,7 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
             await closePublishFlow(sharedPage);
-            await checkPostPublished(sharedPage, postData);
+            await checkPostPublished(sharedPage, {title: 'incorrect title', body: 'incorrect body'});
         });
 
         // Post should only be available on web
