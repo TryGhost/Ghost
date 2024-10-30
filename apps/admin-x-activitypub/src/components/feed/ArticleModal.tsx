@@ -263,22 +263,31 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     </div>
                 </div>
                 <div className='grow overflow-y-auto'>
-                    <div className='mx-auto max-w-[580px] pb-10'>
+                    <div className='mx-auto max-w-[580px] pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
                             return (
                                 <>
-                                    <FeedItem
-                                        actor={item.actor}
-                                        commentCount={item.object.replyCount ?? 0}
-                                        last={false}
-                                        layout='reply'
-                                        object={item.object}
-                                        type='Note'
-                                        onClick={() => {
-                                            navigateForward(item.id, item.object, item.actor);
-                                        }}
-                                        onCommentClick={() => {}}
-                                    />
+                                    {item.object.type === 'Article' ? (
+                                        <ArticleBody
+                                            excerpt={item.object?.preview?.content}
+                                            heading={item.object.name}
+                                            html={item.object.content}
+                                            image={item.object?.image}
+                                        />
+                                    ) : (
+                                        <FeedItem
+                                            actor={item.actor}
+                                            commentCount={item.object.replyCount ?? 0}
+                                            last={false}
+                                            layout='reply'
+                                            object={item.object}
+                                            type='Note'
+                                            onClick={() => {
+                                                navigateForward(item.id, item.object, item.actor);
+                                            }}
+                                            onCommentClick={() => {}}
+                                        />
+                                    )}
                                 </>
                             );
                         })}
