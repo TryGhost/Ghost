@@ -227,7 +227,7 @@ interface FeedItemProps {
     object: ObjectProperties;
     layout: string;
     type: string;
-    commentCount: number;
+    commentCount?: number;
     last?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;

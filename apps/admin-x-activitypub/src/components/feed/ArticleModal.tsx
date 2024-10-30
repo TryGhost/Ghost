@@ -230,7 +230,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 ...object,
                 replyCount: object.replyCount + 1
             }
-        });
+        } as Partial<Activity>);
 
         // Update the replyCount on the current activity loaded in the modal
         // This is used for when we navigate via the history
