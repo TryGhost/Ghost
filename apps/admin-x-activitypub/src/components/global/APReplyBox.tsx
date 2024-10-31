@@ -64,6 +64,16 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                 if (onNewReply) {
                     onNewReply(activity);
                 }
+            },
+            onError() {
+                showToast({
+                    message: 'An error occurred while sending your reply.',
+                    type: 'error'
+                });
+
+                setTimeout(() => {
+                    textareaRef.current?.focus();
+                }, 100);
             }
         });
     }
