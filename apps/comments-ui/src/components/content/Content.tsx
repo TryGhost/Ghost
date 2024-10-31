@@ -48,13 +48,13 @@ const Content = () => {
             <>
                 <ContentTitle count={commentCount} showCount={showCount} title={title}/>
                 <div>
-                    {member ? (isPaidMember || !isPaidOnly ? <MainForm commentsCount={commentCount} /> : 
-                        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} ${(!member || (member && isPaidOnly)) && commentCount ? 'border-t' : 'border-none'} border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
+                    {(member && (isPaidMember || !isPaidOnly)) ? (
+                        <MainForm commentsCount={commentCount} />
+                    ) : (
+                        <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="cta-box">
                             <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />
-                        </section>) : 
-                        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} ${(!member || (member && isPaidOnly)) && commentCount ? 'border-t' : 'border-none'} border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
-                            <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />
-                        </section>}
+                        </section>
+                    )}
                 </div>
                 <div className="z-20 mb-7 mt-3">
                     <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
