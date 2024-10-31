@@ -113,5 +113,35 @@ describe('Unit: Util: sentry', function () {
             expect(result.tags.ajax_url).to.equal(undefined);
             expect(result.contexts.ajax).to.equal(undefined);
         });
+
+        it('skips reporting e.ghost.org requests', () => {
+            const event = {
+                request: {
+                    url: 'https://e.ghost.org/pg/injest/i/v0/e/'
+                }
+            };
+            const exception = {
+                payload: {
+                    errors: []
+                }
+            };
+            const hint = {
+                originalException: exception
+            };
+
+            const result = beforeSend(event, hint);
+            expect(result).to.equal(null);
+        });
+
+        it('skips reporting plausible requests', () => {
+            const event = {
+                request: {
+                    url: 'https://plausible.io/api/event'
+                }
+            };
+
+            const result = beforeSend(event);
+            expect(result).to.equal(null);
+        });
     });
 });

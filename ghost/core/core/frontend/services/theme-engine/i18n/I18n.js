@@ -10,6 +10,8 @@ const isEqual = require('lodash/isEqual');
 const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
+const i18nLib = require('@tryghost/i18n');
+const i18n = require('@tryghost/i18n/lib/i18n');
 
 class I18n {
     /**
@@ -66,11 +68,13 @@ class I18n {
      * @param {object} [bindings]
      * @returns {string}
      */
-    t(translationPath, bindings) {
+    /*t(translationPath, bindings) {
         let string;
         let msg;
 
-        string = this._findString(translationPath);
+        //string = this._findString(translationPath);
+
+        return i18n.t(translationPath, bindings);
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -92,11 +96,21 @@ class I18n {
      *  - Load proper language file into memory
      */
     init() {
-        this._strings = this._loadStrings();
 
-        this._initializeIntl();
+
+        //this._strings = this._loadStrings();
+        //this._initializeIntl();
     }
-
+    t(key, hash) {
+        const i18nLib = require('@tryghost/i18n');
+        const i18nLanguage = this.locale() || 'en';
+        const i18n = i18nLib(i18nLanguage, 'theme');
+        i18n.init({
+            lng: this.locale(),
+            ns: 'theme'
+        });
+        return(i18n.t(key, hash));
+    }
     /**
      * Attempt to load strings from a file
      *

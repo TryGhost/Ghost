@@ -32,6 +32,10 @@ export interface GetFollowingForProfileResponse {
     next: string | null;
 }
 
+export interface ActivityThread {
+    items: Activity[];
+}
+
 export class ActivityPubAPI {
     constructor(
         private readonly apiUrl: URL,
@@ -92,35 +96,77 @@ export class ActivityPubAPI {
     }
 
     async getOutbox(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.outboxApiUrl);
-        if (json === null) {
+        const fetchOutboxPage = async (url: URL): Promise<Activity[]> => {
+            const json = await this.fetchJSON(url);
+
+            if (json === null) {
+                return [];
+            }
+
+            let items: Activity[] = [];
+
+            if ('orderedItems' in json) {
+                items = Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+            }
+
+            if ('next' in json && typeof json.next === 'string') {
+                const nextUrl = new URL(json.next);
+                const nextItems = await fetchOutboxPage(nextUrl);
+
+                items = items.concat(nextItems);
+            }
+
+            return items;
+        };
+
+        const initialJson = await this.fetchJSON(this.outboxApiUrl);
+
+        if (initialJson === null || !('first' in initialJson) || typeof initialJson.first !== 'string') {
             return [];
         }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
-        }
-        return [];
+
+        const firstPageUrl = new URL(initialJson.first);
+
+        return fetchOutboxPage(firstPageUrl);
     }
 
     get followingApiUrl() {
         return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
     }
 
-    async getFollowing(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.followingApiUrl);
-        if (json === null) {
+    async getFollowing(): Promise<Actor[]> {
+        const fetchFollowingPage = async (url: URL): Promise<Actor[]> => {
+            const json = await this.fetchJSON(url);
+
+            if (json === null) {
+                return [];
+            }
+
+            let items: Actor[] = [];
+
+            if ('orderedItems' in json) {
+                items = Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+            }
+
+            if ('next' in json && typeof json.next === 'string') {
+                const nextUrl = new URL(json.next);
+                const nextItems = await fetchFollowingPage(nextUrl);
+
+                items = items.concat(nextItems);
+            }
+
+            return items;
+        };
+
+        const initialJson = await this.fetchJSON(this.followingApiUrl);
+
+        if (initialJson === null || !('first' in initialJson) || typeof initialJson.first !== 'string') {
             return [];
         }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
-        }
-        return [];
+
+        const firstPageUrl = new URL(initialJson.first);
+
+        return fetchFollowingPage(firstPageUrl);
     }
 
     async getFollowingCount(): Promise<number> {
@@ -138,15 +184,39 @@ export class ActivityPubAPI {
         return new URL(`.ghost/activitypub/followers/${this.handle}`, this.apiUrl);
     }
 
-    async getFollowers(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.followersApiUrl);
-        if (json === null) {
+    async getFollowers(): Promise<Actor[]> {
+        const fetchFollowersPage = async (url: URL): Promise<Actor[]> => {
+            const json = await this.fetchJSON(url);
+
+            if (json === null) {
+                return [];
+            }
+
+            let items: Actor[] = [];
+
+            if ('orderedItems' in json) {
+                items = Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+            }
+
+            if ('next' in json && typeof json.next === 'string') {
+                const nextUrl = new URL(json.next);
+                const nextItems = await fetchFollowersPage(nextUrl);
+
+                items = items.concat(nextItems);
+            }
+
+            return items;
+        };
+
+        const initialJson = await this.fetchJSON(this.followersApiUrl);
+
+        if (initialJson === null || !('first' in initialJson) || typeof initialJson.first !== 'string') {
             return [];
         }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        return [];
+
+        const firstPageUrl = new URL(initialJson.first);
+
+        return fetchFollowersPage(firstPageUrl);
     }
 
     async getFollowersCount(): Promise<number> {
@@ -158,21 +228,6 @@ export class ActivityPubAPI {
             return json.totalItems;
         }
         return 0;
-    }
-
-    get followersExpandedApiUrl() {
-        return new URL(`.ghost/activitypub/followers-expanded/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowersExpanded(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.followersExpandedApiUrl);
-        if (json === null) {
-            return [];
-        }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        return [];
     }
 
     async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
@@ -252,14 +307,38 @@ export class ActivityPubAPI {
     }
 
     async getLiked() {
-        const json = await this.fetchJSON(this.likedApiUrl);
-        if (json === null) {
+        const fetchLikedPage = async (url: URL): Promise<Activity[]> => {
+            const json = await this.fetchJSON(url);
+
+            if (json === null) {
+                return [];
+            }
+
+            let items: Activity[] = [];
+
+            if ('orderedItems' in json) {
+                items = Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
+            }
+
+            if ('next' in json && typeof json.next === 'string') {
+                const nextUrl = new URL(json.next);
+                const nextItems = await fetchLikedPage(nextUrl);
+
+                items = items.concat(nextItems);
+            }
+
+            return items;
+        };
+
+        const initialJson = await this.fetchJSON(this.likedApiUrl);
+
+        if (initialJson === null || !('first' in initialJson) || typeof initialJson.first !== 'string') {
             return [];
         }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        return [];
+
+        const firstPageUrl = new URL(initialJson.first);
+
+        return fetchLikedPage(firstPageUrl);
     }
 
     async like(id: string): Promise<void> {
@@ -328,72 +407,6 @@ export class ActivityPubAPI {
         };
     }
 
-    async getAllActivities(
-        includeOwn: boolean = false,
-        includeReplies: boolean = false,
-        filter: {type?: string[]} | null = null
-    ): Promise<Activity[]> {
-        const LIMIT = 50;
-
-        const fetchActivities = async (url: URL): Promise<Activity[]> => {
-            const json = await this.fetchJSON(url);
-
-            // If the response is null, return early
-            if (json === null) {
-                return [];
-            }
-
-            // If the response doesn't have an items array, return early
-            if (!('items' in json)) {
-                return [];
-            }
-
-            // If the response has an items property, but it's not an array
-            // use an empty array
-            const items = Array.isArray(json.items) ? json.items : [];
-
-            // If the response has a nextCursor property, fetch the next page
-            // recursively and concatenate the results
-            if ('nextCursor' in json && typeof json.nextCursor === 'string') {
-                const nextUrl = new URL(url);
-
-                nextUrl.searchParams.set('cursor', json.nextCursor);
-                nextUrl.searchParams.set('limit', LIMIT.toString());
-                if (includeOwn) {
-                    nextUrl.searchParams.set('includeOwn', includeOwn.toString());
-                }
-                if (includeReplies) {
-                    nextUrl.searchParams.set('includeReplies', includeReplies.toString());
-                }
-                if (filter) {
-                    nextUrl.searchParams.set('filter', JSON.stringify(filter));
-                }
-
-                const nextItems = await fetchActivities(nextUrl);
-
-                return items.concat(nextItems);
-            }
-
-            return items;
-        };
-
-        // Make a copy of the activities API URL and set the limit
-        const url = new URL(this.activitiesApiUrl);
-        url.searchParams.set('limit', LIMIT.toString());
-        if (includeOwn) {
-            url.searchParams.set('includeOwn', includeOwn.toString());
-        }
-        if (includeReplies) {
-            url.searchParams.set('includeReplies', includeReplies.toString());
-        }
-        if (filter) {
-            url.searchParams.set('filter', JSON.stringify(filter));
-        }
-
-        // Fetch the activities
-        return fetchActivities(url);
-    }
-
     async reply(id: string, content: string) {
         const url = new URL(`.ghost/activitypub/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content});
@@ -433,5 +446,11 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Profile;
+    }
+
+    async getThread(id: string): Promise<ActivityThread> {
+        const url = new URL(`.ghost/activitypub/thread/${btoa(id)}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as ActivityThread;
     }
 }

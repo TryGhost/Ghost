@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.98.0",
+  "version": "5.98.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -173,7 +173,7 @@
     "chalk": "4.1.2",
     "cheerio": "0.22.0",
     "common-tags": "1.8.2",
-    "compression": "1.7.4",
+    "compression": "1.7.5",
     "connect-slashes": "1.4.0",
     "cookie-session": "2.1.0",
     "cors": "2.8.5",
