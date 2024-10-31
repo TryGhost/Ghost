@@ -94,7 +94,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined,
+        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
