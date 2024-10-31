@@ -176,53 +176,68 @@ class CommentsService {
     async getBestComments(options) {
         this.checkEnabled();
         const postId = options.post_id;
+        let limit = options.limit || 20;
 
-        const allOrderedComments = await this.models.Comment.query()
+        const totalComments = await this.models.Comment.query()
+            .where('comments.post_id', postId) // Filter by postId
+            .count('comments.id as count__comments')
+            .first();
+
+        const commentsWithLikes = await this.models.Comment.query()
             .where('comments.post_id', postId) // Filter by postId
             .select('comments.id')
             .count('comment_likes.id as count__likes')
             .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
             .groupBy('comments.id')
+            .having('count__likes', '>', 0) // Only return comments with likes
             .orderByRaw(`
             count__likes DESC,
             comments.created_at DESC
         `);
 
-        const totalComments = allOrderedComments.length;
+        // get all id's of commentswithlikes
+        const commentsWithLikesIds = commentsWithLikes.map(comment => comment.id);
+        const totalCommentsWithLikes = commentsWithLikesIds.length;
 
-        if (totalComments === 0) {
-            const page = await this.models.Comment.findPage({...options, parentId: null});
-
-            return page;
+        if (totalCommentsWithLikes === 0) {
+            return await this.models.Comment.findPage({...options, parentId: null});
         }
-
-        const limit = Number(options.limit) || 15;
-        const currentPage = Number(options.page) || 1;
-
-        const orderedIds = allOrderedComments
-            .slice((options.page - 1) * limit, currentPage * limit)
-            .map(comment => comment.id);
 
         const findPageOptions = {
             ...options,
-            filter: `id:[${orderedIds.join(',')}]`,
-            withRelated: options.withRelated
+            filter: `id:-[${commentsWithLikesIds.join(',')}]`,
+            withRelated: options.withRelated,
+            parentId: null
         };
 
         const page = await this.models.Comment.findPage(findPageOptions);
 
-        page.data = orderedIds
-            .map(id => page.data.find(comment => comment && comment.id === id))
-            .filter(comment => comment !== undefined);
+        // add comments with likes to the beginning of the page
+        if (options.page === '1') {
+            const commentsWithLikesModels = await this.models.Comment.findPage({
+                filter: `id:[${commentsWithLikesIds.join(',')}]`,
+                withRelated: options.withRelated
+            });
 
-        page.meta.pagination = {
-            page: currentPage,
-            limit: limit,
-            pages: Math.ceil(totalComments / limit),
-            total: totalComments,
-            next: currentPage < Math.ceil(totalComments / limit) ? currentPage + 1 : null,
-            prev: currentPage > 1 ? currentPage - 1 : null
-        };
+            // sort commentsWithLikesModels by most likes
+            commentsWithLikesModels.data.sort((a, b) => {
+                const aLikes = commentsWithLikes.find(comment => comment.id === a.id).count__likes;
+                const bLikes = commentsWithLikes.find(comment => comment.id === b.id).count__likes;
+
+                if (aLikes > bLikes) {
+                    return -1;
+                } else if (aLikes < bLikes) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            });
+
+            page.data = commentsWithLikesModels.data.concat(page.data);
+        }
+
+        // override total with totalComments
+        page.meta.pagination.total = totalComments?.count__comments || 0;
 
         return page;
     }
