@@ -577,7 +577,7 @@ describe('Comments API', function () {
 
             it('checks that pagination is working when order param = best', async function () {
                 // create 20 comments
-
+                const postId2 = fixtureManager.get('posts', 1).id;
                 forEach(new Array(12).fill(0), async (item, index) => {
                     await dbFns.addComment({
                         member_id: fixtureManager.get('members', 1).id,
@@ -626,6 +626,12 @@ describe('Comments API', function () {
                 data2.body.comments.forEach((com) => {
                     should(ids.includes(com.id)).eql(false);
                 });
+
+                const data3 = await membersAgent
+                    .get(`/api/comments/post/${postId2}/?limit=5&page=1&order=best`)
+                    .expectStatus(200);
+
+                should(data3.body.comments.length).eql(0);
             });
 
             it('does not most liked comment first when order param and keeps normal order', async function () {

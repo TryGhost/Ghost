@@ -175,18 +175,26 @@ class CommentsService {
 
     async getBestComments(options) {
         this.checkEnabled();
+        const postId = options.post_id;
 
         const allOrderedComments = await this.models.Comment.query()
+            .where('comments.post_id', postId) // Filter by postId
             .select('comments.id')
             .count('comment_likes.id as count__likes')
             .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
             .groupBy('comments.id')
             .orderByRaw(`
-        count__likes DESC,
-        comments.created_at DESC
-    `);
+            count__likes DESC,
+            comments.created_at DESC
+        `);
 
         const totalComments = allOrderedComments.length;
+
+        if (totalComments === 0) {
+            const page = await this.models.Comment.findPage({...options, parentId: null});
+
+            return page;
+        }
 
         const limit = Number(options.limit) || 15;
         const currentPage = Number(options.page) || 1;

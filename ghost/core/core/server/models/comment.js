@@ -222,22 +222,6 @@ const Comment = ghostBookshelf.Model.extend({
         });
     },
 
-    // async findMostLikedComments(options = {}) {
-    //     const orderedIds = await ghostBookshelf.knex('comments')
-    //         .select('comments.id')
-    //         .count('comment_likes.id as count__likes')
-    //         .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
-    //         .groupBy('comments.id')
-    //         .orderByRaw(`
-    //         CASE WHEN count(comment_likes.id) > 0 THEN 1 ELSE 2 END, 
-    //         count__likes DESC, 
-    //         comments.created_at DESC
-    //     `)
-    //         .pluck('comments.id');
-
-    //     return orderedIds;
-    // },
-
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
 
