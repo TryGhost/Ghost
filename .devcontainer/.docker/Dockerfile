@@ -40,19 +40,21 @@ EXPOSE 6174
 EXPOSE 7173
 EXPOSE 7174
 
+WORKDIR /home/ghost
+
 
 # Full Devcontainer Stage: Add the code and install dependencies
 ### This is a full devcontainer with all the code and dependencies installed
 ### Useful in an environment like Github Codespaces where you don't mount your local code into the container
 FROM base-devcontainer AS full-devcontainer
-WORKDIR /workspaces/ghost
+WORKDIR /home/ghost
 COPY ../../ .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
 # Development Stage: alternative entrypoint for development with some caching optimizations
 FROM base-devcontainer AS development
 
-WORKDIR /workspaces/ghost
+WORKDIR /home/ghost
 
 COPY ../../ .
 
