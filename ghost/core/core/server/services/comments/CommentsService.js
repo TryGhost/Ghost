@@ -173,34 +173,39 @@ class CommentsService {
         return page;
     }
 
-    async getBestComments(options) {
-        this.checkEnabled();
-        const postId = options.post_id;
-
-        const totalComments = await this.models.Comment.query()
-            .where('comments.post_id', postId) // Filter by postId
-            .count('comments.id as count__comments')
-            .first();
-
-        const commentsWithLikes = await this.models.Comment.query()
-            .where('comments.post_id', postId) // Filter by postId
+    async getCommentsWithLikes(options) {
+        return await this.models.Comment.query()
+            .where('comments.post_id', options.post_id) // Filter by postId
             .select('comments.id')
             .count('comment_likes.id as count__likes')
             .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
             .groupBy('comments.id')
             .having('count__likes', '>', 0) // Only return comments with likes
             .orderByRaw(`
-            count__likes DESC,
-            comments.created_at DESC
-        `);
+        count__likes DESC,
+        comments.created_at DESC
+    `);
+    }
 
-        // get all id's of commentswithlikes
+    async getBestComments(options) {
+        this.checkEnabled();
+
+        const totalComments = await this.models.Comment.query()
+            .where('comments.post_id', options.post_id) // Filter by postId
+            .count('comments.id as count__comments')
+            .first();
+
+        const commentsWithLikes = await this.getCommentsWithLikes(options);
+        
+        if (commentsWithLikes.length === 0) {
+            // remove order from options
+            delete options.order;
+            const page = await this.models.Comment.findPage({...options, parentId: null});
+            return page;
+        }
+
         const commentsWithLikesIds = commentsWithLikes.map(comment => comment.id);
         const totalCommentsWithLikes = commentsWithLikesIds.length;
-
-        if (totalCommentsWithLikes === 0) {
-            return await this.models.Comment.findPage({...options, parentId: null});
-        }
 
         const findPageOptions = {
             ...options,
@@ -212,8 +217,9 @@ class CommentsService {
         const page = await this.models.Comment.findPage(findPageOptions);
 
         // add comments with likes to the beginning of the page
-        if (options.page === '1') {
+        if (options.page === '1' && totalCommentsWithLikes > 0) {
             const commentsWithLikesModels = await this.models.Comment.findPage({
+                ...options,
                 filter: `id:[${commentsWithLikesIds.join(',')}]`,
                 withRelated: options.withRelated
             });

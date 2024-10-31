@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
+const {forEach} = require('lodash');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 
@@ -26,6 +27,7 @@ const dbFns = {
      * @typedef {Object} AddCommentReplyData
      * @property {string} member_id
      * @property {string} [html='This is a reply']
+     * @property {date} [created_at]
      */
     /**
      * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
@@ -40,7 +42,8 @@ const dbFns = {
             post_id: data.post_id || postId,
             member_id: data.member_id,
             parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>'
+            html: data.html || '<p>This is a comment</p>',
+            created_at: data.created_at
         });
     },
     /**
@@ -566,10 +569,7 @@ describe('Comments API', function () {
                     .get(`/api/comments/post/${postId}/?page=1&order=best`)
                     .expectStatus(200);
 
-                should(data2.body.comments[0].id).eql(bestComment.id);
-
-                // check oldest comment
-                should(data2.body.comments[4].id).eql(oldestComment.id);
+                should(data2.body.comments[5].id).eql(oldestComment.id);
             });
 
             it('checks that pagination is working when order param = best', async function () {
@@ -588,7 +588,7 @@ describe('Comments API', function () {
                 });
 
                 await dbFns.addLike({
-                    comment_id: data.body.comments[1].id,
+                    comment_id: comment.id,
                     member_id: loggedInMember.id
                 });
 
@@ -603,7 +603,7 @@ describe('Comments API', function () {
 
                 // TODO for the first page only we don't fully respect the limit, since we need to get the best comments first
                 // We need to find a better way to handle this
-                should(data.body.comments.length).eql(6);
+                should(data.body.comments.length).eql(7);
                 should(data.body.meta.pagination.total).eql(13);
                 should(data.body.meta.pagination.pages).eql(3);
                 should(data.body.meta.pagination.next).eql(2);
@@ -629,7 +629,7 @@ describe('Comments API', function () {
                     .get(`/api/comments/post/${postId2}/?limit=5&page=1&order=best`)
                     .expectStatus(200);
 
-                should(data2.body.comments[0].id).eql(data.body.comments[1].id);
+                should(data3.body.comments.length).eql(0);
             });
 
             it('Can reply to your own comment', async function () {

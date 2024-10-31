@@ -51,7 +51,12 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
-        return this.service.getComments(frame.options);
+
+        if (frame.options.order === 'best') {
+            return await this.service.getBestComments(frame.options);
+        }
+
+        return await this.service.getComments(frame.options);
     }
 
     /**
