@@ -21,20 +21,14 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const [, setArticleActor] = useState<ActorProperties | null>(null);
     const {layout, setFeed, setInbox} = useLayout();
 
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading
-    } = useActivitiesForUser({
+    const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
-        includeReplies: true,
         excludeNonFollowers: true,
         filter: {
-            type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
+            type: ['Create:Article', 'Create:Note', 'Announce:Note']
         }
     });
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
 
     const {updateRoute} = useRouting();
 
@@ -45,10 +39,16 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         return !activity.object.inReplyTo;
     });
 
-    const handleViewContent = (object: ObjectProperties, actor: ActorProperties, comments: Activity[], focusReply = false) => {
+    const handleViewContent = (activityId: string, object: ObjectProperties, actor: ActorProperties, focusReply = false) => {
         setArticleContent(object);
         setArticleActor(actor);
-        NiceModal.show(ArticleModal, {object, actor, comments, focusReply});
+        NiceModal.show(ArticleModal, {
+            activityId,
+            object,
+            actor,
+            focusReply,
+            updateActivity
+        });
     };
 
     function getContentAuthor(activity: Activity) {
@@ -121,21 +121,21 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                 key={activity.id}
                                                 data-test-view-article
                                                 onClick={() => handleViewContent(
+                                                    activity.id,
                                                     activity.object,
-                                                    getContentAuthor(activity),
-                                                    activity.object.replies
+                                                    getContentAuthor(activity)
                                                 )}
                                             >
                                                 <FeedItem
                                                     actor={activity.actor}
-                                                    comments={activity.object.replies}
+                                                    commentCount={activity.object.replyCount ?? 0}
                                                     layout={layout}
                                                     object={activity.object}
                                                     type={activity.type}
                                                     onCommentClick={() => handleViewContent(
+                                                        activity.id,
                                                         activity.object,
                                                         getContentAuthor(activity),
-                                                        activity.object.replies,
                                                         true
                                                     )}
                                                 />

@@ -180,7 +180,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                         <div>
                             <FeedItem
                                 actor={profile.actor}
-                                comments={post.object.replies}
+                                commentCount={post.object.replyCount}
                                 layout='feed'
                                 object={post.object}
                                 type={post.type}

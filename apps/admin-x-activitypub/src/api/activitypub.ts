@@ -32,6 +32,10 @@ export interface GetFollowingForProfileResponse {
     next: string | null;
 }
 
+export interface ActivityThread {
+    items: Activity[];
+}
+
 export class ActivityPubAPI {
     constructor(
         private readonly apiUrl: URL,
@@ -508,5 +512,11 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Profile;
+    }
+
+    async getThread(id: string): Promise<ActivityThread> {
+        const url = new URL(`.ghost/activitypub/thread/${btoa(id)}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as ActivityThread;
     }
 }

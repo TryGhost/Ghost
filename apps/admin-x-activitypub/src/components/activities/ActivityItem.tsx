@@ -3,11 +3,13 @@ import React, {ReactNode} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 export type Activity = {
+    id: string,
     type: string,
     actor: ActorProperties,
     object: ObjectProperties & {
         inReplyTo: ObjectProperties | string | null
         replies: Activity[]
+        replyCount: number
     }
 }
 
