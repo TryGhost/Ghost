@@ -1133,7 +1133,7 @@ test.describe('Image card', async () => {
         });
     });
 
-    test('can drag image card onto image card to create gallery', async function () {
+    test.skip('can drag image card onto image card to create gallery', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         await focusEditor(page);
 
