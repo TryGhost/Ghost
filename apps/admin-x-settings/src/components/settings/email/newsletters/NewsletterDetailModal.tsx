@@ -514,8 +514,8 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex flex-col'>
-            <div className='px-7 pb-7 pt-5'>
-                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+            <div className='px-7 pb-7 pt-0'>
+                <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </div>
     );
