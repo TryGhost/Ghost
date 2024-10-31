@@ -187,6 +187,8 @@ class CommentsService {
     `);
     }
 
+    //TODO: Find a way of querying for best comments directly in findPage
+
     async getBestComments(options) {
         this.checkEnabled();
         options.order = 'created_at+desc';

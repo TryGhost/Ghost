@@ -569,7 +569,10 @@ describe('Comments API', function () {
                     .get(`/api/comments/post/${postId}/?page=1&order=best`)
                     .expectStatus(200);
 
-                should(data2.body.comments[5].id).eql(oldestComment.id);
+                // get the LAST comment from data2
+                let lastComment = data2.body.comments[data2.body.comments.length - 1];
+
+                should(lastComment.id).eql(oldestComment.id);
             });
 
             it('checks that pagination is working when order param = best', async function () {
