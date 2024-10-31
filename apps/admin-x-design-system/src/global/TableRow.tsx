@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, {forwardRef} from 'react';
 
-export const tableRowHoverBgClasses = 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950';
+export const tableRowHoverBgClasses = 'before:absolute before:inset-x-[-16px] before:top-[-1px] before:bottom-0 before:bg-grey-50 before:opacity-0 hover:before:opacity-100 before:rounded-md before:transition-opacity dark:before:bg-grey-950 hover:z-10';
 
 export interface TableRowProps {
     id?: string;
@@ -28,23 +28,26 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
 
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
-        'group/table-row',
+        'group/table-row relative',
         bgOnHover && tableRowHoverBgClasses,
         onClick && 'cursor-pointer',
-        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200 dark:border-grey-950 dark:hover:border-grey-900' : 'border-y border-none first-of-type:hover:border-t-transparent',
+        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-950' : 'border-y border-none first-of-type:hover:border-t-transparent',
+        'hover:border-b-transparent',
         className
     );
 
     return (
         <tr ref={ref} className={tableRowClasses} data-testid={testId} id={id} style={style} onClick={handleClick}>
-            {children}
-            {action &&
-                <td className={`w-[1%] whitespace-nowrap p-0 hover:cursor-pointer`}>
-                    <div className={`visible flex items-center justify-end py-3 pr-6 ${hideActions ? 'group-hover/table-row:visible md:invisible' : ''}`}>
-                        {action}
-                    </div>
-                </td>
-            }
+            <td className="p-0" colSpan={1000}>
+                <div className="relative z-10 flex items-center">
+                    <div className="grow py-2">{children}</div>
+                    {action &&
+                        <div className={`flex items-center justify-end p-2${hideActions ? ' opacity-0 group-hover/table-row:opacity-100' : ''}`}>
+                            {action}
+                        </div>
+                    }
+                </div>
+            </td>
         </tr>
     );
 });

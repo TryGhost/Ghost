@@ -1,0 +1,47 @@
+# Base container and services for running Ghost
+## Intended to be extended by another compose file
+## e.g. docker compose -f base.compose.yml -f development.compose.yml up
+## Does not include development dependencies, Ghost code, or any other dependencies
+name: ghost-base
+services:
+  ghost:
+    image: ghost-base
+    build:
+      context: ../../
+      dockerfile: .devcontainer/.docker/Dockerfile
+      target: base
+    pull_policy: never
+    tty: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  mysql:
+    image: mysql:8.0.35
+    # We'll need to look into how we can further fine tune the memory usage/performance here
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    ports:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost
+    restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: "mysql -uroot -proot ghost -e 'select 1'"
+      interval: 1s
+      retries: 120
+  redis:
+    image: redis:7.0
+    ports:
+      - "6379"
+    restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      retries: 120
+
+volumes:
+  mysql-data:

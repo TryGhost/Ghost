@@ -18,6 +18,7 @@ env:
   CACHED_BUILD_PATHS: |
     ${{ github.workspace }}/ghost/*/build
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
+  NODE_VERSION: 20.11.1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -171,7 +172,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
           cache: yarn
 
       - name: Install dependencies
@@ -211,7 +212,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -246,7 +247,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -270,7 +271,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -314,7 +315,7 @@ jobs:
       env:
         FORCE_COLOR: 0
       with:
-        node-version: '18.x'
+        node-version: ${{ env.NODE_VERSION }}
         cache: yarn
 
     - name: Install Stripe-CLI
@@ -388,7 +389,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -413,7 +414,7 @@ jobs:
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
       - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.3
+        uses: benchmark-action/github-action-benchmark@v1.20.4
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: ghost/core/boot-perf-formatted.json
@@ -476,7 +477,7 @@ jobs:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -598,11 +599,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: mysql8
               NODE_ENV: testing-mysql
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -669,7 +670,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -722,7 +723,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -775,7 +776,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -857,7 +858,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Update from v4
         run: |
@@ -1025,7 +1026,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -1068,4 +1069,4 @@ jobs:
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: |
-            https://cdn.jsdelivr.net/npm/@tryghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
+            https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js

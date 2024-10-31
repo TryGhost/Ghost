@@ -27,7 +27,7 @@ class EmailServiceWrapper {
         const limitService = require('../limits');
         const labs = require('../../../shared/labs');
         const emailAddressService = require('../email-address');
-
+        const i18nLib = require('@tryghost/i18n');
         const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
@@ -49,6 +49,8 @@ class EmailServiceWrapper {
         const mailgunClient = new MailgunClient({
             config: configService, settings: settingsCache
         });
+        const i18nLanguage = settingsCache.get('locale') || 'en';
+        const i18n = i18nLib(i18nLanguage, 'newsletter');
 
         const mailgunEmailProvider = new MailgunEmailProvider({
             mailgunClient,
@@ -73,7 +75,8 @@ class EmailServiceWrapper {
             outboundLinkTagger: memberAttribution.outboundLinkTagger,
             emailAddressService: emailAddressService.service,
             labs,
-            models: {Post}
+            models: {Post},
+            t: i18n.t
         });
 
         const sendingService = new SendingService({

@@ -10,7 +10,7 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ProfileSearchResultModal from './search/ProfileSearchResultModal';
+import ViewProfileModal from './global/ViewProfileModal';
 
 import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
@@ -49,7 +49,7 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
         <ActivityItem
             key={result.actor.id}
             onClick={() => {
-                NiceModal.show(ProfileSearchResultModal, {profile: result, onFollow, onUnfollow});
+                NiceModal.show(ViewProfileModal, {profile: result, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={result.actor}/>
@@ -73,7 +73,7 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@quillmatiq@mastodon.social', '@miaq@flipboard.social', '@mallory@techpolicy.social']);
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
     const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
     // Initialise search query
@@ -86,7 +86,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     const results = data?.profiles || [];
     const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0;
+    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
     const showSuggested = query === '' || (isFetched && results.length === 0);
 
     useEffect(() => {
@@ -106,7 +106,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation title='Search' />
+            <MainNavigation page='search' />
             <div className='z-0 flex w-full flex-col items-center pt-8'>
                 <div className='relative flex w-full max-w-[560px] items-center '>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />

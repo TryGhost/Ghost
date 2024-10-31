@@ -923,6 +923,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     line-height: 34px;
     background: var(--white);
     border-radius: var(--border-radius);
+    margin-left: 8px;
 }
 
 @media (max-width: 500px) {
