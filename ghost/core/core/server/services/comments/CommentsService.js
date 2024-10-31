@@ -173,6 +173,60 @@ class CommentsService {
         return page;
     }
 
+    async getBestComments(options) {
+        this.checkEnabled();
+        const postId = options.post_id;
+
+        const allOrderedComments = await this.models.Comment.query()
+            .where('comments.post_id', postId) // Filter by postId
+            .select('comments.id')
+            .count('comment_likes.id as count__likes')
+            .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
+            .groupBy('comments.id')
+            .orderByRaw(`
+            count__likes DESC,
+            comments.created_at DESC
+        `);
+
+        const totalComments = allOrderedComments.length;
+
+        if (totalComments === 0) {
+            const page = await this.models.Comment.findPage({...options, parentId: null});
+
+            return page;
+        }
+
+        const limit = Number(options.limit) || 15;
+        const currentPage = Number(options.page) || 1;
+
+        const orderedIds = allOrderedComments
+            .slice((options.page - 1) * limit, currentPage * limit)
+            .map(comment => comment.id);
+
+        const findPageOptions = {
+            ...options,
+            filter: `id:[${orderedIds.join(',')}]`,
+            withRelated: options.withRelated
+        };
+
+        const page = await this.models.Comment.findPage(findPageOptions);
+
+        page.data = orderedIds
+            .map(id => page.data.find(comment => comment && comment.id === id))
+            .filter(comment => comment !== undefined);
+
+        page.meta.pagination = {
+            page: currentPage,
+            limit: limit,
+            pages: Math.ceil(totalComments / limit),
+            total: totalComments,
+            next: currentPage < Math.ceil(totalComments / limit) ? currentPage + 1 : null,
+            prev: currentPage > 1 ? currentPage - 1 : null
+        };
+
+        return page;
+    }
+
     /**
      * @param {string} id - The ID of the Comment to get replies from
      * @param {any} options
