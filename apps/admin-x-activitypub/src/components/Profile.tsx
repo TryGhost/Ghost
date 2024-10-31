@@ -1,5 +1,5 @@
 import APAvatar from './global/APAvatar';
-import ActivityItem, {type Activity} from './activities/ActivityItem';
+import ActivityItem from './activities/ActivityItem';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
@@ -7,9 +7,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
-import ArticleModal from './feed/ArticleModal';
 import ViewProfileModal from './global/ViewProfileModal';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {handleViewContent} from '../utils/content-handlers';
 import {
     useFollowersCountForUser,
     useFollowersForUser,
@@ -75,14 +75,6 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         });
     };
 
-    const handlePostClick = (activity: Activity) => {
-        NiceModal.show(ArticleModal, {
-            object: activity.object,
-            actor: activity.actor,
-            comments: activity.object.replies || []
-        });
-    };
-
     const tabs = [
         {
             id: 'posts',
@@ -99,14 +91,14 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handlePostClick(activity)}
+                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
-                                        onCommentClick={() => {}}
+                                        onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < posts.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
@@ -144,14 +136,14 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handlePostClick(activity)}
+                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
-                                        onCommentClick={() => {}}
+                                        onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < liked.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
