@@ -19,13 +19,13 @@ const t = (x) => {
 
 const messages = {
     subscriptionStatus: {
-        free: t(''),
+        free: '',
         expired: t('Your subscription has expired.'),
         canceled: t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.'),
         active: t('Your subscription will renew on {date}.'),
         trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
         complimentaryExpires: t('Your subscription will expire on {date}.'),
-        complimentaryInfinite: t('')
+        complimentaryInfinite: ''
     }
 };
 
