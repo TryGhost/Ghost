@@ -7,7 +7,6 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
-const {forEach} = require('lodash');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 
@@ -27,7 +26,6 @@ const dbFns = {
      * @typedef {Object} AddCommentReplyData
      * @property {string} member_id
      * @property {string} [html='This is a reply']
-     * @property {date} [created_at]
      */
     /**
      * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
@@ -42,8 +40,7 @@ const dbFns = {
             post_id: data.post_id || postId,
             member_id: data.member_id,
             parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>',
-            created_at: data.created_at
+            html: data.html || '<p>This is a comment</p>'
         });
     },
     /**
@@ -591,7 +588,7 @@ describe('Comments API', function () {
                 });
 
                 await dbFns.addLike({
-                    comment_id: comment.id,
+                    comment_id: data.body.comments[1].id,
                     member_id: loggedInMember.id
                 });
 
@@ -632,7 +629,7 @@ describe('Comments API', function () {
                     .get(`/api/comments/post/${postId2}/?limit=5&page=1&order=best`)
                     .expectStatus(200);
 
-                should(data3.body.comments.length).eql(0);
+                should(data2.body.comments[0].id).eql(data.body.comments[1].id);
             });
 
             it('Can reply to your own comment', async function () {
