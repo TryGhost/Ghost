@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
@@ -7,19 +8,23 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 
+// Wrapper function so that i18next-parser can find these strings
+const t = (x) => { 
+    return x;
+};
+
 const messages = {
     subscriptionStatus: {
         free: '',
-        expired: 'Your subscription has expired.',
-        canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
-        active: 'Your subscription will renew on {date}.',
-        trial: 'Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.',
-        complimentaryExpires: 'Your subscription will expire on {date}.',
+        expired: t('Your subscription has expired.'),
+        canceled: t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.'),
+        active: t('Your subscription will renew on {date}.'),
+        trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
+        complimentaryExpires: t('Your subscription will expire on {date}.'),
         complimentaryInfinite: ''
     }
 };
@@ -33,8 +38,11 @@ function escapeHtml(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
-function formatDateLong(date, timezone) {
-    return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
+function formatDateLong(date, timezone, locale = 'en-gb') {
+    if (locale === 'en') { 
+        locale = 'en-gb'; 
+    }
+    return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -119,6 +127,7 @@ class EmailRenderer {
     #emailAddressService;
     #labs;
     #models;
+    #t;
 
     /**
      * @param {object} dependencies
@@ -139,6 +148,7 @@ class EmailRenderer {
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
+     * @param {Function} dependencies.t
      */
     constructor({
         settingsCache,
@@ -155,7 +165,8 @@ class EmailRenderer {
         emailAddressService,
         outboundLinkTagger,
         labs,
-        models
+        models,
+        t
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -172,8 +183,9 @@ class EmailRenderer {
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
         this.#models = models;
+        this.#t = t;
     }
-
+    
     getSubject(post, isTestEmail = false) {
         const subject = post.related('posts_meta')?.get('email_subject') || post.get('title');
         return isTestEmail ? `[TEST] ${subject}` : subject;
@@ -549,9 +561,12 @@ class EmailRenderer {
      * @returns {string}
      */
     getMemberStatusText(member) {
+        const t = this.#t; 
+        const locale = this.#settingsCache.get('locale');
+
         if (member.status === 'free') {
             // Not really used, but as a backup
-            return tpl(messages.subscriptionStatus.free);
+            return t(messages.subscriptionStatus.free);
         }
 
         // Do we have an active subscription?
@@ -564,12 +579,12 @@ class EmailRenderer {
 
             if (!activeSubscription && !member.tiers.length) {
                 // No subscription?
-                return tpl(messages.subscriptionStatus.expired);
+                return t(messages.subscriptionStatus.expired);
             }
 
             if (!activeSubscription) {
                 if (!member.tiers[0]?.expiry_at) {
-                    return tpl(messages.subscriptionStatus.complimentaryInfinite);
+                    return t(messages.subscriptionStatus.complimentaryInfinite);
                 }
                 // Create one manually that is expiring
                 activeSubscription = {
@@ -580,30 +595,28 @@ class EmailRenderer {
                 };
             }
             const timezone = this.#settingsCache.get('timezone');
-
             // Translate to a human readable string
             if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
-                const date = formatDateLong(activeSubscription.trial_end_at, timezone);
-                return tpl(messages.subscriptionStatus.trial, {date});
+                const date = formatDateLong(activeSubscription.trial_end_at, timezone, locale);
+                return t(messages.subscriptionStatus.trial, {date});
             }
 
-            const date = formatDateLong(activeSubscription.current_period_end, timezone);
+            const date = formatDateLong(activeSubscription.current_period_end, timezone, locale);
             if (activeSubscription.cancel_at_period_end) {
-                return tpl(messages.subscriptionStatus.canceled, {date});
+                return t(messages.subscriptionStatus.canceled, {date});
             }
-
-            return tpl(messages.subscriptionStatus.active, {date});
+            return t(messages.subscriptionStatus.active, {date});
         }
 
         const expires = member.tiers[0]?.expiry_at ?? null;
 
         if (expires) {
             const timezone = this.#settingsCache.get('timezone');
-            const date = formatDateLong(expires, timezone);
-            return tpl(messages.subscriptionStatus.complimentaryExpires, {date});
+            const date = formatDateLong(expires, timezone, locale);
+            return t(messages.subscriptionStatus.complimentaryExpires, {date});
         }
 
-        return tpl(messages.subscriptionStatus.complimentaryInfinite);
+        return t(messages.subscriptionStatus.complimentaryInfinite);
     }
 
     /**
@@ -611,6 +624,9 @@ class EmailRenderer {
      * @returns {ReplacementDefinition[]}
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
+        const t = this.#t; // es-lint-disable-line no-shadow
+        const locale = this.#settingsCache.get('locale');
+
         const baseDefinitions = [
             {
                 id: 'unsubscribe_url',
@@ -664,22 +680,24 @@ class EmailRenderer {
                 id: 'created_at',
                 getValue: (member) => {
                     const timezone = this.#settingsCache.get('timezone');
-                    return member.createdAt ? formatDateLong(member.createdAt, timezone) : '';
+                    return member.createdAt ? formatDateLong(member.createdAt, timezone, locale) : '';
                 }
             },
             {
                 id: 'status',
                 getValue: (member) => {
                     if (member.status === 'comped') {
-                        return 'complimentary';
+                        return t('complimentary');
                     }
                     if (this.isMemberTrialing(member)) {
-                        return 'trialing';
+                        return t('trialing');
                     }
-                    return member.status;
+                    // other possible statuses: t('free'), t('paid') //
+                    return t(member.status);
                 }
             },
             {
+                //TODO i18n
                 id: 'status_text',
                 getValue: (member) => {
                     return this.getMemberStatusText(member);
@@ -748,7 +766,6 @@ class EmailRenderer {
             }
             delete replacement.originalId;
         }
-
         return replacements;
     }
 
@@ -761,7 +778,7 @@ class EmailRenderer {
         this.#handlebars = require('handlebars').create();
 
         // Register helpers
-        registerHelpers(this.#handlebars, labs);
+        registerHelpers(this.#handlebars, labs, this.#t);
 
         // Partials
         const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
@@ -772,9 +789,6 @@ class EmailRenderer {
 
         const feedbackButtonPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button.hbs`), 'utf8');
         this.#handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
-
-        const feedbackButtonMobilePartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button-mobile.hbs`), 'utf8');
-        this.#handlebars.registerPartial('feedbackButtonMobile', feedbackButtonMobilePartial);
 
         const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);

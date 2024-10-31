@@ -205,16 +205,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -863,16 +866,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -1521,16 +1527,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -2714,16 +2723,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
