@@ -1,5 +1,5 @@
 export type BodyFont = 'Fira Mono' | 'Fira Sans' | 'IBM Plex Serif' | 'Inter' | 'JetBrains Mono' | 'Lora' | 'Manrope' | 'Merriweather' | 'Nunito' | 'Noto Sans' | 'Noto Serif' | 'Poppins' | 'Roboto' | 'Space Mono';
-export type HeadingFont = 'Cardo' | 'Chakra Petch' | 'Old Standard TT' | 'Prata' | 'Rufina' | 'Space Grotesk' | 'Tenor Sans' | BodyFont;
+export type HeadingFont = 'Cardo' | 'Chakra Petch' | 'Old Standard TT' | 'Rufina' | 'Space Grotesk' | 'Tenor Sans' | BodyFont;
 export type CustomFonts = {heading: HeadingFont[], body: BodyFont[]};
 
 export type FontSelection = {
@@ -24,7 +24,6 @@ export const CUSTOM_FONTS: CustomFonts = {
         'Nunito',
         'Old Standard TT',
         'Poppins',
-        'Prata',
         'Roboto',
         'Rufina',
         'Space Grotesk',
@@ -55,7 +54,6 @@ const classFontNames = {
     Merriweather: 'merriweather',
     Nunito: 'nunito',
     'Old Standard TT': 'old-standard-tt',
-    Prata: 'prata',
     Roboto: 'roboto',
     Rufina: 'rufina',
     'Tenor Sans': 'tenor-sans',
@@ -92,9 +90,6 @@ export function generateCustomFontCss(fonts: FontSelection) {
         },
         'Old Standard TT': {
             family: 'old-standard-tt:400,700'
-        },
-        Prata: {
-            family: 'prata:400'
         },
         Roboto: {
             family: 'roboto:400,500,700'
