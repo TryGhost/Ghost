@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 DESCRIPTION >
     Top Device Types ordered by most visits.
@@ -34,6 +34,7 @@ SQL >
         {% end %}
 
         {% if defined(member_status) %} and member_status IN {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }} {% end %}
+                {% if defined(post_type) %} and post_type IN {{ Array(post_type, "'undefined', 'post', 'page'", description="Post type to filter on", required=False) }} {% end %}
         {% if defined(device) %} and device = {{ String(device, description="Device to filter on", required=False) }} {% end %}
         {% if defined(browser) %} and browser = {{ String(browser, description="Browser to filter on", required=False) }} {% end %}
         {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
