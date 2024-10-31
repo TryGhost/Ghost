@@ -189,7 +189,7 @@ class CommentsService {
 
     async getBestComments(options) {
         this.checkEnabled();
-
+        options.order = 'created_at+desc';
         const totalComments = await this.models.Comment.query()
             .where('comments.post_id', options.post_id) // Filter by postId
             .count('comments.id as count__comments')
@@ -199,7 +199,6 @@ class CommentsService {
         
         if (commentsWithLikes.length === 0) {
             // remove order from options
-            delete options.order;
             const page = await this.models.Comment.findPage({...options, parentId: null});
             return page;
         }

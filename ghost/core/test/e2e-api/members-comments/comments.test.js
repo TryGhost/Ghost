@@ -603,7 +603,7 @@ describe('Comments API', function () {
 
                 // TODO for the first page only we don't fully respect the limit, since we need to get the best comments first
                 // We need to find a better way to handle this
-                should(data.body.comments.length).eql(7);
+                should(data.body.comments.length).eql(6);
                 should(data.body.meta.pagination.total).eql(13);
                 should(data.body.meta.pagination.pages).eql(3);
                 should(data.body.meta.pagination.next).eql(2);
