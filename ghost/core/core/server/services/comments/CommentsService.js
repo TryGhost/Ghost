@@ -176,7 +176,6 @@ class CommentsService {
     async getBestComments(options) {
         this.checkEnabled();
         const postId = options.post_id;
-        let limit = options.limit || 20;
 
         const totalComments = await this.models.Comment.query()
             .where('comments.post_id', postId) // Filter by postId
