@@ -193,27 +193,6 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useAllActivitiesForUser({
-    handle,
-    includeOwn = false,
-    includeReplies = false,
-    filter = null
-}: {
-    handle: string;
-    includeOwn?: boolean;
-    includeReplies?: boolean;
-    filter?: {type?: string[]} | null;
-}) {
-    return useQuery({
-        queryKey: [`activities:${JSON.stringify({handle, includeOwn, includeReplies, filter})}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getAllActivities(includeOwn, includeReplies, filter);
-        }
-    });
-}
-
 export function useActivitiesForUser({
     handle,
     includeOwn = false,
