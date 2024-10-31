@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import APAvatar, {AvatarBadge} from './global/APAvatar';
@@ -11,7 +12,7 @@ import MainNavigation from './navigation/MainNavigation';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import stripHtml from '../utils/strip-html';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 // import {useFollowersForUser} from '../MainContent';
 
@@ -38,7 +39,7 @@ const getActivityDescription = (activity: Activity): string => {
         if (activity.object && activity.object.type === 'Article') {
             return `Liked your article "${activity.object.name}"`;
         } else if (activity.object && activity.object.type === 'Note') {
-            return `${activity.object.content}`;
+            return `${stripHtml(activity.object.content)}`;
         }
     }
 
