@@ -623,7 +623,7 @@ describe('Comments API', function () {
                 should(data2.body.meta.pagination.prev).eql(1);
 
                 // ensure data2 does not contain any of the comments from data
-                const comments = data.body.comments.map(com => com.html);
+                const comments = await data.body.comments.map(com => com.html);
                 data2.body.comments.forEach((com) => {
                     should(comments.includes(com.html)).eql(false);
                 });
