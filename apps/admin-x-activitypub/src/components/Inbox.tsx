@@ -1,15 +1,14 @@
 import APAvatar from './global/APAvatar';
-import ActivityItem, {type Activity} from './activities/ActivityItem';
+import ActivityItem from './activities/ActivityItem';
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
-import ArticleModal from './feed/ArticleModal';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import ViewProfileModal from './global/ViewProfileModal';
 import getUsername from '../utils/get-username';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {handleViewContent} from '../utils/content-handlers';
 import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 import {useLayout} from '../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -17,8 +16,6 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 interface InboxProps {}
 
 const Inbox: React.FC<InboxProps> = ({}) => {
-    const [, setArticleContent] = useState<ObjectProperties | null>(null);
-    const [, setArticleActor] = useState<ActorProperties | null>(null);
     const {layout, setFeed, setInbox} = useLayout();
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
@@ -38,42 +35,6 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
         return !activity.object.inReplyTo;
     });
-
-    const handleViewContent = (activityId: string, object: ObjectProperties, actor: ActorProperties, focusReply = false) => {
-        setArticleContent(object);
-        setArticleActor(actor);
-        NiceModal.show(ArticleModal, {
-            activityId,
-            object,
-            actor,
-            focusReply,
-            updateActivity
-        });
-    };
-
-    function getContentAuthor(activity: Activity) {
-        const actor = activity.actor;
-        const attributedTo = activity.object.attributedTo;
-
-        if (!attributedTo) {
-            return actor;
-        }
-
-        if (typeof attributedTo === 'string') {
-            return actor;
-        }
-
-        if (Array.isArray(attributedTo)) {
-            const found = attributedTo.find(item => typeof item !== 'string');
-            if (found) {
-                return found;
-            } else {
-                return actor;
-            }
-        }
-
-        return attributedTo;
-    }
 
     // Intersection observer to fetch more activities when the user scrolls
     // to the bottom of the page
@@ -120,11 +81,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                             <li
                                                 key={activity.id}
                                                 data-test-view-article
-                                                onClick={() => handleViewContent(
-                                                    activity.id,
-                                                    activity.object,
-                                                    getContentAuthor(activity)
-                                                )}
+                                                onClick={() => handleViewContent(activity, false, updateActivity)}
                                             >
                                                 <FeedItem
                                                     actor={activity.actor}
@@ -132,12 +89,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                     layout={layout}
                                                     object={activity.object}
                                                     type={activity.type}
-                                                    onCommentClick={() => handleViewContent(
-                                                        activity.id,
-                                                        activity.object,
-                                                        getContentAuthor(activity),
-                                                        true
-                                                    )}
+                                                    onCommentClick={() => handleViewContent(activity, true, updateActivity)}
                                                 />
                                                 {index < activities.length - 1 && (
                                                     <div className="h-px w-full bg-grey-200"></div>
