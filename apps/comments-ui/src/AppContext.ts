@@ -62,7 +62,9 @@ export type EditableAppContext = {
         page: number,
         limit: number,
         pages: number,
-        total: number
+        total: number,
+        next: number,
+        prev: number
     } | null,
     commentCount: number,
     secundaryFormCount: number,

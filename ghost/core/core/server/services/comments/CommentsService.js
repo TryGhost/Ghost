@@ -191,7 +191,7 @@ class CommentsService {
 
     async getBestComments(options) {
         this.checkEnabled();
-        options.order = 'created_at+desc';
+        options.order = 'created_at desc';
         const totalComments = await this.models.Comment.query()
             .where('comments.post_id', options.post_id) // Filter by postId
             .count('comments.id as count__comments')
@@ -200,7 +200,6 @@ class CommentsService {
         const commentsWithLikes = await this.getCommentsWithLikes(options);
         
         if (commentsWithLikes.length === 0) {
-            // remove order from options
             const page = await this.models.Comment.findPage({...options, parentId: null});
             return page;
         }
@@ -210,19 +209,17 @@ class CommentsService {
 
         const findPageOptions = {
             ...options,
-            filter: `id:-[${commentsWithLikesIds.join(',')}]`,
-            withRelated: options.withRelated,
+            filter: `id:-[${commentsWithLikesIds.join(',')}]+post_id:${options.post_id}`,
             parentId: null
         };
 
         const page = await this.models.Comment.findPage(findPageOptions);
-
         // add comments with likes to the beginning of the page
         if (options.page === '1' && totalCommentsWithLikes > 0) {
             const commentsWithLikesModels = await this.models.Comment.findPage({
                 ...options,
-                filter: `id:[${commentsWithLikesIds.join(',')}]`,
-                withRelated: options.withRelated
+                filter: `id:[${commentsWithLikesIds.join(',')}]+post_id:${options.post_id}`,
+                parentId: null
             });
 
             // sort commentsWithLikesModels by most likes
