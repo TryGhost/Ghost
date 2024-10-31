@@ -173,7 +173,7 @@
     "chalk": "4.1.2",
     "cheerio": "0.22.0",
     "common-tags": "1.8.2",
-    "compression": "1.7.4",
+    "compression": "1.7.5",
     "connect-slashes": "1.4.0",
     "cookie-session": "2.1.0",
     "cors": "2.8.5",
