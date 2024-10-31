@@ -7608,10 +7608,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "4.1.1"
 
-"@tryghost/kg-unsplash-selector@0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.2.5.tgz#3c012858b050d4144532db0254d49bbd8c41ae9c"
-  integrity sha512-z/fERvZX+eWzve+4iqkFkztlBaZ/dtimQ//dwJUqCU3ghtJh3PLpWBGF0vGzDe8r+1wD84twGnkRLyZGoUy3Pw==
+"@tryghost/kg-unsplash-selector@0.2.6":
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.2.6.tgz#bf605bc2e43fc66d1e47f78ed7c94a1ae3cd02f2"
+  integrity sha512-dLCXR+tB18/2tI9tZW4EEebMS1+MAsxEhqTJpXgj4Sf3WKuMR9OholpJrk7LnWABvv0jyT9RXSzp/+tZH6MJTA==
 
 "@tryghost/kg-utils@1.0.28":
   version "1.0.28"
@@ -7620,10 +7620,10 @@
   dependencies:
     semver "^7.6.2"
 
-"@tryghost/koenig-lexical@1.3.26":
-  version "1.3.26"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.26.tgz#22a222d7439c711593bc3ce679ab73e8c7ec7d1c"
-  integrity sha512-Nj4OZJkkUCMv5vikHk1M+irz8zEoV+6ugpV8fvyQ/UWOe6BCej03As1jm9ZCWsFc080oyJYHxNOh5vz34mAKOg==
+"@tryghost/koenig-lexical@1.3.27":
+  version "1.3.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.27.tgz#d98a11b7c21b0d45715947dac5a99b4e21009e16"
+  integrity sha512-TTpiJSKDQ8BL2szN1J7gKUEUUz04i/POeI2x5eayUVy6AYeNnxBR1+t0C6fewAUY3um4+UooTDMsmi9WpSPFBw==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
