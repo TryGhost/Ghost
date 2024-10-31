@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SSO API SSO with 2FA enabled can sign in with SSO when 2FA is enabled 1: [headers] 1`] = `
+Object {
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": 156,
+  "content-security-policy": "default-src 'none'",
+  "content-type": "text/html; charset=utf-8",
+  "set-cookie": Array [
+    StringMatching /\\^ghost-admin-api-session=/,
+  ],
+  "vary": "Accept-Encoding",
+  "x-content-type-options": "nosniff",
+  "x-powered-by": "Express",
+}
+`;
