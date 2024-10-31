@@ -76,14 +76,10 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
       }
 
       function initializeResize() {
-        document.body.style.opacity = '0.5';
-        document.body.style.transition = 'opacity 0.3s ease';
-
         resizeIframe();
 
         waitForImages().then(() => {
           isFullyLoaded = true;
-          document.body.style.opacity = '1';
           resizeIframe();
         });
       }
@@ -237,6 +233,16 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         object.replyCount = object.replyCount + 1;
     }
 
+    const replyBoxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (focusReply && replyBoxRef.current) {
+            setTimeout(() => {
+                replyBoxRef.current?.scrollIntoView({block: 'center'});
+            }, 100);
+        }
+    }, [focusReply]);
+
     return (
         <Modal
             align='right'
@@ -291,7 +297,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 </>
                             );
                         })}
-                
+
                         {object.type === 'Note' && (
                             <FeedItem
                                 actor={actor}
@@ -314,7 +320,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             />
                         )}
 
-                        <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
+                        <div ref={replyBoxRef}>
+                            <APReplyBox
+                                focused={isFocused}
+                                object={object}
+                                onNewReply={handleNewReply}
+                            />
+                        </div>
                         <FeedItemDivider />
 
                         {isLoadingThread && <LoadingIndicator size='lg' />}
