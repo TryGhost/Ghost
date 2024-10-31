@@ -4,14 +4,17 @@ import {type Activity} from '../components/activities/ActivityItem';
 
 export const handleViewContent = (
     activity: Activity,
-    focusReply = false
+    focusReply = false,
+    updateActivity: (id: string, updated: Partial<Activity>) => void = () => {}
 ) => {
     const authorActor = getContentAuthor(activity);
     NiceModal.show(ArticleModal, {
+        activityId: activity.id,
         object: activity.object,
         actor: authorActor,
         comments: Array.isArray(activity.object.replies) ? activity.object.replies : [],
-        focusReply
+        focusReply,
+        updateActivity
     });
 };
 
@@ -37,4 +40,4 @@ export const getContentAuthor = (activity: Activity) => {
     }
 
     return attributedTo;
-}; 
+};

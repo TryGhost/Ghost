@@ -18,20 +18,14 @@ interface InboxProps {}
 const Inbox: React.FC<InboxProps> = ({}) => {
     const {layout, setFeed, setInbox} = useLayout();
 
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading
-    } = useActivitiesForUser({
+    const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
-        includeReplies: true,
         excludeNonFollowers: true,
         filter: {
-            type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
+            type: ['Create:Article', 'Create:Note', 'Announce:Note']
         }
     });
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
 
     const {updateRoute} = useRouting();
 
@@ -87,18 +81,15 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                             <li
                                                 key={activity.id}
                                                 data-test-view-article
-                                                onClick={() => handleViewContent(activity, false)}
+                                                onClick={() => handleViewContent(activity, false, updateActivity)}
                                             >
                                                 <FeedItem
                                                     actor={activity.actor}
-                                                    comments={activity.object.replies}
+                                                    commentCount={activity.object.replyCount ?? 0}
                                                     layout={layout}
                                                     object={activity.object}
                                                     type={activity.type}
-                                                    onCommentClick={() => handleViewContent(
-                                                        activity,
-                                                        true
-                                                    )}
+                                                    onCommentClick={() => handleViewContent(activity, true, updateActivity)}
                                                 />
                                                 {index < activities.length - 1 && (
                                                     <div className="h-px w-full bg-grey-200"></div>

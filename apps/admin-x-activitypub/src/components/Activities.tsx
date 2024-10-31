@@ -11,6 +11,7 @@ import MainNavigation from './navigation/MainNavigation';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 // import {useFollowersForUser} from '../MainContent';
 
@@ -90,13 +91,7 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
 
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading
-    } = useActivitiesForUser({
+    const {getActivitiesQuery} = useActivitiesForUser({
         handle: user,
         includeOwn: true,
         includeReplies: true,
@@ -104,7 +99,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
         }
     });
-
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
     const activities = (data?.pages.flatMap(page => page.data) ?? []);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
@@ -143,16 +138,16 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         switch (activity.type) {
         case ACTVITY_TYPE.CREATE:
             NiceModal.show(ArticleModal, {
+                activityId: activity.id,
                 object: activity.object,
-                actor: activity.actor,
-                comments: activity.object.replies
+                actor: activity.actor
             });
             break;
         case ACTVITY_TYPE.LIKE:
             NiceModal.show(ArticleModal, {
+                activityId: activity.id,
                 object: activity.object,
-                actor: activity.actor,
-                comments: activity.object.replies
+                actor: activity.object.attributedTo as ActorProperties
             });
             break;
         case ACTVITY_TYPE.FOLLOW:
