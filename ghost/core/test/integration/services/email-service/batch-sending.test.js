@@ -710,7 +710,8 @@ describe('Batch sending tests', function () {
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
                 }],
-                email_disabled: false
+                email_disabled: false,
+                created_at: '2024-10-11T23:45:54.000Z'
             });
 
             const {html, plaintext} = await sendEmail(agent, {
@@ -743,7 +744,8 @@ describe('Batch sending tests', function () {
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
                 }],
-                email_disabled: false
+                email_disabled: false,
+                created_at: '2024-10-11T23:45:54.000Z'
             });
 
             const {html, plaintext} = await sendEmail(agent, {
@@ -829,7 +831,7 @@ describe('Batch sending tests', function () {
             });
 
             // Currently the link is not present in plaintext version (because no text)
-            assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have 2 buttons to comments');
+            assert.equal(html.match(/#ghost-comments/g).length, 1, 'Every email should have 1 button to comments');
             await matchEmailSnapshot();
         });
 
@@ -848,7 +850,7 @@ describe('Batch sending tests', function () {
                 });
 
                 // Currently the link is not present in plaintext version (because no text)
-                assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have 2 buttons to comments');
+                assert.equal(html.match(/#ghost-comments/g).length, 1, 'Every email should have 1 button to comments');
                 await matchEmailSnapshot();
             } finally {
                 // undo
@@ -917,7 +919,8 @@ describe('Batch sending tests', function () {
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
                 }],
-                email_disabled: false
+                email_disabled: false,
+                created_at: '2024-10-11T23:45:54.000Z'
             });
 
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
@@ -951,7 +954,8 @@ describe('Batch sending tests', function () {
                     id: fixtureManager.get('newsletters', 0).id
                 }],
                 status: 'comped',
-                email_disabled: false
+                email_disabled: false,
+                created_at: '2024-10-11T23:45:54.000Z'
             });
 
             mockSetting('email_track_clicks', false); // Disable link replacement for this test

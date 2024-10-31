@@ -205,16 +205,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -887,16 +890,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -1545,16 +1551,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -2203,16 +2212,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -2861,16 +2873,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -3467,16 +3482,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -4125,16 +4143,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -4421,38 +4442,22 @@ table.body h2 span {
 
                                 <tr>
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5;\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
-                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto;\\" width=\\"auto\\">
+                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid&amp;key=xxxxxx\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/more-like-this.png\\" border=\\"0\\" width=\\"145\\" height=\\"36\\" alt=\\"More like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"More like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">More like this</p>
                                                         </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/0/?uuid=member-uuid&amp;key=xxxxxx\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/less-like-this.png\\" border=\\"0\\" width=\\"142\\" height=\\"36\\" alt=\\"Less like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Less like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Less like this</p>
                                                         </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment.png\\" border=\\"0\\" width=\\"122\\" height=\\"36\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                        </a>
-                                                    </td>                                            </tr>
-                                        </table>
-                                        <table class=\\"feedback-buttons-mobile\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; display: none; mso-hide: all;\\" width=\\"100%\\">
-                                            <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid&amp;key=xxxxxx\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"More like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">More like this</p>
-                                                        </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/0/?uuid=member-uuid&amp;key=xxxxxx\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Less like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Less like this</p>
-                                                        </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
@@ -4583,24 +4588,6 @@ Hello world
 
 
 
-
-
-
-
-
-
-
-
-
-http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid&key=xxxxxx
-
-
-
-http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/0/?uuid=member-uuid&key=xxxxxx
-
-
-
-http://127.0.0.1:2369/this-is-a-test-post-title-4/#ghost-comments
 
 
 
@@ -4877,16 +4864,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -5173,20 +5163,12 @@ table.body h2 span {
 
                                 <tr>
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5;\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
-                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto;\\" width=\\"auto\\">
+                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment.png\\" border=\\"0\\" width=\\"122\\" height=\\"36\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                        </a>
-                                                    </td>                                            </tr>
-                                        </table>
-                                        <table class=\\"feedback-buttons-mobile\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; display: none; mso-hide: all;\\" width=\\"100%\\">
-                                            <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #15212A; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 33%;\\" nowrap width=\\"33%\\">
-                                                        <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
-                                                            <p class=\\"feedback-button-mobile-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
@@ -5317,16 +5299,6 @@ Hello world
 
 
 
-
-
-
-
-
-
-
-
-
-http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments
 
 
 
@@ -6949,16 +6921,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -7752,16 +7727,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -8465,16 +8443,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -9178,16 +9159,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -9891,16 +9875,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -10604,16 +10591,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -11317,16 +11307,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
@@ -11977,16 +11970,19 @@ table.body .footer a {
   }
 
   table.feedback-buttons {
-    display: none !important;
-  }
-
-  table.feedback-buttons-mobile {
     display: table !important;
     width: 100% !important;
     max-width: 390px;
   }
 
-  table.body .feedback-button-mobile-text {
+  table.feedback-buttons img {
+    display: inherit !important;
+  }
+
+  table.body .feedback-button-text {
+    display: block !important;
+    padding-top: 4px !important;
+    padding-left: 0px !important;
     font-size: 13px !important;
   }
 
