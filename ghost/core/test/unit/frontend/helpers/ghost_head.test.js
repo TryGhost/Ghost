@@ -1351,16 +1351,45 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('search scripts', function () {
-        it('includes search when labs flag enabled', async function () {
-            sinon.stub(labs, 'isSet').returns(true);
-
-            await testGhostHead(testUtils.createHbsResponse({
+        it('includes search', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            rendered.should.match(/sodo-search@/);
+        });
+
+        it('includes locale in search when i18n is enabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('i18n').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            // script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js" data-key="xyz" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css" data-sodo-search="http://127.0.0.1:2369/" data-locale="en" crossorigin="anonymous"></script>
+            rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
+        });
+
+        it('does not incldue locale in search when i18n is disabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('i18n').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/sodo-search@[^>]*?data-locale="en"/);
         });
     });
 
@@ -1528,7 +1557,7 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/portal@/);
             rendered.should.match(/js.stripe.com/);
         });
-        
+
         it('shows the announcement when exclude does not contain announcement', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
@@ -1566,7 +1595,7 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/generator/);
             rendered.should.not.match(/announcement-bar@/);
         });
-        
+
         it('does not load the comments script when exclude contains comment_counts', async function () {
             settingsCache.get.withArgs('comments_enabled').returns('all');
             let rendered = await testGhostHead({hash: {exclude: 'comment_counts'}, ...testUtils.createHbsResponse({
@@ -1578,7 +1607,7 @@ describe('{{ghost_head}} helper', function () {
             })});
             rendered.should.not.match(/comment-counts.min.js/);
         });
-        
+
         it('loads card assets when not excluded', async function () {
             // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
             sinon.stub(cardAssets, 'hasFile').returns(true);
@@ -1647,7 +1676,6 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             rendered.should.not.match(/.gh-post-upgrade-cta-content/);
-        });    
+        });
     });
 });
-

@@ -67,7 +67,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
         if (colorString) {
             attributes['accent-color'] = colorString;
         }
-        const dataAttributes = getDataAttributes(attributes);   
+        const dataAttributes = getDataAttributes(attributes);
         membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
     if (!excludeList.has('cta_styles')) {
@@ -94,7 +94,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: settingsCache.get('locale') || 'en'
+        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined,
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -278,7 +278,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push.apply(head, finaliseStructuredData(meta));
                     head.push('');
                 }
-              
+
                 if (!excludeList.has('schema') && meta.schema) {
                     head.push('<script type="application/ld+json">\n' +
                         JSON.stringify(meta.schema, null, '    ') +
@@ -305,7 +305,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             } catch (err) {
                 logging.warn(err);
             }
-            
+
             // @TODO do this in a more "frameworky" way
 
             if (!excludeList.has('card_assets')) {
@@ -347,7 +347,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-            
+
             if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
