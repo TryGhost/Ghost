@@ -230,7 +230,7 @@ test.describe('Design settings', async () => {
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
 
-        await expect(designSettingTabs.getByRole('tab', {name: 'Brand.'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Brand'})).toBeHidden();
         await expect(designSettingTabs.getByRole('tab', {name: 'Theme'})).toBeHidden();
 
         await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
