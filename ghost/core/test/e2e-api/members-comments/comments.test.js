@@ -575,7 +575,7 @@ describe('Comments API', function () {
                 should(data2.body.comments[4].id).eql(oldestComment.id);
             });
 
-            it.only('checks that pagination is working when order param = best', async function () {
+            it('checks that pagination is working when order param = best', async function () {
                 // create 20 comments
 
                 forEach(new Array(12).fill(0), async (item, index) => {
@@ -591,8 +591,6 @@ describe('Comments API', function () {
                     html: 'This is the best comment',
                     created_at: new Date('2021-01-10')
                 });
-
-                // console.log('comment', comment);
 
                 await dbFns.addLike({
                     comment_id: comment.id,
@@ -612,11 +610,22 @@ describe('Comments API', function () {
                 should(data.body.meta.pagination.total).eql(13);
                 should(data.body.meta.pagination.pages).eql(3);
                 should(data.body.meta.pagination.next).eql(2);
+                should(data.body.meta.pagination.prev).eql(null);
                 should(data.body.meta.pagination.limit).eql(5);
-
-                // check that first comment is the best comment 
-                console.log(data.body.comments);
                 should(data.body.comments[0].id).eql(comment.id);
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/?limit=5&page=2&order=best`)
+                    .expectStatus(200);
+
+                should(data2.body.meta.pagination.next).eql(3);
+                should(data2.body.meta.pagination.prev).eql(1);
+                
+                // ensure data2 does not contain any of the comments from data
+                const ids = data.body.comments.map(com => com.id);
+                data2.body.comments.forEach((com) => {
+                    should(ids.includes(com.id)).eql(false);
+                });
             });
 
             it('does not most liked comment first when order param and keeps normal order', async function () {

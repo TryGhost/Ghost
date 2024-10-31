@@ -36,7 +36,6 @@ module.exports = class CommentsController {
      */
     async browse(frame) {
         if (frame.options.order === 'best') {
-            console.warn('Ordering by "best" is not supported for comments');
             return this.service.getBestComments(frame.options);
         }
         if (frame.options.post_id) {

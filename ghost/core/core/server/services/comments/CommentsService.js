@@ -175,69 +175,48 @@ class CommentsService {
 
     async getBestComments(options) {
         this.checkEnabled();
-        const commentCount = await this.models.Comment.commentCount(options);
 
-        if (commentCount === 0) {
-            return {
-                comments: [],
-                meta: {
-                    pagination: {
-                        page: options.page,
-                        limit: options.limit,
-                        pages: 1,
-                        total: 0,
-                        next: null,
-                        prev: null
-                    }
-                }
-            };
-        }
+        const allOrderedComments = await this.models.Comment.query()
+            .select('comments.id')
+            .count('comment_likes.id as count__likes')
+            .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
+            .groupBy('comments.id')
+            .orderByRaw(`
+        count__likes DESC,
+        comments.created_at DESC
+    `);
 
-        const Comment = this.models.Comment;
+        const totalComments = allOrderedComments.length;
 
-        // Step 1: Use `findPage` with a custom query to include like count and ordering
-        const result = await Comment.findPage({
+        const limit = Number(options.limit) || 15;
+        const currentPage = Number(options.page) || 1;
+
+        const orderedIds = allOrderedComments
+            .slice((options.page - 1) * limit, currentPage * limit)
+            .map(comment => comment.id);
+
+        const findPageOptions = {
             ...options,
-            query: (qb) => {
-                qb.leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
-                    .count('comment_likes.id as count__likes')
-                    .groupBy('comments.id')
-                    .orderByRaw(`
-                        CASE WHEN count(comment_likes.id) > 0 THEN 1 ELSE 2 END,
-                        count__likes DESC,
-                        comments.created_at DESC
-                    `);
-            }
-        });
-    
-        return result; // `findPage` returns paginated data and metadata
+            filter: `id:[${orderedIds.join(',')}]`,
+            withRelated: options.withRelated
+        };
 
-        // {
-        //     "comments": [],
-        //     "meta": {
-        //         "pagination": {
-        //             "page": 1,
-        //             "limit": 20,
-        //             "pages": 1,
-        //             "total": 0,
-        //             "next": null,
-        //             "prev": null
-        //         }
-        //     }
-        // }
+        const page = await this.models.Comment.findPage(findPageOptions);
 
-        // const orderedIds = await this.models.Comment.findMostLikedComments({...options, parentId: null});
-        // if (!orderedIds.length) {
-        //     return await this.models.Comment.findPage({...options, parentId: null});
-        // }
-        // const page = await this.models.Comment.findPage({
-        //     filter: `id:[${orderedIds.join(',')}]`,
-        //     withRelated: options.withRelated
-        // });
+        page.data = orderedIds
+            .map(id => page.data.find(comment => comment && comment.id === id))
+            .filter(comment => comment !== undefined);
 
-        // page.data = orderedIds.map(id => page.data.find(comment => comment.id === id));
+        page.meta.pagination = {
+            page: currentPage,
+            limit: limit,
+            pages: Math.ceil(totalComments / limit),
+            total: totalComments,
+            next: currentPage < Math.ceil(totalComments / limit) ? currentPage + 1 : null,
+            prev: currentPage > 1 ? currentPage - 1 : null
+        };
 
-        // return page;
+        return page;
     }
 
     /**
