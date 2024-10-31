@@ -552,7 +552,6 @@ export default class App extends React.Component {
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
-        
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {site, member} = await this.GhostApi.init();
