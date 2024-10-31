@@ -183,7 +183,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getOutbox', function () {
-        test('It passes the token to the outbox endpoint', async function () {
+        test('It passes the token to the outbox collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -213,7 +213,7 @@ describe('ActivityPubAPI', function () {
             await api.getOutbox();
         });
 
-        test('Returns an empty array when the outbox is empty', async function () {
+        test('Returns an empty array when the outbox collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -247,7 +247,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the outbox is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the outbox collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -316,7 +316,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowing', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the following collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -346,7 +346,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowing();
         });
 
-        test('Returns an empty array when the following is empty', async function () {
+        test('Returns an empty array when the following collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -380,7 +380,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the following is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the following collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -437,7 +437,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowers', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the followers collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -467,7 +467,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowers();
         });
 
-        test('Returns an empty array when the followers is empty', async function () {
+        test('Returns an empty array when the followers collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -501,7 +501,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the followers is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the followers collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
