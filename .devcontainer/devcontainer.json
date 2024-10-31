@@ -1,10 +1,10 @@
 {
     "name": "Ghost Local DevContainer",
     "build": {
-        "context": "../",
-        "dockerfile": ".devcontainer/.docker/Dockerfile",
+        "context": "..",
+        "dockerfile": "./.docker/Dockerfile",
         "target": "base-devcontainer"
     },
     "workspaceFolder": "/home/ghost",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/ghost,type=bind",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/ghost,type=bind"
 }
