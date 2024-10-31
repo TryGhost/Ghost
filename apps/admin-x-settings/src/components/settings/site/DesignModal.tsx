@@ -31,7 +31,7 @@ const Sidebar: React.FC<{
     const tabs: Tab[] = [
         {
             id: 'global',
-            title: 'Global',
+            title: 'Brand',
             contents: <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
         }
     ];
@@ -39,7 +39,7 @@ const Sidebar: React.FC<{
     if (themeSettingSections.length > 0) {
         tabs.push({
             id: 'theme-settings',
-            title: 'Theme settings',
+            title: 'Theme',
             contents: <ThemeSettings sections={themeSettingSections} updateSetting={updateThemeSetting} />
         });
     }
@@ -51,9 +51,9 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex h-full flex-col justify-between'>
-            <div className='grow p-7 pt-2' data-testid="design-setting-tabs">
+            <div className='grow p-7 pt-0' data-testid="design-setting-tabs">
                 {tabs.length > 1 ?
-                    <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+                    <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
                     :
                     <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
                 }

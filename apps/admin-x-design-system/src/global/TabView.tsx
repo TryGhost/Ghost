@@ -50,7 +50,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
         >
             {icon && <Icon className='mb-0.5 mr-1.5 inline' name={icon} size='sm' />}
             {title}
-            {(typeof counter === 'number') && 
+            {(typeof counter === 'number') &&
                 <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-medium text-grey-800 dark:bg-grey-900 dark:text-grey-300'>
                     {new Intl.NumberFormat().format(counter)}
                 </span>
@@ -66,7 +66,8 @@ export interface TabListProps<ID = string> {
     border: boolean;
     buttonBorder?: boolean;
     selectedTab?: ID,
-    topRightContent?: React.ReactNode
+    topRightContent?: React.ReactNode,
+    stickyHeader?: boolean
 }
 
 export const TabList: React.FC<TabListProps> = ({
@@ -75,7 +76,8 @@ export const TabList: React.FC<TabListProps> = ({
     handleTabChange,
     border,
     buttonBorder,
-    topRightContent
+    topRightContent,
+    stickyHeader
 }) => {
     const containerClasses = clsx(
         'no-scrollbar mb-px flex w-full overflow-x-auto',
@@ -85,7 +87,7 @@ export const TabList: React.FC<TabListProps> = ({
         border && 'border-b border-grey-300 dark:border-grey-900'
     );
     return (
-        <TabsPrimitive.List>
+        <TabsPrimitive.List className={`${stickyHeader ? 'sticky top-0 z-50 bg-white dark:bg-black' : ''}`}>
             <div className={containerClasses} role='tablist'>
                 {tabs.map(tab => (
                     <div>
@@ -117,6 +119,7 @@ export interface TabViewProps<ID = string> {
     width?: TabWidth;
     containerClassName?: string;
     topRightContent?: React.ReactNode;
+    stickyHeader?: boolean;
     testId?: string;
 }
 
@@ -129,7 +132,8 @@ function TabView<ID extends string = string>({
     buttonBorder = border,
     width = 'normal',
     containerClassName,
-    topRightContent
+    topRightContent,
+    stickyHeader
 }: TabViewProps<ID>) {
     if (tabs.length !== 0 && selectedTab === undefined) {
         selectedTab = tabs[0].id;
@@ -151,6 +155,7 @@ function TabView<ID extends string = string>({
                 buttonBorder={buttonBorder}
                 handleTabChange={handleTabChange}
                 selectedTab={selectedTab}
+                stickyHeader={stickyHeader}
                 tabs={tabs}
                 topRightContent={topRightContent}
                 width={width}

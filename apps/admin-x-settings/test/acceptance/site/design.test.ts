@@ -89,7 +89,7 @@ test.describe('Design settings', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Theme settings'}).click();
+        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Theme'}).click();
 
         await modal.getByLabel('Email signup text').fill('test');
 
@@ -182,14 +182,14 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Theme settings'}).click();
+        await modal.getByRole('tab', {name: 'Theme'}).click();
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
 
         const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header));
-    
-        expect(matchingHeader).toBeDefined(); 
+
+        expect(matchingHeader).toBeDefined();
 
         await modal.getByRole('button', {name: 'Save'}).click();
         expect(lastApiRequests.editCustomThemeSettings?.body).toMatchObject({
@@ -230,8 +230,8 @@ test.describe('Design settings', async () => {
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
 
-        await expect(designSettingTabs.getByRole('tab', {name: 'Global'})).toBeHidden();
-        await expect(designSettingTabs.getByRole('tab', {name: 'Theme settings'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Brand'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Theme'})).toBeHidden();
 
         await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
     });
@@ -277,7 +277,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Theme settings'}).click();
+        await modal.getByRole('tab', {name: 'Theme'}).click();
 
         const showFeaturedPostsCustomThemeSetting = modal.getByLabel('Show featured posts');
 
