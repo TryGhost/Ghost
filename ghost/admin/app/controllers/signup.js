@@ -104,6 +104,6 @@ export default class SignupController extends Controller {
         const {email, password} = this.signupDetails;
 
         return this.session
-            .authenticate('authenticator:cookie', email, password);
+            .authenticate('authenticator:cookie', {identification: email, password});
     }
 }

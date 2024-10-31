@@ -504,16 +504,20 @@ figure blockquote p {
 ------------------------------------- */
 
 .feedback-buttons {
-    width: auto !important;
+    /*width: auto !important;*/
+    width: 100% !important;
     margin: auto;
 }
 
-.feedback-buttons-mobile {
-    display: none !important;
-    mso-hide: all !important;
+.feedback-buttons img {
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.feedback-button-mobile-text {
+.feedback-button-text {
+    display: inline;
+    padding-left: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     color: #15212A;
     font-size: 13px !important;
     font-weight: 500;
@@ -1476,16 +1480,19 @@ a[data-flickr-embed] img {
     }
 
     table.feedback-buttons {
-        display: none !important;
-    }
-
-    table.feedback-buttons-mobile {
         display: table !important;
         width: 100% !important;
         max-width: 390px;
     }
 
-    table.body .feedback-button-mobile-text {
+    table.feedback-buttons img {
+        display: inherit !important;
+    }
+
+    table.body .feedback-button-text {
+        display: block !important;
+        padding-top: 4px !important;
+        padding-left: 0px !important;
         font-size: 13px !important;
     }
 
