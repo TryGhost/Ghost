@@ -53,7 +53,6 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
         return '';
     }
-
     let membersHelper = '';
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
@@ -65,7 +64,6 @@ function getMembersHelper(data, frontendKey, excludeList) {
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
             locale: settingsCache.get('locale') || 'en'
-
         };
         if (colorString) {
             attributes['accent-color'] = colorString;
