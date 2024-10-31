@@ -48,28 +48,31 @@ function finaliseStructuredData(meta) {
     return head;
 }
 
-function getMembersHelper(data, frontendKey) {
+function getMembersHelper(data, frontendKey, excludeList) {
     // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
         return '';
     }
+    let membersHelper = '';
+    if (!excludeList.has('portal')) {
+        const {scriptUrl} = getFrontendAppConfig('portal');
 
-    const {scriptUrl} = getFrontendAppConfig('portal');
-
-    const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
-    const attributes = {
-        i18n: labs.isSet('i18n'),
-        ghost: urlUtils.getSiteUrl(),
-        key: frontendKey,
-        api: urlUtils.urlFor('api', {type: 'content'}, true)
-    };
-    if (colorString) {
-        attributes['accent-color'] = colorString;
+        const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
+        const attributes = {
+            i18n: labs.isSet('i18n'),
+            ghost: urlUtils.getSiteUrl(),
+            key: frontendKey,
+            api: urlUtils.urlFor('api', {type: 'content'}, true)
+        };
+        if (colorString) {
+            attributes['accent-color'] = colorString;
+        }
+        const dataAttributes = getDataAttributes(attributes);
+        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
-    const dataAttributes = getDataAttributes(attributes);
-
-    let membersHelper = `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
-    membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
+    if (!excludeList.has('cta_styles')) {
+        membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
+    }
     if (settingsCache.get('paid_members_enabled')) {
         // disable fraud detection for e2e tests to reduce waiting time
         const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
@@ -91,7 +94,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: settingsCache.get('locale') || 'en'
+        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -198,12 +201,11 @@ function getTinybirdTrackerScript(dataRoot) {
 // We use the name ghost_head to match the helper for consistency:
 module.exports = async function ghost_head(options) { // eslint-disable-line camelcase
     debug('begin');
-
     // if server error page do nothing
     if (options.data.root.statusCode >= 500) {
         return;
     }
-
+    const excludeList = new Set(options?.hash?.exclude?.split(',') || []);
     const head = [];
     const dataRoot = options.data.root;
     const context = dataRoot._locals.context ? dataRoot._locals.context : null;
@@ -234,25 +236,26 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         debug('end fetch');
 
         if (context) {
-            // head is our main array that holds our meta data
-            if (meta.metaDescription && meta.metaDescription.length > 0) {
-                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
+            if (!excludeList.has('metadata')) {
+                // head is our main array that holds our meta data
+                if (meta.metaDescription && meta.metaDescription.length > 0) {
+                    head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
+                }
+
+                // no output in head if a publication icon is not set
+                if (settingsCache.get('icon')) {
+                    head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
+                }
+
+                head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
+
+                if (_.includes(context, 'preview')) {
+                    head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
+                    head.push(writeMetaTag('referrer', 'same-origin', 'name'));
+                } else {
+                    head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
+                }
             }
-
-            // no output in head if a publication icon is not set
-            if (settingsCache.get('icon')) {
-                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
-            }
-
-            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
-
-            if (_.includes(context, 'preview')) {
-                head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
-                head.push(writeMetaTag('referrer', 'same-origin', 'name'));
-            } else {
-                head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
-            }
-
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
             if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
@@ -270,30 +273,33 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             if (!_.includes(context, 'paged') && useStructuredData) {
-                head.push('');
-                head.push.apply(head, finaliseStructuredData(meta));
-                head.push('');
+                if (!excludeList.has('social_data')) {
+                    head.push('');
+                    head.push.apply(head, finaliseStructuredData(meta));
+                    head.push('');
+                }
 
-                if (meta.schema) {
+                if (!excludeList.has('schema') && meta.schema) {
                     head.push('<script type="application/ld+json">\n' +
                         JSON.stringify(meta.schema, null, '    ') +
                         '\n    </script>\n');
                 }
             }
         }
-
         head.push('<meta name="generator" content="Ghost ' +
             escapeExpression(safeVersion) + '">');
-
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(meta.site.title) + '" href="' +
             escapeExpression(meta.rssUrl) + '">');
-
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
-            head.push(getMembersHelper(options.data, frontendKey));
-            head.push(getSearchHelper(frontendKey));
-            head.push(getAnnouncementBarHelper(options.data));
+            head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
+            if (!excludeList.has('search')) {
+                head.push(getSearchHelper(frontendKey));
+            }
+            if (!excludeList.has('announcement')) {
+                head.push(getAnnouncementBarHelper(options.data));
+            }
             try {
                 head.push(getWebmentionDiscoveryLink());
             } catch (err) {
@@ -301,14 +307,17 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             // @TODO do this in a more "frameworky" way
-            if (cardAssets.hasFile('js')) {
-                head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
-            }
-            if (cardAssets.hasFile('css')) {
-                head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+
+            if (!excludeList.has('card_assets')) {
+                if (cardAssets.hasFile('js')) {
+                    head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
+                }
+                if (cardAssets.hasFile('css')) {
+                    head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+                }
             }
 
-            if (settingsCache.get('comments_enabled') !== 'off') {
+            if (!excludeList.has('comment_counts') && settingsCache.get('comments_enabled') !== 'off') {
                 head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
             }
 
@@ -327,7 +336,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(styleTag);
                 }
             }
-
             if (!_.isEmpty(globalCodeinjection)) {
                 head.push(globalCodeinjection);
             }

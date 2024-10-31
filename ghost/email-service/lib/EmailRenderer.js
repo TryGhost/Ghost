@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
@@ -7,19 +8,23 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const tpl = require('@tryghost/tpl');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 
+// Wrapper function so that i18next-parser can find these strings
+const t = (x) => { 
+    return x;
+};
+
 const messages = {
     subscriptionStatus: {
         free: '',
-        expired: 'Your subscription has expired.',
-        canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
-        active: 'Your subscription will renew on {date}.',
-        trial: 'Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.',
-        complimentaryExpires: 'Your subscription will expire on {date}.',
+        expired: t('Your subscription has expired.'),
+        canceled: t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.'),
+        active: t('Your subscription will renew on {date}.'),
+        trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
+        complimentaryExpires: t('Your subscription will expire on {date}.'),
         complimentaryInfinite: ''
     }
 };
@@ -566,6 +571,7 @@ class EmailRenderer {
      */
     getMemberStatusText(member) {
         const t = this.#t;
+
         const locale = this.#settingsCache.get('locale');
 
         if (member.status === 'free') {
@@ -628,7 +634,8 @@ class EmailRenderer {
      * @returns {ReplacementDefinition[]}
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
-        const t = this.#t;
+        const t = this.#t; // es-lint-disable-line no-shadow
+
         const locale = this.#settingsCache.get('locale');
 
         const baseDefinitions = [

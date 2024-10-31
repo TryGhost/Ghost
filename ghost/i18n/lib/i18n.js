@@ -95,6 +95,7 @@ module.exports = (lng = 'en', ns = 'portal') => {
             }
         }
     }
+
     i18nextInstance.init({
         lng,
 
