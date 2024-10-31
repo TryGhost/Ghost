@@ -193,7 +193,7 @@ const Comment = ghostBookshelf.Model.extend({
                         // Relations
                         'member', 'count.replies', 'count.likes', 'count.liked',
                         // Replies (limited to 3)
-                        'replies', 'replies.member' , 'replies.count.likes', 'replies.count.liked'
+                        'replies', 'replies.member', 'replies.count.likes', 'replies.count.liked'
                     ];
                 }
             }
@@ -202,19 +202,24 @@ const Comment = ghostBookshelf.Model.extend({
         return options;
     },
 
-    async findMostLikedComment(options = {}) {
-        let query = ghostBookshelf.knex('comments')
-            .select('comments.*')
-            .count('comment_likes.id as count__likes') // Counting likes for sorting
-            .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
-            .groupBy('comments.id') // Group by comment ID to aggregate likes count
-            .orderBy('count__likes', 'desc') // Order by likes in descending order (most likes first)
-            .limit(1); // Limit to just 1 result
-        // Execute the query and get the result
-        const result = await query.first(); // Fetch the single top comment
-        const id = result && result.id;
-        // Fetch the comment model by ID
-        return this.findOne({id}, options);
+    async commentCount(options) {
+        const query = this.forge().query();
+        
+        if (options.postId) {
+            query.where('post_id', options.postId);
+        }
+
+        if (options.status) {
+            query.where('status', options.status);
+        }
+
+        return query.count('id as count').then((result) => {
+            return Number(result[0].count) || 0;
+        }).catch((err) => {
+            throw new errors.InternalServerError({
+                err: err
+            });
+        });
     },
 
     async findPage(options) {
@@ -231,16 +236,6 @@ const Comment = ghostBookshelf.Model.extend({
 
         for (const model of result.data) {
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
-        }
-
-        // if options.order === 'best', we findMostLikedComment
-        // then we remove it from the result set and add it as the first element
-        if (options.order === 'best' && options.page === '1') {
-            const mostLikedComment = await this.findMostLikedComment(options);
-            if (mostLikedComment) {
-                result.data = result.data.filter(comment => comment.id !== mostLikedComment.id);
-                result.data.unshift(mostLikedComment);
-            }
         }
 
         return result;
@@ -289,10 +284,8 @@ const Comment = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-
         // The comment model additionally supports having a parentId option
         options.push('parentId');
-
         return options;
     }
 });
