@@ -63,6 +63,7 @@ const SUPPORTED_LOCALES = [
 /**
  * @param {string} [lng]
  * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'|'theme'} ns
+
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
@@ -95,6 +96,7 @@ module.exports = (lng = 'en', ns = 'portal') => {
             }
         }
     }
+
 
     i18nextInstance.init({
         lng,

@@ -569,7 +569,7 @@ class EmailRenderer {
      * @param {MemberLike} member
      * @returns {string}
      */
-    getMemberStatusText(member) {
+
         const t = this.#t;
 
         const locale = this.#settingsCache.get('locale');
@@ -635,7 +635,6 @@ class EmailRenderer {
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
         const t = this.#t; // es-lint-disable-line no-shadow
-
         const locale = this.#settingsCache.get('locale');
 
         const baseDefinitions = [
