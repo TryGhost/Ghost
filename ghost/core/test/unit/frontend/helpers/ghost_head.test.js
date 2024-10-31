@@ -1374,7 +1374,6 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            // script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js" data-key="xyz" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css" data-sodo-search="http://127.0.0.1:2369/" data-locale="en" crossorigin="anonymous"></script>
             rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
         });
 
