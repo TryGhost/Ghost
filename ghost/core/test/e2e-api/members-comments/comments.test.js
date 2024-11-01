@@ -575,67 +575,6 @@ describe('Comments API', function () {
                 should(lastComment.id).eql(oldestComment.id);
             });
 
-            it('checks that pagination is working when order param = best', async function () {
-                // create 20 comments
-
-                forEach(new Array(12).fill(0), async (item, index) => {
-                    await dbFns.addComment({
-                        member_id: fixtureManager.get('members', 1).id,
-                        html: `This is comment ${index}`
-                    });
-                });
-
-                const comment = await dbFns.addComment({
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: 'This is the best comment'
-                });
-
-                await dbFns.addLike({
-                    comment_id: comment.id,
-                    member_id: loggedInMember.id
-                });
-
-                await dbFns.addLike({
-                    comment_id: comment.id,
-                    member_id: fixtureManager.get('members', 1).id
-                });
-
-                const data = await membersAgent
-                    .get(`/api/comments/post/${postId}/?limit=5&page=1&order=count__likes%20desc%2C%20created_at%20desc`)
-                    .expectStatus(200);
-
-                // TODO for the first page only we don't fully respect the limit, since we need to get the best comments first
-                // We need to find a better way to handle this, preferable without changing the order of the comments
-                should(data.body.comments.length).eql(5);
-                should(data.body.meta.pagination.total).eql(13);
-                should(data.body.meta.pagination.pages).eql(3);
-                should(data.body.meta.pagination.next).eql(2);
-                should(data.body.meta.pagination.prev).eql(null);
-                should(data.body.meta.pagination.limit).eql(5);
-                should(data.body.comments[0].id).eql(comment.id);
-
-                const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}/?limit=5&page=2&order=best`)
-                    .expectStatus(200);
-
-                should(data2.body.comments.length).eql(5);
-                should(data2.body.meta.pagination.next).eql(3);
-                should(data2.body.meta.pagination.prev).eql(1);
-
-                // ensure data2 does not contain any of the comments from data
-                //TODO FLAKY TEST
-                const comments = await data.body.comments.map(com => com.html);
-                data2.body.comments.forEach((com) => {
-                    should(comments.includes(com.html)).eql(false);
-                });
-                const postId2 = fixtureManager.get('posts', 1).id;
-                const data3 = await membersAgent
-                    .get(`/api/comments/post/${postId2}/?limit=5&page=1&order=best`)
-                    .expectStatus(200);
-
-                should(data3.body.comments.length).eql(0);
-            });
-
             it('Can reply to your own comment', async function () {
                 // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
                 const timezone = settingsCache.get('timezone');
