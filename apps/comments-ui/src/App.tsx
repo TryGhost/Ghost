@@ -28,7 +28,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         secundaryFormCount: 0,
         popup: null,
         labs: null,
-        order: 'best'
+        order: 'count__likes desc, created_at desc'
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
