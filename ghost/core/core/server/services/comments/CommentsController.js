@@ -52,6 +52,7 @@ module.exports = class CommentsController {
             }
         }
         return this.service.getComments(frame.options);
+
     }
 
     /**
