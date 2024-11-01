@@ -52,9 +52,10 @@ module.exports = class CommentsController {
             }
         }
 
-        if (frame.options.order === 'best') {
-            return await this.service.getBestComments(frame.options);
-        }
+        // if (frame.options.order === 'best') {
+        //     frame.options.order = 'count__likes desc, created_at desc'; // lets apply this client side
+        //     return await this.service.getComments(frame.options);
+        // }
         return await this.service.getComments(frame.options);
     }
 

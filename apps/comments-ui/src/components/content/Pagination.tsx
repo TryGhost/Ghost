@@ -2,7 +2,7 @@ import {formatNumber} from '../../utils/helpers';
 import {useAppContext, useLabs} from '../../AppContext';
 
 const Pagination = () => {
-    const {pagination, comments, order, dispatchAction, t} = useAppContext();
+    const {pagination, dispatchAction, t} = useAppContext();
     const labs = useLabs();
 
     const loadMore = () => {
@@ -13,28 +13,11 @@ const Pagination = () => {
         return null;
     }
 
-    let left = 0;
-    const loadedCommentsCount = comments.length;
-    const isBestOrdering = order === 'best';
-    const isFirstPage = pagination.page === 1;
+    const left = pagination.total - pagination.page * pagination.limit;
 
-    // if it's the first page and we are in best ordering, we calculate it differently till we have the API figured out.
-    // const countRemaining = pagination.total - loadedCommentsCount;
-
-    if (isBestOrdering && isFirstPage && labs.commentImprovements) {
-        const loadedCommentsMoreThanLimit = loadedCommentsCount > pagination.limit;
-
-        if (loadedCommentsMoreThanLimit) {
-            left = loadedCommentsCount - pagination.limit;
-        }
-    } else {
-        left = pagination.next !== null && pagination.total - pagination.page * pagination.limit || 0;
-        if (left <= 0 && loadedCommentsCount > left) {
-            return null;
-        }
+    if (left <= 0) {
+        return null;
     }
-
-    // console.log(order);
 
     // TODO: add i18n support for these strings when removing labs flag
     const text = labs.commentImprovements

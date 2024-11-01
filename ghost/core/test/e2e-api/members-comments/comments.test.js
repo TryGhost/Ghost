@@ -566,7 +566,7 @@ describe('Comments API', function () {
                 });
 
                 const data2 = await membersAgent
-                    .get(`/api/comments/post/${postId}/?page=1&order=best`)
+                    .get(`/api/comments/post/${postId}/?page=1&order=count__likes%20desc%2C%20created_at%20desc`)
                     .expectStatus(200);
 
                 // get the LAST comment from data2
@@ -601,12 +601,12 @@ describe('Comments API', function () {
                 });
 
                 const data = await membersAgent
-                    .get(`/api/comments/post/${postId}/?limit=5&page=1&order=best`)
+                    .get(`/api/comments/post/${postId}/?limit=5&page=1&order=count__likes%20desc%2C%20created_at%20desc`)
                     .expectStatus(200);
 
                 // TODO for the first page only we don't fully respect the limit, since we need to get the best comments first
                 // We need to find a better way to handle this, preferable without changing the order of the comments
-                should(data.body.comments.length).eql(6);
+                should(data.body.comments.length).eql(5);
                 should(data.body.meta.pagination.total).eql(13);
                 should(data.body.meta.pagination.pages).eql(3);
                 should(data.body.meta.pagination.next).eql(2);
