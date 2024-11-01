@@ -624,10 +624,10 @@ describe('Comments API', function () {
 
                 // ensure data2 does not contain any of the comments from data
                 //TODO FLAKY TEST
-                // const comments = await data.body.comments.map(com => com.html);
-                // data2.body.comments.forEach((com) => {
-                //     should(comments.includes(com.html)).eql(false);
-                // });
+                const comments = await data.body.comments.map(com => com.html);
+                data2.body.comments.forEach((com) => {
+                    should(comments.includes(com.html)).eql(false);
+                });
                 const postId2 = fixtureManager.get('posts', 1).id;
                 const data3 = await membersAgent
                     .get(`/api/comments/post/${postId2}/?limit=5&page=1&order=best`)
