@@ -7,7 +7,6 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
-const {forEach} = require('lodash');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 
