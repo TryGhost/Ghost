@@ -5,7 +5,7 @@ import {useOrderChange} from '../../../AppContext';
 export const SortingForm: React.FC = () => {
     const changeOrder = useOrderChange();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('best');
+    const [selectedOption, setSelectedOption] = useState('count__likes desc, created_at desc');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const options = [
