@@ -9,7 +9,7 @@ export const SortingForm: React.FC = () => {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const options = [
-        {value: 'best', label: 'Best'},
+        {value: 'count__likes desc, created_at desc', label: 'Best'},
         {value: 'created_at desc', label: 'Newest'},
         {value: 'created_at asc', label: 'Oldest'}
     ];
