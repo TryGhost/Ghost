@@ -56,7 +56,8 @@ export default class App extends React.Component {
             action: 'init:running',
             initStatus: 'running',
             lastPage: null,
-            customSiteUrl: props.customSiteUrl
+            customSiteUrl: props.customSiteUrl,
+            locale: props.locale
         };
     }
 
@@ -158,8 +159,7 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
-            const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
-
+            const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             const i18n = i18nLib(i18nLanguage, 'portal');
             
             const state = {
@@ -174,7 +174,8 @@ export default class App extends React.Component {
                 t: i18n.t,
                 dir: i18n.dir() || 'ltr',
                 action: 'init:success',
-                initStatus: 'success'
+                initStatus: 'success',
+                locale: i18nLanguage
             };
 
             this.handleSignupQuery({site, pageQuery, member});
@@ -551,7 +552,6 @@ export default class App extends React.Component {
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
-
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {site, member} = await this.GhostApi.init();

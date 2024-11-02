@@ -21,7 +21,8 @@ function getSiteData() {
         const siteUrl = scriptTag.dataset.ghost;
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
-        return {siteUrl, apiKey, apiUrl, siteI18nEnabled};
+        const locale = scriptTag.dataset.locale; // not providing a fallback here but will do it within the app.
+        return {siteUrl, apiKey, apiUrl, siteI18nEnabled, locale};
     }
     return {};
 }
@@ -41,12 +42,12 @@ function setup() {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled} = getSiteData();
+    const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled, locale} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} />
+            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} locale={locale}/>
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
