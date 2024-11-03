@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Test and coverage
-        run: yarn test --coverage
+        run: nx run-many --target=test --exclude=@tryghost/admin-x-framework,@tryghost/post-revisions,@tryghost/comments-ui,ghost-admin --coverage
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
