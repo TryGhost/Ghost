@@ -48,7 +48,22 @@ export default class GhPsmTagsInput extends Component {
 
     @action
     _updateTags(newTags) {
-        this.updateTags(newTags);
+        if (this.updateTags) {
+            // Call the provided updateTags action
+            return this.updateTags(newTags);
+        }
+
+        let currentTags = this.get('post.tags');
+
+        // destroy new+unsaved tags that are no longer selected
+        currentTags.forEach(function (tag) {
+            if (!newTags.includes(tag) && tag.get('isNew')) {
+                tag.destroyRecord();
+            }
+        });
+
+        // update tags
+        return this.set('post.tags', newTags);
     }
 
     @action
