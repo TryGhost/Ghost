@@ -16,6 +16,8 @@ jobs:
           fetch-depth: 0
       - name: Install dependencies
         run: yarn
+      - name: Install NX globally
+        run: yarn global add nx
       - name: Test and coverage
         run: nx run-many --target=test --exclude=@tryghost/admin-x-framework,@tryghost/post-revisions,@tryghost/comments-ui,ghost-admin --coverage
       - name: SonarCloud Scan
