@@ -184,3 +184,4 @@ add|ember-template-lint|require-iframe-title|27|20|27|20|94e58d11848d5613900c218
 add|ember-template-lint|require-iframe-title|42|16|42|16|a3292b469dc37f2f4791e7f224b0b65c8ecf5d18|1728345600000|1738717200000|1743897600000|app/components/modals/email-preview.hbs
 add|ember-template-lint|no-autofocus-attribute|21|20|21|20|942419d05c04ded6716f09faecd6b1ab55418121|1728345600000|1738717200000|1743897600000|app/components/modals/new-custom-integration.hbs
 add|ember-template-lint|no-invalid-interactive|2|37|2|37|e21ba31f54b631a428c28a1c9f88d0dc66f2f5fc|1728345600000|1738717200000|1743897600000|app/components/modals/search.hbs
+remove|ember-template-lint|no-action|5|14|5|14|a90edd9a99596008f60bfcdbc6befe7fe8d26321|1728345600000|1738717200000|1743897600000|app/components/gh-psm-tags-input.hbs
