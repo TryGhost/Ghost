@@ -622,6 +622,28 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     @action
+    changeTags(newTags) {
+        let post = this.post;
+
+        let currentTags = post.get('tags');
+
+        // destroy new+unsaved tags that are no longer selected
+        currentTags.forEach(function (tag) {
+            if (!newTags.includes(tag) && tag.get('isNew')) {
+                tag.destroyRecord();
+            }
+        });
+
+        // update tags
+        post.set('tags', newTags);
+
+        this.savePostTask.perform().catch((error) => {
+            this.showError(error);
+            post.rollbackAttributes();
+        });
+    }
+
+    @action
     deletePostInternal() {
         if (this.deletePost) {
             this.deletePost();
