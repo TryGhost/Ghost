@@ -1,3 +1,0 @@
-id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,import_tier
-634e48e056ef99c6a7af5850,compedmember@example.com,Some Comped Member,This is a comped member,true,true,,2023-07-26T11:50:00.000Z,,Some Import Label,Invalid Tier
-

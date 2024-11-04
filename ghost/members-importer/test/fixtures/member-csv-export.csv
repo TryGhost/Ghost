@@ -1,3 +1,0 @@
-id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers
-634e48e056ef99c6a7af5850,member_complimentary_test@example.com,"bobby tables","a note",true,true,,2022-10-18T06:34:08.000Z,,"user import label",This is a Bronze Tier
-634e566dde68acf282cd311e,member_stripe_test@example.com,"stirpey beaver","testing notes",false,,cus_MdR9tqW6bAreiq,2022-10-18T07:31:57.000Z,,,This is a Premium Tier
