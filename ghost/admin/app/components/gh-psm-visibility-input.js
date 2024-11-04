@@ -35,5 +35,8 @@ export default class GhPsmVisibilityInput extends Component {
         if (newVisibility !== 'tiers') {
             this.post.set('tiers', []);
         }
+        if (this.savePostOnChange) {
+            return this.savePostOnChange();
+        }
     }
 }
