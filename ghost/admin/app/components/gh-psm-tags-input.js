@@ -58,7 +58,10 @@ export default class GhPsmTagsInput extends Component {
         });
 
         // update tags
-        return this.set('post.tags', newTags);
+        this.set('post.tags', newTags);
+        if (this.savePostOnChange) {
+            return this.savePostOnChange();
+        }
     }
 
     @action
