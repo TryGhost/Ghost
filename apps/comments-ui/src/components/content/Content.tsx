@@ -52,7 +52,7 @@ const Content = () => {
                         <MainForm commentsCount={commentCount} />
                     ) : (
                         <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="cta-box">
-                            <CTABox isFirst={pagination?.total === 0} isPaid={isPaidOnly} />
+                            <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
                         </section>
                     )}
                 </div>
