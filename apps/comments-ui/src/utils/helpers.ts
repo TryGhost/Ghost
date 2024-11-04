@@ -13,52 +13,53 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     const date = new Date(dateString);
     const now = new Date();
 
-    // Diff is in seconds
-    let diff = Math.round((now.getTime() - date.getTime()) / 1000);
-    if (diff < 5) {
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
         return t('Just now');
     }
 
-    if (diff < 60) {
-        return t('{{amount}} seconds ago', {amount: diff});
-    }
+    // Check if dates are on different calendar days by comparing UTC dates
+    const dateUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    const nowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const dayDiff = Math.floor((nowUTC.getTime() - dateUTC.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Diff in minutes
-    diff = diff / 60;
-    if (diff < 60) {
-        if (Math.floor(diff) === 1) {
-            return t(`One min ago`);
-        }
-        return t('{{amount}} mins ago', {amount: Math.floor(diff)});
-    }
-
-    // Diff in hours
-    diff = diff / 60;
-    if (diff < 24) {
-        if (Math.floor(diff) === 1) {
-            return t(`One hour ago`);
-        }
-        return t('{{amount}} hrs ago', {amount: Math.floor(diff)});
-    }
-
-    // Check for yesterday
-    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-    if (date.getFullYear() === yesterday.getFullYear() && 
-        date.getMonth() === yesterday.getMonth() && 
-        date.getDate() === yesterday.getDate()) {
+    if (dayDiff === 1) {
         return t('Yesterday');
     }
 
-    // For anything older than yesterday, show explicit date
-    const day = date.toLocaleDateString('en-us', {day: 'numeric'});
-    const month = date.toLocaleString('en-us', {month: 'short'});
-    
-    // Only show year if it's different from current year
-    if (date.getFullYear() === now.getFullYear()) {
+    if (dayDiff > 1) {
+        const day = date.getDate();
+        const month = date.toLocaleString('en-us', {month: 'short'});
+        
+        // If it's from a different year, include the year
+        if (date.getFullYear() !== now.getFullYear()) {
+            return `${day} ${month} ${date.getFullYear()}`;
+        }
+        // If it's from this year but not today/yesterday, show date without year
         return `${day} ${month}`;
     }
-    
-    return `${day} ${month} ${date.getFullYear()}`;
+
+    // If we're on the same calendar day, show relative time
+    let diff = Math.round((now.getTime() - date.getTime()) / 1000);
+    if (diff < 60) {
+        return t('Just now');
+    }
+
+    diff = Math.round(diff / 60);
+    if (diff === 1) {
+        return t('One min ago');
+    }
+
+    if (diff < 60) {
+        return t('{{amount}} mins ago', {amount: diff});
+    }
+
+    diff = Math.round(diff / 60);
+    if (diff === 1) {
+        return t('One hour ago');
+    }
+
+    return t('{{amount}} hrs ago', {amount: diff});
 }
 
 export function formatExplicitTime(dateString: string): string {

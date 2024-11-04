@@ -29,22 +29,19 @@ describe('Date/Time Formatting', () => {
         return key;
     };
 
-    beforeEach(() => {
-        // Set a fixed time: 2024-02-15 15:00:00
-        clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-    });
-
     afterEach(() => {
-        clock.restore();
+        clock?.restore();
     });
 
     describe('formatRelativeTime', () => {
-        it('handles just now', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:57.000Z', t)).toBe('Just now');
+        beforeEach(() => {
+            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
         });
 
-        it('handles seconds ago', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:30.000Z', t)).toBe('30 seconds ago');
+        it('handles just now', () => {
+            expect(helpers.formatRelativeTime('2024-02-15T14:59:57.000Z', t)).toBe('Just now');
+            expect(helpers.formatRelativeTime('2024-02-15T14:59:30.000Z', t)).toBe('Just now');
+            expect(helpers.formatRelativeTime('2024-02-15T14:59:01.000Z', t)).toBe('Just now');
         });
 
         it('handles one minute ago', () => {
@@ -72,6 +69,38 @@ describe('Date/Time Formatting', () => {
         });
 
         it('handles date in different year', () => {
+            expect(helpers.formatRelativeTime('2023-02-15T15:00:00.000Z', t)).toBe('15 Feb 2023');
+        });
+    });
+
+    describe('formatRelativeTime transitions', () => {
+        it('transitions from just now to minutes', () => {
+            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+            expect(helpers.formatRelativeTime('2024-02-15T14:59:00.000Z', t)).toBe('One min ago');
+            expect(helpers.formatRelativeTime('2024-02-15T14:58:00.000Z', t)).toBe('2 mins ago');
+        });
+
+        it('transitions from minutes to hours at 60 minutes', () => {
+            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+            expect(helpers.formatRelativeTime('2024-02-15T14:01:00.000Z', t)).toBe('59 mins ago');
+            expect(helpers.formatRelativeTime('2024-02-15T14:00:00.000Z', t)).toBe('One hour ago');
+        });
+
+        it('transitions from hours to yesterday at calendar day change', () => {
+            clock = sinon.useFakeTimers(new Date('2024-02-15T00:30:00.000Z'));
+            expect(helpers.formatRelativeTime('2024-02-14T23:00:00.000Z', t)).toBe('Yesterday');
+            expect(helpers.formatRelativeTime('2024-02-15T00:00:00.000Z', t)).toBe('30 mins ago');
+        });
+
+        it('transitions from yesterday to date format', () => {
+            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+            expect(helpers.formatRelativeTime('2024-02-14T15:00:00.000Z', t)).toBe('Yesterday');
+            expect(helpers.formatRelativeTime('2024-02-13T15:00:00.000Z', t)).toBe('13 Feb');
+        });
+    
+        it('shows year for dates in previous years', () => {
+            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+            expect(helpers.formatRelativeTime('2023-12-15T15:00:00.000Z', t)).toBe('15 Dec 2023');
             expect(helpers.formatRelativeTime('2023-02-15T15:00:00.000Z', t)).toBe('15 Feb 2023');
         });
     });
