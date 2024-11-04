@@ -45,7 +45,7 @@ const GenericPopup: React.FC<Props> = ({show, children, title, callback}) => {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="to-rgba(0,0,0,0.1) fixed left-0 top-0 flex h-screen w-screen justify-center overflow-hidden bg-gradient-to-b from-[rgba(0,0,0,0.2)] pt-0 backdrop-blur-[2px] sm:pt-12" onMouseDown={close}>
+                        <div className="to-rgba(0,0,0,0.1) fixed left-0 top-0 flex h-screen w-screen justify-center overflow-hidden bg-gradient-to-b from-[rgba(0,0,0,0.2)] pt-0 backdrop-blur-[2px] sm:pt-[4vmin]" onMouseDown={close}>
                             <Transition.Child
                                 enter="transition duration-200 delay-150 linear"
                                 enterFrom="translate-y-4 opacity-0"
