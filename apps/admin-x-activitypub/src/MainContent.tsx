@@ -47,16 +47,12 @@ const MainContent = () => {
     switch (mainRoute) {
     case 'search':
         return <Search />;
-        break;
     case 'activity':
         return <Activities />;
-        break;
     case 'profile':
         return <Profile />;
-        break;
     default:
         return <Inbox />;
-        break;
     }
 };
 
