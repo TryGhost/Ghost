@@ -183,7 +183,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getOutbox', function () {
-        test('It passes the token to the outbox endpoint', async function () {
+        test('It passes the token to the outbox collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -213,7 +213,7 @@ describe('ActivityPubAPI', function () {
             await api.getOutbox();
         });
 
-        test('Returns an empty array when the outbox is empty', async function () {
+        test('Returns an empty array when the outbox collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -247,7 +247,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the outbox is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the outbox collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -316,7 +316,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowing', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the following collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -346,7 +346,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowing();
         });
 
-        test('Returns an empty array when the following is empty', async function () {
+        test('Returns an empty array when the following collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -380,7 +380,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the following is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the following collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -437,7 +437,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowers', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the followers collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -467,7 +467,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowers();
         });
 
-        test('Returns an empty array when the followers is empty', async function () {
+        test('Returns an empty array when the followers collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -501,7 +501,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the followers is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the followers collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -721,6 +721,8 @@ describe('ActivityPubAPI', function () {
 
     describe('search', function () {
         test('It returns the results of the search', async function () {
+            const handle = '@foo@bar.baz';
+
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -729,11 +731,11 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                'https://activitypub.api/.ghost/activitypub/actions/search?query=%40foo%40bar.baz': {
+                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({
                         profiles: [
                             {
-                                handle: '@foo@bar.baz',
+                                handle,
                                 name: 'Foo Bar'
                             }
                         ]
@@ -748,14 +750,45 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.search('@foo@bar.baz');
+            const actual = await api.search(handle);
             const expected = {
                 profiles: [
                     {
-                        handle: '@foo@bar.baz',
+                        handle,
                         name: 'Foo Bar'
                     }
                 ]
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array when there are no profiles in the response', async function () {
+            const handle = '@foo@bar.baz';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.search(handle);
+            const expected = {
+                profiles: []
             };
 
             expect(actual).toEqual(expected);
@@ -997,7 +1030,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowingForProfile', function () {
-        test('It returns a following arrayfor a profile', async function () {
+        test('It returns an array of following actors for a profile', async function () {
             const handle = '@foo@bar.baz';
 
             const fakeFetch = Fetch({
@@ -1260,6 +1293,43 @@ describe('ActivityPubAPI', function () {
             const actual = await api.getProfile(handle);
             const expected = {
                 handle,
+                name: 'Foo Bar'
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('getThread', function () {
+        test('It returns a thread', async function () {
+            const activityId = 'https://example.com/thread/abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/thread/${encodeURIComponent(activityId)}`]: {
+                    response: JSONResponse({
+                        id: activityId,
+                        name: 'Foo Bar'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getThread(activityId);
+            const expected = {
+                id: activityId,
                 name: 'Foo Bar'
             };
 
