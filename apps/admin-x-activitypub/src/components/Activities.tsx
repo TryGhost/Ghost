@@ -7,14 +7,12 @@ import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
-// import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
-// import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
 

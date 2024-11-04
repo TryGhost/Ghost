@@ -1,23 +1,26 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LoadingIndicator, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {Button, LoadingIndicator, Modal} from '@tryghost/admin-x-design-system';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
 import {type Activity} from '../activities/ActivityItem';
-
+import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
-import FeedItem from './FeedItem';
 import articleBodyStyles from '../articleBodyStyles';
-
+import FeedItem from './FeedItem';
+import MainHeader from '../navigation/MainHeader';
 import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+import getUsername from '../../utils/get-username';
+import {renderTimestamp} from '../../utils/render-timestamp';
 
 interface ArticleModalProps {
     activityId: string;
     object: ObjectProperties;
     actor: ActorProperties;
     focusReply: boolean;
+    width?: 'narrow' | 'wide';
     updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
         activityId: string;
@@ -155,10 +158,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     object,
     actor,
     focusReply,
+    width = 'narrow',
     updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
+    const MODAL_SIZE_LG = 840;
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
         if (focused) {
@@ -174,7 +179,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const activityThreadChildren = (activityThread?.items ?? []).slice(activtyThreadActivityIdx + 1);
     const activityThreadParents = (activityThread?.items ?? []).slice(0, activtyThreadActivityIdx);
 
-    const [modalSize] = useState<number>(MODAL_SIZE_SM);
+    const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
 
     const canNavigateBack = history.length > 0;
@@ -254,46 +259,35 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-3'>
-                    <div className='grid h-8 grid-cols-3'>
-                        {canNavigateBack && (
-                            <div className='col-[1/2] flex items-center justify-between px-8'>
-                                <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
-                            </div>
-                        )}
-                        <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
+                <MainHeader>
+                    {canNavigateBack && (
+                        <div className='col-[1/2] flex items-center justify-between px-8'>
+                            <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
                         </div>
-                        <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                            <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                        </div>
+                    )}
+                    <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                     </div>
-                </div>
+                    <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
+                        <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                    </div>
+                </MainHeader>
                 <div className='grow overflow-y-auto'>
                     <div className='mx-auto max-w-[580px] pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
                             return (
                                 <>
-                                    {item.object.type === 'Article' ? (
-                                        <ArticleBody
-                                            excerpt={item.object?.preview?.content}
-                                            heading={item.object.name}
-                                            html={item.object.content}
-                                            image={item.object?.image}
-                                        />
-                                    ) : (
-                                        <FeedItem
-                                            actor={item.actor}
-                                            commentCount={item.object.replyCount ?? 0}
-                                            last={false}
-                                            layout='reply'
-                                            object={item.object}
-                                            type='Note'
-                                            onClick={() => {
-                                                navigateForward(item.id, item.object, item.actor);
-                                            }}
-                                            onCommentClick={() => {}}
-                                        />
-                                    )}
+                                    <FeedItem
+                                        actor={item.actor}
+                                        commentCount={item.object.replyCount ?? 0}
+                                        last={false}
+                                        layout='reply'
+                                        object={item.object}
+                                        type='Note'
+                                        onClick={() => {
+                                            navigateForward(item.id, item.object, item.actor);
+                                        }}
+                                        onCommentClick={() => {}}
+                                    />
                                 </>
                             );
                         })}
@@ -312,12 +306,28 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             />
                         )}
                         {object.type === 'Article' && (
-                            <ArticleBody
-                                excerpt={object?.preview?.content}
-                                heading={object.name}
-                                html={object.content}
-                                image={object?.image}
-                            />
+                            <>
+                                <div className='flex items-center gap-3 pt-5'>
+                                    <div className='relative z-10 pt-[3px]'>
+                                        <APAvatar author={actor}/>
+                                    </div>
+                                    <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]'>{actor.name}</span>
+                                            <div>{renderTimestamp(object)}</div>
+                                        </div>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate text-grey-700'>{getUsername(actor)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ArticleBody
+                                    excerpt={object?.preview?.content}
+                                    heading={object.name}
+                                    html={object.content}
+                                    image={object?.image}
+                                />
+                            </>
                         )}
 
                         <div ref={replyBoxRef}>
