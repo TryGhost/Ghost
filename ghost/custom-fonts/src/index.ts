@@ -1,51 +1,88 @@
-export type BodyFont = 'Fira Mono' | 'Fira Sans' | 'IBM Plex Serif' | 'Inter' | 'JetBrains Mono' | 'Lora' | 'Manrope' | 'Merriweather' | 'Nunito' | 'Noto Sans' | 'Noto Serif' | 'Poppins' | 'Roboto' | 'Space Mono';
-export type HeadingFont = 'Cardo' | 'Chakra Petch' | 'Old Standard TT' | 'Prata' | 'Rufina' | 'Space Grotesk' | 'Tenor Sans' | BodyFont;
-export type CustomFonts = {heading: HeadingFont[], body: BodyFont[]};
+// export type BodyFont = 'Fira Mono' | 'Fira Sans' | 'IBM Plex Serif' | 'Inter' | 'JetBrains Mono' | 'Lora' | 'Manrope' | 'Merriweather' | 'Nunito' | 'Noto Sans' | 'Noto Serif' | 'Poppins' | 'Roboto' | 'Space Mono';
+// export type HeadingFont = 'Cardo' | 'Chakra Petch' | 'Old Standard TT' | 'Prata' | 'Rufina' | 'Space Grotesk' | 'Tenor Sans' | BodyFont;
+export type BodyFontName =
+  | 'Fira Mono'
+  | 'Fira Sans'
+  | 'IBM Plex Serif'
+  | 'Inter'
+  | 'JetBrains Mono'
+  | 'Lora'
+  | 'Manrope'
+  | 'Merriweather'
+  | 'Nunito'
+  | 'Noto Sans'
+  | 'Noto Serif'
+  | 'Poppins'
+  | 'Roboto'
+  | 'Space Mono';
+
+export type HeadingFontName =
+  | 'Cardo'
+  | 'Chakra Petch'
+  | 'Old Standard TT'
+  | 'Prata'
+  | 'Rufina'
+  | 'Space Grotesk'
+  | 'Tenor Sans'
+  | BodyFontName;
+
+export type Font<T extends string> = {
+    name: T;
+    creator: string;
+};
+
+export type HeadingFont = Font<HeadingFontName>;
+export type BodyFont = Font<BodyFontName>;
+
+export type CustomFonts = {
+  heading: HeadingFont[];
+  body: BodyFont[];
+};
 
 export type FontSelection = {
-    heading?: HeadingFont,
-    body?: BodyFont
+  heading?: HeadingFontName;
+  body?: BodyFontName;
 };
 
 export const CUSTOM_FONTS: CustomFonts = {
     heading: [
-        'Cardo',
-        'Chakra Petch',
-        'Fira Mono',
-        'Fira Sans',
-        'IBM Plex Serif',
-        'Inter',
-        'JetBrains Mono',
-        'Lora',
-        'Manrope',
-        'Merriweather',
-        'Noto Sans',
-        'Noto Serif',
-        'Nunito',
-        'Old Standard TT',
-        'Poppins',
-        'Prata',
-        'Roboto',
-        'Rufina',
-        'Space Grotesk',
-        'Space Mono',
-        'Tenor Sans'
+        {name: 'Cardo', creator: 'David Perry'},
+        {name: 'Chakra Petch', creator: 'Cadson Demak'},
+        {name: 'Fira Mono', creator: 'Erik Spiekermann'},
+        {name: 'Fira Sans', creator: 'Erik Spiekermann'},
+        {name: 'IBM Plex Serif', creator: 'IBM'},
+        {name: 'Inter', creator: 'Rasmus Andersson'},
+        {name: 'JetBrains Mono', creator: 'JetBrains'},
+        {name: 'Lora', creator: 'Cyreal'},
+        {name: 'Manrope', creator: 'Mikhail Sharanda'},
+        {name: 'Merriweather', creator: 'Sorkin Type'},
+        {name: 'Noto Sans', creator: 'Google'},
+        {name: 'Noto Serif', creator: 'Google'},
+        {name: 'Nunito', creator: 'Vernon Adams'},
+        {name: 'Old Standard TT', creator: 'Alexey Kryukov'},
+        {name: 'Poppins', creator: 'Indian Type Foundry'},
+        {name: 'Prata', creator: 'Cyreal'},
+        {name: 'Roboto', creator: 'Christian Robertson'},
+        {name: 'Rufina', creator: 'Héctor Gatti'},
+        {name: 'Space Grotesk', creator: 'Florian Karsten'},
+        {name: 'Space Mono', creator: 'Colophon Foundry'},
+        {name: 'Tenor Sans', creator: 'Denis Masharov'}
     ],
     body: [
-        'Fira Mono',
-        'Fira Sans',
-        'IBM Plex Serif',
-        'Inter',
-        'JetBrains Mono',
-        'Lora',
-        'Manrope',
-        'Merriweather',
-        'Noto Sans',
-        'Noto Serif',
-        'Nunito',
-        'Poppins',
-        'Roboto',
-        'Space Mono'
+        {name: 'Fira Mono', creator: 'Erik Spiekermann'},
+        {name: 'Fira Sans', creator: 'Erik Spiekermann'},
+        {name: 'IBM Plex Serif', creator: 'IBM'},
+        {name: 'Inter', creator: 'Rasmus Andersson'},
+        {name: 'JetBrains Mono', creator: 'JetBrains'},
+        {name: 'Lora', creator: 'Cyreal'},
+        {name: 'Manrope', creator: 'Mikhail Sharanda'},
+        {name: 'Merriweather', creator: 'Sorkin Type'},
+        {name: 'Noto Sans', creator: 'Google'},
+        {name: 'Noto Serif', creator: 'Google'},
+        {name: 'Nunito', creator: 'Vernon Adams'},
+        {name: 'Poppins', creator: 'Indian Type Foundry'},
+        {name: 'Roboto', creator: 'Christian Robertson'},
+        {name: 'Space Mono', creator: 'Colophon Foundry'}
     ]
 };
 
@@ -213,10 +250,10 @@ export function getCustomFonts(): CustomFonts {
     return CUSTOM_FONTS;
 }
 
-export function isValidCustomFont(font: string): font is BodyFont {
-    return CUSTOM_FONTS.body.includes(font as BodyFont);
+export function isValidCustomFont(fontName: string): fontName is BodyFontName {
+    return CUSTOM_FONTS.body.some(font => font.name === fontName);
 }
 
-export function isValidCustomHeadingFont(font: string): font is HeadingFont {
-    return CUSTOM_FONTS.heading.includes(font as HeadingFont);
+export function isValidCustomHeadingFont(fontName: string): fontName is HeadingFontName {
+    return CUSTOM_FONTS.heading.some(font => font.name === fontName);
 }
