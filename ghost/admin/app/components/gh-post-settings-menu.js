@@ -625,7 +625,7 @@ export default class GhPostSettingsMenu extends Component {
     savePost() {
         this.savePostTask.perform().catch((error) => {
             this.showError(error);
-            post.rollbackAttributes();
+            this.post.rollbackAttributes();
         });
     }
 
