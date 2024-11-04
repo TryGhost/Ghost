@@ -59,6 +59,10 @@ export class MockedApi {
         this.member = buildMember(overrides);
     }
 
+    logoutMember() {
+        this.member = null;
+    }
+
     setSettings(overrides) {
         this.settings = buildSettings(overrides);
     }

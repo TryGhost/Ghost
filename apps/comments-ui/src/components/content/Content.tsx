@@ -14,10 +14,15 @@ const Content = () => {
 
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     let commentsElements;
+    let commentsDataset = comments;
+    if (labs.commentImprovements && !member) {
+        // Only show published comments to non-members
+        commentsDataset = commentsDataset.filter(comment => comment?.status === 'published');
+    }
     if (labs && labs.commentImprovements) {
-        commentsElements = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
+        commentsElements = commentsDataset.slice().map(comment => <Comment key={comment.id} comment={comment} />);
     } else {
-        commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
+        commentsElements = commentsDataset.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
     }
 
     useEffect(() => {

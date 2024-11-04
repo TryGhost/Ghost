@@ -9,7 +9,7 @@ export const HiddenCommentText: React.FC<HiddenCommentTextProps> = ({notPublishe
     const message: string = notPublishedMessage;
     const labs = useLabs();
 
-    if (labs.commentsImprovements) {
+    if (labs.commentImprovements) {
         return (
             <div>
                 <p 

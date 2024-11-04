@@ -207,7 +207,7 @@ test.describe('Auth Frame', async () => {
             publication: 'Publisher Weekly',
             admin,
             labs: {
-                commentsImprovements: true
+                commentImprovements: true
             }
         });
 

@@ -111,7 +111,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const {admin, t} = useAppContext();
     const labs = useLabs();
     let notPublishedMessage:string = '';
-    if (labs.commentsImprovements) {
+    if (labs.commentImprovements) {
         notPublishedMessage = comment.html;
     } else {
         if (admin && comment.status === 'hidden') {

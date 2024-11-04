@@ -433,10 +433,11 @@ test.describe('Actions', async () => {
             await expect(comments.nth(0)).toContainText('This is the oldest');
         });
     });
-    test.describe('Hidden and Deleted Commmemts', () => {
+    test.describe('Hidden and Deleted Commmemts - all behind flag', () => {
         test('Guest visitors cannot see hidden nor deleted comments', async ({page}) => {
             mockedApi.addComment({
-                html: '<p>This is comment 1</p>'
+                html: '<p>This is comment 1</p>',
+                status: 'published'
             });
             mockedApi.addComment({
                 html: '<p>This is a naughty comment and should be hidden</p>',
@@ -447,7 +448,9 @@ test.describe('Actions', async () => {
                 status: 'deleted'
             });
 
-            await initialize({
+            mockedApi.logoutMember();
+
+            const {frame} = await initialize({
                 mockedApi,
                 page,
                 publication: 'Publisher Weekly',
@@ -455,9 +458,8 @@ test.describe('Actions', async () => {
                     commentImprovements: true
                 }
             });
-
-            const comments = await page.locator('data-testid=comment-component');
-
+    
+            const comments = await frame.getByTestId('comment-component');
             await expect(comments).toHaveCount(1);
         });
         test('Members cannot see hidden comments', async ({page}) => {
@@ -478,7 +480,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 3</p>'
             });
 
-            await initialize({
+            const {frame} = await initialize({
                 mockedApi,
                 page,
                 publication: 'Publisher Weekly',
@@ -489,7 +491,7 @@ test.describe('Actions', async () => {
 
             // Logged in member should not be able to see the hidden comment
 
-            const comments = await page.locator('data-testid=comment-component');
+            const comments = await frame.locator('data-testid=comment-component');
 
             await expect(comments).toHaveCount(2);
 
