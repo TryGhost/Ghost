@@ -24,9 +24,9 @@ describe('error messages are set correctly', () => {
         function t(message) { 
             return 'translated ' + message;
         }
-        const error = new Response('{"errors":[{"message":"Too many attempts try again in {{number}} minutes."}]}', {status: 400});
+        const error = new Response('{"errors":[{"message":"Too many attempts try again in {number} minutes."}]}', {status: 400});
         const humanReadableError = await HumanReadableError.fromApiResponse(error);
-        expect(chooseBestErrorMessage(humanReadableError, 'this is the default message', t)).toEqual('translated Too many attempts try again in {{number}} minutes.');
+        expect(chooseBestErrorMessage(humanReadableError, 'this is the default message', t)).toEqual('translated Too many attempts try again in {number} minutes.');
     });
 
     test('handles an error when the message has a number', async () => {
@@ -35,7 +35,7 @@ describe('error messages are set correctly', () => {
         }
         const error = new Response('{"errors":[{"message":"Too many attempts try again in 10 minutes."}]}', {status: 400});
         const humanReadableError = await HumanReadableError.fromApiResponse(error);
-        expect(chooseBestErrorMessage(humanReadableError, 'this is the default message', t)).toEqual('translated Too many attempts try again in {{number}} minutes. 10');
+        expect(chooseBestErrorMessage(humanReadableError, 'this is the default message', t)).toEqual('translated Too many attempts try again in {number} minutes. 10');
     });
 
     test('handles a 500 error', async () => {
