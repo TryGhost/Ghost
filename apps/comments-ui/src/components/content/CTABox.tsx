@@ -6,7 +6,7 @@ type Props = {
     isPaid: boolean
 };
 const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
-    const {accentColor, publication, member, t} = useAppContext();
+    const {accentColor, publication, member, t, commentCount} = useAppContext();
 
     const buttonStyle = {
         backgroundColor: accentColor
@@ -16,7 +16,7 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
         color: accentColor
     };
 
-    const titleText = (isFirst ? t('Start the conversation') : t('Join the discussion'));
+    const titleText = (commentCount === 0 ? t('Start the conversation') : t('Join the discussion'));
 
     const handleSignUpClick = () => {
         window.location.href = (isPaid && member) ? '#/portal/account/plans' : '#/portal/signup';
