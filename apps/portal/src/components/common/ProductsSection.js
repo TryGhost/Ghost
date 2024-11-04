@@ -462,11 +462,11 @@ export const ProductsSectionStyles = () => {
                 min-width: unset;
             }
 
-            .gh-portal-btn-product {
+            .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) {
                 position: static;
             }
 
-            .gh-portal-btn-product::before {
+            .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe)::before {
                 display: none;
             }
         }
