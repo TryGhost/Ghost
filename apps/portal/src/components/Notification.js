@@ -34,7 +34,7 @@ const NotificationText = ({type, status, context}) => {
         const firstname = context.member.firstname || '';
         return (
             <p>
-                {firstname ? t('Welcome back, {{name}}!', {name: firstname}) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
+                {firstname ? t('Welcome back, {name}!', {name: firstname}) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
             </p>
         );
     } else if (type === 'signin' && status === 'error') {

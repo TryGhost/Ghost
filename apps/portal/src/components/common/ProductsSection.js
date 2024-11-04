@@ -748,7 +748,7 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
         return (
             <Interpolate
                 syntax={SYNTAX_I18NEXT}
-                string={t('Start {{amount}}-day free trial')}
+                string={t('Start {amount}-day free trial')}
                 mapping={{
                     amount: trialDays
                 }}
