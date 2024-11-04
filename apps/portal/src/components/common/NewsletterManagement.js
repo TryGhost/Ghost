@@ -136,7 +136,7 @@ function ShowPaidMemberMessage({site, isPaid}) {
 
     if (isPaid) {
         return (
-            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {{title}}', {title: site?.title})}</p>
+            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
         );
     }
     return null;

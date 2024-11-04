@@ -523,11 +523,11 @@ export default class OfferPage extends React.Component {
             forever: t(`{amount} off forever.`, {
                 amount: this.getOffAmount({offer})
             }),
-            firstPeriod: t(`{amount} off for first {{period}}.`, {
+            firstPeriod: t(`{amount} off for first {period}.`, {
                 amount: this.getOffAmount({offer}),
                 period: offer.cadence
             }),
-            firstNMonths: t(`{amount} off for first {{number}} months.`, {
+            firstNMonths: t(`{amount} off for first {number} months.`, {
                 amount: this.getOffAmount({offer}),
                 number: offer.duration_in_months || ''
             })
@@ -555,7 +555,7 @@ export default class OfferPage extends React.Component {
         }
         if (discountDuration === 'trial') {
             return (
-                <p className="footnote">{t('Try free for {{amount}} days, then {{originalPrice}}.', {
+                <p className="footnote">{t('Try free for {amount} days, then {originalPrice}.', {
                     amount: offer.amount,
                     originalPrice: originalPrice,
                     interpolation: {escapeValue: false}

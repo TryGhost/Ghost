@@ -900,7 +900,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                     }}
                 >
                     {t('Yearly')}
-                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
+                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(save {highestYearlyDiscount}%)', {highestYearlyDiscount})}</span>}
                 </button>
             </div>
         </div>
@@ -973,7 +973,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
             const supportAddress = getSupportAddress({site});
             return (
                 <p style={{textAlign: 'center'}}>
-                    {t('Please contact {{supportAddress}} to adjust your complimentary subscription.', {supportAddress})}
+                    {t('Please contact {supportAddress} to adjust your complimentary subscription.', {supportAddress})}
                 </p>
             );
         } else {
