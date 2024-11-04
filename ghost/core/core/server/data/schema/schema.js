@@ -985,7 +985,9 @@ module.exports = {
         started_at: {type: 'dateTime', nullable: true},
         finished_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        metadata: {type: 'string', maxlength: 2000, nullable: true},
+        queue_entry: {type: 'integer', nullable: true, unsigned: true}
     },
     redirects: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
