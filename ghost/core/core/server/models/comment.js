@@ -222,16 +222,6 @@ const Comment = ghostBookshelf.Model.extend({
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
         }
 
-        // if options.order === 'best', we findMostLikedComment
-        // then we remove it from the result set and add it as the first element
-        if (options.order === 'best' && options.page === '1') {
-            const mostLikedComment = await this.findMostLikedComment(options);
-            if (mostLikedComment) {
-                result.data = result.data.filter(comment => comment.id !== mostLikedComment.id);
-                result.data.unshift(mostLikedComment);
-            }
-        }
-
         return result;
     },
 

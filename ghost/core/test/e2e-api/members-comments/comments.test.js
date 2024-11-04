@@ -26,6 +26,7 @@ const dbFns = {
      * @typedef {Object} AddCommentReplyData
      * @property {string} member_id
      * @property {string} [html='This is a reply']
+     * @property {date} [created_at]
      */
     /**
      * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
@@ -40,7 +41,8 @@ const dbFns = {
             post_id: data.post_id || postId,
             member_id: data.member_id,
             parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>'
+            html: data.html || '<p>This is a comment</p>',
+            created_at: data.created_at
         });
     },
     /**
@@ -511,8 +513,7 @@ describe('Comments API', function () {
             });
 
             it('can show most liked comment first when order param = best followed by most recent', async function () {
-                // await setupBrowseCommentsData();
-                // add another comment
+                await setupBrowseCommentsData();
                 await dbFns.addComment({
                     html: 'This is the newest comment',
                     member_id: fixtureManager.get('members', 2).id,
