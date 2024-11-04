@@ -29,7 +29,7 @@ const getActivityDescription = (activity: Activity): string => {
     switch (activity.type) {
     case ACTVITY_TYPE.CREATE:
         if (activity.object?.inReplyTo && typeof activity.object?.inReplyTo !== 'string') {
-            return `Commented on your article "${activity.object.inReplyTo.name}"`;
+            return `Replied to your article "${activity.object.inReplyTo.name}"`;
         }
 
         return '';
