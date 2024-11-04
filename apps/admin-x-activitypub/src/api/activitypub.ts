@@ -272,7 +272,7 @@ export class ActivityPubAPI {
         excludeNonFollowers: boolean = false,
         filter: {type?: string[]} | null = null,
         cursor?: string
-    ): Promise<{data: Activity[], nextCursor: string | null}> {
+    ): Promise<{data: Activity[], next: string | null}> {
         const LIMIT = 50;
 
         const url = new URL(this.activitiesApiUrl);
@@ -298,23 +298,23 @@ export class ActivityPubAPI {
         if (json === null) {
             return {
                 data: [],
-                nextCursor: null
+                next: null
             };
         }
 
         if (!('items' in json)) {
             return {
                 data: [],
-                nextCursor: null
+                next: null
             };
         }
 
         const data = Array.isArray(json.items) ? json.items : [];
-        const nextCursor = 'nextCursor' in json && typeof json.nextCursor === 'string' ? json.nextCursor : null;
+        const next = 'next' in json && typeof json.next === 'string' ? json.next : null;
 
         return {
             data,
-            nextCursor
+            next
         };
     }
 
@@ -360,7 +360,7 @@ export class ActivityPubAPI {
     }
 
     async getThread(id: string): Promise<ActivityThread> {
-        const url = new URL(`.ghost/activitypub/thread/${btoa(id)}`, this.apiUrl);
+        const url = new URL(`.ghost/activitypub/thread/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as ActivityThread;
     }
