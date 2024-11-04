@@ -512,9 +512,8 @@ describe('Comments API', function () {
                 should.not.exist(response.body.comments[0].unsubscribe_url);
             });
 
-            it('can show most liked comment first when order param = best', async function () {
-                // await setupBrowseCommentsData();
-                // add another comment
+            it('can show most liked comment first when order param = best followed by most recent', async function () {
+                await setupBrowseCommentsData();
                 await dbFns.addComment({
                     html: 'This is the newest comment',
                     member_id: fixtureManager.get('members', 2).id,
