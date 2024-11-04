@@ -22,7 +22,7 @@ const Pagination = () => {
     // TODO: add i18n support for these strings when removing labs flag
     const text = labs.commentImprovements
         ? (left === 1 ? 'Load more (1)' : `Load more (${formatNumber(left)})`)
-        : (left === 1 ? t('Show 1 previous comment') : t('Show {{amount}} previous comments', {amount: formatNumber(left)}));
+        : (left === 1 ? t('Show 1 previous comment') : t('Show {amount} previous comments', {amount: formatNumber(left)}));
 
     return (
         labs.commentImprovements ? (

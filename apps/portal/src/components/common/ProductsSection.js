@@ -586,7 +586,7 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
     if (hasFreeTrialTier({site})) {
         if (trialDays) {
             return (
-                <span className="gh-portal-discount-label">{t('{{trialDays}} days free', {trialDays})}</span>
+                <span className="gh-portal-discount-label">{t('{trialDays} days free', {trialDays})}</span>
             );
         } else {
             return null;
@@ -595,7 +595,7 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
 
     if (selectedInterval === 'year') {
         return (
-            <span className="gh-portal-discount-label">{t('{{discount}}% discount', {discount})}</span>
+            <span className="gh-portal-discount-label">{t('{discount}% discount', {discount})}</span>
         );
     }
 
@@ -851,13 +851,13 @@ function YearlyDiscount({discount}) {
     if (hasFreeTrialTier({site})) {
         return (
             <>
-                <span className="gh-portal-discount-label-trial">{t('{{discount}}% discount', {discount})}</span>
+                <span className="gh-portal-discount-label-trial">{t('{discount}% discount', {discount})}</span>
             </>
         );
     } else {
         return (
             <>
-                <span className="gh-portal-discount-label">{t('{{discount}}% discount', {discount})}</span>
+                <span className="gh-portal-discount-label">{t('{discount}% discount', {discount})}</span>
             </>
         );
     }

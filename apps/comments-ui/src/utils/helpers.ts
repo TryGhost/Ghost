@@ -20,7 +20,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     }
 
     if (diff < 60) {
-        return t('{{amount}} seconds ago', {amount: diff});
+        return t('{amount} seconds ago', {amount: diff});
     }
 
     // Diff in minutes
@@ -29,7 +29,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         if (Math.floor(diff) === 1) {
             return t(`One min ago`);
         }
-        return t('{{amount}} mins ago', {amount: Math.floor(diff)});
+        return t('{amount} mins ago', {amount: Math.floor(diff)});
     }
 
     // First check for yesterday
@@ -45,7 +45,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         if (Math.floor(diff) === 1) {
             return t(`One hour ago`);
         }
-        return t('{{amount}} hrs ago', {amount: Math.floor(diff)});
+        return t('{amount} hrs ago', {amount: Math.floor(diff)});
     }
 
     // Diff in days
@@ -55,7 +55,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
             // Special case, we should compare based on dates in the future instead
             return t(`One day ago`);
         }
-        return t('{{amount}} days ago', {amount: Math.floor(diff)});
+        return t('{amount} days ago', {amount: Math.floor(diff)});
     }
 
     // Diff in weeks
@@ -65,7 +65,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
             // Special case, we should compare based on dates in the future instead
             return t(`One week ago`);
         }
-        return t('{{amount}} weeks ago', {amount: Math.floor(diff)});
+        return t('{amount} weeks ago', {amount: Math.floor(diff)});
     }
 
     // Diff in months
@@ -75,7 +75,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
             // Special case, we should compare based on dates in the future instead
             return t(`One month ago`);
         }
-        return t('{{amount}} months ago', {amount: Math.floor(diff)});
+        return t('{amount} months ago', {amount: Math.floor(diff)});
     }
 
     // Diff in years
@@ -84,7 +84,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         // Special case, we should compare based on dates in the future instead
         return t(`One year ago`);
     }
-    return t('{{amount}} years ago', {amount: Math.floor(diff)});
+    return t('{amount} years ago', {amount: Math.floor(diff)});
 }
 
 export function formatExplicitTime(dateString: string): string {
