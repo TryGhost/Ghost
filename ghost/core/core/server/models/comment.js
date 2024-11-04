@@ -94,6 +94,12 @@ const Comment = ghostBookshelf.Model.extend({
         }
     },
 
+    orderAttributes: function orderAttributes() {
+        let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
+        keys.push('count__likes');
+        return keys;
+    },
+
     onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
@@ -202,31 +208,14 @@ const Comment = ghostBookshelf.Model.extend({
         return options;
     },
 
-    async findMostLikedComment(options = {}) {
-        let query = ghostBookshelf.knex('comments')
-            .select('comments.*')
-            .count('comment_likes.id as count__likes') // Counting likes for sorting
-            .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
-            .groupBy('comments.id') // Group by comment ID to aggregate likes count
-            .orderBy('count__likes', 'desc') // Order by likes in descending order (most likes first)
-            .limit(1); // Limit to just 1 result
-        // Execute the query and get the result
-        const result = await query.first(); // Fetch the single top comment
-        const id = result && result.id;
-        // Fetch the comment model by ID
-        return this.findOne({id}, options);
-    },
-
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
-
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
             'replies.count.likes',
             'replies.count.liked'
         ].filter(relation => withRelated.includes(relation));
-
         const result = await ghostBookshelf.Model.findPage.call(this, options);
 
         for (const model of result.data) {
