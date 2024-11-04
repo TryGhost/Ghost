@@ -32,13 +32,6 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         return t('{{amount}} mins ago', {amount: Math.floor(diff)});
     }
 
-    // First check for yesterday
-    // (we ignore setting 'yesterday' if close to midnight and keep using minutes until 1 hour difference)
-    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-    if (date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate()) {
-        return t('Yesterday');
-    }
-
     // Diff in hours
     diff = diff / 60;
     if (diff < 24) {
@@ -48,43 +41,24 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         return t('{{amount}} hrs ago', {amount: Math.floor(diff)});
     }
 
-    // Diff in days
-    diff = diff / 24;
-    if (diff < 7) {
-        if (Math.floor(diff) === 1) {
-            // Special case, we should compare based on dates in the future instead
-            return t(`One day ago`);
-        }
-        return t('{{amount}} days ago', {amount: Math.floor(diff)});
+    // Check for yesterday
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    if (date.getFullYear() === yesterday.getFullYear() && 
+        date.getMonth() === yesterday.getMonth() && 
+        date.getDate() === yesterday.getDate()) {
+        return t('Yesterday');
     }
 
-    // Diff in weeks
-    diff = diff / 7;
-    if (diff < 4) {
-        if (Math.floor(diff) === 1) {
-            // Special case, we should compare based on dates in the future instead
-            return t(`One week ago`);
-        }
-        return t('{{amount}} weeks ago', {amount: Math.floor(diff)});
+    // For anything older than yesterday, show explicit date
+    const day = date.toLocaleDateString('en-us', {day: 'numeric'});
+    const month = date.toLocaleString('en-us', {month: 'short'});
+    
+    // Only show year if it's different from current year
+    if (date.getFullYear() === now.getFullYear()) {
+        return `${day} ${month}`;
     }
-
-    // Diff in months
-    diff = diff * 7 / 30;
-    if (diff < 12) {
-        if (Math.floor(diff) === 1) {
-            // Special case, we should compare based on dates in the future instead
-            return t(`One month ago`);
-        }
-        return t('{{amount}} months ago', {amount: Math.floor(diff)});
-    }
-
-    // Diff in years
-    diff = diff * 30 / 365;
-    if (Math.floor(diff) === 1) {
-        // Special case, we should compare based on dates in the future instead
-        return t(`One year ago`);
-    }
-    return t('{{amount}} years ago', {amount: Math.floor(diff)});
+    
+    return `${day} ${month} ${date.getFullYear()}`;
 }
 
 export function formatExplicitTime(dateString: string): string {
