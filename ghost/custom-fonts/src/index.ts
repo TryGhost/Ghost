@@ -18,7 +18,6 @@ export type HeadingFontName =
   | 'Cardo'
   | 'Chakra Petch'
   | 'Old Standard TT'
-  | 'Prata'
   | 'Rufina'
   | 'Space Grotesk'
   | 'Tenor Sans'
@@ -46,9 +45,9 @@ export const CUSTOM_FONTS: CustomFonts = {
     heading: [
         {name: 'Cardo', creator: 'David Perry'},
         {name: 'Chakra Petch', creator: 'Cadson Demak'},
-        {name: 'Fira Mono', creator: 'Erik Spiekermann'},
-        {name: 'Fira Sans', creator: 'Erik Spiekermann'},
-        {name: 'IBM Plex Serif', creator: 'IBM'},
+        {name: 'Fira Mono', creator: 'Carrois Apostrophe'},
+        {name: 'Fira Sans', creator: 'Carrois Apostrophe'},
+        {name: 'IBM Plex Serif', creator: 'Mike Abbink'},
         {name: 'Inter', creator: 'Rasmus Andersson'},
         {name: 'JetBrains Mono', creator: 'JetBrains'},
         {name: 'Lora', creator: 'Cyreal'},
@@ -59,17 +58,16 @@ export const CUSTOM_FONTS: CustomFonts = {
         {name: 'Nunito', creator: 'Vernon Adams'},
         {name: 'Old Standard TT', creator: 'Alexey Kryukov'},
         {name: 'Poppins', creator: 'Indian Type Foundry'},
-        {name: 'Prata', creator: 'Cyreal'},
         {name: 'Roboto', creator: 'Christian Robertson'},
-        {name: 'Rufina', creator: 'Héctor Gatti'},
+        {name: 'Rufina', creator: 'Martin Sommaruga'},
         {name: 'Space Grotesk', creator: 'Florian Karsten'},
         {name: 'Space Mono', creator: 'Colophon Foundry'},
         {name: 'Tenor Sans', creator: 'Denis Masharov'}
     ],
     body: [
-        {name: 'Fira Mono', creator: 'Erik Spiekermann'},
-        {name: 'Fira Sans', creator: 'Erik Spiekermann'},
-        {name: 'IBM Plex Serif', creator: 'IBM'},
+        {name: 'Fira Mono', creator: 'Carrois Apostrophe'},
+        {name: 'Fira Sans', creator: 'Carrois Apostrophe'},
+        {name: 'IBM Plex Serif', creator: 'Mike Abbink'},
         {name: 'Inter', creator: 'Rasmus Andersson'},
         {name: 'JetBrains Mono', creator: 'JetBrains'},
         {name: 'Lora', creator: 'Cyreal'},
