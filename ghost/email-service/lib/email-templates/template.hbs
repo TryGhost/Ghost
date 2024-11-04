@@ -91,15 +91,15 @@
                                                     <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
                                                         <tr>
                                                             <td height="20" class="{{classes.meta}}" style="padding: 0;">
-                                                                By {{post.authors}} • <span class="post-meta-date">{{post.publishedAt}} </span>
+                                                                {{{t 'By {authors}' authors=post.authors }}} • <span class="post-meta-date">{{post.publishedAt}} </span>
                                                             </td>
                                                             <td class="{{classes.meta}} view-online desktop">
-                                                                <a href="{{post.url}}" class="view-online-link">View in browser</a>
+                                                                <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
                                                             </td>
                                                         </tr>
                                                         <tr class="{{classes.meta}} view-online-mobile">
                                                             <td height="20" class="view-online">
-                                                                <a href="{{post.url}}" class="view-online-link">View in browser</a>
+                                                                <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -157,22 +157,11 @@
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this.png" width="145" height="36" }}
-                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this.png" width="142" height="36" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
                                                 {{/if}}
                                                 {{#if newsletter.showCommentCta}}
-                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment.png" width="122" height="36" }}
-                                                {{/if}}
-                                            </tr>
-                                        </table>
-                                        <table class="feedback-buttons-mobile" role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                {{#if feedbackButtons }}
-                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
-                                                    {{> feedbackButtonMobile feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
-                                                {{/if}}
-                                                {{#if newsletter.showCommentCta}}
-                                                    {{> feedbackButtonMobile href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42" }}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42"}}
                                                 {{/if}}
                                             </tr>
                                         </table>
@@ -183,7 +172,7 @@
                              {{#if latestPosts.length}}
                                 <tr>
                                     <td style="padding: 24px 0; border-bottom: 1px solid #e5eff5;">
-                                        <h3 class="latest-posts-header">Keep reading</h3>
+                                        <h3 class="latest-posts-header">{{t 'Keep reading'}}</h3>
                                         {{> latestPosts}}
                                     </td>
                                 </tr>
@@ -192,19 +181,19 @@
                             {{#if newsletter.showSubscriptionDetails}}
                                 <tr>
                                     <td class="subscription-box">
-                                        <h3>Subscription details</h3>
+                                        <h3>{{t 'Subscription details'}}</h3>
                                         <p style="margin-bottom: 16px;">
-                                            <span>You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {{site.title}}.</span> %%{status_text}%%
+                                            <span>{{{t "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}." site=site.title }}}</span> %%{status_text}%%
                                         </p>
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td class="subscription-details">
-                                                    <p class="%%{name_class}%%">Name: %%{name, "not provided"}%%</p>
-                                                    <p>Email: <a href="#">%%{email}%%</a></p>
-                                                    <p>Member since: %%{created_at}%%</p>
+                                                    <p class="%%{name_class}%%">{{t 'Name'}}: %%{name, "not provided"}%%</p>
+                                                    <p>{{t 'Email'}}: <a href="#">%%{email}%%</a></p>
+                                                    <p>{{t 'Member since'}}: %%{created_at}%%</p>
                                                 </td>
                                                 <td align="right" valign="bottom" class="manage-subscription">
-                                                    <a href="%%{manage_account_url}%%"> Manage subscription &rarr;</a>
+                                                    <a href="%%{manage_account_url}%%"> {{t 'Manage subscription'}} &rarr;</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -219,7 +208,7 @@
                                             <tr><td class="footer">{{{footerContent}}}</td></tr>
                                         {{/if}}
                                         <tr>
-                                            <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">Unsubscribe</a></td>
+                                            <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">{{t 'Unsubscribe'}}</a></td>
                                         </tr>
 
                                         {{#if showBadge }}
