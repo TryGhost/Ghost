@@ -28,7 +28,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         secundaryFormCount: 0,
         popup: null,
         labs: null,
-        order: 'best'
+        order: 'count__likes desc, created_at desc'
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -145,12 +145,14 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             // Fetch data from API, links, preview, dev sources
             const {member, labs} = await api.init();
             const {comments, pagination, count} = await fetchComments(labs);
+            const order = labs.commentImprovements ? 'count__likes desc, created_at desc' : 'created_at desc';
             const state = {
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
                 commentCount: count,
+                order,
                 labs: labs
             };
 
