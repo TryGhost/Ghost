@@ -24,7 +24,7 @@ const AccountWelcome = () => {
             const expiryAt = getDateString(expiryDate);
             return (
                 <div className='gh-portal-section'>
-                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {{expiryDate}}`, {expiryDate: expiryAt})}</p>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {expiryDate}`, {expiryDate: expiryAt})}</p>
                 </div>
             );
         }
@@ -40,13 +40,13 @@ const AccountWelcome = () => {
             const trialEnd = getDateString(subscription.trial_end_at);
             return (
                 <div className='gh-portal-section'>
-                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will start on {{subscriptionStart}}`, {subscriptionStart: trialEnd})}</p>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will start on {subscriptionStart}`, {subscriptionStart: trialEnd})}</p>
                 </div>
             );
         }
         return (
             <div className='gh-portal-section'>
-                <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will renew on {{renewalDate}}`, {renewalDate: getDateString(currentPeriodEnd)})}</p>
+                <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will renew on {renewalDate}`, {renewalDate: getDateString(currentPeriodEnd)})}</p>
             </div>
         );
     }
