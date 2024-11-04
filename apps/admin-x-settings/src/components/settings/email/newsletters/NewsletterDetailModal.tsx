@@ -107,7 +107,7 @@ const Sidebar: React.FC<{
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
     const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
-    const commentsEnabled = getSettingValue(settings, 'comments_enabled') === 'all';
+    const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled'));
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
     const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
