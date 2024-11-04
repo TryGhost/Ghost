@@ -1,11 +1,7 @@
 const assert = require('assert/strict');
 const http = require('http');
 const path = require('path');
-
-const models = require('../../../core/server/models');
-
-models.init();
-
+const testUtils = require('../../utils');
 const jobService = require('../../../core/server/services/jobs/job-service');
 
 const JOB_NAME = 'update-check';
@@ -13,6 +9,8 @@ const JOB_PATH = path.resolve(__dirname, '../../../core/server/run-update-check.
 
 describe('Run Update Check', function () {
     let mockUpdateServer;
+
+    before(testUtils.setup('default'));
 
     afterEach(function () {
         if (mockUpdateServer) {

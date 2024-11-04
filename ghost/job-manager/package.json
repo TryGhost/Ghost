@@ -23,6 +23,7 @@
     "date-fns": "2.30.0",
     "delay": "5.0.0",
     "mocha": "10.2.0",
+    "rewire": "^7.0.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
@@ -33,6 +34,7 @@
     "bree": "6.5.0",
     "cron-validate": "1.4.5",
     "fastq": "1.17.1",
-    "p-wait-for": "3.2.0"
+    "p-wait-for": "3.2.0",
+    "workerpool": "^9.1.3"
   }
 }
