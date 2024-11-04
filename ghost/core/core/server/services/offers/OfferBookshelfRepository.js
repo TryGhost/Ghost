@@ -107,6 +107,8 @@ class OfferBookshelfRepository {
         });
 
         try {
+            const lastRedeemedObject = lastRedeemed.toJSON();
+
             return await Offer.create({
                 id: json.id,
                 name: json.name,
@@ -126,7 +128,7 @@ class OfferBookshelfRepository {
                     name: json.product.name
                 },
                 created_at: json.created_at,
-                last_redeemed: lastRedeemed.toJSON().length > 0 ? lastRedeemed.toJSON()[0].created_at : null
+                last_redeemed: lastRedeemedObject.length > 0 ? lastRedeemedObject[0].created_at : null
             }, null);
         } catch (err) {
             logger.error(err);
