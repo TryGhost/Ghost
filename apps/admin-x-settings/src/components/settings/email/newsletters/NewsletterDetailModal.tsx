@@ -10,7 +10,7 @@ import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -107,6 +107,7 @@ const Sidebar: React.FC<{
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
     const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
+    const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
     const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
@@ -456,12 +457,12 @@ const Sidebar: React.FC<{
                             label='Ask your readers for feedback'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
-                        <Toggle
+                        {commentsEnabled && <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
-                        />
+                        />}
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
