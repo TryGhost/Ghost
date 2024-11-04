@@ -271,7 +271,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     menuItems.push({
         id: 'copy-link',
         label: 'Copy link to post',
-        onClick: handleCopyLink
+        onClick: () => { handleCopyLink(); }
     });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
