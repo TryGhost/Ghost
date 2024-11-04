@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import clsx from 'clsx';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
@@ -13,7 +14,7 @@ interface APAvatarProps {
 
 const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     let iconSize = 18;
-    let containerClass = '';
+    let containerClass = 'shrink-0 items-center justify-center relative z-10 flex';
     let imageClass = 'z-10 rounded w-10 h-10 object-cover';
     const badgeClass = `w-6 h-6 z-20 rounded-full absolute -bottom-2 -right-[0.6rem] border-2 border-white content-box flex items-center justify-center `;
     let badgeColor = '';
@@ -38,19 +39,23 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     switch (size) {
     case 'xs':
         iconSize = 12;
-        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-5 h-5';
+        containerClass = clsx('h-5 w-5 rounded ', containerClass);
         imageClass = 'z-10 rounded w-5 h-5 object-cover';
         break;
     case 'sm':
-        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-10 h-10';
+        containerClass = clsx('h-10 w-10 rounded', containerClass);
         break;
     case 'lg':
-        containerClass = 'z-10 relative rounded-xl bg-grey-100 shrink-0 flex items-center justify-center w-22 h-22';
+        containerClass = clsx('h-22 w-22 rounded-xl', containerClass);
         imageClass = 'z-10 rounded-xl w-22 h-22 object-cover';
         break;
     default:
-        containerClass = 'z-10 relative rounded bg-grey-100 shrink-0 flex items-center justify-center w-10 h-10';
+        containerClass = clsx('h-10 w-10  rounded', containerClass);
         break;
+    }
+
+    if (!iconUrl) {
+        containerClass = clsx(containerClass, 'bg-grey-100');
     }
 
     if (iconUrl) {

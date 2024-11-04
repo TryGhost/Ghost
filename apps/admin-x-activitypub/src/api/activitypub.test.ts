@@ -183,7 +183,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getOutbox', function () {
-        test('It passes the token to the outbox endpoint', async function () {
+        test('It passes the token to the outbox collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -213,7 +213,7 @@ describe('ActivityPubAPI', function () {
             await api.getOutbox();
         });
 
-        test('Returns an empty array when the outbox is empty', async function () {
+        test('Returns an empty array when the outbox collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -247,7 +247,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the outbox is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the outbox collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -316,7 +316,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowing', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the following collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -346,7 +346,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowing();
         });
 
-        test('Returns an empty array when the following is empty', async function () {
+        test('Returns an empty array when the following collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -380,7 +380,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the following is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the following collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -437,7 +437,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowers', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the followers collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -467,7 +467,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowers();
         });
 
-        test('Returns an empty array when the followers is empty', async function () {
+        test('Returns an empty array when the followers collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -501,7 +501,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Recursively retrieves all items and returns them when the followers is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the followers collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -716,143 +716,6 @@ describe('ActivityPubAPI', function () {
             );
 
             await api.follow('@user@domain.com');
-        });
-    });
-
-    describe('getAllActivities', function () {
-        test('It fetches all activities navigating pagination', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50': {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: 'next-cursor'
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&cursor=next-cursor': {
-                    response: JSONResponse({
-                        items: [{type: 'Announce', object: {type: 'Article'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities();
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}},
-                {type: 'Announce', object: {type: 'Article'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It fetches a user\'s own activities', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&includeOwn=true': {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities(true);
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It fetches activities with replies', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&includeReplies=true': {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities(false, true);
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It fetches filtered activities', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                [`https://activitypub.api/.ghost/activitypub/activities/index?limit=50&filter=%7B%22type%22%3A%5B%22Create%3ANote%22%5D%7D`]: {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities(false, false, {type: ['Create:Note']});
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}}
-            ];
-
-            expect(actual).toEqual(expected);
         });
     });
 

@@ -10,6 +10,7 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+const {cardAssets} = require('../../../../core/frontend/services/assets-minification');
 const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
@@ -1350,16 +1351,44 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('search scripts', function () {
-        it('includes search when labs flag enabled', async function () {
-            sinon.stub(labs, 'isSet').returns(true);
-
-            await testGhostHead(testUtils.createHbsResponse({
+        it('includes search', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            rendered.should.match(/sodo-search@/);
+        });
+
+        it('includes locale in search when i18n is enabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('i18n').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
+        });
+
+        it('does not incldue locale in search when i18n is disabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('i18n').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/sodo-search@[^>]*?data-locale="en"/);
         });
     });
 
@@ -1464,6 +1493,188 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+        });
+    });
+    describe('respects values from excludes: ', function () {
+        it('when excludes is empty', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/portal@/);
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+        it('when exclude contains search', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'search'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.not.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+        it('when exclude contains portal', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+        it('can handle multiple excludes', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'portal,search'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.not.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+
+        it('shows the announcement when exclude does not contain announcement', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            settingsCache.get.withArgs('announcement_content').returns('Hello world');
+            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+
+            let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+            rendered.should.match(/announcement-bar@/);
+        });
+        it('does not show the announcement when exclude contains announcement', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            settingsCache.get.withArgs('announcement_content').returns('Hello world');
+            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+
+            let rendered = await testGhostHead({hash: {exclude: 'announcement'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+            rendered.should.match(/generator/);
+            rendered.should.not.match(/announcement-bar@/);
+        });
+
+        it('does not load the comments script when exclude contains comment_counts', async function () {
+            settingsCache.get.withArgs('comments_enabled').returns('all');
+            let rendered = await testGhostHead({hash: {exclude: 'comment_counts'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/comment-counts.min.js/);
+        });
+
+        it('loads card assets when not excluded', async function () {
+            // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
+            sinon.stub(cardAssets, 'hasFile').returns(true);
+
+            let rendered = await testGhostHead({...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.match(/cards.min.js/);
+            rendered.should.match(/cards.min.css/);
+        });
+        it('does not load card assets when excluded with card_assets', async function () {
+            sinon.stub(cardAssets, 'hasFile').returns(true);
+            let rendered = await testGhostHead({hash: {exclude: 'card_assets'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/cards.min.js/);
+            rendered.should.not.match(/cards.min.css/);
+        });
+        it('does not load meta tags when excluded with metadata', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'metadata'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/<link rel="canonical"/);
+        });
+        it('does not load schema when excluded with schema', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'schema'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/<script type="application\/ld\+json"/);
+        });
+        it('does not load og: or twitter: attributes when excludd with social_data', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'social_data'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/<meta property="og:/);
+            rendered.should.not.match(/<meta property="twitter:/);
+        });
+        it('does not load cta styles when excluded with cta_styles', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            let rendered = await testGhostHead({hash: {exclude: 'cta_styles'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/.gh-post-upgrade-cta-content/);
         });
     });
 });
