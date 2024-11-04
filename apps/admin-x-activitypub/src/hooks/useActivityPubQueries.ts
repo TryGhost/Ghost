@@ -217,7 +217,7 @@ export function useActivitiesForUser({
             return api.getActivities(includeOwn, includeReplies, excludeNonFollowers, filter, pageParam);
         },
         getNextPageParam(prevPage) {
-            return prevPage.nextCursor;
+            return prevPage.next;
         }
     });
 
