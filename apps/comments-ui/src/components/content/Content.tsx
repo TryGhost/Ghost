@@ -12,13 +12,10 @@ const Content = () => {
     const labs = useLabs();
     const {t} = useAppContext();
 
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount, admin} = useAppContext();
     let commentsElements;
-    let commentsDataset = comments;
-    if (labs.commentImprovements && !member) {
-        // Only show published comments to non-members
-        commentsDataset = commentsDataset.filter(comment => comment?.status === 'published');
-    }
+    const commentsDataset = comments;
+
     if (labs && labs.commentImprovements) {
         commentsElements = commentsDataset.slice().map(comment => <Comment key={comment.id} comment={comment} />);
     } else {
