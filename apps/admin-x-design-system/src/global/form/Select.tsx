@@ -69,7 +69,7 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
     <components.DropdownIndicator {...props}>
-        <div className={`absolute top-[13px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}></div>
+        <div className={`absolute top-1/2 mt-[-5px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}></div>
     </components.DropdownIndicator>
 );
 
@@ -171,7 +171,7 @@ const Select: React.FC<SelectProps> = ({
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
-        option: clsx('px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
+        option: clsx('group px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
         groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
@@ -182,6 +182,21 @@ const Select: React.FC<SelectProps> = ({
             return <DropdownIndicator {...ddiProps} clearBg={clearBg} />;
         };
     }, [clearBg]);
+
+    const {components: propComponents = {}, ...restProps} = props;
+
+    // Define your default components
+    const defaultComponents = {
+        DropdownIndicator: dropdownIndicatorComponent,
+        Option,
+        ClearIndicator
+    };
+
+    // Merge the default components with those passed via props
+    const allComponents = {
+        ...defaultComponents,
+        ...propComponents
+    };
 
     const customProps = {
         classNames: {
@@ -201,7 +216,7 @@ const Select: React.FC<SelectProps> = ({
             groupHeading: () => customClasses.groupHeading,
             clearIndicator: () => customClasses.clearIndicator
         },
-        components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
+        // components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
         inputId: id,
         isClearable: false,
         isSearchable: isSearchable,
@@ -222,7 +237,7 @@ const Select: React.FC<SelectProps> = ({
             <div className={containerClasses} data-testid={testId}>
                 {async ?
                     <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
-                    <ReactSelect<SelectOption, false> {...customProps} {...props} />
+                    <ReactSelect<SelectOption, false> {...customProps} {...restProps} components={allComponents} />
                 }
             </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}

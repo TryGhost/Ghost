@@ -356,7 +356,7 @@ test.describe('Design settings', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
-                {key: 'heading_font', value: 'Caro'},
+                {key: 'heading_font', value: 'Cardo'},
                 {key: 'body_font', value: 'Inter'}
             ])},
             browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
@@ -379,8 +379,8 @@ test.describe('Design settings', async () => {
         const modal = page.getByTestId('design-modal');
 
         // The fonts should be set to the values in the settings
-        await expect(modal.getByTestId('heading-font-select')).toHaveText('Caro');
-        await expect(modal.getByTestId('body-font-select')).toHaveText('Inter');
+        await expect(modal.getByTestId('heading-font-select')).toHaveText(/Cardo/);
+        await expect(modal.getByTestId('body-font-select')).toHaveText(/Inter/);
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
         // select a different heading font
