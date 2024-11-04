@@ -67,12 +67,12 @@ const SUPPORTED_LOCALES = [
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
     let interpolation = {};
-    if (ns === 'newsletter') {
-        interpolation = {
-            prefix: '{',
-            suffix: '}'
-        };
-    }
+    // if (ns === 'newsletter') {
+    interpolation = {
+        prefix: '{',
+        suffix: '}'
+    };
+    //}
     i18nextInstance.init({
         lng,
 
