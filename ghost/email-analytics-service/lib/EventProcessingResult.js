@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 class EventProcessingResult {
     /**
      * @param {object} result
@@ -59,8 +57,9 @@ class EventProcessingResult {
 
         this.processingFailures += other.processingFailures || 0;
 
-        this.emailIds = _.compact(_.union(this.emailIds, other.emailIds || []));
-        this.memberIds = _.compact(_.union(this.memberIds, other.memberIds || []));
+        // TODO: come up with a cleaner way to merge these without churning through Array and Set
+        this.emailIds = Array.from(new Set([...this.emailIds, ...(other.emailIds || [])])).filter(Boolean);
+        this.memberIds = Array.from(new Set([...this.memberIds, ...(other.memberIds || [])])).filter(Boolean);
     }
 }
 
