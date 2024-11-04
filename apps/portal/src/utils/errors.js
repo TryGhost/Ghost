@@ -51,12 +51,12 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('This site is invite-only, contact the owner for access.');
             t('Unable to initiate checkout session');
             t('This site is not accepting payments at the moment.');
-            t('Too many attempts try again in {{number}} minutes.');
-            t('Too many attempts try again in {{number}} hours.');
-            t('Too many attempts try again in {{number}} days.');
-            t('Too many different sign-in attempts, try again in {{number}} minutes');
-            t('Too many different sign-in attempts, try again in {{number}} hours');
-            t('Too many different sign-in attempts, try again in {{number}} days');
+            t('Too many attempts try again in {number} minutes.');
+            t('Too many attempts try again in {number} hours.');
+            t('Too many attempts try again in {number} days.');
+            t('Too many different sign-in attempts, try again in {number} minutes');
+            t('Too many different sign-in attempts, try again in {number} hours');
+            t('Too many different sign-in attempts, try again in {number} days');
             t('Failed to send magic link email');
         }
     };
@@ -78,7 +78,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
         }
         const number = message.match(/\d+/);
         if (number) {
-            message = message.replace(number[0], '{{number}}');
+            message = message.replace(number[0], '{number}');
         }
         return {preparedMessage: message, number: number ? number[0] : null};
     };
