@@ -47,11 +47,7 @@ export default class GhPsmTagsInput extends Component {
     }
 
     @action
-    _updateTags(newTags) {
-        if (this.updateTags) {
-            return this.updateTags(newTags);
-        }
-
+    updateTags(newTags) {
         let currentTags = this.get('post.tags');
 
         // destroy new+unsaved tags that are no longer selected
@@ -62,7 +58,10 @@ export default class GhPsmTagsInput extends Component {
         });
 
         // update tags
-        return this.set('post.tags', newTags);
+        this.set('post.tags', newTags);
+        if(this.savePostOnChange) {
+            return this.savePostOnChange();
+        }
     }
 
     @action
