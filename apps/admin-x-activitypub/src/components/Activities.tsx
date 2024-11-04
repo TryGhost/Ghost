@@ -84,7 +84,7 @@ const getActivityBadge = (activity: Activity): AvatarBadge => {
     }
 };
 
-const Activities: React.FC<ActivitiesProps> = ({}) => {
+const Activities: React.FC<ActivitiesProps> = () => {
     const user = 'index';
 
     const {
