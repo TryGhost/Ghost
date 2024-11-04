@@ -49,7 +49,6 @@ export default class GhPsmTagsInput extends Component {
     @action
     _updateTags(newTags) {
         if (this.updateTags) {
-            // Call the provided updateTags action
             return this.updateTags(newTags);
         }
 
