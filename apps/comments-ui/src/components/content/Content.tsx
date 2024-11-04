@@ -56,11 +56,13 @@ const Content = () => {
                         </section>
                     )}
                 </div>
-                <div className="z-20 mb-7 mt-3">
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                        {t('Sort by')}: <SortingForm/>
-                    </span>
-                </div>
+                {commentCount > 1 && (
+                    <div className="z-20 mb-7 mt-3">
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                            {t('Sort by')}: <SortingForm/>
+                        </span>
+                    </div>
+                )}
                 <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements">
                     {commentsElements}
                 </div>
