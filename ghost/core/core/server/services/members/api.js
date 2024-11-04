@@ -98,7 +98,7 @@ function createApiInstance(config) {
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('You\'re one tap away from subscribing to {siteTitle}} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${t('You\'re one tap away from subscribing to {siteTitle} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
 

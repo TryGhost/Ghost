@@ -284,7 +284,6 @@
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "An error message displayed in the member account area when newsletter delivery to their address has repeatedly failed or they have marked an email as spam.",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "",
     "You're one tap away from subscribing to {siteTitle}!": "",
-    "You're one tap away from subscribing to {siteTitle}} — please confirm your email address with this link:": "",
     "You've successfully signed in.": "A notification displayed when the user signs in",
     "You've successfully subscribed to": "A notification displayed when the user subscribed",
     "Your account": "A label indicating member account details",
