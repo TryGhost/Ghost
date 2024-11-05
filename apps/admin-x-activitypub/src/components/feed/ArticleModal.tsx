@@ -1,6 +1,5 @@
 import FeedItem from './FeedItem';
 import FeedItemStats from './FeedItemStats';
-import MainHeader from '../navigation/MainHeader';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import articleBodyStyles from '../articleBodyStyles';
@@ -267,18 +266,34 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize}
         >
             <div className='flex h-full flex-col'>
-                <MainHeader>
-                    {canNavigateBack && (
-                        <div className='col-[1/2] flex items-center justify-between px-8'>
-                            <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
+                    <div className={`flex h-8 ${object.type === 'Article' && 'pl-[98px]'}`}>
+                        {canNavigateBack ? (
+                            <div className='col-[1/2] flex items-center justify-between px-8'>
+                                <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                            </div>
+                        ) : <div className='flex items-center gap-3 px-8'>
+                            <div className='relative z-10 pt-[3px]'>
+                                <APAvatar author={actor}/>
+                            </div>
+                            <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
+                                <div className='flex w-full'>
+                                    <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]'>{actor.name}</span>
+                                    <div>{renderTimestamp(object)}</div>
+                                </div>
+                                <div className='flex w-full'>
+                                    <span className='min-w-0 truncate text-grey-700'>{getUsername(actor)}</span>
+                                </div>
+                            </div>
+                        </div>}
+                        <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                         </div>
-                    )}
-                    <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
+                        <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
+                            <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        </div>
                     </div>
-                    <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                    </div>
-                </MainHeader>
+                </div>
+                
                 <div className='grow overflow-y-auto'>
                     <div className='mx-auto max-w-[580px] pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
@@ -307,6 +322,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 last={true}
                                 layout={activityThreadParents.length > 0 ? 'modal' : 'modal'}
                                 object={object}
+                                showHeader={canNavigateBack}
                                 type='Note'
                                 onCommentClick={() => {
                                     setReplyBoxFocused(true);
@@ -315,20 +331,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         )}
                         {object.type === 'Article' && (
                             <>
-                                <div className='flex items-center gap-3 pt-5'>
-                                    <div className='relative z-10 pt-[3px]'>
-                                        <APAvatar author={actor}/>
-                                    </div>
-                                    <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
-                                        <div className='flex w-full'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]'>{actor.name}</span>
-                                            <div>{renderTimestamp(object)}</div>
-                                        </div>
-                                        <div className='flex w-full'>
-                                            <span className='min-w-0 truncate text-grey-700'>{getUsername(actor)}</span>
-                                        </div>
-                                    </div>
-                                </div>
                                 <ArticleBody
                                     excerpt={object?.preview?.content}
                                     heading={object.name}
