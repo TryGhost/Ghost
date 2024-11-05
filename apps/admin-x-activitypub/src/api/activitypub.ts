@@ -234,9 +234,10 @@ export class ActivityPubAPI {
         };
     }
 
-    async follow(username: string): Promise<void> {
+    async follow(username: string): Promise<Actor> {
         const url = new URL(`.ghost/activitypub/actions/follow/${username}`, this.apiUrl);
-        await this.fetchJSON(url, 'POST');
+        const json = await this.fetchJSON(url, 'POST');
+        return json as Actor;
     }
 
     async getActor(url: string): Promise<Actor> {
