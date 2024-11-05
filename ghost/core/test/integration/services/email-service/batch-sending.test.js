@@ -194,7 +194,7 @@ describe('Batch sending tests', function () {
 
     it('Doesn\'t include members created after the email in the batches', async function () {
         // If we create a new member (e.g. a member that was imported) after the email was created, they should not be included in the email
-        const addStub = sinon.stub(models.Email, 'add');
+        const addStub = await sinon.stub(models.Email, 'add');
         let laterMember;
         addStub.callsFake(async function () {
             const r = await addStub.wrappedMethod.call(this, ...arguments);
@@ -215,11 +215,11 @@ describe('Batch sending tests', function () {
 
         const {emailModel} = await sendEmail(agent);
 
-        assert(addStub.calledOnce);
+        assert(await addStub.calledOnce);
         assert.ok(laterMember);
-        addStub.restore();
+        await addStub.restore();
 
-        assert.equal(emailModel.get('email_count'), 4);
+        assert.equal(await emailModel.get('email_count'), 4);
 
         // Did we create batches?
         const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
@@ -230,13 +230,13 @@ describe('Batch sending tests', function () {
         assert.equal(emailRecipients.models.length, 4);
 
         for (const recipient of emailRecipients.models) {
-            assert.equal(recipient.get('batch_id'), batches.models[0].id);
-            assert.notEqual(recipient.get('member_id'), laterMember.id);
+            assert.equal(await recipient.get('batch_id'), batches.models[0].id);
+            assert.notEqual(await recipient.get('member_id'), laterMember.id);
         }
 
         // Create a new email and see if it is included now
         const {emailModel: emailModel2} = await sendEmail(agent);
-        assert.equal(emailModel2.get('email_count'), 5);
+        assert.equal(await emailModel2.get('email_count'), 5);
         const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel2.id}'`});
         assert.equal(emailRecipients2.models.length, emailRecipients.models.length + 1);
 
