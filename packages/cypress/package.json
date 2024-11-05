@@ -1,6 +1,5 @@
 {
-  "name": "uniandes-ghost",
-  "description": "Automated Test monorepo for Ghost",
+  "name": "cypress-ghost",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,5 +7,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "description": ""
 }
