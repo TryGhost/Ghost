@@ -44,7 +44,7 @@
     "bson-objectid": "2.0.4",
     "express": "4.21.1",
     "got": "11.8.6",
-    "jsonwebtoken": "8.5.1",
+    "jsonwebtoken": "9.0.0",
     "lodash": "4.17.21",
     "moment": "2.29.4",
     "node-jose": "2.2.0",
