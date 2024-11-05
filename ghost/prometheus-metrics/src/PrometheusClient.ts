@@ -52,7 +52,7 @@ export class PrometheusClient {
      * Pushes metrics to the pushgateway, if enabled
      */
     async pushMetrics() {
-        if (this.gateway) {
+        if (this.config.pushgateway?.enabled && this.gateway) {
             const jobName = this.config.pushgateway?.jobName || 'ghost';
             await this.gateway.pushAdd({jobName});
         }
