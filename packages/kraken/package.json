@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "kraken": "./node_modules/kraken-node/bin/kraken-node",
+    "kraken": "npx kraken-node",
     "test": "npm run kraken run"
   },
   "keywords": [],
