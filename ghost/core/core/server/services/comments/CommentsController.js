@@ -51,7 +51,7 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
-        return this.service.getComments(frame.options);
+        return await this.service.getComments(frame.options);
     }
 
     /**
