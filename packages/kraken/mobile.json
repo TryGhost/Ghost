@@ -1,0 +1,6 @@
+{
+    "type": "singular",
+    "apk_path": "<APK_PATH>",
+    "apk_package": "<APK_PACKAGE>",
+    "apk_launch_activity": "<APK_LAUNCH_ACTIVITY>"
+}

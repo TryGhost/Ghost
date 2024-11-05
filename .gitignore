@@ -1,0 +1,5 @@
+node_modules/
+
+## kraken
+packages/kraken/reports/
+packages/kraken/.kraken/

@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "kraken": "./node_modules/kraken-node/bin/kraken-node",
+    "test": "npm run kraken run"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "kraken-node": "^1.0.24"
+  }
 }
