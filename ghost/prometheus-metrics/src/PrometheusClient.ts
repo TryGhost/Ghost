@@ -1,17 +1,28 @@
 import {Request, Response} from 'express';
-
+import client from 'prom-client';
 export class PrometheusClient {
-    constructor() {
-        this.client = require('prom-client');
+    constructor({register}: {register?: client.Registry} = {}) {
+        this.client = client;
         this.prefix = 'ghost_';
-        this.collectDefaultMetrics();
+        this.register = register || undefined;
     }
 
     public client;
     private prefix;
+    private register: client.Registry | undefined;
+
+    init() {
+        this.collectDefaultMetrics();
+    }
 
     collectDefaultMetrics() {
-        this.client.collectDefaultMetrics({prefix: this.prefix});
+        const metricsConfig: {prefix: string, register?: client.Registry} = {
+            prefix: this.prefix
+        };
+        if (this.register) {
+            metricsConfig.register = this.register;
+        }
+        this.client.collectDefaultMetrics(metricsConfig);
     }
 
     async handleMetricsRequest(req: Request, res: Response) {
@@ -31,11 +42,11 @@ export class PrometheusClient {
         return this.client.register.metrics();
     }
 
-    getRegistry() {
-        return this.client.register;
+    getRegister() {
+        return this.register || this.client.register;
     }
 
     getContentType() {
-        return this.getRegistry().contentType;
+        return this.getRegister().contentType;
     }
 }
