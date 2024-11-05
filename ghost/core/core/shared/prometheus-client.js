@@ -1,36 +1,13 @@
-class PrometheusClient {
-    constructor() {
-        this.client = require('prom-client');
-        this.prefix = 'ghost_';
-        this.collectDefaultMetrics();
-    }
+const {PrometheusClient} = require('@tryghost/prometheus-metrics');
+const config = require('./config');
 
-    collectDefaultMetrics() {
-        this.client.collectDefaultMetrics({prefix: this.prefix});
-    }
+let prometheusClient;
 
-    async handleMetricsRequest(req, res) {
-        try {
-            res.set('Content-Type', this.getContentType());
-            res.end(await this.getMetrics());
-        } catch (err) {
-            res.status(500).end(err.message);
-        }
-    }
-
-    async getMetrics() {
-        return this.client.register.metrics();
-    }
-
-    getRegistry() {
-        return this.client.register;
-    }
-
-    getContentType() {
-        return this.getRegistry().contentType;
-    }
+if (!prometheusClient) {
+    const pushgatewayConfig = config.get('prometheus:pushgateway');
+    const prometheusConfig = {pushgateway: pushgatewayConfig};
+    prometheusClient = new PrometheusClient(prometheusConfig);
+    prometheusClient.init();
 }
 
-// Create a singleton instance and export it as the default export
-const prometheusClient = new PrometheusClient();
 module.exports = prometheusClient;

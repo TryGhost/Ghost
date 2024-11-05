@@ -48,5 +48,11 @@ services:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
       - ./grafana/dashboards:/var/lib/grafana/dashboards
+  pushgateway:
+    profiles: [monitoring]
+    image: prom/pushgateway:v1.6.0
+    container_name: ghost-pushgateway
+    ports:
+      - "9091:9091"
 volumes:
   mysql-data:
