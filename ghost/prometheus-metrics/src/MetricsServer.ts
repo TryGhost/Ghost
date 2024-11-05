@@ -17,7 +17,6 @@ export class MetricsServer {
     private isShuttingDown: boolean;
 
     constructor({serverConfig, handler}: {serverConfig: ServerConfig, handler: express.Handler}) {
-        console.log('MetricsServer constructor');
         // initialize local variables
         this.serverConfig = serverConfig;
         this.handler = handler;
