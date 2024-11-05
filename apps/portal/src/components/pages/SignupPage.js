@@ -634,7 +634,7 @@ class SignupPage extends React.Component {
 
         // If we have at least one error, set an error message for the current selected plan
         if (Object.keys(errors).length > 0 && this.state.plan) {
-            priceErrors[this.state.plan] = t('Please fill in the required fields');
+            priceErrors[this.state.plan] = t('Please fill in required fields');
         }
 
         return (
