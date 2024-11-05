@@ -564,6 +564,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
+
+            // Ensure the prometheus client is stopped when the server shuts down
+            ghostServer.registerCleanupTask(async () => {
+                if (prometheusClient) {
+                    prometheusClient.stop();
+                }
+            });
             debug('End: load server + minimal app');
         }
 
