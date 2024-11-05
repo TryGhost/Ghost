@@ -16,9 +16,9 @@ describe('PrometheusClient', function () {
         });
     });
 
-    describe('getRegistry', function () {
-        it('should return the registry', function () {
-            assert.ok(prometheusClient.getRegistry());
+    describe('getRegister', function () {
+        it('should return the register', function () {
+            assert.ok(prometheusClient.getRegister());
         });
     });
 

@@ -111,10 +111,11 @@ describe('Prometheus Client', function () {
     });
 
     describe('getMetrics', function () {
-        it('should return the metrics', function () {
+        it('should return metrics', async function () {
             const {client: instance} = createPrometheusClientInstance();
-            const metrics = instance.getMetrics();
-            assert.ok(metrics);
+            instance.init();
+            const metrics = await instance.getMetrics();
+            assert.match(metrics, /^# HELP/);
         });
     });
 });

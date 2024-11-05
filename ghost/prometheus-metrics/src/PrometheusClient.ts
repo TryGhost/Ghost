@@ -39,7 +39,8 @@ export class PrometheusClient {
     }
 
     async getMetrics() {
-        return this.client.register.metrics();
+        const register = this.getRegister();
+        return register.metrics();
     }
 
     getRegister() {
