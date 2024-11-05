@@ -2,6 +2,21 @@ import {MockedApi, getModifierKey, initialize, selectText, setClipboard, waitEdi
 import {expect, test} from '@playwright/test';
 
 test.describe('Editor', async () => {
+    test('Editor placeholder shows Start the conversation when no existing comments ', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const editor = frame.getByTestId('editor');
+
+        const placeholderElement = editor.locator('[data-placeholder="Start the conversation"]');
+        await expect(placeholderElement).toBeVisible();
+    });
     test('Can comment on a post', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
@@ -59,7 +74,7 @@ test.describe('Editor', async () => {
         await page.waitForTimeout(200);
     });
 
-    test('Can use CMD+ENTER to submmit', async ({page}) => {
+    test('Can use CMD+ENTER to submit', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -102,6 +117,45 @@ test.describe('Editor', async () => {
 
         await expect(frame.getByText('This is comment 1')).toBeVisible();
         await expect(frame.getByText('Newly added comment')).toBeVisible();
+    });
+
+    test('Start the conversation changes to Join the Discussion if more 0 comments. ', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const editor = frame.getByTestId('form-editor');
+
+        const placeholderElement = editor.locator('[data-placeholder="Start the conversation"]');
+        await expect(placeholderElement).toBeVisible();
+
+        await editor.click({force: true});
+
+        // Wait for focused
+        await waitEditorFocused(editor);
+
+        // Wait for animation to finish
+        await page.waitForTimeout(200);
+
+        // Type in the editor
+        await editor.type('Newly added comment');
+
+        // Post the comment
+        const button = await frame.getByTestId('submit-form-button');
+        await button.click();
+
+        await expect(editor).toHaveText('');
+
+        await expect(frame.getByText('Newly added comment')).toBeVisible();
+
+        const newPlaceholderElement = editor.locator('[data-placeholder="Join the discussion"]');
+
+        await expect(newPlaceholderElement).toBeVisible();
     });
 
     test.describe('Markdown', () => {
