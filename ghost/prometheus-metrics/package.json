@@ -1,7 +1,7 @@
 {
-  "name": "@tryghost/metrics-server",
+  "name": "@tryghost/prometheus-metrics",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/metrics-server",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/prometheus-metrics",
   "author": "Ghost Foundation",
   "private": true,
   "main": "build/index.js",

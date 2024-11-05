@@ -257,7 +257,7 @@ async function initExpressApps({frontend, backend, config}) {
  * Initialize prometheus client
  */
 function initPrometheusClient({config}) {
-    if (config.get('metrics_server:enabled')) {
+    if (config.get('prometheus:enabled')) {
         debug('Begin: initPrometheusClient');
         const prometheusClient = require('./shared/prometheus-client');
         debug('End: initPrometheusClient');
@@ -272,11 +272,11 @@ function initPrometheusClient({config}) {
  */
 async function initMetricsServer({prometheusClient, ghostServer, config}) {
     debug('Begin: initMetricsServer');
-    if (ghostServer && config.get('metrics_server:enabled')) {
-        const {MetricsServer} = require('@tryghost/metrics-server');
+    if (ghostServer && config.get('prometheus:metrics_server:enabled')) {
+        const {MetricsServer} = require('@tryghost/prometheus-metrics');
         const serverConfig = {
-            host: config.get('metrics_server:host') || '127.0.0.1',
-            port: config.get('metrics_server:port') || 9416
+            host: config.get('prometheus:metrics_server:host') || '127.0.0.1',
+            port: config.get('prometheus:metrics_server:port') || 9416
         };
         const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
         const metricsServer = new MetricsServer({serverConfig, handler});
