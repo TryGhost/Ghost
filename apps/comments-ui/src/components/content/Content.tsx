@@ -12,7 +12,7 @@ const Content = () => {
     const labs = useLabs();
     const {t} = useAppContext();
 
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount, admin} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     let commentsElements;
     const commentsDataset = comments;
 

@@ -128,7 +128,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
             if (!hasReplies) {
                 return <></>;
             }
-            notPublishedMessage = t('This comment has been removed .');
+            notPublishedMessage = t('This comment has been removed.');
         }
     }
 
