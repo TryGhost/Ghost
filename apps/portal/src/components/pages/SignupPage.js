@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -354,6 +354,8 @@ class SignupPage extends React.Component {
             showNewsletterSelection: false,
             termsCheckboxChecked: false
         };
+    
+        this.termsRef = React.createRef();
     }
 
     componentDidMount() {
@@ -407,6 +409,16 @@ class SignupPage extends React.Component {
             const {site, onAction} = this.context;
             const {name, email, plan, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+            
+            // Only scroll checkbox into view if it's the only error
+            const otherErrors = {...errors};
+            delete otherErrors.checkbox;
+            const hasOnlyCheckboxError = errors?.checkbox && Object.values(otherErrors).every(error => !error);
+            
+            if (hasOnlyCheckboxError && this.termsRef.current) {
+                this.termsRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }
+
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
@@ -566,7 +578,7 @@ class SignupPage extends React.Component {
         const className = `gh-portal-signup-terms ${errorClassName}`;
 
         return (
-            <div className={className} onClick={interceptAnchorClicks}>
+            <div className={className} onClick={interceptAnchorClicks} ref={this.termsRef}>
                 {signupTerms}
             </div>
         );
@@ -717,11 +729,8 @@ class SignupPage extends React.Component {
             );
         }
 
-        const freeBenefits = getFreeProductBenefits({site});
-        const freeDescription = getFreeTierDescription({site});
         const showOnlyFree = pageQuery === 'free';
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
-        const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
         const signupTerms = this.renderSignupTerms();
 
@@ -755,7 +764,7 @@ class SignupPage extends React.Component {
                             </>)}
 
                         {(hasOnlyFree ?
-                            <div className={'gh-portal-btn-container' + (sticky ? ' sticky m24' : '')}>
+                            <div className='gh-portal-btn-container'>
                                 <div className='gh-portal-logged-out-form-container'>
                                     {this.renderSubmitButton()}
                                     {this.renderLoginMessage()}
