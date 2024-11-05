@@ -89,7 +89,7 @@ test.describe('Design settings', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Theme settings'}).click();
+        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Theme'}).click();
 
         await modal.getByLabel('Email signup text').fill('test');
 
@@ -182,14 +182,14 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Theme settings'}).click();
+        await modal.getByRole('tab', {name: 'Theme'}).click();
         await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
 
         const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header));
-    
-        expect(matchingHeader).toBeDefined(); 
+
+        expect(matchingHeader).toBeDefined();
 
         await modal.getByRole('button', {name: 'Save'}).click();
         expect(lastApiRequests.editCustomThemeSettings?.body).toMatchObject({
@@ -230,8 +230,8 @@ test.describe('Design settings', async () => {
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
 
-        await expect(designSettingTabs.getByRole('tab', {name: 'Global'})).toBeHidden();
-        await expect(designSettingTabs.getByRole('tab', {name: 'Theme settings'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Brand'})).toBeHidden();
+        await expect(designSettingTabs.getByRole('tab', {name: 'Theme'})).toBeHidden();
 
         await expect(designSettingTabs.getByTestId('accent-color-picker')).toBeVisible();
     });
@@ -277,7 +277,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await modal.getByRole('tab', {name: 'Theme settings'}).click();
+        await modal.getByRole('tab', {name: 'Theme'}).click();
 
         const showFeaturedPostsCustomThemeSetting = modal.getByLabel('Show featured posts');
 
@@ -356,7 +356,7 @@ test.describe('Design settings', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
-                {key: 'heading_font', value: 'Caro'},
+                {key: 'heading_font', value: 'Cardo'},
                 {key: 'body_font', value: 'Inter'}
             ])},
             browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
@@ -379,8 +379,8 @@ test.describe('Design settings', async () => {
         const modal = page.getByTestId('design-modal');
 
         // The fonts should be set to the values in the settings
-        await expect(modal.getByTestId('heading-font-select')).toHaveText('Caro');
-        await expect(modal.getByTestId('body-font-select')).toHaveText('Inter');
+        await expect(modal.getByTestId('heading-font-select')).toHaveText(/Cardo/);
+        await expect(modal.getByTestId('body-font-select')).toHaveText(/Inter/);
 
         const designSettingTabs = modal.getByTestId('design-setting-tabs');
         // select a different heading font
