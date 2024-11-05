@@ -1,28 +1,33 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
+
+type PrometheusClientConfig = {
+    register?: client.Registry;
+    pushgateway?: {
+        enabled: boolean;
+        url: string;
+        interval: number;
+    }
+};
 export class PrometheusClient {
-    constructor({register}: {register?: client.Registry} = {}) {
+    constructor(prometheusConfig: PrometheusClientConfig = {}) {
+        this.config = prometheusConfig;
         this.client = client;
         this.prefix = 'ghost_';
-        this.register = register || undefined;
+        this.register = this.config.register || client.register;
     }
 
     public client;
+    private config: PrometheusClientConfig;
     private prefix;
-    private register: client.Registry | undefined;
+    private register: client.Registry;
 
     init() {
         this.collectDefaultMetrics();
     }
 
     collectDefaultMetrics() {
-        const metricsConfig: {prefix: string, register?: client.Registry} = {
-            prefix: this.prefix
-        };
-        if (this.register) {
-            metricsConfig.register = this.register;
-        }
-        this.client.collectDefaultMetrics(metricsConfig);
+        this.client.collectDefaultMetrics({prefix: this.prefix, register: this.register});
     }
 
     async handleMetricsRequest(req: Request, res: Response) {
@@ -39,15 +44,10 @@ export class PrometheusClient {
     }
 
     async getMetrics() {
-        const register = this.getRegister();
-        return register.metrics();
-    }
-
-    getRegister() {
-        return this.register || this.client.register;
+        return this.register.metrics();
     }
 
     getContentType() {
-        return this.getRegister().contentType;
+        return this.register.contentType;
     }
 }

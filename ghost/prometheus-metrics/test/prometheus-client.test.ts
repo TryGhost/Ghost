@@ -25,11 +25,6 @@ describe('Prometheus Client', function () {
             assert.ok(defaultClient);
         });
 
-        it('should return the default register', function () {
-            const register = defaultClient.getRegister();
-            assert.ok(register);
-        });
-
         it('init: should call collectDefaultMetrics', function () {
             const collectDefaultMetricsSpy = sinon.spy(defaultClient.client, 'collectDefaultMetrics');
             defaultClient.init();
