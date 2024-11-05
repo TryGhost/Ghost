@@ -4,11 +4,11 @@ import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-
 
 import APAvatar from '../global/APAvatar';
 
+import FeedItemStats from './FeedItemStats';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -148,72 +148,6 @@ function renderInboxAttachment(object: ObjectProperties) {
         return null;
     }
 }
-
-const FeedItemStats: React.FC<{
-    object: ObjectProperties;
-    likeCount: number;
-    commentCount: number;
-    layout: string;
-    onLikeClick: () => void;
-    onCommentClick: () => void;
-}> = ({object, likeCount, commentCount, layout, onLikeClick, onCommentClick}) => {
-    const [isClicked, setIsClicked] = useState(false);
-    const [isLiked, setIsLiked] = useState(object.liked);
-    const likeMutation = useLikeMutationForUser('index');
-    const unlikeMutation = useUnlikeMutationForUser('index');
-
-    const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
-        e.stopPropagation();
-        setIsClicked(true);
-        if (!isLiked) {
-            likeMutation.mutate(object.id);
-        } else {
-            unlikeMutation.mutate(object.id);
-        }
-
-        setIsLiked(!isLiked);
-
-        onLikeClick();
-        setTimeout(() => setIsClicked(false), 300);
-    };
-
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-5'}`}>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
-                hideLabel={true}
-                icon='heart'
-                id='like'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    if (e) {
-                        handleLikeClick(e);
-                    }
-                }}
-            />
-            {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
-        </div>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
-                hideLabel={true}
-                icon='comment'
-                id='comment'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    onCommentClick();
-                }}
-            />
-            {commentCount > 0 && (layout !== 'inbox') && (
-                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
-            )}
-        </div>
-    </div>);
-};
 
 interface FeedItemProps {
     actor: ActorProperties;

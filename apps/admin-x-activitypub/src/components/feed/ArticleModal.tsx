@@ -1,19 +1,22 @@
-import React, {useEffect, useRef, useState} from 'react';
-
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {Button, LoadingIndicator, Modal} from '@tryghost/admin-x-design-system';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import FeedItem from './FeedItem';
+import FeedItemStats from './FeedItemStats';
+import MainHeader from '../navigation/MainHeader';
+import NiceModal from '@ebay/nice-modal-react';
+import React from 'react';
+import articleBodyStyles from '../articleBodyStyles';
+import getUsername from '../../utils/get-username';
 
 import {type Activity} from '../activities/ActivityItem';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Button, LoadingIndicator, Modal} from '@tryghost/admin-x-design-system';
+import {renderTimestamp} from '../../utils/render-timestamp';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useEffect, useRef, useState} from 'react';
+import {useModal} from '@ebay/nice-modal-react';
+import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
-import articleBodyStyles from '../articleBodyStyles';
-import FeedItem from './FeedItem';
-import MainHeader from '../navigation/MainHeader';
-import {useThreadForUser} from '../../hooks/useActivityPubQueries';
-import getUsername from '../../utils/get-username';
-import {renderTimestamp} from '../../utils/render-timestamp';
 
 interface ArticleModalProps {
     activityId: string;
@@ -133,7 +136,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
     }, [htmlContent]);
 
     return (
-        <div className='w-full border-b border-grey-200 pb-10'>
+        <div className='w-full pb-10'>
             <iframe
                 ref={iframeRef}
                 id='gh-ap-article-iframe'
@@ -218,6 +221,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 }
             ]
         });
+    };
+
+    const onLikeClick = () => {
+        // Do API req or smth
+        // Don't need to know about setting timeouts or anything like that
     };
 
     function handleNewReply(activity: Activity) {
@@ -328,6 +336,19 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     image={object?.image}
                                 />
                             </>
+                        )}
+
+                        {object.type === 'Article' && (
+                            <div className='border-b border-grey-200 pb-8'>
+                                <FeedItemStats
+                                    commentCount={object.replyCount ?? 0}
+                                    layout={'modal'}
+                                    likeCount={1}
+                                    object={object}
+                                    onCommentClick={() => {}}
+                                    onLikeClick={onLikeClick}
+                                />
+                            </div>
                         )}
 
                         <div ref={replyBoxRef}>
