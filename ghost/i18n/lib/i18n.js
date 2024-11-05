@@ -56,15 +56,23 @@ const SUPPORTED_LOCALES = [
     'vi', // Vietnamese
     'zh', // Chinese
     'zh-Hant', // Traditional Chinese
-    'sw' // Swahili
+    'sw', // Swahili
+    'ta' // Tamil
 ];
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
+    let interpolation = {};
+    if (ns === 'newsletter') {
+        interpolation = {
+            prefix: '{',
+            suffix: '}'
+        };
+    }
     i18nextInstance.init({
         lng,
 
@@ -80,6 +88,9 @@ module.exports = (lng = 'en', ns = 'portal') => {
 
         ns: ns,
         defaultNS: ns,
+
+        // separators
+        interpolation,
 
         resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
             const res = require(`../locales/${locale}/${ns}.json`);

@@ -1,0 +1,38 @@
+# Development container with Ghost code and dependencies pre-installed
+## Watches your local filesystem and syncs changes to the container
+## Intended for use with raw docker compose commands
+name: ghost-development
+services:
+  ghost:
+    image: ghost-development
+    build:
+      target: development
+    command: ["yarn", "dev"]
+    volumes:
+      - ../../.yarncache:/workspaces/ghost/.yarncache
+    develop: 
+      watch: 
+        - path: ../../
+          action: sync
+          target: /workspaces/ghost
+          ignore: 
+            - node_modules/
+            - .yarncache/
+        - path: yarn.lock
+          action: rebuild
+    ports:
+      - 2368:2368
+      - 4200:4200
+      - 4173:4173
+      - 41730:41730
+      - 4175:4175
+      - 4176:4176
+      - 4177:4177
+      - 4178:4178
+      - 6174:6174
+      - 7173:7173
+      - 7174:7174
+      - 9174:9174
+    environment:
+      - DEBUG=${DEBUG:-}
+      - APP_FLAGS=${APP_FLAGS:-}

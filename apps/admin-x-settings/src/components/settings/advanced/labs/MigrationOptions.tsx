@@ -21,7 +21,7 @@ const ImportModalContent = () => {
                 modal.remove();
                 NiceModal.show(ConfirmationModal, {
                     title: 'Import in progress',
-                    prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it's complete. Usually this only takes a few minutes, but larger imports may take longer.`,
+                    prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
                     cancelLabel: '',
                     okLabel: 'Got it',
                     onOk: confirmModal => confirmModal?.remove(),

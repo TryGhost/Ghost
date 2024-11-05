@@ -6,7 +6,7 @@ import APAvatar from '../global/APAvatar';
 
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
-import {type Activity} from '../activities/ActivityItem';
+import stripHtml from '../../utils/strip-html';
 import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 function getAttachment(object: ObjectProperties) {
@@ -140,8 +140,8 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <div className='min-w-[160px]'>
-                <img className={`h-[100px] w-[160px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
+            return <div className='min-h-[80px]'>
+                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
             </div>;
         }
         return null;
@@ -156,17 +156,6 @@ function renderTimestamp(object: ObjectProperties) {
     return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
 }
 
-const truncateHTML = (html: string, maxLength: number) => {
-    const tempElement = document.createElement('div');
-    tempElement.innerHTML = html;
-  
-    const textContent = tempElement.textContent || tempElement.innerText || '';
-  
-    const truncatedText = textContent.substring(0, maxLength);
-  
-    return `“${truncatedText}&hellip;”`;
-};
-
 const FeedItemStats: React.FC<{
     object: ObjectProperties;
     likeCount: number;
@@ -180,7 +169,8 @@ const FeedItemStats: React.FC<{
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
 
-    const handleLikeClick = async () => {
+    const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
         setIsClicked(true);
         if (!isLiked) {
             likeMutation.mutate(object.id);
@@ -205,7 +195,9 @@ const FeedItemStats: React.FC<{
                 unstyled={true}
                 onClick={(e?: React.MouseEvent<HTMLElement>) => {
                     e?.stopPropagation();
-                    handleLikeClick();
+                    if (e) {
+                        handleLikeClick(e);
+                    }
                 }}
             />
             {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
@@ -235,7 +227,7 @@ interface FeedItemProps {
     object: ObjectProperties;
     layout: string;
     type: string;
-    comments?: Activity[];
+    commentCount?: number;
     last?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
@@ -243,7 +235,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, last, onClick = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -256,12 +248,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const handleDelete = () => {
-        // Handle delete action
-    };
+    // const handleDelete = () => {
+    //     // Handle delete action
+    // };
 
     const handleCopyLink = async () => {
-        if (object?.url) { // Check if url is defined
+        if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
             showToast({
@@ -286,16 +278,16 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
-    menuItems.push({
-        id: 'delete',
-        label: 'Delete',
-        destructive: true,
-        onClick: handleDelete
-    });
+    // menuItems.push({
+    //     id: 'delete',
+    //     label: 'Delete',
+    //     destructive: true,
+    //     onClick: handleDelete
+    // });
 
     const UserMenuTrigger = (
         <Button
-            className={`relative z-10 ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
+            className={`relative z-[9998] ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
             iconColorClass={`(${layout === 'inbox' ? 'text-grey-900' : 'text-grey-600'}`}
@@ -309,25 +301,25 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
+                    <div className={`group/article relative cursor-pointer pt-6`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
+                        <div className={`border-1 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
                             <APAvatar author={author}/>
-                            <div className='flex justify-between'>
-                                <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                            <div className='flex min-w-0 justify-between'>
+                                <div className='relative z-10 flex w-full flex-col overflow-visible text-md'>
                                     <div className='flex justify-between'>
-                                        <div className='flex'>
-                                            <span className='truncate whitespace-nowrap font-bold' data-test-activity-heading>{author.name}</span>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
                                             <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
                                         </div>
-                                        {renderTimestamp(object)}
+                                        <div className='ml-2'>{renderTimestamp(object)}</div>
                                     </div>
                                 </div>
                             </div>
-                            <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
+                            <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
                                     <div className='mt-[-24px]'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
@@ -343,9 +335,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             size='md'
                                         />}
                                     </div>
-                                    <div className='space-between mt-5 flex'>
+                                    <div className='space-between relative z-[30] mt-5 flex'>
                                         <FeedItemStats
-                                            commentCount={comments.length}
+                                            commentCount={commentCount}
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
@@ -356,9 +348,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                 </div>
                             </div>
-                            {/* </div> */}
                         </div>
-                        {/* <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors ${(layout === 'feed') ? 'group-hover/article:bg-grey-75' : ''} `}></div> */}
                     </div>
                 )}
             </>
@@ -367,24 +357,23 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div>
-                        <div className={`group/article relative cursor-pointer`} onClick={onClick}>
+                    <div data-object-id={object.id}>
+                        <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
                             {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                                 <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                                 <span className='z-10'>{actor.name} reposted</span>
                             </div>}
-                            <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-4`} data-test-activity>
+                            <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-4 pt-5`} data-test-activity>
                                 <div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
                                 </div>
-                                {/* <div className='border-1 z-10 -mt-1 flex w-full flex-col items-start justify-between border-b border-b-grey-200 pb-4' data-test-activity> */}
-                                <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
-                                    <div className='flex'>
-                                        <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                        {renderTimestamp(object)}
+                                <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
+                                    <div className='flex w-full'>
+                                        <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                        <div>{renderTimestamp(object)}</div>
                                     </div>
-                                    <div className='flex'>
-                                        <span className='truncate text-grey-700'>{getUsername(author)}</span>
+                                    <div className='flex w-full'>
+                                        <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
                                     </div>
                                 </div>
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
@@ -394,7 +383,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         {renderFeedAttachment(object, layout)}
                                         <div className='space-between mt-5 flex'>
                                             <FeedItemStats
-                                                commentCount={comments.length}
+                                                commentCount={commentCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
@@ -405,7 +394,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         </div>
                                     </div>
                                 </div>
-                                {/* </div> */}
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
@@ -419,19 +407,19 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
+                    <div className={`group/article relative cursor-pointer py-5`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
                         <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
-                            <div className='relative z-10 pt-[3px]'>
+                            <div className='relative z-10 min-w-0 pt-[3px]'>
                                 <APAvatar author={author}/>
                             </div>
-                            <div className='relative z-10 flex w-full flex-col overflow-visible text-[1.5rem]'>
+                            <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex'>
-                                    <span className='truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                    {renderTimestamp(object)}
+                                    <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                    <div>{renderTimestamp(object)}</div>
                                 </div>
                                 <div className='flex'>
                                     <span className='truncate text-grey-700'>{getUsername(author)}</span>
@@ -444,7 +432,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     {renderFeedAttachment(object, layout)}
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
-                                            commentCount={comments.length}
+                                            commentCount={commentCount}
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
@@ -466,25 +454,33 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -mt-px flex cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' onClick={onClick}>
-                        <div className='flex w-full flex-col items-start justify-between gap-1 pr-4'>
-                            <div className='z-10 flex items-start justify-between gap-2 group-hover/article:border-transparent'>
+                    <div className='group/article relative -mx-4 -my-px flex min-w-0 cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                        <div className='flex w-full min-w-0 flex-col items-start justify-between gap-1 pr-4'>
+                            <div className='z-10 flex w-full min-w-0 items-start gap-2 group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='xs'/>
-                                <div className='z-10 w-full text-sm'>
-                                    <div>
-                                        <span className='truncate whitespace-nowrap font-semibold' data-test-activity-heading>{author.name}</span>
-                                        <span className='truncate text-grey-700'>&nbsp;{getUsername(author)}</span>
-                                        <span className='whitespace-nowrap text-grey-700 before:mx-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
-                                    </div>
-                                </div>
+                                <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
+                                <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
+                                {/* <div className='flex gap-2'>
+                                    <span className='truncate min-w-0 break-all font-semibold' data-test-activity-heading>{author.name}</span>
+                                    <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
+                                </div> */}
+                                <span className='shrink-0 whitespace-nowrap text-grey-700 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
-                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>{object.name ? object.name : <span>{author.name}: <span dangerouslySetInnerHTML={({__html: truncateHTML(object.content, 30)})}></span></span>}</Heading>
-                            <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content line-clamp-1 text-pretty text-[1.5rem] text-grey-700'></div>
+                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>
+                                {object.name ? object.name : (
+                                    <span dangerouslySetInnerHTML={{
+                                        __html: object.content.length > 30
+                                            ? stripHtml(object.content).substring(0, 50) + '...'
+                                            : stripHtml(object.content)
+                                    }}></span>
+                                )}
+                            </Heading>
+                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full truncate text-[1.5rem] text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
-                        <div className='invisible absolute right-2 top-[9px] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
+                        <div className='invisible absolute right-2 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
-                                commentCount={comments.length}
+                                commentCount={commentCount}
                                 layout={layout}
                                 likeCount={1}
                                 object={object}

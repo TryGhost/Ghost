@@ -22,12 +22,15 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
         padding: 4px 24px 4px 0px;
     }
+    html[dir="rtl"] .gh-portal-recommendation-item .gh-portal-list-detail {
+        padding: 4px 0px 4px 24px;
+    }
 
     .gh-portal-recommendation-item-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
     }
 
     .gh-portal-recommendation-item-favicon {
@@ -53,7 +56,7 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-item .gh-portal-recommendation-description-container p {
         font-size: 1.35rem;
-        padding-left: 30px;
+        padding-inline-start: 30px;
         font-weight: 400;
         letter-spacing: 0.1px;
         margin-top: 4px;
@@ -75,7 +78,7 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-arrow-icon {
     height: 12px;
     opacity: 0;
-    margin-left: -6px;
+    margin-inline-start: -6px;
     transition: 0.2s ease-in opacity;
     }
 
@@ -94,7 +97,7 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-subscribed {
         display: flex;
-        padding-left: 30px;
+        padding-inline-start: 30px;
         align-items: center;
         gap: 4px;
         font-size: 1.35rem;
@@ -315,15 +318,27 @@ const RecommendationsPage = () => {
         };
     }, []);
 
-    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
-    const subheading = pageData && pageData.signup ? t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.') : t('Here are a few other sites you may enjoy.');
-
-    if (!recommendationsEnabled) {
-        return null;
-    }
-
     if (recommendations === null) {
         return <LoadingPage/>;
+    }
+
+    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
+
+    /* Possible cases: 
+    - no recommendations found - subhead says no recommendations are available.
+    - recommendations found - show generic message
+    - recommendations found and user just signed up - show specific message
+    */
+   
+    let subheading;
+    if (recommendationsEnabled && recommendations && recommendations.length > 0) {
+        if (pageData && pageData.signup) {
+            subheading = t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.');
+        } else {
+            subheading = t('Here are a few other sites you may enjoy.');
+        }
+    } else {
+        subheading = t('Sorry, no recommendations are available right now.');
     }
 
     return (
@@ -334,12 +349,13 @@ const RecommendationsPage = () => {
                 <h1 className="gh-portal-main-title">{heading}</h1>
             </div>
             <p className="gh-portal-recommendations-description">{subheading}</p>
-
-            <div className="gh-portal-list">
-                {recommendations.slice(0, numToShow).map((recommendation, index) => (
-                    <RecommendationItem key={index} {...recommendation} />
-                ))}
-            </div>
+            {recommendationsEnabled ?
+                <div className="gh-portal-list">
+                    {recommendations.slice(0, numToShow).map((recommendation, index) => (
+                        <RecommendationItem key={index} {...recommendation} />
+                    ))}
+                </div>
+                : null}
 
             {((numToShow < recommendations.length) || (pageData && pageData.signup)) && (
                 <footer className='gh-portal-action-footer'>

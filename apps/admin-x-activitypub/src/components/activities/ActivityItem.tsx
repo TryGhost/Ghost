@@ -3,11 +3,13 @@ import React, {ReactNode} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 export type Activity = {
+    id: string,
     type: string,
     actor: ActorProperties,
     object: ObjectProperties & {
         inReplyTo: ObjectProperties | string | null
         replies: Activity[]
+        replyCount: number
     }
 }
 
@@ -26,7 +28,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null, onClic
                 onClick();
             }
         }}>
-            <div className='flex w-full gap-4 border-b border-grey-100 px-2 py-4'>
+            <div className='flex w-full gap-3 border-b border-grey-100 px-2 py-4'>
                 {childrenArray[0]}
                 {childrenArray[1]}
                 {childrenArray[2]}

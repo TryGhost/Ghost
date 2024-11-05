@@ -8,7 +8,6 @@ import {Activity} from '../activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
-// import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -35,9 +34,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     object,
     focused,
     onNewReply,
-    // onChange,
-    // onFocus,
-    // onBlur,
     ...props
 }) => {
     const id = useId();
@@ -68,6 +64,16 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                 if (onNewReply) {
                     onNewReply(activity);
                 }
+            },
+            onError() {
+                showToast({
+                    message: 'An error occurred while sending your reply.',
+                    type: 'error'
+                });
+
+                setTimeout(() => {
+                    textareaRef.current?.focus();
+                }, 100);
             }
         });
     }
@@ -131,8 +137,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                         {hint}
                     </div>
                 </FormPrimitive.Root>
-                <div className='absolute bottom-[6px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={replyMutation.isLoading} size='sm' onMouseDown={handleClick} />
+                <div className='absolute bottom-[3px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
+                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={replyMutation.isLoading} size='md' onMouseDown={handleClick} />
                 </div>
             </div>
         </div>

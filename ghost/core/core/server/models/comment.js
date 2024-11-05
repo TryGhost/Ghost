@@ -94,6 +94,12 @@ const Comment = ghostBookshelf.Model.extend({
         }
     },
 
+    orderAttributes: function orderAttributes() {
+        let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
+        keys.push('count__likes');
+        return keys;
+    },
+
     onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
@@ -204,14 +210,12 @@ const Comment = ghostBookshelf.Model.extend({
 
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
-
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
             'replies.count.likes',
             'replies.count.liked'
         ].filter(relation => withRelated.includes(relation));
-
         const result = await ghostBookshelf.Model.findPage.call(this, options);
 
         for (const model of result.data) {

@@ -7,6 +7,10 @@ const NavigationEditForm: React.FC<{
     baseUrl: string;
     navigation: NavigationEditor;
 }> = ({baseUrl, navigation}) => {
+    const onAddItem = () => {
+        navigation.addItem();
+    };
+
     return <div className="w-full pt-2">
         <SortableList
             items={navigation.items}
@@ -25,7 +29,7 @@ const NavigationEditForm: React.FC<{
         <div className='flex items-center gap-3'>
             <Icon colorClass='text-grey-300 dark:text-grey-900 mt-1' name='add' size='sm' />
             <NavigationItemEditor
-                action={<Button className='mx-2 mt-1 self-center rounded bg-green p-1' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' unstyled onClick={navigation.addItem} />}
+                action={<Button className='mx-2 mt-2.5 self-start rounded bg-green p-1' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' unstyled onClick={onAddItem} />}
                 baseUrl={baseUrl}
                 className="mt-1"
                 clearError={key => navigation.clearError(navigation.newItem.id, key)}
@@ -33,6 +37,7 @@ const NavigationEditForm: React.FC<{
                 item={navigation.newItem}
                 labelPlaceholder="New item label"
                 updateItem={navigation.setNewItem}
+                onAddItem={onAddItem}
             />
         </div>
     </div>;
