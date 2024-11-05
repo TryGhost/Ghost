@@ -111,18 +111,36 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const {admin, t} = useAppContext();
     const labs = useLabs();
     let notPublishedMessage:string = '';
-    if (labs.commentImprovements) {
-        notPublishedMessage = comment.html;
-    } else {
-        if (admin && comment.status === 'hidden') {
-            notPublishedMessage = t('This comment has been hidden.');
-        } else {
-            notPublishedMessage = t('This comment has been removed.');
-        }
-    }
 
     const avatar = (<BlankAvatar />);
     const hasReplies = comment.replies && comment.replies.length > 0;
+
+    if (labs.commentImprovements) {
+        if (admin) {
+            notPublishedMessage = comment.html;
+        }
+        if (comment.status === 'hidden' && !admin) {
+            if (!hasReplies) {
+                return <></>;
+            }
+            notPublishedMessage = t('This comment has been hidden.');
+        } else if (comment.status === 'deleted' && !admin) {
+            if (!hasReplies) {
+                return <></>;
+            }
+            notPublishedMessage = t('This comment has been removed .');
+        }
+    }
+
+    if (!labs.commentImprovements) {
+        {
+            if (comment.status === 'hidden') {
+                notPublishedMessage = t('This comment has been hidden.');
+            } else if (comment.status === 'deleted') {
+                notPublishedMessage = t('This comment has been removed.');
+            }
+        }
+    }
 
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>

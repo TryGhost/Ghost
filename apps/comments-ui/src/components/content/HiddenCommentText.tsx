@@ -5,11 +5,11 @@ interface HiddenCommentTextProps {
 }
 
 export const HiddenCommentText: React.FC<HiddenCommentTextProps> = ({notPublishedMessage}) => {
-    const {t} = useAppContext();
+    const {t, admin} = useAppContext();
     const message: string = notPublishedMessage;
     const labs = useLabs();
 
-    if (labs.commentImprovements) {
+    if (labs.commentImprovements && admin) {
         return (
             <div>
                 <p 
