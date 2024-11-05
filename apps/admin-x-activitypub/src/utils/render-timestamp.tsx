@@ -1,4 +1,3 @@
-import React from 'react';
 import getRelativeTimestamp from './get-relative-timestamp';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
