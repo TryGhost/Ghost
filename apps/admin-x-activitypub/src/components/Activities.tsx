@@ -139,7 +139,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             NiceModal.show(ArticleModal, {
                 activityId: activity.id,
                 object: activity.object,
-                actor: activity.actor
+                actor: activity.actor,
+                focusReplies: true
             });
             break;
         case ACTVITY_TYPE.LIKE:

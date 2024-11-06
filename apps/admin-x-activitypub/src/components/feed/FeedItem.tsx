@@ -252,7 +252,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='mt-[-24px]'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content line-clamp-3 text-pretty text-[1.5rem] text-grey-900'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
                                         {(object.type === 'Article') && <Button
                                             className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}

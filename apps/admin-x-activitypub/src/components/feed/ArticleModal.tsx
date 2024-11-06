@@ -22,6 +22,7 @@ interface ArticleModalProps {
     object: ObjectProperties;
     actor: ActorProperties;
     focusReply: boolean;
+    focusReplies: boolean;
     width?: 'narrow' | 'wide';
     updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
@@ -160,20 +161,14 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     object,
     actor,
     focusReply,
+    focusReplies,
     width = 'narrow',
     updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 840;
-    const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
-    function setReplyBoxFocused(focused: boolean) {
-        if (focused) {
-            setFocused(prev => prev + 1);
-        } else {
-            setFocused(0);
-        }
-    }
+    const [isFocused] = useState(focusReply ? 1 : 0);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: activityThread, isLoading: isLoadingThread} = threadQuery;
@@ -204,7 +199,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             history
         });
     };
-    const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties) => {
+    const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
         modal.show({
@@ -213,6 +208,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             actor: nextActor,
             updateActivity,
             width,
+            focusReply: nextFocusReply,
             history: [
                 ...history,
                 {
@@ -248,14 +244,24 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
+    const repliesRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (focusReply && replyBoxRef.current) {
-            setTimeout(() => {
-                replyBoxRef.current?.scrollIntoView({block: 'center'});
-            }, 100);
-        }
-    }, [focusReply]);
+        // Combine both scroll behaviors into a single effect
+        setTimeout(() => {
+            if (focusReply && replyBoxRef.current) {
+                replyBoxRef.current.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            } else if (focusReplies && repliesRef.current) {
+                repliesRef.current.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }, 100);
+    }, [focusReply, focusReplies]);
 
     return (
         <Modal
@@ -309,9 +315,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         object={item.object}
                                         type='Note'
                                         onClick={() => {
-                                            navigateForward(item.id, item.object, item.actor);
+                                            navigateForward(item.id, item.object, item.actor, false);
                                         }}
-                                        onCommentClick={() => {}}
+                                        onCommentClick={() => {
+                                            navigateForward(item.id, item.object, item.actor, true);
+                                        }}
                                     />
                                 </>
                             );
@@ -322,12 +330,15 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 actor={actor}
                                 commentCount={object.replyCount ?? 0}
                                 last={true}
-                                layout={activityThreadParents.length > 0 ? 'modal' : 'modal'}
+                                layout={'modal'}
                                 object={object}
-                                showHeader={activityThreadParents.length > 0 ? true : false}
+                                showHeader={(canNavigateBack || (activityThreadParents.length > 0)) ? true : false}
                                 type='Note'
                                 onCommentClick={() => {
-                                    setReplyBoxFocused(true);
+                                    repliesRef.current?.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'center'
+                                    });
                                 }}
                             />
                         )}
@@ -349,7 +360,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     layout={'modal'}
                                     likeCount={1}
                                     object={object}
-                                    onCommentClick={() => {}}
+                                    onCommentClick={() => {
+                                        repliesRef.current?.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center'
+                                        });
+                                    }}
                                     onLikeClick={onLikeClick}
                                 />
                             </div>
@@ -366,27 +382,31 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
                         {isLoadingThread && <LoadingIndicator size='lg' />}
 
-                        {activityThreadChildren.map((item, index) => {
-                            const showDivider = index !== activityThreadChildren.length - 1;
+                        <div ref={repliesRef}>
+                            {activityThreadChildren.map((item, index) => {
+                                const showDivider = index !== activityThreadChildren.length - 1;
 
-                            return (
-                                <>
-                                    <FeedItem
-                                        actor={item.actor}
-                                        commentCount={item.object.replyCount ?? 0}
-                                        last={true}
-                                        layout='reply'
-                                        object={item.object}
-                                        type='Note'
-                                        onClick={() => {
-                                            navigateForward(item.id, item.object, item.actor);
-                                        }}
-                                        onCommentClick={() => {}}
-                                    />
-                                    {showDivider && <FeedItemDivider />}
-                                </>
-                            );
-                        })}
+                                return (
+                                    <>
+                                        <FeedItem
+                                            actor={item.actor}
+                                            commentCount={item.object.replyCount ?? 0}
+                                            last={true}
+                                            layout='reply'
+                                            object={item.object}
+                                            type='Note'
+                                            onClick={() => {
+                                                navigateForward(item.id, item.object, item.actor, false);
+                                            }}
+                                            onCommentClick={() => {
+                                                navigateForward(item.id, item.object, item.actor, true);
+                                            }}
+                                        />
+                                        {showDivider && <FeedItemDivider />}
+                                    </>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
