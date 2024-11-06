@@ -56,45 +56,6 @@ test.describe('Hidden Comments', async () => {
             await expect(secondComment).toContainText('This is a naughty comment and should be hidden');
             await expect(secondComment).toContainText('Hidden - not visible to members');
         });
-
-        test('admin can see hidden parent, but reply will still show', async ({page}) => {
-            const mockedApi = new MockedApi({});
-            mockedApi.addComment({
-                html: '<p>This is comment 1</p>'
-            });
-            mockedApi.addComment({
-                html: '<p>This is a naughty comment and should be hidden</p>',
-                status: 'hidden',
-                replies: [
-                    mockedApi.buildReply({
-                        html: '<p>you said something really bad</p>',
-                        status: 'published'
-                    })
-                ]
-            });
-            mockedApi.setMember({});
-    
-            await mockAdminAuthFrame({
-                admin,
-                page
-            });
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                admin,
-                labs: {
-                    commentImprovements: true
-                }
-            });
-    
-            const comments = await frame.locator('data-testid=comment-component');
-    
-            const secondComment = comments.nth(1);
-            await expect(secondComment).toContainText('This is a naughty comment and should be hidden');
-            await expect(secondComment).toContainText('Hidden - not visible to members');
-            await expect(secondComment).toContainText('you said something really bad');
-        });
     });
 
     test.describe('as a member', async () => {

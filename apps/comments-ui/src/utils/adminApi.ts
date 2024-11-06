@@ -59,14 +59,6 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
         },
         async showComment(id: string) {
             return await callApi('showComment', {id});
-        },
-
-        async getComments() {
-            const result = await callApi('getComments');
-            if (!result || !result.comments) {
-                return [];
-            }
-            return result.comments;
         }
     };
 

@@ -39,7 +39,7 @@ const countFields = [
     'likes'
 ];
 
-const commentMapper = (model, frame, admin) => {
+const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
     const response = _.pick(jsonModel, commentFields);
@@ -73,7 +73,6 @@ const commentMapper = (model, frame, admin) => {
     }
 
     if (utils.isMembersAPI(frame)) {
-        console.log('isMembersAPI', frame);
         if (jsonModel.status !== 'published') {
             response.html = null;
         }
