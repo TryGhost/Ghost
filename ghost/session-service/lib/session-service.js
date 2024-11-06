@@ -254,7 +254,7 @@ module.exports = function createSessionService({
         } catch (error) {
             throw new errors.EmailError({
                 ...error,
-                message: 'Failed to send email, Please try again or contact support@ghost.org'
+                message: 'Failed to send email. Please check your site configuration and try again.'
             });
         }
     }
