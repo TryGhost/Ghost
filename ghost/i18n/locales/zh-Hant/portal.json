@@ -137,7 +137,7 @@
     "Sign up": "註冊",
     "Signup error: Invalid link": "註冊錯誤：連結無效",
     "Something went wrong, please try again later.": "伺服器錯誤，請稍後重試。",
-    "Sorry, no recommendations are available right now.": "",
+    "Sorry, no recommendations are available right now.": "抱歉，目前沒有其他的推薦。",
     "Sorry, that didn’t work.": "抱歉，該操作無法完成。",
     "Spam complaints": "垃圾郵件",
     "Start {{amount}}-day free trial": "開始 {{amount}} 天免費試用",
