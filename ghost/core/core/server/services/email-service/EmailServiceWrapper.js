@@ -1,5 +1,10 @@
+const debug = require('@tryghost/debug')('i18n');
+
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
+const events = require('../../lib/common/events');
+const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
 
 class EmailServiceWrapper {
     getPostUrl(post) {
@@ -51,6 +56,23 @@ class EmailServiceWrapper {
         });
         const i18nLanguage = settingsCache.get('locale') || 'en';
         const i18n = i18nLib(i18nLanguage, 'newsletter');
+
+        events.on('settings.labs.edited', () => {
+            if (labs.isSet('i18n')) {
+                debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
+                i18n.changeLanguage(settingsCache.get('locale'));
+            } else {
+                debug('labs i18n disabled, updating i18n to en');
+                i18n.changeLanguage('en');
+            }
+        });
+    
+        events.on('settings.locale.edited', (model) => {
+            if (labs.isSet('i18n')) {
+                debug('locale changed, updating i18n to', model.get('value'));
+                i18n.changeLanguage(model.get('value'));
+            }
+        });
 
         const mailgunEmailProvider = new MailgunEmailProvider({
             mailgunClient,
