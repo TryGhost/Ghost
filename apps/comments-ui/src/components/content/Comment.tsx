@@ -6,7 +6,6 @@ import ReplyButton from './buttons/ReplyButton';
 import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
 import {Comment, useAppContext, useLabs} from '../../AppContext';
-import {HiddenCommentText} from './HiddenCommentText';
 import {Transition} from '@headlessui/react';
 import {formatExplicitTime, getMemberNameFromComment, isCommentPublished} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
@@ -116,29 +115,29 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     if (labs.commentImprovements) {
-        if (admin) {
-            notPublishedMessage = comment.html;
-        }
-        if (comment.status === 'hidden' && !admin) {
-            if (!hasReplies) {
+        if (comment.status === 'hidden') {
+            if (admin || hasReplies) {
+                notPublishedMessage = t('This comment has been hidden.');
+            } else {
                 return <></>;
             }
-            notPublishedMessage = t('This comment has been hidden.');
-        } else if (comment.status === 'deleted' && !admin) {
+        } else if (comment.status === 'deleted') {
             if (!hasReplies) {
                 return <></>;
             }
             notPublishedMessage = t('This comment has been removed.');
         }
-    }
-
-    if (!labs.commentImprovements) {
-        {
-            if (comment.status === 'hidden') {
-                notPublishedMessage = t('This comment has been hidden.');
-            } else if (comment.status === 'deleted') {
-                notPublishedMessage = t('This comment has been removed.');
-            }
+    } else {
+        // Fallback logic when `commentImprovements flag` is disabled
+        switch (comment.status) {
+        case 'hidden':
+            notPublishedMessage = t('This comment has been hidden.');
+            break;
+        case 'deleted':
+            notPublishedMessage = t('This comment has been removed.');
+            break;
+        default:
+            break;
         }
     }
 
@@ -146,7 +145,9 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
             <div className="mt-[-3px] flex items-start">
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
-                    <HiddenCommentText notPublishedMessage={notPublishedMessage} />
+                    <p className="text-md mt-[4px] font-sans italic leading-normal text-black/20 sm:text-lg dark:text-white/35">
+                        {notPublishedMessage}
+                    </p>
                     <div className="mt-[4px]">
                         <MoreButton comment={comment} toggleEdit={openEditMode} />
                     </div>
