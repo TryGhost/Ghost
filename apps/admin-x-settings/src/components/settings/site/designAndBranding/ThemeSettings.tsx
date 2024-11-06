@@ -5,7 +5,6 @@ import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSet
 import {Form} from '@tryghost/admin-x-design-system';
 import {Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
-import {useOfficialThemes} from '../../../providers/SettingsAppProvider';
 
 interface ThemeSettingsProps {
     sections: Array<{
@@ -16,9 +15,32 @@ interface ThemeSettingsProps {
     updateSetting: (setting: CustomThemeSetting) => void;
 }
 
+interface ThemeSettingsMap {
+    [key: string]: string[];
+}
+
+const themeSettingsMap: ThemeSettingsMap = {
+    source: ['title_font', 'body_font'],
+    casper: ['title_font', 'body_font'],
+    alto: ['title_font', 'body_font'],
+    bulletin: ['title_font', 'body_font'],
+    dawn: ['title_font', 'body_font'],
+    digest: ['title_font', 'body_font'],
+    dope: ['title_font', 'body_font'],
+    ease: ['title_font', 'body_font'],
+    edge: ['title_font', 'body_font'],
+    edition: ['title_font', 'body_font'],
+    episode: ['typography'],
+    headline: ['title_font', 'body_font'],
+    journal: ['title_font', 'body_font'],
+    london: ['title_font', 'body_font'],
+    ruby: ['title_font', 'body_font'],
+    solo: ['typography'],
+    taste: ['style'],
+    wave: ['title_font', 'body_font']
+};
+
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) => {
-    const officialThemes = useOfficialThemes();
-    const officialThemeNames = new Set(officialThemes.map(theme => theme.name.toLowerCase()));
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
     const activeThemeName = activeTheme?.name.toLowerCase() || '';
@@ -46,10 +68,9 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                             // hides typography related theme settings from official themes
                             // should be removed once we remove the settings from the themes in 6.0
                             if (hasCustomFonts) {
-                                if (['title_font', 'body_font', 'typography'].includes(setting.key)) {
-                                    if (officialThemeNames.has(activeThemeName)) {
-                                        spaceClass += ' hidden';
-                                    }
+                                const hidingSettings = themeSettingsMap[activeThemeName];
+                                if (hidingSettings && hidingSettings.includes(setting.key)) {
+                                    spaceClass += ' hidden';
                                 }
                             }
 
