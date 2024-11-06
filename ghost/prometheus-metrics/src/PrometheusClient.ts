@@ -1,6 +1,7 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
 import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
 
 type PrometheusClientConfig = {
     register?: client.Registry;
@@ -56,8 +57,14 @@ export class PrometheusClient {
             try {
                 await this.gateway.pushAdd({jobName});
                 logging.debug('Metrics pushed to pushgateway - jobName: ', jobName);
-            } catch (error) {
-                logging.error('Error pushing metrics to pushgateway - jobName: ', jobName);
+            } catch (err) {
+                let error;
+                if (typeof err === 'object' && err !== null && 'code' in err) {
+                    error = new errors.InternalServerError({message: 'Error pushing metrics to pushgateway: ' + err.code, code: err.code as string});
+                } else {
+                    error = new errors.InternalServerError({message: 'Error pushing metrics to pushgateway: Unknown error'});
+                }
+                logging.error(error);
             }
         }
     }
