@@ -9,7 +9,7 @@
 ## Requerimientos
 
 -   npm >=7.0.0
--   node >=20.0.0
+-   node >=20.13.1
 
 ## Instalación
 
@@ -20,6 +20,19 @@ npm install
 ```
 
 # Kraken
+
+### Configuración
+
+-   Ubicar el archivo de propiedades de Kraken que se encuentra en la ruta `./packages/kraken/properties.json`
+-   Modificar las propiedades con los valores de la instancia de Ghost que se desea probar
+
+```json
+{
+    "GHOST_URL": "GHOST_URL",
+    "ADMIN_USERNAME": "MY_ADMIN_EMAIL",
+    "ADMIN_PASSWORD": "MY_ADMIN_PASS"
+}
+```
 
 ### Ejecución
 
