@@ -312,21 +312,21 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "irate(ghost_process_cpu_user_seconds_total{job=~\"$job\", instance=~\"$instance\"}[1m]) * 100",
+            "expr": "irate(ghost_process_cpu_user_seconds_total{job=~\"$job\"}[1m]) * 100",
             "interval": "",
-            "legendFormat": "User CPU - {{instance}}",
+            "legendFormat": "User CPU - {{job}}",
             "refId": "A"
           },
           {
-            "expr": "irate(ghost_process_cpu_system_seconds_total{job=~\"$job\", instance=~\"$instance\"}[1m]) * 100",
+            "expr": "irate(ghost_process_cpu_system_seconds_total{job=~\"$job\"}[1m]) * 100",
             "interval": "",
-            "legendFormat": "System CPU - {{instance}}",
+            "legendFormat": "System CPU - {{job}}",
             "refId": "B"
           },
           {
-            "expr": "irate(ghost_process_cpu_seconds_total{job=~\"$job\", instance=~\"$instance\"}[1m]) * 100",
+            "expr": "irate(ghost_process_cpu_seconds_total{job=~\"$job\"}[1m]) * 100",
             "interval": "",
-            "legendFormat": "Total CPU - {{instance}}",
+            "legendFormat": "Total CPU - {{job}}",
             "refId": "C"
           }
         ],
