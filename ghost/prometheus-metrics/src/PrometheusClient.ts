@@ -56,8 +56,8 @@ export class PrometheusClient {
             try {
                 await this.gateway.pushAdd({jobName});
                 logging.debug('Metrics pushed to pushgateway - jobName: ', jobName);
-            } catch (error) {
-                logging.error('Error pushing metrics to pushgateway - jobName: ', jobName);
+            } catch (err) {
+                logging.error({err, message: 'Error pushing metrics to pushgateway for jobName: ' + jobName});
             }
         }
     }
