@@ -119,27 +119,29 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     if (labs.commentImprovements) {
         if (admin) {
             notPublishedMessage = comment.html;
-        }
-        if (comment.status === 'hidden' && !admin) {
-            if (!hasReplies) {
-                return <></>;
+            if (hasReplies) {
+                if (comment.status === 'hidden') {
+                    notPublishedMessage = t('This comment has been hidden.');
+                }
+                if (comment.status === 'deleted') {
+                    notPublishedMessage = t('This comment has been removed.');
+                }
             }
-            notPublishedMessage = t('This comment has been hidden.');
-        } else if (comment.status === 'deleted' && !admin) {
+        } else {
             if (!hasReplies) {
-                return <></>;
+                console.log('hidden comment', comment);
             }
-            notPublishedMessage = t('This comment has been removed.');
-        }
-    }
-
-    if (!labs.commentImprovements) {
-        {
             if (comment.status === 'hidden') {
                 notPublishedMessage = t('This comment has been hidden.');
             } else if (comment.status === 'deleted') {
                 notPublishedMessage = t('This comment has been removed.');
             }
+        }
+    } else {
+        if (comment.status === 'hidden') {
+            notPublishedMessage = t('This comment has been hidden.');
+        } else if (comment.status === 'deleted') {
+            notPublishedMessage = t('This comment has been removed.');
         }
     }
 

@@ -1,4 +1,6 @@
 const models = require('../../models');
+const commentsService = require('../../services/comments');
+const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
 
 function handleCacheHeaders(model, frame) {
     if (model) {
@@ -40,6 +42,31 @@ const controller = {
             handleCacheHeaders(result, frame);
 
             return result;
+        }
+    },
+    browse: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'post_id',
+            'include',
+            'page',
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'debug'
+        ],
+        validation: {
+            options: {
+                include: ALLOWED_INCLUDES
+            }
+        },
+        permissions: true,
+        query(frame) {
+            console.log('admin', frame.options);
+            return commentsService.controller.browse(frame);
         }
     }
 };

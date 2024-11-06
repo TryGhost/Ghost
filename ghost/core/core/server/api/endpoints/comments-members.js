@@ -27,6 +27,7 @@ const controller = {
         },
         permissions: true,
         query(frame) {
+            console.log('memeber', frame.options);
             return commentsService.controller.browse(frame);
         }
     },
