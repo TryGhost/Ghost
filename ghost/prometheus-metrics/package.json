@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "express": "4.21.1",
-    "prom-client": "^15.1.3",
+    "prom-client": "15.1.3",
     "stoppable": "1.1.0"
   }
 }
