@@ -176,8 +176,8 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         detail={<div className="line-clamp-2">{integration.description || 'No description'}</div>}
                         icon={
                             integration.icon_image ?
-                                <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
-                                <Icon className='w-8' name='integration' />
+                                <img className='h-8 w-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
+                                <Icon className='w-8 shrink-0' name='integration' />
                         }
                         title={integration.name}
                         custom
