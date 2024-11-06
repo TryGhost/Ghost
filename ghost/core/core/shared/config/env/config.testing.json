@@ -11,9 +11,6 @@
     "server": {
         "port": 2369
     },
-    "metrics_server": {
-        "port": 9417
-    },
     "logging": {
         "level": "error"
     },

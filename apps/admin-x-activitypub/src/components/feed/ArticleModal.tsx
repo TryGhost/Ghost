@@ -2,20 +2,28 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Modal} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator, Modal} from '@tryghost/admin-x-design-system';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
-import FeedItem from './FeedItem';
-
-import APReplyBox from '../global/APReplyBox';
-import articleBodyStyles from '../articleBodyStyles';
 import {type Activity} from '../activities/ActivityItem';
 
+import APReplyBox from '../global/APReplyBox';
+import FeedItem from './FeedItem';
+import articleBodyStyles from '../articleBodyStyles';
+
+import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+
 interface ArticleModalProps {
+    activityId: string;
     object: ObjectProperties;
     actor: ActorProperties;
-    comments: Activity[];
     focusReply: boolean;
+    updateActivity: (id: string, updated: Partial<Activity>) => void;
+    history: {
+        activityId: string;
+        object: ObjectProperties;
+        actor: ActorProperties;
+    }[];
 }
 
 const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string}> = ({heading, image, excerpt, html}) => {
@@ -68,14 +76,10 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
       }
 
       function initializeResize() {
-        document.body.style.opacity = '0.5';
-        document.body.style.transition = 'opacity 0.3s ease';
-
         resizeIframe();
 
         waitForImages().then(() => {
           isFullyLoaded = true;
-          document.body.style.opacity = '1';
           resizeIframe();
         });
       }
@@ -146,9 +150,15 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-grey-200"></div>
 );
 
-const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, focusReply}) => {
+const ArticleModal: React.FC<ArticleModalProps> = ({
+    activityId,
+    object,
+    actor,
+    focusReply,
+    updateActivity = () => {},
+    history = []
+}) => {
     const MODAL_SIZE_SM = 640;
-    const [commentsState, setCommentsState] = useState(comments);
     const [isFocused, setFocused] = useState(focusReply ? 1 : 0);
     function setReplyBoxFocused(focused: boolean) {
         if (focused) {
@@ -158,44 +168,80 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
         }
     }
 
+    const {threadQuery, addToThread} = useThreadForUser('index', activityId);
+    const {data: activityThread, isLoading: isLoadingThread} = threadQuery;
+    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.id === activityId);
+    const activityThreadChildren = (activityThread?.items ?? []).slice(activtyThreadActivityIdx + 1);
+    const activityThreadParents = (activityThread?.items ?? []).slice(0, activtyThreadActivityIdx);
+
     const [modalSize] = useState<number>(MODAL_SIZE_SM);
     const modal = useModal();
 
-    // Navigation stack to navigate between comments - This could probably use a
-    // more robust solution, but for now, thanks to the fact modal.show() updates
-    // the existing modal instead of creating a new one (i think 😅) we can use
-    // a stack to navigate between comments pretty easily
-    //
-    // @TODO: Look into a more robust solution for navigation
-    const [navigationStack, setNavigationStack] = useState<[ObjectProperties, ActorProperties, Activity[]][]>([]);
-    const [canNavigateBack, setCanNavigateBack] = useState(false);
+    const canNavigateBack = history.length > 0;
     const navigateBack = () => {
-        const [previousObject, previousActor, previousComments] = navigationStack.pop() ?? [];
+        const prevProps = history.pop();
 
-        if (navigationStack.length === 0) {
-            setCanNavigateBack(false);
+        // This shouldn't happen, but if it does, just remove the modal
+        if (!prevProps) {
+            modal.remove();
+
+            return;
         }
 
         modal.show({
-            object: previousObject,
-            actor: previousActor,
-            comments: previousComments
+            activityId: prevProps.activityId,
+            object: prevProps.object,
+            actor: prevProps.actor,
+            updateActivity,
+            history
         });
     };
-    const navigateForward = (nextObject: ObjectProperties, nextActor: ActorProperties, nextComments: Activity[]) => {
-        setCanNavigateBack(true);
-        setNavigationStack([...navigationStack, [object, actor, commentsState]]);
-
+    const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties) => {
+        // Trigger the modal to show the next activity and add the existing
+        // activity to the history so we can navigate back
         modal.show({
+            activityId: nextActivityId,
             object: nextObject,
             actor: nextActor,
-            comments: nextComments
+            updateActivity,
+            history: [
+                ...history,
+                {
+                    activityId: activityId,
+                    object: object,
+                    actor: actor
+                }
+            ]
         });
     };
 
     function handleNewReply(activity: Activity) {
-        setCommentsState(prev => [activity].concat(prev));
+        // Add the new reply to the thread
+        addToThread(activity);
+
+        // Update the replyCount on the activity outside of the context
+        // of this component
+        updateActivity(activityId, {
+            object: {
+                ...object,
+                replyCount: object.replyCount + 1
+            }
+        } as Partial<Activity>);
+
+        // Update the replyCount on the current activity loaded in the modal
+        // This is used for when we navigate via the history
+        object.replyCount = object.replyCount + 1;
     }
+
+    const replyBoxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (focusReply && replyBoxRef.current) {
+            setTimeout(() => {
+                replyBoxRef.current?.scrollIntoView({block: 'center'});
+            }, 100);
+        }
+    }, [focusReply]);
 
     return (
         <Modal
@@ -223,62 +269,85 @@ const ArticleModal: React.FC<ArticleModalProps> = ({object, actor, comments, foc
                     </div>
                 </div>
                 <div className='grow overflow-y-auto'>
-                    <div className='mx-auto max-w-[580px] py-10'>
+                    <div className='mx-auto max-w-[580px] pb-10 pt-5'>
+                        {activityThreadParents.map((item) => {
+                            return (
+                                <>
+                                    {item.object.type === 'Article' ? (
+                                        <ArticleBody
+                                            excerpt={item.object?.preview?.content}
+                                            heading={item.object.name}
+                                            html={item.object.content}
+                                            image={item.object?.image}
+                                        />
+                                    ) : (
+                                        <FeedItem
+                                            actor={item.actor}
+                                            commentCount={item.object.replyCount ?? 0}
+                                            last={false}
+                                            layout='reply'
+                                            object={item.object}
+                                            type='Note'
+                                            onClick={() => {
+                                                navigateForward(item.id, item.object, item.actor);
+                                            }}
+                                            onCommentClick={() => {}}
+                                        />
+                                    )}
+                                </>
+                            );
+                        })}
+
                         {object.type === 'Note' && (
                             <FeedItem
                                 actor={actor}
-                                comments={comments}
-                                layout='modal'
+                                commentCount={object.replyCount ?? 0}
+                                last={true}
+                                layout={activityThreadParents.length > 0 ? 'modal' : 'modal'}
                                 object={object}
                                 type='Note'
                                 onCommentClick={() => {
                                     setReplyBoxFocused(true);
                                 }}
-                            />)}
-                        {object.type === 'Article' && (
-                            <ArticleBody excerpt={object?.preview?.content} heading={object.name} html={object.content} image={object?.image} />
+                            />
                         )}
-                        <APReplyBox focused={isFocused} object={object} onNewReply={handleNewReply}/>
+                        {object.type === 'Article' && (
+                            <ArticleBody
+                                excerpt={object?.preview?.content}
+                                heading={object.name}
+                                html={object.content}
+                                image={object?.image}
+                            />
+                        )}
+
+                        <div ref={replyBoxRef}>
+                            <APReplyBox
+                                focused={isFocused}
+                                object={object}
+                                onNewReply={handleNewReply}
+                            />
+                        </div>
                         <FeedItemDivider />
 
-                        {commentsState.map((comment, index) => {
-                            const showDivider = index !== comments.length - 1;
-                            const nestedComments = comment.object.replies ?? [];
-                            const hasNestedComments = nestedComments.length > 0;
+                        {isLoadingThread && <LoadingIndicator size='lg' />}
+
+                        {activityThreadChildren.map((item, index) => {
+                            const showDivider = index !== activityThreadChildren.length - 1;
 
                             return (
                                 <>
                                     <FeedItem
-                                        actor={comment.actor}
-                                        comments={nestedComments}
+                                        actor={item.actor}
+                                        commentCount={item.object.replyCount ?? 0}
                                         last={true}
                                         layout='reply'
-                                        object={comment.object}
+                                        object={item.object}
                                         type='Note'
                                         onClick={() => {
-                                            navigateForward(comment.object, comment.actor, nestedComments);
+                                            navigateForward(item.id, item.object, item.actor);
                                         }}
                                         onCommentClick={() => {}}
                                     />
-                                    {hasNestedComments && <FeedItemDivider />}
-                                    {nestedComments.map((nestedComment, nestedCommentIndex) => {
-                                        const nestedNestedComments = nestedComment.object.replies ?? [];
-
-                                        return (
-                                            <FeedItem
-                                                actor={nestedComment.actor}
-                                                comments={nestedNestedComments}
-                                                last={nestedComments.length === nestedCommentIndex + 1}
-                                                layout='reply'
-                                                object={nestedComment.object}
-                                                type='Note'
-                                                onClick={() => {
-                                                    navigateForward(nestedComment.object, nestedComment.actor, nestedNestedComments);
-                                                }}
-                                                onCommentClick={() => {}}
-                                            />
-                                        );
-                                    })}
                                     {showDivider && <FeedItemDivider />}
                                 </>
                             );
