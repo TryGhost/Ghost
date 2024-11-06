@@ -93,7 +93,14 @@ module.exports = (lng = 'en', ns = 'portal') => {
         interpolation,
 
         resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
-            const res = require(`../locales/${locale}/${ns}.json`);
+            let res;
+            // add an extra fallback - this handles the case where we have a partial set of translations for some reason
+            // by falling back to the english translations
+            try {
+                res = require(`../locales/${locale}/${ns}.json`);
+            } catch (err) {
+                res = require(`../locales/en/${ns}.json`);
+            }
 
             // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
             // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
