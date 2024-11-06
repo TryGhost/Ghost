@@ -282,13 +282,40 @@ export function useSearchForUser(handle: string, query: string) {
 }
 
 export function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const queryClient = useQueryClient();
     return useMutation({
         async mutationFn(username: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
             return api.follow(username);
         },
-        onSuccess,
+        onSuccess(followedActor, fullHandle) {
+            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+                if (!currentProfile) {
+                    return currentProfile;
+                }
+                return {
+                    ...currentProfile,
+                    isFollowing: true
+                };
+            });
+
+            queryClient.setQueryData(['following:index'], (currentFollowing?: unknown[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return [followedActor].concat(currentFollowing);
+            });
+
+            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
+                if (!currentFollowingCount) {
+                    return 1;
+                }
+                return currentFollowingCount + 1;
+            });
+
+            onSuccess();
+        },
         onError
     });
 }

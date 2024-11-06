@@ -18,6 +18,7 @@ export type HeadingFontName =
   | 'Cardo'
   | 'Chakra Petch'
   | 'Old Standard TT'
+  | 'Libre Baskerville'
   | 'Rufina'
   | 'Space Grotesk'
   | 'Tenor Sans'
@@ -50,6 +51,7 @@ export const CUSTOM_FONTS: CustomFonts = {
         {name: 'IBM Plex Serif', creator: 'Mike Abbink'},
         {name: 'Inter', creator: 'Rasmus Andersson'},
         {name: 'JetBrains Mono', creator: 'JetBrains'},
+        {name: 'Libre Baskerville', creator: 'Impallari Type'},
         {name: 'Lora', creator: 'Cyreal'},
         {name: 'Manrope', creator: 'Mikhail Sharanda'},
         {name: 'Merriweather', creator: 'Sorkin Type'},
@@ -102,7 +104,8 @@ const classFontNames = {
     'IBM Plex Serif': 'ibm-plex-serif',
     'Space Mono': 'space-mono',
     'Fira Mono': 'fira-mono',
-    'JetBrains Mono': 'jetbrains-mono'
+    'JetBrains Mono': 'jetbrains-mono',
+    'Libre Baskerville': 'libre-baskerville'
 };
 
 export function generateCustomFontCss(fonts: FontSelection) {
@@ -169,6 +172,9 @@ export function generateCustomFontCss(fonts: FontSelection) {
         },
         'JetBrains Mono': {
             family: 'jetbrains-mono:400,700'
+        },
+        'Libre Baskerville': {
+            family: 'libre-baskerville:700'
         }
     };
 
