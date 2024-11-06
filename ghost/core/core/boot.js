@@ -333,6 +333,7 @@ async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
+    const identityTokens = require('./server/services/identity-tokens');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
@@ -380,6 +381,7 @@ async function initServices() {
     await emailAddressService.init(),
 
     await Promise.all([
+        identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
         mentionsEmailReport.init(),
