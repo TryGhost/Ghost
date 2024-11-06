@@ -121,4 +121,11 @@ describe('Custom Fonts', function () {
             assert.equal(result, '', 'Returns an empty string with no fonts');
         });
     });
+
+    describe('getAllCustomFontsImports', function () {
+        it('returns the correct imports for all custom fonts', function () {
+            const result = customFonts.getAllCustomFontsImports();
+            assert.equal(result, '<link rel="stylesheet" media="all" href="https://fonts.bunny.net/css?family=cardo:400,700|manrope:300,500,700|merriweather:300,700|nunito:400,600,700|old-standard-tt:400,700|roboto:400,500,700|rufina:400,500,700|tenor-sans:400|space-grotesk:700|chakra-petch:400|noto-sans:400,700|poppins:400,500,600|fira-sans:400,500,600|inter:400,500,600|noto-serif:400,700|lora:400,700|ibm-plex-serif:400,500,600|space-mono:400,700|fira-mono:400,700|jetbrains-mono:400,700&display=swap">');
+        });
+    });
 });

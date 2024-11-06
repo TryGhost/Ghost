@@ -4,7 +4,7 @@
 // Outputs scripts and other assets at the top of a Ghost theme
 const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
-const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
+const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont, getAllCustomFontsImports} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
 // @TODO fix this require
 const {cardAssets} = require('../services/assets-minification');
@@ -354,6 +354,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             if (labs.isSet('customFonts')) {
+                // Add all custom fonts imports to the head
+                head.push(new SafeString(getAllCustomFontsImports()));
                 // Check if if the request is for a site preview, in which case we **always** use the custom font values
                 // from the passed in data, even when they're empty strings or settings cache has values.
                 const isSitePreview = options.data.site._preview;
@@ -373,7 +375,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     if (bodyFont) {
                         fontSelection.body = bodyFont;
                     }
+                    // Generate the custom CSS for the selected fonts
                     const customCSS = generateCustomFontCss(fontSelection);
+                    // Add the custom CSS to the head
                     head.push(new SafeString(customCSS));
                 }
             }

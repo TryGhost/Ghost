@@ -108,93 +108,95 @@ const classFontNames = {
     'Libre Baskerville': 'libre-baskerville'
 };
 
+const importStrings = {
+    Cardo: {
+        family: 'cardo:400,700'
+    },
+    Manrope: {
+        family: 'manrope:300,500,700'
+    },
+    Merriweather: {
+        family: 'merriweather:300,700'
+    },
+    Nunito: {
+        family: 'nunito:400,600,700'
+    },
+    'Old Standard TT': {
+        family: 'old-standard-tt:400,700'
+    },
+    Roboto: {
+        family: 'roboto:400,500,700'
+    },
+    Rufina: {
+        family: 'rufina:400,500,700'
+    },
+    'Tenor Sans': {
+        family: 'tenor-sans:400'
+    },
+    'Space Grotesk': {
+        family: 'space-grotesk:700'
+    },
+    'Chakra Petch': {
+        family: 'chakra-petch:400'
+    },
+    'Noto Sans': {
+        family: 'noto-sans:400,700'
+    },
+    Poppins: {
+        family: 'poppins:400,500,600'
+    },
+    'Fira Sans': {
+        family: 'fira-sans:400,500,600'
+    },
+    Inter: {
+        family: 'inter:400,500,600'
+    },
+    'Noto Serif': {
+        family: 'noto-serif:400,700'
+    },
+    Lora: {
+        family: 'lora:400,700'
+    },
+    'IBM Plex Serif': {
+        family: 'ibm-plex-serif:400,500,600'
+    },
+    'Space Mono': {
+        family: 'space-mono:400,700'
+    },
+    'Fira Mono': {
+        family: 'fira-mono:400,700'
+    },
+    'JetBrains Mono': {
+        family: 'jetbrains-mono:400,700'
+    },
+    'Libre Baskerville': {
+        family: 'libre-baskerville:700'
+    }
+};
+
 export function generateCustomFontCss(fonts: FontSelection) {
-    let fontImports: string = '';
+    // let fontImports: string = '';
     let fontCSS: string = '';
 
-    const importStrings = {
-        Cardo: {
-            family: 'cardo:400,700'
-        },
-        Manrope: {
-            family: 'manrope:300,500,700'
-        },
-        Merriweather: {
-            family: 'merriweather:300,700'
-        },
-        Nunito: {
-            family: 'nunito:400,600,700'
-        },
-        'Old Standard TT': {
-            family: 'old-standard-tt:400,700'
-        },
-        Roboto: {
-            family: 'roboto:400,500,700'
-        },
-        Rufina: {
-            family: 'rufina:400,500,700'
-        },
-        'Tenor Sans': {
-            family: 'tenor-sans:400'
-        },
-        'Space Grotesk': {
-            family: 'space-grotesk:700'
-        },
-        'Chakra Petch': {
-            family: 'chakra-petch:400'
-        },
-        'Noto Sans': {
-            family: 'noto-sans:400,700'
-        },
-        Poppins: {
-            family: 'poppins:400,500,600'
-        },
-        'Fira Sans': {
-            family: 'fira-sans:400,500,600'
-        },
-        Inter: {
-            family: 'inter:400,500,600'
-        },
-        'Noto Serif': {
-            family: 'noto-serif:400,700'
-        },
-        Lora: {
-            family: 'lora:400,700'
-        },
-        'IBM Plex Serif': {
-            family: 'ibm-plex-serif:400,500,600'
-        },
-        'Space Mono': {
-            family: 'space-mono:400,700'
-        },
-        'Fira Mono': {
-            family: 'fira-mono:400,700'
-        },
-        'JetBrains Mono': {
-            family: 'jetbrains-mono:400,700'
-        },
-        'Libre Baskerville': {
-            family: 'libre-baskerville:700'
-        }
-    };
+    // Moved the import logic to the getAllCustomFontsImports function,
+    // so this function only returns the CSS.
+    // if (fonts?.heading && fonts?.body && fonts?.heading === fonts?.body) {
+    //     fontImports = `<link rel="stylesheet" media="all" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}&display=swap">`;
+    // } else {
+    //     fontImports = '';
 
-    if (fonts?.heading && fonts?.body && fonts?.heading === fonts?.body) {
-        fontImports = `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}">`;
-    } else {
-        fontImports = '';
+    //     if (fonts?.heading && fonts?.body) {
+    //         fontImports += `<link rel="stylesheet" media="all" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}|${importStrings[fonts?.body]?.family}&display=swap">`;
+    //     } else {
+    //         if (fonts?.heading) {
+    //             fontImports += `<link rel="stylesheet" media="all" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}&display=swap">`;
+    //         }
 
-        if (fonts?.heading && fonts?.body) {
-            fontImports += `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}|${importStrings[fonts?.body]?.family}">`;
-        } else {
-            if (fonts?.heading) {
-                fontImports += `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.heading]?.family}">`;
-            }
-
-            if (fonts?.body) {
-                fontImports += `<link rel="stylesheet" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.body]?.family}">`;
-            }
-        }
-    }
+    //         if (fonts?.body) {
+    //             fontImports += `<link rel="stylesheet" media="all" href="https://fonts.bunny.net/css?family=${importStrings[fonts?.body]?.family}&display=swap">`;
+    //         }
+    //     }
+    // }
 
     if (fonts?.body || fonts?.heading) {
         fontCSS = ':root {';
@@ -210,7 +212,7 @@ export function generateCustomFontCss(fonts: FontSelection) {
         fontCSS += '}';
     }
 
-    return `<link rel="preconnect" href="https://fonts.bunny.net">${fontImports}<style>${fontCSS}</style>`;
+    return `<style>${fontCSS}</style>`;
 }
 
 export function generateCustomFontBodyClass(fonts: FontSelection) {
@@ -228,6 +230,14 @@ export function generateCustomFontBodyClass(fonts: FontSelection) {
     }
 
     return bodyClass;
+}
+
+export function getAllCustomFontsImports() {
+    let importString = '<link rel="preconnect" href="https://fonts.bunny.net"><link rel="stylesheet" media="all" href="https://fonts.bunny.net/css?family=';
+    const allFonts = Object.values(importStrings).map(font => font.family);
+    importString += allFonts.join('|');
+    importString += '&display=swap">';
+    return importString;
 }
 
 export function getCSSFriendlyFontClassName(font: string) {
