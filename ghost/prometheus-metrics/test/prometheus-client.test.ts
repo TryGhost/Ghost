@@ -12,7 +12,7 @@ describe('Prometheus Client', function () {
     afterEach(function () {
         if (instance) {
             instance.stop();
-            instance.register.clear();
+            instance.client.register.clear();
         }
     });
 
