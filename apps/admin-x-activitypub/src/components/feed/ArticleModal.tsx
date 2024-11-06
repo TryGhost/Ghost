@@ -200,6 +200,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             object: prevProps.object,
             actor: prevProps.actor,
             updateActivity,
+            width,
             history
         });
     };
@@ -211,6 +212,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             object: nextObject,
             actor: nextActor,
             updateActivity,
+            width,
             history: [
                 ...history,
                 {
@@ -268,7 +270,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             <div className='flex h-full flex-col'>
                 <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
                     <div className={`flex h-8 ${object.type === 'Article' && 'pl-[98px]'}`}>
-                        {canNavigateBack ? (
+                        {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between px-8'>
                                 <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
@@ -322,7 +324,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 last={true}
                                 layout={activityThreadParents.length > 0 ? 'modal' : 'modal'}
                                 object={object}
-                                showHeader={canNavigateBack}
+                                showHeader={activityThreadParents.length > 0 ? true : false}
                                 type='Note'
                                 onCommentClick={() => {
                                     setReplyBoxFocused(true);
