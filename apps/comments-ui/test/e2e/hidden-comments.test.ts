@@ -94,7 +94,7 @@ test.describe('Hidden Comments', async () => {
             await expect(comments).toHaveCount(2);
         });
 
-        test('admin can see hidden parent (greyed out and hidden text), but reply will still show', async ({page}) => {
+        test('admin can see hidden parent, but reply will still show', async ({page}) => {
             const mockedApi = new MockedApi({});
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>'
@@ -133,7 +133,7 @@ test.describe('Hidden Comments', async () => {
             await expect(secondComment).toContainText('you said something really bad');
         });
 
-        test('admin can see deleted parent (greyed out and hidden text), but reply will still show', async ({page}) => {
+        test('admin can see deleted parent, but reply will still show', async ({page}) => {
             const mockedApi = new MockedApi({});
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>'
@@ -170,6 +170,47 @@ test.describe('Hidden Comments', async () => {
             const secondComment = comments.nth(1);
             await expect(secondComment).not.toContainText('This is a naughty comment and should be deleted');
             await expect(secondComment).toContainText('you said something really bad');
+        });
+
+        test('admin can see when parent is deleted but has hidden replies', async ({page}) => {
+            const mockedApi = new MockedApi({});
+            mockedApi.addComment({
+                html: '<p>Tknsjkhnfkhdnh</p>',
+                status: 'deleted',
+                replies: [
+                    mockedApi.buildReply({
+                        html: '<p>ngisdenbgosgbsog</p>',
+                        status: 'hidden'
+                    })
+                ]
+            });
+
+            mockedApi.setMember({});
+
+            await mockAdminAuthFrame({
+                admin,
+                page
+            });
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                admin,
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const comments = await frame.getByTestId('comment-component');
+
+            // expect to have contain text "This comment has been removed." on the first comment
+            // and the child comment to be hidden This comment has been hidden.
+
+            const firstComment = comments.nth(0);
+            const secondComment = comments.nth(1);
+
+            await expect(firstComment).toContainText('This comment has been removed.');
+            await expect(secondComment).toContainText('This comment has been hidden.');
         });
     });
 
@@ -346,6 +387,35 @@ test.describe('Hidden Comments', async () => {
             const secondComment = comments.nth(1);
             await expect(secondComment).not.toContainText('This is a naughty comment and should be hidden');
             await expect(secondComment).toContainText('you said something really bad');
+        });
+
+        test('hides comments if both parent and all replies are hidden or deleted', async ({page}) => {
+            const mockedApi = new MockedApi({});
+            mockedApi.addComment({
+                html: '<p>Tknsjkhnfkhdnh</p>',
+                status: 'hidden',
+                replies: [
+                    mockedApi.buildReply({
+                        html: '<p>ngisdenbgosgbsog</p>',
+                        status: 'deleted'
+                    })
+                ]
+            });
+
+            mockedApi.logoutMember();
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                labs: {
+                    commentImprovements: true
+                }
+            });
+
+            const comments = await frame.getByTestId('comment-component');
+
+            await expect(comments).toHaveCount(0);
         });
     });
 });

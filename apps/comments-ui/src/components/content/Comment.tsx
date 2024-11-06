@@ -115,29 +115,34 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     if (labs.commentImprovements) {
+        const hasAllRepliesHidden = comment.replies && comment.replies.every(reply => reply.status === 'hidden' || reply.status === 'deleted');
+        const hasVisibleReplies = comment.replies && comment.replies.some(reply => reply.status !== 'hidden' && reply.status !== 'deleted');
+
         if (comment.status === 'hidden') {
-            if (admin || hasReplies) {
+            if (admin || (hasReplies && hasVisibleReplies)) {
                 notPublishedMessage = t('This comment has been hidden.');
-            } else {
-                return <></>;
+            } else if (!hasReplies || hasAllRepliesHidden) {
+                return <></>; // Hide completely for non-admins if no visible replies
             }
         } else if (comment.status === 'deleted') {
-            if (!hasReplies) {
-                return <></>;
+            if (admin) {
+                if (hasReplies && (hasVisibleReplies || hasAllRepliesHidden)) {
+                    // Admins see deleted comment if it has any replies (even if hidden)
+                    notPublishedMessage = t('This comment has been removed.');
+                } else if (!hasReplies) {
+                    return <></>; // Hide completely if no replies
+                }
+            } else if (!hasReplies || hasAllRepliesHidden) {
+                return <></>; // Hide completely for non-admins if no visible replies
             }
-            notPublishedMessage = t('This comment has been removed.');
         }
-    } else {
-        // Fallback logic when `commentImprovements flag` is disabled
-        switch (comment.status) {
-        case 'hidden':
-            notPublishedMessage = t('This comment has been hidden.');
-            break;
-        case 'deleted':
-            notPublishedMessage = t('This comment has been removed.');
-            break;
-        default:
-            break;
+    } else { // not behind feature flag
+        {
+            if (comment.status === 'hidden') {
+                notPublishedMessage = t('This comment has been hidden.');
+            } else if (comment.status === 'deleted') {
+                notPublishedMessage = t('This comment has been removed.');
+            }
         }
     }
 
