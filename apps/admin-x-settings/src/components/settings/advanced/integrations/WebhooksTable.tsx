@@ -36,7 +36,6 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             <TableRow bgOnHover={false}>
                 <TableHead>{integration.webhooks?.length || 0} {integration.webhooks?.length === 1 ? 'webhook' : 'webhooks'}</TableHead>
                 <TableHead>Last triggered</TableHead>
-                <TableHead />
             </TableRow>
             {integration.webhooks?.map(webhook => (
                 <TableRow
