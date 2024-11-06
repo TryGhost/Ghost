@@ -1,10 +1,7 @@
 const debug = require('@tryghost/debug')('i18n');
-
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
-const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
 
 class EmailServiceWrapper {
     getPostUrl(post) {
