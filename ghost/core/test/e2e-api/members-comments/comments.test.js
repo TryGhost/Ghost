@@ -21,6 +21,7 @@ const dbFns = {
      * @property {string} member_id
      * @property {string} [parent_id]
      * @property {string} [html='This is a comment']
+     * @property {string} [status='published']
      */
     /**
      * @typedef {Object} AddCommentReplyData
@@ -42,7 +43,8 @@ const dbFns = {
             member_id: data.member_id,
             parent_id: data.parent_id,
             html: data.html || '<p>This is a comment</p>',
-            created_at: data.created_at
+            created_at: data.created_at,
+            status: data.status || 'published'
         });
     },
     /**
@@ -386,6 +388,125 @@ describe('Comments API', function () {
                 await testGetComments(`/api/comments/post/${postId}/`, [
                     commentMatcherWithReplies({replies: 1})
                 ]);
+            });
+
+            it('excludes hidden comments', async function () {
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                // check that hiddenComment.id is not in the response
+                should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
+                should(data2.body.comments.length).eql(0);
+            });
+
+            it('excludes deleted comments', async function () {
+                // await mockManager.mockLabsEnabled('commentImprovements');
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a deleted comment',
+                    status: 'deleted'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                // go through all comments and check if the deleted comment is not there
+                data2.body.comments.forEach((comment) => {
+                    should(comment.html).not.eql('This is a deleted comment');
+                });
+
+                data2.body.comments.length.should.eql(0);
+            });
+
+            it('shows hidden and deleted comment where there is a reply', async function () {
+                await mockManager.mockLabsEnabled('commentImprovements');
+                await setupBrowseCommentsData();
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
+                });
+
+                const deletedComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a deleted comment',
+                    status: 'deleted'
+                });
+
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    parent_id: hiddenComment.get('id'),
+                    html: 'This is a reply to a hidden comment'
+                });
+
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    parent_id: deletedComment.get('id'),
+                    html: 'This is a reply to a deleted comment'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}`)
+                    .expectStatus(200);
+
+                // check if hidden and deleted comments have their html removed
+                data2.body.comments.forEach((comment) => {
+                    should.notEqual(comment.html, 'This is a hidden comment');
+                    should.notEqual(comment.html, 'This is a deleted comment');
+                });
+
+                // check if hiddenComment.id and deletedComment.id are in the response
+                should(data2.body.comments.map(c => c.id)).containEql(hiddenComment.id);
+                should(data2.body.comments.map(c => c.id)).containEql(deletedComment.id);
+
+                // check if the replies to hidden and deleted comments are in the response
+                data2.body.comments.forEach((comment) => {
+                    if (comment.id === hiddenComment.id) {
+                        should(comment.replies.length).eql(1);
+                        should(comment.replies[0].html).eql('This is a reply to a hidden comment');
+                    } else if (comment.id === deletedComment.id) {
+                        should(comment.replies.length).eql(1);
+                        should(comment.replies[0].html).eql('This is a reply to a deleted comment');
+                    }
+                });
+            });
+
+            it.only('Returns nothing if both parent and reply are hidden', async function () {
+                await mockManager.mockLabsEnabled('commentImprovements');
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
+                });
+
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 1).id,
+                    parent_id: hiddenComment.get('id'),
+                    html: 'This is a reply to a hidden comment',
+                    status: 'hidden'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}`)
+                    .expectStatus(200);
+
+                should(data2.body.comments.length).eql(0);
             });
 
             it('cannot comment on a post', async function () {

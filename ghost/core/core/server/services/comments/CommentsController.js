@@ -54,6 +54,27 @@ module.exports = class CommentsController {
         return await this.service.getComments(frame.options);
     }
 
+    async adminBrowse(frame) {
+        if (frame.options.post_id) {
+            if (frame.options.filter) {
+                frame.options.mongoTransformer = function (query) {
+                    return {
+                        $and: [
+                            {
+                                post_id: frame.options.post_id
+                            },
+                            query
+                        ]
+                    };
+                };
+            } else {
+                frame.options.filter = `post_id:${frame.options.post_id}`;
+            }
+        }
+        frame.options.isAdmin = true;
+        return await this.service.getAdminComments(frame.options);
+    }
+
     /**
      * @param {Frame} frame
      */

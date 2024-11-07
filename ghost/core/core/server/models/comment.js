@@ -58,23 +58,26 @@ const Comment = ghostBookshelf.Model.extend({
             .query('limit', 3);
     },
     customQuery(qb) {
-        if (labs.isSet('commentImprovements')) {
-            qb.where(function () {
-                this.whereNotIn('comments.status', ['hidden', 'deleted'])
-                    .orWhereExists(function () {
-                        this.select(1)
-                            .from('comments as replies')
-                            .whereRaw('replies.parent_id = comments.id')
-                            .whereNotIn('replies.status', ['hidden', 'deleted']);
-                    });
-            });
-        }
+        qb.where(function () {
+            this.whereNotIn('comments.status', ['hidden', 'deleted'])
+                .orWhereExists(function () {
+                    this.select(1)
+                        .from('comments as replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .whereNotIn('replies.status', ['hidden', 'deleted']);
+                });
+        });
     },
 
     applyCustomQuery(options) {
-        this.query((qb) => {
-            this.customQuery(qb, options);
-        });
+        if (labs.isSet('commentImprovements')) {
+            console.log('lab is set');
+            if (!options.isAdmin) { // if it's an admin request, we don't need to apply the custom query
+                this.query((qb) => {
+                    this.customQuery(qb, options);
+                });
+            }
+        }
     },
 
     emitChange: function emitChange(event, options) {
@@ -290,6 +293,7 @@ const Comment = ghostBookshelf.Model.extend({
 
         // The comment model additionally supports having a parentId option
         options.push('parentId');
+        options.push('isAdmin');
 
         return options;
     }
