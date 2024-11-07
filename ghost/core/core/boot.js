@@ -474,6 +474,8 @@ async function initBackgroundServices({config}) {
         return;
     }
 
+    const activitypub = require('./server/services/activitypub');
+    await activitypub.init();
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');

@@ -1,0 +1,39 @@
+{
+  "name": "@tryghost/activitypub",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/activitypub",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput --sourceMap",
+    "build": "tsc",
+    "build:ts": "tsc",
+    "prepare": "tsc",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "test": "yarn test:types && yarn test:unit",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --ext .ts --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
+  },
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
+    "@tryghost/identity-token-service": "0.0.0",
+    "@tryghost/logging": "2.4.19",
+    "c8": "10.1.2",
+    "knex": "3.1.0",
+    "mocha": "10.8.2",
+    "nock": "13.5.5",
+    "sinon": "19.0.2",
+    "sqlite3": "5.1.7",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3"
+  },
+  "dependencies": {
+    "bson-objectid": "2.0.4"
+  }
+}
