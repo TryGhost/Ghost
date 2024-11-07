@@ -1,19 +1,19 @@
 const { faker } = require("@faker-js/faker");
 
-class PostEditorPageObject {
-    postEditorPage = "/ghost/#/editor/post";
+class PageEditorPageObject {
+    pageEditorPage = "/ghost/#/editor/page";
 
     constructor(driver) {
         this.driver = driver;
-        this.postEditorPage = this.driver.baseUrl + this.postEditorPage;
+        this.pageEditorPage = this.driver.baseUrl + this.pageEditorPage;
     }
 
-    async navigateToPostEditor() {
-        await this.driver.url(this.postEditorPage);
+    async navigateToPageEditor() {
+        await this.driver.url(this.pageEditorPage);
         return await this.driver.pause(1000);
     }
 
-    async createAndPublishPost(title, url) {
+    async createAndPublishPage(title, url) {
         await this.setTitle(title);
         await this.setContent(faker.lorem.paragraph());
         await this.driver.pause(1000);
@@ -86,6 +86,26 @@ class PostEditorPageObject {
         const element = await this.driver.$("a[data-test-complete-bookmark]");
         return await element.click();
     }
+
+    async navigateToPage(url) {
+        await this.driver.url(`${this.driver.baseUrl}/${url?.toLowerCase()}`);
+        return await this.driver.pause(1000);
+    }
+
+    async getPageTitle() {
+        const element = await this.driver.$("h1.gh-page-title");
+        return await element.getText();
+    }
+
+    async navigateToPage(url) {
+        await this.driver.url(`${this.driver.baseUrl}/${url?.toLowerCase()}`);
+        return await this.driver.pause(1000);
+    }
+
+    async getPageTitle() {
+        const element = await this.driver.$("h1.gh-article-title");
+        return await element.getText();
+    }
 }
 
-module.exports = { PostEditorPageObject };
+module.exports = { PageEditorPageObject };

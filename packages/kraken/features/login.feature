@@ -24,4 +24,3 @@ Scenario: E01201 - Inicio de sesión con contraseña incorrecta
   And I wait for 1 seconds
   Then an error message is shown
   And a retry button is shown
-
