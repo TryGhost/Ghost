@@ -12,8 +12,8 @@ export const handleViewContent = (
         activityId: activity.id,
         object: activity.object,
         actor: authorActor,
-        comments: Array.isArray(activity.object.replies) ? activity.object.replies : [],
         focusReply,
+        width: activity.object.type === 'Article' ? 'wide' : 'narrow',
         updateActivity
     });
 };

@@ -63,6 +63,12 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
     const url = new URL(hash, domain);
 
     const pathName = getHashPath(basePath, url.pathname);
+    
+    // Return early if we don't have modal configuration
+    if (!modalPaths || !loadModals) {
+        return {pathName: pathName || ''};
+    }
+
     const searchParams = url.searchParams;
 
     if (pathName && modalPaths && loadModals) {

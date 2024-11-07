@@ -7,14 +7,12 @@ import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
-// import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
-// import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
 
@@ -29,7 +27,7 @@ const getActivityDescription = (activity: Activity): string => {
     switch (activity.type) {
     case ACTVITY_TYPE.CREATE:
         if (activity.object?.inReplyTo && typeof activity.object?.inReplyTo !== 'string') {
-            return `Commented on your article "${activity.object.inReplyTo.name}"`;
+            return `Replied to your article "${activity.object.inReplyTo.name}"`;
         }
 
         return '';
@@ -141,7 +139,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             NiceModal.show(ArticleModal, {
                 activityId: activity.id,
                 object: activity.object,
-                actor: activity.actor
+                actor: activity.actor,
+                focusReplies: true
             });
             break;
         case ACTVITY_TYPE.LIKE:
