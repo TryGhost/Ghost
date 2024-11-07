@@ -10,6 +10,7 @@ Given(
         await element2.setValue(password);
         const element3 = await this.driver.$("#ember5");
         await element3.click();
+        return await this.driver.pause(2000);
     }
 );
 
