@@ -130,7 +130,7 @@ describe('Email renderer', function () {
                 email: 'test@example.com',
                 createdAt: new Date(2023, 2, 13, 12, 0),
                 status: 'free'
-            };  
+            };
         });
 
         it('returns the unsubscribe header replacement by default', function () {
@@ -388,7 +388,7 @@ describe('Email renderer', function () {
                 email: 'test@example.com',
                 createdAt: new Date(2023, 2, 13, 12, 0),
                 status: 'free'
-            };  
+            };
         });
 
         it('handles dates when the locale is en-gb (default)', function () {
@@ -399,6 +399,7 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].id, 'created_at');
             assert.equal(replacements[0].getValue(member), '13 March 2023');
         });
+
         it('handles dates when the locale is fr', function () {
             emailRenderer = new EmailRenderer({
                 urlUtils: {
@@ -427,6 +428,7 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].id, 'created_at');
             assert.equal(replacements[0].getValue(member), '13 mars 2023');
         });
+
         it('handles dates when the locale is en (US)', function () {
             emailRenderer = new EmailRenderer({
                 urlUtils: {
@@ -448,6 +450,65 @@ describe('Email renderer', function () {
                 settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
                 t: t
             });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale has whitespace like "en "', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => labsEnabled
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'en ';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is invalid like "(en)"', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => labsEnabled
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return '(en)';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+
             const html = '%%{created_at}%%';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
             assert.equal(replacements.length, 2);
