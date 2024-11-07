@@ -1,20 +1,22 @@
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
-import {Comment, useAppContext} from '../../../AppContext';
+import {Comment, useAppContext, useLabs} from '../../../AppContext';
 import {useEffect, useRef} from 'react';
 
 type Props = {
     comment: Comment;
     close: () => void;
     toggleEdit: () => void;
+    isLastComment?: boolean;
 };
-const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
+const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit, isLastComment}) => {
     const {member, admin} = useAppContext();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
     const element = useRef<HTMLDivElement>(null);
-
+    const labs = useLabs();
+    
     useEffect(() => {
         const listener = () => {
             close();
@@ -76,11 +78,19 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     }
 
     return (
-        <div ref={element} onClick={stopPropagation}>
-            <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-36 dark:bg-neutral-800 dark:text-white">
-                {contextMenu}
+        labs.commentImprovements ? (
+            <div ref={element} className="relative" onClick={stopPropagation}>
+                <div className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-36 dark:bg-neutral-800 dark:text-white ${isLastComment ? 'bottom-full mb-6' : 'top-0'}`}>
+                    {contextMenu}
+                </div>
             </div>
-        </div>
+        ) : (
+            <div ref={element} onClick={stopPropagation}>
+                <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-36 dark:bg-neutral-800 dark:text-white">
+                    {contextMenu}
+                </div>
+            </div>
+        )
     );
 };
 
