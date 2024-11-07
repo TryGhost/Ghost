@@ -257,7 +257,7 @@ async function initExpressApps({frontend, backend, config}) {
  * Initialize prometheus client
  */
 function initPrometheusClient({config}) {
-    if (config.get('metrics_server:enabled')) {
+    if (config.get('prometheus:enabled')) {
         debug('Begin: initPrometheusClient');
         const prometheusClient = require('./shared/prometheus-client');
         debug('End: initPrometheusClient');
@@ -272,11 +272,11 @@ function initPrometheusClient({config}) {
  */
 async function initMetricsServer({prometheusClient, ghostServer, config}) {
     debug('Begin: initMetricsServer');
-    if (ghostServer && config.get('metrics_server:enabled')) {
-        const {MetricsServer} = require('@tryghost/metrics-server');
+    if (ghostServer && config.get('prometheus:metrics_server:enabled')) {
+        const {MetricsServer} = require('@tryghost/prometheus-metrics');
         const serverConfig = {
-            host: config.get('metrics_server:host') || '127.0.0.1',
-            port: config.get('metrics_server:port') || 9416
+            host: config.get('prometheus:metrics_server:host') || '127.0.0.1',
+            port: config.get('prometheus:metrics_server:port') || 9416
         };
         const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
         const metricsServer = new MetricsServer({serverConfig, handler});
@@ -333,6 +333,7 @@ async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
+    const identityTokens = require('./server/services/identity-tokens');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
@@ -380,6 +381,7 @@ async function initServices() {
     await emailAddressService.init(),
 
     await Promise.all([
+        identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
         mentionsEmailReport.init(),
@@ -564,6 +566,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
+
+            // Ensure the prometheus client is stopped when the server shuts down
+            ghostServer.registerCleanupTask(async () => {
+                if (prometheusClient) {
+                    prometheusClient.stop();
+                }
+            });
             debug('End: load server + minimal app');
         }
 

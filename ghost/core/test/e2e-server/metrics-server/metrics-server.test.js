@@ -6,7 +6,10 @@ const configUtils = require('../../utils/configUtils');
 
 describe('Metrics Server', function () {
     before(function () {
-        configUtils.set('metrics_server:enabled', true);
+        configUtils.set('prometheus:enabled', true);
+        configUtils.set('prometheus:metrics_server:enabled', true);
+        configUtils.set('prometheus:metrics_server:host', '127.0.0.1');
+        configUtils.set('prometheus:metrics_server:port', 9417);
     });
 
     it('should start up when Ghost boots and stop when Ghost stops', async function () {
@@ -28,7 +31,7 @@ describe('Metrics Server', function () {
     });
 
     it('should not start if enabled is false', async function () {
-        configUtils.set('metrics_server:enabled', false);
+        configUtils.set('prometheus:metrics_server:enabled', false);
         await testUtils.startGhost({forceStart: true});
         // Requesting the metrics endpoint should throw an error
         let error;
@@ -45,7 +48,7 @@ describe('Metrics Server', function () {
         let metricsResponse;
         let metricsText;
         before(async function () {
-            configUtils.set('metrics_server:enabled', true);
+            configUtils.set('prometheus:metrics_server:enabled', true);
             await testUtils.startGhost({forceStart: true});
             metricsResponse = await request('http://127.0.0.1:9417').get('/metrics');
             metricsText = metricsResponse.text;
