@@ -1,4 +1,5 @@
 const { Given, When, Then } = require("@cucumber/cucumber");
+const { expect } = require("chai");
 
 Given(
     "I am an admin logged in with email {kraken-string} and password {kraken-string}",
@@ -25,4 +26,16 @@ When("I enter password {kraken-string}", async function (password) {
 When("I click next Sign In", async function () {
     const element = await this.driver.$("#ember5");
     return await element.click();
+});
+
+Then("an error message is shown", async function () {
+    const element = await this.driver.$(".main-error");
+    const elementText = await element.getText();
+    expect(elementText).to.contain("Your password is incorrect.");
+});
+
+Then("a retry button is shown", async function () {
+    const element = await this.driver.$("#ember5 > span");
+    const elementText = await element.getText();
+    expect(elementText).to.equal("Retry");
 });
