@@ -63,7 +63,7 @@ const Content = () => {
                         </span>
                     </div>
                 )}
-                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements">
+                <div className="z-10" data-test="comment-elements">
                     {commentsElements}
                 </div>
                 <Pagination />
