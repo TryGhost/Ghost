@@ -6,6 +6,14 @@ const {
     PostEditorPageObject,
 } = require("../page_objects/post-editor.page-object");
 const {
+    PageEditorPageObject,
+} = require("../page_objects/create-page.page-object");
+
+const {
+    ProfileStaffPageObject,
+} = require("../page_objects/profile-staff.page-object");
+
+const {
     PostViewerPageObject,
 } = require("../page_objects/post-viewer.page-object");
 const properties = require("../../../properties.json");
@@ -18,6 +26,8 @@ Before(async function () {
     this.adminPageObject = new AdminPageObject(this.driver);
     this.postEditorPageObject = new PostEditorPageObject(this.driver);
     this.postViewerPageObject = new PostViewerPageObject(this.driver);
+    this.pageEditorPageObject= new PageEditorPageObject(this.driver);
+    this.profileStaffPageObject= new ProfileStaffPageObject(this.driver);
 });
 
 After(async function () {
