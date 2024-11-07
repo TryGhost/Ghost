@@ -1,6 +1,7 @@
 const {
     BadRequestError
 } = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
 const emailTemplate = require('../lib/emails/signin');
 const UAParser = require('ua-parser-js');
 const got = require('got');
@@ -244,11 +245,18 @@ module.exports = function createSessionService({
             deviceDetails: await getDeviceDetails(session.user_agent, session.ip)
         });
 
-        await mailer.send({
-            to: recipient,
-            subject: `${token} is your Ghost sign in verification code`,
-            html: email
-        });
+        try {
+            await mailer.send({
+                to: recipient,
+                subject: `${token} is your Ghost sign in verification code`,
+                html: email
+            });
+        } catch (error) {
+            throw new errors.EmailError({
+                ...error,
+                message: 'Failed to send email. Please check your site configuration and try again.'
+            });
+        }
     }
 
     /**

@@ -1,14 +1,14 @@
 {
-  "name": "@tryghost/metrics-server",
+  "name": "@tryghost/identity-token-service",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/metrics-server",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/identity-token-service",
   "author": "Ghost Foundation",
   "private": true,
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "yarn build:ts",
+    "build": "tsc",
     "build:ts": "tsc",
     "prepare": "tsc",
     "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
@@ -22,17 +22,14 @@
     "build"
   ],
   "devDependencies": {
-    "@types/express": "4.17.21",
-    "@types/stoppable": "1.1.0",
     "c8": "10.1.2",
-    "mocha": "10.7.3",
+    "mocha": "10.8.2",
+    "node-jose": "2.2.0",
     "sinon": "19.0.2",
-    "supertest": "7.0.0",
     "ts-node": "10.9.2",
-    "typescript": "5.6.2"
+    "typescript": "5.6.3"
   },
   "dependencies": {
-    "express": "4.21.1",
-    "stoppable": "1.1.0"
+    "jsonwebtoken": "8.5.1"
   }
 }
