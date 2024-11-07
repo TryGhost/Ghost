@@ -28,7 +28,7 @@ services:
     restart: always
   prometheus:
     profiles: [monitoring]
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:v2.53.2
     container_name: ghost-prometheus
     ports:
       - "9090:9090"
@@ -37,7 +37,7 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
     profiles: [monitoring]
-    image: grafana/grafana:8.2.3
+    image: grafana/grafana:10.4.0
     container_name: ghost-grafana
     ports:
       - "3000:3000"
@@ -50,7 +50,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
   pushgateway:
     profiles: [monitoring]
-    image: prom/pushgateway:v1.6.0
+    image: prom/pushgateway:v1.10.0
     container_name: ghost-pushgateway
     ports:
       - "9091:9091"
