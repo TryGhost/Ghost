@@ -427,7 +427,7 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             const editorUrl = await sharedPage.url();
-            
+
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {type: 'send', time: '00:00'});
             await closePublishFlow(sharedPage);

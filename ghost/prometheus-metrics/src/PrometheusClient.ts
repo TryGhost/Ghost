@@ -1,5 +1,7 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
+import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
 
 type PrometheusClientConfig = {
     register?: client.Registry;
@@ -23,13 +25,11 @@ export class PrometheusClient {
         this.config = prometheusConfig;
         this.client = client;
         this.prefix = 'ghost_';
-        this.register = this.config.register || client.register;
     }
 
     public client;
     private config: PrometheusClientConfig;
     private prefix;
-    public register: client.Registry; // public for testing
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
     private pushInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -54,7 +54,18 @@ export class PrometheusClient {
     async pushMetrics() {
         if (this.config.pushgateway?.enabled && this.gateway) {
             const jobName = this.config.pushgateway?.jobName || 'ghost';
-            await this.gateway.pushAdd({jobName});
+            try {
+                await this.gateway.pushAdd({jobName});
+                logging.debug('Metrics pushed to pushgateway - jobName: ', jobName);
+            } catch (err) {
+                let error;
+                if (typeof err === 'object' && err !== null && 'code' in err) {
+                    error = new errors.InternalServerError({message: 'Error pushing metrics to pushgateway: ' + err.code, code: err.code as string});
+                } else {
+                    error = new errors.InternalServerError({message: 'Error pushing metrics to pushgateway: Unknown error'});
+                }
+                logging.error(error);
+            }
         }
     }
 
@@ -73,7 +84,7 @@ export class PrometheusClient {
      * Only called once on init
      */
     collectDefaultMetrics() {
-        this.client.collectDefaultMetrics({prefix: this.prefix, register: this.register});
+        this.client.collectDefaultMetrics({prefix: this.prefix});
     }
 
     /**
@@ -98,13 +109,13 @@ export class PrometheusClient {
      * Returns the metrics from the registry
      */
     async getMetrics() {
-        return this.register.metrics();
+        return this.client.register.metrics();
     }
 
     /**
      * Returns the content type for the metrics
      */
     getContentType() {
-        return this.register.contentType;
+        return this.client.register.contentType;
     }
 }
