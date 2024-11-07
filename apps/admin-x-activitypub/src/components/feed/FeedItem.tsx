@@ -141,7 +141,7 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <div className='min-h-[80px]'>
+            return <div className='min-h-[80px] min-w-[120px]'>
                 <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
             </div>;
         }
