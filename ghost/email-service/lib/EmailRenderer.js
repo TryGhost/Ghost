@@ -229,6 +229,10 @@ class EmailRenderer {
     #getValidLocale() {
         let locale = this.#settingsCache.get('locale') || DEFAULT_LOCALE;
 
+        if (!this.#labs.isSet('i18n')) {
+            locale = DEFAULT_LOCALE;
+        }
+
         // Remove any trailing whitespace
         locale = locale.trim();
 
