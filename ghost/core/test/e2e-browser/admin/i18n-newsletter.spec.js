@@ -1,22 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {slugify} = require('@tryghost/string');
 const {createPostDraft} = require('../utils');
-
-
-/**
- * @param {import('@playwright/test').Page} page
- */
-const openPublishFlow = async (page) => {
-    await page.locator('[data-test-button="publish-flow"]').first().click();
-};
-
-/**
- * @param {import('@playwright/test').Page} page
- */
-const closePublishFlow = async (page) => {
-    await page.locator('[data-test-button="close-publish-flow"]').click();
-};
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -50,7 +34,7 @@ test.describe('i18n validation', () => {
             // click the publish-preview button
             await sharedPage.locator('[data-test-button="publish-preview"]').first().click();
             // wait for the preview to load
-            await sharedPage.waitForSelector('[data-test-button="email-preview"]')
+            await sharedPage.waitForSelector('[data-test-button="email-preview"]');
             await sharedPage.locator('[data-test-button="email-preview"]').first().click();
 
             await sharedPage.waitForTimeout(1000);
@@ -60,7 +44,6 @@ test.describe('i18n validation', () => {
             expect(metaText).not.toContain('By Joe Bloggs');
 
             //await closePublishFlow(sharedPage);
-
         });
         test('Preview in English', async ({sharedPage}) => {
             await sharedPage.goto('/ghost/#/settings/publication-language');
@@ -79,7 +62,7 @@ test.describe('i18n validation', () => {
             // click the publish-preview button
             await sharedPage.locator('[data-test-button="publish-preview"]').first().click();
             // wait for the preview to load
-            await sharedPage.waitForSelector('[data-test-button="email-preview"]')
+            await sharedPage.waitForSelector('[data-test-button="email-preview"]');
             await sharedPage.locator('[data-test-button="email-preview"]').first().click();
 
             await sharedPage.waitForTimeout(1000);
@@ -87,9 +70,6 @@ test.describe('i18n validation', () => {
             const metaText = await sharedPage.frameLocator('iframe.gh-pe-iframe').locator('td.post-meta').first().textContent();
             expect(metaText).toContain('By Joe Bloggs');
             expect(metaText).not.toContain('Par Joe Bloggs');
-
-
-        });  
-
+        });
     });
 });
