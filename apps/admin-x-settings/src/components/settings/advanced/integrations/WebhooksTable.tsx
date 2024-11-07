@@ -60,7 +60,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                             <span className='text-grey-600'>Event:</span>
                             <span>{getWebhookEventLabel(webhook.event)}</span>
                             <span className='text-grey-600'>URL:</span>
-                            <span className='line-clamp-2 break-words' title={webhook.target_url}>
+                            <span className='line-clamp-3 break-all' title={webhook.target_url}>
                                 {webhook.target_url}
                             </span>
                         </div>
