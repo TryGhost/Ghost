@@ -43,7 +43,7 @@ const themeSettingsMap: ThemeSettingsMap = {
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) => {
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
-    const activeThemeName = activeTheme?.name.toLowerCase() || '';
+    const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
     const hasCustomFonts = useFeatureFlag('customFonts');
 
     return (
