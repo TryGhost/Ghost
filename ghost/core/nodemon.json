@@ -1,3 +1,0 @@
-{
-    "ignore": ["*.test.js", "**/content/public/**", "**/core/built/**", ".yarncache/**"]
-}
