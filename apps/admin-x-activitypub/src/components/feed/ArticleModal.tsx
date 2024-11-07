@@ -343,18 +343,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             />
                         )}
                         {object.type === 'Article' && (
-                            <>
+                            <div className='border-b border-grey-200 pb-8'>
                                 <ArticleBody
                                     excerpt={object?.preview?.content}
                                     heading={object.name}
                                     html={object.content}
                                     image={object?.image}
                                 />
-                            </>
-                        )}
-
-                        {object.type === 'Article' && (
-                            <div className='border-b border-grey-200 pb-8'>
                                 <FeedItemStats
                                     commentCount={object.replyCount ?? 0}
                                     layout={'modal'}
