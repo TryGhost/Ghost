@@ -4,8 +4,12 @@ const { expect } = require("chai");
 Then(
     "I should see a page with the post title {kraken-string}",
     async function (postTitle) {
-        const element = await this.driver.$("h1.gh-article-title");
-        const elementText = await element.getText();
-        expect(elementText).to.equal(postTitle);
+        const currentPostTitle = await this.postViewerPageObject.getPostTitle();
+
+        expect(currentPostTitle).to.equal(postTitle);
     }
 );
+
+When("I navigate to the post url {kraken-string}", async function (postUrl) {
+    return await this.postViewerPageObject.navigateToPost(postUrl);
+});
