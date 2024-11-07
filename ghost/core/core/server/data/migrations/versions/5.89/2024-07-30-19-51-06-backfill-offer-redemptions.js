@@ -50,7 +50,7 @@ module.exports = createTransactionalMigration(
                     };
                 });
                 // Batch insert rows into the offer_redemptions table
-                await knex.batchInsert('offer_redemptions', offerRedemptions, 1000);
+                await knex.batchInsert('offer_redemptions', offerRedemptions, 100);
             } else {
                 logging.info('No offer redemptions to backfill');
             }
