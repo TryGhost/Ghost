@@ -28,7 +28,6 @@ test.describe('i18n', () => {
             };
 
             await sharedPage.goto('/ghost');
-            await sharedPage.waitForTimeout(1000);
             await createPostDraft(sharedPage, postData);
 
             // click the publish-preview button
