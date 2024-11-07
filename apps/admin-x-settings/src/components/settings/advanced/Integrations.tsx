@@ -173,7 +173,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                 {integrations.map(integration => (
                     <IntegrationItem
                         action={() => updateRoute({route: `integrations/${integration.id}`})}
-                        detail={<div className="line-clamp-2">{integration.description || 'No description'}</div>}
+                        detail={<div className="line-clamp-2 break-all">{integration.description || 'No description'}</div>}
                         icon={
                             integration.icon_image ?
                                 <img className='h-8 w-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
