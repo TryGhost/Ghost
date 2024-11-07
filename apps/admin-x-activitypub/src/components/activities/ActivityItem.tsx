@@ -23,12 +23,12 @@ const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null, onClic
     const childrenArray = React.Children.toArray(children);
 
     const Item = (
-        <div className='flex w-full max-w-[560px] cursor-pointer flex-col hover:bg-grey-75' onClick={() => {
+        <div className='relative flex w-full max-w-[560px] cursor-pointer flex-col border-b border-grey-100 before:absolute before:inset-x-[-8px] before:inset-y-[-1px] before:rounded-md before:bg-grey-50 before:opacity-0 before:transition-opacity hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:border-grey-950 dark:before:bg-grey-950' onClick={() => {
             if (!url && onClick) {
                 onClick();
             }
         }}>
-            <div className='flex w-full gap-3 border-b border-grey-100 px-2 py-4'>
+            <div className='relative z-10 flex w-full gap-3 px-2 py-4'>
                 {childrenArray[0]}
                 {childrenArray[1]}
                 {childrenArray[2]}
