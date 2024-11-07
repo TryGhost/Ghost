@@ -7,7 +7,7 @@ class AdminPageObject {
     }
 
     async navigateToAdminPage() {
-        await this.driver.url(this.postEditorPage);
+        await this.driver.url(this.adminPage);
         return await this.driver.pause(1000);
     }
 
@@ -29,6 +29,17 @@ class AdminPageObject {
         const currentHash = url.hash.substring(2);
         return currentHash;
     }
+
+    async clickAdminSetting() {
+        const element = await this.driver.$(".ember-view.gh-nav-bottom-tabicon");
+        return await element.click();
+    }
+
+    async clickAdminSetting() {
+        const element = await this.driver.$(".ember-view.gh-nav-bottom-tabicon");
+        return await element.click();
+    }
+
 }
 
 module.exports = { AdminPageObject };

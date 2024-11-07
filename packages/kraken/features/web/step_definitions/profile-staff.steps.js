@@ -1,9 +1,6 @@
 const { Given, When, Then } = require("@cucumber/cucumber");
 const { expect } = require("chai");
 
-When("I click profile icon", async function () {
-    return await this.profileStaffPageObject.clickSettingProfile();
-});
 
 When("I click your profile", async function () {
     return await this.profileStaffPageObject.clickProfile();
