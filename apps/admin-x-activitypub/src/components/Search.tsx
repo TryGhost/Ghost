@@ -80,22 +80,13 @@ const Search: React.FC<SearchProps> = ({}) => {
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
-    const [isQuerying, setIsQuerying] = useState(false);
     const {searchQuery, updateProfileSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
     const {data, isFetching, isFetched} = searchQuery;
 
     const results = data?.profiles || [];
-    const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
+    const showLoading = isFetching && query.length > 0;
+    const showNoResults = !isFetching && isFetched && results.length === 0 && query.length > 0 && debouncedQuery === query;
     const showSuggested = query === '' || (isFetched && results.length === 0);
-
-    useEffect(() => {
-        if (query !== '') {
-            setIsQuerying(true);
-        } else {
-            setIsQuerying(false);
-        }
-    }, [query]);
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -132,32 +123,35 @@ const Search: React.FC<SearchProps> = ({}) => {
                             unstyled
                             onClick={() => {
                                 setQuery('');
-
                                 queryInputRef.current?.focus();
                             }}
                         />
                     )}
                 </div>
-                {showLoading && (
+                {showLoading ? (
                     <LoadingIndicator size='lg'/>
-                )}
-                {showNoResults && (
+                ) : showNoResults ? (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
+                ) : (
+                    <>
+                        {results.map(result => (
+                            <SearchResult
+                                key={(result as SearchResultItem).actor.id}
+                                result={result as SearchResultItem}
+                                update={updateResult}
+                            />
+                        ))}
+                    </>
                 )}
-                {results.map(result => (
-                    <SearchResult
-                        key={(result as SearchResultItem).actor.id}
-                        result={result as SearchResultItem}
-                        update={updateResult}
-                    />
-                ))}
                 {showSuggested && (
                     <>
                         <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
                         {isLoadingSuggested && (
-                            <LoadingIndicator size='sm'/>
+                            <div className='p-4'>
+                                <LoadingIndicator size='md'/>
+                            </div>
                         )}
                         {suggested.map(profile => (
                             <SearchResult
