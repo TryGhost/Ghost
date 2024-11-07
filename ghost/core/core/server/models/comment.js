@@ -75,7 +75,6 @@ const Comment = ghostBookshelf.Model.extend({
 
     applyCustomQuery(options) {
         if (labs.isSet('commentImprovements')) {
-            console.log('lab is set');
             if (!options.isAdmin) { // if it's an admin request, we don't need to apply the custom query
                 this.query((qb) => {
                     this.customQuery(qb, options);

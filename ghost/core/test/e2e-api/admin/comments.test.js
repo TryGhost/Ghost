@@ -5,11 +5,11 @@ const {
     mockManager
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-
+let postId;
 const dbFns = {
     /**
      * @typedef {Object} AddCommentData
-     * @property {string} [post_id=postId]
+     * @property {string} [post_id=post_id]
      * @property {string} member_id
      * @property {string} [parent_id]
      * @property {string} [html='This is a comment']

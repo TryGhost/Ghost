@@ -493,7 +493,7 @@ describe('Comments API', function () {
                 });
             });
 
-            it.only('Returns nothing if both parent and reply are hidden', async function () {
+            it('Returns nothing if both parent and reply are hidden', async function () {
                 await mockManager.mockLabsEnabled('commentImprovements');
                 const hiddenComment = await dbFns.addComment({
                     post_id: postId,
