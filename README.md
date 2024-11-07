@@ -25,6 +25,7 @@ npm install
 
 -   Ubicar el archivo de propiedades de Kraken que se encuentra en la ruta `./packages/kraken/properties.json`
 -   Modificar las propiedades con los valores de la instancia de Ghost que se desea probar
+-   **Asegúrate de que la URL de Ghost no contenga un path ni un slash final, solo debe incluir el host, dominio y puerto. Por ejemplo: http://localhost:2368**
 
 ```json
 {

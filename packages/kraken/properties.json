@@ -1,5 +1,5 @@
 {
-    "GHOST_URL": "http://localhost:2368/ghost/",
+    "GHOST_URL": "http://localhost:2368",
     "ADMIN_USERNAME": "andrespiarpu@gmail.com",
     "ADMIN_PASSWORD": "thisisatest"
 }
