@@ -52,7 +52,7 @@ describe('Prometheus Client', function () {
             instance.init();
             assert.ok(instance.gateway);
             await new Promise(function (resolve) {
-                setTimeout(resolve, 5);
+                setTimeout(resolve, 25);
             });
             assert.ok(scope1.isDone(), 'pushgateway should push metrics immediately');
             const scope2 = nock('http://localhost:9091')
@@ -71,7 +71,7 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient({pushgateway: {enabled: true}}, logger);
             instance.init();
             await new Promise(function (resolve) {
-                setTimeout(resolve, 5);
+                setTimeout(resolve, 25);
             });
             assert.ok(scope.isDone());
             assert.ok(logger.error.called);
