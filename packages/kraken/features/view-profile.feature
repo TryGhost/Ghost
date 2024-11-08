@@ -1,6 +1,6 @@
 Feature: F004 - View Profile Staff
 
-@user2 @web
+@user9 @web
 Scenario: View Profile Staff
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds

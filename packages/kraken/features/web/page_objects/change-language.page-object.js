@@ -1,9 +1,14 @@
 class ChangeLanguagePageObject {
-    adminPage = "/ghost";
+    homePage = "";
 
     constructor(driver) {
         this.driver = driver;
-        this.adminPage = this.driver.baseUrl + this.adminPage;
+        this.homePage = this.driver.baseUrl ;
+    }
+
+    async navigateToHomePage() {
+        await this.driver.url(this.homePage);
+        return await this.driver.pause(1000);
     }
 
     async getLanguage() {
@@ -17,15 +22,14 @@ class ChangeLanguagePageObject {
     }
 
     async editLanguage(value) {
+        const element = await this.driver.$(`input[placeholder="Site language"]`);      
+        return await element.setValue(value);
+    }
+
+    async cleanInput() {
         const element = await this.driver.$(`input[placeholder="Site language"]`);
-        await element.clearValue();
-        await this.driver.pause(1000);
-        await element.click();                
-        await element.setValue(['\uE009', 'a']); 
-        await element.setValue('\uE003');       
-        await element.setValue(value);
-        await this.driver.pause(1000);
-        return await this.saveLanguage();
+        return  await element.setValue('');
+  
     }
 
     async saveLanguage() {
