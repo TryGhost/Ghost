@@ -6,7 +6,7 @@ import type {Knex} from 'knex';
 import nock from 'nock';
 import {EventEmitter} from 'events';
 import type {EventEmitter as EventEmitterType} from 'events';
-import type {Gauge, Counter, Summary} from 'prom-client';
+import type {Gauge, Counter, Summary, Pushgateway, RegistryContentType} from 'prom-client';
 
 describe('Prometheus Client', function () {
     let instance: PrometheusClient;
@@ -44,37 +44,20 @@ describe('Prometheus Client', function () {
         });
 
         it('should create the pushgateway client if the pushgateway is enabled', async function () {
-            const scope1 = nock('http://localhost:9091')
+            const clock = sinon.useFakeTimers();
+            nock('http://localhost:9091')
+                .persist()
                 .post('/metrics/job/ghost')
                 .reply(200);
             
             instance = new PrometheusClient({pushgateway: {enabled: true, interval: 20}});
+            const pushMetricsStub = sinon.stub(instance, 'pushMetrics').resolves();
             instance.init();
             assert.ok(instance.gateway);
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 25);
-            });
-            assert.ok(scope1.isDone(), 'pushgateway should push metrics immediately');
-            const scope2 = nock('http://localhost:9091')
-                .post('/metrics/job/ghost')
-                .reply(200);
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 25);
-            });
-            assert.ok(scope2.isDone(), 'pushgateway should push metrics again after the interval');
-        });
-
-        it('should log an error if pushing metrics to the pushgateway fails', async function () {
-            const scope = nock('http://localhost:9091')
-                .post('/metrics/job/ghost')
-                .reply(500);
-            instance = new PrometheusClient({pushgateway: {enabled: true}}, logger);
-            instance.init();
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 25);
-            });
-            assert.ok(scope.isDone());
-            assert.ok(logger.error.called);
+            assert.ok(pushMetricsStub.called, 'pushMetrics should be called immediately');
+            clock.tick(30);
+            assert.ok(pushMetricsStub.calledTwice, 'pushMetrics should be called again after the interval');
+            clock.restore();
         });
     });
 
@@ -84,6 +67,43 @@ describe('Prometheus Client', function () {
             const collectDefaultMetricsSpy = sinon.spy(instance.client, 'collectDefaultMetrics');
             instance.collectDefaultMetrics();
             assert.ok(collectDefaultMetricsSpy.called);
+        });
+    });
+
+    describe('pushMetrics', function () {
+        it('should push metrics to the pushgateway', async function () {
+            const scope = nock('http://localhost:9091')
+                .persist()
+                .post('/metrics/job/ghost')
+                .reply(200);
+            instance = new PrometheusClient({pushgateway: {enabled: true}});
+            instance.init();
+            await instance.pushMetrics();
+            scope.done();
+        });
+
+        it('should log an error with error code if pushing metrics to the gateway fails', async function () {
+            instance = new PrometheusClient({pushgateway: {enabled: true}}, logger);
+            instance.init();
+            instance.gateway = {
+                pushAdd: sinon.stub().rejects({code: 'ECONNRESET'})
+            } as unknown as Pushgateway<RegistryContentType>;
+            await instance.pushMetrics();
+            assert.ok(logger.error.called);
+            const [[error]] = logger.error.args;
+            assert.match(error, /ECONNRESET/);
+        });
+
+        it('should log a generic error if the error is unknown', async function () {
+            instance = new PrometheusClient({pushgateway: {enabled: true}}, logger);
+            instance.init();
+            instance.gateway = {
+                pushAdd: sinon.stub().rejects()
+            } as unknown as Pushgateway<RegistryContentType>;
+            await instance.pushMetrics();
+            assert.ok(logger.error.called);
+            const [[error]] = logger.error.args;
+            assert.match(error, /Unknown error/);
         });
     });
 

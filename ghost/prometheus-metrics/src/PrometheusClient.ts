@@ -1,6 +1,5 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
-import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
 import logging from '@tryghost/logging';
 
@@ -67,9 +66,9 @@ export class PrometheusClient {
             } catch (err) {
                 let error;
                 if (typeof err === 'object' && err !== null && 'code' in err) {
-                    error = new errors.InternalServerError({message: 'Error pushing metrics to pushgateway: ' + err.code, code: err.code as string});
+                    error = 'Error pushing metrics to pushgateway: ' + err.code as string;
                 } else {
-                    error = new errors.InternalServerError({message: 'Error pushing metrics to pushgateway: Unknown error'});
+                    error = 'Error pushing metrics to pushgateway: Unknown error';
                 }
                 this.logger.error(error);
             }
