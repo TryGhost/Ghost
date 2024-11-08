@@ -68,6 +68,10 @@ if (!knexInstance && config.get('database') && config.get('database').client) {
         const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
         instrumentation.instrument();
     }
+    if (config.get('prometheus:enabled')) {
+        const prometheusClient = require('../../../shared/prometheus-client');
+        prometheusClient.instrumentKnex(knexInstance);
+    }
 }
 
 module.exports = knexInstance;
