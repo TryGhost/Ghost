@@ -1,14 +1,12 @@
-Feature: F001 - Modificar titulo del sitio
+Feature: F005 - Modificar titulo del sitio
 
 @user7 @web
-Scenario: E00101 - Modificación titulo de sitio web
+Scenario: E00103 -Mostrar un modal al salir de configuraciones sin guardar cambios en el título
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I am in the Settings page
   When I click the edit title and description option
   And I modify the title to "$name_site-title"
-  And I click the save title button
+  And I click the exit Settings button
   And I wait for 1 seconds
-  And I navigate to Site page
-  And I wait for 1 seconds
-  Then the site name should be "$$name_site-title"
+  Then I should see the unsaved changes modal
   And I wait for 2 seconds

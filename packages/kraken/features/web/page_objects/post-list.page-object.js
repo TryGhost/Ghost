@@ -17,7 +17,6 @@ class PostListPageObject {
             const titleElement = await element.$(".gh-content-entry-title");
             const text = await titleElement.getText();
             if (text.includes(title)) {
-                console.log("Found post");
                 return element;
             }
         }

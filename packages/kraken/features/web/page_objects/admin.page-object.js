@@ -31,15 +31,25 @@ class AdminPageObject {
     }
 
     async clickAdminSetting() {
-        const element = await this.driver.$(".ember-view.gh-nav-bottom-tabicon");
+        const element = await this.driver.$(
+            ".ember-view.gh-nav-bottom-tabicon"
+        );
         return await element.click();
     }
 
     async clickAdminSetting() {
-        const element = await this.driver.$(".ember-view.gh-nav-bottom-tabicon");
+        const element = await this.driver.$(
+            ".ember-view.gh-nav-bottom-tabicon"
+        );
         return await element.click();
     }
 
+    async getUnsavedChangesMessage() {
+        const element = await this.driver.$(
+            'div[data-test-modal="unsaved-settings"] h1'
+        );
+        return await element.getText();
+    }
 }
 
 module.exports = { AdminPageObject };

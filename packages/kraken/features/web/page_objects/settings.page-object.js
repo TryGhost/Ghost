@@ -39,6 +39,20 @@ class SettingsPageObject {
             }
         }
     }
+
+    async clickExitSettingsButton() {
+        const element = await this.driver.$(
+            'button[data-testid="exit-settings"]'
+        );
+        return await element.click();
+    }
+
+    async getUnsavedChangesMessage() {
+        const element = await this.driver.$(
+            'section[data-testid="confirmation-modal"] h3'
+        );
+        return await element.getText();
+    }
 }
 
 module.exports = { SettingsPageObject };

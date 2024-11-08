@@ -44,7 +44,6 @@ Then(
     "I should see a post {kraken-string} in the post list flagged as draft",
     async function (postTitle) {
         const post = await this.postListPageObject.getPostFromList(postTitle);
-        console.log("!!!post!!!!!", post);
         expect(post).to.exist;
         const postStatus = await this.postListPageObject.getPostStatus(post);
         expect(postStatus).to.include("Draft");
