@@ -5,6 +5,8 @@ Given("I am on the page editor page", async function () {
     return await this.pageEditorPageObject.navigateToPageEditor();
 });
 
+
+
 When(
     "I create and publish a page with title {kraken-string} and url {kraken-string}",
     async function (title, url) {
@@ -54,8 +56,20 @@ Then(
     }
 );
 
+Then(
+    "I shouldn't see a page in home page with title {kraken-string}",
+    async function (pageTitle) {
+        const isInHome = await this.pageEditorPageObject.verifyPageInHome(pageTitle);
+        expect(false).to.equal(isInHome);
+    }
+);
+
 When("I navigate to the page url {kraken-string}", async function (postUrl) {
     return await this.pageEditorPageObject.navigateToPage(postUrl);
+});
+
+When("I navigate to the home page", async function () {
+    return await this.pageEditorPageObject.navigateToHomePage();
 });
 
 

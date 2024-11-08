@@ -8,6 +8,11 @@ class PageEditorPageObject {
         this.pageEditorPage = this.driver.baseUrl + this.pageEditorPage;
     }
 
+    async navigateToHomePage() {
+        await this.driver.url(this.driver.baseUrl);
+        return await this.driver.pause(1000);
+    }
+
     async navigateToPageEditor() {
         await this.driver.url(this.pageEditorPage);
         return await this.driver.pause(1000);
@@ -105,6 +110,19 @@ class PageEditorPageObject {
     async getPageTitle() {
         const element = await this.driver.$("h1.gh-article-title");
         return await element.getText();
+    }
+
+    async verifyPageInHome(title) {
+        const elements = await this.driver.$$(`.nav`);
+        const value=false;
+        for (let element of elements) {
+            const text = await element.getText();
+            if (text.includes(title)) {
+                value=true;
+                break;
+            }
+        }
+        return value;
     }
 }
 
