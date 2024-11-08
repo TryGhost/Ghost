@@ -14,7 +14,13 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import { LoginPage } from "../e2e/pages";
+import "./commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
+
+before(() => {
+    cy.log("Global setup: Setting pages instances");
+    cy.loginPage = new LoginPage();
+});
