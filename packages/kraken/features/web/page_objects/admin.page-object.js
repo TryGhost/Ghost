@@ -37,12 +37,6 @@ class AdminPageObject {
         return await element.click();
     }
 
-    async clickAdminSetting() {
-        const element = await this.driver.$(
-            ".ember-view.gh-nav-bottom-tabicon"
-        );
-        return await element.click();
-    }
 
     async getUnsavedChangesMessage() {
         const element = await this.driver.$(
