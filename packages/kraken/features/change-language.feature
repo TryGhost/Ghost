@@ -16,9 +16,8 @@ Scenario: change the language
   And I wait for 2 seconds
   And I edit language "es"
   And I wait for 2 seconds
-  And I click in save language
+  When I click in save language
   And I wait for 2 seconds
-  And I navegate to admin page
   Then I verify the language "es"
 
 @user8 @web
@@ -37,9 +36,8 @@ Scenario: change the language  with space
   And I wait for 2 seconds
   And I edit language "es      "
   And I wait for 2 seconds
-  And I click in save language
+  When I click in save language
   And I wait for 2 seconds
-  And I navegate to admin page
   Then I verify the language "es      "
 
 
