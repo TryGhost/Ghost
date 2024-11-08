@@ -86,6 +86,11 @@ class PostEditorPageObject {
         const element = await this.driver.$("a[data-test-complete-bookmark]");
         return await element.click();
     }
+
+    async clickReturnArrow() {
+        const element = await this.driver.$('a[data-test-link="posts"]');
+        return await element.click();
+    }
 }
 
 module.exports = { PostEditorPageObject };
