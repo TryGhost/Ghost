@@ -1,4 +1,5 @@
-const { When, Given } = require("@cucumber/cucumber");
+const { When, Given, Then } = require("@cucumber/cucumber");
+const { expect } = require("chai");
 
 Given("I am on the post editor page", async function () {
     return await this.postEditorPageObject.navigateToPostEditor();
@@ -15,16 +16,8 @@ When("I type a post title {kraken-string}", async function (string) {
     return await this.postEditorPageObject.setTitle(string);
 });
 
-When("I type a random content {kraken-string}", async function (string) {
-    return await this.postEditorPageObject.setContent(string);
-});
-
 When(`I click the "Settings" button`, async function () {
     return await this.postEditorPageObject.clickSettings();
-});
-
-When("I type a random page url {kraken-string}", async function (string) {
-    return await this.postEditorPageObject.setUrl(string);
 });
 
 When(`I click the {string} editor button`, async function (buttonName) {
@@ -42,3 +35,17 @@ When('I click the "Confirm publish" button', async function () {
 When("I click the post bookmark link", async function () {
     return await this.postEditorPageObject.clickBookmarkLink();
 });
+
+When("I click on the return arrow", async function () {
+    return await this.postEditorPageObject.clickReturnArrow();
+});
+
+Then(
+    "I should see a post {kraken-string} in the post list flagged as draft",
+    async function (postTitle) {
+        const post = await this.postListPageObject.getPostFromList(postTitle);
+        expect(post).to.exist;
+        const postStatus = await this.postListPageObject.getPostStatus(post);
+        expect(postStatus).to.include("Draft");
+    }
+);

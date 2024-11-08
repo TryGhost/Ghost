@@ -21,6 +21,13 @@ const {
     PostViewerPageObject,
 } = require("../page_objects/post-viewer.page-object");
 const properties = require("../../../properties.json");
+const {
+    TagEditorPageObject,
+} = require("../page_objects/tag-editor.page-object");
+const { TagListPageObject } = require("../page_objects/tag-list.page-object");
+const { SitePageObject } = require("../page_objects/site.page-object");
+const { SettingsPageObject } = require("../page_objects/settings.page-object");
+const { PostListPageObject } = require("../page_objects/post-list.page-object");
 
 Before(async function () {
     this.deviceClient = new WebClient("chrome", {}, this.userId);
@@ -30,9 +37,14 @@ Before(async function () {
     this.adminPageObject = new AdminPageObject(this.driver);
     this.postEditorPageObject = new PostEditorPageObject(this.driver);
     this.postViewerPageObject = new PostViewerPageObject(this.driver);
-    this.pageEditorPageObject= new PageEditorPageObject(this.driver);
-    this.profileStaffPageObject= new ProfileStaffPageObject(this.driver);
-    this.changeLanguagePageObject= new ChangeLanguagePageObject(this.driver);
+    this.pageEditorPageObject = new PageEditorPageObject(this.driver);
+    this.profileStaffPageObject = new ProfileStaffPageObject(this.driver);
+    this.changeLanguagePageObject = new ChangeLanguagePageObject(this.driver);
+    this.postListPageObject = new PostListPageObject(this.driver);
+    this.settingsPageObject = new SettingsPageObject(this.driver);
+    this.sitePageObject = new SitePageObject(this.driver);
+    this.tagEditorPageObject = new TagEditorPageObject(this.driver);
+    this.tagListPageObject = new TagListPageObject(this.driver);
 });
 
 After(async function () {
