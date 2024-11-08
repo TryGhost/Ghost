@@ -4,7 +4,7 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {isVersionMismatchError, isTwoFactorTokenRequiredError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -22,6 +22,7 @@ export default class ReAuthenticateModal extends Component {
     @service notifications;
     @service session;
     @service modals;
+    @service router;
 
     static modalOptions = {
         className: 'fullscreen-modal-wide fullscreen-modal-action modal-reauthenticate',
@@ -65,8 +66,17 @@ export default class ReAuthenticateModal extends Component {
             this.args.close();
             return true;
         } catch (error) {
+            console.log('We got an error');
             if (!error) {
                 return;
+            }
+
+            if (isTwoFactorTokenRequiredError(error)) {
+                console.log('two factor token required');
+                // Close current modal and open verify screen
+                this.args.close();
+                this.modals.open('editor/modals/re-verify');
+                return true;
             }
 
             if (error?.payload?.errors) {
