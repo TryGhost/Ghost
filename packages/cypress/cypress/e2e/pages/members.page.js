@@ -4,9 +4,14 @@ class MembersPage {
       cy.url().should('include', '/#/members/new');
     }
   
-    fillMemberDetails(name, email) {
+    fillMemberDetailsComplete(name, email) {
       cy.get('input[name="name"]').type(name);
       cy.get('input[name="email"]').type(email);
+    }
+
+    
+    fillMemberDetails(name) {
+      cy.get('input[name="name"]').type(name);     
     }
   
     saveMember() {
@@ -14,7 +19,13 @@ class MembersPage {
     }
   
     verifyMemberCreation() {
-      cy.url().should('match', /http:\/\/localhost:2368\/ghost\/#\/members\/[a-z0-9]{24}/);
+        // Validate the URL using a regular expression pattern
+        cy.url().should('match', /http:\/\/localhost:2368\/ghost\/#\/members\/[a-z0-9]{24}/);
+    }
+    
+
+    verifyEmailError() {
+      cy.get('input[name="email"]').parent().should('have.class', 'error');
     }
   }
   
