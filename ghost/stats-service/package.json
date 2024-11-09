@@ -21,12 +21,12 @@
   ],
   "devDependencies": {
     "@types/luxon": "3.4.2",
-    "@types/mocha": "10.0.1",
-    "@types/sinon": "10.0.16",
+    "@types/mocha": "10.0.9",
+    "@types/sinon": "10.0.20",
     "c8": "8.0.1",
     "knex": "2.4.2",
     "luxon": "3.5.0",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "should": "13.2.3",
     "sinon": "15.2.0",
     "sqlite3": "5.1.7"

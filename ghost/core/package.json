@@ -247,10 +247,10 @@
     "form-data": "4.0.0",
     "inquirer": "8.2.6",
     "jwks-rsa": "3.1.0",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
-    "nock": "13.3.3",
+    "nock": "13.5.5",
     "papaparse": "5.3.2",
     "parse-prometheus-text-format": "1.1.1",
     "postcss": "8.4.39",
@@ -258,8 +258,8 @@
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "15.2.0",
-    "supertest": "6.3.3",
-    "tmp": "0.2.1",
+    "supertest": "6.3.4",
+    "tmp": "0.2.3",
     "toml": "3.0.0"
   },
   "resolutions": {

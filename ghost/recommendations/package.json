@@ -24,7 +24,7 @@
   "devDependencies": {
     "@types/node": "20.14.8",
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "sinon": "15.2.0",
     "ts-node": "10.9.2",
     "typescript": "5.4.5"

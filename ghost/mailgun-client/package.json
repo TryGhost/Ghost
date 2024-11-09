@@ -19,8 +19,8 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "mocha": "10.2.0",
-    "nock": "13.3.3",
+    "mocha": "10.8.2",
+    "nock": "13.5.5",
     "sinon": "15.2.0"
   },
   "dependencies": {
