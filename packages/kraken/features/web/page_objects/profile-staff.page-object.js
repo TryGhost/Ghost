@@ -15,6 +15,11 @@ class ProfileStaffPageObject {
         return await element.click();
     }
 
+    async getOwnerSection() {
+        const element = await this.driver.$(".text-md.font-semibold.capitalize.text-white");
+        return await element.getText();
+    }
+
     async getName() {
         const element = await this.driver.$(
             'h1.text-white'
@@ -27,8 +32,7 @@ class ProfileStaffPageObject {
             'input.bg-transparent'
         );
         await element.clearValue();
-        await element.setValue(name);
-        return await this.driver.pause(1000);
+        return await element.setValue(name);
     }
 
 }

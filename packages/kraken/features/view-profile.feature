@@ -15,8 +15,8 @@ Scenario: E00402 - Ver perfil desde panel administrativo y modificar nombre
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds
   And I click in admin setting
-  And I wait for 4 seconds
-  And I click your profile
+  And I wait for 1 seconds
+  When I click your profile
   And I wait for 2 seconds
   And I edit the name with name "$name-fullname"
   And I wait for 2 seconds

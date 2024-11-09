@@ -17,13 +17,13 @@ When("I click in save", async function () {
 
 
 Then("I should be on the profile staff section", async function () {
-    const element = await this.driver.$(".text-md.font-semibold.capitalize.text-white");
-    const elementText = await element.getText();
+    const elementText = await this.profileStaffPageObject.getOwnerSection();
     expect(elementText).to.equal("Owner");
 });
 
 Then('I should be on the profile staff section with name {kraken-string}', async function (name) {
-    const elementText = this.profileStaffPageObject.getName();
-    expect(elementText).to.not.equal(name);
+    const elementText = await this.profileStaffPageObject.getName();
+    const result=elementText.toString().substring(elementText.length - name.length);
+    expect(result).to.equal(name);
 });
 
