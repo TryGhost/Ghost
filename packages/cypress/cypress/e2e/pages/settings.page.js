@@ -23,4 +23,13 @@ export class SettingsPage {
             .click();
         cy.wait(1000);
     }
+
+    clickExitSettingsButton() {
+        cy.get('button[data-testid="exit-settings"]').click();
+        cy.wait(1000);
+    }
+
+    getUnsavedChangesModal() {
+        return cy.get('section[data-testid="confirmation-modal"]');
+    }
 }
