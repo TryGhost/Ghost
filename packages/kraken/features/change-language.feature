@@ -1,7 +1,7 @@
 Feature: F005 - Change language
 
 @user7 @web
-Scenario: change the language
+Scenario: E00501 - change the language
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds
   And I click in admin setting
@@ -21,7 +21,7 @@ Scenario: change the language
   Then I verify the language "es"
 
 @user8 @web
-Scenario: change the language  with space
+Scenario: E00502 -  change the language  with space
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds
   And I click in admin setting

@@ -1,7 +1,7 @@
-Feature: F004 - View Profile Staff
+Feature: F04 - View Profile Staff
 
 @user9 @web
-Scenario: View Profile Staff
+Scenario: E00401 - View Profile Staff
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds
   And I click in admin setting

@@ -16,6 +16,7 @@
 // Import commands.js using ES2015 syntax:
 import { LoginPage  } from "../e2e/pages/login.page";
 import { ChangeLanguage  } from "../e2e/pages/change-language.page";
+import { ProfileStaff  } from "../e2e/pages/profile-staff.page";
 import "./commands";
 
 // Alternatively you can use CommonJS syntax:
@@ -25,4 +26,5 @@ before(() => {
     cy.log("Global setup: Setting pages instances");
     cy.loginPage = new LoginPage();
     cy.changeLanguage= new ChangeLanguage();
+    cy.profileStaff= new ProfileStaff();
 });
