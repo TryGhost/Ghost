@@ -1,8 +1,8 @@
-Feature: F006 - Create page
+Feature: F006 - Crear página estática
 
 
 @user5 @web
-Scenario: Create Page
+Scenario: E00601 - Crear página estática
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I am on the page editor page
   When I create and publish a page with title "$name_post-title" and url "$name_post-url"
@@ -12,7 +12,7 @@ Scenario: Create Page
 
 
 @user6 @web
-Scenario: Create Page and I can't see in home page
+Scenario: E00602 - Crear página estática y no se ve en homepage
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I am on the page editor page
   When I create and publish a page with title "$name_post-title" and url "$name_post-url"
