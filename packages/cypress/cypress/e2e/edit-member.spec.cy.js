@@ -1,84 +1,85 @@
 // cypress/integration/loginAndCreateMember.spec.js
-import DashboardPage from './pages/dashboard.page';
-import MembersPage from './pages/members.page';
 
-describe('Ghost Admin Login and Member Creation', () => {
+describe("Ghost Admin Login and Member Creation", () => {
+    it("E00901 - should log in to Ghost admin and create a new member, then edit member successfully", () => {
+        // When the user enters valid login credentials and submits
+        cy.log(
+            'Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"'
+        );
+        cy.loginPage.loginAs(
+            Cypress.env("ADMIN_USERNAME"),
+            Cypress.env("ADMIN_PASSWORD")
+        );
 
-  it('E00901 - should log in to Ghost admin and create a new member, then edit member successfully', () => {
-    
-    // When the user enters valid login credentials and submits
-    cy.log('Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"');
-    cy.loginPage.loginAs(Cypress.env("ADMIN_USERNAME"),Cypress.env("ADMIN_PASSWORD"));
+        cy.log("Then the user should be redirected to the dashboard");
+        cy.wait(5000);
+        cy.dashboardPage.verifyDashboard();
 
-    cy.log('Then the user should be redirected to the dashboard');
-    cy.wait(5000);
-    DashboardPage.verifyDashboard();
+        cy.log("Given the user navigates to the Members section");
+        cy.dashboardPage.navigateToMembers();
 
-    cy.log('Given the user navigates to the Members section');
-    DashboardPage.navigateToMembers();
+        cy.log("When the user opens the new member form");
+        cy.membersPage.openNewMemberForm();
+        cy.log("Then the new member form should be displayed");
 
-    cy.log('When the user opens the new member form');
-    MembersPage.openNewMemberForm();
-    cy.log('Then the new member form should be displayed');
-    
-    const memberName = 'New Member Cypress';
-    const memberEmail = `newmember${Date.now()}@example.com`;
-    const updatedMemberName = 'Updated Member Name';
-    const updatedMemberEmail = `updated${Date.now()}@example.com`;
+        const memberName = "New Member Cypress";
+        const memberEmail = `newmember${Date.now()}@example.com`;
+        const updatedMemberName = "Updated Member Name";
+        const updatedMemberEmail = `updated${Date.now()}@example.com`;
 
-    cy.log('Given the user has entered the new member details');
-    MembersPage.fillMemberDetailsComplete(memberName, memberEmail);
+        cy.log("Given the user has entered the new member details");
+        cy.membersPage.fillMemberDetailsComplete(memberName, memberEmail);
 
-    cy.log('When the user saves the new member');
-    MembersPage.saveMember();
+        cy.log("When the user saves the new member");
+        cy.membersPage.saveMember();
 
-    cy.wait(500);
-    
-    MembersPage.verifyMemberCreation();
+        cy.wait(500);
 
-    cy.log('When: I navigate to the Members page');
-    DashboardPage.navigateToMembers();
+        cy.membersPage.verifyMemberCreation();
 
-    cy.log('And: I open the member to edit');
-    MembersPage.openMember(memberName);
+        cy.log("When: I navigate to the Members page");
+        cy.dashboardPage.navigateToMembers();
 
-    cy.log('When: I edit the member details');
-    MembersPage.editMemberDetails(updatedMemberName, updatedMemberEmail);
+        cy.log("And: I open the member to edit");
+        cy.membersPage.openMember(memberName);
 
-    cy.log('Then: The changes should be saved successfully');
-    MembersPage.verifyEditSuccess();
+        cy.log("When: I edit the member details");
+        cy.membersPage.editMemberDetails(updatedMemberName, updatedMemberEmail);
 
-    cy.log('And: I should see the updated member in the list');
-    MembersPage.verifyUpdatedMemberInList(updatedMemberName);
+        cy.log("Then: The changes should be saved successfully");
+        cy.membersPage.verifyEditSuccess();
 
-  });
+        cy.log("And: I should see the updated member in the list");
+        cy.membersPage.verifyUpdatedMemberInList(updatedMemberName);
+    });
 
+    it("E00902 - should show an error message when trying to update a member without an email", () => {
+        // When the user enters valid login credentials and submits
+        cy.log(
+            'Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"'
+        );
+        cy.loginPage.loginAs(
+            Cypress.env("ADMIN_USERNAME"),
+            Cypress.env("ADMIN_PASSWORD")
+        );
 
-  it('E00902 - should show an error message when trying to update a member without an email', () => {
+        cy.log("Then the user should be redirected to the dashboard");
+        cy.wait(5000);
+        cy.dashboardPage.verifyDashboard();
 
-    // When the user enters valid login credentials and submits
-    cy.log('Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"');
-    cy.loginPage.loginAs(Cypress.env("ADMIN_USERNAME"),Cypress.env("ADMIN_PASSWORD"));
+        const updatedMemberName = "Updated Member Name";
 
-    cy.log('Then the user should be redirected to the dashboard');
-    cy.wait(5000);
-    DashboardPage.verifyDashboard();
+        cy.log("When: I navigate to the Members page");
+        cy.dashboardPage.navigateToMembers();
 
-    const updatedMemberName = 'Updated Member Name';
+        cy.log("And: I open the member to edit");
+        cy.membersPage.openMember(updatedMemberName);
 
-    cy.log('When: I navigate to the Members page');
-    DashboardPage.navigateToMembers();
+        cy.log("When: I update the invalid email field and save the member");
+        cy.membersPage.clearEmail();
+        cy.membersPage.editMemberDetails(updatedMemberName, "invalid");
 
-    cy.log('And: I open the member to edit');
-    MembersPage.openMember(updatedMemberName);
-
-    cy.log('When: I update the invalid email field and save the member');
-    MembersPage.clearEmail();
-    MembersPage.editMemberDetails(updatedMemberName, 'invalid'); 
-
-    cy.log('Then: I should see an error message for invalid email');
-    MembersPage.verifyEmailError();
-  });
-  
-
+        cy.log("Then: I should see an error message for invalid email");
+        cy.membersPage.verifyEmailError();
+    });
 });
