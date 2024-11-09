@@ -36,35 +36,36 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             <TableRow bgOnHover={false}>
                 <TableHead>{integration.webhooks?.length || 0} {integration.webhooks?.length === 1 ? 'webhook' : 'webhooks'}</TableHead>
                 <TableHead>Last triggered</TableHead>
-                <TableHead />
             </TableRow>
             {integration.webhooks?.map(webhook => (
-                <TableRow
-                    action={
-                        <Button color='red' label='Delete' link onClick={(e) => {
-                            e?.stopPropagation();
-                            handleDelete(webhook.id);
-                        }} />
-                    }
-                    hideActions
-                    onClick={() => {
-                        NiceModal.show(WebhookModal, {
-                            webhook,
-                            integrationId:
+                <TableRow action={
+                    <Button color='red' label='Delete' link onClick={(e) => {
+                        e?.stopPropagation();
+                        handleDelete(webhook.id);
+                    }} />
+                }
+                bgOnHover={false}
+                hideActions
+                onClick={() => {
+                    NiceModal.show(WebhookModal, {
+                        webhook,
+                        integrationId:
                         integration.id
-                        });
-                    }}
+                    });
+                }}
                 >
-                    <TableCell className='w-1/2'>
+                    <TableCell className='w-3/4'>
                         <div className='text-sm font-semibold'>{webhook.name}</div>
                         <div className='grid grid-cols-[max-content_1fr] gap-x-1 text-xs leading-snug'>
                             <span className='text-grey-600'>Event:</span>
                             <span>{getWebhookEventLabel(webhook.event)}</span>
                             <span className='text-grey-600'>URL:</span>
-                            <span>{webhook.target_url}</span>
+                            <span className='line-clamp-3 break-all' title={webhook.target_url}>
+                                {webhook.target_url}
+                            </span>
                         </div>
                     </TableCell>
-                    <TableCell className='w-1/2 text-sm'>
+                    <TableCell className='w-1/4 text-sm'>
                         {webhook.last_triggered_at && new Date(webhook.last_triggered_at).toLocaleString('default', {
                             weekday: 'short',
                             month: 'short',

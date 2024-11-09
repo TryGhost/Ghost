@@ -1,7 +1,9 @@
 import React from 'react';
 import ThemeSetting from './ThemeSetting';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Form} from '@tryghost/admin-x-design-system';
+import {Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
 interface ThemeSettingsProps {
@@ -13,7 +15,37 @@ interface ThemeSettingsProps {
     updateSetting: (setting: CustomThemeSetting) => void;
 }
 
+interface ThemeSettingsMap {
+    [key: string]: string[];
+}
+
+const themeSettingsMap: ThemeSettingsMap = {
+    source: ['title_font', 'body_font'],
+    casper: ['title_font', 'body_font'],
+    alto: ['title_font', 'body_font'],
+    bulletin: ['title_font', 'body_font'],
+    dawn: ['title_font', 'body_font'],
+    digest: ['title_font', 'body_font'],
+    dope: ['title_font', 'body_font'],
+    ease: ['title_font', 'body_font'],
+    edge: ['title_font', 'body_font'],
+    edition: ['title_font', 'body_font'],
+    episode: ['typography'],
+    headline: ['title_font', 'body_font'],
+    journal: ['title_font', 'body_font'],
+    london: ['title_font', 'body_font'],
+    ruby: ['title_font', 'body_font'],
+    solo: ['typography'],
+    taste: ['style'],
+    wave: ['title_font', 'body_font']
+};
+
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) => {
+    const {data: themesData} = useBrowseThemes();
+    const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
+    const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
+    const hasCustomFonts = useFeatureFlag('customFonts');
+
     return (
         <>
             {sections.map((section) => {
@@ -29,9 +61,19 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                             if (setting.type === 'boolean' && previousType !== 'boolean' && previousType !== undefined) {
                                 spaceClass = 'mt-3';
                             }
-                            if ((setting.type === 'text' || setting.type === 'select') && (previousType === 'text' || previousType === 'select')) { 
+                            if ((setting.type === 'text' || setting.type === 'select') && (previousType === 'text' || previousType === 'select')) {
                                 spaceClass = 'mt-2';
                             }
+
+                            // hides typography related theme settings from official themes
+                            // should be removed once we remove the settings from the themes in 6.0
+                            if (hasCustomFonts) {
+                                const hidingSettings = themeSettingsMap[activeThemeName];
+                                if (hidingSettings && hidingSettings.includes(setting.key)) {
+                                    spaceClass += ' hidden';
+                                }
+                            }
+
                             previousType = setting.type;
                             return <div key={setting.key} className={spaceClass}>
                                 <ThemeSetting
