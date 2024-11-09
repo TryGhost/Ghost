@@ -23,7 +23,7 @@ import {
     DashboardPage,
     MembersPage,
     ProfileStaff,
-    CreatePage
+    CreatePage,
     PostListPage,
     SettingsPage,
     SitePage,
