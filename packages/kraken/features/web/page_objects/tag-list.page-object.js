@@ -10,7 +10,7 @@ class TagListPageObject {
 
     async navigateToTagListPage() {
         await this.driver.url(this.tagListPage);
-        return await this.driver.pause(1000);
+        return await this.driver.pause(2000);
     }
 
     async getTagFromList(tagName) {

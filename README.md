@@ -10,6 +10,7 @@
 
 -   npm >=7.0.0
 -   node >=20.13.1
+-   adb (Check [platform-tools](https://developer.android.com/tools/releases/platform-tools))
 
 ## Instalación
 

@@ -24,6 +24,12 @@ import {
     MembersPage,
     ProfileStaff,
     CreatePage
+    PostListPage,
+    SettingsPage,
+    SitePage,
+    TagEditorPage,
+    TagListPage,
+    AdminPage,
 } from "../e2e/pages";
 import "./commands";
 
@@ -41,4 +47,10 @@ before(() => {
     cy.dashboardPage = new DashboardPage();
     cy.membersPage = new MembersPage();
     cy.createPage= new CreatePage();
+    cy.postListPage = new PostListPage();
+    cy.settingsPage = new SettingsPage();
+    cy.sitePage = new SitePage();
+    cy.tagEditorPage = new TagEditorPage();
+    cy.tagListPage = new TagListPage();
+    cy.adminPage = new AdminPage();
 });
