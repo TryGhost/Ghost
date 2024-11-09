@@ -56,7 +56,7 @@ class MembersPage {
     clearEmail() {
       cy.log("When I clear the email field");
       cy.get('input[name="email"]').clear();
-    }
+    } 
 
   }
   
