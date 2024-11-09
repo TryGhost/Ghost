@@ -14,8 +14,14 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import { LoginPage  } from "../e2e/pages/login.page";
-import { ChangeLanguage  } from "../e2e/pages/change-language.page";
+import {
+    LoginPage,
+    PostViewerPage,
+    PostEditorPage,
+    ChangeLanguage,
+    DashboardPage,
+    MembersPage,
+} from "../e2e/pages";
 import "./commands";
 
 // Alternatively you can use CommonJS syntax:
@@ -24,5 +30,9 @@ import "./commands";
 before(() => {
     cy.log("Global setup: Setting pages instances");
     cy.loginPage = new LoginPage();
-    cy.changeLanguage= new ChangeLanguage();
+    cy.changeLanguage = new ChangeLanguage();
+    cy.postViewerPage = new PostViewerPage();
+    cy.postEditorPage = new PostEditorPage();
+    cy.dashboardPage = new DashboardPage();
+    cy.membersPage = new MembersPage();
 });
