@@ -25,6 +25,8 @@ import {
     ProfileStaff,
     CreatePage
     PostListPage,
+    SettingsPage,
+    SitePage,
 } from "../e2e/pages";
 import "./commands";
 
@@ -43,4 +45,6 @@ before(() => {
     cy.membersPage = new MembersPage();
     cy.createPage= new CreatePage();
     cy.postListPage = new PostListPage();
+    cy.settingsPage = new SettingsPage();
+    cy.sitePage = new SitePage();
 });

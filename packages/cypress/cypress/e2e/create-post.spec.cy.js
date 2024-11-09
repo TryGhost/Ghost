@@ -1,18 +1,18 @@
 import { faker } from "@faker-js/faker";
 
 describe("F002 - Crear post", () => {
+    const adminUsername = Cypress.env("ADMIN_USERNAME");
+    const adminPassword = Cypress.env("ADMIN_PASSWORD");
+
     it("E00201 - Crear un post y publicarlo", () => {
         const postTitle = faker.word.words(2);
         const postUrl = faker.word.words(1);
 
         // Given
         cy.log(
-            'Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"'
+            `Given I am an admin logged in with email "${adminUsername}" and password "${adminPassword}"`
         );
-        cy.loginPage.loginAs(
-            Cypress.env("ADMIN_USERNAME"),
-            Cypress.env("ADMIN_PASSWORD")
-        );
+        cy.loginPage.loginAs(adminUsername, adminPassword);
 
         cy.log("And I am on the post editor page");
         cy.postEditorPage.visit();
@@ -39,12 +39,9 @@ describe("F002 - Crear post", () => {
 
         // Given
         cy.log(
-            'Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"'
+            `Given I am an admin logged in with email "${adminUsername}" and password "${adminPassword}"`
         );
-        cy.loginPage.loginAs(
-            Cypress.env("ADMIN_USERNAME"),
-            Cypress.env("ADMIN_PASSWORD")
-        );
+        cy.loginPage.loginAs(adminUsername, adminPassword);
 
         cy.log("And I am on the post editor page");
         cy.postEditorPage.visit();

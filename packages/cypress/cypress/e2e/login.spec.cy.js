@@ -1,14 +1,17 @@
 describe("F012 - Login feature", () => {
+    const adminUsername = Cypress.env("ADMIN_USERNAME");
+    const adminPassword = Cypress.env("ADMIN_PASSWORD");
+
     it("E01201 - Inicio de sesión exitoso", () => {
         // Given
         cy.log("Given I am on the login page");
         cy.loginPage.visit();
 
         // When
-        cy.log('When I enter email "<ADMIN_USERNAME>"');
+        cy.log(`When I enter email "${adminUsername}"`);
         cy.loginPage.enterEmail(Cypress.env("ADMIN_USERNAME"));
 
-        cy.log('And I enter password "<ADMIN_PASSWORD>"');
+        cy.log(`And I enter password "${adminPassword}"`);
         cy.loginPage.enterPassword(Cypress.env("ADMIN_PASSWORD"));
 
         cy.log("And I click next Sign In");
@@ -25,7 +28,7 @@ describe("F012 - Login feature", () => {
         cy.loginPage.visit();
 
         // When
-        cy.log('When I enter email "<ADMIN_USERNAME>"');
+        cy.log(`When I enter email "${adminUsername}"`);
         cy.loginPage.enterEmail(Cypress.env("ADMIN_USERNAME"));
 
         cy.log("And I enter a wrong password");
