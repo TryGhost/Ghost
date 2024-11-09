@@ -1,5 +1,5 @@
-describe("F004 - Change language", () => {
-    it("E00501 - Change language", () => {
+describe("F004 - Configurar lenguaje de publicación", () => {
+    it("E00501 - Modificar lenguaje de ghost", () => {
  
         cy.log('Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"');
         cy.loginPage.loginAs(Cypress.env("ADMIN_USERNAME"),Cypress.env("ADMIN_PASSWORD"));
@@ -26,7 +26,7 @@ describe("F004 - Change language", () => {
 
 
 
-    it("E00502 - Change language with space", () => {
+    it("E00502 - Modificar lenguaje con espacios en blanco", () => {
  
         cy.log('Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"');
         cy.loginPage.loginAs(Cypress.env("ADMIN_USERNAME"),Cypress.env("ADMIN_PASSWORD"));

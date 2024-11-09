@@ -1,7 +1,7 @@
-Feature: F04 - View Profile Staff
+Feature: F004 - Ver perfil de staff
 
 @user9 @web
-Scenario: E00401 - View Profile Staff
+Scenario: E00401 - Ver perfil desde panel administrativo
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds
   And I click in admin setting

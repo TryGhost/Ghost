@@ -22,7 +22,8 @@ import {
     ChangeLanguage,
     DashboardPage,
     MembersPage,
-    ProfileStaff
+    ProfileStaff,
+    CreatePage
 } from "../e2e/pages";
 import "./commands";
 
@@ -39,4 +40,5 @@ before(() => {
     cy.postEditorPage = new PostEditorPage();
     cy.dashboardPage = new DashboardPage();
     cy.membersPage = new MembersPage();
+    cy.createPage= new CreatePage();
 });

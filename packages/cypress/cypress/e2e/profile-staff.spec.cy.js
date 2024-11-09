@@ -1,6 +1,6 @@
-describe("F004 - View Profile Staff", () => {
+describe("F004 - Ver perfil de staff", () => {
 
-    it("E00401 - View Profile Staff", () => {
+    it("E00401 - Ver perfil desde panel administrativo", () => {
  
         cy.log('Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"');
         cy.loginPage.loginAs(Cypress.env("ADMIN_USERNAME"),Cypress.env("ADMIN_PASSWORD"));
