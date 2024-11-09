@@ -14,7 +14,7 @@ export class ChangeLanguage {
     }
 
     editLanguage(language) {
-        cy.get(`input[placeholder="Site language"]`).type(language);
+        cy.get('input[placeholder="Site language"]').first().clear().type(language);
         cy.wait(1000);
     }
 
@@ -31,7 +31,7 @@ export class ChangeLanguage {
 
     verifyLanguage(language) {
         cy.get('html').invoke('attr', 'lang').then((lang) => {
-            expect(lang).to.not.equal(language); 
+            expect(lang).to.equal(language); 
           });
     }
 }
