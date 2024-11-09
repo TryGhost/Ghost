@@ -9,7 +9,6 @@ describe("F002 - Crear post", () => {
         cy.log(
             'Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"'
         );
-        cy.loginPage.visit();
         cy.loginPage.loginAs(
             Cypress.env("ADMIN_USERNAME"),
             Cypress.env("ADMIN_PASSWORD")
@@ -30,6 +29,43 @@ describe("F002 - Crear post", () => {
         // Then
         cy.log(`Then I should see a page with the post title "${postTitle}"`);
         cy.postViewerPage.getPostTitle().should("have.text", postTitle);
+
+        cy.log("And I wait for 2 seconds");
+        cy.wait(2000);
+    });
+
+    it("E00202 - Crear un borrador de un post", () => {
+        const postTitle = faker.word.words(2);
+
+        // Given
+        cy.log(
+            'Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"'
+        );
+        cy.loginPage.loginAs(
+            Cypress.env("ADMIN_USERNAME"),
+            Cypress.env("ADMIN_PASSWORD")
+        );
+
+        cy.log("And I am on the post editor page");
+        cy.postEditorPage.visit();
+
+        // When
+        cy.log(`When I type a post title "${postTitle}"`);
+        cy.postEditorPage.setTitle(postTitle);
+
+        cy.log("And I click on the return arrow");
+        cy.postEditorPage.clickReturnArrow();
+
+        cy.log("And I wait for 3 seconds");
+        cy.wait(3000);
+
+        // Then
+        cy.log(
+            `Then I should see a post "${postTitle}" in the post list flagged as draft`
+        );
+        cy.postListPage.visit();
+        const post = cy.postListPage.getPostFromList(postTitle);
+        cy.postListPage.getPostStatus(post).should("contain.text", "Draft");
 
         cy.log("And I wait for 2 seconds");
         cy.wait(2000);
