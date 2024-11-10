@@ -10,8 +10,8 @@ const isEqual = require('lodash/isEqual');
 const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
-const i18nLib = require('@tryghost/i18n');
-const i18n = require('@tryghost/i18n/lib/i18n');
+//const i18nLib = require('@tryghost/i18n');
+//const i18n = require('@tryghost/i18n/lib/i18n');
 
 class I18n {
     /**
@@ -109,7 +109,7 @@ class I18n {
             lng: this.locale(),
             ns: 'theme'
         });
-        return(i18n.t(key, hash));
+        return i18n.t(key, hash);
     }
     /**
      * Attempt to load strings from a file

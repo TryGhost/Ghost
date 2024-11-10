@@ -88,15 +88,14 @@ module.exports = (lng = 'en', ns = 'portal') => {
         }, {});
     } else {
         resources = {
-            "en": {
-                "theme": require(`../locales/en/theme.json`)
+            en: {
+                theme: require(`../locales/en/theme.json`)
             },
-            "fr": {
-                "theme": require(`../locales/fr/theme.json`)
+            fr: {
+                theme: require(`../locales/fr/theme.json`)
             }
-        }
+        };
     }
-
 
     i18nextInstance.init({
         lng,
