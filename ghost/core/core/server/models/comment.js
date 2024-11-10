@@ -46,6 +46,10 @@ const Comment = ghostBookshelf.Model.extend({
         return this.belongsTo('Comment', 'parent_id');
     },
 
+    inReplyTo() {
+        return this.belongsTo('Comment', 'in_reply_to_id');
+    },
+
     likes() {
         return this.hasMany('CommentLike', 'comment_id');
     },
@@ -92,6 +96,12 @@ const Comment = ghostBookshelf.Model.extend({
             }
             this.set('html', html);
         }
+    },
+
+    orderAttributes: function orderAttributes() {
+        let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
+        keys.push('count__likes');
+        return keys;
     },
 
     onCreated: function onCreated(model, options) {
@@ -175,25 +185,26 @@ const Comment = ghostBookshelf.Model.extend({
     /**
      * We have to ensure consistency. If you listen on model events (e.g. `member.added`), you can expect that you always
      * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
-     * that event listeners have to re-fetch a resource. This function is used in the context of inserting
-     * and updating resources. We won't return the relations by default for now.
+     * that event listeners have to re-fetch a resource.
      */
     defaultRelations: function defaultRelations(methodName, options) {
-        // @todo: the default relations are not working for 'add' when we add it below
+        // @TODO: the default relations are not working for 'add' when we add it below
+        // this is because bookshelf does not automatically call `fetch` after adding so
+        // our bookshelf eager-load plugin doesn't use the `withRelated` options
         if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
                 if (options.parentId) {
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'member', 'count.likes', 'count.liked'
+                        'inReplyTo', 'member', 'count.likes', 'count.liked'
                     ];
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'count.replies', 'count.likes', 'count.liked',
+                        'member', 'inReplyTo', 'count.replies', 'count.likes', 'count.liked',
                         // Replies (limited to 3)
-                        'replies', 'replies.member' , 'replies.count.likes', 'replies.count.liked'
+                        'replies', 'replies.member', 'replies.inReplyTo', 'replies.count.likes', 'replies.count.liked'
                     ];
                 }
             }
@@ -202,45 +213,18 @@ const Comment = ghostBookshelf.Model.extend({
         return options;
     },
 
-    async findMostLikedComment(options = {}) {
-        let query = ghostBookshelf.knex('comments')
-            .select('comments.*')
-            .count('comment_likes.id as count__likes') // Counting likes for sorting
-            .leftJoin('comment_likes', 'comments.id', 'comment_likes.comment_id')
-            .groupBy('comments.id') // Group by comment ID to aggregate likes count
-            .orderBy('count__likes', 'desc') // Order by likes in descending order (most likes first)
-            .limit(1); // Limit to just 1 result
-        // Execute the query and get the result
-        const result = await query.first(); // Fetch the single top comment
-        const id = result && result.id;
-        // Fetch the comment model by ID
-        return this.findOne({id}, options);
-    },
-
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
-
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
             'replies.count.likes',
             'replies.count.liked'
         ].filter(relation => withRelated.includes(relation));
-
         const result = await ghostBookshelf.Model.findPage.call(this, options);
 
         for (const model of result.data) {
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
-        }
-
-        // if options.order === 'best', we findMostLikedComment
-        // then we remove it from the result set and add it as the first element
-        if (options.order === 'best' && options.page === '1') {
-            const mostLikedComment = await this.findMostLikedComment(options);
-            if (mostLikedComment) {
-                result.data = result.data.filter(comment => comment.id !== mostLikedComment.id);
-                result.data.unshift(mostLikedComment);
-            }
         }
 
         return result;

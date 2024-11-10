@@ -62,7 +62,8 @@ function getMembersHelper(data, frontendKey, excludeList) {
             i18n: labs.isSet('i18n'),
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
-            api: urlUtils.urlFor('api', {type: 'content'}, true)
+            api: urlUtils.urlFor('api', {type: 'content'}, true),
+            locale: settingsCache.get('locale') || 'en'
         };
         if (colorString) {
             attributes['accent-color'] = colorString;

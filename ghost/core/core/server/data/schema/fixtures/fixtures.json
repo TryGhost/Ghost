@@ -814,6 +814,13 @@
                     "description": "Internal Content API integration for Admin access",
                     "type": "core",
                     "api_keys": [{"type": "content"}]
+                },
+                {
+                    "slug": "ghost-activitypub",
+                    "name": "Ghost ActivityPub",
+                    "description": "Internal Integration for ActivityPub",
+                    "type": "internal",
+                    "api_keys": []
                 }
             ]
         }

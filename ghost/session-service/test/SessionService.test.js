@@ -366,4 +366,110 @@ describe('SessionService', function () {
         const authCodeSecond = await sessionServiceSecond.generateAuthCodeForUser(req, res);
         should.notEqual(authCodeFirst, authCodeSecond);
     });
+
+    it('sends an email with the auth code', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                user_id: 'user-123',
+                ip: '0.0.0.0',
+                user_agent: 'Fake'
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.stub().resolves({
+            id: 'user-123',
+            get: sinon.stub().returns('test@example.com')
+        });
+
+        const mailer = {
+            send: sinon.stub().resolves()
+        };
+
+        const getSettingsCache = sinon.stub().returns('site-title');
+        const getBlogLogo = sinon.stub().returns('logo.png');
+        const urlUtils = {
+            urlFor: sinon.stub().returns('https://example.com')
+        };
+
+        const t = sinon.stub().callsFake(text => text);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getSettingsCache,
+            getBlogLogo,
+            urlUtils,
+            mailer,
+            t,
+            labs: {
+                isSet: () => false
+            }
+        });
+
+        const req = Object.create(express.request);
+        const res = Object.create(express.response);
+
+        await sessionService.sendAuthCodeToUser(req, res);
+
+        should.ok(mailer.send.calledOnce);
+        const emailArgs = mailer.send.firstCall.args[0];
+        should.equal(emailArgs.to, 'test@example.com');
+        emailArgs.subject.should.match(/Ghost sign in verification code/);
+    });
+
+    it('throws an error when mail fails to send', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                user_id: 'user-123',
+                ip: '0.0.0.0',
+                user_agent: 'Fake'
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.stub().resolves({
+            id: 'user-123',
+            get: sinon.stub().returns('test@example.com')
+        });
+
+        const mailer = {
+            send: sinon.stub().rejects(new Error('Mail error'))
+        };
+
+        const getSettingsCache = sinon.stub().returns('site-title');
+        const getBlogLogo = sinon.stub().returns('logo.png');
+        const urlUtils = {
+            urlFor: sinon.stub().returns('https://example.com')
+        };
+
+        const t = sinon.stub().callsFake(text => text);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getSettingsCache,
+            getBlogLogo,
+            urlUtils,
+            mailer,
+            t,
+            labs: {
+                isSet: () => false
+            }
+        });
+
+        const req = Object.create(express.request);
+        const res = Object.create(express.response);
+
+        await should(sessionService.sendAuthCodeToUser(req, res))
+            .rejectedWith({
+                message: 'Failed to send email. Please check your site configuration and try again.'
+            });
+    });
 });
