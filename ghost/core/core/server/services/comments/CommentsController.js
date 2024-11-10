@@ -51,7 +51,8 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
-        return this.service.getComments(frame.options);
+
+        return await this.service.getComments(frame.options);
     }
 
     /**
@@ -114,6 +115,7 @@ module.exports = class CommentsController {
         if (data.parent_id) {
             result = await this.service.replyToComment(
                 data.parent_id,
+                data.in_reply_to_id,
                 frame.options.context.member.id,
                 data.html,
                 frame.options

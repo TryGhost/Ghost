@@ -65,7 +65,7 @@ export class MockedApi {
         // Sort comments on created at + id
         const setOrder = order || 'default';
 
-        if (setOrder === 'best' && page === 1) {
+        if (setOrder === 'count__likes desc, created_at desc') {
             // Sort by likes (desc) first, then by created_at (asc)
             this.comments.sort((a, b) => {
                 const likesDiff = b.count.likes - a.count.likes;

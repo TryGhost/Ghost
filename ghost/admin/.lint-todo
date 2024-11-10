@@ -88,9 +88,9 @@ add|ember-template-lint|no-passed-in-event-handlers|778|40|778|40|42e0617f832585
 add|ember-template-lint|no-passed-in-event-handlers|823|40|823|40|d1dccfeee5b103fac3b14d5b4567bc65ee08fd5a|1728345600000|1738717200000|1743897600000|app/components/gh-post-settings-menu.hbs
 add|ember-template-lint|no-passed-in-event-handlers|836|40|836|40|055c4b70aa8daba6b97077eefa95ebed7f7f5315|1728345600000|1738717200000|1743897600000|app/components/gh-post-settings-menu.hbs
 add|ember-template-lint|no-action|4|14|4|14|c8f6146f9286ec1b289e28983ab446386f390f01|1728345600000|1738717200000|1743897600000|app/components/gh-psm-authors-input.hbs
-add|ember-template-lint|no-action|5|14|5|14|a90edd9a99596008f60bfcdbc6befe7fe8d26321|1728345600000|1738717200000|1743897600000|app/components/gh-psm-tags-input.hbs
 add|ember-template-lint|no-action|6|14|6|14|3924d7cfb394cbcfd6b1bf9cf13a5040ac8f94b5|1728345600000|1738717200000|1743897600000|app/components/gh-psm-tags-input.hbs
 add|ember-template-lint|no-action|10|20|10|20|8b7921c0514cfd3fec8c3a474187048bc26faf7f|1728345600000|1738717200000|1743897600000|app/components/gh-psm-tags-input.hbs
+add|ember-template-lint|no-action|5|14|5|14|4168b695661f188460f6a14bdeecc8ce20b265e9|1728345600000|1738717200000|1743897600000|app/components/gh-psm-tags-input.hbs
 add|ember-template-lint|no-action|9|24|9|24|2e612be5e2b8e0b792f951c3c75b2f71df880365|1728345600000|1738717200000|1743897600000|app/components/gh-psm-template-select.hbs
 add|ember-template-lint|no-action|7|16|7|16|86819b20fcc42bc1d4607519c1d45532ee337884|1728345600000|1738717200000|1743897600000|app/components/gh-psm-visibility-input.hbs
 add|ember-template-lint|no-autofocus-attribute|13|16|13|16|fa0ffb960072633b72117849e3927673be0059af|1728345600000|1738717200000|1743897600000|app/components/gh-search-input.hbs
@@ -184,3 +184,11 @@ add|ember-template-lint|require-iframe-title|27|20|27|20|94e58d11848d5613900c218
 add|ember-template-lint|require-iframe-title|42|16|42|16|a3292b469dc37f2f4791e7f224b0b65c8ecf5d18|1728345600000|1738717200000|1743897600000|app/components/modals/email-preview.hbs
 add|ember-template-lint|no-autofocus-attribute|21|20|21|20|942419d05c04ded6716f09faecd6b1ab55418121|1728345600000|1738717200000|1743897600000|app/components/modals/new-custom-integration.hbs
 add|ember-template-lint|no-invalid-interactive|2|37|2|37|e21ba31f54b631a428c28a1c9f88d0dc66f2f5fc|1728345600000|1738717200000|1743897600000|app/components/modals/search.hbs
+remove|ember-template-lint|no-action|5|14|5|14|4168b695661f188460f6a14bdeecc8ce20b265e9|1728345600000|1738717200000|1743897600000|app/components/gh-psm-tags-input.hbs
+add|ember-template-lint|no-action|73|76|73|76|7d339c0f3d02ec863651697ad8e8105158d858f1|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs
+add|ember-template-lint|no-action|5|14|5|14|88b11bf43be33d97824ebac071a563affac0b97d|1730678400000|1741046400000|1746230400000|app/components/gh-psm-tags-input.hbs
+add|ember-template-lint|no-action|73|82|73|82|f30d469e4ae668f05aca2f92a124a6b4748847a3|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-action|73|76|73|76|7d339c0f3d02ec863651697ad8e8105158d858f1|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs
+add|ember-template-lint|no-action|5|14|5|14|a90edd9a99596008f60bfcdbc6befe7fe8d26321|1730678400000|1741046400000|1746230400000|app/components/gh-psm-tags-input.hbs
+remove|ember-template-lint|no-action|5|14|5|14|88b11bf43be33d97824ebac071a563affac0b97d|1730678400000|1741046400000|1746230400000|app/components/gh-psm-tags-input.hbs
+add|ember-template-lint|no-action|80|92|80|92|f30d469e4ae668f05aca2f92a124a6b4748847a3|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs

@@ -18,7 +18,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
 
     const editor = useEditor({
         ...getEditorConfig(config)
-    });
+    }, [commentsCount]);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
