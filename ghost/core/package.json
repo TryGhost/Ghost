@@ -162,7 +162,7 @@
     "date-fns": "2.30.0",
     "dequal": "catalog:",
     "dompurify": "catalog:",
-    "downsize": "0.0.8",
+    "downsize-cjs": "1.1.2",
     "entities": "4.5.0",
     "express": "4.22.2",
     "express-brute": "1.0.1",
