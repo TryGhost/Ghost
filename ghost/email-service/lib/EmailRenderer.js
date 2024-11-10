@@ -31,15 +31,6 @@ const messages = {
     }
 };
 
-// this is required to trigger the t parser
-/* 
-t('Your subscription has expired.');
-t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.');
-t('Your subscription will renew on {date}.');
-t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.');
-t('Your subscription will expire on {date}.');
-*/
-
 function escapeHtml(unsafe) {
     return unsafe
         .replace(/&/g, '&amp;')
@@ -597,7 +588,6 @@ class EmailRenderer {
      * @param {MemberLike} member
      * @returns {string}
      */
-
     getMemberStatusText(member) {
         const t = this.#t;
         const locale = this.#getValidLocale();
