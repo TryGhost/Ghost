@@ -11,7 +11,7 @@
 // Dev flag feature: In case of restricted content access for member-only posts, shows CTA box
 
 const {templates, hbs, SafeString} = require('../services/handlebars');
-const downsize = require('downsize');
+const downsize = require('downsize-cjs');
 const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;
 
