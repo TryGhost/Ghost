@@ -8,12 +8,6 @@ Scenario: E00501 - Modificar lenguaje de ghost
   And I wait for 2 seconds
   And I click in edit language
   And I wait for 2 seconds
-  And I edit language " "
-  And I wait for 2 seconds
-  And I click in save language
-  And I wait for 2 seconds
-  And I click in edit language
-  And I wait for 2 seconds
   And I edit language "es"
   And I wait for 2 seconds
   When I click in save language
@@ -25,12 +19,6 @@ Scenario: E00502 -  Modificar lenguaje con espacios en blanco
   Given I am an admin logged in with email "<ADMIN_USERNAME>" and password "<ADMIN_PASSWORD>"
   And I wait for 2 seconds
   And I click in admin setting
-  And I wait for 2 seconds
-  And I click in edit language
-  And I wait for 2 seconds
-  And I edit language " "
-  And I wait for 2 seconds
-  And I click in save language
   And I wait for 2 seconds
   And I click in edit language
   And I wait for 2 seconds
