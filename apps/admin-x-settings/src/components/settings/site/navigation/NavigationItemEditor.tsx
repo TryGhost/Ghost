@@ -36,7 +36,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                             e.preventDefault();
                             addItem?.();
                         }
-                        //clearError?.('label');
+                        !!item.errors.label && clearError?.('label');
                     }}
                 />
             </div>
@@ -63,12 +63,13 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                             //     addItem?.();
                             // }, 0);
                         }
+                        !!item.errors.url && clearError?.('url');
                     }}
                     onKeyDown={(e) => {
                         //console.log('onKeyDown, updating url with', e.target.value, 'and key is:', e.key);
                         const urls = formatUrl(e.target.value, baseUrl, true);
                         updateItem?.({url: urls.save || ''});
-                        //clearError?.('url');
+                        
                     }}
                 />
             </div>
