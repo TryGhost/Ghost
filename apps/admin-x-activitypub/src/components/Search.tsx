@@ -95,6 +95,56 @@ const Search: React.FC<SearchProps> = ({}) => {
         }
     }, []);
 
+    const renderSearchResults = () => {
+        if (showLoading) {
+            return <LoadingIndicator size='lg'/>;
+        }
+
+        if (showNoResults) {
+            return (
+                <NoValueLabel icon='user'>
+                    No users matching this username
+                </NoValueLabel>
+            );
+        }
+
+        return (
+            <>
+                {results.map(result => (
+                    <SearchResult
+                        key={(result as SearchResultItem).actor.id}
+                        result={result as SearchResultItem}
+                        update={updateResult}
+                    />
+                ))}
+            </>
+        );
+    };
+
+    const renderSuggestedAccounts = () => {
+        if (!showSuggested) {
+            return null;
+        }
+
+        return (
+            <>
+                <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
+                {isLoadingSuggested && (
+                    <div className='p-4'>
+                        <LoadingIndicator size='md'/>
+                    </div>
+                )}
+                {suggested.map(profile => (
+                    <SearchResult
+                        key={(profile as SearchResultItem).actor.id}
+                        result={profile as SearchResultItem}
+                        update={updateSuggestedProfile}
+                    />
+                ))}
+            </>
+        );
+    };
+
     return (
         <>
             <MainNavigation page='search' />
@@ -128,40 +178,8 @@ const Search: React.FC<SearchProps> = ({}) => {
                         />
                     )}
                 </div>
-                {showLoading ? (
-                    <LoadingIndicator size='lg'/>
-                ) : showNoResults ? (
-                    <NoValueLabel icon='user'>
-                        No users matching this username
-                    </NoValueLabel>
-                ) : (
-                    <>
-                        {results.map(result => (
-                            <SearchResult
-                                key={(result as SearchResultItem).actor.id}
-                                result={result as SearchResultItem}
-                                update={updateResult}
-                            />
-                        ))}
-                    </>
-                )}
-                {showSuggested && (
-                    <>
-                        <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
-                        {isLoadingSuggested && (
-                            <div className='p-4'>
-                                <LoadingIndicator size='md'/>
-                            </div>
-                        )}
-                        {suggested.map(profile => (
-                            <SearchResult
-                                key={(profile as SearchResultItem).actor.id}
-                                result={profile as SearchResultItem}
-                                update={updateSuggestedProfile}
-                            />
-                        ))}
-                    </>
-                )}
+                {renderSearchResults()}
+                {renderSuggestedAccounts()}
             </div>
         </>
     );
