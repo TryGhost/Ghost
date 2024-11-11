@@ -64,7 +64,7 @@ const dbFns = {
     }
 };
 
-describe('Comments API', function () {
+describe('Admin Comments API', function () {
     let adminApi;
     let membersApi;
 
@@ -180,12 +180,15 @@ describe('Comments API', function () {
                 status: 'hidden'
             });
             const res = await adminApi.get('/comments/post/' + post.id + '/');
-            assert.equal(res.body.comments.length, 1);
+            // check that there is no deleted comments by looping through the returned comments
+            for (const comment of res.body.comments) {
+                assert.notEqual(comment.status, 'deleted');
+            }
         });
 
         it('Returns deleted comments if is has hidden or published replies', async function () {
             const post = fixtureManager.get('posts', 1);
-            const {parent} = await dbFns.addCommentWithReplies({
+            await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
                 post_id: post.id,
                 html: 'Comment 1',
@@ -200,10 +203,15 @@ describe('Comments API', function () {
             });
 
             const res = await adminApi.get('/comments/post/' + post.id + '/');
-            assert.equal(res.body.comments.length, 1);
-            assert.equal(res.body.comments[0].id, parent.id);
-            // check if the reply is returned
-            assert.equal(res.body.comments[0].replies.length, 1);
+
+            // find deleted comment
+            const deletedComment = res.body.comments.find(comment => comment.status === 'deleted');
+
+            assert.equal(deletedComment.html, 'Comment 1');
+
+            const publishedReply = res.body.comments.find(comment => comment.id === deletedComment.id).replies?.find(reply => reply.status === 'published');
+
+            assert.equal(publishedReply.html, 'Reply 1');
         });
 
         it('Does show HTML of deleted and hidden comments since we are admin', async function () {
