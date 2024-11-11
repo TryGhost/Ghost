@@ -10,11 +10,13 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
 
     return (
         <>
-            <div className="no-scrollbar flex w-full gap-5 border-b border-grey-300 px-6 dark:border-grey-900">
+            <div className={`no-scrollbar flex w-full gap-5 px-6 ${tabs.length > 1 ? 'border-b border-grey-300 dark:border-grey-900' : ''}`}>
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
-                        className={`-mb-px cursor-pointer appearance-none whitespace-nowrap border-b-2 pb-3 pt-4 text-sm font-semibold transition-all ${
+                        className={`-mb-px appearance-none whitespace-nowrap text-sm font-semibold transition-all ${
+                            tabs.length > 1 ? 'cursor-pointer border-b-2 pb-3 pt-4' : 'cursor-default pt-6'
+                        } ${
                             activeTab === tab.id
                                 ? 'border-black text-black dark:border-white dark:text-white'
                                 : 'border-transparent text-grey-600 hover:border-grey-500 dark:text-white'
@@ -27,7 +29,7 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
                     </button>
                 ))}
             </div>
-            <div className="flex flex-col gap-3 p-6">
+            <div className="flex flex-col gap-3 p-6 pt-4">
                 {tabContent[activeTab]}
             </div>
         </>

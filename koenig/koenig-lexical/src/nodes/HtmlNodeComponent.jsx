@@ -36,7 +36,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
     };
 
     const tabs = [
-        {id: 'design', label: 'Design'},
         {id: 'visibility', label: 'Visibility'}
     ];
 
@@ -64,12 +63,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 />
             )}
         </>
-    );
-
-    const designSettings = (
-        <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">
-            Some design settings
-        </div>
     );
 
     const updateHtml = (value) => {
@@ -143,7 +136,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
                     onMouseDown={e => e.preventDefault()}
                 >
                     {{
-                        design: designSettings,
                         visibility: visibilitySettings
                     }}
                 </SettingsPanel>

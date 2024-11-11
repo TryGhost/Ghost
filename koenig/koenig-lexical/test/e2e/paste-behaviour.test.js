@@ -554,7 +554,6 @@ test.describe('Paste behaviour', async () => {
                         <div>
                             <div draggable="true">
                                 <div>
-                                    <button type="button">Design</button>
                                     <button type="button">Visibility</button>
                                 </div>
                                 <div>
