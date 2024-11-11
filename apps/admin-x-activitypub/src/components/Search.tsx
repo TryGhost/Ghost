@@ -71,6 +71,49 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     );
 };
 
+const SearchResults: React.FC<{
+    results: SearchResultItem[];
+    onUpdate: (id: string, updated: Partial<SearchResultItem>) => void;
+}> = ({results, onUpdate}) => {
+    return (
+        <>
+            {results.map(result => (
+                <SearchResult
+                    key={result.actor.id}
+                    result={result}
+                    update={onUpdate}
+                />
+            ))}
+        </>
+    );
+};
+
+const SuggestedAccounts: React.FC<{
+    profiles: SearchResultItem[];
+    isLoading: boolean;
+    onUpdate: (id: string, updated: Partial<SearchResultItem>) => void;
+}> = ({profiles, isLoading, onUpdate}) => {
+    return (
+        <>
+            <span className='mb-1 flex w-full max-w-[560px] font-semibold'>
+                Suggested accounts
+            </span>
+            {isLoading && (
+                <div className='p-4'>
+                    <LoadingIndicator size='md'/>
+                </div>
+            )}
+            {profiles.map(profile => (
+                <SearchResult
+                    key={profile.actor.id}
+                    result={profile}
+                    update={onUpdate}
+                />
+            ))}
+        </>
+    );
+};
+
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
@@ -94,56 +137,6 @@ const Search: React.FC<SearchProps> = ({}) => {
             queryInputRef.current.focus();
         }
     }, []);
-
-    const renderSearchResults = () => {
-        if (showLoading) {
-            return <LoadingIndicator size='lg'/>;
-        }
-
-        if (showNoResults) {
-            return (
-                <NoValueLabel icon='user'>
-                    No users matching this username
-                </NoValueLabel>
-            );
-        }
-
-        return (
-            <>
-                {results.map(result => (
-                    <SearchResult
-                        key={(result as SearchResultItem).actor.id}
-                        result={result as SearchResultItem}
-                        update={updateResult}
-                    />
-                ))}
-            </>
-        );
-    };
-
-    const renderSuggestedAccounts = () => {
-        if (!showSuggested) {
-            return null;
-        }
-
-        return (
-            <>
-                <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
-                {isLoadingSuggested && (
-                    <div className='p-4'>
-                        <LoadingIndicator size='md'/>
-                    </div>
-                )}
-                {suggested.map(profile => (
-                    <SearchResult
-                        key={(profile as SearchResultItem).actor.id}
-                        result={profile as SearchResultItem}
-                        update={updateSuggestedProfile}
-                    />
-                ))}
-            </>
-        );
-    };
 
     return (
         <>
@@ -178,8 +171,28 @@ const Search: React.FC<SearchProps> = ({}) => {
                         />
                     )}
                 </div>
-                {renderSearchResults()}
-                {renderSuggestedAccounts()}
+                {showLoading && <LoadingIndicator size='lg'/>}
+                
+                {showNoResults && (
+                    <NoValueLabel icon='user'>
+                        No users matching this username
+                    </NoValueLabel>
+                )}
+                
+                {!showLoading && !showNoResults && (
+                    <SearchResults 
+                        results={results as SearchResultItem[]} 
+                        onUpdate={updateResult}
+                    />
+                )}
+                
+                {showSuggested && (
+                    <SuggestedAccounts 
+                        isLoading={isLoadingSuggested}
+                        profiles={suggested as SearchResultItem[]}
+                        onUpdate={updateSuggestedProfile}
+                    />
+                )}
             </div>
         </>
     );
