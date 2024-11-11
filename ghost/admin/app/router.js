@@ -64,6 +64,10 @@ Router.map(function () {
         this.route('activitypub-x', {path: '/*sub'});
     });
 
+    this.route('post-analytics-spike', function () {
+        this.route('post-analytics-spike', {path: '/*sub'});
+    });
+
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
         this.route('connect');
