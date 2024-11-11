@@ -33,6 +33,7 @@ const NavigationEditForm: React.FC<{
                 item={navigation.newItem}
                 labelPlaceholder="New item label"
                 updateItem={navigation.setNewItem}
+                addItem={navigation.addItem}
             />
         </div>
     </div>;

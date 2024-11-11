@@ -24,7 +24,7 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, c
     const [editableItems, setEditableItems] = useState<Array<{ item: Item; id: string }>>(items.map((item, index) => ({item, id: index.toString()})));
 
     const [newItem, setNewItem] = useState<Item>(blank);
-
+    
     useEffect(() => {
         const allItems = editableItems.map(({item}) => item);
 
@@ -37,6 +37,12 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, c
             setItems(allItems);
         }
     }, [editableItems, newItem, items, setItems, canAddNewItem]);
+
+    
+        console.log(JSON.stringify(items));
+        console.log(JSON.stringify(newItem));
+    
+    
 
     const updateItem = (id: string, item: Item) => {
         const updatedItems = editableItems.map(current => (current.id === id ? {...current, item} : current));
