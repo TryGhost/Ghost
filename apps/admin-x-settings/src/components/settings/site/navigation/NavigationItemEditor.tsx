@@ -52,14 +52,22 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     value={item.url}
                     hideTitle
                     onChange={value => updateItem?.({url: value || ''})}
-                    onKeyDown={(e) => {
-                        //console.log('onKeyDown, updating url with', e.target.value, 'and key is:', e.key);
-                        const urls = formatUrl(e.target.value + e.key, baseUrl, true);
-                        updateItem?.({url: urls.save || ''});
+                    onKeyUp={(e) => {
+                        console.log('onKeyUp, updating url with', e.target.value, 'and key is:', e.key);
                         if (e.key === 'Enter') {
                             e.preventDefault();
+                            const urls = formatUrl(e.target.value, baseUrl, true);
+                            updateItem?.({url: urls.save || ''});
                             addItem?.();
+                            // setTimeout(() => {
+                            //     addItem?.();
+                            // }, 0);
                         }
+                    }}
+                    onKeyDown={(e) => {
+                        //console.log('onKeyDown, updating url with', e.target.value, 'and key is:', e.key);
+                        const urls = formatUrl(e.target.value, baseUrl, true);
+                        updateItem?.({url: urls.save || ''});
                         //clearError?.('url');
                     }}
                 />
