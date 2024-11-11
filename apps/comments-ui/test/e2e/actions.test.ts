@@ -107,7 +107,9 @@ test.describe('Actions', async () => {
         await expect(frame.getByText('This is a reply 123')).toHaveCount(1);
     });
 
-    test('Reply-to-reply action not shown without labs flag', async ({page}) => {
+    test('Reply-to-reply action not shown without labs flag', async ({
+        page
+    }) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>',
             replies: [
@@ -193,11 +195,15 @@ test.describe('Actions', async () => {
         const profileModal = detailsFrame.getByTestId('profile-modal');
         await expect(profileModal).toBeVisible();
 
-        await expect(detailsFrame.getByTestId('name-input')).toHaveValue('John Doe');
+        await expect(detailsFrame.getByTestId('name-input')).toHaveValue(
+            'John Doe'
+        );
         await expect(detailsFrame.getByTestId('expertise-input')).toHaveValue('');
 
         await detailsFrame.getByTestId('name-input').fill('Testy McTest');
-        await detailsFrame.getByTestId('expertise-input').fill('Software development');
+        await detailsFrame
+            .getByTestId('expertise-input')
+            .fill('Software development');
 
         await detailsFrame.getByTestId('save-button').click();
 
@@ -209,7 +215,9 @@ test.describe('Actions', async () => {
         await waitEditorFocused(editor);
 
         await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
-        await expect(frame.getByTestId('expertise-button')).toHaveText('·Software development');
+        await expect(frame.getByTestId('expertise-button')).toHaveText(
+            '·Software development'
+        );
     });
 
     test.describe('Sorting - flag needs to be enabled', () => {
@@ -235,7 +243,7 @@ test.describe('Actions', async () => {
             mockedApi.addComment({
                 html: '<p>This is comment 6</p>'
             });
-    
+
             const {frame} = await initialize({
                 mockedApi,
                 page,
@@ -292,7 +300,9 @@ test.describe('Actions', async () => {
 
             await expect(comments.nth(0)).toContainText('This is comment 3');
         });
-        test('Renders Sorting Form dropdown, with Best, Newest Oldest', async ({page}) => {
+        test('Renders Sorting Form dropdown, with Best, Newest Oldest', async ({
+            page
+        }) => {
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>'
             });
@@ -314,7 +324,7 @@ test.describe('Actions', async () => {
             mockedApi.addComment({
                 html: '<p>This is comment 6</p>'
             });
-    
+
             const {frame} = await initialize({
                 mockedApi,
                 page,
@@ -330,7 +340,9 @@ test.describe('Actions', async () => {
 
             await sortingForm.click();
 
-            const sortingDropdown = frame.getByTestId('comments-sorting-form-dropdown');
+            const sortingDropdown = frame.getByTestId(
+                'comments-sorting-form-dropdown'
+            );
             await expect(sortingDropdown).toBeVisible();
 
             // check if inner options are visible
@@ -370,7 +382,9 @@ test.describe('Actions', async () => {
 
             await sortingForm.click();
 
-            const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
+            const sortingDropdown = await frame.getByTestId(
+                'comments-sorting-form-dropdown'
+            );
 
             const newestOption = await sortingDropdown.getByText('Newest');
             await newestOption.click();
@@ -407,7 +421,9 @@ test.describe('Actions', async () => {
 
             await sortingForm.click();
 
-            const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
+            const sortingDropdown = await frame.getByTestId(
+                'comments-sorting-form-dropdown'
+            );
 
             const newestOption = await sortingDropdown.getByText('Oldest');
             await newestOption.click();
