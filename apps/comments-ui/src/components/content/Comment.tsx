@@ -107,43 +107,16 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {admin, t} = useAppContext();
-    const labs = useLabs();
+    const {t} = useAppContext();
     let notPublishedMessage:string = '';
 
     const avatar = (<BlankAvatar />);
     const hasReplies = comment.replies && comment.replies.length > 0;
 
-    if (labs.commentImprovements) {
-        const hasAllRepliesHidden = comment.replies && comment.replies.every(reply => reply.status === 'hidden' || reply.status === 'deleted');
-        const hasVisibleReplies = comment.replies && comment.replies.some(reply => reply.status !== 'hidden' && reply.status !== 'deleted');
-
-        if (comment.status === 'hidden') {
-            if (admin || (hasReplies && hasVisibleReplies)) {
-                notPublishedMessage = t('This comment has been hidden.');
-            } else if (!hasReplies || hasAllRepliesHidden) {
-                return <></>; // Hide completely for non-admins if no visible replies
-            }
-        } else if (comment.status === 'deleted') {
-            if (admin) {
-                if (hasReplies && (hasVisibleReplies || hasAllRepliesHidden)) {
-                    // Admins see deleted comment if it has any replies (even if hidden)
-                    notPublishedMessage = t('This comment has been removed.');
-                } else if (!hasReplies) {
-                    return <></>; // Hide completely if no replies
-                }
-            } else if (!hasReplies || hasAllRepliesHidden) {
-                return <></>; // Hide completely for non-admins if no visible replies
-            }
-        }
-    } else { // not behind feature flag
-        {
-            if (comment.status === 'hidden') {
-                notPublishedMessage = t('This comment has been hidden.');
-            } else if (comment.status === 'deleted') {
-                notPublishedMessage = t('This comment has been removed.');
-            }
-        }
+    if (comment.status === 'hidden') {
+        notPublishedMessage = t('This comment has been hidden.');
+    } else if (comment.status === 'deleted') {
+        notPublishedMessage = t('This comment has been removed.');
     }
 
     return (
