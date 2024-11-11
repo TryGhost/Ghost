@@ -38,12 +38,6 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, c
         }
     }, [editableItems, newItem, items, setItems, canAddNewItem]);
 
-    
-        console.log(JSON.stringify(items));
-        console.log(JSON.stringify(newItem));
-    
-    
-
     const updateItem = (id: string, item: Item) => {
         const updatedItems = editableItems.map(current => (current.id === id ? {...current, item} : current));
         setEditableItems(updatedItems);

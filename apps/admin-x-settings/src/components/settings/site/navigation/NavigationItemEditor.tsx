@@ -1,7 +1,7 @@
 import React, {ReactNode} from 'react';
 import clsx from 'clsx';
 import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
-import {formatUrl, TextField, URLTextField} from '@tryghost/admin-x-design-system';
+import {TextField, URLTextField, formatUrl} from '@tryghost/admin-x-design-system';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     baseUrl: string;
@@ -31,7 +31,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     hideTitle
                     onChange={e => updateItem?.({label: e.target.value})}
                     onKeyDown={(e) => {
-                        updateItem?.({label: e.target.value});
+                        updateItem?.({label: (e.target as HTMLInputElement).value});
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             addItem?.();
@@ -52,24 +52,18 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     value={item.url}
                     hideTitle
                     onChange={value => updateItem?.({url: value || ''})}
+                    onKeyDown={(e) => {
+                        const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
+                        updateItem?.({url: urls.save || ''});  
+                    }}
                     onKeyUp={(e) => {
-                        console.log('onKeyUp, updating url with', e.target.value, 'and key is:', e.key);
                         if (e.key === 'Enter') {
                             e.preventDefault();
-                            const urls = formatUrl(e.target.value, baseUrl, true);
+                            const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
                             updateItem?.({url: urls.save || ''});
                             addItem?.();
-                            // setTimeout(() => {
-                            //     addItem?.();
-                            // }, 0);
                         }
                         !!item.errors.url && clearError?.('url');
-                    }}
-                    onKeyDown={(e) => {
-                        //console.log('onKeyDown, updating url with', e.target.value, 'and key is:', e.key);
-                        const urls = formatUrl(e.target.value, baseUrl, true);
-                        updateItem?.({url: urls.save || ''});
-                        
                     }}
                 />
             </div>
