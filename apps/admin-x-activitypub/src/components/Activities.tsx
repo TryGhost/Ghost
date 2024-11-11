@@ -147,7 +147,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             NiceModal.show(ArticleModal, {
                 activityId: activity.id,
                 object: activity.object,
-                actor: activity.object.attributedTo as ActorProperties
+                actor: activity.object.attributedTo as ActorProperties,
+                width: 'wide'
             });
             break;
         case ACTVITY_TYPE.FOLLOW:
