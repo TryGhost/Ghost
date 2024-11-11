@@ -1,9 +1,9 @@
 {
-    "Email sent": "Email envoyé",
-    "Now check your email!": "Veuillez consulter votre boîte de réception.",
-    "Please enter a valid email address": "Veuillez renseigner une adresse email valide",
+    "Email sent": "E-mail envoyé",
+    "Now check your email!": "Veuillez consulter votre boîte de réception !",
+    "Please enter a valid email address": "Veuillez renseigner une adresse e-mail valide",
     "Something went wrong, please try again.": "Quelque chose s'est mal passé, veuillez réessayer.",
     "Subscribe": "S'abonner",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Pour terminer l'inscription, cliquez sur le lien de confirmation dans l'email qui vient de vous être adressé. S'il n'arrive pas dans les 3 minutes, vérifiez votre dossier d'indésirables !",
-    "Your email address": "Votre adresse email"
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Pour terminer l'inscription, cliquez sur le lien de confirmation dans l'e-mail qui vient de vous être adressé. S'il n'arrive pas dans les 3 minutes, vérifiez votre dossier d'indésirables !",
+    "Your email address": "Votre adresse e-mail"
 }
