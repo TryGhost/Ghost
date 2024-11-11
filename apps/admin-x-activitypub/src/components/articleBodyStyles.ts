@@ -425,17 +425,6 @@ button.gh-form-input {
     flex-grow: 1;
 }
 
-.gh-canvas,
-.kg-width-full.kg-content-wide {
-    --main: minmax(0, 1fr);
-    --wide: minmax(0, calc((var(--container-width, 1200px) - var(--content-width, 720px)) / 2));
-    --full: minmax(var(--container-gap), 1fr);
-
-    display: grid;
-    grid-template-columns:
-        [main-start] var(--main) [main-end]
-}
-
 .gh-canvas > * {
     grid-column: main;
 }
