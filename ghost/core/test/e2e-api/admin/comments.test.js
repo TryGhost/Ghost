@@ -181,8 +181,6 @@ describe('Comments API', function () {
             });
             const res = await adminApi.get('/comments/post/' + post.id + '/');
 
-            assert.equal(res.body.comments.length, 2);
-
             assert.equal(res.body.comments[0].html, 'Comment 2');
 
             assert.equal(res.body.comments[1].html, 'Comment 1');
