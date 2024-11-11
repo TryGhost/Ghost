@@ -71,6 +71,49 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     );
 };
 
+const SearchResults: React.FC<{
+    results: SearchResultItem[];
+    onUpdate: (id: string, updated: Partial<SearchResultItem>) => void;
+}> = ({results, onUpdate}) => {
+    return (
+        <>
+            {results.map(result => (
+                <SearchResult
+                    key={result.actor.id}
+                    result={result}
+                    update={onUpdate}
+                />
+            ))}
+        </>
+    );
+};
+
+const SuggestedAccounts: React.FC<{
+    profiles: SearchResultItem[];
+    isLoading: boolean;
+    onUpdate: (id: string, updated: Partial<SearchResultItem>) => void;
+}> = ({profiles, isLoading, onUpdate}) => {
+    return (
+        <>
+            <span className='mb-1 flex w-full max-w-[560px] font-semibold'>
+                Suggested accounts
+            </span>
+            {isLoading && (
+                <div className='p-4'>
+                    <LoadingIndicator size='md'/>
+                </div>
+            )}
+            {profiles.map(profile => (
+                <SearchResult
+                    key={profile.actor.id}
+                    result={profile}
+                    update={onUpdate}
+                />
+            ))}
+        </>
+    );
+};
+
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
@@ -80,22 +123,13 @@ const Search: React.FC<SearchProps> = ({}) => {
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
-    const [isQuerying, setIsQuerying] = useState(false);
     const {searchQuery, updateProfileSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
     const {data, isFetching, isFetched} = searchQuery;
 
     const results = data?.profiles || [];
-    const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
+    const showLoading = isFetching && query.length > 0;
+    const showNoResults = !isFetching && isFetched && results.length === 0 && query.length > 0 && debouncedQuery === query;
     const showSuggested = query === '' || (isFetched && results.length === 0);
-
-    useEffect(() => {
-        if (query !== '') {
-            setIsQuerying(true);
-        } else {
-            setIsQuerying(false);
-        }
-    }, [query]);
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -132,41 +166,32 @@ const Search: React.FC<SearchProps> = ({}) => {
                             unstyled
                             onClick={() => {
                                 setQuery('');
-
                                 queryInputRef.current?.focus();
                             }}
                         />
                     )}
                 </div>
-                {showLoading && (
-                    <LoadingIndicator size='lg'/>
-                )}
+                {showLoading && <LoadingIndicator size='lg'/>}
+                
                 {showNoResults && (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
                 )}
-                {results.map(result => (
-                    <SearchResult
-                        key={(result as SearchResultItem).actor.id}
-                        result={result as SearchResultItem}
-                        update={updateResult}
+                
+                {!showLoading && !showNoResults && (
+                    <SearchResults 
+                        results={results as SearchResultItem[]} 
+                        onUpdate={updateResult}
                     />
-                ))}
+                )}
+                
                 {showSuggested && (
-                    <>
-                        <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
-                        {isLoadingSuggested && (
-                            <LoadingIndicator size='sm'/>
-                        )}
-                        {suggested.map(profile => (
-                            <SearchResult
-                                key={(profile as SearchResultItem).actor.id}
-                                result={profile as SearchResultItem}
-                                update={updateSuggestedProfile}
-                            />
-                        ))}
-                    </>
+                    <SuggestedAccounts 
+                        isLoading={isLoadingSuggested}
+                        profiles={suggested as SearchResultItem[]}
+                        onUpdate={updateSuggestedProfile}
+                    />
                 )}
             </div>
         </>
