@@ -398,6 +398,125 @@ describe('Comments API', function () {
                 ]);
             });
 
+            it('excludes hidden comments', async function () {
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                // check that hiddenComment.id is not in the response
+                should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
+                should(data2.body.comments.length).eql(0);
+            });
+
+            it('excludes deleted comments', async function () {
+                // await mockManager.mockLabsEnabled('commentImprovements');
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a deleted comment',
+                    status: 'deleted'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                // go through all comments and check if the deleted comment is not there
+                data2.body.comments.forEach((comment) => {
+                    should(comment.html).not.eql('This is a deleted comment');
+                });
+
+                data2.body.comments.length.should.eql(0);
+            });
+
+            it('shows hidden and deleted comment where there is a reply', async function () {
+                await mockManager.mockLabsEnabled('commentImprovements');
+                await setupBrowseCommentsData();
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
+                });
+
+                const deletedComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a deleted comment',
+                    status: 'deleted'
+                });
+
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    parent_id: hiddenComment.get('id'),
+                    html: 'This is a reply to a hidden comment'
+                });
+
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    parent_id: deletedComment.get('id'),
+                    html: 'This is a reply to a deleted comment'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}`)
+                    .expectStatus(200);
+
+                // check if hidden and deleted comments have their html removed
+                data2.body.comments.forEach((comment) => {
+                    should.notEqual(comment.html, 'This is a hidden comment');
+                    should.notEqual(comment.html, 'This is a deleted comment');
+                });
+
+                // check if hiddenComment.id and deletedComment.id are in the response
+                should(data2.body.comments.map(c => c.id)).containEql(hiddenComment.id);
+                should(data2.body.comments.map(c => c.id)).containEql(deletedComment.id);
+
+                // check if the replies to hidden and deleted comments are in the response
+                data2.body.comments.forEach((comment) => {
+                    if (comment.id === hiddenComment.id) {
+                        should(comment.replies.length).eql(1);
+                        should(comment.replies[0].html).eql('This is a reply to a hidden comment');
+                    } else if (comment.id === deletedComment.id) {
+                        should(comment.replies.length).eql(1);
+                        should(comment.replies[0].html).eql('This is a reply to a deleted comment');
+                    }
+                });
+            });
+
+            it('Returns nothing if both parent and reply are hidden', async function () {
+                await mockManager.mockLabsEnabled('commentImprovements');
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
+                });
+
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 1).id,
+                    parent_id: hiddenComment.get('id'),
+                    html: 'This is a reply to a hidden comment',
+                    status: 'hidden'
+                });
+
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}`)
+                    .expectStatus(200);
+
+                should(data2.body.comments.length).eql(0);
+            });
+
             it('cannot comment on a post', async function () {
                 await testCannotCommentOnPost(401);
             });

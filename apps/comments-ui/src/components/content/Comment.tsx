@@ -107,23 +107,25 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {admin, t} = useAppContext();
-
-    let notPublishedMessage;
-    if (admin && comment.status === 'hidden') {
-        notPublishedMessage = t('This comment has been hidden.');
-    } else {
-        notPublishedMessage = t('This comment has been removed.');
-    }
+    const {t} = useAppContext();
+    let notPublishedMessage:string = '';
 
     const avatar = (<BlankAvatar />);
     const hasReplies = comment.replies && comment.replies.length > 0;
+
+    if (comment.status === 'hidden') {
+        notPublishedMessage = t('This comment has been hidden.');
+    } else if (comment.status === 'deleted') {
+        notPublishedMessage = t('This comment has been removed.');
+    }
 
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
             <div className="mt-[-3px] flex items-start">
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
-                    <p className="text-md mt-[4px] font-sans italic leading-normal text-black/20 sm:text-lg dark:text-white/35">{notPublishedMessage}</p>
+                    <p className="text-md mt-[4px] font-sans italic leading-normal text-black/20 sm:text-lg dark:text-white/35">
+                        {notPublishedMessage}
+                    </p>
                     <div className="mt-[4px]">
                         <MoreButton comment={comment} toggleEdit={openEditMode} />
                     </div>
