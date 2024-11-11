@@ -73,11 +73,28 @@ const Comment = ghostBookshelf.Model.extend({
         });
     },
 
+    adminCustomQuery(qb) {
+        qb.where(function () {
+            this.whereNotIn('comments.status', ['deleted'])
+                .orWhereExists(function () {
+                    this.select(1)
+                        .from('comments as replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .whereNotIn('replies.status', ['deleted']);
+                });
+        });
+    },
+
     applyCustomQuery(options) {
         if (labs.isSet('commentImprovements')) {
             if (!options.isAdmin) { // if it's an admin request, we don't need to apply the custom query
                 this.query((qb) => {
                     this.customQuery(qb, options);
+                });
+            }
+            if (options.isAdmin) {
+                this.query((qb) => {
+                    this.adminCustomQuery(qb, options);
                 });
             }
         }
