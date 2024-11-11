@@ -6,14 +6,16 @@ export class MockedApi {
     postId: string;
     member: any;
     settings: any;
+    members: any[];
 
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
 
-    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}}: {postId?: string, comments?: any[], member?: any, settings?: any}) {
+    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, members = []}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[]}) {
         this.postId = postId;
         this.comments = comments;
         this.member = member;
         this.settings = settings;
+        this.members = [];
     }
 
     addComment(overrides: any = {}) {
@@ -47,8 +49,18 @@ export class MockedApi {
         }
     }
 
+    createMember(overrides) {
+        const newMember = buildMember(overrides);
+        this.members.push(newMember);
+        return newMember;
+    }
+
     setMember(overrides) {
         this.member = buildMember(overrides);
+    }
+
+    logoutMember() {
+        this.member = null;
     }
 
     setSettings(overrides) {
