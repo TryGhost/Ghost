@@ -59,15 +59,17 @@ const sessionService = createSessionService({
 
 module.exports = createSessionMiddleware({sessionService});
 
-const ssoAdapter = adapterManager.getAdapter('sso');
 // Looks funky but this is a "custom" piece of middleware
-module.exports.createSessionFromToken = sessionFromToken({
-    callNextWithError: false,
-    createSession: sessionService.createSessionForUser,
-    findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
-    getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
-    getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
-});
+module.exports.createSessionFromToken = () => {
+    const ssoAdapter = adapterManager.getAdapter('sso');
+    return sessionFromToken({
+        callNextWithError: false,
+        createSession: sessionService.createVerifiedSessionForUser,
+        findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
+        getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
+        getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
+    });
+};
 
 module.exports.sessionService = sessionService;
 module.exports.deleteAllSessions = expressSession.deleteAllSessions;
