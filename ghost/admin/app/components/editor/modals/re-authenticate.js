@@ -22,7 +22,6 @@ export default class ReAuthenticateModal extends Component {
     @service notifications;
     @service session;
     @service modals;
-    @service router;
 
     static modalOptions = {
         className: 'fullscreen-modal-wide fullscreen-modal-action modal-reauthenticate',

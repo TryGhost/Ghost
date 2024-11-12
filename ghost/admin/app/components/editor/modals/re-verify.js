@@ -172,4 +172,4 @@ export default class ReVerifyModal extends Component {
         super.willDestroy(...arguments);
         this.delayResendAvailabilityTask.cancelAll();
     }
-} 
+}
