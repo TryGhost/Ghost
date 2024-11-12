@@ -3,7 +3,6 @@ import {
     mockApi,
     mockSitePreview,
     responseFixtures,
-    toggleLabsFlag,
     updatedSettingsResponse
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
@@ -306,7 +305,6 @@ test.describe('Design settings', async () => {
     });
 
     test('Custom fonts', async ({page}) => {
-        toggleLabsFlag('customFonts', true);
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
@@ -352,7 +350,6 @@ test.describe('Design settings', async () => {
     });
 
     test('Custom fonts setting back to default', async ({page}) => {
-        toggleLabsFlag('customFonts', true);
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([

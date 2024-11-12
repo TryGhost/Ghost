@@ -1,48 +1,55 @@
 @import '@tryghost/admin-x-design-system/styles.css';
 
 .admin-x-base.admin-x-activitypub {
-    animation-name: none;
+  animation-name: none;
 }
 
 @keyframes bump {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
+  0% {
+    transform: scale(1);
   }
-  
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
 .bump {
-animation: bump 0.3s ease-in-out;
+  animation: bump 0.3s ease-in-out;
 }
 
 .ap-red-heart path {
-    fill: #F50B23;
+  fill: #F50B23;
 }
 
-.ap-note-content a, .ap-profile-content a {
-  color: rgb(37 99 235) !important;
+.ap-note-content a,
+.ap-profile-content a {
+  color: #2563eb !important;
   word-break: break-all;
 }
 
-.ap-note-content a:hover, .ap-profile-content a:hover {
-  color: rgb(29 78 216) !important;
+.ap-note-content a:hover,
+.ap-profile-content a:hover {
+  color: #1d4ed8 !important;
   text-decoration: underline !important;
 }
 
-.ap-note-content span.invisible, .ap-profile-content span.invisible {
+.ap-note-content span.invisible,
+.ap-profile-content span.invisible {
   display: none;
 }
 
-.ap-note-content a:not(.hashtag) span.ellipsis:after, .ap-profile-content a:not(.hashtag) span.ellipsis:after, .ap-likes .ellipsis::after {
+.ap-note-content a:not(.hashtag) span.ellipsis:after,
+.ap-profile-content a:not(.hashtag) span.ellipsis:after,
+.ap-likes .ellipsis::after {
   content: "…";
 }
 
-.ap-note-content p + p {
+.ap-note-content p+p {
   margin-top: 1.5rem !important;
 }
 

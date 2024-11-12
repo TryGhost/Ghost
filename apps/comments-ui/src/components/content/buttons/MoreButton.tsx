@@ -10,7 +10,7 @@ type Props = {
 
 const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-    const {member, admin} = useAppContext();
+    const {member, admin, pagination, comments} = useAppContext();
     const isAdmin = !!admin;
 
     const toggleContextMenu = () => {
@@ -21,10 +21,10 @@ const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
         setIsContextMenuOpen(false);
     };
 
-    /*
-     * Whether we have at least one action inside the context menu
-     * (to hide the 'more' icon if we don't have any actions)
-    */
+    // Check if this is the last comment and there's no more pagination
+    const isLastComment = (!pagination || pagination.total <= pagination.page * pagination.limit) && 
+                         comments[comments.length - 1]?.id === comment.id;
+
     const show = (!!member && comment.status === 'published') || isAdmin;
 
     if (!show) {
@@ -33,8 +33,10 @@ const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
 
     return (
         <div data-testid="more-button">
-            <button className="outline-0" type="button" onClick={toggleContextMenu}><MoreIcon className={`duration-50 gh-comments-icon gh-comments-icon-more outline-0 transition ease-linear hover:fill-black/75 dark:hover:fill-white/75 ${isContextMenuOpen ? 'fill-black/75 dark:fill-white/75' : 'fill-black/50 dark:fill-white/60'}`} /></button>
-            {isContextMenuOpen ? <CommentContextMenu close={closeContextMenu} comment={comment} toggleEdit={toggleEdit} /> : null}
+            <button className="outline-0" type="button" onClick={toggleContextMenu}>
+                <MoreIcon className={`duration-50 gh-comments-icon gh-comments-icon-more outline-0 transition ease-linear hover:fill-black/75 dark:hover:fill-white/75 ${isContextMenuOpen ? 'fill-black/75 dark:fill-white/75' : 'fill-black/50 dark:fill-white/60'}`} />
+            </button>
+            {isContextMenuOpen ? <CommentContextMenu close={closeContextMenu} comment={comment} isLastComment={isLastComment} toggleEdit={toggleEdit} /> : null}
         </div>
     );
 };

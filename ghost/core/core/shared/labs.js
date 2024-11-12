@@ -16,6 +16,7 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'collections',
+    'i18n',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
@@ -26,7 +27,6 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'i18n',
     'activitypub',
     'stripeAutomaticTax',
     'webmentions',
@@ -46,8 +46,7 @@ const ALPHA_FEATURES = [
     'adminXDemo',
     'contentVisibility',
     'commentImprovements',
-    'staff2fa',
-    'customFonts'
+    'staff2fa'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

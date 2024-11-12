@@ -1,4 +1,5 @@
 const models = require('../../models');
+const commentsService = require('../../services/comments');
 
 function handleCacheHeaders(model, frame) {
     if (model) {
@@ -39,6 +40,33 @@ const controller = {
 
             handleCacheHeaders(result, frame);
 
+            return result;
+        }
+    },
+    browse: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'post_id',
+            'include',
+            'page',
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'debug'
+        ],
+        validation: {
+            options: {
+                post_id: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const result = await commentsService.controller.adminBrowse(frame);
             return result;
         }
     }

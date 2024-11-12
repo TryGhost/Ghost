@@ -425,21 +425,6 @@ button.gh-form-input {
     flex-grow: 1;
 }
 
-.gh-canvas,
-.kg-width-full.kg-content-wide {
-    --main: min(var(--content-width, 720px), 100% - var(--container-gap) * 2);
-    --wide: minmax(0, calc((var(--container-width, 1200px) - var(--content-width, 720px)) / 2));
-    --full: minmax(var(--container-gap), 1fr);
-
-    display: grid;
-    grid-template-columns:
-        [full-start] var(--full)
-        [wide-start] var(--wide)
-        [main-start] var(--main) [main-end]
-        var(--wide) [wide-end]
-        var(--full) [full-end];
-}
-
 .gh-canvas > * {
     grid-column: main;
 }
@@ -2008,7 +1993,7 @@ Search                         LOGO                    Login Subscribe
 }
 
 .gh-article-header {
-    margin: clamp(40px, 3.64vw + 25.45px, 72px) 0 40px;
+    margin: 24px 0;
 }
 
 .gh-article-tag {
@@ -2031,7 +2016,7 @@ Search                         LOGO                    Login Subscribe
 .gh-article-excerpt {
     margin-top: 16px;
     font-size: 2.1rem;
-    line-height: 1.25;
+    line-height: 1.3;
     letter-spacing: -0.63px;
     text-wrap: pretty;
 }

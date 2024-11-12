@@ -14,10 +14,12 @@ const Content = () => {
 
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     let commentsElements;
+    const commentsDataset = comments;
+
     if (labs && labs.commentImprovements) {
-        commentsElements = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
+        commentsElements = commentsDataset.slice().map(comment => <Comment key={comment.id} comment={comment} />);
     } else {
-        commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
+        commentsElements = commentsDataset.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
     }
 
     useEffect(() => {
@@ -63,7 +65,7 @@ const Content = () => {
                         </span>
                     </div>
                 )}
-                <div className={!pagination ? 'z-10 mt-4' : 'z-10'} data-test="comment-elements">
+                <div className="z-10" data-test="comment-elements">
                     {commentsElements}
                 </div>
                 <Pagination />

@@ -7,7 +7,7 @@ const body_class = require('../../../../core/frontend/helpers/body_class');
 
 // Stubs
 const proxy = require('../../../../core/frontend/services/proxy');
-const {settingsCache, labs} = proxy;
+const {settingsCache} = proxy;
 
 describe('{{body_class}} helper', function () {
     let options = {};
@@ -30,7 +30,8 @@ describe('{{body_class}} helper', function () {
                 root: {
                     context: [],
                     settings: {active_theme: 'casper'}
-                }
+                },
+                site: {}
             }
         };
     });
@@ -163,7 +164,6 @@ describe('{{body_class}} helper', function () {
 
     describe('custom fonts', function () {
         let settingsCacheStub;
-        let labsStub;
 
         function callBodyClassWithContext(context, self) {
             options.data.root.context = context;
@@ -174,7 +174,6 @@ describe('{{body_class}} helper', function () {
         }
 
         beforeEach(function () {
-            labsStub = sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
             settingsCacheStub = sinon.stub(settingsCache, 'get');
             options = {
                 data: {
@@ -214,17 +213,6 @@ describe('{{body_class}} helper', function () {
             );
 
             rendered.string.should.equal('post-template tag-foo tag-bar gh-font-heading-space-grotesk gh-font-body-noto-sans');
-        });
-
-        it('does not include custom font classes when custom fonts are not enabled', function () {
-            labsStub.withArgs('customFonts').returns(false);
-
-            const rendered = callBodyClassWithContext(
-                ['post'],
-                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
-            );
-
-            rendered.string.should.equal('post-template tag-foo tag-bar');
         });
 
         it('includes custom font classes for home page when set in options data object', function () {

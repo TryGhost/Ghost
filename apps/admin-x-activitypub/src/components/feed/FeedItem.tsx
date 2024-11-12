@@ -4,10 +4,11 @@ import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-
 
 import APAvatar from '../global/APAvatar';
 
+import FeedItemStats from './FeedItemStats';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
-import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
+import {renderTimestamp} from '../../utils/render-timestamp';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -140,7 +141,7 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <div className='min-h-[80px]'>
+            return <div className='min-h-[80px] min-w-[120px]'>
                 <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
             </div>;
         }
@@ -148,86 +149,13 @@ function renderInboxAttachment(object: ObjectProperties) {
     }
 }
 
-function renderTimestamp(object: ObjectProperties) {
-    const timestamp =
-        new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
-
-    const date = new Date(object?.published ?? new Date());
-    return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
-}
-
-const FeedItemStats: React.FC<{
-    object: ObjectProperties;
-    likeCount: number;
-    commentCount: number;
-    layout: string;
-    onLikeClick: () => void;
-    onCommentClick: () => void;
-}> = ({object, likeCount, commentCount, layout, onLikeClick, onCommentClick}) => {
-    const [isClicked, setIsClicked] = useState(false);
-    const [isLiked, setIsLiked] = useState(object.liked);
-    const likeMutation = useLikeMutationForUser('index');
-    const unlikeMutation = useUnlikeMutationForUser('index');
-
-    const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
-        e.stopPropagation();
-        setIsClicked(true);
-        if (!isLiked) {
-            likeMutation.mutate(object.id);
-        } else {
-            unlikeMutation.mutate(object.id);
-        }
-
-        setIsLiked(!isLiked);
-
-        onLikeClick();
-        setTimeout(() => setIsClicked(false), 300);
-    };
-
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-5'}`}>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
-                hideLabel={true}
-                icon='heart'
-                id='like'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    if (e) {
-                        handleLikeClick(e);
-                    }
-                }}
-            />
-            {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
-        </div>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
-                hideLabel={true}
-                icon='comment'
-                id='comment'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    onCommentClick();
-                }}
-            />
-            {commentCount > 0 && (layout !== 'inbox') && (
-                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
-            )}
-        </div>
-    </div>);
-};
-
 interface FeedItemProps {
     actor: ActorProperties;
     object: ObjectProperties;
     layout: string;
     type: string;
     commentCount?: number;
+    showHeader?: boolean;
     last?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
@@ -235,7 +163,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -323,8 +251,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='flex flex-col'>
                                     <div className='mt-[-24px]'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
-                                        {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                                        {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
                                         {(object.type === 'Article') && <Button
                                             className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
@@ -364,7 +292,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <span className='z-10'>{actor.name} reposted</span>
                             </div>}
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-4 pt-5`} data-test-activity>
-                                <div className='relative z-10 pt-[3px]'>
+                                {(showHeader) && <><div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
                                 </div>
                                 <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
@@ -375,11 +303,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='flex w-full'>
                                         <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
                                     </div>
-                                </div>
+                                </div></>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
+                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.8rem] text-grey-900'></div>
                                         {renderFeedAttachment(object, layout)}
                                         <div className='space-between mt-5 flex'>
                                             <FeedItemStats
@@ -427,9 +355,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
-                                    {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                    <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                                    {renderFeedAttachment(object, layout)}
+                                    {(object.type === 'Article') && renderFeedAttachment(object, layout)}
+                                    {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                    {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                                    {(object.type === 'Note') && renderFeedAttachment(object, layout)}
+                                    {(object.type === 'Article') && <Button
+                                        className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                                        color='grey'
+                                        fullWidth={true}
+                                        id='read-more'
+                                        label='Read more'
+                                        size='md'
+                                    />}
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
                                             commentCount={commentCount}
