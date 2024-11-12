@@ -307,12 +307,6 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 dangerouslySetInnerHTML={{__html: userProfile?.summary ?? ''}}
                                 className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                             />
-                            {attachments.map(attachment => (
-                                <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
-                                    <span className={`text-xs font-semibold`}>{attachment.name}</span>
-                                    <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
-                                </span>
-                            ))}
                             {!isExpanded && isOverflowing && (
                                 <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                             )}
