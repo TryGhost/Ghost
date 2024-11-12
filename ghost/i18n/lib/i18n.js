@@ -1,5 +1,4 @@
 const i18next = require('i18next');
-const logging = require('@tryghost/logging');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -70,7 +69,6 @@ function generateResources(locales, ns) {
             res = require(`../locales/${locale}/${ns}.json`);
         } catch (err) {
             res = require(`../locales/en/${ns}.json`);
-            logging.warn(`file not found for locales/${locale}/${ns}.json, falling back to en`);
         }
 
         // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
