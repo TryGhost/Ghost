@@ -93,7 +93,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
 function renderInboxAttachment(object: ObjectProperties) {
     const attachment = getAttachment(object);
 
-    const videoAttachmentStyles = 'ml-8 shrink-0 rounded-md h-[80px] w-[120px] ';
+    const videoAttachmentStyles = 'ml-8 shrink-0 rounded-md h-[80px] w-[120px] relative';
     const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
 
     if (!attachment) {
@@ -392,7 +392,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <span className='min-w-0 truncate'>{getUsername(author)}</span>
                                 <span className='shrink-0 whitespace-nowrap before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
-                            <Heading className='mb-1 line-clamp-1 max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
+                            <Heading className='mb-1 line-clamp-1 w-full max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
                                 {object.name ? object.name : (
                                     <span dangerouslySetInnerHTML={{
                                         __html: stripHtml(object.content)
