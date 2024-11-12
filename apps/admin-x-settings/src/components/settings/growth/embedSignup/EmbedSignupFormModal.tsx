@@ -16,7 +16,8 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
     const [selectedLayout, setSelectedLayout] = useState<string>('all-in-one');
-    const [embedScript, setEmbedScript] = useState<string>('');
+    const [previewScript, setPreviewScript] = useState<string>('');
+    const [generatedScript, setGeneratedScript] = useState<string>('');
     const [isCopied, setIsCopied] = useState(false);
 
     const {updateRoute} = useRouting();
@@ -33,8 +34,8 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         if (!siteData) {
             return;
         }
-        const code = generateCode({
-            preview: true,
+
+        const defaultConfig = {
             config: {
                 blogUrl: siteData.url,
                 signupForm: {
@@ -53,14 +54,24 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             backgroundColor: selectedColor || '#08090c',
             layout: selectedLayout,
             i18nEnabled
-        });
+        };
 
-        setEmbedScript(code);
+        const previewCode = generateCode({
+            preview: true,
+            ...defaultConfig
+        });
+        setPreviewScript(previewCode);
+
+        const generatedCode = generateCode({
+            preview: false,
+            ...defaultConfig
+        });
+        setGeneratedScript(generatedCode);
     }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, i18nEnabled, icon, description]);
 
     const handleCopyClick = async () => {
         try {
-            await navigator.clipboard.writeText(embedScript);
+            await navigator.clipboard.writeText(generatedScript);
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 2000); // reset after 2 seconds
         } catch (err) {
@@ -98,13 +109,13 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         >
             <div className='grid grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview
-                    html={embedScript}
+                    html={previewScript}
                     style={selectedLayout}
                 />
                 <EmbedSignupSidebar
                     accentColor={accentColor}
                     customColor={customColor}
-                    embedScript={embedScript}
+                    embedScript={generatedScript}
                     handleColorToggle={handleColorToggle}
                     handleCopyClick={handleCopyClick}
                     handleLabelClick={addSelectedLabel}
