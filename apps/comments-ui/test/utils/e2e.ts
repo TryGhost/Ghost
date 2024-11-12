@@ -112,7 +112,7 @@ export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '
             }
         }
     });
-    
+
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
@@ -227,4 +227,25 @@ export function addMultipleComments(api, numComments) {
             html: `<p>This is comment ${i}.</p>`
         });
     }
+}
+
+export async function waitForFrameOpacity(frameLocator, selector, timeout = 2000) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+    // Evaluate the opacity of the element within the frame
+        const opacity = await frameLocator.locator(selector).evaluate((element) => {
+            return window.getComputedStyle(element).opacity;
+        });
+
+        // Check if opacity is 1 (100%)
+        if (opacity === '1') {
+            return;
+        }
+
+        // Wait a little before retrying
+        await new Promise((resolve) => {
+            setTimeout(resolve, 100);
+        });
+    }
+    throw new Error(`Element ${selector} did not reach 100% opacity within ${timeout} ms`);
 }
