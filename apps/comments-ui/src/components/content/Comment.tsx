@@ -20,6 +20,7 @@ type AnimatedCommentProps = {
 const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent, toggleParentReplyMode}) => {
     return (
         <Transition
+            data-testid="animated-comment"
             enter="transition-opacity duration-300 ease-out"
             enterFrom="opacity-0"
             enterTo="opacity-100"
