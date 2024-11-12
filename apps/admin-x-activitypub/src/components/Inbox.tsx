@@ -25,7 +25,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
         includeOwn: true,
         excludeNonFollowers: true,
         filter: {
-            type: ['Create:Article', 'Create:Note', 'Announce:Note']
+            type: ['Create:Article:notReply', 'Create:Note:notReply', 'Announce:Note']
         }
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
@@ -35,9 +35,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
     const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
     const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
 
-    const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
-        return !activity.object.inReplyTo;
-    });
+    const activities = (data?.pages.flatMap(page => page.data) ?? []);
 
     // Intersection observer to fetch more activities when the user scrolls
     // to the bottom of the page
