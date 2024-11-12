@@ -66,16 +66,13 @@ export default class ReAuthenticateModal extends Component {
             this.args.close();
             return true;
         } catch (error) {
-            console.log('We got an error');
             if (!error) {
                 return;
             }
 
             if (isTwoFactorTokenRequiredError(error)) {
-                console.log('two factor token required');
-                // Close current modal and open verify screen
+                yield this.modals.open('editor/modals/re-verify');
                 this.args.close();
-                this.modals.open('editor/modals/re-verify');
                 return true;
             }
 
