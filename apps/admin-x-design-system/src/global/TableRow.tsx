@@ -28,7 +28,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
 
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
-        'group/table-row relative',
+        'group/table-row relative transform-gpu [clip-path:inset(0_-16px)]',
         bgOnHover && tableRowHoverBgClasses,
         onClick && 'cursor-pointer',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-950' : 'border-y border-none first-of-type:hover:border-t-transparent',
