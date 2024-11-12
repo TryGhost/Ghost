@@ -1,10 +1,10 @@
 import Component from '@glimmer/component';
+import DS from 'ember-data'; // eslint-disable-line
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
-import DS from 'ember-data';
 
 const {Errors} = DS;
 

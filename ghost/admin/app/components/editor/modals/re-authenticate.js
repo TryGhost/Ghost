@@ -4,7 +4,7 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
-import {isVersionMismatchError, isTwoFactorTokenRequiredError} from 'ghost-admin/services/ajax';
+import {isTwoFactorTokenRequiredError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
