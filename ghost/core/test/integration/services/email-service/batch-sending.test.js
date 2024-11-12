@@ -109,6 +109,7 @@ describe('Batch sending tests', function () {
             value: false
         }], {context: {internal: true}});
         mockManager.restore();
+        await jobManager.allSettled();
     });
 
     before(async function () {
