@@ -56,7 +56,7 @@ export const generateCode = ({
         options[`label-${i + 1}`] = label.name;
     }
 
-    let style = 'min-height: 58px; max-width: 440px; margin: 0 auto; width: 100%;';
+    let style = 'min-height: 58px;max-width: 440px;margin: 0 auto;width: 100%';
 
     if (layout === 'all-in-one') {
         if (settings.icon && settings.icon !== '') {
@@ -67,7 +67,7 @@ export const generateCode = ({
         options['background-color'] = backgroundColor;
         options['text-color'] = textColorForBackgroundColor(backgroundColor).hex();
 
-        style = 'height: 40vmin; min-height: 360px;';
+        style = 'height: 40vmin;min-height: 360px';
     }
 
     if (preview) {
