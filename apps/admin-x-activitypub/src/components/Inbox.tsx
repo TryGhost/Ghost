@@ -20,6 +20,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
+        includeOwn: true,
         excludeNonFollowers: true,
         filter: {
             type: ['Create:Article', 'Create:Note', 'Announce:Note']
