@@ -6,6 +6,7 @@ import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import ViewProfileModal from './global/ViewProfileModal';
+import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
@@ -123,7 +124,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                             <APAvatar author={actor} />
                                                             <div>
                                                                 <div className='text-grey-600'>
-                                                                    <span className='mr-1 truncate font-bold text-black'>{actor.name || actor.preferredUsername || 'Unknown'}</span>
+                                                                    <span className='mr-1 truncate font-bold text-black'>{getName(actor)}</span>
                                                                     <div className='truncate text-sm'>{getUsername(actor)}</div>
                                                                 </div>
                                                             </div>
