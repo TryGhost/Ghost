@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {escapeHtml} from '../../utils/escape-html';
 
 export function renderBookmarkNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -15,15 +16,6 @@ export function renderBookmarkNode(node, options = {}) {
     } else {
         return frontendTemplate(node, document);
     }
-}
-
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
 }
 
 function truncateText(text, maxLength) {
@@ -45,7 +37,7 @@ function truncateHtml(text, maxLength, maxLengthMobile) {
     if (text.length <= maxLengthMobile) {
         return escapeHtml(text);
     }
-    
+
     if (text && text.length > maxLengthMobile) {
         let ellipsis = '';
 
@@ -62,18 +54,18 @@ function truncateHtml(text, maxLength, maxLengthMobile) {
 }
 
 function emailTemplate(node, document) {
-    const title = node.title;
-    const publisher = node.publisher;
-    const author = node.author;
-    const icon = node.icon;
-    const description = node.description;
-    const url = node.url;
-    const thumbnail = node.thumbnail;
-    const caption = node.caption;
+    const title = escapeHtml(node.title);
+    const publisher = escapeHtml(node.publisher);
+    const author = escapeHtml(node.author);
+    const icon = escapeHtml(node.icon);
+    const description = escapeHtml(node.description);
+    const url = escapeHtml(node.url);
+    const thumbnail = escapeHtml(node.thumbnail);
+    const caption = escapeHtml(node.caption);
 
     const element = document.createElement('div');
 
-    const html = 
+    const html =
         `
         <!--[if !mso !vml]-->
             <figure class="kg-card kg-bookmark-card ${caption ? `kg-card-hascaption` : ''}">
