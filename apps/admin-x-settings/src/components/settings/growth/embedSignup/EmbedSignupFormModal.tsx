@@ -54,7 +54,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             backgroundColor: selectedColor || '#08090c',
             layout: selectedLayout,
             i18nEnabled
-        }
+        };
 
         const previewCode = generateCode({
             preview: true,
