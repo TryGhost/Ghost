@@ -3,8 +3,8 @@ const test = require('../fixtures/ghost-test');
 const {createMember, impersonateMember, completeStripeSubscription} = require('../utils');
 
 test.describe('Portal', () => {
-    test.describe.only('Donations', () => {
-        test.only('Can donate as an anonymous member', async ({sharedPage}) => {
+    test.describe('Donations', () => {
+        test('Can donate as an anonymous member', async ({sharedPage}) => {
             // go to website and open portal
             await sharedPage.goto('/#/portal/support');
 
