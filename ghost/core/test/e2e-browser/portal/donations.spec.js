@@ -13,7 +13,9 @@ test.describe('Portal', () => {
             await sharedPage.getByText('Change amount').click();
             await sharedPage.locator('#customUnitAmount').fill('12.50');
             await sharedPage.locator('#email').fill('member-donation-test-1@ghost.org');
-            await sharedPage.getByTestId('card-accordion-item-button').dispatchEvent('click');
+            if (await sharedPage.getByTestId('card-tab-button').isVisible()) {
+                await sharedPage.getByTestId('card-tab-button').dispatchEvent('click');
+            }
             await completeStripeSubscription(sharedPage);
             await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
             expect(sharedPage.url()).toMatch(/[^\/]\/#\/portal\/support\/success/); // Ensure correct URL and no double-slash
@@ -40,7 +42,9 @@ test.describe('Portal', () => {
             // Don't need to fill email as it's already filled
             await sharedPage.getByText('Change amount').click();
             await sharedPage.locator('#customUnitAmount').fill('12.50');
-            await sharedPage.getByTestId('card-accordion-item-button').dispatchEvent('click');
+            if (await sharedPage.getByTestId('card-tab-button').isVisible()) {
+                await sharedPage.getByTestId('card-tab-button').dispatchEvent('click');
+            }
             await completeStripeSubscription(sharedPage);
 
             // Check success notification
@@ -69,7 +73,9 @@ test.describe('Portal', () => {
 
             const totalAmount = sharedPage.getByTestId('product-summary-total-amount');
             await expect(totalAmount).toHaveText('€98.00');
-            await sharedPage.getByTestId('card-accordion-item-button').dispatchEvent('click');
+            if (await sharedPage.getByTestId('card-tab-button').isVisible()) {
+                await sharedPage.getByTestId('card-tab-button').dispatchEvent('click');
+            }
             await completeStripeSubscription(sharedPage);
 
             // Check success message
