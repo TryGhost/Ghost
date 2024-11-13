@@ -1,6 +1,6 @@
 /**
  * Escape HTML special characters
- * @param {string} unsafe 
+ * @param {string} unsafe
  * @returns string
  */
 export function escapeHtml(unsafe) {
