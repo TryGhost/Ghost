@@ -1,13 +1,12 @@
 import assert from 'assert/strict';
 import {PrometheusClient} from '../src';
 import {Request, Response} from 'express';
-import type {Metric} from 'prom-client';
 import * as sinon from 'sinon';
 import type {Knex} from 'knex';
 import nock from 'nock';
 import {EventEmitter} from 'events';
 import type {EventEmitter as EventEmitterType} from 'events';
-import type {Gauge, Counter, Summary, Pushgateway, RegistryContentType} from 'prom-client';
+import type {Gauge, Counter, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
 
 describe('Prometheus Client', function () {
     let instance: PrometheusClient;
@@ -391,7 +390,7 @@ describe('Prometheus Client', function () {
             it('should add the counter metric to the registry', function () {
                 instance = new PrometheusClient();
                 instance.init();
-                instance.registerCounter('test_counter', 'A test counter');
+                instance.registerCounter({name: 'test_counter', help: 'A test counter'});
                 const metric = instance.getMetric('ghost_test_counter');
                 assert.ok(metric);
             });
@@ -399,7 +398,7 @@ describe('Prometheus Client', function () {
             it('should return the counter metric', function () {
                 instance = new PrometheusClient();
                 instance.init();
-                const counter = instance.registerCounter('test_counter', 'A test counter');
+                const counter = instance.registerCounter({name: 'test_counter', help: 'A test counter'});
                 const metric = instance.getMetric('ghost_test_counter');
                 assert.equal(metric, counter);
             });
@@ -407,13 +406,88 @@ describe('Prometheus Client', function () {
             it('should increment the counter', async function () {
                 instance = new PrometheusClient();
                 instance.init();
-                const counter = instance.registerCounter('test_counter', 'A test counter');
+                const counter = instance.registerCounter({name: 'test_counter', help: 'A test counter'});
                 const metric = instance.getMetric('ghost_test_counter');
                 const metricValueBefore = await metric?.get();
                 assert.equal(metricValueBefore?.values[0].value, 0);
                 counter.inc();
                 const metricValueAfter = await metric?.get();
                 assert.equal(metricValueAfter?.values[0].value, 1);
+            });
+        });
+
+        describe('registerGauge', function () {
+            it('should add the gauge metric to the registry', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
+                const metric = instance.getMetric('ghost_test_gauge');
+                assert.ok(metric);
+            });
+
+            it('should return the gauge metric', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
+                const metric = instance.getMetric('ghost_test_gauge');
+                assert.equal(metric, gauge);
+            });
+
+            it('should set the gauge value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
+                gauge.set(10);
+                const metric = instance.getMetric('ghost_test_gauge');
+                const metricValue = await metric?.get();
+                assert.equal(metricValue?.values[0].value, 10);
+            });
+
+            it('should increment the gauge', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
+                const metricValueBefore = await gauge.get();
+                assert.equal(metricValueBefore?.values[0].value, 0);
+                gauge.inc();
+                const metricValueAfter = await gauge.get();
+                assert.equal(metricValueAfter?.values[0].value, 1);
+            });
+
+            it('should decrement the gauge', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
+                const metricValueBefore = await gauge.get();
+                assert.equal(metricValueBefore?.values[0].value, 0);
+                gauge.dec();
+                const metricValueAfter = await gauge.get();
+                assert.equal(metricValueAfter?.values[0].value, -1);
+            });
+
+            it('should use the collect function to set the gauge value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerGauge({name: 'test_gauge', help: 'A test gauge', collect() {
+                    (this as unknown as Gauge).set(10); // `this` is the gauge instance
+                }});
+                const metric = instance.getMetric('ghost_test_gauge');
+                const metricValue = await metric?.get();
+                assert.equal(metricValue?.values[0].value, 10);
+            });
+
+            it('should use an async collect function to set the gauge value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerGauge({name: 'test_gauge', help: 'A test gauge', async collect() {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 10);
+                    });
+                    (this as unknown as Gauge).set(20); // `this` is the gauge instance
+                }});
+                const metric = instance.getMetric('ghost_test_gauge');
+                const metricValue = await metric?.get();
+                assert.equal(metricValue?.values[0].value, 20);
             });
         });
     });

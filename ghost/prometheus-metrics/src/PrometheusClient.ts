@@ -157,10 +157,24 @@ export class PrometheusClient {
      * @param help - The help text for the metric
      * @returns The counter metric
      */
-    registerCounter(name: string, help: string) {
+    registerCounter({name, help}: {name: string, help: string}): client.Counter {
         return new this.client.Counter({
             name: `${this.prefix}${name}`,
             help
+        });
+    }
+
+    /**
+     * Registers a gauge metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @returns The gauge metric
+     */
+    registerGauge({name, help, collect}: {name: string, help: string, collect?: () => void}): client.Gauge {
+        return new this.client.Gauge({
+            name: `${this.prefix}${name}`,
+            help,
+            collect
         });
     }
 
