@@ -173,7 +173,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     //     // Handle delete action
     // };
 
-    const handleCopyLink = async () => {
+    const handleCopyLink = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
@@ -195,7 +196,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     menuItems.push({
         id: 'copy-link',
         label: 'Copy link to post',
-        onClick: handleCopyLink
+        onClick: (e: React.MouseEvent) => {
+            handleCopyLink(e);
+        }
     });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
