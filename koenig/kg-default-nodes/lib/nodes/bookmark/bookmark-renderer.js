@@ -1,5 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {escapeHtml} from '../../utils/escape-html';
+import {truncateHtml} from '../../utils/truncate';
 
 export function renderBookmarkNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -17,63 +19,20 @@ export function renderBookmarkNode(node, options = {}) {
     }
 }
 
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function truncateText(text, maxLength) {
-    if (text && text.length > maxLength) {
-        return text.substring(0, maxLength - 1).trim() + '…';
-    } else {
-        return text ?? '';
-    }
-}
-
-function truncateHtml(text, maxLength, maxLengthMobile) {
-    // If no mobile length specified or mobile length is larger than desktop,
-    // just do a simple truncate
-    if (!maxLengthMobile || maxLength <= maxLengthMobile) {
-        return escapeHtml(truncateText(text, maxLength));
-    }
-
-    // Handle text shorter than mobile length
-    if (text.length <= maxLengthMobile) {
-        return escapeHtml(text);
-    }
-    
-    if (text && text.length > maxLengthMobile) {
-        let ellipsis = '';
-
-        if (text.length > maxLengthMobile && text.length <= maxLength) {
-            ellipsis = '<span class="hide-desktop">…</span>';
-        } else if (text.length > maxLength) {
-            ellipsis = '…';
-        }
-
-        return escapeHtml(text.substring(0, maxLengthMobile - 1)) + '<span class="desktop-only">' + escapeHtml(text.substring(maxLengthMobile - 1, maxLength - 1)) + '</span>' + ellipsis;
-    } else {
-        return escapeHtml(text ?? '');
-    }
-}
-
 function emailTemplate(node, document) {
-    const title = node.title;
-    const publisher = node.publisher;
-    const author = node.author;
+    const title = escapeHtml(node.title);
+    const publisher = escapeHtml(node.publisher);
+    const author = escapeHtml(node.author);
+    const description = escapeHtml(node.description);
+
     const icon = node.icon;
-    const description = node.description;
     const url = node.url;
     const thumbnail = node.thumbnail;
     const caption = node.caption;
 
     const element = document.createElement('div');
 
-    const html = 
+    const html =
         `
         <!--[if !mso !vml]-->
             <figure class="kg-card kg-bookmark-card ${caption ? `kg-card-hascaption` : ''}">

@@ -133,7 +133,7 @@ describe('BookmarkNode', function () {
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
             BookmarkNode.urlTransformMap.should.deepEqual({
-                'url': 'url',
+                url: 'url',
                 'metadata.icon': 'url',
                 'metadata.thumbnail': 'url'
             });
@@ -206,6 +206,64 @@ describe('BookmarkNode', function () {
 
             element.outerHTML.should.equal('<span></span>');
         }));
+
+        it('escapes HTML for text fields in web', editorTest(function () {
+            dataset = {
+                url: 'https://www.fake.org/',
+                metadata: {
+                    icon: 'https://www.fake.org/favicon.ico',
+                    title: 'Ghost: Independent technology <script>alert("XSS")</script> for modern publishing.',
+                    description: 'doing "kewl" stuff',
+                    author: 'fa\'ker',
+                    publisher: 'Fake <script>alert("XSS")</script>',
+                    thumbnail: 'https://fake.org/image.png'
+                },
+                caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
+            };
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM(exportOptions);
+
+            // Check that text fields are escaped
+            element.innerHTML.should.containEql('Ghost: Independent technology &lt;script&gt;alert("XSS")&lt;/script&gt; for modern publishing.');
+            element.innerHTML.should.containEql('doing "kewl" stuff');
+            element.innerHTML.should.containEql('fa\'ker');
+            element.innerHTML.should.containEql('Fake &lt;script&gt;alert("XSS")&lt;/script&gt;');
+
+            // Check that caption is not escaped
+            element.innerHTML.should.containEql('<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>');
+        }));
+
+        it('escapes HTML for text fields in email', editorTest(function () {
+            const options = {
+                target: 'email'
+            };
+            dataset = {
+                url: 'https://www.fake.org/',
+                metadata: {
+                    icon: 'https://www.fake.org/favicon.ico',
+                    title: 'Ghost: Independent technology <script>alert("XSS")</script> for modern publishing.',
+                    description: 'doing "kewl" stuff',
+                    author: 'fa\'ker',
+                    publisher: 'Fake <script>alert("XSS")</script>',
+                    thumbnail: 'https://fake.org/image.png'
+                },
+                caption: '<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'
+            };
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
+
+            // Check that email template is used
+            element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
+
+            // Check that text fields are escaped
+            element.innerHTML.should.containEql('Ghost: Independent technology &lt;script&gt;alert("XSS")&lt;/script&gt; for modern publishing.');
+            element.innerHTML.should.containEql('doing &amp;quot;kewl&amp;quot; stuff');
+            element.innerHTML.should.containEql('fa\'ker');
+            element.innerHTML.should.containEql('Fake &lt;script&gt;alert("XSS")&lt;/script&gt;');
+
+            // Check that caption is not escaped
+            element.innerHTML.should.containEql('<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>');
+        }));
     });
 
     describe('exportJSON', function () {
@@ -277,7 +335,7 @@ describe('BookmarkNode', function () {
 
         it('urlTransformMap', editorTest(function () {
             BookmarkNode.urlTransformMap.should.deepEqual({
-                'url': 'url',
+                url: 'url',
                 'metadata.icon': 'url',
                 'metadata.thumbnail': 'url'
             });
