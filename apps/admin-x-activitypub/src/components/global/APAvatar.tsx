@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
-type AvatarSize = 'xs' | 'sm' | 'lg';
+type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg';
 export type AvatarBadge = 'user-fill' | 'heart-fill' | 'comment-fill' | undefined;
 
 interface APAvatarProps {
@@ -37,6 +37,11 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     }
 
     switch (size) {
+    case '2xs':
+        iconSize = 10;
+        containerClass = clsx('h-4 w-4 rounded ', containerClass);
+        imageClass = 'z-10 rounded w-4 h-4 object-cover';
+        break;
     case 'xs':
         iconSize = 12;
         containerClass = clsx('h-5 w-5 rounded ', containerClass);

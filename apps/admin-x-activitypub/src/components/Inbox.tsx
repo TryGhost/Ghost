@@ -76,9 +76,9 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                         </div>
                     ) : activities.length > 0 ? (
                         <>
-                            <div className={`mx-auto flex items-start ${layout === 'inbox' ? 'max-w-6xl gap-14' : 'gap-8'}`}>
+                            <div className={`mx-auto flex items-start gap-8`}>
                                 <div className='flex w-full min-w-0 items-start'>
-                                    <ul className={`mx-auto flex ${layout === 'inbox' ? 'w-full max-w-full' : 'max-w-[500px]'} flex-col`}>
+                                    <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
                                         {activities.map((activity, index) => (
                                             <li
                                                 key={activity.id}
@@ -106,7 +106,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         )}
                                     </ul>
                                 </div>
-                                <div className={`sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden ${layout === 'inbox' ? '' : ' xxxl:fixed xxxl:right-[40px]'}`}>
+                                <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like...</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
