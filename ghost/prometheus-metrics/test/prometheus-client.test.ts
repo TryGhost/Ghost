@@ -1,6 +1,7 @@
 import assert from 'assert/strict';
 import {PrometheusClient} from '../src';
 import {Request, Response} from 'express';
+import type {Metric} from 'prom-client';
 import * as sinon from 'sinon';
 import type {Knex} from 'knex';
 import nock from 'nock';
@@ -155,11 +156,56 @@ describe('Prometheus Client', function () {
     });
 
     describe('getMetrics', function () {
-        it('should return metrics', async function () {
+        it('should return metrics as a string', async function () {
             instance = new PrometheusClient();
             instance.init();
             const metrics = await instance.getMetrics();
-            assert.match(metrics, /^# HELP/);
+            assert.equal(typeof metrics, 'string');
+            assert.match(metrics as string, /^# HELP/);
+        });
+    });
+
+    describe('getMetricsAsJSON', function () {
+        it('should return metrics as an array of objects', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metrics = await instance.getMetricsAsJSON();
+            assert.equal(typeof metrics, 'object');
+            assert.ok(Array.isArray(metrics));
+            assert.ok(Object.keys(metrics[0]).includes('name'));
+        });
+    });
+
+    describe('getMetricsAsArray', function () {
+        it('should return metrics as an array', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metricsArray = await instance.getMetricsAsArray();
+            assert.ok(Array.isArray(metricsArray));
+            assert.ok((metricsArray[0] as Metric).get());
+        });
+    });
+
+    describe('getMetric', function () {
+        it('should return a metric from the registry by name', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metric = instance.getMetric('ghost_process_cpu_seconds_total');
+            assert.ok(metric);
+        });
+
+        it('should return undefined if the metric is not found', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metric = instance.getMetric('ghost_not_a_metric');
+            assert.equal(metric, undefined);
+        });
+
+        it('should add the prefix to the metric name if it is not already present', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metric = instance.getMetric('process_cpu_seconds_total');
+            assert.ok(metric);
         });
     });
 
@@ -337,6 +383,38 @@ describe('Prometheus Client', function () {
                 {metricName: 'ghost_db_query_duration_milliseconds_sum', labels: {}, value: 5500},
                 {metricName: 'ghost_db_query_duration_milliseconds_count', labels: {}, value: 10}
             ]);
+        });
+    });
+
+    describe('Custom Metrics', function () {
+        describe('registerCounter', function () {
+            it('should add the counter metric to the registry', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerCounter('test_counter', 'A test counter');
+                const metric = instance.getMetric('ghost_test_counter');
+                assert.ok(metric);
+            });
+
+            it('should return the counter metric', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const counter = instance.registerCounter('test_counter', 'A test counter');
+                const metric = instance.getMetric('ghost_test_counter');
+                assert.equal(metric, counter);
+            });
+
+            it('should increment the counter', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const counter = instance.registerCounter('test_counter', 'A test counter');
+                const metric = instance.getMetric('ghost_test_counter');
+                const metricValueBefore = await metric?.get();
+                assert.equal(metricValueBefore?.values[0].value, 0);
+                counter.inc();
+                const metricValueAfter = await metric?.get();
+                assert.equal(metricValueAfter?.values[0].value, 1);
+            });
         });
     });
 });

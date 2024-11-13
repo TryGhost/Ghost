@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
+import type {Metric} from 'prom-client';
 import type {Knex} from 'knex';
 import logging from '@tryghost/logging';
 
@@ -112,10 +113,23 @@ export class PrometheusClient {
     }
 
     /**
-     * Returns the metrics from the registry
+     * Returns the metrics from the registry as a string
      */
-    async getMetrics() {
+    async getMetrics(): Promise<string> {
         return this.client.register.metrics();
+    }
+
+    /**
+     * Returns the metrics from the registry as a JSON object
+     * 
+     * Particularly useful for testing
+     */
+    async getMetricsAsJSON(): Promise<object[]> {
+        return this.client.register.getMetricsAsJSON();
+    }
+
+    async getMetricsAsArray(): Promise<object[]> {
+        return this.client.register.getMetricsAsArray();
     }
 
     /**
@@ -123,6 +137,31 @@ export class PrometheusClient {
      */
     getContentType() {
         return this.client.register.contentType;
+    }
+
+    /**
+     * Returns a single metric from the registry
+     * @param name - The name of the metric
+     * @returns The metric
+     */
+    getMetric(name: string): Metric | undefined {
+        if (!name.startsWith(this.prefix)) {
+            name = `${this.prefix}${name}`;
+        }
+        return this.client.register.getSingleMetric(name);
+    }
+
+    /**
+     * Registers a counter metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @returns The counter metric
+     */
+    registerCounter(name: string, help: string) {
+        return new this.client.Counter({
+            name: `${this.prefix}${name}`,
+            help
+        });
     }
 
     // Utility functions for creating custom metrics
