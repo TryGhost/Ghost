@@ -1,14 +1,34 @@
 # Koenig - Lexical edition
 
-Early stage re-write of Ghost's editor, using Lexical as the editor framework in place of mobiledoc-kit.
+Ghost editor, based on the Lexical framework.
 
 ## Development
 
-### Running the development version
+The editor can be run in two modes:
+- standalone mode: demo version that runs without a dependency on Ghost
+- integrated mode: integrated into Ghost Admin
 
-Run `yarn dev` to start the development server to test/develop the editor standalone. This will generate a demo site from the `index.html` file which renders the demo app in `demo/demo.jsx` and makes it available on http://localhost:5173
+### Standalone mode
 
-### Cards additional setup
+Run `yarn dev` to start the editor in standalone mode for development on http://localhost:5173. This command generates a demo site from the `index.html` file, which renders the demo app in `demo/demo.jsx`.
+
+### Integrated mode
+
+In order to run the editor inside Ghost Admin, follow the 3 steps below:
+
+1. Link Koenig server-side dependencies inside Ghost
+   - Run `yarn link` inside `Koenig/packages/kg-default-nodes` and `Koenig/packages/kg-lexical-html-renderer`
+   - Paste the output at the root of the Ghost monorepo:
+     - `yarn link @tryghost/kg-default-nodes`
+     - `yarn link @tryghost/kg-lexical-html-renderer`
+
+2. Start Ghost in dev mode: inside the Ghost monorepo, run `yarn dev --lexical`.
+
+3. Start the editor in dev mode: inside the Koenig monorepo, run `yarn dev`.
+
+Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a post, it will use your local version of the editor. Changes to the editor will be reflected inside Ghost Admin after a few seconds - the time for the editor to get rebuilt.
+
+### Specific card setup
 
 #### Gif card
 
@@ -23,19 +43,7 @@ How to get the tenor key is described here https://ghost.org/docs/config/#tenor
 
 These cards make external web requests. Since the demo doesn't have a server to process these requests, we must fetch these resources on the front end. To do this we need to enable CORS, which is most easily done with a browser extension like 'Test CORS' for Chrome. Otherwise you will see blocked requests logging errors in the console. This can also be avoided by using test data directly without fetching via `fetchEmbed.js`.
 
-### Running inside Admin
-
-```bash
-# Within koenig-lexical, start all the build/preview steps
-yarn dev
-
-# Within Ghost, run `yarn dev` with `--lexical`
-yarn dev --lexical
-```
-
-Admin should now load your local version of Lexical.
-
-Note: if you need to run your local packages of `kg-default-nodes` and `kg-lexical-html-renderer`, you will need to run `yarn link` in those repositories and run the output in `ghost/core`. Otherwise `ghost/core` will be using the latest published version listed in `package.json`.
+## Additional notes
 
 ### Project structure
 
@@ -47,7 +55,7 @@ The main module source. `/src/index.js` is the entry point for the exposed modul
 
 Used for developing/demoing the editor. Renders a blank editor with all features enabled.
 
-### Set up details
+### Styling
 
 **CSS**
 
@@ -100,30 +108,23 @@ Node enables ECMAScript modules if `type: 'module'` in package.json file. It lea
 - [No require.extensions](https://github.com/GrosSacASac/node/blob/master/doc/api/esm.md#no-requireextensions). It means we don't have control over the extensions list. Further will be a description of why this is important.
 
 We can make file extension optional with [--experimental-specifier-resolution](https://nodejs.org/api/cli.html#--experimental-specifier-resolutionmode)
-flag, which we use. But node is not recognized `jsx` extension. 
-It can be solved with [node loaders](https://github.com/nodejs/loaders-test/tree/main/commonjs-extension-resolution-loader), whereas 
-as they're still in [experimental mode](https://nodejs.org/api/esm.html#esm_experimental_loaders), there is no appropriate 
+flag, which we use. But node is not recognized `jsx` extension.
+It can be solved with [node loaders](https://github.com/nodejs/loaders-test/tree/main/commonjs-extension-resolution-loader), whereas
+as they're still in [experimental mode](https://nodejs.org/api/esm.html#esm_experimental_loaders), there is no appropriate
 implementation for this use case.
-The same issue was raised in the babel repo, but the loader won't be added while node loaders are 
-in [experimental mode](https://github.com/babel/babel/issues/11934).  
+The same issue was raised in the babel repo, but the loader won't be added while node loaders are
+in [experimental mode](https://github.com/babel/babel/issues/11934).
 
-We can add our loader implementation to solve the issue. Still, in reality, we shouldn't need real 
-JSX components in e2e tests. It can be a situation when some constants locate in the `jsx` file. In this case, 
-we can move them to js file. If it is a problem in the future, we can add our implementation of the loader or 
+We can add our loader implementation to solve the issue. Still, in reality, we shouldn't need real
+JSX components in e2e tests. It can be a situation when some constants locate in the `jsx` file. In this case,
+we can move them to js file. If it is a problem in the future, we can add our implementation of the loader or
 add an extension to all imports in the project.
-
-## Deployment
-
-To deploy the changes made in Koenig Lexical and integrate them into Ghost, follow these steps:
-
-1. Run `yarn ship` in the top-level Koenig monorepo. This command will update the editor used on Ghost by fetching the latest version from jsdelivr.
-
-2. Bump the version of `@tryghost/kg-default-nodes` in the Ghost repository. This step is necessary for rendering to work correctly with newly added or updated nodes. Failure to perform this step may result in issues when saving posts on Ghost that use the new cards.
-
-3. Run `/main` in Slack and wait for the new version to build to test on staging.
 
 ### Editor integration
 
-There's a [vitest vscode extension](https://marketplace.visualstudio.com/items?itemName=ZixuanChen.vitest-explorer) that 
+There's a [vitest vscode extension](https://marketplace.visualstudio.com/items?itemName=ZixuanChen.vitest-explorer) that
 lets you run and debug individual unit tests/groups directly inside vscode.
 
+## Deployment
+
+Koenig packages are shipped via Lerna at the monorepo level. Please refer to the monorepo's [README](../../README.md) for deployment instructions.
