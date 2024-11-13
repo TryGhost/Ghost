@@ -508,7 +508,7 @@ describe('Prometheus Client', function () {
                 assert.equal(metric, summary);
             });
 
-            it('should observe a value', async function () {
+            it('can observe a value', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 const summary = instance.registerSummary({name: 'test_summary', help: 'A test summary'});
@@ -525,7 +525,7 @@ describe('Prometheus Client', function () {
                 ]);
             });
 
-            it('should use the collect function to set the summary value', async function () {
+            it('can use the collect function to set the summary value', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', collect() {
@@ -542,7 +542,7 @@ describe('Prometheus Client', function () {
                 ]);
             });
 
-            it('should use an async collect function to set the summary value', async function () {
+            it('can use an async collect function to set the summary value', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', async collect() {
@@ -562,7 +562,7 @@ describe('Prometheus Client', function () {
                 ]);
             });
 
-            it('should use the percentiles option to set the summary value', async function () {
+            it('can use the percentiles option to set the summary value', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', percentiles: [0.1, 0.5, 0.9]});
@@ -575,6 +575,170 @@ describe('Prometheus Client', function () {
                     {metricName: 'ghost_test_summary_sum', labels: {}, value: 0},
                     {metricName: 'ghost_test_summary_count', labels: {}, value: 0}
                 ]);
+            });
+
+            it('can use a timer to observe the summary value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const summary = instance.registerSummary({name: 'test_summary', help: 'A test summary', percentiles: [0.1, 0.5, 0.9]});
+                const clock = sinon.useFakeTimers();
+                const timer = summary.startTimer();
+                clock.tick(1000);
+                timer();
+                const metric = instance.getMetric('ghost_test_summary');
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue?.values, [
+                    {labels: {quantile: 0.1}, value: 1},
+                    {labels: {quantile: 0.5}, value: 1},
+                    {labels: {quantile: 0.9}, value: 1},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 1},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+
+                clock.restore();
+            });
+        });
+
+        describe('registerHistogram', function () {
+            it('should add the histogram metric to the registry', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerHistogram({name: 'test_histogram', help: 'A test histogram', buckets: [1, 2, 3]});
+                const metric = instance.getMetric('ghost_test_histogram');
+                assert.ok(metric);
+            });
+
+            it('should return the histogram metric', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const histogram = instance.registerHistogram({name: 'test_histogram', help: 'A test histogram', buckets: [1, 2, 3]});
+                const metric = instance.getMetric('ghost_test_histogram');
+                assert.equal(metric, histogram);
+            });
+
+            it('can observe a value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const histogram = instance.registerHistogram({name: 'test_histogram', help: 'A test histogram', buckets: [1, 2, 3]});
+                histogram.observe(1);
+                histogram.observe(2);
+                histogram.observe(3);
+                const metric = instance.getMetric('ghost_test_histogram');
+                assert.ok(metric);
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue?.values, [
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: 1
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 1
+                    },
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: 2
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 2
+                    },
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: 3
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 3
+                    },
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: '+Inf'
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 3
+                    },
+                    {
+                        exemplar: undefined,
+                        labels: {},
+                        metricName: 'ghost_test_histogram_sum',
+                        value: 6
+                    },
+                    {
+                        exemplar: undefined,
+                        labels: {},
+                        metricName: 'ghost_test_histogram_count',
+                        value: 3
+                    }
+                ]);
+            });
+
+            it('can use a timer to observe the histogram value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const histogram = instance.registerHistogram({name: 'test_histogram', help: 'A test histogram', buckets: [1000, 2000, 3000]});
+                const clock = sinon.useFakeTimers();
+                // Observe a value of 1 second
+                const timer1 = histogram.startTimer();
+                clock.tick(1000);
+                timer1();
+
+                // Observe a value of 2 seconds
+                const timer2 = histogram.startTimer();
+                clock.tick(2000);
+                timer2();
+
+                const metric = instance.getMetric('ghost_test_histogram');
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue?.values, [
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: 1000
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 2
+                    },
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: 2000
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 2
+                    },
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: 3000
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 2
+                    },
+                    {
+                        exemplar: null,
+                        labels: {
+                            le: '+Inf'
+                        },
+                        metricName: 'ghost_test_histogram_bucket',
+                        value: 2
+                    },
+                    {
+                        exemplar: undefined,
+                        labels: {},
+                        metricName: 'ghost_test_histogram_sum',
+                        value: 3
+                    },
+                    {
+                        exemplar: undefined,
+                        labels: {},
+                        metricName: 'ghost_test_histogram_count',
+                        value: 2
+                    }
+                ]);
+
+                clock.restore();
             });
         });
     });

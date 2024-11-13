@@ -168,6 +168,7 @@ export class PrometheusClient {
      * Registers a gauge metric
      * @param name - The name of the metric
      * @param help - The help text for the metric
+     * @param collect - The collect function to use for the gauge
      * @returns The gauge metric
      */
     registerGauge({name, help, collect}: {name: string, help: string, collect?: () => void}): client.Gauge {
@@ -183,6 +184,7 @@ export class PrometheusClient {
      * @param name - The name of the metric
      * @param help - The help text for the metric
      * @param percentiles - The percentiles to calculate for the summary
+     * @param collect - The collect function to use for the summary
      * @returns The summary metric
      */
     registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
@@ -191,6 +193,22 @@ export class PrometheusClient {
             help,
             percentiles: percentiles || [0.5, 0.9, 0.99],
             collect
+        });
+    }
+
+    /**
+     * Registers a histogram metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @param buckets - The buckets to calculate for the histogram
+     * @param collect - The collect function to use for the histogram
+     * @returns The histogram metric
+     */
+    registerHistogram({name, help, buckets}: {name: string, help: string, buckets: number[], collect?: () => void}): client.Histogram {
+        return new this.client.Histogram({
+            name: `${this.prefix}${name}`,
+            help,
+            buckets: buckets
         });
     }
 
