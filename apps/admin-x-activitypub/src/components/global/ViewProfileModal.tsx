@@ -13,6 +13,7 @@ import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
 import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
+import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 
 const noop = () => {};
@@ -86,7 +87,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                     <APAvatar author={actor} />
                                     <div>
                                         <div className='text-grey-600'>
-                                            <span className='mr-1 font-bold text-black'>{actor.name || actor.preferredUsername || 'Unknown'}</span>
+                                            <span className='mr-1 font-bold text-black'>{getName(actor)}</span>
                                             <div className='text-sm'>{getUsername(actor)}</div>
                                         </div>
                                     </div>
