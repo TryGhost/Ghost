@@ -490,5 +490,92 @@ describe('Prometheus Client', function () {
                 assert.equal(metricValue?.values[0].value, 20);
             });
         });
+
+        describe('registerSummary', function () {
+            it('should add the summary metric to the registry', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerSummary({name: 'test_summary', help: 'A test summary'});
+                const metric = instance.getMetric('ghost_test_summary');
+                assert.ok(metric);
+            });
+
+            it('should return the summary metric', function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const summary = instance.registerSummary({name: 'test_summary', help: 'A test summary'});
+                const metric = instance.getMetric('ghost_test_summary');
+                assert.equal(metric, summary);
+            });
+
+            it('should observe a value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                const summary = instance.registerSummary({name: 'test_summary', help: 'A test summary'});
+                summary.observe(10);
+                const metric = instance.getMetric('ghost_test_summary');
+                assert.ok(metric);
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue.values, [
+                    {labels: {quantile: 0.5}, value: 10},
+                    {labels: {quantile: 0.9}, value: 10},
+                    {labels: {quantile: 0.99}, value: 10},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 10},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+            });
+
+            it('should use the collect function to set the summary value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerSummary({name: 'test_summary', help: 'A test summary', collect() {
+                    (this as unknown as Summary).observe(20);
+                }});
+                const metric = instance.getMetric('ghost_test_summary');
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue?.values, [
+                    {labels: {quantile: 0.5}, value: 20},
+                    {labels: {quantile: 0.9}, value: 20},
+                    {labels: {quantile: 0.99}, value: 20},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 20},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+            });
+
+            it('should use an async collect function to set the summary value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerSummary({name: 'test_summary', help: 'A test summary', async collect() {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 10);
+                    });
+                    (this as unknown as Summary).observe(30);
+                }});
+                const metric = instance.getMetric('ghost_test_summary');
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue?.values, [
+                    {labels: {quantile: 0.5}, value: 30},
+                    {labels: {quantile: 0.9}, value: 30},
+                    {labels: {quantile: 0.99}, value: 30},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 30},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+            });
+
+            it('should use the percentiles option to set the summary value', async function () {
+                instance = new PrometheusClient();
+                instance.init();
+                instance.registerSummary({name: 'test_summary', help: 'A test summary', percentiles: [0.1, 0.5, 0.9]});
+                const metric = instance.getMetric('ghost_test_summary');
+                const metricValue = await metric?.get();
+                assert.deepEqual(metricValue?.values, [
+                    {labels: {quantile: 0.1}, value: 0},
+                    {labels: {quantile: 0.5}, value: 0},
+                    {labels: {quantile: 0.9}, value: 0},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 0},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 0}
+                ]);
+            });
+        });
     });
 });

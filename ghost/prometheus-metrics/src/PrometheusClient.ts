@@ -178,6 +178,22 @@ export class PrometheusClient {
         });
     }
 
+    /**
+     * Registers a summary metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @param percentiles - The percentiles to calculate for the summary
+     * @returns The summary metric
+     */
+    registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
+        return new this.client.Summary({
+            name: `${this.prefix}${name}`,
+            help,
+            percentiles: percentiles || [0.5, 0.9, 0.99],
+            collect
+        });
+    }
+
     // Utility functions for creating custom metrics
 
     /**
