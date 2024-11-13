@@ -672,7 +672,7 @@ export default class LexicalEditorController extends Controller {
                 yield this.modals.open(ReAuthenticateModal);
 
                 if (this.session.isAuthenticated) {
-                    return this.saveTask.perform(options);
+                    return this.autosaveTask.perform();
                 }
             }
 
