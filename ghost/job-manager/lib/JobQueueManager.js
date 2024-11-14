@@ -108,7 +108,7 @@ class JobQueueManager {
         if (stats.pendingTasks <= this.config.QUEUE_CAPACITY) {
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
             const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
-            this.prometheusClient.getMetric('job_manager_queue_depth').set(total);
+            this.prometheusClient.getMetric('job_manager_queue_depth')?.set(total);
             this.logger.info(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
             this.updatePollInterval(jobs);
             await this.processJobs(jobs);
@@ -143,7 +143,7 @@ class JobQueueManager {
         try {
             await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
-            this.prometheusClient.getMetric('job_manager_queue_job_completion_count').inc({jobName});
+            this.prometheusClient.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
             if (jobName === 'update-member-email-analytics') {
                 this.prometheusClient.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
             }
