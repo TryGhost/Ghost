@@ -34,7 +34,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
             };
             editor.on('update', checkContent);
             editor.on('transaction', checkContent);
-            
+
             checkContent();
 
             return () => {
@@ -139,8 +139,8 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
                 {labs.commentImprovements ? (
                     <button
                         className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md px-3 py-2 text-center font-sans text-base font-medium outline-0 transition-all duration-200 sm:text-sm ${
-                            hasContent 
-                                ? 'bg-[var(--gh-accent-color)] text-white hover:brightness-105' 
+                            hasContent
+                                ? 'bg-[var(--gh-accent-color)] text-white hover:brightness-105'
                                 : 'bg-black/5 text-neutral-900 dark:bg-white/15 dark:text-neutral-300'
                         }`}
                         data-testid="submit-form-button"
@@ -300,18 +300,25 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
+        <form
+            ref={formEl}
+            className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
+            data-testid="form"
+            onClick={focusEditor}
+            onMouseDown={preventIfFocused}
+            onTouchStart={preventIfFocused}
+        >
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                    <FormEditor 
-                        close={close} 
-                        editor={editor} 
-                        isOpen={isOpen} 
-                        progress={progress} 
-                        reduced={reduced} 
-                        setProgress={setProgress} 
-                        submit={submit} 
-                        submitSize={submitSize} 
+                    <FormEditor
+                        close={close}
+                        editor={editor}
+                        isOpen={isOpen}
+                        progress={progress}
+                        reduced={reduced}
+                        setProgress={setProgress}
+                        submit={submit}
+                        submitSize={submitSize}
                         submitText={submitText}
                     />
                 </div>
@@ -320,7 +327,13 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                         <Avatar comment={comment} />
                     </div>
                     <div className="grow-1 mt-0.5 w-full">
-                        <FormHeader editExpertise={editExpertise} editName={editName} expertise={memberExpertise} name={memberName} show={isOpen} />
+                        <FormHeader
+                            editExpertise={editExpertise}
+                            editName={editName}
+                            expertise={memberExpertise}
+                            name={memberName}
+                            show={isOpen}
+                        />
                     </div>
                 </div>
             </div>
