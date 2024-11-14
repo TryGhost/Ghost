@@ -16,7 +16,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     let iconSize = 18;
     let containerClass = 'shrink-0 items-center justify-center relative z-10 flex';
     let imageClass = 'z-10 rounded w-10 h-10 object-cover';
-    const badgeClass = `w-6 h-6 z-20 rounded-full absolute -bottom-2 -right-[0.6rem] border-2 border-white content-box flex items-center justify-center `;
+    const badgeClass = `w-6 h-6 z-20 rounded-full absolute -bottom-2 -right-[0.6rem] border-2 border-white content-box flex items-center justify-center`;
     let badgeColor = '';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
 
@@ -26,13 +26,13 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
 
     switch (badge) {
     case 'user-fill':
-        badgeColor = ' bg-blue-500';
+        badgeColor = 'bg-blue-500';
         break;
     case 'heart-fill':
-        badgeColor = ' bg-red-500';
+        badgeColor = 'bg-red-500';
         break;
     case 'comment-fill':
-        badgeColor = ' bg-purple-500';
+        badgeColor = 'bg-purple-500';
         break;
     }
 
@@ -55,13 +55,23 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         imageClass = 'z-10 rounded-xl w-22 h-22 object-cover';
         break;
     default:
-        containerClass = clsx('h-10 w-10  rounded', containerClass);
+        containerClass = clsx('h-10 w-10 rounded', containerClass);
         break;
     }
 
     if (!iconUrl) {
         containerClass = clsx(containerClass, 'bg-grey-100');
     }
+
+    const BadgeElement = badge && (
+        <div className={clsx(badgeClass, badgeColor)}>
+            <Icon
+                colorClass='text-white'
+                name={badge}
+                size='xs'
+            />
+        </div>
+    );
 
     if (iconUrl) {
         return (
@@ -71,15 +81,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
                     src={iconUrl}
                     onError={() => setIconUrl(undefined)}
                 />
-                {badge && (
-                    <div className={`${badgeClass} ${badgeColor}`}>
-                        <Icon
-                            colorClass='text-white'
-                            name={badge}
-                            size='xs'
-                        />
-                    </div>
-                )}
+                {BadgeElement}
             </a>
         );
     }
@@ -91,6 +93,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
                 name='user'
                 size={iconSize}
             />
+            {BadgeElement}
         </div>
     );
 };
