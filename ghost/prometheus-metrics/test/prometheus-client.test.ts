@@ -445,12 +445,11 @@ describe('Prometheus Client', function () {
                 instance = new PrometheusClient();
                 instance.init();
                 const counter = instance.registerCounter({name: 'test_counter', help: 'A test counter'});
-                const metric = instance.getMetric('ghost_test_counter');
-                const metricValueBefore = await metric?.get();
-                assert.equal(metricValueBefore?.values[0].value, 0);
+                const metricValuesBefore = await instance.getMetricValues('ghost_test_counter');
+                assert.deepEqual(metricValuesBefore, [{value: 0, labels: {}}]);
                 counter.inc();
-                const metricValueAfter = await metric?.get();
-                assert.equal(metricValueAfter?.values[0].value, 1);
+                const metricValuesAfter = await instance.getMetricValues('ghost_test_counter');
+                assert.deepEqual(metricValuesAfter, [{value: 1, labels: {}}]);
             });
         });
 
@@ -476,31 +475,30 @@ describe('Prometheus Client', function () {
                 instance.init();
                 const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
                 gauge.set(10);
-                const metric = instance.getMetric('ghost_test_gauge');
-                const metricValue = await metric?.get();
-                assert.equal(metricValue?.values[0].value, 10);
+                const metricValues = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValues, [{value: 10, labels: {}}]);
             });
 
             it('should increment the gauge', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
-                const metricValueBefore = await gauge.get();
-                assert.equal(metricValueBefore?.values[0].value, 0);
+                const metricValuesBefore = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValuesBefore, [{value: 0, labels: {}}]);
                 gauge.inc();
-                const metricValueAfter = await gauge.get();
-                assert.equal(metricValueAfter?.values[0].value, 1);
+                const metricValuesAfter = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValuesAfter, [{value: 1, labels: {}}]);
             });
 
             it('should decrement the gauge', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 const gauge = instance.registerGauge({name: 'test_gauge', help: 'A test gauge'});
-                const metricValueBefore = await gauge.get();
-                assert.equal(metricValueBefore?.values[0].value, 0);
+                const metricValuesBefore = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValuesBefore, [{value: 0, labels: {}}]);
                 gauge.dec();
-                const metricValueAfter = await gauge.get();
-                assert.equal(metricValueAfter?.values[0].value, -1);
+                const metricValuesAfter = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValuesAfter, [{value: -1, labels: {}}]);
             });
 
             it('should use the collect function to set the gauge value', async function () {
@@ -509,9 +507,8 @@ describe('Prometheus Client', function () {
                 instance.registerGauge({name: 'test_gauge', help: 'A test gauge', collect() {
                     (this as unknown as Gauge).set(10); // `this` is the gauge instance
                 }});
-                const metric = instance.getMetric('ghost_test_gauge');
-                const metricValue = await metric?.get();
-                assert.equal(metricValue?.values[0].value, 10);
+                const metricValues = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValues, [{value: 10, labels: {}}]);
             });
 
             it('should use an async collect function to set the gauge value', async function () {
@@ -523,9 +520,8 @@ describe('Prometheus Client', function () {
                     });
                     (this as unknown as Gauge).set(20); // `this` is the gauge instance
                 }});
-                const metric = instance.getMetric('ghost_test_gauge');
-                const metricValue = await metric?.get();
-                assert.equal(metricValue?.values[0].value, 20);
+                const metricValues = await instance.getMetricValues('ghost_test_gauge');
+                assert.deepEqual(metricValues, [{value: 20, labels: {}}]);
             });
         });
 
@@ -551,10 +547,8 @@ describe('Prometheus Client', function () {
                 instance.init();
                 const summary = instance.registerSummary({name: 'test_summary', help: 'A test summary'});
                 summary.observe(10);
-                const metric = instance.getMetric('ghost_test_summary');
-                assert.ok(metric);
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, [
                     {labels: {quantile: 0.5}, value: 10},
                     {labels: {quantile: 0.9}, value: 10},
                     {labels: {quantile: 0.99}, value: 10},
@@ -569,9 +563,8 @@ describe('Prometheus Client', function () {
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', collect() {
                     (this as unknown as Summary).observe(20);
                 }});
-                const metric = instance.getMetric('ghost_test_summary');
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue?.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, [
                     {labels: {quantile: 0.5}, value: 20},
                     {labels: {quantile: 0.9}, value: 20},
                     {labels: {quantile: 0.99}, value: 20},
@@ -589,9 +582,8 @@ describe('Prometheus Client', function () {
                     });
                     (this as unknown as Summary).observe(30);
                 }});
-                const metric = instance.getMetric('ghost_test_summary');
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue?.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, [
                     {labels: {quantile: 0.5}, value: 30},
                     {labels: {quantile: 0.9}, value: 30},
                     {labels: {quantile: 0.99}, value: 30},
@@ -604,9 +596,8 @@ describe('Prometheus Client', function () {
                 instance = new PrometheusClient();
                 instance.init();
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', percentiles: [0.1, 0.5, 0.9]});
-                const metric = instance.getMetric('ghost_test_summary');
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue?.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, [
                     {labels: {quantile: 0.1}, value: 0},
                     {labels: {quantile: 0.5}, value: 0},
                     {labels: {quantile: 0.9}, value: 0},
@@ -623,9 +614,8 @@ describe('Prometheus Client', function () {
                 const timer = summary.startTimer();
                 clock.tick(1000);
                 timer();
-                const metric = instance.getMetric('ghost_test_summary');
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue?.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, [
                     {labels: {quantile: 0.1}, value: 1},
                     {labels: {quantile: 0.5}, value: 1},
                     {labels: {quantile: 0.9}, value: 1},
@@ -661,10 +651,8 @@ describe('Prometheus Client', function () {
                 histogram.observe(1);
                 histogram.observe(2);
                 histogram.observe(3);
-                const metric = instance.getMetric('ghost_test_histogram');
-                assert.ok(metric);
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue?.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_histogram');
+                assert.deepEqual(metricValues, [
                     {
                         exemplar: null,
                         labels: {
@@ -727,9 +715,8 @@ describe('Prometheus Client', function () {
                 clock.tick(2000);
                 timer2();
 
-                const metric = instance.getMetric('ghost_test_histogram');
-                const metricValue = await metric?.get();
-                assert.deepEqual(metricValue?.values, [
+                const metricValues = await instance.getMetricValues('ghost_test_histogram');
+                assert.deepEqual(metricValues, [
                     {
                         exemplar: null,
                         labels: {
