@@ -217,11 +217,14 @@ export class PrometheusClient {
      * @param collect - The collect function to use for the summary
      * @returns The summary metric
      */
-    registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
+    registerSummary({name, help, percentiles, collect, maxAgeSeconds, ageBuckets, pruneAgedBuckets}: {name: string, help: string, percentiles?: number[], collect?: () => void, maxAgeSeconds?: number, ageBuckets?: number, pruneAgedBuckets?: boolean}): client.Summary {
         return new this.client.Summary({
             name: `${this.prefix}${name}`,
             help,
             percentiles: percentiles || [0.5, 0.9, 0.99],
+            maxAgeSeconds,
+            ageBuckets,
+            pruneAgedBuckets,
             collect
         });
     }
@@ -315,13 +318,19 @@ export class PrometheusClient {
         this.registerSummary({
             name: `db_query_duration_seconds`,
             help: 'The duration of queries in seconds',
-            percentiles: [0.5, 0.9, 0.99]
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 1,
+            pruneAgedBuckets: true
         });
 
         this.registerSummary({
             name: `db_acquire_duration_seconds`,
             help: 'The duration of acquire requests in seconds',
-            percentiles: [0.5, 0.9, 0.99]
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 1,
+            pruneAgedBuckets: true
         });
     }
 
