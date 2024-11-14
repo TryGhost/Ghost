@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
+import type {Metric, MetricObjectWithValues, MetricValue} from 'prom-client';
 import type {Knex} from 'knex';
 import logging from '@tryghost/logging';
 
@@ -112,10 +113,23 @@ export class PrometheusClient {
     }
 
     /**
-     * Returns the metrics from the registry
+     * Returns the metrics from the registry as a string
      */
-    async getMetrics() {
+    async getMetrics(): Promise<string> {
         return this.client.register.metrics();
+    }
+
+    /**
+     * Returns the metrics from the registry as a JSON object
+     * 
+     * Particularly useful for testing
+     */
+    async getMetricsAsJSON(): Promise<object[]> {
+        return this.client.register.getMetricsAsJSON();
+    }
+
+    async getMetricsAsArray(): Promise<object[]> {
+        return this.client.register.getMetricsAsArray();
     }
 
     /**
@@ -123,6 +137,104 @@ export class PrometheusClient {
      */
     getContentType() {
         return this.client.register.contentType;
+    }
+
+    /**
+     * Returns a single metric from the registry
+     * @param name - The name of the metric
+     * @returns The metric
+     */
+    getMetric(name: string): Metric | undefined {
+        if (!name.startsWith(this.prefix)) {
+            name = `${this.prefix}${name}`;
+        }
+        return this.client.register.getSingleMetric(name);
+    }
+
+    /**
+     * Returns the metric object of a single metric, if it exists
+     * @param name - The name of the metric
+     * @returns The values of the metric
+     */
+    async getMetricObject(name: string): Promise<MetricObjectWithValues<MetricValue<string>> | undefined> {
+        const metric = this.getMetric(name);
+        if (!metric) {
+            return undefined;
+        }
+        return await metric.get();
+    }
+
+    async getMetricValues(name: string): Promise<MetricValue<string>[] | undefined> {
+        const metricObject = await this.getMetricObject(name);
+        if (!metricObject) {
+            return undefined;
+        }
+        return metricObject.values;
+    }
+
+    /**
+     * 
+     */
+
+    /**
+     * Registers a counter metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @returns The counter metric
+     */
+    registerCounter({name, help}: {name: string, help: string}): client.Counter {
+        return new this.client.Counter({
+            name: `${this.prefix}${name}`,
+            help
+        });
+    }
+
+    /**
+     * Registers a gauge metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @param collect - The collect function to use for the gauge
+     * @returns The gauge metric
+     */
+    registerGauge({name, help, collect}: {name: string, help: string, collect?: () => void}): client.Gauge {
+        return new this.client.Gauge({
+            name: `${this.prefix}${name}`,
+            help,
+            collect
+        });
+    }
+
+    /**
+     * Registers a summary metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @param percentiles - The percentiles to calculate for the summary
+     * @param collect - The collect function to use for the summary
+     * @returns The summary metric
+     */
+    registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
+        return new this.client.Summary({
+            name: `${this.prefix}${name}`,
+            help,
+            percentiles: percentiles || [0.5, 0.9, 0.99],
+            collect
+        });
+    }
+
+    /**
+     * Registers a histogram metric
+     * @param name - The name of the metric
+     * @param help - The help text for the metric
+     * @param buckets - The buckets to calculate for the histogram
+     * @param collect - The collect function to use for the histogram
+     * @returns The histogram metric
+     */
+    registerHistogram({name, help, buckets}: {name: string, help: string, buckets: number[], collect?: () => void}): client.Histogram {
+        return new this.client.Histogram({
+            name: `${this.prefix}${name}`,
+            help,
+            buckets: buckets
+        });
     }
 
     // Utility functions for creating custom metrics
