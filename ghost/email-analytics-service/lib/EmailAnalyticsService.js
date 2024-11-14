@@ -516,7 +516,7 @@ module.exports = class EmailAnalyticsService {
         logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
 
         // @ts-expect-error
-        const emailMetric = this.prometheusClient.getMetric('email_analytics_aggregate_email_stats_count');
+        const emailMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_email_stats_count');
         for (const emailId of emailIds) {
             emailMetric?.inc();
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
@@ -528,7 +528,7 @@ module.exports = class EmailAnalyticsService {
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
 
         // @ts-expect-error
-        const memberMetric = this.prometheusClient.getMetric('email_analytics_aggregate_member_stats_count');
+        const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
         for (const memberId of memberIds) {
             if (this.config?.get('services:jobs:queue:enabled')) {
                 // With the queue enabled we will dispatch an event to update the member email analytics on the background queue (multithreaded :))
