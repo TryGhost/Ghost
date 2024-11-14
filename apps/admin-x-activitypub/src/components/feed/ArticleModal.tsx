@@ -202,6 +202,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
+
         modal.show({
             activityId: nextActivityId,
             object: nextObject,
@@ -275,12 +276,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         >
             <div className='flex h-full flex-col'>
                 <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
-                    <div className={`flex h-8 ${object.type === 'Article' && 'pl-[98px]'}`}>
+                    <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'mx-auto w-full max-w-[580px]' : 'px-8'}`}>
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
-                            <div className='col-[1/2] flex items-center justify-between px-8'>
-                                <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                            <div className='col-[1/2] flex items-center justify-between'>
+                                <Button className='flex w-10 items-center justify-center' icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
-                        ) : <div className='flex items-center gap-3 px-8'>
+                        ) : <div className='flex items-center gap-3'>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={actor}/>
                             </div>
@@ -296,8 +297,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         </div>}
                         <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                         </div>
-                        <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                            <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <div className='col-[3/4] flex items-center justify-end space-x-6'>
+                            <Button className='flex w-10 items-center justify-center' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
