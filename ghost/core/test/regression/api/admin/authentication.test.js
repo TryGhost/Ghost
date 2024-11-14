@@ -22,7 +22,7 @@ async function waitForEmailSent(emailMockReceiver, number = 1) {
     }
 }
 
-describe.only('Authentication API', function () {
+describe('Authentication API', function () {
     let emailMockReceiver;
     let agent;
 
