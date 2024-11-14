@@ -202,6 +202,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
+
         modal.show({
             activityId: nextActivityId,
             object: nextObject,
@@ -275,7 +276,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         >
             <div className='flex h-full flex-col'>
                 <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
-                    <div className={`flex h-8 ${object.type === 'Article' && 'pl-[98px]'}`}>
+                    <div className={`flex h-8 ${object.type === 'Article' && modalSize === MODAL_SIZE_LG ? 'pl-[98px]' : ''}`}>
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between px-8'>
                                 <Button icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
