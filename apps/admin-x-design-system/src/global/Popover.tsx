@@ -20,15 +20,10 @@ const Popover: React.FC<PopoverProps> = ({
     open: openState,
     setOpen: setOpenState
 }) => {
-    let open;
-    let setOpen;
-
-    if (openState !== undefined && setOpenState !== undefined) {
-        open = openState;
-        setOpen = setOpenState;
-    } else {
-        [open, setOpen] = useState(openState);
-    }
+    const [internalOpen, setInternalOpen] = useState(false);
+    
+    const open = openState !== undefined ? openState : internalOpen;
+    const setOpen = setOpenState || setInternalOpen;
 
     const handleContentClick = () => {
         if (closeOnItemClick) {

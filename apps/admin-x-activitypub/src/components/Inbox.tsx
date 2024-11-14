@@ -90,8 +90,8 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                     layout={layout}
                                                     object={activity.object}
                                                     type={activity.type}
-                                                    onCommentClick={() => handleViewContent(activity, true, updateActivity)}
                                                     onClick={() => handleViewContent(activity, false, updateActivity)}
+                                                    onCommentClick={() => handleViewContent(activity, true, updateActivity)}
                                                 />
                                                 {index < activities.length - 1 && (
                                                     <div className="h-px w-full bg-grey-200"></div>

@@ -98,8 +98,8 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
-                                        onCommentClick={() => handleViewContent(activity, true)}
                                         onClick={() => handleViewContent(activity, false)}
+                                        onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < posts.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
@@ -143,8 +143,8 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
-                                        onCommentClick={() => handleViewContent(activity, true)}
                                         onClick={() => handleViewContent(activity, false)}
+                                        onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < liked.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>

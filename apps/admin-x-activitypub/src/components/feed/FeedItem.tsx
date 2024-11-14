@@ -171,18 +171,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const [menuIsOpen, setMenuIsOpen] = useState(false);
 
-    const onClick = (event: React.MouseEvent) => {
+    const onClick = () => {
         if (menuIsOpen) {
             return;
         }
         onClickHandler();
-    }
+    };
 
     // const handleDelete = () => {
     //     // Handle delete action
     // };
 
-    const handleCopyLink = async (e: React.MouseEvent) => {
+    const handleCopyLink = async () => {
         if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
@@ -274,7 +274,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -320,7 +320,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                         </div>
                                     </div>
                                 </div>
@@ -378,7 +378,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -420,7 +420,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
-                            <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                         </div>
                     </div>
                 )}
