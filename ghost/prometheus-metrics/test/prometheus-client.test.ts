@@ -208,6 +208,44 @@ describe('Prometheus Client', function () {
         });
     });
 
+    describe('getMetricObject', function () {
+        it('should return the values of a metric', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metricObject = await instance.getMetricObject('ghost_process_cpu_seconds_total');
+            assert.ok(metricObject);
+            assert.ok(metricObject.values);
+            assert.ok(Array.isArray(metricObject.values));
+            assert.equal(metricObject.help, 'Total user and system CPU time spent in seconds.');
+            assert.equal(metricObject.type, 'counter');
+            assert.equal(metricObject.name, 'ghost_process_cpu_seconds_total');
+        });
+
+        it('should return undefined if the metric is not found', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metricObject = await instance.getMetricObject('ghost_not_a_metric');
+            assert.equal(metricObject, undefined);
+        });
+    });
+
+    describe('getMetricValues', function () {
+        it('should return the values of a metric', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metricValues = await instance.getMetricValues('ghost_process_cpu_seconds_total');
+            assert.ok(metricValues);
+            assert.ok(Array.isArray(metricValues));
+        });
+
+        it('should return undefined if the metric is not found', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            const metricValues = await instance.getMetricValues('ghost_not_a_metric');
+            assert.equal(metricValues, undefined);
+        });
+    });
+
     describe('instrumentKnex', function () {
         let knexMock: Knex;
         let eventEmitter: EventEmitterType;

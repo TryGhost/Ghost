@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import client from 'prom-client';
-import type {Metric} from 'prom-client';
+import type {Metric, MetricObjectWithValues, MetricValue} from 'prom-client';
 import type {Knex} from 'knex';
 import logging from '@tryghost/logging';
 
@@ -150,6 +150,31 @@ export class PrometheusClient {
         }
         return this.client.register.getSingleMetric(name);
     }
+
+    /**
+     * Returns the metric object of a single metric, if it exists
+     * @param name - The name of the metric
+     * @returns The values of the metric
+     */
+    async getMetricObject(name: string): Promise<MetricObjectWithValues<MetricValue<string>> | undefined> {
+        const metric = this.getMetric(name);
+        if (!metric) {
+            return undefined;
+        }
+        return await metric.get();
+    }
+
+    async getMetricValues(name: string): Promise<MetricValue<string>[] | undefined> {
+        const metricObject = await this.getMetricObject(name);
+        if (!metricObject) {
+            return undefined;
+        }
+        return metricObject.values;
+    }
+
+    /**
+     * 
+     */
 
     /**
      * Registers a counter metric
