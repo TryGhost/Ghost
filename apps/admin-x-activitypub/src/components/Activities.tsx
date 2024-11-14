@@ -141,7 +141,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 activityId: activity.id,
                 object: activity.object,
                 actor: activity.actor,
-                focusReplies: true
+                focusReplies: true,
+                width: typeof activity.object?.inReplyTo === 'object' && activity.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
             });
             break;
         case ACTVITY_TYPE.LIKE:
