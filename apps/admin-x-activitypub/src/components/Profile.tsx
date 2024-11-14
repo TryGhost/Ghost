@@ -4,6 +4,7 @@ import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
+import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
@@ -91,13 +92,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
+                                        onClick={() => handleViewContent(activity, false)}
                                         onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < posts.length - 1 && (
@@ -136,13 +137,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
+                                        onClick={() => handleViewContent(activity, false)}
                                         onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < liked.length - 1 && (
@@ -187,7 +188,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         <APAvatar author={item} />
                                         <div>
                                             <div className='text-grey-600'>
-                                                <span className='mr-1 font-bold text-black'>{item.name || item.preferredUsername || 'Unknown'}</span>
+                                                <span className='mr-1 font-bold text-black'>{getName(item)}</span>
                                                 <div className='text-sm'>{getUsername(item)}</div>
                                             </div>
                                         </div>
@@ -235,7 +236,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         <APAvatar author={item} />
                                         <div>
                                             <div className='text-grey-600'>
-                                                <span className='mr-1 font-bold text-black'>{item.name || item.preferredUsername || 'Unknown'}</span>
+                                                <span className='mr-1 font-bold text-black'>{item.name || getName(item) || 'Unknown'}</span>
                                                 <div className='text-sm'>{getUsername(item)}</div>
                                             </div>
                                         </div>

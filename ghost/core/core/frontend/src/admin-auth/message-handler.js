@@ -23,6 +23,18 @@ window.addEventListener('message', async function (event) {
         }), siteOrigin);
     }
 
+    if (data.action === 'browseComments') {
+        try {
+            const res = await fetch(
+                adminUrl + '/comments/?limit=50&order=created_at%20desc'
+            );
+            const json = await res.json();
+            respond(null, json);
+        } catch (err) {
+            respond(err, null);
+        }
+    }
+
     if (data.action === 'getUser') {
         try {
             const res = await fetch(
