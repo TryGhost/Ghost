@@ -263,21 +263,9 @@ Settings = ghostBookshelf.Model.extend({
             options.context = internalContext.context;
         }
 
-        // tear down the connection pool and reinitialize it
         // this is required for sqlite to pick up the columns after db init
-        // first get all the listeners on the connection pool so we can reattach them after recreating the pool
-        const events = ghostBookshelf.knex.client.pool.emitter?.eventNames();
-        let listeners = {};
-        events?.forEach((event) => {
-            listeners[event] = ghostBookshelf.knex.client.pool.emitter.listeners(event);
-        });
-        // destroy and reinitialize the pool
         await ghostBookshelf.knex.destroy();
         await ghostBookshelf.knex.initialize();
-        // reattach the listeners
-        events?.forEach((event) => {
-            listeners[event].forEach(listener => ghostBookshelf.knex.client.pool.emitter.on(event, listener));
-        });
 
         const allSettings = await this.findAll(options);
 

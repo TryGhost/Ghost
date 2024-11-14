@@ -246,6 +246,113 @@ describe('Prometheus Client', function () {
         });
     });
 
+    describe('registerKnexMetrics', function () {
+        let knexMock: Knex;
+
+        beforeEach(function () {
+            knexMock = {
+                client: {
+                    pool: {
+                        max: 10,
+                        min: 1,
+                        numUsed: sinon.stub().returns(0),
+                        numFree: sinon.stub().returns(0),
+                        numPendingAcquires: sinon.stub().returns(0),
+                        numPendingCreates: sinon.stub().returns(0)
+                    }
+                }
+            } as unknown as Knex;
+        });
+
+        it('should register the metrics for the connection pool and queries', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.registerKnexMetrics(knexMock);
+            assert.ok(instance.getMetric('ghost_db_connection_pool_max'));
+            assert.ok(instance.getMetric('ghost_db_query_duration_seconds'));
+        });
+
+        it('should not register the metrics if they are already registered', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.registerKnexMetrics(knexMock);
+            // Registering the same metrics on promClient again would throw an error
+            assert.doesNotThrow(() => instance.registerKnexMetrics(knexMock));
+            assert.ok(instance.getMetric('ghost_db_connection_pool_max'));
+        });
+    });
+
+    describe('instrumentKnexQueries', function () {
+        let knexMock: Knex;
+        let knexEventEmitter: EventEmitterType;
+
+        beforeEach(function () {
+            knexEventEmitter = new EventEmitter();
+            knexMock = {
+                on: sinon.stub().callsFake((event, callback) => {
+                    knexEventEmitter.on(event, callback);
+                }),
+                eventNames: () => knexEventEmitter.eventNames(),
+                listeners: (event: string) => knexEventEmitter.listeners(event)
+            } as unknown as Knex;
+            sinon.restore();
+        });
+
+        it('should add event listeners to the knex instance', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.registerKnexMetrics(knexMock);
+            instance.instrumentKnexQueries(knexMock);
+            assert.ok((knexMock.on as sinon.SinonStub).calledTwice);
+        });
+
+        it('should not add the same listeners multiple times', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.registerKnexMetrics(knexMock);
+            instance.instrumentKnexQueries(knexMock);
+            instance.instrumentKnexQueries(knexMock);
+            assert.ok((knexMock.on as sinon.SinonStub).calledTwice);
+        });
+    });
+
+    describe('instrumentKnexPool', function () {
+        let knexMock: Knex;
+        let poolEventEmitter: EventEmitterType;
+
+        beforeEach(function () {
+            poolEventEmitter = new EventEmitter();
+            knexMock = {
+                client: {
+                    pool: {
+                        emitter: poolEventEmitter,
+                        on: sinon.stub().callsFake((event, callback) => {
+                            poolEventEmitter.on(event, callback);
+                        })
+                    }
+                }
+            } as unknown as Knex;
+            sinon.restore();
+        });
+
+        it('should add event listeners to the knex instance', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.registerKnexMetrics(knexMock);
+            instance.instrumentKnexConnectionPool(knexMock);
+            assert.equal((knexMock.client.pool.on as sinon.SinonStub).callCount, 3);
+        });
+
+        it('should not add the same listeners multiple times', function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.registerKnexMetrics(knexMock);
+            instance.instrumentKnexConnectionPool(knexMock);
+            instance.instrumentKnexConnectionPool(knexMock);
+            assert.equal((knexMock.client.pool.on as sinon.SinonStub).callCount, 3);
+        });
+    });
+
     describe('instrumentKnex', function () {
         let knexMock: Knex;
         let knexEventEmitter: EventEmitterType;
@@ -292,7 +399,9 @@ describe('Prometheus Client', function () {
                             poolEventEmitter.on(event, callback);
                         })
                     }
-                }
+                },
+                eventNames: sinon.stub().returns([]),
+                listeners: sinon.stub().returns([])
             } as unknown as Knex;
         });
 

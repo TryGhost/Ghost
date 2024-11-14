@@ -245,11 +245,17 @@ export class PrometheusClient {
     // Utility functions for creating custom metrics
 
     /**
-     * Instruments the knex connection pool and queries
+     * Registers metrics for the knex connection pool if they are not already registered
+     * Can safely be called multiple times
      * @param knexInstance - The knex instance
      */
-    instrumentKnex(knexInstance: Knex) {
-        // Create some gauges for tracking the connection pool
+    registerKnexMetrics(knexInstance: Knex) {
+        // If the metrics are already registered, return
+        if (this.getMetric(`db_connection_pool_max`)) {
+            return;
+        }
+
+        // Register the metrics for the knex connection pool and queries
         this.registerGauge({
             name: `db_connection_pool_max`,
             help: 'The maximum number of connections allowed in the pool',
@@ -306,43 +312,104 @@ export class PrometheusClient {
             }
         });
 
-        const queryDurationSummary = this.registerSummary({
+        this.registerSummary({
             name: `db_query_duration_seconds`,
             help: 'The duration of queries in seconds',
             percentiles: [0.5, 0.9, 0.99]
         });
 
-        const acquireDurationSummary = this.registerSummary({
+        this.registerSummary({
             name: `db_acquire_duration_seconds`,
             help: 'The duration of acquire requests in seconds',
             percentiles: [0.5, 0.9, 0.99]
         });
+    }
 
-        knexInstance.on('query', (query) => {
-            // Start a timer for the query and add it to the map
+    /**
+     * Adds event listeners to the knex instance to track the query duration
+     * @param knexInstance - The knex instance
+     */
+    instrumentKnexQueries(knexInstance: Knex) {
+        // Get the current event listeners on the knex instance
+        // This is used to avoid adding the same listeners multiple times
+        let eventNames = knexInstance.eventNames();
+        let listeners: Record<string, any[]> = {};
+        eventNames?.forEach((event: string | symbol) => {
+            const eventName = event as string;
+            listeners[eventName] = knexInstance.listeners(eventName);
+        });
+
+        const queryDurationSummary = this.getMetric(`db_query_duration_seconds`) as client.Summary;
+
+        const startQueryTimer = (query: any) => {
             this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
-        });
+        };
 
-        knexInstance.on('query-response', (err, query) => {
-            // Stop the timer and record the duration to the Summary metric
+        const stopQueryTimer = (err: any,query: any) => {
             this.queries.get(query.__knexQueryUid)?.();
+            this.queries.delete(query.__knexQueryUid);
+        };
+
+        if (queryDurationSummary) {
+            if (!listeners?.query?.some((listener: any) => listener.name === startQueryTimer.name)) {
+                knexInstance.on('query', startQueryTimer);
+            }
+            if (!listeners?.['query-response']?.some((listener: any) => listener.name === stopQueryTimer.name)) {
+                knexInstance.on('query-response', stopQueryTimer);
+            }
+        }
+    }
+
+    /**
+     * Adds event listeners to the knex connection pool to track the acquire duration
+     * @param knexInstance - The knex instance
+     */
+    instrumentKnexConnectionPool(knexInstance: Knex) {
+        const acquireDurationSummary = this.getMetric(`db_acquire_duration_seconds`) as client.Summary;
+
+        // Get the current event listeners on the pool
+        // This is used to avoid adding the same listeners multiple times
+        let eventNames = knexInstance.client.pool.emitter?.eventNames();
+        let listeners: Record<string, any[]> = {};
+        eventNames?.forEach((event: string | symbol) => {
+            const eventName = event as string;
+            listeners[eventName] = knexInstance.client.pool.emitter?.listeners(eventName);
         });
 
-        knexInstance.client.pool.on('acquireRequest', (eventId: number) => {
-            // Start a timer for the acquire request and add it to the map by eventId
+        const startAcquireTimer = (eventId: number) => {
             this.acquireRequests.set(eventId, acquireDurationSummary.startTimer());
-        });
+        };
 
-        knexInstance.client.pool.on('acquireSuccess', (eventId: number) => {
-            // Stop the timer and record the duration to the Summary metric
+        const stopAcquireTimer = (eventId: number) => {
             this.acquireRequests.get(eventId)?.();
             this.acquireRequests.delete(eventId);
-        });
+        };
 
-        knexInstance.client.pool.on('acquireFail', (eventId: number) => {
-            // Stop the timer and record the duration to the Summary metric
-            this.acquireRequests.get(eventId)?.();
-            this.acquireRequests.delete(eventId);
-        });
+        if (acquireDurationSummary) {
+            if (!listeners?.acquireRequest?.some((listener: any) => listener.name === startAcquireTimer.name)) {
+                knexInstance.client.pool.on('acquireRequest', startAcquireTimer);
+            }
+            if (!listeners?.acquireSuccess?.some((listener: any) => listener.name === stopAcquireTimer.name)) {
+                knexInstance.client.pool.on('acquireSuccess', stopAcquireTimer);
+            }
+            if (!listeners?.acquireFail?.some((listener: any) => listener.name === stopAcquireTimer.name)) {
+                knexInstance.client.pool.on('acquireFail', stopAcquireTimer);
+            }
+        }
+    }
+
+    /**
+     * Instruments the knex connection pool and queries
+     * @param knexInstance - The knex instance
+     */
+    instrumentKnex(knexInstance: Knex) {
+        // Register the metrics for the knex connection pool if they are not already registered
+        this.registerKnexMetrics(knexInstance);
+
+        // Add event listeners to the knex instance to track the query duration
+        this.instrumentKnexQueries(knexInstance);
+
+        // Add event listeners to the knex connection pool to track the acquire duration
+        this.instrumentKnexConnectionPool(knexInstance);
     }
 }
