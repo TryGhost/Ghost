@@ -6,6 +6,7 @@ import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import ViewProfileModal from './global/ViewProfileModal';
+import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
@@ -20,6 +21,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
+        includeOwn: true,
         excludeNonFollowers: true,
         filter: {
             type: ['Create:Article', 'Create:Note', 'Announce:Note']
@@ -74,9 +76,9 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                         </div>
                     ) : activities.length > 0 ? (
                         <>
-                            <div className={`mx-auto flex items-start ${layout === 'inbox' ? 'max-w-6xl gap-14' : 'gap-8'}`}>
+                            <div className={`mx-auto flex items-start gap-8`}>
                                 <div className='flex w-full min-w-0 items-start'>
-                                    <ul className={`mx-auto flex ${layout === 'inbox' ? 'w-full max-w-full' : 'max-w-[500px]'} flex-col`}>
+                                    <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
                                         {activities.map((activity, index) => (
                                             <li
                                                 key={activity.id}
@@ -104,7 +106,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                         )}
                                     </ul>
                                 </div>
-                                <div className={`sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden ${layout === 'inbox' ? '' : ' xxxl:fixed xxxl:right-[40px]'}`}>
+                                <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like...</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
@@ -123,7 +125,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                             <APAvatar author={actor} />
                                                             <div>
                                                                 <div className='text-grey-600'>
-                                                                    <span className='mr-1 truncate font-bold text-black'>{actor.name || actor.preferredUsername || 'Unknown'}</span>
+                                                                    <span className='mr-1 truncate font-bold text-black'>{getName(actor)}</span>
                                                                     <div className='truncate text-sm'>{getUsername(actor)}</div>
                                                                 </div>
                                                             </div>
