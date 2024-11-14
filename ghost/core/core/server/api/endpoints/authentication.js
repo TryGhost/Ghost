@@ -37,10 +37,6 @@ const controller = {
                     return auth.setup.assertSetupCompleted(false)();
                 })
                 .then(() => {
-                    // Needs req / res -- will need refactoring
-                    return auth.session.createSetupSession(/* no req / res to put here */);
-                })
-                .then(() => {
                     const setupDetails = {
                         name: frame.data.setup[0].name,
                         email: frame.data.setup[0].email,
@@ -80,6 +76,15 @@ const controller = {
                             logging.error(err);
                         });
                     return user;
+                })
+                .then((user) => {
+                    return function createMiddleware(userMapper) {
+                        return async function setupSessionMiddleware(req, res, next) {
+                            await auth.session.createSetupSession(req, res, next);
+                            res.status(201);
+                            res.json({users: [userMapper(user, {options: {context: {internal: true}}})]});
+                        };
+                    };
                 });
         }
     },

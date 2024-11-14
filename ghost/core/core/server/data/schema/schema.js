@@ -331,7 +331,7 @@ module.exports = {
     sessions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         session_id: {type: 'string', maxlength: 32, nullable: false, unique: true},
-        user_id: {type: 'string', maxlength: 24, nullable: false},
+        user_id: {type: 'string', maxlength: 24, nullable: true},
         session_data: {type: 'string', maxlength: 2000, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}

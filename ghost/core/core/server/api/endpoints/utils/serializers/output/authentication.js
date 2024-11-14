@@ -9,12 +9,8 @@ const messages = {
 };
 
 module.exports = {
-    setup(user, apiConfig, frame) {
-        frame.response = {
-            users: [
-                mappers.users(user, {options: {context: {internal: true}}})
-            ]
-        };
+    setup(createMiddleware, apiConfig, frame) {
+        frame.response = createMiddleware(mappers.users);
     },
 
     updateSetup(user, apiConfig, frame) {
