@@ -1,6 +1,6 @@
 import React from 'react';
 import {Avatar} from '../Avatar';
-import {Comment, useAppContext, useLabs} from '../../../AppContext';
+import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../../AppContext';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
@@ -11,6 +11,7 @@ import {usePopupOpen} from '../../../utils/hooks';
 type Progress = 'default' | 'sending' | 'sent' | 'error';
 export type SubmitSize = 'small' | 'medium' | 'large';
 type FormEditorProps = {
+    comment?: Comment;
     submit: (data: {html: string}) => Promise<void>;
     progress: Progress;
     setProgress: (progress: Progress) => void;
@@ -20,17 +21,28 @@ type FormEditorProps = {
     editor: Editor | null;
     submitText: React.ReactNode;
     submitSize: SubmitSize;
+    openForm?: OpenCommentForm;
 };
-const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
+const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize, openForm}) => {
     const labs = useLabs();
-    const {t} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
     const [hasContent, setHasContent] = useState(false);
 
     useEffect(() => {
         if (editor) {
             const checkContent = () => {
-                setHasContent(!editor.isEmpty);
+                const editorHasContent = !editor.isEmpty;
+                setHasContent(editorHasContent);
+
+                if (openForm) {
+                    const hasUnsavedChanges = comment && openForm.type === 'edit' ? editor.getHTML() !== comment.html : editorHasContent;
+
+                    // avoid unnecessary state updates to prevent infinite loops
+                    if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
+                        dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
+                    }
+                }
             };
             editor.on('update', checkContent);
             editor.on('transaction', checkContent);
@@ -42,7 +54,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
                 editor.off('transaction', checkContent);
             };
         }
-    }, [editor]);
+    }, [editor, comment, openForm, dispatchAction]);
 
     if (progress === 'sending') {
         submitText = null;
@@ -210,6 +222,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
 };
 
 type FormProps = {
+    openForm: OpenCommentForm;
     comment?: Comment;
     editor: Editor | null;
     submit: (data: {html: string}) => Promise<void>;
@@ -220,7 +233,7 @@ type FormProps = {
     reduced: boolean;
 };
 
-const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen}) => {
+const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen, openForm}) => {
     const {member, dispatchAction} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
@@ -312,8 +325,10 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
                     <FormEditor
                         close={close}
+                        comment={comment}
                         editor={editor}
                         isOpen={isOpen}
+                        openForm={openForm}
                         progress={progress}
                         reduced={reduced}
                         setProgress={setProgress}

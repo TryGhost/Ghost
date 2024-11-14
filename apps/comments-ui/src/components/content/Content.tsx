@@ -10,9 +10,8 @@ import {useEffect} from 'react';
 
 const Content = () => {
     const labs = useLabs();
-    const {t} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount, t} = useAppContext();
 
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount} = useAppContext();
     let commentsElements;
     const commentsDataset = comments;
 

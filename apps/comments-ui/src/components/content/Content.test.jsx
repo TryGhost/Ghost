@@ -6,7 +6,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
         commentsEnabled: 'all',
         comments: [],
-        openFormCount: 0,
+        openCommentForms: [],
         member: null,
         t: str => str,
         ...appContext
