@@ -136,7 +136,6 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     const handleActivityClick = (activity: Activity) => {
         switch (activity.type) {
         case ACTVITY_TYPE.CREATE:
-            console.log('activity.object', activity.object);
             NiceModal.show(ArticleModal, {
                 activityId: activity.id,
                 object: activity.object,
