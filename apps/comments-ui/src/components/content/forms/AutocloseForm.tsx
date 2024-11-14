@@ -13,43 +13,43 @@ type Props = {
     submitText: JSX.Element;
     submitSize: SubmitSize;
 };
-const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
-    const {dispatchAction, secundaryFormCount} = useAppContext();
+const AutocloseForm: React.FC<Props> = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
+    const {dispatchAction, openFormCount} = useAppContext();
 
     // Keep track of the amount of open forms
     useEffect(() => {
-        dispatchAction('increaseSecundaryFormCount', {});
+        dispatchAction('increaseOpenFormCount', {});
         return () => {
-            dispatchAction('decreaseSecundaryFormCount', {});
+            dispatchAction('decreaseOpenFormCount', {});
         };
     }, [dispatchAction]);
 
     useSecondUpdate(() => {
         // We use useSecondUpdate because:
         // first call is the mounting of the form
-        // second call is the increaseSecundaryFormCount from our own
-        // third call means a different SecondaryForm is mounted or unmounted, and we need to close if not changed
+        // second call is the increaseOpenFormCount from our own
+        // third call means a different AutocloseForm is mounted or unmounted, and we need to close if not changed
 
-        if (secundaryFormCount > 1) {
+        if (openFormCount > 1) {
             closeIfNotChanged();
         };
-    }, [secundaryFormCount]);
+    }, [openFormCount]);
 
     const reduced = isMobile();
 
     return (
         <div className='mt-[-16px] pr-3'>
-            <Form 
-                close={close} 
-                editor={editor} 
-                isOpen={true} 
-                reduced={reduced} 
-                submit={submit} 
-                submitSize={submitSize} 
+            <Form
+                close={close}
+                editor={editor}
+                isOpen={true}
+                reduced={reduced}
+                submit={submit}
+                submitSize={submitSize}
                 submitText={submitText}
             />
         </div>
     );
 };
 
-export default SecundaryForm;
+export default AutocloseForm;

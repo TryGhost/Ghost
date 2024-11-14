@@ -1,4 +1,4 @@
-import SecundaryForm from './SecundaryForm';
+import AutocloseForm from './AutocloseForm';
 import {Comment, useAppContext} from '../../../AppContext';
 import {getEditorConfig} from '../../../utils/editor';
 import {useCallback, useEffect} from 'react';
@@ -68,7 +68,7 @@ const EditForm: React.FC<Props> = ({comment, parent, close}) => {
 
     return (
         <div className='px-3 pb-2 pt-3'>
-            <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+            <AutocloseForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
         </div>
     );
 };

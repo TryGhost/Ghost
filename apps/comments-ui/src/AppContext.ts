@@ -65,7 +65,7 @@ export type EditableAppContext = {
         total: number
     } | null,
     commentCount: number,
-    secundaryFormCount: number,
+    openFormCount: number,
     popup: Page | null,
     labs: LabsContextType,
     order: string

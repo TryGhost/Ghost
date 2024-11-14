@@ -25,7 +25,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         comments: [],
         pagination: null,
         commentCount: 0,
-        secundaryFormCount: 0,
+        openFormCount: 0,
         popup: null,
         labs: null,
         order: 'count__likes desc, created_at desc'

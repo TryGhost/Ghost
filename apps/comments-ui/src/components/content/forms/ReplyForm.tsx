@@ -1,4 +1,4 @@
-import SecundaryForm from './SecundaryForm';
+import AutocloseForm from './AutocloseForm';
 import {Comment, useAppContext} from '../../../AppContext';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
@@ -53,7 +53,7 @@ const ReplyForm: React.FC<Props> = ({parent, close}) => {
 
     return (
         <div ref={setForm}>
-            <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+            <AutocloseForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
         </div>
     );
 };

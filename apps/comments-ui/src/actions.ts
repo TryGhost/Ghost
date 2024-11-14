@@ -19,7 +19,7 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
 
 async function setOrder({data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
     const data = await api.comments.browse({page: 1, postId: options.postId, order: order});
-    
+
     return {
         comments: [...data.comments],
         pagination: data.meta.pagination,
@@ -347,15 +347,15 @@ function closePopup() {
     };
 }
 
-function increaseSecundaryFormCount({state}: {state: EditableAppContext}) {
+function increaseOpenFormCount({state}: {state: EditableAppContext}) {
     return {
-        secundaryFormCount: state.secundaryFormCount + 1
+        openFormCount: state.openFormCount + 1
     };
 }
 
-function decreaseSecundaryFormCount({state}: {state: EditableAppContext}) {
+function decreaseOpenFormCount({state}: {state: EditableAppContext}) {
     return {
-        secundaryFormCount: state.secundaryFormCount - 1
+        openFormCount: state.openFormCount - 1
     };
 }
 
@@ -363,8 +363,8 @@ function decreaseSecundaryFormCount({state}: {state: EditableAppContext}) {
 export const SyncActions = {
     openPopup,
     closePopup,
-    increaseSecundaryFormCount,
-    decreaseSecundaryFormCount
+    increaseOpenFormCount,
+    decreaseOpenFormCount
 };
 
 export type SyncActionType = keyof typeof SyncActions;
