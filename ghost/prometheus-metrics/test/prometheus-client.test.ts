@@ -300,7 +300,7 @@ describe('Prometheus Client', function () {
             assert.match(metrics, /ghost_db_connection_pool_pending_acquires/);
             assert.match(metrics, /ghost_db_connection_pool_pending_creates/);
             assert.match(metrics, /ghost_db_query_count/);
-            assert.match(metrics, /ghost_db_query_duration_milliseconds/);
+            assert.match(metrics, /ghost_db_query_duration_seconds/);
         });
 
         it('should collect the connection pool max metric', async function () {
@@ -389,13 +389,13 @@ describe('Prometheus Client', function () {
             instance.init();
             instance.instrumentKnex(knexMock);
             simulateQuery('1', 0);
-            const metricValues = await instance.getMetricValues('ghost_db_query_duration_milliseconds');
+            const metricValues = await instance.getMetricValues('ghost_db_query_duration_seconds');
             assert.deepEqual(metricValues, [
                 {value: 0, labels: {quantile: 0.5}},
                 {value: 0, labels: {quantile: 0.9}},
                 {value: 0, labels: {quantile: 0.99}},
-                {metricName: 'ghost_db_query_duration_milliseconds_sum', labels: {}, value: 0},
-                {metricName: 'ghost_db_query_duration_milliseconds_count', labels: {}, value: 1}
+                {metricName: 'ghost_db_query_duration_seconds_sum', labels: {}, value: 0},
+                {metricName: 'ghost_db_query_duration_seconds_count', labels: {}, value: 1}
             ]);
         });
 
@@ -405,13 +405,13 @@ describe('Prometheus Client', function () {
             instance.instrumentKnex(knexMock);
             const durations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
             simulateQueries(durations);
-            const metricValues = await instance.getMetricValues('ghost_db_query_duration_milliseconds');
+            const metricValues = await instance.getMetricValues('ghost_db_query_duration_seconds');
             assert.deepEqual(metricValues, [
-                {labels: {quantile: 0.5}, value: 550},
-                {labels: {quantile: 0.9}, value: 950},
-                {labels: {quantile: 0.99}, value: 1000},
-                {metricName: 'ghost_db_query_duration_milliseconds_sum', labels: {}, value: 5500},
-                {metricName: 'ghost_db_query_duration_milliseconds_count', labels: {}, value: 10}
+                {labels: {quantile: 0.5}, value: 0.55},
+                {labels: {quantile: 0.9}, value: 0.95},
+                {labels: {quantile: 0.99}, value: 1},
+                {metricName: 'ghost_db_query_duration_seconds_sum', labels: {}, value: 5.5},
+                {metricName: 'ghost_db_query_duration_seconds_count', labels: {}, value: 10}
             ]);
         });
     });
