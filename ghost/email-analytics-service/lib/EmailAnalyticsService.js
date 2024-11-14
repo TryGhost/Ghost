@@ -88,8 +88,6 @@ module.exports = class EmailAnalyticsService {
 
         if (prometheusClient) {
             // @ts-expect-error
-            prometheusClient.registerCounter({name: 'email_analytics_aggregate_email_stats_count', help: 'Count of email stats aggregations'});
-            // @ts-expect-error
             prometheusClient.registerCounter({name: 'email_analytics_aggregate_member_stats_count', help: 'Count of member stats aggregations'});
         }
     }
@@ -515,10 +513,7 @@ module.exports = class EmailAnalyticsService {
         let startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
 
-        // @ts-expect-error
-        const emailMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_email_stats_count');
         for (const emailId of emailIds) {
-            emailMetric?.inc();
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
         let endTime = Date.now() - startTime;
