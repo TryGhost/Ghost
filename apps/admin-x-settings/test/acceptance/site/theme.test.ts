@@ -237,4 +237,19 @@ test.describe('Theme settings', async () => {
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/Upload failed/);
     });
+
+    test('fires Install Theme modal when redirected from markerplace url', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+        }});
+        await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
+
+        await page.waitForSelector('[data-testid="theme-modal"]');
+
+        const confirmation = page.getByTestId('confirmation-modal');
+
+        await expect(confirmation).toHaveText(/Install Theme/);
+        await expect(confirmation).toHaveText(/By clicking below, Taste will automatically be activated as the theme for your site/);
+    });
 });

@@ -10,13 +10,11 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         return <DesignModal />;
     } else if (pathName === 'design/change-theme') {
         return <ChangeThemeModal />;
-    } else if (pathName === 'design/change-theme/install') {
+    } else if (pathName === 'theme/install') {
         const url = window.location.href;
         const fragment = url.split('#')[1];
         const queryParams = fragment.split('?')[1];
-
         const searchParams = new URLSearchParams(queryParams);
-
         const ref = searchParams.get('ref') || null;
         const source = searchParams.get('source') || null;
 
