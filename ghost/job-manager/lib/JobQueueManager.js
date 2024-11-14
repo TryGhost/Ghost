@@ -144,6 +144,9 @@ class JobQueueManager {
             await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
             this.prometheusClient.getMetric('job_manager_queue_job_completion_count').inc({jobName});
+            if (jobName === 'update-member-email-analytics') {
+                this.prometheusClient.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
+            }
         } catch (error) {
             await this.handleJobError(job, jobMetadata, error);
         } finally {
