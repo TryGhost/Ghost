@@ -6,7 +6,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
         commentsEnabled: 'all',
         comments: [],
-        secundaryFormCount: 0,
+        openCommentForms: [],
         member: null,
         t: str => str,
         ...appContext
@@ -45,7 +45,7 @@ describe('Content', function () {
         });
 
         it('renders no CTA or form when a reply form is open', function () {
-            contextualRender(<Content />, {appContext: {member: {}, secundaryFormCount: 1}});
+            contextualRender(<Content />, {appContext: {member: {}, openFormCount: 1}});
             expect(screen.queryByTestId('cta-box')).not.toBeInTheDocument();
             expect(screen.queryByTestId('main-form')).not.toBeInTheDocument();
         });

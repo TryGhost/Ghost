@@ -1,6 +1,6 @@
 import React from 'react';
 import {Avatar} from '../Avatar';
-import {Comment, useAppContext, useLabs} from '../../../AppContext';
+import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../../AppContext';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
@@ -11,6 +11,7 @@ import {usePopupOpen} from '../../../utils/hooks';
 type Progress = 'default' | 'sending' | 'sent' | 'error';
 export type SubmitSize = 'small' | 'medium' | 'large';
 type FormEditorProps = {
+    comment?: Comment;
     submit: (data: {html: string}) => Promise<void>;
     progress: Progress;
     setProgress: (progress: Progress) => void;
@@ -20,21 +21,32 @@ type FormEditorProps = {
     editor: Editor | null;
     submitText: React.ReactNode;
     submitSize: SubmitSize;
+    openForm?: OpenCommentForm;
 };
-const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
+const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize, openForm}) => {
     const labs = useLabs();
-    const {t} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
     const [hasContent, setHasContent] = useState(false);
 
     useEffect(() => {
         if (editor) {
             const checkContent = () => {
-                setHasContent(!editor.isEmpty);
+                const editorHasContent = !editor.isEmpty;
+                setHasContent(editorHasContent);
+
+                if (openForm) {
+                    const hasUnsavedChanges = comment && openForm.type === 'edit' ? editor.getHTML() !== comment.html : editorHasContent;
+
+                    // avoid unnecessary state updates to prevent infinite loops
+                    if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
+                        dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
+                    }
+                }
             };
             editor.on('update', checkContent);
             editor.on('transaction', checkContent);
-            
+
             checkContent();
 
             return () => {
@@ -42,7 +54,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
                 editor.off('transaction', checkContent);
             };
         }
-    }, [editor]);
+    }, [editor, comment, openForm, dispatchAction]);
 
     if (progress === 'sending') {
         submitText = null;
@@ -139,8 +151,8 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
                 {labs.commentImprovements ? (
                     <button
                         className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md px-3 py-2 text-center font-sans text-base font-medium outline-0 transition-all duration-200 sm:text-sm ${
-                            hasContent 
-                                ? 'bg-[var(--gh-accent-color)] text-white hover:brightness-105' 
+                            hasContent
+                                ? 'bg-[var(--gh-accent-color)] text-white hover:brightness-105'
                                 : 'bg-black/5 text-neutral-900 dark:bg-white/15 dark:text-neutral-300'
                         }`}
                         data-testid="submit-form-button"
@@ -210,6 +222,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
 };
 
 type FormProps = {
+    openForm: OpenCommentForm;
     comment?: Comment;
     editor: Editor | null;
     submit: (data: {html: string}) => Promise<void>;
@@ -220,7 +233,7 @@ type FormProps = {
     reduced: boolean;
 };
 
-const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen}) => {
+const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen, openForm}) => {
     const {member, dispatchAction} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
@@ -300,18 +313,27 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
+        <form
+            ref={formEl}
+            className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
+            data-testid="form"
+            onClick={focusEditor}
+            onMouseDown={preventIfFocused}
+            onTouchStart={preventIfFocused}
+        >
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                    <FormEditor 
-                        close={close} 
-                        editor={editor} 
-                        isOpen={isOpen} 
-                        progress={progress} 
-                        reduced={reduced} 
-                        setProgress={setProgress} 
-                        submit={submit} 
-                        submitSize={submitSize} 
+                    <FormEditor
+                        close={close}
+                        comment={comment}
+                        editor={editor}
+                        isOpen={isOpen}
+                        openForm={openForm}
+                        progress={progress}
+                        reduced={reduced}
+                        setProgress={setProgress}
+                        submit={submit}
+                        submitSize={submitSize}
                         submitText={submitText}
                     />
                 </div>
@@ -320,7 +342,13 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                         <Avatar comment={comment} />
                     </div>
                     <div className="grow-1 mt-0.5 w-full">
-                        <FormHeader editExpertise={editExpertise} editName={editName} expertise={memberExpertise} name={memberName} show={isOpen} />
+                        <FormHeader
+                            editExpertise={editExpertise}
+                            editName={editName}
+                            expertise={memberExpertise}
+                            name={memberName}
+                            show={isOpen}
+                        />
                     </div>
                 </div>
             </div>

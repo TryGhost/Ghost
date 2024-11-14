@@ -26,6 +26,7 @@ export default defineConfig({
     use: {
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: 'on-first-retry',
+        screenshot: 'only-on-failure',
         launchOptions: {
             slowMo: parseInt(process.env.PLAYWRIGHT_SLOWMO ?? '') || 0,
             // force GPU hardware acceleration

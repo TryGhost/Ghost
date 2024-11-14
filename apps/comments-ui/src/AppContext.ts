@@ -27,6 +27,13 @@ export type Comment = {
     html: string
 }
 
+export type OpenCommentForm = {
+    id: string,
+    parent_id?: string,
+    type: 'reply' | 'edit',
+    hasUnsavedChanges: boolean
+}
+
 export type AddComment = {
     post_id: string,
     status: string,
@@ -65,7 +72,7 @@ export type EditableAppContext = {
         total: number
     } | null,
     commentCount: number,
-    secundaryFormCount: number,
+    openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
     order: string
@@ -77,7 +84,8 @@ export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
     // eslint-disable-next-line @typescript-eslint/ban-types
     t: TranslationFunction,
-    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void
+    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
+    openFormCount: number
 }
 
 // Copy time from AppContextType
