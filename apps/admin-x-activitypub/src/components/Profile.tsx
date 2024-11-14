@@ -92,7 +92,6 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
@@ -100,6 +99,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         object={activity.object}
                                         type={activity.type}
                                         onCommentClick={() => handleViewContent(activity, true)}
+                                        onClick={() => handleViewContent(activity, false)}
                                     />
                                     {index < posts.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>
@@ -137,7 +137,6 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
@@ -145,6 +144,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
                                         onCommentClick={() => handleViewContent(activity, true)}
+                                        onClick={() => handleViewContent(activity, false)}
                                     />
                                     {index < liked.length - 1 && (
                                         <div className="h-px w-full bg-grey-200"></div>

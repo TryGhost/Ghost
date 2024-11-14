@@ -156,7 +156,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -169,12 +169,20 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
+    const [menuIsOpen, setMenuIsOpen] = useState(false);
+
+    const onClick = (event: React.MouseEvent) => {
+        if (menuIsOpen) {
+            return;
+        }
+        onClickHandler();
+    }
+
     // const handleDelete = () => {
     //     // Handle delete action
     // };
 
     const handleCopyLink = async (e: React.MouseEvent) => {
-        e.stopPropagation();
         if (object?.url) {
             await navigator.clipboard.writeText(object.url);
             setIsCopied(true);
@@ -196,9 +204,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     menuItems.push({
         id: 'copy-link',
         label: 'Copy link to post',
-        onClick: (e: React.MouseEvent) => {
-            handleCopyLink(e);
-        }
+        onClick: handleCopyLink
     });
 
     // TODO: If this is your own Note/Article, you should be able to delete it
@@ -268,7 +274,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -314,7 +320,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                            <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
                                         </div>
                                     </div>
                                 </div>
@@ -372,7 +378,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -414,7 +420,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
-                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            <Menu open={menuIsOpen} setOpen={setMenuIsOpen} items={menuItems} position='end' trigger={UserMenuTrigger}/>
                         </div>
                     </div>
                 )}
