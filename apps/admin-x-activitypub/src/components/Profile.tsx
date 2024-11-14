@@ -92,13 +92,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
+                                        onClick={() => handleViewContent(activity, false)}
                                         onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < posts.length - 1 && (
@@ -137,13 +137,13 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
+                                        onClick={() => handleViewContent(activity, false)}
                                         onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < liked.length - 1 && (

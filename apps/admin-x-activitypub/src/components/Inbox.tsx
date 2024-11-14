@@ -83,7 +83,6 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                             <li
                                                 key={activity.id}
                                                 data-test-view-article
-                                                onClick={() => handleViewContent(activity, false, updateActivity)}
                                             >
                                                 <FeedItem
                                                     actor={activity.actor}
@@ -91,6 +90,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                     layout={layout}
                                                     object={activity.object}
                                                     type={activity.type}
+                                                    onClick={() => handleViewContent(activity, false, updateActivity)}
                                                     onCommentClick={() => handleViewContent(activity, true, updateActivity)}
                                                 />
                                                 {index < activities.length - 1 && (

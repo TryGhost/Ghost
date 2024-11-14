@@ -8,15 +8,22 @@ export interface PopoverProps {
     children: React.ReactNode;
     position?: PopoverPosition;
     closeOnItemClick?: boolean;
+    open?: boolean;
+    setOpen?: (value: boolean) => void;
 }
 
 const Popover: React.FC<PopoverProps> = ({
     trigger,
     children,
     position = 'start',
-    closeOnItemClick
+    closeOnItemClick,
+    open: openState,
+    setOpen: setOpenState
 }) => {
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+    
+    const open = openState !== undefined ? openState : internalOpen;
+    const setOpen = setOpenState || setInternalOpen;
 
     const handleContentClick = () => {
         if (closeOnItemClick) {
