@@ -8,6 +8,7 @@ import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
+import Separator from './global/Separator';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
@@ -184,28 +185,24 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     (isLoading === false && activities.length > 0) && (
                         <>
                             <div className='mt-8 flex w-full max-w-[560px] flex-col'>
-                                {activities?.map(activity => (
-                                    <ActivityItem
-                                        key={activity.id}
-                                        url={getActivityUrl(activity) || getActorUrl(activity)}
-                                        onClick={() => handleActivityClick(activity)}
-                                    >
-                                        <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                        <div className='min-w-0'>
-                                            <div className='truncate text-grey-600'>
-                                                <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
-                                                {getUsername(activity.actor)}
+                                {activities?.map((activity, index) => (
+                                    <React.Fragment key={activity.id}>
+                                        <ActivityItem
+                                            url={getActivityUrl(activity) || getActorUrl(activity)}
+                                            onClick={() => handleActivityClick(activity)}
+                                        >
+                                            <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
+                                            <div className='min-w-0'>
+                                                <div className='truncate text-grey-600'>
+                                                    <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
+                                                    {getUsername(activity.actor)}
+                                                </div>
+                                                <div className=''>{getActivityDescription(activity)}</div>
+                                                {getExtendedDescription(activity)}
                                             </div>
-                                            <div className=''>{getActivityDescription(activity)}</div>
-                                            {getExtendedDescription(activity)}
-                                        </div>
-                                        {/* <FollowButton
-                                            className='ml-auto'
-                                            following={isFollower(activity.actor.id)}
-                                            handle={getUsername(activity.actor)}
-                                            type='link'
-                                        /> */}
-                                    </ActivityItem>
+                                        </ActivityItem>
+                                        {index < activities.length - 1 && <Separator />}
+                                    </React.Fragment>
                                 ))}
                             </div>
                             <div ref={loadMoreRef} className='h-1'></div>

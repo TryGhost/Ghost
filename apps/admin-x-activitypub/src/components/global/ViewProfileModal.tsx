@@ -13,6 +13,7 @@ import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
 import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
+import Separator from './Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 
@@ -81,23 +82,26 @@ const ActorList: React.FC<ActorListProps> = ({
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actorData.map(({actor, isFollowing}) => {
+                        {actorData.map(({actor, isFollowing}, index) => {
                             return (
-                                <ActivityItem key={actor.id} url={actor.url}>
-                                    <APAvatar author={actor} />
-                                    <div>
-                                        <div className='text-grey-600'>
-                                            <span className='mr-1 font-bold text-black'>{getName(actor)}</span>
-                                            <div className='text-sm'>{getUsername(actor)}</div>
+                                <React.Fragment key={actor.id}>
+                                    <ActivityItem key={actor.id} url={actor.url}>
+                                        <APAvatar author={actor} />
+                                        <div>
+                                            <div className='text-grey-600'>
+                                                <span className='mr-1 font-bold text-black'>{getName(actor)}</span>
+                                                <div className='text-sm'>{getUsername(actor)}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <FollowButton
-                                        className='ml-auto'
-                                        following={isFollowing}
-                                        handle={getUsername(actor)}
-                                        type='link'
-                                    />
-                                </ActivityItem>
+                                        <FollowButton
+                                            className='ml-auto'
+                                            following={isFollowing}
+                                            handle={getUsername(actor)}
+                                            type='link'
+                                        />
+                                    </ActivityItem>
+                                    {index < actorData.length - 1 && <Separator />}
+                                </React.Fragment>
                             );
                         })}
                     </List>
@@ -188,7 +192,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                 onCommentClick={() => {}}
                             />
                             {index < posts.length - 1 && (
-                                <div className="h-px w-full bg-grey-200"></div>
+                                <Separator />
                             )}
                         </div>
                     ))}

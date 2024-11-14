@@ -12,6 +12,7 @@ import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import ViewProfileModal from './global/ViewProfileModal';
 
+import Separator from './global/Separator';
 import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
 interface SearchResultItem {
@@ -103,13 +104,18 @@ const SuggestedAccounts: React.FC<{
                     <LoadingIndicator size='md'/>
                 </div>
             )}
-            {profiles.map(profile => (
-                <SearchResult
-                    key={profile.actor.id}
-                    result={profile}
-                    update={onUpdate}
-                />
-            ))}
+            {profiles.map((profile, index) => {
+                return (
+                    <React.Fragment key={profile.actor.id}>
+                        <SearchResult
+                            key={profile.actor.id}
+                            result={profile}
+                            update={onUpdate}
+                        />
+                        {index < profiles.length - 1 && <Separator />}
+                    </React.Fragment>
+                );
+            })}
         </>
     );
 };
@@ -141,8 +147,8 @@ const Search: React.FC<SearchProps> = ({}) => {
     return (
         <>
             <MainNavigation page='search' />
-            <div className='z-0 flex w-full flex-col items-center pt-8'>
-                <div className='relative flex w-full max-w-[560px] items-center '>
+            <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
+                <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-grey-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950 tablet:mr-0'
