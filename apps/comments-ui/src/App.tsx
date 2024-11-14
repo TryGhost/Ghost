@@ -25,9 +25,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         comments: [],
         pagination: null,
         commentCount: 0,
-        secundaryFormCount: 0,
+        openCommentForms: [],
         popup: null,
-        labs: null,
+        labs: {},
         order: 'count__likes desc, created_at desc'
     });
 
@@ -87,7 +87,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         ...options,
         ...state,
         t: i18n.t,
-        dispatchAction: dispatchAction as DispatchActionType
+        dispatchAction: dispatchAction as DispatchActionType,
+        openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms])
     };
 
     const initAdminAuth = async () => {
