@@ -6,7 +6,7 @@ import type {Knex} from 'knex';
 import nock from 'nock';
 import {EventEmitter} from 'events';
 import type {EventEmitter as EventEmitterType} from 'events';
-import type {Gauge, Counter, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
+import type {Gauge, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
 
 describe('Prometheus Client', function () {
     let instance: PrometheusClient;
@@ -248,13 +248,22 @@ describe('Prometheus Client', function () {
 
     describe('instrumentKnex', function () {
         let knexMock: Knex;
-        let eventEmitter: EventEmitterType;
+        let knexEventEmitter: EventEmitterType;
+        let poolEventEmitter: EventEmitterType;
 
         function simulateQuery(queryUid: string, duration: number) {
             const clock = sinon.useFakeTimers();
-            eventEmitter.emit('query', {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            knexEventEmitter.emit('query', {__knexQueryUid: queryUid, sql: 'SELECT 1'});
             clock.tick(duration);
-            eventEmitter.emit('query-response', null, {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            knexEventEmitter.emit('query-response', null, {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            clock.restore();
+        }
+
+        function simulateAcquireRequest(eventId: number, duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('acquireRequest', eventId);
+            clock.tick(duration);
+            poolEventEmitter.emit('acquireSuccess', eventId);
             clock.restore();
         }
 
@@ -265,10 +274,11 @@ describe('Prometheus Client', function () {
         }
 
         beforeEach(function () {
-            eventEmitter = new EventEmitter();
+            knexEventEmitter = new EventEmitter();
+            poolEventEmitter = new EventEmitter();
             knexMock = {
                 on: sinon.stub().callsFake((event, callback) => {
-                    eventEmitter.on(event, callback);
+                    knexEventEmitter.on(event, callback);
                 }),
                 client: {
                     pool: {
@@ -277,7 +287,10 @@ describe('Prometheus Client', function () {
                         numUsed: sinon.stub().returns(0),
                         numFree: sinon.stub().returns(0),
                         numPendingAcquires: sinon.stub().returns(0),
-                        numPendingCreates: sinon.stub().returns(0)
+                        numPendingCreates: sinon.stub().returns(0),
+                        on: sinon.stub().callsFake((event, callback) => {
+                            poolEventEmitter.on(event, callback);
+                        })
                     }
                 }
             } as unknown as Knex;
@@ -285,22 +298,6 @@ describe('Prometheus Client', function () {
 
         afterEach(function () {
             sinon.restore();
-        });
-
-        it('should create all the custom metrics for the connection pool and queries', async function () {
-            instance = new PrometheusClient();
-            instance.init();
-            instance.instrumentKnex(knexMock);
-            const metrics = await instance.getMetrics();
-            assert.match(metrics, /ghost_db_connection_pool_max/);
-            assert.match(metrics, /ghost_db_connection_pool_min/);
-            assert.match(metrics, /ghost_db_connection_pool_active/);
-            assert.match(metrics, /ghost_db_connection_pool_used/);
-            assert.match(metrics, /ghost_db_connection_pool_idle/);
-            assert.match(metrics, /ghost_db_connection_pool_pending_acquires/);
-            assert.match(metrics, /ghost_db_connection_pool_pending_creates/);
-            assert.match(metrics, /ghost_db_query_count/);
-            assert.match(metrics, /ghost_db_query_duration_seconds/);
         });
 
         it('should collect the connection pool max metric', async function () {
@@ -365,25 +362,6 @@ describe('Prometheus Client', function () {
             assert.deepEqual(metricValues, [{value: 3, labels: {}}]);
         });
 
-        it('should collect the db query count metric', async function () {
-            instance = new PrometheusClient();
-            instance.init();
-            instance.instrumentKnex(knexMock);
-            const metricValues = await instance.getMetricValues('ghost_db_query_count');
-            assert.deepEqual(metricValues, [{value: 0, labels: {}}]);
-        });
-
-        it('should increment the db query count metric when a query is executed', async function () {
-            instance = new PrometheusClient();
-            instance.init();
-            instance.instrumentKnex(knexMock);
-            simulateQuery('1', 0);
-            const metricValues = await instance.getMetricValues('ghost_db_query_count');
-            assert.deepEqual(metricValues, [{value: 1, labels: {}}]);
-            assert.equal(instance.queries.size, 1);
-            assert.ok(instance.queries.has('1'));
-        });
-
         it('should collect the db query duration metric when a query is executed', async function () {
             instance = new PrometheusClient();
             instance.init();
@@ -412,6 +390,21 @@ describe('Prometheus Client', function () {
                 {labels: {quantile: 0.99}, value: 1},
                 {metricName: 'ghost_db_query_duration_seconds_sum', labels: {}, value: 5.5},
                 {metricName: 'ghost_db_query_duration_seconds_count', labels: {}, value: 10}
+            ]);
+        });
+
+        it('should collect the db acquire duration metric when an acquire request is made', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateAcquireRequest(1, 100);
+            const metricValues = await instance.getMetricValues('ghost_db_acquire_duration_seconds');
+            assert.deepEqual(metricValues, [
+                {labels: {quantile: 0.5}, value: 0.1},
+                {labels: {quantile: 0.9}, value: 0.1},
+                {labels: {quantile: 0.99}, value: 0.1},
+                {metricName: 'ghost_db_acquire_duration_seconds_sum', labels: {}, value: 0.1},
+                {metricName: 'ghost_db_acquire_duration_seconds_count', labels: {}, value: 1}
             ]);
         });
     });

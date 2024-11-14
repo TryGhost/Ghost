@@ -29,14 +29,20 @@ export class PrometheusClient {
         this.logger = logger;
     }
 
+    // Prom-client client - ref https://github.com/siimon/prom-client
     public client;
+
+    // Pushgateway client - ref https://github.com/siimon/prom-client?tab=readme-ov-file#pushgateway
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
-    public queries: Map<string, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
     private pushInterval: ReturnType<typeof setInterval> | undefined;
     private logger: any;
+
+    // Map of query IDs to timers for tracking the duration of queries
+    public queries: Map<string, () => void> = new Map();
+    public acquireRequests: Map<number, () => void> = new Map();
 
     /**
      * Initializes the prometheus client, setting up the pushgateway if enabled
@@ -300,26 +306,43 @@ export class PrometheusClient {
             }
         });
 
-        this.registerCounter({
-            name: `db_query_count`,
-            help: 'The number of queries executed'
-        });
-
         const queryDurationSummary = this.registerSummary({
             name: `db_query_duration_seconds`,
             help: 'The duration of queries in seconds',
             percentiles: [0.5, 0.9, 0.99]
         });
 
+        const acquireDurationSummary = this.registerSummary({
+            name: `db_acquire_duration_seconds`,
+            help: 'The duration of acquire requests in seconds',
+            percentiles: [0.5, 0.9, 0.99]
+        });
+
         knexInstance.on('query', (query) => {
-            // Increment the query counter
-            (this.getMetric(`db_query_count`) as client.Counter).inc();
-            // Add the query to the map
+            // Start a timer for the query and add it to the map
             this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
         });
 
         knexInstance.on('query-response', (err, query) => {
+            // Stop the timer and record the duration to the Summary metric
             this.queries.get(query.__knexQueryUid)?.();
+        });
+
+        knexInstance.client.pool.on('acquireRequest', (eventId: number) => {
+            // Start a timer for the acquire request and add it to the map by eventId
+            this.acquireRequests.set(eventId, acquireDurationSummary.startTimer());
+        });
+
+        knexInstance.client.pool.on('acquireSuccess', (eventId: number) => {
+            // Stop the timer and record the duration to the Summary metric
+            this.acquireRequests.get(eventId)?.();
+            this.acquireRequests.delete(eventId);
+        });
+
+        knexInstance.client.pool.on('acquireFail', (eventId: number) => {
+            // Stop the timer and record the duration to the Summary metric
+            this.acquireRequests.get(eventId)?.();
+            this.acquireRequests.delete(eventId);
         });
     }
 }
