@@ -180,12 +180,14 @@ export class PrometheusClient {
      * Registers a counter metric
      * @param name - The name of the metric
      * @param help - The help text for the metric
+     * @param labelNames - The names of the labels for the metric
      * @returns The counter metric
      */
-    registerCounter({name, help}: {name: string, help: string}): client.Counter {
+    registerCounter({name, help, labelNames = []}: {name: string, help: string, labelNames: string[]}): client.Counter {
         return new this.client.Counter({
             name: `${this.prefix}${name}`,
-            help
+            help,
+            labelNames
         });
     }
 
