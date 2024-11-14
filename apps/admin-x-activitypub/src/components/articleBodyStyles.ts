@@ -2122,6 +2122,7 @@ headings, text, images and lists. We deal with cards lower down. */
 .gh-content {
     font-size: var(--content-font-size, 1.7rem);
     letter-spacing: -0.01em;
+    overflow-x: hidden;
 }
 
 /* Default vertical spacing */
