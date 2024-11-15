@@ -568,6 +568,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config, bootLogger, frontend});
+
+        // Instrument the knex instance and connection pool if prometheus is enabled
+        // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
+        if (prometheusClient) {
+            prometheusClient.instrumentKnex(connection);
+        }
+        
         const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
