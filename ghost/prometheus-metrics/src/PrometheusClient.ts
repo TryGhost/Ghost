@@ -32,6 +32,7 @@ export class PrometheusClient {
     public client;
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
     public queries: Map<string, () => void> = new Map();
+    public acquires: Map<number, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
@@ -211,11 +212,14 @@ export class PrometheusClient {
      * @param collect - The collect function to use for the summary
      * @returns The summary metric
      */
-    registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
+    registerSummary({name, help, percentiles, maxAgeSeconds, ageBuckets, pruneAgedBuckets, collect}: {name: string, help: string, percentiles?: number[], maxAgeSeconds?: number, ageBuckets?: number, pruneAgedBuckets?: boolean, collect?: () => void}): client.Summary {
         return new this.client.Summary({
             name: `${this.prefix}${name}`,
             help,
             percentiles: percentiles || [0.5, 0.9, 0.99],
+            maxAgeSeconds,
+            ageBuckets,
+            pruneAgedBuckets,
             collect
         });
     }
@@ -303,7 +307,19 @@ export class PrometheusClient {
         const queryDurationSummary = this.registerSummary({
             name: `db_query_duration_seconds`,
             help: 'Summary of the duration of knex database queries in seconds',
-            percentiles: [0.5, 0.9, 0.99]
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 1,
+            pruneAgedBuckets: true
+        });
+
+        const acquireDurationSummary = this.registerSummary({
+            name: `db_connection_acquire_duration_seconds`,
+            help: 'Summary of the duration of acquiring a connection from the pool in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 1,
+            pruneAgedBuckets: true
         });
 
         knexInstance.on('query', (query) => {
@@ -313,6 +329,21 @@ export class PrometheusClient {
 
         knexInstance.on('query-response', (err, query) => {
             this.queries.get(query.__knexQueryUid)?.();
+            this.queries.delete(query.__knexQueryUid);
+        });
+
+        knexInstance.client.pool.on('acquireRequest', (eventId: number) => {
+            this.acquires.set(eventId, acquireDurationSummary.startTimer());
+        });
+
+        knexInstance.client.pool.on('acquireSuccess', (eventId: number) => {
+            this.acquires.get(eventId)?.();
+            this.acquires.delete(eventId);
+        });
+
+        knexInstance.client.pool.on('acquireFail', (eventId: number) => {
+            this.acquires.get(eventId)?.();
+            this.acquires.delete(eventId);
         });
     }
 }

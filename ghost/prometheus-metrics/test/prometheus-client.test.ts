@@ -248,13 +248,14 @@ describe('Prometheus Client', function () {
 
     describe('instrumentKnex', function () {
         let knexMock: Knex;
-        let eventEmitter: EventEmitterType;
+        let knexEventEmitter: EventEmitterType;
+        let poolEventEmitter: EventEmitterType;
 
         function simulateQuery(queryUid: string, duration: number) {
             const clock = sinon.useFakeTimers();
-            eventEmitter.emit('query', {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            knexEventEmitter.emit('query', {__knexQueryUid: queryUid, sql: 'SELECT 1'});
             clock.tick(duration);
-            eventEmitter.emit('query-response', null, {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            knexEventEmitter.emit('query-response', null, {__knexQueryUid: queryUid, sql: 'SELECT 1'});
             clock.restore();
         }
 
@@ -264,11 +265,28 @@ describe('Prometheus Client', function () {
             });
         }
 
+        function simulateAcquire(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('acquireRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('acquireSuccess');
+            clock.restore();
+        }
+
+        function simulateAcquireFail(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('acquireRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('acquireFail');
+            clock.restore();
+        }
+
         beforeEach(function () {
-            eventEmitter = new EventEmitter();
+            knexEventEmitter = new EventEmitter();
+            poolEventEmitter = new EventEmitter();
             knexMock = {
                 on: sinon.stub().callsFake((event, callback) => {
-                    eventEmitter.on(event, callback);
+                    knexEventEmitter.on(event, callback);
                 }),
                 client: {
                     pool: {
@@ -277,7 +295,10 @@ describe('Prometheus Client', function () {
                         numUsed: sinon.stub().returns(0),
                         numFree: sinon.stub().returns(0),
                         numPendingAcquires: sinon.stub().returns(0),
-                        numPendingCreates: sinon.stub().returns(0)
+                        numPendingCreates: sinon.stub().returns(0),
+                        on: sinon.stub().callsFake((event, callback) => {
+                            poolEventEmitter.on(event, callback);
+                        })
                     }
                 }
             } as unknown as Knex;
@@ -372,6 +393,24 @@ describe('Prometheus Client', function () {
                 {metricName: 'ghost_db_query_duration_seconds_sum', labels: {}, value: 5.5},
                 {metricName: 'ghost_db_query_duration_seconds_count', labels: {}, value: 10}
             ]);
+        });
+
+        it('should collect the db connection acquire duration metric when a connection is acquired', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateAcquire(500);
+            const metricValues = await instance.getMetricValues('db_connection_acquire_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
+        });
+
+        it('should collect the db connection acquire duration metric when a connection fails to be acquired', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateAcquireFail(500);
+            const metricValues = await instance.getMetricValues('db_connection_acquire_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
         });
     });
 
