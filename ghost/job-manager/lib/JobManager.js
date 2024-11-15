@@ -52,8 +52,9 @@ class JobManager {
      * @param {Object} [options.config] - config
      * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
      * @param {JobQueueManager} [options.jobQueueManager] - job queue manager instance (for testing)
+     * @param {Object} [options.prometheusClient] - prometheus client instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null, prometheusClient = null}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
@@ -91,6 +92,8 @@ class JobManager {
         if (JobModel) {
             this._jobsRepository = new JobsRepository({JobModel});
         }
+        
+        this.prometheusClient = prometheusClient;
 
         if (jobQueueManager) {
             this.#jobQueueManager = jobQueueManager;
@@ -101,7 +104,7 @@ class JobManager {
 
     #initializeJobQueueManager() {
         if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
-            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config});
+            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config, prometheusClient: this.prometheusClient});
             this.#jobQueueManager.init();
         }
     }
@@ -129,6 +132,7 @@ class JobManager {
      * @property {string} name - The name or identifier of the job.
      * @property {Object} metadata - Metadata associated with the job.
      * @property {string} metadata.job - The absolute path to the job to execute.
+     * @property {string} metadata.name - The name of the job. Used for metrics.
      * @property {Object} metadata.data - The data associated with the job.
      */
 

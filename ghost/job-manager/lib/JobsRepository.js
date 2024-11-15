@@ -71,14 +71,14 @@ class JobsRepository {
      * @async
      * @description Retrieves a list of queued jobs from the database.
      * @param {number} [limit=50] - The maximum number of jobs to retrieve.
-     * @returns {Promise<Array>} An array of queued job objects.
+     * @returns {Promise<Object>} An object containing the queued job data and total count.
      */
     async getQueuedJobs(limit = 50) {
         const jobs = await this._JobModel.findPage({
             filter: 'queue_entry:1',
             limit
         });
-        return jobs.data;
+        return {data: jobs.data, total: jobs.meta.pagination.total};
     }
 
     /**
