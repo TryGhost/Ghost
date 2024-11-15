@@ -258,7 +258,7 @@ test.describe('Actions', async () => {
             await expect(sortingForm).toBeVisible();
         });
 
-        test('Defaut sorting is by Best', async ({page}) => {
+        test('Default sorting is by Best', async ({page}) => {
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>',
                 count: {

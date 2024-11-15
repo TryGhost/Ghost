@@ -31,8 +31,8 @@ export class PrometheusClient {
 
     public client;
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
-    public customMetrics: Map<string, client.Metric> = new Map();
-    public queries: Map<string, Date> = new Map();
+    public queries: Map<string, () => void> = new Map();
+    public acquires: Map<number, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
@@ -212,11 +212,14 @@ export class PrometheusClient {
      * @param collect - The collect function to use for the summary
      * @returns The summary metric
      */
-    registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
+    registerSummary({name, help, percentiles, maxAgeSeconds, ageBuckets, pruneAgedBuckets, collect}: {name: string, help: string, percentiles?: number[], maxAgeSeconds?: number, ageBuckets?: number, pruneAgedBuckets?: boolean, collect?: () => void}): client.Summary {
         return new this.client.Summary({
             name: `${this.prefix}${name}`,
             help,
             percentiles: percentiles || [0.5, 0.9, 0.99],
+            maxAgeSeconds,
+            ageBuckets,
+            pruneAgedBuckets,
             collect
         });
     }
@@ -245,86 +248,102 @@ export class PrometheusClient {
      */
     instrumentKnex(knexInstance: Knex) {
         // Create some gauges for tracking the connection pool
-        this.customMetrics.set(`${this.prefix}db_connection_pool_max`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_max`,
-            help: 'The maximum number of connections allowed in the pool',
+        this.registerGauge({
+            name: `db_connection_pool_max`, 
+            help: 'The maximum number of connections allowed in the pool', 
             collect() {
-                this.set(knexInstance.client.pool.max);
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.max);
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_connection_pool_min`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_min`,
+        this.registerGauge({
+            name: `db_connection_pool_min`, 
             help: 'The minimum number of connections allowed in the pool',
             collect() {
-                this.set(knexInstance.client.pool.min);
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.min);
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_connection_pool_active`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_active`,
+        this.registerGauge({
+            name: `db_connection_pool_active`, 
             help: 'The number of active connections to the database, which can be in use or idle',
             collect() {
-                this.set(knexInstance.client.pool.numUsed() + knexInstance.client.pool.numFree());
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.numUsed() + knexInstance.client.pool.numFree());
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_connection_pool_used`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_used`,
+        this.registerGauge({
+            name: `db_connection_pool_used`,
             help: 'The number of connections currently in use by the database',
             collect() {
-                this.set(knexInstance.client.pool.numUsed());
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.numUsed());
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_connection_pool_idle`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_idle`,
+        this.registerGauge({
+            name: `db_connection_pool_idle`,
             help: 'The number of active connections currently idle in pool',
             collect() {
-                this.set(knexInstance.client.pool.numFree());
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.numFree());
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_connection_pool_pending_acquires`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_pending_acquires`,
+        this.registerGauge({
+            name: `db_connection_pool_pending_acquires`,
             help: 'The number of connections currently waiting to be acquired from the pool',
             collect() {
-                this.set(knexInstance.client.pool.numPendingAcquires());
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.numPendingAcquires());
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_connection_pool_pending_creates`, new this.client.Gauge({
-            name: `${this.prefix}db_connection_pool_pending_creates`,
+        this.registerGauge({
+            name: `db_connection_pool_pending_creates`,
             help: 'The number of connections currently waiting to be created',
             collect() {
-                this.set(knexInstance.client.pool.numPendingCreates());
+                (this as unknown as client.Gauge).set(knexInstance.client.pool.numPendingCreates());
             }
-        }));
+        });
 
-        this.customMetrics.set(`${this.prefix}db_query_count`, new this.client.Counter({
-            name: `${this.prefix}db_query_count`,
-            help: 'The number of queries executed'
-        }));
+        const queryDurationSummary = this.registerSummary({
+            name: `db_query_duration_seconds`,
+            help: 'Summary of the duration of knex database queries in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 6,
+            pruneAgedBuckets: false
+        });
 
-        this.customMetrics.set(`${this.prefix}db_query_duration_milliseconds`, new this.client.Summary({
-            name: `${this.prefix}db_query_duration_milliseconds`,
-            help: 'The duration of queries in milliseconds',
-            percentiles: [0.5, 0.9, 0.99]
-        }));
+        const acquireDurationSummary = this.registerSummary({
+            name: `db_connection_acquire_duration_seconds`,
+            help: 'Summary of the duration of acquiring a connection from the pool in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 6,
+            pruneAgedBuckets: false
+        });
 
         knexInstance.on('query', (query) => {
-            // Increment the query counter
-            (this.customMetrics.get(`${this.prefix}db_query_count`) as client.Counter).inc();
             // Add the query to the map
-            this.queries.set(query.__knexQueryUid, new Date());
+            this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
         });
 
         knexInstance.on('query-response', (err, query) => {
-            const start = this.queries.get(query.__knexQueryUid);
-            if (start) {
-                const duration = new Date().getTime() - start.getTime();
-                (this.customMetrics.get(`${this.prefix}db_query_duration_milliseconds`) as client.Summary).observe(duration);
-            }
+            this.queries.get(query.__knexQueryUid)?.();
+            this.queries.delete(query.__knexQueryUid);
+        });
+
+        knexInstance.client.pool.on('acquireRequest', (eventId: number) => {
+            this.acquires.set(eventId, acquireDurationSummary.startTimer());
+        });
+
+        knexInstance.client.pool.on('acquireSuccess', (eventId: number) => {
+            this.acquires.get(eventId)?.();
+            this.acquires.delete(eventId);
+        });
+
+        knexInstance.client.pool.on('acquireFail', (eventId: number) => {
+            this.acquires.get(eventId)?.();
+            this.acquires.delete(eventId);
         });
     }
 }
