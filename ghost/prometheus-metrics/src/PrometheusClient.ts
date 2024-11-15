@@ -31,7 +31,7 @@ export class PrometheusClient {
 
     public client;
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
-    public queries: Map<string, Date> = new Map();
+    public queries: Map<string, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
@@ -300,23 +300,19 @@ export class PrometheusClient {
             }
         });
 
-        this.registerSummary({
-            name: `db_query_duration_milliseconds`,
-            help: 'The duration of queries in milliseconds',
+        const queryDurationSummary = this.registerSummary({
+            name: `db_query_duration_seconds`,
+            help: 'Summary of the duration of knex database queries in seconds',
             percentiles: [0.5, 0.9, 0.99]
         });
 
         knexInstance.on('query', (query) => {
             // Add the query to the map
-            this.queries.set(query.__knexQueryUid, new Date());
+            this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
         });
 
         knexInstance.on('query-response', (err, query) => {
-            const start = this.queries.get(query.__knexQueryUid);
-            if (start) {
-                const duration = new Date().getTime() - start.getTime();
-                (this.getMetric(`db_query_duration_milliseconds`) as client.Summary).observe(duration);
-            }
+            this.queries.get(query.__knexQueryUid)?.();
         });
     }
 }

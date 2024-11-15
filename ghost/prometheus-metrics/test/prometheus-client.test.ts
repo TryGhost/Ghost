@@ -353,9 +353,9 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            eventEmitter.emit('query', {__knexQueryUid: '1', sql: 'SELECT 1'});
-            const metricValues = await instance.getMetricValues('db_query_duration_milliseconds');
-            assert.equal(metricValues?.[0].value, 0);
+            simulateQuery('1', 500);
+            const metricValues = await instance.getMetricValues('db_query_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
         });
 
         it('should accurately calculate the query duration of a query', async function () {
@@ -364,13 +364,13 @@ describe('Prometheus Client', function () {
             instance.instrumentKnex(knexMock);
             const durations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
             simulateQueries(durations);
-            const metricValues = await instance.getMetricValues('db_query_duration_milliseconds');
+            const metricValues = await instance.getMetricValues('db_query_duration_seconds');
             assert.deepEqual(metricValues, [
-                {labels: {quantile: 0.5}, value: 550},
-                {labels: {quantile: 0.9}, value: 950},
-                {labels: {quantile: 0.99}, value: 1000},
-                {metricName: 'ghost_db_query_duration_milliseconds_sum', labels: {}, value: 5500},
-                {metricName: 'ghost_db_query_duration_milliseconds_count', labels: {}, value: 10}
+                {labels: {quantile: 0.5}, value: 0.55},
+                {labels: {quantile: 0.9}, value: 0.95},
+                {labels: {quantile: 0.99}, value: 1},
+                {metricName: 'ghost_db_query_duration_seconds_sum', labels: {}, value: 5.5},
+                {metricName: 'ghost_db_query_duration_seconds_count', labels: {}, value: 10}
             ]);
         });
     });
