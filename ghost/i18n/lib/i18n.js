@@ -34,6 +34,7 @@ const SUPPORTED_LOCALES = [
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
     'no', // Norwegian
