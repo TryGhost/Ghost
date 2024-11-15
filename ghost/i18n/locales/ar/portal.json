@@ -189,7 +189,6 @@
     "Welcome back!": "!مرحبًا بعودتك",
     "Welcome to {{siteTitle}}": "{{siteTitle}} مرحبًا بك في ",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "عندما يفشل صندوق الوارد في استقبال رسالة بريد إلكتروني، يُطلق على ذلك عادةً ارتداد. في كثير من الحالات، قد يكون هذا الارتداد مؤقتًا. ومع ذلك، في بعض الحالات، قد يتم إرجاع البريد الإلكتروني كفشل دائم إذا كان عنوان البريد الإلكتروني غير صالح أو غير موجود.",
-عندما يفشل صندوق الوارد في استقبال رسالة بريد إلكتروني، يُطلق على ذلك عادةً ارتداد. في كثير من الحالات، قد يكون هذا الارتداد مؤقتًا. ومع ذلك، في بعض الحالات، قد يتم إرجاع البريد الإلكتروني كفشل دائم إذا كان عنوان البريد الإلكتروني غير صالح أو غير موجود.
 ",
     "Why has my email been disabled?": "لماذا تم تعطيل بريدي الالكتروني؟",
     "year": "سنة",
