@@ -6,7 +6,7 @@ import type {Knex} from 'knex';
 import nock from 'nock';
 import {EventEmitter} from 'events';
 import type {EventEmitter as EventEmitterType} from 'events';
-import type {Gauge, Counter, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
+import type {Gauge, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
 
 describe('Prometheus Client', function () {
     let instance: PrometheusClient;
