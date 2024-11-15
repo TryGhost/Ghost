@@ -28,6 +28,7 @@ describe('Job Queue', function () {
     afterEach(async function () {
         await configUtils.restore();
     });
+    afterEach(testUtils.teardownDb);
 
     describe('enabled by config', function () {
         beforeEach(async function () {
