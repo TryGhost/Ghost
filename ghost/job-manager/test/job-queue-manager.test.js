@@ -8,8 +8,11 @@ describe('JobQueueManager', function () {
     let mockConfig;
     let mockLogger;
     let mockWorkerPool;
+    let mockPrometheusClient;
+    let metricIncStub;
 
     beforeEach(function () {
+        metricIncStub = sinon.stub();
         mockJobModel = {};
         mockConfig = {
             get: sinon.stub().returns({})
@@ -17,6 +20,14 @@ describe('JobQueueManager', function () {
         mockLogger = {
             info: sinon.stub(),
             error: sinon.stub()
+        };
+        mockPrometheusClient = {
+            getMetric: sinon.stub().returns({
+                set: sinon.stub(),
+                inc: metricIncStub
+            }),
+            registerCounter: sinon.stub(),
+            registerGauge: sinon.stub()
         };
         mockWorkerPool = {
             pool: sinon.stub().returns({
@@ -30,7 +41,8 @@ describe('JobQueueManager', function () {
             JobModel: mockJobModel,
             config: mockConfig,
             logger: mockLogger,
-            WorkerPool: mockWorkerPool
+            WorkerPool: mockWorkerPool,
+            prometheusClient: mockPrometheusClient
         });
     });
 
@@ -116,7 +128,7 @@ describe('JobQueueManager', function () {
             const mockJobs = [{get: sinon.stub().returns('{}')}];
 
             sinon.stub(jobQueueManager, 'getStats').resolves(mockStats);
-            sinon.stub(jobQueueManager.jobsRepository, 'getQueuedJobs').resolves(mockJobs);
+            sinon.stub(jobQueueManager.jobsRepository, 'getQueuedJobs').resolves({data: mockJobs, total: mockJobs.length});
             sinon.stub(jobQueueManager, 'updatePollInterval');
             sinon.stub(jobQueueManager, 'processJobs');
 
@@ -278,6 +290,20 @@ describe('JobQueueManager', function () {
             
             expect(handleJobErrorStub.calledWith(job, {job: 'testJob', data: {}}, error)).to.be.true;
             expect(jobQueueManager.state.queuedJobs.has('testJob')).to.be.false;
+        });
+
+        it('should increment the job_manager_queue_job_completion_count metric', async function () {
+            const job = {id: '1', get: sinon.stub().returns('{"job": "testJob", "data": {}}')};
+            sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
+            await jobQueueManager.executeJob(job, 'testJob', {job: 'testJob', data: {}});
+            expect(metricIncStub.calledOnce).to.be.true;
+        });
+
+        it('should increment the email_analytics_aggregate_member_stats_count metric', async function () {
+            const job = {id: '1', get: sinon.stub().returns('{"job": "update-member-email-analytics", "data": {}}')};
+            sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
+            await jobQueueManager.executeJob(job, 'update-member-email-analytics', {job: 'update-member-email-analytics', data: {}});
+            expect(metricIncStub.calledTwice).to.be.true;
         });
     });
 
