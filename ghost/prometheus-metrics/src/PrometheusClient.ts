@@ -31,7 +31,8 @@ export class PrometheusClient {
 
     public client;
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
-    public queries: Map<string, Date> = new Map();
+    public queries: Map<string, () => void> = new Map();
+    public acquires: Map<number, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
@@ -213,11 +214,14 @@ export class PrometheusClient {
      * @param collect - The collect function to use for the summary
      * @returns The summary metric
      */
-    registerSummary({name, help, percentiles, collect}: {name: string, help: string, percentiles?: number[], collect?: () => void}): client.Summary {
+    registerSummary({name, help, percentiles, maxAgeSeconds, ageBuckets, pruneAgedBuckets, collect}: {name: string, help: string, percentiles?: number[], maxAgeSeconds?: number, ageBuckets?: number, pruneAgedBuckets?: boolean, collect?: () => void}): client.Summary {
         return new this.client.Summary({
             name: `${this.prefix}${name}`,
             help,
             percentiles: percentiles || [0.5, 0.9, 0.99],
+            maxAgeSeconds,
+            ageBuckets,
+            pruneAgedBuckets,
             collect
         });
     }
@@ -302,23 +306,46 @@ export class PrometheusClient {
             }
         });
 
-        this.registerSummary({
-            name: `db_query_duration_milliseconds`,
-            help: 'The duration of queries in milliseconds',
-            percentiles: [0.5, 0.9, 0.99]
+        const queryDurationSummary = this.registerSummary({
+            name: `db_query_duration_seconds`,
+            help: 'Summary of the duration of knex database queries in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 6,
+            pruneAgedBuckets: false
+        });
+
+        const acquireDurationSummary = this.registerSummary({
+            name: `db_connection_acquire_duration_seconds`,
+            help: 'Summary of the duration of acquiring a connection from the pool in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 6,
+            pruneAgedBuckets: false
         });
 
         knexInstance.on('query', (query) => {
             // Add the query to the map
-            this.queries.set(query.__knexQueryUid, new Date());
+            this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
         });
 
         knexInstance.on('query-response', (err, query) => {
-            const start = this.queries.get(query.__knexQueryUid);
-            if (start) {
-                const duration = new Date().getTime() - start.getTime();
-                (this.getMetric(`db_query_duration_milliseconds`) as client.Summary).observe(duration);
-            }
+            this.queries.get(query.__knexQueryUid)?.();
+            this.queries.delete(query.__knexQueryUid);
+        });
+
+        knexInstance.client.pool.on('acquireRequest', (eventId: number) => {
+            this.acquires.set(eventId, acquireDurationSummary.startTimer());
+        });
+
+        knexInstance.client.pool.on('acquireSuccess', (eventId: number) => {
+            this.acquires.get(eventId)?.();
+            this.acquires.delete(eventId);
+        });
+
+        knexInstance.client.pool.on('acquireFail', (eventId: number) => {
+            this.acquires.get(eventId)?.();
+            this.acquires.delete(eventId);
         });
     }
 }
