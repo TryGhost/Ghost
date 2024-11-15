@@ -8,6 +8,7 @@ import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
+import Separator from './global/Separator';
 import ViewProfileModal from './global/ViewProfileModal';
 import {Button, Heading, List, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
@@ -92,17 +93,17 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={activity.object}
                                         type={activity.type}
+                                        onClick={() => handleViewContent(activity, false)}
                                         onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < posts.length - 1 && (
-                                        <div className="h-px w-full bg-grey-200"></div>
+                                        <Separator />
                                     )}
                                 </li>
                             ))}
@@ -137,17 +138,17 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 <li
                                     key={activity.id}
                                     data-test-view-article
-                                    onClick={() => handleViewContent(activity, false)}
                                 >
                                     <FeedItem
                                         actor={activity.object?.attributedTo || activity.actor}
                                         layout={layout}
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
+                                        onClick={() => handleViewContent(activity, false)}
                                         onCommentClick={() => handleViewContent(activity, true)}
                                     />
                                     {index < liked.length - 1 && (
-                                        <div className="h-px w-full bg-grey-200"></div>
+                                        <Separator />
                                     )}
                                 </li>
                             ))}
@@ -178,25 +179,28 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <List>
-                            {following.slice(0, visibleFollowing).map((item) => {
+                            {following.slice(0, visibleFollowing).map((item, index) => {
                                 return (
-                                    <ActivityItem
-                                        key={item.id}
-                                        url={item.url}
-                                        onClick={() => handleUserClick(item)}
-                                    >
-                                        <APAvatar author={item} />
-                                        <div>
-                                            <div className='text-grey-600'>
-                                                <span className='mr-1 font-bold text-black'>{getName(item)}</span>
-                                                <div className='text-sm'>{getUsername(item)}</div>
+                                    <React.Fragment key={item.id}>
+                                        <ActivityItem
+                                            key={item.id}
+                                            url={item.url}
+                                            onClick={() => handleUserClick(item)}
+                                        >
+                                            <APAvatar author={item} />
+                                            <div>
+                                                <div className='text-grey-600'>
+                                                    <span className='mr-1 font-bold text-black'>{getName(item)}</span>
+                                                    <div className='text-sm'>{getUsername(item)}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {/* <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
+                                            {/* <Button className='ml-auto' color='grey' label='Unfollow' link={true} onClick={(e) => {
                                             e?.preventDefault();
                                             alert('Implement me!');
                                         }} /> */}
-                                    </ActivityItem>
+                                        </ActivityItem>
+                                        {index < following.length - 1 && <Separator />}
+                                    </React.Fragment>
                                 );
                             })}
                         </List>
@@ -226,21 +230,24 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                         </NoValueLabel>
                     ) : (
                         <List>
-                            {followers.slice(0, visibleFollowers).map((item) => {
+                            {followers.slice(0, visibleFollowers).map((item, index) => {
                                 return (
-                                    <ActivityItem
-                                        key={item.id}
-                                        url={item.url}
-                                        onClick={() => handleUserClick(item)}
-                                    >
-                                        <APAvatar author={item} />
-                                        <div>
-                                            <div className='text-grey-600'>
-                                                <span className='mr-1 font-bold text-black'>{item.name || getName(item) || 'Unknown'}</span>
-                                                <div className='text-sm'>{getUsername(item)}</div>
+                                    <React.Fragment key={item.id}>
+                                        <ActivityItem
+                                            key={item.id}
+                                            url={item.url}
+                                            onClick={() => handleUserClick(item)}
+                                        >
+                                            <APAvatar author={item} />
+                                            <div>
+                                                <div className='text-grey-600'>
+                                                    <span className='mr-1 font-bold text-black'>{item.name || getName(item) || 'Unknown'}</span>
+                                                    <div className='text-sm'>{getUsername(item)}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </ActivityItem>
+                                        </ActivityItem>
+                                        {index < followers.length - 1 && <Separator />}
+                                    </React.Fragment>
                                 );
                             })}
                         </List>
