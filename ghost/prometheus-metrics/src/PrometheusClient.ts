@@ -309,8 +309,8 @@ export class PrometheusClient {
             help: 'Summary of the duration of knex database queries in seconds',
             percentiles: [0.5, 0.9, 0.99],
             maxAgeSeconds: 60,
-            ageBuckets: 1,
-            pruneAgedBuckets: true
+            ageBuckets: 6,
+            pruneAgedBuckets: false
         });
 
         const acquireDurationSummary = this.registerSummary({
@@ -318,8 +318,8 @@ export class PrometheusClient {
             help: 'Summary of the duration of acquiring a connection from the pool in seconds',
             percentiles: [0.5, 0.9, 0.99],
             maxAgeSeconds: 60,
-            ageBuckets: 1,
-            pruneAgedBuckets: true
+            ageBuckets: 6,
+            pruneAgedBuckets: false
         });
 
         knexInstance.on('query', (query) => {
