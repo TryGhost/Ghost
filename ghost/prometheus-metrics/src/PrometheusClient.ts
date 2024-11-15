@@ -182,7 +182,7 @@ export class PrometheusClient {
      * @param labelNames - The names of the labels for the metric
      * @returns The counter metric
      */
-    registerCounter({name, help, labelNames = []}: {name: string, help: string, labelNames: string[]}): client.Counter {
+    registerCounter({name, help, labelNames = []}: {name: string, help: string, labelNames?: string[]}): client.Counter {
         return new this.client.Counter({
             name: `${this.prefix}${name}`,
             help,
