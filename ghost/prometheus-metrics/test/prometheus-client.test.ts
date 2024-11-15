@@ -583,7 +583,7 @@ describe('Prometheus Client', function () {
                 ]);
             });
 
-            it('can use the percentiles option to set the summary value', async function () {
+            it('respects the percentiles option', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', percentiles: [0.1, 0.5, 0.9]});
@@ -595,6 +595,44 @@ describe('Prometheus Client', function () {
                     {metricName: 'ghost_test_summary_sum', labels: {}, value: 0},
                     {metricName: 'ghost_test_summary_count', labels: {}, value: 0}
                 ]);
+            });
+
+            it('removes datapoints older than maxAgeSeconds from percentile metrics if maxAgeSeconds and ageBuckets are provided', async function () {
+                const clock = sinon.useFakeTimers();
+                instance = new PrometheusClient();
+                instance.init();
+                const metric = instance.registerSummary({name: 'test_summary', help: 'A test summary', maxAgeSeconds: 10, ageBuckets: 1});
+                metric.observe(1);
+                const metricValuesBefore = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValuesBefore, [
+                    {labels: {quantile: 0.5}, value: 1},
+                    {labels: {quantile: 0.9}, value: 1},
+                    {labels: {quantile: 0.99}, value: 1},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 1},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+                clock.tick(20000);
+                const metricValuesAfter = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValuesAfter, [
+                    {labels: {quantile: 0.5}, value: 0},
+                    {labels: {quantile: 0.9}, value: 0},
+                    {labels: {quantile: 0.99}, value: 0},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 1},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+                clock.restore();
+            });
+
+            it('does not export the metric if maxAgeSeconds and ageBuckets are provided and pruneAgedBuckets is true', async function () {
+                const clock = sinon.useFakeTimers();
+                instance = new PrometheusClient();
+                instance.init();
+                const metric = instance.registerSummary({name: 'test_summary', help: 'A test summary', maxAgeSeconds: 10, ageBuckets: 1, pruneAgedBuckets: true});
+                metric.observe(1);
+                clock.tick(20000);
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, []);
+                clock.restore();
             });
 
             it('can use a timer to observe the summary value', async function () {
