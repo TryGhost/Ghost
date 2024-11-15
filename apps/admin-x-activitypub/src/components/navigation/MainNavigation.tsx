@@ -29,7 +29,7 @@ const MainNavigation: React.FC<MainNavigationProps> = ({
             </div>
             <div className='col-[3/4] flex items-center justify-end gap-2 px-8'>
                 {page === 'home' &&
-                <div className='mr-3'>
+                <div>
                     <Tooltip content="Inbox">
                         <Button className='!px-2' icon='listview' iconColorClass={layout === 'inbox' ? 'text-black' : 'text-grey-400'} size='sm' onClick={setInbox} />
                     </Tooltip>

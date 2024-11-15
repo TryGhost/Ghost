@@ -4,10 +4,12 @@ import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-
 
 import APAvatar from '../global/APAvatar';
 
+import FeedItemStats from './FeedItemStats';
+import clsx from 'clsx';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
-import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
+import {renderTimestamp} from '../../utils/render-timestamp';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -82,7 +84,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         </div>;
     default:
         if (object.image) {
-            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10' src={object.image} />;
+            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]' src={object.image} />;
         }
         return null;
     }
@@ -91,20 +93,16 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
 function renderInboxAttachment(object: ObjectProperties) {
     const attachment = getAttachment(object);
 
+    const videoAttachmentStyles = 'ml-8 shrink-0 rounded-md h-[80px] w-[120px] relative';
+    const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
+
     if (!attachment) {
         return null;
     }
 
     if (Array.isArray(attachment)) {
-        const attachmentCount = attachment.length;
-
         return (
-            <div className='min-w-[120px]'>
-                <div className='relative'>
-                    <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment[0].url} />
-                    <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
-                </div>
-            </div>
+            <img className={imageAttachmentStyles} src={attachment[0].url} />
         );
     }
 
@@ -113,14 +111,12 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/png':
     case 'image/gif':
         return (
-            <div className='min-w-[120px]'>
-                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment.url} />
-            </div>
+            <img className={imageAttachmentStyles} src={attachment.url} />
         );
     case 'video/mp4':
     case 'video/webm':
         return (
-            <div className='relative h-[80px]'>
+            <div className={videoAttachmentStyles}>
                 <video className='h-[80px] w-full rounded object-cover' src={attachment.url} />
                 <div className='absolute inset-0 rounded bg-grey-900 opacity-50'></div>
                 <div className='absolute inset-0 flex items-center justify-center'>
@@ -132,7 +128,7 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'audio/mpeg':
     case 'audio/ogg':
         return (
-            <div className='min-w-[160px]'>
+            <div className='ml-8 w-[120px]'>
                 <div className='relative mb-4 mt-2 w-full'>
                     <audio className='w-full' src={attachment.url} controls/>
                 </div>
@@ -140,87 +136,11 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <div className='min-h-[80px]'>
-                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
-            </div>;
+            return <img className={imageAttachmentStyles} src={object.image} />;
         }
         return null;
     }
 }
-
-function renderTimestamp(object: ObjectProperties) {
-    const timestamp =
-        new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
-
-    const date = new Date(object?.published ?? new Date());
-    return (<a className='whitespace-nowrap text-grey-700 hover:underline' href={object.url} title={`${timestamp}`}>{getRelativeTimestamp(date)}</a>);
-}
-
-const FeedItemStats: React.FC<{
-    object: ObjectProperties;
-    likeCount: number;
-    commentCount: number;
-    layout: string;
-    onLikeClick: () => void;
-    onCommentClick: () => void;
-}> = ({object, likeCount, commentCount, layout, onLikeClick, onCommentClick}) => {
-    const [isClicked, setIsClicked] = useState(false);
-    const [isLiked, setIsLiked] = useState(object.liked);
-    const likeMutation = useLikeMutationForUser('index');
-    const unlikeMutation = useUnlikeMutationForUser('index');
-
-    const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
-        e.stopPropagation();
-        setIsClicked(true);
-        if (!isLiked) {
-            likeMutation.mutate(object.id);
-        } else {
-            unlikeMutation.mutate(object.id);
-        }
-
-        setIsLiked(!isLiked);
-
-        onLikeClick();
-        setTimeout(() => setIsClicked(false), 300);
-    };
-
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-5'}`}>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
-                hideLabel={true}
-                icon='heart'
-                id='like'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    if (e) {
-                        handleLikeClick(e);
-                    }
-                }}
-            />
-            {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
-        </div>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
-                hideLabel={true}
-                icon='comment'
-                id='comment'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    onCommentClick();
-                }}
-            />
-            {commentCount > 0 && (layout !== 'inbox') && (
-                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
-            )}
-        </div>
-    </div>);
-};
 
 interface FeedItemProps {
     actor: ActorProperties;
@@ -228,6 +148,7 @@ interface FeedItemProps {
     layout: string;
     type: string;
     commentCount?: number;
+    showHeader?: boolean;
     last?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
@@ -235,7 +156,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -246,6 +167,15 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     const onLikeClick = () => {
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
+    };
+
+    const [menuIsOpen, setMenuIsOpen] = useState(false);
+
+    const onClick = () => {
+        if (menuIsOpen) {
+            return;
+        }
+        onClickHandler();
     };
 
     // const handleDelete = () => {
@@ -323,8 +253,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='flex flex-col'>
                                     <div className='mt-[-24px]'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
-                                        {object.name && <Heading className='my-1 leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? object.preview.content : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                                        {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
                                         {(object.type === 'Article') && <Button
                                             className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
@@ -344,7 +274,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -364,7 +294,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <span className='z-10'>{actor.name} reposted</span>
                             </div>}
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-4 pt-5`} data-test-activity>
-                                <div className='relative z-10 pt-[3px]'>
+                                {(showHeader) && <><div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
                                 </div>
                                 <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
@@ -375,11 +305,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='flex w-full'>
                                         <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
                                     </div>
-                                </div>
+                                </div></>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.7rem] text-grey-900'></div>
+                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.8rem] text-grey-900'></div>
                                         {renderFeedAttachment(object, layout)}
                                         <div className='space-between mt-5 flex'>
                                             <FeedItemStats
@@ -390,7 +320,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                         </div>
                                     </div>
                                 </div>
@@ -427,9 +357,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
-                                    {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                    <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>
-                                    {renderFeedAttachment(object, layout)}
+                                    {(object.type === 'Article') && renderFeedAttachment(object, layout)}
+                                    {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
+                                    {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
+                                    {(object.type === 'Note') && renderFeedAttachment(object, layout)}
+                                    {(object.type === 'Article') && <Button
+                                        className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                                        color='grey'
+                                        fullWidth={true}
+                                        id='read-more'
+                                        label='Read more'
+                                        size='md'
+                                    />}
                                     <div className='space-between mt-5 flex'>
                                         <FeedItemStats
                                             commentCount={commentCount}
@@ -439,7 +378,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -454,31 +393,25 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -my-px flex min-w-0 cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
-                        <div className='flex w-full min-w-0 flex-col items-start justify-between gap-1 pr-4'>
-                            <div className='z-10 flex w-full min-w-0 items-start gap-2 group-hover/article:border-transparent'>
-                                <APAvatar author={author} size='xs'/>
-                                <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
-                                <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
-                                {/* <div className='flex gap-2'>
-                                    <span className='truncate min-w-0 break-all font-semibold' data-test-activity-heading>{author.name}</span>
-                                    <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
-                                </div> */}
-                                <span className='shrink-0 whitespace-nowrap text-grey-700 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                        <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start'>
+                            <div className='z-10 mb-1 flex w-full min-w-0 items-center gap-1.5 text-base text-grey-700 group-hover/article:border-transparent'>
+                                <APAvatar author={author} size='2xs'/>
+                                <span className='min-w-0 truncate break-all font-medium text-grey-900' data-test-activity-heading>{author.name}</span>
+                                <span className='min-w-0 truncate'>{getUsername(author)}</span>
+                                <span className='shrink-0 whitespace-nowrap before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
-                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>
+                            <Heading className='mb-1 line-clamp-1 w-full max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
                                 {object.name ? object.name : (
                                     <span dangerouslySetInnerHTML={{
-                                        __html: object.content.length > 30
-                                            ? stripHtml(object.content).substring(0, 50) + '...'
-                                            : stripHtml(object.content)
+                                        __html: stripHtml(object.content)
                                     }}></span>
                                 )}
                             </Heading>
-                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full truncate text-[1.5rem] text-grey-700'></div>
+                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full max-w-[600px] truncate text-base leading-normal text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
-                        <div className='invisible absolute right-2 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
+                        <div className='invisible absolute right-4 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
                                 commentCount={commentCount}
                                 layout={layout}
@@ -487,7 +420,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
-                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                         </div>
                     </div>
                 )}
