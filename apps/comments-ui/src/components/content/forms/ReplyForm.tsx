@@ -1,16 +1,16 @@
-import SecundaryForm from './SecundaryForm';
-import {Comment, useAppContext} from '../../../AppContext';
+import Form from './Form';
+import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
 import {getEditorConfig} from '../../../utils/editor';
-import {scrollToElement} from '../../../utils/helpers';
+import {isMobile, scrollToElement} from '../../../utils/helpers';
 import {useCallback} from 'react';
 import {useEditor} from '@tiptap/react';
 import {useRefCallback} from '../../../utils/hooks';
 
 type Props = {
+    openForm: OpenCommentForm;
     parent: Comment;
-    close: () => void;
 }
-const ReplyForm: React.FC<Props> = ({parent, close}) => {
+const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
@@ -35,25 +35,29 @@ const ReplyForm: React.FC<Props> = ({parent, close}) => {
         });
     }, [parent, postId, dispatchAction]);
 
-    const submitProps = {
-        submitText: (
-            <>
-                <span className="hidden sm:inline">{t('Add reply')}</span><span className="sm:hidden">{t('Reply')}</span>
-            </>
-        ),
-        submitSize: 'medium',
-        submit
-    };
+    const close = useCallback(() => {
+        dispatchAction('closeCommentForm', openForm.id);
+    }, [dispatchAction, openForm]);
 
-    const closeIfNotChanged = useCallback(() => {
-        if (editor?.isEmpty) {
-            close();
-        }
-    }, [editor, close]);
+    const SubmitText = (<>
+        <span className="hidden sm:inline">{t('Add reply')}</span><span className="sm:hidden">{t('Reply')}</span>
+    </>);
 
     return (
         <div ref={setForm}>
-            <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+            <div className='mt-[-16px] pr-3'>
+                <Form
+                    close={close}
+                    comment={parent}
+                    editor={editor}
+                    isOpen={true}
+                    openForm={openForm}
+                    reduced={isMobile()}
+                    submit={submit}
+                    submitSize={'medium'}
+                    submitText={SubmitText}
+                />
+            </div>
         </div>
     );
 };

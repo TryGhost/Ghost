@@ -6,7 +6,7 @@ import type {Knex} from 'knex';
 import nock from 'nock';
 import {EventEmitter} from 'events';
 import type {EventEmitter as EventEmitterType} from 'events';
-import type {Gauge, Counter, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
+import type {Gauge, Summary, Pushgateway, RegistryContentType, Metric} from 'prom-client';
 
 describe('Prometheus Client', function () {
     let instance: PrometheusClient;
@@ -248,13 +248,14 @@ describe('Prometheus Client', function () {
 
     describe('instrumentKnex', function () {
         let knexMock: Knex;
-        let eventEmitter: EventEmitterType;
+        let knexEventEmitter: EventEmitterType;
+        let poolEventEmitter: EventEmitterType;
 
         function simulateQuery(queryUid: string, duration: number) {
             const clock = sinon.useFakeTimers();
-            eventEmitter.emit('query', {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            knexEventEmitter.emit('query', {__knexQueryUid: queryUid, sql: 'SELECT 1'});
             clock.tick(duration);
-            eventEmitter.emit('query-response', null, {__knexQueryUid: queryUid, sql: 'SELECT 1'});
+            knexEventEmitter.emit('query-response', null, {__knexQueryUid: queryUid, sql: 'SELECT 1'});
             clock.restore();
         }
 
@@ -264,11 +265,28 @@ describe('Prometheus Client', function () {
             });
         }
 
+        function simulateAcquire(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('acquireRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('acquireSuccess');
+            clock.restore();
+        }
+
+        function simulateAcquireFail(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('acquireRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('acquireFail');
+            clock.restore();
+        }
+
         beforeEach(function () {
-            eventEmitter = new EventEmitter();
+            knexEventEmitter = new EventEmitter();
+            poolEventEmitter = new EventEmitter();
             knexMock = {
                 on: sinon.stub().callsFake((event, callback) => {
-                    eventEmitter.on(event, callback);
+                    knexEventEmitter.on(event, callback);
                 }),
                 client: {
                     pool: {
@@ -277,7 +295,10 @@ describe('Prometheus Client', function () {
                         numUsed: sinon.stub().returns(0),
                         numFree: sinon.stub().returns(0),
                         numPendingAcquires: sinon.stub().returns(0),
-                        numPendingCreates: sinon.stub().returns(0)
+                        numPendingCreates: sinon.stub().returns(0),
+                        on: sinon.stub().callsFake((event, callback) => {
+                            poolEventEmitter.on(event, callback);
+                        })
                     }
                 }
             } as unknown as Knex;
@@ -287,40 +308,20 @@ describe('Prometheus Client', function () {
             sinon.restore();
         });
 
-        it('should create all the custom metrics for the connection pool and queries', function () {
-            instance = new PrometheusClient();
-            instance.init();
-            instance.instrumentKnex(knexMock);
-            const metrics = Array.from(instance.customMetrics.keys());
-            assert.deepEqual(metrics, [
-                'ghost_db_connection_pool_max',
-                'ghost_db_connection_pool_min',
-                'ghost_db_connection_pool_active',
-                'ghost_db_connection_pool_used',
-                'ghost_db_connection_pool_idle',
-                'ghost_db_connection_pool_pending_acquires',
-                'ghost_db_connection_pool_pending_creates',
-                'ghost_db_query_count',
-                'ghost_db_query_duration_milliseconds'
-            ]);
-        });
-
         it('should collect the connection pool max metric', async function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolMaxGauge = instance.customMetrics.get('ghost_db_connection_pool_max') as Gauge;
-            const result = await connectionPoolMaxGauge.get();
-            assert.equal(result.values[0].value, 10);
+            const metricValues = await instance.getMetricValues('db_connection_pool_max');
+            assert.equal(metricValues?.[0].value, 10);
         });
 
         it('should collect the connection pool min metric', async function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolMinGauge = instance.customMetrics.get('ghost_db_connection_pool_min') as Gauge;
-            const result = await connectionPoolMinGauge.get();
-            assert.equal(result.values[0].value, 1);
+            const metricValues = await instance.getMetricValues('db_connection_pool_min');
+            assert.equal(metricValues?.[0].value, 1);
         });
 
         it('should collect the connection pool active metric', async function () {
@@ -329,9 +330,8 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolActiveGauge = instance.customMetrics.get('ghost_db_connection_pool_active') as Gauge;
-            const result = await connectionPoolActiveGauge.get();
-            assert.equal(result.values[0].value, 10);
+            const metricValues = await instance.getMetricValues('db_connection_pool_active');
+            assert.equal(metricValues?.[0].value, 10);
         });
 
         it('should collect the connection pool used metric', async function () {
@@ -339,9 +339,8 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolUsedGauge = instance.customMetrics.get('ghost_db_connection_pool_used') as Gauge;
-            const result = await connectionPoolUsedGauge.get();
-            assert.equal(result.values[0].value, 3);
+            const metricValues = await instance.getMetricValues('db_connection_pool_used');
+            assert.equal(metricValues?.[0].value, 3);
         });
 
         it('should collect the connection pool idle metric', async function () {
@@ -349,9 +348,8 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolIdleGauge = instance.customMetrics.get('ghost_db_connection_pool_idle') as Gauge;
-            const result = await connectionPoolIdleGauge.get();
-            assert.equal(result.values[0].value, 7);
+            const metricValues = await instance.getMetricValues('db_connection_pool_idle');
+            assert.equal(metricValues?.[0].value, 7);
         });
 
         it('should collect the connection pool pending acquires metric', async function () {
@@ -359,9 +357,8 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolPendingAcquiresGauge = instance.customMetrics.get('ghost_db_connection_pool_pending_acquires') as Gauge;
-            const result = await connectionPoolPendingAcquiresGauge.get();
-            assert.equal(result.values[0].value, 3);
+            const metricValues = await instance.getMetricValues('db_connection_pool_pending_acquires');
+            assert.equal(metricValues?.[0].value, 3);
         });
 
         it('should collect the connection pool pending creates metric', async function () {
@@ -369,40 +366,17 @@ describe('Prometheus Client', function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            const connectionPoolPendingCreatesGauge = instance.customMetrics.get('ghost_db_connection_pool_pending_creates') as Gauge;
-            const result = await connectionPoolPendingCreatesGauge.get();
-            assert.equal(result.values[0].value, 3);
-        });
-
-        it('should collect the db query count metric', async function () {
-            instance = new PrometheusClient();
-            instance.init();
-            instance.instrumentKnex(knexMock);
-            const dbQueryCountGauge = instance.customMetrics.get('ghost_db_query_count') as Counter;
-            const result = await dbQueryCountGauge.get();
-            assert.equal(result.values[0].value, 0);
-        });
-
-        it('should increment the db query count metric when a query is executed', async function () {
-            instance = new PrometheusClient();
-            instance.init();
-            instance.instrumentKnex(knexMock);
-            eventEmitter.emit('query', {__knexQueryUid: '1', sql: 'SELECT 1'});
-            const dbQueryCountGauge = instance.customMetrics.get('ghost_db_query_count') as Counter;
-            const result = await dbQueryCountGauge.get();
-            assert.equal(result.values[0].value, 1);
-            assert.equal(instance.queries.size, 1);
-            assert.ok(instance.queries.has('1'));
+            const metricValues = await instance.getMetricValues('db_connection_pool_pending_creates');
+            assert.equal(metricValues?.[0].value, 3);
         });
 
         it('should collect the db query duration metric when a query is executed', async function () {
             instance = new PrometheusClient();
             instance.init();
             instance.instrumentKnex(knexMock);
-            eventEmitter.emit('query', {__knexQueryUid: '1', sql: 'SELECT 1'});
-            const dbQueryDurationSummary = instance.customMetrics.get('ghost_db_query_duration_milliseconds') as Summary;
-            const result = await dbQueryDurationSummary.get();
-            assert.equal(result.values[0].value, 0);
+            simulateQuery('1', 500);
+            const metricValues = await instance.getMetricValues('db_query_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
         });
 
         it('should accurately calculate the query duration of a query', async function () {
@@ -411,15 +385,32 @@ describe('Prometheus Client', function () {
             instance.instrumentKnex(knexMock);
             const durations = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
             simulateQueries(durations);
-            const dbQueryDurationSummary = instance.customMetrics.get('ghost_db_query_duration_milliseconds') as Summary;
-            const result = await dbQueryDurationSummary.get();
-            assert.deepEqual(result.values, [
-                {labels: {quantile: 0.5}, value: 550},
-                {labels: {quantile: 0.9}, value: 950},
-                {labels: {quantile: 0.99}, value: 1000},
-                {metricName: 'ghost_db_query_duration_milliseconds_sum', labels: {}, value: 5500},
-                {metricName: 'ghost_db_query_duration_milliseconds_count', labels: {}, value: 10}
+            const metricValues = await instance.getMetricValues('db_query_duration_seconds');
+            assert.deepEqual(metricValues, [
+                {labels: {quantile: 0.5}, value: 0.55},
+                {labels: {quantile: 0.9}, value: 0.95},
+                {labels: {quantile: 0.99}, value: 1},
+                {metricName: 'ghost_db_query_duration_seconds_sum', labels: {}, value: 5.5},
+                {metricName: 'ghost_db_query_duration_seconds_count', labels: {}, value: 10}
             ]);
+        });
+
+        it('should collect the db connection acquire duration metric when a connection is acquired', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateAcquire(500);
+            const metricValues = await instance.getMetricValues('db_connection_acquire_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
+        });
+
+        it('should collect the db connection acquire duration metric when a connection fails to be acquired', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateAcquireFail(500);
+            const metricValues = await instance.getMetricValues('db_connection_acquire_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
         });
     });
 
@@ -592,7 +583,7 @@ describe('Prometheus Client', function () {
                 ]);
             });
 
-            it('can use the percentiles option to set the summary value', async function () {
+            it('respects the percentiles option', async function () {
                 instance = new PrometheusClient();
                 instance.init();
                 instance.registerSummary({name: 'test_summary', help: 'A test summary', percentiles: [0.1, 0.5, 0.9]});
@@ -604,6 +595,44 @@ describe('Prometheus Client', function () {
                     {metricName: 'ghost_test_summary_sum', labels: {}, value: 0},
                     {metricName: 'ghost_test_summary_count', labels: {}, value: 0}
                 ]);
+            });
+
+            it('removes datapoints older than maxAgeSeconds from percentile metrics if maxAgeSeconds and ageBuckets are provided', async function () {
+                const clock = sinon.useFakeTimers();
+                instance = new PrometheusClient();
+                instance.init();
+                const metric = instance.registerSummary({name: 'test_summary', help: 'A test summary', maxAgeSeconds: 10, ageBuckets: 1});
+                metric.observe(1);
+                const metricValuesBefore = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValuesBefore, [
+                    {labels: {quantile: 0.5}, value: 1},
+                    {labels: {quantile: 0.9}, value: 1},
+                    {labels: {quantile: 0.99}, value: 1},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 1},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+                clock.tick(20000);
+                const metricValuesAfter = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValuesAfter, [
+                    {labels: {quantile: 0.5}, value: 0},
+                    {labels: {quantile: 0.9}, value: 0},
+                    {labels: {quantile: 0.99}, value: 0},
+                    {metricName: 'ghost_test_summary_sum', labels: {}, value: 1},
+                    {metricName: 'ghost_test_summary_count', labels: {}, value: 1}
+                ]);
+                clock.restore();
+            });
+
+            it('does not export the metric if maxAgeSeconds and ageBuckets are provided and pruneAgedBuckets is true', async function () {
+                const clock = sinon.useFakeTimers();
+                instance = new PrometheusClient();
+                instance.init();
+                const metric = instance.registerSummary({name: 'test_summary', help: 'A test summary', maxAgeSeconds: 10, ageBuckets: 1, pruneAgedBuckets: true});
+                metric.observe(1);
+                clock.tick(20000);
+                const metricValues = await instance.getMetricValues('ghost_test_summary');
+                assert.deepEqual(metricValues, []);
+                clock.restore();
             });
 
             it('can use a timer to observe the summary value', async function () {

@@ -10,9 +10,8 @@ import {useEffect} from 'react';
 
 const Content = () => {
     const labs = useLabs();
-    const {t} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount, t} = useAppContext();
 
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     let commentsElements;
     const commentsDataset = comments;
 
@@ -43,7 +42,7 @@ const Content = () => {
     const isPaidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
     const isFirst = pagination?.total === 0;
-    const hasOpenReplyForms = secundaryFormCount > 0;
+    const hasOpenReplyForms = openFormCount > 0;
 
     return (
         labs.commentImprovements ? (
@@ -82,10 +81,10 @@ const Content = () => {
                 </div>
                 <div>
                     {!hasOpenReplyForms
-                        ? (member ? (isPaidMember || !isPaidOnly ? <MainForm commentsCount={commentCount} /> : 
+                        ? (member ? (isPaidMember || !isPaidOnly ? <MainForm commentsCount={commentCount} /> :
                             <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} ${(!member || (member && isPaidOnly)) && commentCount ? 'border-t' : 'border-none'} border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
                                 <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
-                            </section>) : 
+                            </section>) :
                             <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} ${(!member || (member && isPaidOnly)) && commentCount ? 'border-t' : 'border-none'} border-[rgba(0,0,0,0.075)] sm:px-8 dark:border-[rgba(255,255,255,0.1)]`} data-testid="cta-box">
                                 <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
                             </section>)

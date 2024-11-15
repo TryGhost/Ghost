@@ -5,19 +5,18 @@ import Replies, {RepliesProps} from './Replies';
 import ReplyButton from './buttons/ReplyButton';
 import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
-import {Comment, useAppContext, useLabs} from '../../AppContext';
+import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../AppContext';
 import {Transition} from '@headlessui/react';
 import {formatExplicitTime, getMemberNameFromComment, isCommentPublished} from '../../utils/helpers';
+import {useCallback} from 'react';
 import {useRelativeTime} from '../../utils/hooks';
-import {useState} from 'react';
 
 type AnimatedCommentProps = {
     comment: Comment;
     parent?: Comment;
-    toggleParentReplyMode?: () => Promise<void>;
 };
 
-const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent, toggleParentReplyMode}) => {
+const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
     return (
         <Transition
             data-testid="animated-comment"
@@ -30,75 +29,76 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent, toggl
             show={true}
             appear
         >
-            <EditableComment comment={comment} parent={parent} toggleParentReplyMode={toggleParentReplyMode} />
+            <EditableComment comment={comment} parent={parent} />
         </Transition>
     );
 };
 
 type EditableCommentProps = AnimatedCommentProps;
-const EditableComment: React.FC<EditableCommentProps> = ({comment, parent, toggleParentReplyMode}) => {
-    const [isInEditMode, setIsInEditMode] = useState(false);
+const EditableComment: React.FC<EditableCommentProps> = ({comment, parent}) => {
+    const {openCommentForms} = useAppContext();
 
-    const closeEditMode = () => {
-        setIsInEditMode(false);
-    };
-
-    const openEditMode = () => {
-        setIsInEditMode(true);
-    };
+    const form = openCommentForms.find(openForm => openForm.id === comment.id && openForm.type === 'edit');
+    const isInEditMode = !!form;
 
     if (isInEditMode) {
-        return (
-            <EditForm close={closeEditMode} comment={comment} parent={parent} />
-        );
+        return (<EditForm comment={comment} openForm={form} parent={parent} />);
     } else {
-        return (<CommentComponent comment={comment} openEditMode={openEditMode} parent={parent} toggleParentReplyMode={toggleParentReplyMode} />);
+        return (<CommentComponent comment={comment} parent={parent} />);
     }
 };
 
-type CommentProps = AnimatedCommentProps & {
-    openEditMode: () => void;
-};
-const CommentComponent: React.FC<CommentProps> = ({comment, parent, openEditMode, toggleParentReplyMode}) => {
+type CommentProps = AnimatedCommentProps;
+const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
+    const {dispatchAction} = useAppContext();
+
     const isPublished = isCommentPublished(comment);
 
+    const openEditMode = useCallback(() => {
+        const newForm: OpenCommentForm = {id: comment.id, type: 'edit', hasUnsavedChanges: false};
+        dispatchAction('openCommentForm', newForm);
+    }, [comment.id, dispatchAction]);
+
     if (isPublished) {
-        return (<PublishedComment comment={comment} openEditMode={openEditMode} parent={parent} toggleParentReplyMode={toggleParentReplyMode} />);
+        return (<PublishedComment comment={comment} openEditMode={openEditMode} parent={parent} />);
     }
     return (<UnpublishedComment comment={comment} openEditMode={openEditMode} />);
 };
 
-const PublishedComment: React.FC<CommentProps> = ({comment, parent, openEditMode, toggleParentReplyMode}) => {
-    const [isInReplyMode, setIsInReplyMode] = useState(false);
-    const {dispatchAction} = useAppContext();
+type PublishedCommentProps = CommentProps & {
+    openEditMode: () => void;
+}
+const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
+    const {dispatchAction, openCommentForms} = useAppContext();
 
-    const toggleReplyMode = async () => {
-        if (parent && toggleParentReplyMode) {
-            return await toggleParentReplyMode();
+    // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
+    // so we need to check for a match of either the comment id or the parent id
+    const openForm = openCommentForms.find(f => (f.id === comment.id || f.parent_id === comment.id) && f.type === 'reply');
+    // avoid displaying the reply form inside RepliesContainer
+    const displayReplyForm = openForm && (!openForm.parent_id || openForm.parent_id === comment.id);
+    // only highlight the reply button for the comment that is being replied to
+    const highlightReplyButton = !!(openForm && openForm.id === comment.id);
+
+    const openReplyForm = useCallback(async () => {
+        if (openForm && openForm.id === comment.id) {
+            dispatchAction('closeCommentForm', openForm.id);
+        } else {
+            const newForm: OpenCommentForm = {id: comment.id, parent_id: parent?.id, type: 'reply', hasUnsavedChanges: false};
+            await dispatchAction('openCommentForm', newForm);
         }
+    }, [comment, parent, openForm, dispatchAction]);
 
-        if (!isInReplyMode) {
-            // First load all the replies before opening the reply model
-            await dispatchAction('loadMoreReplies', {comment, limit: 'all'});
-        }
-        setIsInReplyMode(current => !current);
-    };
-
-    const closeReplyMode = () => {
-        setIsInReplyMode(false);
-    };
-
-    const hasReplies = isInReplyMode || (comment.replies && comment.replies.length > 0);
+    const hasReplies = displayReplyForm || (comment.replies && comment.replies.length > 0);
     const avatar = (<Avatar comment={comment} />);
 
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
             <CommentHeader comment={comment} />
             <CommentBody html={comment.html} />
-            <CommentMenu comment={comment} isInReplyMode={isInReplyMode} openEditMode={openEditMode} parent={parent} toggleReplyMode={toggleReplyMode} />
+            <CommentMenu comment={comment} highlightReplyButton={highlightReplyButton} openEditMode={openEditMode} openReplyForm={openReplyForm} parent={parent} />
 
-            <RepliesContainer comment={comment} toggleReplyMode={toggleReplyMode} />
-            <ReplyFormBox closeReplyMode={closeReplyMode} comment={comment} isInReplyMode={isInReplyMode} />
+            <RepliesContainer comment={comment} />
+            {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
 };
@@ -164,7 +164,7 @@ const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
     );
 };
 
-const RepliesContainer: React.FC<RepliesProps> = ({comment, toggleReplyMode}) => {
+const RepliesContainer: React.FC<RepliesProps> = ({comment}) => {
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     if (!hasReplies) {
@@ -173,24 +173,19 @@ const RepliesContainer: React.FC<RepliesProps> = ({comment, toggleReplyMode}) =>
 
     return (
         <div className="mb-4 ml-[-1.4rem] mt-7 sm:mb-0 sm:mt-8">
-            <Replies comment={comment} toggleReplyMode={toggleReplyMode} />
+            <Replies comment={comment} />
         </div>
     );
 };
 
 type ReplyFormBoxProps = {
     comment: Comment;
-    isInReplyMode: boolean;
-    closeReplyMode: () => void;
+    openForm: OpenCommentForm;
 };
-const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, isInReplyMode, closeReplyMode}) => {
-    if (!isInReplyMode) {
-        return null;
-    }
-
+const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, openForm}) => {
     return (
         <div className="my-8 sm:my-10">
-            <ReplyForm close={closeReplyMode} parent={comment} />
+            <ReplyForm openForm={openForm} parent={comment} />
         </div>
     );
 };
@@ -239,12 +234,12 @@ const CommentBody: React.FC<{html: string}> = ({html}) => {
 
 type CommentMenuProps = {
     comment: Comment;
-    toggleReplyMode: () => void;
-    isInReplyMode: boolean;
+    openReplyForm: () => void;
+    highlightReplyButton: boolean;
     openEditMode: () => void;
     parent?: Comment;
 };
-const CommentMenu: React.FC<CommentMenuProps> = ({comment, toggleReplyMode, isInReplyMode, openEditMode, parent}) => {
+const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highlightReplyButton, openEditMode, parent}) => {
     // If this comment is from the current member, always override member
     // with the member from the context, so we update the expertise in existing comments when we change it
     const {member, commentsEnabled} = useAppContext();
@@ -257,7 +252,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, toggleReplyMode, isIn
     return (
         <div className="flex items-center gap-4">
             {<LikeButton comment={comment} />}
-            {(canReply && <ReplyButton isReplying={isInReplyMode} toggleReply={toggleReplyMode} />)}
+            {(canReply && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />)}
             {<MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );
