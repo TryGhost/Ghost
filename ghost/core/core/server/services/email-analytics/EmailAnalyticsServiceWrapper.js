@@ -22,6 +22,7 @@ class EmailAnalyticsServiceWrapper {
         const membersService = require('../members');
         const membersRepository = membersService.api.members;
         const emailSuppressionList = require('../email-suppression-list');
+        const prometheusClient = require('../../../shared/prometheus-client');
 
         this.eventStorage = new EmailEventStorage({
             db,
@@ -50,7 +51,8 @@ class EmailAnalyticsServiceWrapper {
                 new MailgunProvider({config, settings})
             ],
             queries,
-            domainEvents
+            domainEvents,
+            prometheusClient
         });
 
         // We currently cannot trigger a non-offloaded job from the job manager
@@ -65,6 +67,7 @@ class EmailAnalyticsServiceWrapper {
                 name: `update-member-email-analytics-${memberId}`,
                 metadata: {
                     job: path.resolve(__dirname, 'jobs/update-member-email-analytics'),
+                    name: 'update-member-email-analytics',
                     data: {
                         memberId
                     }
