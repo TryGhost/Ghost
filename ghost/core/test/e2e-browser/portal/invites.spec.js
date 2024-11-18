@@ -8,7 +8,7 @@ const models = require('../../../core/server/models');
  */
 test.describe('Portal', () => {
     test.describe('Invites', () => {
-        test('Send invitation to a new staff member', async ({sharedPage, browser}) => {
+        test('New staff member can signup using an invite link', async ({sharedPage}) => {
             // Navigate to settings
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
@@ -33,7 +33,6 @@ test.describe('Portal', () => {
             // Wait for the API response
             const response = await responsePromise;
             inviteResponse = await response.json();
-            console.log('Invite API Response:', inviteResponse);
 
             // Verify the invitation was sent (UI feedback)
             const invitedMessage = sharedPage.getByText('Invitation sent', {exact: true});
@@ -47,29 +46,32 @@ test.describe('Portal', () => {
             const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
             const encodedToken = security.url.encodeBase64(token);
             const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
-            
-            console.log('Invite URL:', inviteUrl);
 
             //signout current user
             await sharedPage.goto('/ghost');
             await sharedPage.getByRole('button', { name: 'arrow-down', exact: true }).click();
             await sharedPage.getByRole('link', { name: 'Sign out' }).click();
 
-            // Open invite URL in a new context
-            const newContext = await browser.newContext();
-            const newPage = await newContext.newPage();
-            await newPage.goto(inviteUrl);
+            // Open invite URL
+            await sharedPage.goto(inviteUrl);
 
             // Verify we're on the signup page
-            await newPage.waitForLoadState('networkidle');
-            await expect(newPage.locator('text=Create your account.')).toBeVisible();
-            
-            // Cleanup
-            await newContext.close();
+            await sharedPage.waitForLoadState('networkidle');
+            await expect(sharedPage.locator('text=Create your account.')).toBeVisible();
+
+            //Signup using the invite Link
+            await sharedPage.getByPlaceholder('Jamie Larson').fill('Test User');
+            await sharedPage.getByPlaceholder('jamie@example.com').fill(testEmail);
+            await sharedPage.getByPlaceholder('At least 10 characters').fill('test123456');
+            await sharedPage.getByRole('button', {name: 'Create Account →'}).click();
+            await sharedPage.waitForLoadState('networkidle');
+            await expect(sharedPage.locator('text=Start creating content.')).toBeVisible();
+            await expect(sharedPage.locator('text=Write a new post')).toBeVisible();
+            await expect(sharedPage).toHaveURL('/ghost/#/posts');
+
+            await sharedPage.getByRole('button', { name: 'arrow-down', exact: true }).click();
+            await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
+
         });
     });
 });
-// await page.goto('http://localhost:2368/ghost/');
-// await page.goto('http://localhost:2368/ghost/#/dashboard');
-// await page.getByRole('button', { name: 'arrow-down', exact: true }).click();
-// await page.getByRole('link', { name: 'Sign out' }).click();
