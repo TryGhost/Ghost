@@ -19,13 +19,23 @@ interface InboxProps {}
 
 const Inbox: React.FC<InboxProps> = ({}) => {
     const {layout, setFeed, setInbox} = useLayout();
+    const {route} = useRouting();
+    const mainRoute = route.split('/')[0];
+
+    const typeFilter = mainRoute === 'inbox' 
+        ? ['Create:Article'] 
+        : ['Create:Note', 'Announce:Note'];
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [mainRoute]);
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
         includeOwn: true,
         excludeNonFollowers: true,
         filter: {
-            type: ['Create:Article', 'Create:Note', 'Announce:Note']
+            type: typeFilter
         }
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
@@ -161,7 +171,11 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     Welcome to ActivityPub Beta
                                 </Heading>
                                 <p className="text-pretty text-grey-800">
-                                    Here you&apos;ll find the latest posts from accounts you&apos;re following, so go ahead and find the ones you like using the &quot;Search&quot; tab.
+                                    {mainRoute === 'inbox' 
+                                        ? 'Here you\'ll find the latest articles from accounts you\'re following.'
+                                        : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
+                                    }
+                                    {' Go ahead and find the ones you like using the "Search" tab.'}
                                 </p>
                                 <p className="text-pretty text-grey-800">
                                     For more information about what you can and can&apos;t (yet) do in the beta version, check out the onboarding guide:
