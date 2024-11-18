@@ -6,7 +6,11 @@ test.describe('Actions', async () => {
 
     test.beforeEach(async () => {
         mockedApi = new MockedApi({});
-        mockedApi.setMember({});
+        mockedApi.setMember({
+            name: 'John Doe',
+            expertise: 'Software development',
+            avatar_image: 'https://example.com/avatar.jpg'
+        });
     });
 
     test('Can like and unlike a comment', async ({page}) => {
@@ -93,6 +97,10 @@ test.describe('Actions', async () => {
         await expect(editor).toBeVisible();
         // Wait for focused
         await waitEditorFocused(editor);
+
+        // Ensure form data is correct
+        const form = frame.getByTestId('form');
+        await expect(form.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/avatar.jpg');
 
         // Type some text
         await page.keyboard.type('This is a reply 123');
