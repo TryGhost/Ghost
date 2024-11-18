@@ -83,6 +83,7 @@ export const importComponent = async (packageName) => {
         window[packageName] = await import(`https://${url.host}${url.pathname}${url.search}`);
     }
 
+    // e.g. http://localhost:2368/ghost/assets/post-analytics-spike/post-analytics-spike.js?v=development
     console.log('import URL: ', `http://${url.host}${url.pathname}${url.search}`);
 
     return window[packageName];
