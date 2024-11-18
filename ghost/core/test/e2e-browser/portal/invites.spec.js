@@ -8,7 +8,7 @@ const models = require('../../../core/server/models');
  */
 test.describe('Portal', () => {
     test.describe('Invites', () => {
-        test('Send invitation to a new staff member', async ({sharedPage}) => {
+        test('Send invitation to a new staff member', async ({sharedPage, browser}) => {
             // Navigate to settings
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
@@ -49,6 +49,27 @@ test.describe('Portal', () => {
             const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
             
             console.log('Invite URL:', inviteUrl);
+
+            //signout current user
+            await sharedPage.goto('/ghost');
+            await sharedPage.getByRole('button', { name: 'arrow-down', exact: true }).click();
+            await sharedPage.getByRole('link', { name: 'Sign out' }).click();
+
+            // Open invite URL in a new context
+            const newContext = await browser.newContext();
+            const newPage = await newContext.newPage();
+            await newPage.goto(inviteUrl);
+
+            // Verify we're on the signup page
+            await newPage.waitForLoadState('networkidle');
+            await expect(newPage.locator('text=Create your account.')).toBeVisible();
+            
+            // Cleanup
+            await newContext.close();
         });
     });
 });
+// await page.goto('http://localhost:2368/ghost/');
+// await page.goto('http://localhost:2368/ghost/#/dashboard');
+// await page.getByRole('button', { name: 'arrow-down', exact: true }).click();
+// await page.getByRole('link', { name: 'Sign out' }).click();
