@@ -48,7 +48,6 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
             <div className='mt-[-16px] pr-3'>
                 <Form
                     close={close}
-                    comment={parent}
                     editor={editor}
                     isOpen={true}
                     openForm={openForm}

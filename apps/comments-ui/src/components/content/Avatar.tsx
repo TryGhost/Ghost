@@ -64,7 +64,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         return `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
     };
 
-    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) || 
+    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) ||
         (member && getInitials(member.name || '')) || '';
     const commentMember = (comment ? comment.member : member);
 
@@ -82,12 +82,12 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
                     <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
-            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
+            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={commentMember.avatar_image} />}
         </>
     );
 
     return (
-        <figure className={`relative ${dimensionClasses}`}>
+        <figure className={`relative ${dimensionClasses}`} data-testid="avatar">
             {avatarEl}
         </figure>
     );
