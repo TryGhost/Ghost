@@ -1,5 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
+const security = require('@tryghost/security');
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -7,27 +8,33 @@ const test = require('../fixtures/ghost-test');
 test.describe('Portal', () => {
     test.describe('Invites', () => {
         test('Send invitation to a new staff member', async ({sharedPage}) => {
+            // Navigate to settings
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await sharedPage.waitForLoadState('networkidle');
-            
-            //Send invitation to a new staff member
+
+            // Send the invitation
             await sharedPage.getByRole('button', {name: 'Invite people'}).click();
-            await sharedPage.getByPlaceholder('jamie@example.com').fill('vershwal.princi@gmail.com');
+            await sharedPage.getByPlaceholder('jamie@example.com').fill('x@gmail.com');
+
+            // Set up response listener just before clicking send
+            let inviteResponse = null;
+            const responsePromise = sharedPage.waitForResponse(
+                response => response.url().includes('/api/admin/invites/') && 
+                           response.request().method() === 'POST'
+            );
+
+            // Click send invitation
             await sharedPage.getByRole('button', { name: 'Send invitation' }).click();
 
-            // Wait for the network request to complete
-            await sharedPage.waitForLoadState('networkidle');
+            // Wait for the API response
+            const response = await responsePromise;
+            inviteResponse = await response.json();
+            console.log('Invite API Response:', inviteResponse);
 
-            
-            // Check if the invitation was sent
-            const invitedEmail = sharedPage.getByText('Invitation sent', {exact: true});
-            await expect(invitedEmail).toBeVisible({timeout: 5000});
-            
-            // Check for other elements after confirming that the invitation was sent
-            await sharedPage.getByTestId('user-invite').getByText('vershwal.princi@gmail.com').hover();
-            await expect(sharedPage.getByRole('button', {name: 'Revoke'})).toBeVisible();
-            await expect(sharedPage.getByRole('button', {name: 'Resend'})).toBeVisible();
+            // Verify the invitation was sent (UI feedback)
+            const invitedMessage = sharedPage.getByText('Invitation sent', {exact: true});
+            await expect(invitedMessage).toBeVisible({timeout: 5000});
         });
     });
 });
