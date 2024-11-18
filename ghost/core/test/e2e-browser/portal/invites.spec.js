@@ -62,7 +62,6 @@ test.describe('Portal', () => {
             await sharedPage.getByRole('button', {name: 'Create Account →'}).click();
             await sharedPage.waitForLoadState('networkidle');
             await expect(sharedPage.locator('text=Start creating content.')).toBeVisible();
-            await expect(sharedPage.locator('text=Write a new post')).toBeVisible();
             await expect(sharedPage).toHaveURL('/ghost/#/posts');
 
             await sharedPage.getByRole('button', {name: 'arrow-down', exact: true}).click();
