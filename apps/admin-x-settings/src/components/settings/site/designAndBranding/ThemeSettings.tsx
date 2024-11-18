@@ -1,5 +1,6 @@
 import React from 'react';
 import ThemeSetting from './ThemeSetting';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Form} from '@tryghost/admin-x-design-system';
 import {Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
@@ -43,6 +44,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
     const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
+    const hasCustomFonts = useFeatureFlag('customFonts');
 
     return (
         <>
@@ -65,9 +67,11 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
 
                             // hides typography related theme settings from official themes
                             // should be removed once we remove the settings from the themes in 6.0
-                            const hidingSettings = themeSettingsMap[activeThemeName];
-                            if (hidingSettings && hidingSettings.includes(setting.key)) {
-                                spaceClass += ' hidden';
+                            if (hasCustomFonts) {
+                                const hidingSettings = themeSettingsMap[activeThemeName];
+                                if (hidingSettings && hidingSettings.includes(setting.key)) {
+                                    spaceClass += ' hidden';
+                                }
                             }
 
                             previousType = setting.type;
