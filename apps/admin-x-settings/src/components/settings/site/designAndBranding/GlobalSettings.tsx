@@ -60,7 +60,7 @@ const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({child
                 <div className='flex h-12 w-12 items-center justify-center rounded-md bg-white text-2xl font-bold dark:bg-black'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
-                    <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
+                    <span className='text-grey-700 dark:text-grey-600 font-sans text-xs font-normal'>{optionProps.data.creator}</span>
                 </div>
             </div>
         </div>
@@ -71,10 +71,10 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...op
     <components.Option {...optionProps}>
         <div className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={optionProps.data.value}>
             <div className='flex items-center gap-3'>
-                <div className='flex h-12 w-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
+                <div className='bg-grey-150 group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800 flex h-12 w-12 items-center justify-center rounded-md text-2xl font-bold'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
-                    <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
+                    <span className='text-grey-700 dark:text-grey-600 font-sans text-xs font-normal'>{optionProps.data.creator}</span>
                 </div>
             </div>
             {optionProps.isSelected && <span><Icon name='check' size={14} /></span>}

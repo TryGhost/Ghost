@@ -1,3 +1,4 @@
+import path from 'path';
 import react from '@vitejs/plugin-react';
 import glob from 'glob';
 import {resolve} from 'path';
@@ -12,6 +13,11 @@ export default (function viteConfig() {
             svgr(),
             react()
         ],
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './src')
+            }
+        },
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.VITEST_SEGFAULT_RETRY': 3
@@ -26,13 +32,13 @@ export default (function viteConfig() {
             outDir: 'es',
             lib: {
                 formats: ['es'],
-                entry: glob.sync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, path) => {
-                    if (path.includes('.stories.') || path.endsWith('.d.ts')) {
+                entry: glob.sync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, libpath) => {
+                    if (libpath.includes('.stories.') || libpath.endsWith('.d.ts')) {
                         return entries;
                     }
 
-                    const outPath = path.replace(resolve(__dirname, 'src') + '/', '').replace(/\.(ts|tsx)$/, '');
-                    entries[outPath] = path;
+                    const outPath = libpath.replace(resolve(__dirname, 'src') + '/', '').replace(/\.(ts|tsx)$/, '');
+                    entries[outPath] = libpath;
                     return entries;
                 }, {} as Record<string, string>)
             },
