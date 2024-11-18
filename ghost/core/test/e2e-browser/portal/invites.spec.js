@@ -35,6 +35,15 @@ test.describe('Portal', () => {
             // Verify the invitation was sent (UI feedback)
             const invitedMessage = sharedPage.getByText('Invitation sent', {exact: true});
             await expect(invitedMessage).toBeVisible({timeout: 5000});
+
+            const token = '45676578';
+            
+            // Construct the invite URL
+            const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
+            const encodedToken = security.url.encodeBase64(token);
+            const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
+            
+            console.log('Invite URL:', inviteUrl);
         });
     });
 });
