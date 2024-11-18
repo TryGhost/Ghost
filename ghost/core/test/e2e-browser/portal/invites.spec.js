@@ -46,7 +46,7 @@ test.describe('Portal', () => {
             //signout current user
             await sharedPage.goto('/ghost/#/dashboard');
             await sharedPage.waitForLoadState('networkidle');
-            await sharedPage.getByRole('button', {name: 'arrow-down'}).click();
+            await sharedPage.locator('[data-test-nav="arrow-down"]').click();
             await sharedPage.getByRole('link', {name: 'Sign out'}).click();
 
             // Open invite URL
@@ -65,7 +65,7 @@ test.describe('Portal', () => {
             await expect(sharedPage.locator('text=Start creating content.')).toBeVisible();
             await expect(sharedPage).toHaveURL('/ghost/#/posts');
 
-            await sharedPage.getByRole('button', {name: 'arrow-down', exact: true}).click();
+            await sharedPage.locator('[data-test-nav="arrow-down"]').click();
             await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
         });
     });
