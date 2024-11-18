@@ -44,7 +44,8 @@ test.describe('Portal', () => {
             const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
 
             //signout current user
-            await sharedPage.goto('/ghost');
+            await sharedPage.goto('/ghost/#/dashboard');
+            await sharedPage.waitForLoadState('networkidle');
             await sharedPage.getByRole('button', {name: 'arrow-down', exact: true}).click();
             await sharedPage.getByRole('link', {name: 'Sign out'}).click();
 
