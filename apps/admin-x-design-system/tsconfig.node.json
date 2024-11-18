@@ -4,13 +4,7 @@
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
+    "allowSyntheticDefaultImports": true
   },
   "include": ["vite.config.ts", "package.json"]
 }
