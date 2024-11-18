@@ -55,7 +55,7 @@ const MainContent = () => {
         return <Profile />;
         break;
     default:
-        return <Inbox />;
+        return <Inbox mainRoute={mainRoute} />;
         break;
     }
 };

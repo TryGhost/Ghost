@@ -15,20 +15,16 @@ import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPu
 import {useLayout} from '../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-interface InboxProps {}
+interface InboxProps {
+    mainRoute: string;
+}
 
-const Inbox: React.FC<InboxProps> = ({}) => {
+const Inbox: React.FC<InboxProps> = ({mainRoute}) => {
     const {layout, setFeed, setInbox} = useLayout();
-    const {route} = useRouting();
-    const mainRoute = route.split('/')[0];
 
     const typeFilter = mainRoute === 'inbox' 
         ? ['Create:Article'] 
         : ['Create:Note', 'Announce:Note'];
-
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [mainRoute]);
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
