@@ -46,7 +46,7 @@ test.describe('Portal', () => {
             //signout current user
             await sharedPage.goto('/ghost/#/dashboard');
             await sharedPage.waitForLoadState('networkidle');
-            await sharedPage.getByRole('button', {name: 'arrow-down', exact: true}).click();
+            await sharedPage.getByRole('button', {name: 'arrow-down'}).click();
             await sharedPage.getByRole('link', {name: 'Sign out'}).click();
 
             // Open invite URL
