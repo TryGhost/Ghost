@@ -4,7 +4,7 @@ const MainContent = () => {
 
     return (
         <>
-            <GHDSHeading size={2}>Post analytics spike</GHDSHeading>
+            <GHDSHeading size={2}>Post analytics spike lee</GHDSHeading>
         </>
     );
 };

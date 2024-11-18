@@ -1,7 +1,9 @@
+import { GHDSHeading } from "@tryghost/admin-x-design-system";
+
 const PostAnalytics = () => {
     return (
         <div>
-            <h1>Post analytics</h1>
+            <GHDSHeading size={1}>Post analytics — Spike Lee</GHDSHeading>
         </div>
     );
 }
