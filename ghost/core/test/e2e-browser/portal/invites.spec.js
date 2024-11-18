@@ -3,9 +3,6 @@ const test = require('../fixtures/ghost-test');
 const security = require('@tryghost/security');
 const models = require('../../../core/server/models');
 
-/**
- * @param {import('@playwright/test').Page} page
- */
 test.describe('Portal', () => {
     test.describe('Invites', () => {
         test('New staff member can signup using an invite link', async ({sharedPage}) => {
@@ -21,18 +18,17 @@ test.describe('Portal', () => {
             await sharedPage.getByPlaceholder('jamie@example.com').fill(testEmail);
 
             // Set up response listener just before clicking send
-            let inviteResponse = null;
             const responsePromise = sharedPage.waitForResponse(
                 response => response.url().includes('/api/admin/invites/') && 
                            response.request().method() === 'POST'
             );
 
             // Click send invitation
-            await sharedPage.getByRole('button', { name: 'Send invitation' }).click();
+            await sharedPage.getByRole('button', {name: 'Send invitation'}).click();
 
             // Wait for the API response
             const response = await responsePromise;
-            inviteResponse = await response.json();
+            await response.json();
 
             // Verify the invitation was sent (UI feedback)
             const invitedMessage = sharedPage.getByText('Invitation sent', {exact: true});
@@ -49,8 +45,8 @@ test.describe('Portal', () => {
 
             //signout current user
             await sharedPage.goto('/ghost');
-            await sharedPage.getByRole('button', { name: 'arrow-down', exact: true }).click();
-            await sharedPage.getByRole('link', { name: 'Sign out' }).click();
+            await sharedPage.getByRole('button', {name: 'arrow-down', exact: true}).click();
+            await sharedPage.getByRole('link', {name: 'Sign out'}).click();
 
             // Open invite URL
             await sharedPage.goto(inviteUrl);
@@ -69,9 +65,8 @@ test.describe('Portal', () => {
             await expect(sharedPage.locator('text=Write a new post')).toBeVisible();
             await expect(sharedPage).toHaveURL('/ghost/#/posts');
 
-            await sharedPage.getByRole('button', { name: 'arrow-down', exact: true }).click();
+            await sharedPage.getByRole('button', {name: 'arrow-down', exact: true}).click();
             await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
-
         });
     });
 });
