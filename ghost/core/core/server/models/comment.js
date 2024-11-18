@@ -258,6 +258,7 @@ const Comment = ghostBookshelf.Model.extend({
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
+            'replies.inReplyTo',
             'replies.count.likes',
             'replies.count.liked'
         ].filter(relation => withRelated.includes(relation));

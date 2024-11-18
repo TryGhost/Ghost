@@ -8,6 +8,7 @@ const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
 const memberAttribution = require('../../../../../../../core/server/services/member-attribution');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const labs = require('../../../../../../../core/shared/labs');
 
 function createJsonModel(data) {
     return Object.assign(data, {toJSON: sinon.stub().returns(data)});
@@ -611,7 +612,11 @@ describe('Unit: utils/serializers/output/mappers', function () {
         });
     });
 
-    describe('Comment mapper', function () {
+    describe('Comment mapper (commentImprovements flag enabled)', function () {
+        beforeEach(function () {
+            sinon.stub(labs, 'isSet').returns(true);
+        });
+
         it('includes in_reply_to_snippet for published replies-to-replies', function () {
             const frame = {};
 
@@ -640,7 +645,13 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 id: 'comment3',
                 html: '<p>comment 3</p>',
                 member: {id: 'member1'},
-                parent: {id: 'comment1', html: '<p>comment 1</p>', member: {id: 'member1'}},
+                parent: {
+                    id: 'comment1',
+                    html: '<p>comment 1</p>',
+                    member: {id: 'member1'},
+                    in_reply_to_id: null,
+                    in_reply_to_snippet: null
+                },
                 in_reply_to_id: 'comment2',
                 in_reply_to_snippet: 'comment 2'
             });
@@ -668,7 +679,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
         });
 
-        it('does not include in_reply_to_snippet for top-level comments', function () {
+        it('includes null in_reply_to attributes for top-level comments', function () {
             const frame = {};
 
             const model = {
@@ -682,7 +693,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
             mapped.should.eql({
                 id: 'comment1',
                 html: '<p>comment 1</p>',
-                member: null
+                member: null,
+                in_reply_to_id: null,
+                in_reply_to_snippet: null
             });
         });
     });
