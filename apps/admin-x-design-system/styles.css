@@ -26,7 +26,7 @@
 @import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
 @import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
 
-/* ShadCN variations */
+/* ShadCN variables */
 @layer base {
     :root {
         --background: 0 0% 100%;

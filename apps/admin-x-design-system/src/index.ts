@@ -159,6 +159,12 @@ export type {SettingValueProps} from './settings/SettingValue';
 export {default as StripeButton} from './settings/StripeButton';
 export type {StripeButtonProps} from './settings/StripeButton';
 
+/**
+ * Ghost Design System 1.0
+ */
+export {Heading as GHDSHeading, headingVariants} from '@/components/typography/heading';
+export type {HeadingProps as GHDSHeadingProps} from '@/components/typography/heading';
+
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';
 export type {PaginationData} from './hooks/usePagination';

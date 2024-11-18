@@ -1,13 +1,10 @@
-// import DetailPage from './DetailPage';
-// import ListPage from './ListPage';
-// import {useRouting} from '@tryghost/admin-x-framework/routing';
+import { GHDSHeading } from "@tryghost/admin-x-design-system";
 
 const MainContent = () => {
-    // const {route} = useRouting();
 
     return (
         <>
-        <h1>Post analytics spike</h1>
+            <GHDSHeading size={2}>Post analytics spike</GHDSHeading>
         </>
     );
 };
