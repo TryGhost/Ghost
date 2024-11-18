@@ -1,4 +1,3 @@
-import path from 'path';
 import react from '@vitejs/plugin-react';
 import {PluginOption, UserConfig, mergeConfig} from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
@@ -45,11 +44,6 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
             }),
             cssInjectedByJsPlugin()
         ],
-        resolve: {
-            alias: {
-                '@': './src'
-            }
-        },
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.VITEST_SEGFAULT_RETRY': 3
