@@ -124,7 +124,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         if (isLoadingLiked) {
             return (
                 <div className='flex h-40 items-center justify-center'>
-                    <LoadingIndicator />
+                    <LoadingIndicator size='md' />
                 </div>
             );
         }
@@ -175,7 +175,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         if (isLoadingFollowing || isLoadingFollowingCount) {
             return (
                 <div className='flex h-40 items-center justify-center'>
-                    <LoadingIndicator />
+                    <LoadingIndicator size='md' />
                 </div>
             );
         }
@@ -228,7 +228,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         if (isLoadingFollowers || isLoadingFollowersCount) {
             return (
                 <div className='flex h-40 items-center justify-center'>
-                    <LoadingIndicator />
+                    <LoadingIndicator size='md' />
                 </div>
             );
         }
