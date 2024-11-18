@@ -6,7 +6,7 @@
             "plugins": "git yarn gh"
         }
     },
-    "dockerComposeFile": ["./.docker/base.compose.yml", "./.docker/base-devcontainer.compose.yml"],
+    "dockerComposeFile": ["./compose.yml"],
     "service": "ghost",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     "shutdownAction": "stopCompose",
