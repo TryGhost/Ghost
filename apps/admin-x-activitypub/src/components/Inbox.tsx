@@ -12,17 +12,16 @@ import getUsername from '../utils/get-username';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
 import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
-import {useLayout} from '../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
+type Layout = 'inbox' | 'feed';
+
 interface InboxProps {
-    mainRoute: string;
+    layout: Layout;
 }
 
-const Inbox: React.FC<InboxProps> = ({mainRoute}) => {
-    const {layout, setFeed, setInbox} = useLayout();
-
-    const typeFilter = mainRoute === 'inbox' 
+const Inbox: React.FC<InboxProps> = ({layout}) => {
+    const typeFilter = layout === 'inbox'
         ? ['Create:Article'] 
         : ['Create:Note', 'Announce:Note'];
 
@@ -74,7 +73,7 @@ const Inbox: React.FC<InboxProps> = ({mainRoute}) => {
 
     return (
         <>
-            <MainNavigation layout={layout} page='home' setFeed={setFeed} setInbox={setInbox}/>
+            <MainNavigation page={layout}/>
             <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
                     {isLoading ? (
@@ -167,7 +166,7 @@ const Inbox: React.FC<InboxProps> = ({mainRoute}) => {
                                     Welcome to ActivityPub Beta
                                 </Heading>
                                 <p className="text-pretty text-grey-800">
-                                    {mainRoute === 'inbox' 
+                                    {layout === 'inbox' 
                                         ? 'Here you\'ll find the latest articles from accounts you\'re following.'
                                         : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
                                     }
