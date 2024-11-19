@@ -231,27 +231,25 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-6`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative cursor-pointer py-6`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
-                            <APAvatar author={author}/>
-                            <div className='flex min-w-0 justify-between'>
-                                <div className='relative z-10 flex w-full flex-col overflow-visible text-md'>
-                                    <div className='flex justify-between'>
-                                        <div className='flex w-full'>
-                                            <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
-                                            <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
-                                        </div>
-                                        <div className='ml-2'>{renderTimestamp(object)}</div>
+                        <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
+                            <div className='flex min-w-0 items-center gap-2.5'>
+                                <APAvatar author={author}/>
+                                <div className='flex min-w-0 flex-col gap-0.5'>
+                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal]' data-test-activity-heading>{author.name}</span>
+                                    <div className='flex w-full text-grey-700'>
+                                        <span className='truncate leading-tight'>{getUsername(author)}</span>
+                                        <div className='ml-1 leading-tight before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</div>
                                     </div>
                                 </div>
                             </div>
                             <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
-                                    <div className='mt-[-24px]'>
+                                    <div className=''>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
                                         {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}

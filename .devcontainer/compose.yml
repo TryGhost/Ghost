@@ -2,15 +2,18 @@
 ## Intended to be extended by another compose file
 ## e.g. docker compose -f base.compose.yml -f development.compose.yml up
 ## Does not include development dependencies, Ghost code, or any other dependencies
-name: ghost-base
+name: ghost-devcontainer
 services:
   ghost:
-    image: ghost-base
+    image: ghost-devcontainer
+    command: ["sleep", "infinity"]
     build:
-      context: ../../
-      dockerfile: .devcontainer/.docker/Dockerfile
-      target: base
+      context: ../
+      dockerfile: .devcontainer/Dockerfile
+      target: base-devcontainer
     pull_policy: never
+    environment:
+      - DEVCONTAINER=true
     tty: true
     depends_on:
       mysql:

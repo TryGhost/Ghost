@@ -28,7 +28,7 @@ const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
                     </button>
                     :
                     <button className="w-full text-left text-[14px]" type="button" onClick={hideComment}>
-                        <span className="hidden sm:inline">{t('Hide comment')}</span><span className="sm:hidden">{t('Hide')}</span>
+                        <span className="hidden text-red-600 sm:inline">{t('Hide comment')}</span><span className="text-red-600 sm:hidden">{t('Hide')}</span>
                     </button>
             }
         </div>
