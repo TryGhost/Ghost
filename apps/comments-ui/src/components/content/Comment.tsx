@@ -249,7 +249,7 @@ const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
 
     return (
         <>
-            <div className={`mb-2 mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
+            <div className={`mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'} ${isReplyToReply ? 'mb-0.5' : 'mb-2'}`}>
                 <AuthorName comment={comment} />
                 <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
                     <span>
@@ -260,8 +260,8 @@ const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
                 </div>
             </div>
             {(isReplyToReply &&
-                <a className="truncate text-gray-500" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>
-                    <span>{t('replied to comment')}</span>: <span data-testid="comment-in-reply-to">{comment.in_reply_to_snippet}</span>
+                <a className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>
+                    <span>{t('replied to comment')}</span>:<span className="ml-0.5 font-semibold text-[#8B8B8B]" data-testid="comment-in-reply-to">{comment.in_reply_to_snippet}</span>
                 </a>
             )}
         </>
