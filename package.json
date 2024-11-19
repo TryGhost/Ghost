@@ -36,6 +36,7 @@
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
     "docker:reset": "docker compose down -v && docker compose up -d --wait",
     "docker:down": "docker compose down",
+    "compose": "docker compose -f .devcontainer/compose.yml",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
