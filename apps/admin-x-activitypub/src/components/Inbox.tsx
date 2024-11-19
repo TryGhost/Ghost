@@ -113,6 +113,8 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                     </ul>
                                 </div>
                                 <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
+                                    <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
+                                    <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
