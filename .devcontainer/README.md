@@ -5,13 +5,13 @@ This file contains the configuration for the dev container. It is used to define
 
 There are three main components that the devcontainer.json file relies on:
 - The docker compose file (`.devcontainer/compose.yml`), which defines all the services that should be started when the dev container is launched, like MySQL and Redis.
-- The Dockerfile (`.devcontainer/Dockerfile`), which is used to build the dev container image.
+- The Dockerfile (`.docker/Dockerfile`), which is used to build the dev container image.
 - The `onCreateCommand` script (`.devcontainer/onCreateCommand.js`), which is used to setup the dev container after it is created.
 
 The Dev Container setup is intended to be as simple as possible with a focus on a really simple setup experience. It is designed to use VSCode's "Clone Repository in Container" feature, which will automatically handle the setup of the dev container, and create a volume for the Ghost codebase that is managed by Docker. It is a great tool for quickly spinning up an isolated development environment, but it lacks some of the flexibility and direct control that a full docker compose setup can provide. Therefore, if you plan to do more "heavy lifting" on Ghost, we recommend using the docker compose setup instead.
 
 ## Dockerfile
-The Dockerfile used to build the Dev Container itself is located at `.devcontainer/Dockerfile`. This Dockerfile uses a multi-stage build to allow for multiple types of builds without duplicating code and ensuring maximum consistency. The following targets are available:
+The Dockerfile used to build the Dev Container itself is located at `.docker/Dockerfile`. This Dockerfile uses a multi-stage build to allow for multiple types of builds without duplicating code and ensuring maximum consistency. The following targets are available:
 - `base`: The bare minimum base image used to build and run Ghost. Includes the operating system, node, and some build dependencies, but does not include any Ghost code or dependencies.
 - `base-devcontainer`: everything from `base`, plus additional development dependencies like the stripe-cli and playwright. No code or node dependencies.
 - `full-devcontainer`: everything from `base-devcontainer`, plus Ghost's code and all node dependencies

@@ -14,7 +14,7 @@ services:
     restart: always
     volumes:
       # Turns out you can drop .sql or .sql.gz files in here, cool!
-      - ./mysql-preload:/docker-entrypoint-initdb.d
+      - ./.docker/mysql-preload:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
     healthcheck:
       test: "mysql -uroot -proot ghost -e 'select 1'"
@@ -34,7 +34,7 @@ services:
       - "9090:9090"
     restart: always
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
     profiles: [monitoring]
     image: grafana/grafana:8.3.0
@@ -46,9 +46,9 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./.docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./.docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
   pushgateway:
     profiles: [monitoring]
     image: prom/pushgateway:v1.6.0

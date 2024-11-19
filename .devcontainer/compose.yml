@@ -9,7 +9,7 @@ services:
     command: ["sleep", "infinity"]
     build:
       context: ../
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: .docker/Dockerfile
       target: base-devcontainer
     pull_policy: never
     environment:
