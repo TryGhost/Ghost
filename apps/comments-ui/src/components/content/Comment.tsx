@@ -7,7 +7,7 @@ import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
 import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../AppContext';
 import {Transition} from '@headlessui/react';
-import {formatExplicitTime, getMemberNameFromComment, isCommentPublished} from '../../utils/helpers';
+import {formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment, isCommentPublished} from '../../utils/helpers';
 import {useCallback} from 'react';
 import {useRelativeTime} from '../../utils/hooks';
 
@@ -23,6 +23,7 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
             enter="transition-opacity duration-300 ease-out"
             enterFrom="opacity-0"
             enterTo="opacity-100"
+            id={comment.id}
             leave="transition-opacity duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
@@ -49,20 +50,27 @@ const EditableComment: React.FC<EditableCommentProps> = ({comment, parent}) => {
 };
 
 type CommentProps = AnimatedCommentProps;
-const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
+export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
     const {dispatchAction} = useAppContext();
 
     const isPublished = isCommentPublished(comment);
 
     const openEditMode = useCallback(() => {
-        const newForm: OpenCommentForm = {id: comment.id, type: 'edit', hasUnsavedChanges: false};
+        const newForm: OpenCommentForm = {
+            id: comment.id,
+            type: 'edit',
+            hasUnsavedChanges: false,
+            in_reply_to_id: comment.in_reply_to_id,
+            in_reply_to_snippet: comment.in_reply_to_snippet
+        };
         dispatchAction('openCommentForm', newForm);
     }, [comment.id, dispatchAction]);
 
     if (isPublished) {
         return (<PublishedComment comment={comment} openEditMode={openEditMode} parent={parent} />);
+    } else {
+        return (<UnpublishedComment comment={comment} openEditMode={openEditMode} />);
     }
-    return (<UnpublishedComment comment={comment} openEditMode={openEditMode} />);
 };
 
 type PublishedCommentProps = CommentProps & {
@@ -83,7 +91,21 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
         if (openForm && openForm.id === comment.id) {
             dispatchAction('closeCommentForm', openForm.id);
         } else {
-            const newForm: OpenCommentForm = {id: comment.id, parent_id: parent?.id, type: 'reply', hasUnsavedChanges: false};
+            const inReplyToDetails: Partial<OpenCommentForm> = {};
+
+            if (parent) {
+                inReplyToDetails.in_reply_to_id = comment.id;
+                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet(comment);
+            }
+
+            const newForm: OpenCommentForm = {
+                id: comment.id,
+                parent_id: parent?.id,
+                type: 'reply',
+                hasUnsavedChanges: false,
+                ...inReplyToDetails
+            };
+
             await dispatchAction('openCommentForm', newForm);
         }
     }, [comment, parent, openForm, dispatchAction]);
@@ -205,21 +227,44 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
+    const {t} = useAppContext();
+    const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const {member} = useAppContext();
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
+    const isReplyToReply = labs.commentImprovements && comment.in_reply_to_id && comment.in_reply_to_snippet;
+
+    const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+
+        if (!e.target) {
+            return;
+        }
+
+        const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
+        if (element) {
+            element.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    };
 
     return (
-        <div className={`mb-2 mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'}`}>
-            <AuthorName comment={comment} />
-            <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
-                <span>
-                    <MemberExpertise comment={comment}/>
-                    <span title={formatExplicitTime(comment.created_at)}><span className="mx-[0.3em]">·</span>{createdAtRelative}</span>
-                    <EditedInfo comment={comment} />
-                </span>
+        <>
+            <div className={`mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'} ${isReplyToReply ? 'mb-0.5' : 'mb-2'}`}>
+                <AuthorName comment={comment} />
+                <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
+                    <span>
+                        <MemberExpertise comment={comment}/>
+                        <span title={formatExplicitTime(comment.created_at)}><span className="mx-[0.3em]">·</span>{createdAtRelative}</span>
+                        <EditedInfo comment={comment} />
+                    </span>
+                </div>
             </div>
-        </div>
+            {(isReplyToReply &&
+                <a className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>
+                    <span>{t('replied to comment')}</span>:<span className="ml-0.5 font-semibold text-[#8B8B8B]" data-testid="comment-in-reply-to">{comment.in_reply_to_snippet}</span>
+                </a>
+            )}
+        </>
     );
 };
 

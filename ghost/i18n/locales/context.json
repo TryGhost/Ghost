@@ -305,6 +305,8 @@
     "jamie@example.com": "Placeholder for email input field",
     "month": "the subscription interval (monthly), following the /",
     "paid": "",
+    "replied to comment": "",
+    "reply to comment": "Short version of 'In reply to comment ...'",
     "trialing": "",
     "year": "the subscription interval (monthly), following the /",
     "{{amount}} characters left": "Characters left, shown above the input field, when editing your expertise in the comments app",

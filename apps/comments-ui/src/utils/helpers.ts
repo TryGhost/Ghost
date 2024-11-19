@@ -208,3 +208,28 @@ export const scrollToElement = (element: HTMLElement) => {
         });
     }
 };
+
+export function getCommentInReplyToSnippet(comment: {html?: string}): string {
+    const {html = ''} = comment;
+
+    // It would be nicer to use DOMParser here so we can use `innerText` instead
+    // of `textContent` to have a more native "visible content" implementation.
+    // However, we can't test that because JSDOM doesn't support `innerText`
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Strip non-visible elements (rough innerText proxy)
+    tempDiv.querySelectorAll('script, style, link, meta, noscript, title').forEach(el => el.remove());
+
+    // Remove blockquotes to avoid showing content that was quoted from a previous comment,
+    // we want the snippet to contain unique content from the comment being replied to
+    tempDiv.querySelectorAll('blockquote').forEach(el => el.remove());
+
+    let text = tempDiv.textContent || '';
+
+    text = text.replace('\n', ' ');
+    text = text.replace(/\s+/g, ' ');
+    text = text.trim();
+
+    return text.substring(0, 100);
+}

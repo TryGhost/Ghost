@@ -62,3 +62,47 @@ describe('getMemberInitialsFromComment', function () {
         testInitials({name: 'Test member'}, 'TM');
     });
 });
+
+describe('getCommentInReplyToSnippet', function () {
+    function testGetSnippet(comment: {html?: string}, expected: string) {
+        const snippet = helpers.getCommentInReplyToSnippet(comment);
+        expect(snippet).to.equal(expected);
+    }
+
+    it('handles comment with missing html', function () {
+        testGetSnippet({}, '');
+    });
+
+    it('handles comment with blank html', function () {
+        testGetSnippet({html: ''}, '');
+    });
+
+    it('converts html to text', function () {
+        testGetSnippet({html: '<p>Test <strong>comment</strong></p>'}, 'Test comment');
+    });
+
+    it('converts to a single line', function () {
+        testGetSnippet({html: '<p>Test</p>\n<p>comment</p>'}, 'Test comment');
+    });
+
+    it('trims whitespace', function () {
+        testGetSnippet({html: '<p>  Test  <br />New line</p>\n<p>New paragraph</p>'}, 'Test New line New paragraph');
+    });
+
+    it('strips blockquotes', function () {
+        testGetSnippet({html: '<blockquote>Previous comment</blockquote>\n<p>My reply to quote</p>'}, 'My reply to quote');
+    });
+
+    it('ignores scripts', function () {
+        testGetSnippet({html: '<script>alert("XSS")</script>\n<p>Test comment</p>'}, 'Test comment');
+    });
+
+    it('ignores image alt text', function () {
+        testGetSnippet({html: '<img alt="Image alt text" src="image.jpg" />\n<p>Test comment</p>'}, 'Test comment');
+    });
+
+    it('limits length to 100 characters', function () {
+        const longText = 'a'.repeat(200);
+        testGetSnippet({html: `<p>${longText}</p>`}, longText.substring(0, 100));
+    });
+});

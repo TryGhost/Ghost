@@ -18,7 +18,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     );
 };
 
-describe('Content', function () {
+describe('<Content>', function () {
     describe('main form or cta', function () {
         it('renders CTA when not logged in', function () {
             contextualRender(<Content />, {appContext: {}});
