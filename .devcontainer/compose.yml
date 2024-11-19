@@ -26,10 +26,12 @@ services:
     extends:
       file: ../compose.yml
       service: mysql
+    container_name: ghost-devcontainer-mysql
   redis:
     extends:
       file: ../compose.yml
       service: redis
+    container_name: ghost-devcontainer-redis
 
 volumes:
   mysql-data:
