@@ -13,7 +13,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import Separator from './global/Separator';
-import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
+import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
+import {useSearchForUser} from '../hooks/useActivityPubQueries';
 
 interface SearchResultItem {
     actor: ActorProperties;
@@ -122,8 +123,7 @@ const SuggestedAccounts: React.FC<{
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
-    const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const {suggested, isLoadingSuggested, updateSuggestedProfile} = useSuggestedProfiles(6);
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
@@ -178,22 +178,22 @@ const Search: React.FC<SearchProps> = ({}) => {
                     )}
                 </div>
                 {showLoading && <LoadingIndicator size='lg'/>}
-                
+
                 {showNoResults && (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
                 )}
-                
+
                 {!showLoading && !showNoResults && (
-                    <SearchResults 
-                        results={results as SearchResultItem[]} 
+                    <SearchResults
+                        results={results as SearchResultItem[]}
                         onUpdate={updateResult}
                     />
                 )}
-                
+
                 {showSuggested && (
-                    <SuggestedAccounts 
+                    <SuggestedAccounts
                         isLoading={isLoadingSuggested}
                         profiles={suggested as SearchResultItem[]}
                         onUpdate={updateSuggestedProfile}
