@@ -51,7 +51,7 @@ test.describe('Email card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div>
-                        <div>Free members</div>
+                        <div>Hidden on website and paid newsletter</div>
                         <div>
                             <div data-kg="editor">
                                 <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
@@ -95,7 +95,7 @@ test.describe('Email card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div>
-                        <div>Free members</div>
+                        <div>Hidden on website and paid newsletter</div>
                         <hr />
                         <div>
                             <div data-kg="editor">
@@ -142,7 +142,7 @@ test.describe('Email card', async () => {
                 <div class="relative border-transparent caret-grey-800 z-10 hover:shadow-[0_0_0_1px] hover:shadow-green hover:-mx-3 hover:px-3"
                     data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div class="w-full pb-6">
-                        <div class="pb-7 pt-[.6rem] font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">Free members</div>
+                        <div class="py-[.6rem] font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">Hidden on website and paid newsletter</div>
                         <div
                             class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 text-center mx-auto [&amp;:has(.placeholder)]:w-fit [&amp;:has(.placeholder)]:text-left">
                             <div data-kg="editor">
@@ -189,7 +189,7 @@ test.describe('Email card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div>
-                        <div>Free members</div>
+                        <div>Hidden on website and paid newsletter</div>
                         <div>
                             <div data-kg="editor">
                                 <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
@@ -302,7 +302,7 @@ test.describe('Email card', async () => {
             <div><svg></svg></div>
             <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="email-cta">
                 <div>
-                    <div>Free members</div>
+                    <div>Hidden on website and paid newsletter</div>
                     <hr />
                     <div>
                         <div data-kg="editor">
@@ -482,7 +482,7 @@ test.describe('Email card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div>
-                        <div>Free members</div>
+                        <div>Hidden on website and paid newsletter</div>
                         <hr />
                         <div>
                             <div data-kg="editor">
@@ -513,7 +513,7 @@ test.describe('Email card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="email-cta">
                     <div>
-                        <div>Free members</div>
+                        <div>Hidden on website and paid newsletter</div>
                         <hr />
                         <div>
                             <div data-kg="editor">
@@ -548,7 +548,7 @@ test.describe('Email card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="email-cta">
                     <div>
-                        <div>Free members</div>
+                        <div>Hidden on website and paid newsletter</div>
                         <hr />
                         <div>
                             <div data-kg="editor">

@@ -50,7 +50,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
             <ToggleSetting
                 dataTestId="visibility-show-on-email"
                 isChecked={emailVisibility}
-                label="Show in email"
+                label="Show in email newsletter"
                 onChange={handleSettingChange(toggleEmail)}
             />
             {emailVisibility && dropdownOptions && (

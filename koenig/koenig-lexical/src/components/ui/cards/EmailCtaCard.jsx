@@ -6,6 +6,7 @@ import React from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {Button} from '../Button';
 import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function EmailCtaCard({
@@ -48,18 +49,27 @@ export function EmailCtaCard({
         name: 'status:-free'
     }];
 
-    const segmentName = dropdownOptions.find(option => option.name === segment)?.label ?? '';
+    const getVisibilityMessage = (segmentType) => {
+        switch (segmentType) {
+        case 'status:free':
+            return 'Hidden on website and paid newsletter';
+        case 'status:-free':
+            return 'Hidden on website and free newsletter';
+        default:
+            return '';
+        }
+    };
+
+    const visibilityMessage = getVisibilityMessage(segment);
 
     return (
         <>
             <div className="w-full pb-6">
                 {/* Segment */}
-                <div className="pb-7 pt-[.6rem] font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">
-                    {segmentName}
-                </div>
+                <CardVisibilityMessage message={visibilityMessage} />
 
                 {/* Top divider */}
-                {showDividers && <hr className="not-kg-prose -mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="top-divider" />}
+                {showDividers && <hr className="not-kg-prose mb-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="top-divider" />}
 
                 {/* HTML content */}
                 <KoenigNestedEditor

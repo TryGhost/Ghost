@@ -567,7 +567,7 @@ test.describe('Paste behaviour', async () => {
                                         </div>
                                     </label>
                                     <label>
-                                        <div><div>Show in email</div></div>
+                                        <div><div>Show in email newsletter</div></div>
                                         <div>
                                             <label id="visibility-show-on-email">
                                                 <input type="checkbox" checked="" />

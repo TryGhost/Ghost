@@ -45,6 +45,7 @@ test.describe('Email card', async () => {
         <div data-lexical-decorator="true" contenteditable="false">
             <div><svg></svg></div>
             <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email">
+                <div>Hidden on website</div>
                 <div>
                     <div>
                         <div data-kg="editor">
@@ -70,6 +71,7 @@ test.describe('Email card', async () => {
         <div data-lexical-decorator="true" contenteditable="false">
             <div><svg></svg></div>
             <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="email">
+                <div>Hidden on website</div>
                 <div>
                     <div>
                         <div data-kg="editor">
@@ -83,12 +85,6 @@ test.describe('Email card', async () => {
                                 </p>
                             </div>
                         </div>
-                    </div>
-                    <div>
-                        Only visible when delivered by email, this card will not be published on your site.
-                        <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
-                            <svg></svg>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -198,6 +194,7 @@ test.describe('Email card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div><svg></svg></div>
                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="email">
+                    <div>Hidden on website</div>
                     <div>
                         <div>
                             <div data-kg="editor">
@@ -219,12 +216,6 @@ test.describe('Email card', async () => {
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            Only visible when delivered by email, this card will not be published on your site.
-                            <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
-                                <svg></svg>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -239,6 +230,7 @@ test.describe('Email card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div><svg></svg></div>
                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="email">
+                    <div>Hidden on website</div>
                     <div>
                         <div>
                             <div data-kg="editor">
@@ -255,12 +247,6 @@ test.describe('Email card', async () => {
                                     </p>
                                 </div>
                             </div>
-                        </div>
-                        <div>
-                            Only visible when delivered by email, this card will not be published on your site.
-                            <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
-                                <svg></svg>
-                            </a>
                         </div>
                     </div>
                 </div>
