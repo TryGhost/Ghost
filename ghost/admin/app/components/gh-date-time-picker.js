@@ -53,7 +53,10 @@ export default class GhDateTimePicker extends Component {
     
     @computed('_date')
     get localDateValue() {
-        return this._date.toDate();
+        // extract parts so we can build a date object that is strictly the day in the local tz
+        const [year, month, day] = this._date.format(DATE_FORMAT).split('-').map(Number);
+        const date = new Date(year, month - 1, day); // month is 0-indexed in the js date object
+        return date;
     }
 
     @computed('blogTimezone')
