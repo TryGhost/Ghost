@@ -77,7 +77,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[4]).toBe(false); // emailVisibility
         expect(node.visibility.showOnEmail).toBe(false);
-        expect(result.current[7]).toBe('Only shown on web'); // message
+        expect(result.current[7]).toBe('Hidden in newsletter'); // message
     });
 
     it('should toggleWeb and be able to update the node', () => {
@@ -91,7 +91,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[5]).toBe(false); // webVisibility
         expect(node.visibility.showOnWeb).toBe(false);
-        expect(result.current[7]).toBe('Only shown in email'); // message
+        expect(result.current[7]).toBe('Hidden on website'); // message
     });
 
     it('should toggleSegment and be able to update the node', () => {
@@ -105,7 +105,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[3]).toBe('status:free'); // segment
         expect(node.visibility.segment).toBe('status:free');
-        expect(result.current[7]).toBe('Shown on web, and to free members only in email'); // message
+        expect(result.current[7]).toBe('Hidden in paid newsletter'); // message
     });
 
     it('should update the message correctly when both toggles are off', () => {
@@ -120,7 +120,7 @@ describe('useVisibilityToggle', () => {
 
         expect(result.current[4]).toBe(false); // emailVisibility
         expect(result.current[5]).toBe(false); // webVisibility
-        expect(result.current[7]).toBe('Hidden from both web and email'); // message
+        expect(result.current[7]).toBe('Hidden on website and newsletter'); // message
     });
 
     it('does not return dropdownOptions if stripe is not enabled', () => {

@@ -69,7 +69,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('tab-visibility').click();
             await card.getByTestId('visibility-show-on-web').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Only shown in email');
+            await expect(card.getByTestId('visibility-message')).toContainText('Hidden on website');
         });
 
         test('can toggle visibility settings - show on email is off', async function () {
@@ -79,7 +79,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('tab-visibility').click();
             await card.getByTestId('visibility-show-on-email').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Only shown on web');
+            await expect(card.getByTestId('visibility-message')).toContainText('Hidden in newsletter');
         });
 
         test('can toggle visibility settings segments - free members', async function () {
@@ -90,7 +90,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-dropdown-segment').click();
             await card.locator('[data-test-value="status:free"]').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web, and to free members only in email');
+            await expect(card.getByTestId('visibility-message')).toContainText('Hidden in paid newsletter');
         });
 
         test('can toggle visibility settings segments - paid members', async function () {
@@ -101,7 +101,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-dropdown-segment').click();
             await card.locator('[data-test-value="status:-free"]').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Shown on web, and to paid members only in email');
+            await expect(card.getByTestId('visibility-message')).toContainText('Hidden in free newsletter');
         });
 
         test('can toggle visibility settings segments - all members', async function () {
@@ -123,7 +123,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('visibility-show-on-web').click();
             await card.getByTestId('visibility-show-on-email').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Hidden from both web and email');
+            await expect(card.getByTestId('visibility-message')).toContainText('Hidden on website and newsletter');
         });
 
         test('can toggle visibility - member settings hidden when stripe is not enabled', async function () {

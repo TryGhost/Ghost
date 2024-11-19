@@ -35,24 +35,24 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     });
 
     if (isVisibilityActive) {
-        let segmentLabel = '';
+        let hiddenNewsletter = '';
 
         if (segment === 'status:free') {
-            segmentLabel = 'free members';
+            hiddenNewsletter = 'paid newsletter';
         } else if (segment === 'status:-free') {
-            segmentLabel = 'paid members';
+            hiddenNewsletter = 'free newsletter';
         }
 
         if (!showOnWeb && !showOnEmail) {
-            message = 'Hidden from both web and email';
+            message = 'Hidden on website and newsletter';
         } else if (showOnWeb && !showOnEmail) {
-            message = 'Only shown on web';
-        } else if (showOnWeb && showOnEmail && segmentLabel) {
-            message = `Shown on web, and to ${segmentLabel} only in email`;
-        } else if (!showOnWeb && showOnEmail && !segmentLabel) {
-            message = 'Only shown in email';
-        } else if (!showOnWeb && showOnEmail && segmentLabel) {
-            message = `Only shown to ${segmentLabel} in email`;
+            message = 'Hidden in newsletter';
+        } else if (showOnWeb && showOnEmail && hiddenNewsletter) {
+            message = `Hidden in ${hiddenNewsletter}`;
+        } else if (!showOnWeb && showOnEmail && !hiddenNewsletter) {
+            message = 'Hidden on website';
+        } else if (!showOnWeb && showOnEmail && hiddenNewsletter) {
+            message = `Hidden on website and ${hiddenNewsletter}`;
         }
     }
     
