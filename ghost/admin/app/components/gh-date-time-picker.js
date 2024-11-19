@@ -53,8 +53,7 @@ export default class GhDateTimePicker extends Component {
     
     @computed('_date')
     get localDateValue() {
-        // Convert the selected date to a new date in the local timezone, purely to please PowerDatepicker
-        return new Date(this._date.format(DATE_FORMAT));
+        return this._date.toDate();
     }
 
     @computed('blogTimezone')
