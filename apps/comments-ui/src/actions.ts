@@ -8,7 +8,12 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
     }
-    const data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
+    let data;
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+        data = await state.adminApi.browse({page, postId: options.postId, order: order || state.order});
+    } else {
+        data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
+    }
 
     // Note: we store the comments from new to old, and show them in reverse order
     return {
@@ -17,8 +22,13 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
     };
 }
 
-async function setOrder({data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
-    const data = await api.comments.browse({page: 1, postId: options.postId, order: order});
+async function setOrder({state, data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
+    let data;
+
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+        data = await state.adminApi.browse({page: 1, postId: options.postId, order});
+    }
+    data = await api.comments.browse({page: 1, postId: options.postId, order: order});
 
     return {
         comments: [...data.comments],
