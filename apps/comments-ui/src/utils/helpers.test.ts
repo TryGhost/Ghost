@@ -1,5 +1,4 @@
 import * as helpers from './helpers';
-import {Comment} from '../AppContext';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../test/utils/fixtures';
 
 describe('formatNumber', function () {
