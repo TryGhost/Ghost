@@ -206,7 +206,7 @@ export function useActivitiesForUser({
     excludeNonFollowers?: boolean;
     filter?: {type?: string[]} | null;
 }) {
-    const queryKey = [`activities:${JSON.stringify({handle, includeOwn, includeReplies, filter})}`];
+    const queryKey = [`activities:${handle}`, {includeOwn, includeReplies, filterTypes: filter?.type}];
     const queryClient = useQueryClient();
 
     const getActivitiesQuery = useInfiniteQuery({

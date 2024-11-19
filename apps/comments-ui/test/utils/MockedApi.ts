@@ -1,6 +1,12 @@
 import nql from '@tryghost/nql';
 import {buildComment, buildMember, buildReply, buildSettings} from './fixtures';
 
+// The test file doesn't run in the browser, so we can't use the DOM API.
+// We can use a simple regex to strip HTML tags from a string for test purposes.
+const htmlToPlaintext = (html) => {
+    return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+};
+
 export class MockedApi {
     comments: any[];
     postId: string;
@@ -9,6 +15,10 @@ export class MockedApi {
     members: any[];
 
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
+
+    #findReplyById(id: string) {
+        return this.comments.flatMap(c => c.replies).find(r => r.id === id);
+    }
 
     constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, members = []}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[]}) {
         this.postId = postId;
@@ -22,6 +32,11 @@ export class MockedApi {
         if (!overrides.created_at) {
             overrides.created_at = this.#lastCommentDate.toISOString();
             this.#lastCommentDate = new Date(this.#lastCommentDate.getTime() + 1);
+        }
+
+        const inReplyTo = overrides.in_reply_to_id && this.#findReplyById(overrides.in_reply_to_id);
+        if (inReplyTo) {
+            overrides.in_reply_to_snippet = htmlToPlaintext(inReplyTo.html);
         }
 
         const fixture = buildComment({
@@ -107,7 +122,7 @@ export class MockedApi {
                 const bDate = new Date(b.created_at).getTime();
                 return aDate - bDate; // Oldest first
             });
-        } 
+        }
 
         if (setOrder === 'default') {
             this.comments.sort((a, b) => {
