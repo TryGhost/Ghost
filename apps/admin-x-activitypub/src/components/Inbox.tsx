@@ -5,6 +5,7 @@ import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
+import Separator from './global/Separator';
 import ViewProfileModal from './global/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
@@ -83,7 +84,6 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                             <li
                                                 key={activity.id}
                                                 data-test-view-article
-                                                onClick={() => handleViewContent(activity, false, updateActivity)}
                                             >
                                                 <FeedItem
                                                     actor={activity.actor}
@@ -91,10 +91,11 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                     layout={layout}
                                                     object={activity.object}
                                                     type={activity.type}
+                                                    onClick={() => handleViewContent(activity, false, updateActivity)}
                                                     onCommentClick={() => handleViewContent(activity, true, updateActivity)}
                                                 />
                                                 {index < activities.length - 1 && (
-                                                    <div className="h-px w-full bg-grey-200"></div>
+                                                    <Separator />
                                                 )}
                                             </li>
                                         ))}
@@ -107,29 +108,28 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     </ul>
                                 </div>
                                 <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
-                                    <h2 className='mb-2 text-lg font-semibold'>You might also like...</h2>
+                                    <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
                                     ) : (
                                         <ul className='grow'>
-                                            {suggested.map((profile) => {
+                                            {suggested.map((profile, index) => {
                                                 const actor = profile.actor;
                                                 // const isFollowing = profile.isFollowing;
                                                 return (
-                                                    <li key={actor.id}>
-                                                        <ActivityItem url={actor.url} onClick={() => NiceModal.show(ViewProfileModal, {
-                                                            profile: getUsername(actor),
-                                                            onFollow: () => {},
-                                                            onUnfollow: () => {}
-                                                        })}>
-                                                            <APAvatar author={actor} />
-                                                            <div>
-                                                                <div className='text-grey-600'>
-                                                                    <span className='mr-1 truncate font-bold text-black'>{getName(actor)}</span>
-                                                                    <div className='truncate text-sm'>{getUsername(actor)}</div>
+                                                    <React.Fragment key={actor.id}>
+                                                        <li key={actor.id}>
+                                                            <ActivityItem url={actor.url} onClick={() => NiceModal.show(ViewProfileModal, {
+                                                                profile: getUsername(actor),
+                                                                onFollow: () => {},
+                                                                onUnfollow: () => {}
+                                                            })}>
+                                                                <APAvatar author={actor} />
+                                                                <div className='flex min-w-0 flex-col'>
+                                                                    <span className='block w-full truncate font-bold text-black'>{getName(actor)}</span>
+                                                                    <span className='block w-full truncate text-sm text-grey-600'>{getUsername(actor)}</span>
                                                                 </div>
-                                                            </div>
-                                                            {/* <FollowButton
+                                                                {/* <FollowButton
                                                                 className='ml-auto'
                                                                 following={isFollowing}
                                                                 handle={getUsername(actor)}
@@ -137,8 +137,10 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                                                 onFollow={() => updateSuggestedProfile(actor.id!, {isFollowing: true})}
                                                                 onUnfollow={() => updateSuggestedProfile(actor.id!, {isFollowing: false})}
                                                             /> */}
-                                                        </ActivityItem>
-                                                    </li>
+                                                            </ActivityItem>
+                                                        </li>
+                                                        {index < suggested.length - 1 && <Separator />}
+                                                    </React.Fragment>
                                                 );
                                             })}
                                         </ul>

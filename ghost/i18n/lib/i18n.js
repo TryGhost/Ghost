@@ -20,6 +20,7 @@ const SUPPORTED_LOCALES = [
     'fi', // Finnish
     'fr', // French
     'gd', // Gaelic (Scottish)
+    'he', // Hebrew
     'hi', // Hindi
     'hr', // Croatian
     'hu', // Hungarian
@@ -33,6 +34,7 @@ const SUPPORTED_LOCALES = [
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
     'no', // Norwegian
