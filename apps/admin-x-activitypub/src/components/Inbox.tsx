@@ -12,20 +12,25 @@ import getUsername from '../utils/get-username';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
 import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
-import {useLayout} from '../hooks/layout';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-interface InboxProps {}
+type Layout = 'inbox' | 'feed';
 
-const Inbox: React.FC<InboxProps> = ({}) => {
-    const {layout, setFeed, setInbox} = useLayout();
+interface InboxProps {
+    layout: Layout;
+}
+
+const Inbox: React.FC<InboxProps> = ({layout}) => {
+    const typeFilter = layout === 'inbox'
+        ? ['Create:Article'] 
+        : ['Create:Note', 'Announce:Note'];
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
         handle: 'index',
         includeOwn: true,
         excludeNonFollowers: true,
         filter: {
-            type: ['Create:Article', 'Create:Note', 'Announce:Note']
+            type: typeFilter
         }
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
@@ -68,7 +73,7 @@ const Inbox: React.FC<InboxProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation layout={layout} page='home' setFeed={setFeed} setInbox={setInbox}/>
+            <MainNavigation page={layout}/>
             <div className='z-0 my-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
                     {isLoading ? (
@@ -108,6 +113,8 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     </ul>
                                 </div>
                                 <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
+                                    <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
+                                    <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
@@ -161,7 +168,11 @@ const Inbox: React.FC<InboxProps> = ({}) => {
                                     Welcome to ActivityPub Beta
                                 </Heading>
                                 <p className="text-pretty text-grey-800">
-                                    Here you&apos;ll find the latest posts from accounts you&apos;re following, so go ahead and find the ones you like using the &quot;Search&quot; tab.
+                                    {layout === 'inbox' 
+                                        ? 'Here you\'ll find the latest articles from accounts you\'re following.'
+                                        : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
+                                    }
+                                    {' Go ahead and find the ones you like using the "Search" tab.'}
                                 </p>
                                 <p className="text-pretty text-grey-800">
                                     For more information about what you can and can&apos;t (yet) do in the beta version, check out the onboarding guide:

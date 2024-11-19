@@ -1,43 +1,43 @@
 import MainHeader from './MainHeader';
 import React from 'react';
-import {Button, Tooltip} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
+import {useQueryClient} from '@tanstack/react-query';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface MainNavigationProps {
     page: string;
-    layout?: 'feed' | 'inbox';
-    setFeed?: () => void;
-    setInbox?: () => void;
 }
 
-const MainNavigation: React.FC<MainNavigationProps> = ({
-    page = '',
-    layout,
-    setFeed,
-    setInbox
-}) => {
-    const {route, updateRoute} = useRouting();
-    const mainRoute = route.split('/')[0];
+const MainNavigation: React.FC<MainNavigationProps> = ({page}) => {
+    const {updateRoute} = useRouting();
+    const queryClient = useQueryClient();
+
+    const handleRouteChange = (newRoute: string) => {
+        queryClient.removeQueries({
+            queryKey: ['activities:index']
+        });
+        
+        updateRoute(newRoute);
+    };
 
     return (
         <MainHeader>
             <div className='col-[1/2] flex gap-8 px-8'>
-                <Button className={` ${mainRoute === '' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Inbox' unstyled onClick={() => updateRoute('')} />
-                <Button className={` ${mainRoute === 'activity' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
-                <Button className={` ${mainRoute === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />
-                <Button className={` ${mainRoute === 'profile' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Profile' unstyled onClick={() => updateRoute('profile')} />
-            </div>
-            <div className='col-[3/4] flex items-center justify-end gap-2 px-8'>
-                {page === 'home' &&
-                <div>
-                    <Tooltip content="Inbox">
-                        <Button className='!px-2' icon='listview' iconColorClass={layout === 'inbox' ? 'text-black' : 'text-grey-400'} size='sm' onClick={setInbox} />
-                    </Tooltip>
-                    <Tooltip content="Feed">
-                        <Button className='!px-2' icon='card-list' iconColorClass={layout === 'feed' ? 'text-black' : 'text-grey-400'} size='sm' onClick={setFeed} />
-                    </Tooltip>
-                </div>
-                }
+                <Button 
+                    className={`${page === 'inbox' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} 
+                    label='Inbox' 
+                    unstyled 
+                    onClick={() => handleRouteChange('inbox')} 
+                />
+                <Button 
+                    className={`${page === 'feed' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} 
+                    label='Feed' 
+                    unstyled 
+                    onClick={() => handleRouteChange('feed')} 
+                />
+                <Button className={`${page === 'activities' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
+                <Button className={`${page === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />
+                <Button className={`${page === 'profile' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Profile' unstyled onClick={() => updateRoute('profile')} />
             </div>
         </MainHeader>
     );

@@ -55,7 +55,8 @@ const MainContent = () => {
         return <Profile />;
         break;
     default:
-        return <Inbox />;
+        const layout = (mainRoute === 'inbox' || mainRoute === '') ? 'inbox' : 'feed';
+        return <Inbox layout={layout} />;
         break;
     }
 };
