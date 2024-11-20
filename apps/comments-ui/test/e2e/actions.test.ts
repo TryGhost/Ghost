@@ -102,6 +102,9 @@ test.describe('Actions', async () => {
         const form = frame.getByTestId('form');
         await expect(form.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/avatar.jpg');
 
+        // Should not include the replying-to-reply indicator
+        await expect(frame.getByTestId('replying-to')).not.toBeVisible();
+
         // Type some text
         await page.keyboard.type('This is a reply 123');
         await expect(editor).toHaveText('This is a reply 123');
@@ -168,13 +171,21 @@ test.describe('Actions', async () => {
         await expect(editor).toBeVisible();
         await waitEditorFocused(editor);
 
+        // Should indicate we're replying to a reply
+        await expect(frame.getByTestId('replying-to')).toBeVisible();
+        await expect(frame.getByTestId('replying-to')).toHaveText('reply to comment: This is a reply to 1');
+
         await page.keyboard.type('This is a reply to a reply');
 
         const submitButton = parentComment.getByTestId('submit-form-button');
         await submitButton.click();
 
+        // Comment gets added and has correct contents
         await expect(frame.getByTestId('comment-component')).toHaveCount(3);
         await expect(frame.getByText('This is a reply to a reply')).toHaveCount(1);
+
+        // Should indicate this was a reply to a reply
+        await expect(frame.getByTestId('comment-in-reply-to')).toHaveText('This is a reply to 1');
     });
 
     test('Can add expertise', async ({page}) => {

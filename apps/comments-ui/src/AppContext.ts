@@ -15,6 +15,8 @@ export type Member = {
 export type Comment = {
     id: string,
     post_id: string,
+    in_reply_to_id: string,
+    in_reply_to_snippet: string,
     replies: Comment[],
     status: string,
     liked: boolean,
@@ -31,6 +33,8 @@ export type Comment = {
 export type OpenCommentForm = {
     id: string,
     parent_id?: string,
+    in_reply_to_id?: string,
+    in_reply_to_snippet?: string,
     type: 'reply' | 'edit',
     hasUnsavedChanges: boolean
 }
