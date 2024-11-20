@@ -1,27 +1,48 @@
+import * as FormPrimitive from '@radix-ui/react-form';
+import APAvatar from '../global/APAvatar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Modal, showToast} from '@tryghost/admin-x-design-system';
+import {useUserDataForUser} from '../../hooks/useActivityPubQueries';
 
 const NewPostModal = NiceModal.create(() => {
     const modal = useModal();
+    const {data: user} = useUserDataForUser('index');
 
     return (
         <Modal
             cancelLabel="Cancel"
             okLabel="Post"
-            size='sm'
+            stickyFooter={true}
+            width={575}
             onCancel={() => {
                 modal.remove();
             }}
             onOk={() => {
-                // Handle post creation
+                showToast({
+                    message: 'Note sent',
+                    type: 'success'
+                });
                 modal.remove();
             }}
         >
-            <div className="py-4">
-                <textarea
-                    className="min-h-[150px] w-full rounded-md border border-grey-300 p-2"
-                    placeholder="What's on your mind?"
-                />
+            <div className='flex items-start gap-2'>
+                <APAvatar author={user as ActorProperties} />
+                <FormPrimitive.Root asChild>
+                    <div className='flex w-full flex-col'>
+                        <FormPrimitive.Field name='temp' asChild>
+                            <FormPrimitive.Control asChild>
+                                <textarea
+                                    autoFocus={true}
+                                    className='ap-textarea w-full resize-none p-2 text-lg'
+                                    placeholder='What&apos;s on your mind?'
+                                    rows={1}
+                                >
+                                </textarea>
+                            </FormPrimitive.Control>
+                        </FormPrimitive.Field>
+                    </div>
+                </FormPrimitive.Root>
             </div>
         </Modal>
     );

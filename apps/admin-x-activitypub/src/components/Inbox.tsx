@@ -88,11 +88,11 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                             <div className={`mx-auto flex items-start gap-8`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
-                                        {layout === 'feed' && <div className='relative mx-[-6px] mb-4 mt-5 flex w-[calc(100%+12px)] items-center'>
-                                            <div className='ml-[6px]'>
+                                        {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-7 flex w-[calc(100%+24px)] items-center'>
+                                            <div className='ml-[12px]'>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='absolute w-full rounded-md bg-white p-4 pl-14 text-left text-grey-500 shadow-md transition-opacity hover:opacity-60' label='What&apos;s on your mind?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
+                                            <Button aria-label='New post' className='absolute w-full rounded-md bg-white p-5 pl-16 text-left text-lg tracking-normal text-grey-500 shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-all hover:shadow-sm' label='What&apos;s on your mind?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col`}>
                                             {activities.map((activity, index) => (
