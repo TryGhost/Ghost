@@ -276,7 +276,6 @@ const Comment = ghostBookshelf.Model.extend({
                     qb.count('replies.id')
                         .from('comments AS replies')
                         .whereRaw('replies.parent_id = comments.id')
-                        .whereNotIn('replies.status', ['hidden', 'deleted'])
                         .as('count__replies');
                 });
             },
