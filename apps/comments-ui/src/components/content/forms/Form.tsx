@@ -133,8 +133,14 @@ const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setPr
         };
     }, [editor, close, submitForm]);
 
+    let openStyles = '';
+    if (isOpen) {
+        const isReplyToReply = labs.commentImprovements && !!openForm?.in_reply_to_snippet;
+        openStyles = isReplyToReply ? 'pl-[1px] pt-[68px] sm:pl-[44px] sm:pt-[56px]' : 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
+    }
+
     return (
-        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]'}`}>
+        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${openStyles}`}>
             <div
                 className={`text-md min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}
             `}
@@ -182,11 +188,18 @@ type FormHeaderProps = {
     show: boolean;
     name: string | null;
     expertise: string | null;
+    replyingToId?: string;
+    replyingToText?: string;
     editName: () => void;
     editExpertise: () => void;
 };
 
-const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName, editExpertise}) => {
+const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingToText, editName, editExpertise}) => {
+    const {t} = useAppContext();
+    const labs = useLabs();
+
+    const isReplyingToReply = labs.commentImprovements && replyingToText;
+
     return (
         <Transition
             enter="transition duration-500 delay-100 ease-in-out"
@@ -207,7 +220,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
                 </div>
                 <div className="flex items-baseline justify-start">
                     <button
-                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-black/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
+                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
                         data-testid="expertise-button"
                         type="button"
                         onClick={editExpertise}
@@ -217,6 +230,11 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
                     </button>
                 </div>
             </div>
+            {isReplyingToReply && (
+                <div className="line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
+                    <span>{t('reply to comment')}:</span>&nbsp;<span className="font-semibold">{replyingToText}</span>
+                </div>
+            )}
         </Transition>
     );
 };
@@ -347,6 +365,8 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                             editName={editName}
                             expertise={memberExpertise}
                             name={memberName}
+                            replyingToId={openForm?.in_reply_to_id}
+                            replyingToText={openForm?.in_reply_to_snippet}
                             show={isOpen}
                         />
                     </div>
