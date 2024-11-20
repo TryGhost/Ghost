@@ -19,8 +19,12 @@ const PostAnalytics = () => {
                     </GHDSBreadcrumbList>
                 </GHDSBreadcrumb>
                 <div className="flex items-start justify-between">
-                    <GHDSHeading size={1}>Post analytics</GHDSHeading>
-                    <GHDSButton size={'sm'} className="mt-1">It is something!</GHDSButton>
+                    <GHDSHeading size="pagetitle">Post analytics</GHDSHeading>
+                    <div className="flex items-center mt-1 gap-2">
+                        <GHDSButton variant='outline'>Refresh</GHDSButton>
+                        <GHDSButton variant='outline'>Share</GHDSButton>
+                        <GHDSButton variant='outline'>•••</GHDSButton>
+                    </div>
                 </div>
             </header>
             <div className="mt-8 border rounded-lg border-grey-300 min-h-[500px] flex items-center justify-center text-grey-500">
