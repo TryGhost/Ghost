@@ -183,5 +183,64 @@ test.describe('Auth Frame', async () => {
         await moreButtons.nth(1).getByText('Show comment').click();
         await expect(secondComment).toContainText('This is comment 2');
     });
+
+    test('LABS - Hidden comment is displayed for admins', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 4</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 5</p>'
+        });
+
+        await mockAdminAuthFrame({
+            admin,
+            page
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            admin,
+            labs: {
+                commentImprovements: true
+            }
+        });
+
+        const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
+        await expect(iframeElement).toHaveCount(1);
+
+        // Check if more actions button is visible on each comment
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(5);
+
+        const moreButtons = await frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(5);
+
+        // Click the 2nd button
+        await moreButtons.nth(1).click();
+        await moreButtons.nth(1).getByText('Hide comment').click();
+
+        const secondComment = comments.nth(1);
+        // check that there is a span with data-testid="hidden-comment-html" in the comment
+        const hiddenCommentHtml = await secondComment.locator('[data-testId="hidden-comment-html"]');
+        await expect(hiddenCommentHtml).toHaveCount(1);
+        expect(await hiddenCommentHtml.textContent()).toContain('This is comment 2');
+
+        // Check can show it again
+        await moreButtons.nth(1).click();
+        await moreButtons.nth(1).getByText('Show comment').click();
+        await expect(secondComment).toContainText('This is comment 2');
+    });
 });
 
