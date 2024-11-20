@@ -10,7 +10,7 @@ import ViewProfileModal from './global/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
 import {useActivitiesForUser, useSuggestedProfiles, useUserDataForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -77,7 +77,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
     return (
         <>
             <MainNavigation page={layout}/>
-            <div className='z-0 my-5 flex w-full flex-col'>
+            <div className='z-0 mb-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
                     {isLoading ? (
                         <div className='flex flex-col items-center justify-center space-y-4 text-center'>
@@ -88,11 +88,11 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                             <div className={`mx-auto flex items-start gap-8`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
-                                        {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-7 flex w-[calc(100%+24px)] items-center'>
-                                            <div className='ml-[12px]'>
+                                        {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-10 flex w-[calc(100%+24px)] items-center p-3'>
+                                            <div className=''>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='absolute w-full rounded-md bg-white p-5 pl-16 text-left text-lg tracking-normal text-grey-500 shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-all hover:shadow-sm' label='What&apos;s on your mind?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
+                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-all hover:shadow-sm' label='What&apos;s new?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col`}>
                                             {activities.map((activity, index) => (
@@ -123,7 +123,8 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                         </ul>
                                     </div>
                                 </div>
-                                <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
+                                <div className='sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
+                                    {/* <Icon className='mb-2' colorClass='text-blue-500' name='comment' size='md' /> */}
                                     <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
                                     <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>

@@ -34,8 +34,8 @@ const NewPostModal = NiceModal.create(() => {
                             <FormPrimitive.Control asChild>
                                 <textarea
                                     autoFocus={true}
-                                    className='ap-textarea w-full resize-none p-2 text-lg'
-                                    placeholder='What&apos;s on your mind?'
+                                    className='ap-textarea w-full resize-none p-2 text-[1.5rem]'
+                                    placeholder='What&apos;s new?'
                                     rows={1}
                                 >
                                 </textarea>
