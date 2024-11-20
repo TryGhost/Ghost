@@ -9,9 +9,10 @@ import Separator from './global/Separator';
 import ViewProfileModal from './global/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
-import {useActivitiesForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser, useSuggestedProfiles, useUserDataForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
@@ -22,7 +23,7 @@ interface InboxProps {
 
 const Inbox: React.FC<InboxProps> = ({layout}) => {
     const typeFilter = layout === 'inbox'
-        ? ['Create:Article'] 
+        ? ['Create:Article']
         : ['Create:Note', 'Announce:Note'];
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
@@ -71,6 +72,8 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const {data: user} = useUserDataForUser('index');
+
     return (
         <>
             <MainNavigation page={layout}/>
@@ -83,34 +86,42 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                     ) : activities.length > 0 ? (
                         <>
                             <div className={`mx-auto flex items-start gap-8`}>
-                                <div className='flex w-full min-w-0 items-start'>
-                                    <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
-                                        {activities.map((activity, index) => (
-                                            <li
-                                                key={activity.id}
-                                                data-test-view-article
-                                            >
-                                                <FeedItem
-                                                    actor={activity.actor}
-                                                    commentCount={activity.object.replyCount ?? 0}
-                                                    layout={layout}
-                                                    object={activity.object}
-                                                    type={activity.type}
-                                                    onClick={() => handleViewContent(activity, false, updateActivity)}
-                                                    onCommentClick={() => handleViewContent(activity, true, updateActivity)}
-                                                />
-                                                {index < activities.length - 1 && (
-                                                    <Separator />
-                                                )}
-                                            </li>
-                                        ))}
-                                        <div ref={loadMoreRef} className='h-1'></div>
-                                        {isFetchingNextPage && (
-                                            <div className='flex flex-col items-center justify-center space-y-4 text-center'>
-                                                <LoadingIndicator size='md' />
+                                <div className='flex w-full min-w-0 flex-col items-center'>
+                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
+                                        {layout === 'feed' && <div className='relative mx-[-6px] mb-4 mt-5 flex w-[calc(100%+12px)] items-center'>
+                                            <div className='ml-[6px]'>
+                                                <APAvatar author={user as ActorProperties} />
                                             </div>
-                                        )}
-                                    </ul>
+                                            <Button aria-label='New post' className='absolute w-full rounded-md bg-white p-4 pl-14 text-left text-grey-500 shadow-md transition-opacity hover:opacity-60' label='What&apos;s on your mind?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
+                                        </div>}
+                                        <ul className={`mx-auto flex w-full flex-col`}>
+                                            {activities.map((activity, index) => (
+                                                <li
+                                                    key={activity.id}
+                                                    data-test-view-article
+                                                >
+                                                    <FeedItem
+                                                        actor={activity.actor}
+                                                        commentCount={activity.object.replyCount ?? 0}
+                                                        layout={layout}
+                                                        object={activity.object}
+                                                        type={activity.type}
+                                                        onClick={() => handleViewContent(activity, false, updateActivity)}
+                                                        onCommentClick={() => handleViewContent(activity, true, updateActivity)}
+                                                    />
+                                                    {index < activities.length - 1 && (
+                                                        <Separator />
+                                                    )}
+                                                </li>
+                                            ))}
+                                            <div ref={loadMoreRef} className='h-1'></div>
+                                            {isFetchingNextPage && (
+                                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                    <LoadingIndicator size='md' />
+                                                </div>
+                                            )}
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
                                     <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
@@ -168,7 +179,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                     Welcome to ActivityPub Beta
                                 </Heading>
                                 <p className="text-pretty text-grey-800">
-                                    {layout === 'inbox' 
+                                    {layout === 'inbox'
                                         ? 'Here you\'ll find the latest articles from accounts you\'re following.'
                                         : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
                                     }
