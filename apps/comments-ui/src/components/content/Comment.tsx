@@ -54,7 +54,7 @@ const useCommentVisibility = (comment: Comment, admin: boolean, labs: {commentIm
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isDeleted = comment.status === 'deleted';
     const isHidden = comment.status === 'hidden';
-    
+
     if (labs?.commentImprovements) {
         return {
             // Show deleted message only when comment has replies (regardless of admin status)
@@ -152,8 +152,8 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
             <CommentBody className={hiddenClass} html={comment.html} />
             <CommentMenu
                 comment={comment}
-                highlightReplyButton={highlightReplyButton} 
-                openEditMode={openEditMode} 
+                highlightReplyButton={highlightReplyButton}
+                openEditMode={openEditMode}
                 openReplyForm={openReplyForm}
                 parent={parent}
             />
@@ -169,16 +169,16 @@ type UnpublishedCommentProps = {
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
     const {t, labs, admin} = useAppContext();
-    
-    const avatar = (labs.commentImprovements && admin && comment.status !== 'deleted') ? 
-        <Avatar comment={comment} isHidden={true} /> : 
+
+    const avatar = (labs.commentImprovements && admin && comment.status !== 'deleted') ?
+        <Avatar comment={comment} isHidden={true} /> :
         <BlankAvatar />;
     const hasReplies = comment.replies && comment.replies.length > 0;
 
-    const notPublishedMessage = comment.status === 'hidden' ? 
-        t('This comment has been hidden.') : 
-        comment.status === 'deleted' ? 
-            t('This comment has been removed.') : 
+    const notPublishedMessage = comment.status === 'hidden' ?
+        t('This comment has been hidden.') :
+        comment.status === 'deleted' ?
+            t('This comment has been removed.') :
             '';
 
     // Only show MoreButton for hidden (not deleted) comments when admin
@@ -189,8 +189,8 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
             <div className="mt-[-3px] flex items-start">
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
-                        {labs.commentImprovements && admin && comment.status !== 'deleted' ? 
-                            <span dangerouslySetInnerHTML={{__html: comment.html}} data-testId="hidden-comment-html"></span> : 
+                        {labs.commentImprovements && admin && comment.status !== 'deleted' ?
+                            <span dangerouslySetInnerHTML={{__html: comment.html}} data-testId="hidden-comment-html"></span> :
                             notPublishedMessage}
                     </p>
                     {showMoreButton && (
@@ -359,11 +359,19 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
     }
 
     return (
-        <div className={`flex items-center gap-4 ${className}`}>
-            {<LikeButton comment={comment} />}
-            {(canReply && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />)}
-            {<MoreButton comment={comment} toggleEdit={openEditMode} />}
-        </div>
+        labs.commentImprovements ? (
+            <div className={`flex items-center gap-4 ${className}`}>
+                {<LikeButton comment={comment} />}
+                {<ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
+                {<MoreButton comment={comment} toggleEdit={openEditMode} />}
+            </div>
+        ) : (
+            <div className={`flex items-center gap-4 ${className}`}>
+                {<LikeButton comment={comment} />}
+                {(canReply && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />)}
+                {<MoreButton comment={comment} toggleEdit={openEditMode} />}
+            </div>
+        )
     );
 };
 
