@@ -295,11 +295,19 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
     const canReply = member && (isPaidMember || !paidOnly) && (labs.commentImprovements ? true : !parent);
 
     return (
-        <div className="flex items-center gap-4">
-            {<LikeButton comment={comment} />}
-            {(canReply && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />)}
-            {<MoreButton comment={comment} toggleEdit={openEditMode} />}
-        </div>
+        labs.commentImprovements ? (
+            <div className="flex items-center gap-4">
+                {<LikeButton comment={comment} />}
+                {<ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
+                {<MoreButton comment={comment} toggleEdit={openEditMode} />}
+            </div>
+        ) : (
+            <div className="flex items-center gap-4">
+                {<LikeButton comment={comment} />}
+                {(canReply && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />)}
+                {<MoreButton comment={comment} toggleEdit={openEditMode} />}
+            </div>
+        )
     );
 };
 
