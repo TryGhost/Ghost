@@ -314,6 +314,7 @@ export function HeaderCard({alignment,
                         {/* Subheading */}
                         {<KoenigNestedEditor
                             dataTestId="header-subheader-editor"
+                            defaultKoenigEnterBehaviour={true}
                             hasSettingsPanel={true}
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}

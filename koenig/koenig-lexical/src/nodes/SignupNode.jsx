@@ -71,7 +71,7 @@ export class SignupNode extends BaseSignupNode {
         if (this.__disclaimerTextEditor) {
             this.__disclaimerTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__disclaimerTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: false, allowBr: true});
                 json.disclaimer = cleanedHtml;
             });
         }
@@ -79,7 +79,7 @@ export class SignupNode extends BaseSignupNode {
         if (this.__headerTextEditor) {
             this.__headerTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__headerTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: false, allowBr: true});
                 json.header = cleanedHtml;
             });
         }

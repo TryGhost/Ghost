@@ -115,4 +115,15 @@ test.describe('Koening Editor with minimal nodes', async function () {
             await expect(await page.locator(h3ButtonSelector)).toHaveCount(0);
         });
     });
+    test('allows shift-enter', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('Hello World');
+        await page.keyboard.press('Shift+Enter');
+        await page.keyboard.type('This is second line');
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">Hello World</span><br /><span data-lexical-text="true">This is second line</span></p>
+        `);
+    });
 });
