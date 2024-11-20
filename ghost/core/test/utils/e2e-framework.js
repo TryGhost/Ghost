@@ -409,10 +409,12 @@ const getAgentsWithFrontend = async () => {
     };
 };
 
-const insertWebhook = ({event, url}) => {
+const insertWebhook = ({event, url, integrationType = undefined}) => {
     return fixtureUtils.fixtures.insertWebhook({
         event: event,
         target_url: url
+    }, {
+        integrationType
     });
 };
 
