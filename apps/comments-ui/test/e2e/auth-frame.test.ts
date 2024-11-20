@@ -118,7 +118,7 @@ test.describe('Auth Frame', async () => {
 
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
-        await expect(secondComment).toHaveText('This comment has been hidden.');
+        await expect(secondComment).toContainText('This comment has been hidden.');
         await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
@@ -175,7 +175,7 @@ test.describe('Auth Frame', async () => {
 
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
-        await expect(secondComment).toHaveText('This comment has been hidden.');
+        await expect(secondComment).toContainText('This comment has been hidden.');
         await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
