@@ -426,10 +426,16 @@ const fixtures = {
         }));
     },
 
-    insertWebhook: function (attributes) {
+    insertWebhook: function (attributes, options = {}) {
+        let integration = DataGenerator.forKnex.integrations[0];
+        if (options.integrationType) {
+            integration = DataGenerator.forKnex.integrations.find(
+                props => props.type === options.integrationType
+            );
+        }
         const webhook = DataGenerator.forKnex.createWebhook(
             Object.assign(attributes, {
-                integration_id: DataGenerator.forKnex.integrations[0].id
+                integration_id: integration.id
             })
         );
 
