@@ -182,8 +182,141 @@ describe('ActivityPubAPI', function () {
         });
     });
 
+    describe('getOutbox', function () {
+        test('It passes the token to the outbox collection endpoint', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/outbox/index': {
+                    async assert(_resource, init) {
+                        const headers = new Headers(init?.headers);
+                        expect(headers.get('Authorization')).toContain('fake-token');
+                    },
+                    response: JSONResponse({
+                        type: 'Collection',
+                        orderedItems: []
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await api.getOutbox();
+        });
+
+        test('Returns an empty array when the outbox collection is empty', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/outbox/index': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        first: 'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0'
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection'
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getOutbox();
+            const expected: never[] = [];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('Recursively retrieves all items and returns them when the outbox collection is not empty', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/outbox/index': {
+                    response:
+                     JSONResponse({
+                         type: 'OrderedCollection',
+                         first: 'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0'
+                     })
+                },
+                'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        next: 'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=1',
+                        orderedItems: [{
+                            type: 'Create',
+                            object: {
+                                type: 'Note'
+                            }
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=1': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        orderedItems: [{
+                            type: 'Create',
+                            object: {
+                                type: 'Article'
+                            }
+                        }]
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getOutbox();
+            const expected: Activity[] = [
+                {
+                    type: 'Create',
+                    object: {
+                        type: 'Note'
+                    }
+                },
+                {
+                    type: 'Create',
+                    object: {
+                        type: 'Article'
+                    }
+                }
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
     describe('getFollowing', function () {
-        test('It passes the token to the following endpoint', async function () {
+        test('It passes the token to the following collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -213,7 +346,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowing();
         });
 
-        test('Returns an empty array when the following is empty', async function () {
+        test('Returns an empty array when the following collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -224,8 +357,13 @@ describe('ActivityPubAPI', function () {
                 },
                 'https://activitypub.api/.ghost/activitypub/following/index': {
                     response: JSONResponse({
-                        type: 'Collection',
-                        items: []
+                        type: 'OrderedCollection',
+                        first: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=0'
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/following/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection'
                     })
                 }
             });
@@ -242,7 +380,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Returns all the items array when the following is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the following collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -254,11 +392,26 @@ describe('ActivityPubAPI', function () {
                 'https://activitypub.api/.ghost/activitypub/following/index': {
                     response:
                      JSONResponse({
-                         type: 'Collection',
-                         orderedItems: [{
-                             type: 'Person'
-                         }]
+                         type: 'OrderedCollection',
+                         first: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=0'
                      })
+                },
+                'https://activitypub.api/.ghost/activitypub/following/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        next: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=1',
+                        orderedItems: [{
+                            type: 'Person'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/following/index?cursor=1': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        orderedItems: [{
+                            type: 'Group'
+                        }]
+                    })
                 }
             });
 
@@ -273,43 +426,9 @@ describe('ActivityPubAPI', function () {
             const expected: Activity[] = [
                 {
                     type: 'Person'
-                }
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('Returns an array when the items key is a single object', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
                 },
-                'https://activitypub.api/.ghost/activitypub/following/index': {
-                    response:
-                     JSONResponse({
-                         type: 'Collection',
-                         items: {
-                             type: 'Person'
-                         }
-                     })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-            const expected: Activity[] = [
                 {
-                    type: 'Person'
+                    type: 'Group'
                 }
             ];
 
@@ -318,7 +437,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowers', function () {
-        test('It passes the token to the followers endpoint', async function () {
+        test('It passes the token to the followers collection endpoint', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -348,7 +467,7 @@ describe('ActivityPubAPI', function () {
             await api.getFollowers();
         });
 
-        test('Returns an empty array when the followers is empty', async function () {
+        test('Returns an empty array when the followers collection is empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -359,8 +478,13 @@ describe('ActivityPubAPI', function () {
                 },
                 'https://activitypub.api/.ghost/activitypub/followers/index': {
                     response: JSONResponse({
-                        type: 'Collection',
-                        orderedItems: []
+                        type: 'OrderedCollection',
+                        first: 'https://activitypub.api/.ghost/activitypub/followers/index?cursor=0'
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/followers/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection'
                     })
                 }
             });
@@ -377,7 +501,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('Returns all the items array when the followers is not empty', async function () {
+        test('Recursively retrieves all items and returns them when the followers collection is not empty', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -389,11 +513,26 @@ describe('ActivityPubAPI', function () {
                 'https://activitypub.api/.ghost/activitypub/followers/index': {
                     response:
                      JSONResponse({
-                         type: 'Collection',
-                         orderedItems: [{
-                             type: 'Person'
-                         }]
+                         type: 'OrderedCollection',
+                         first: 'https://activitypub.api/.ghost/activitypub/followers/index?cursor=0'
                      })
+                },
+                'https://activitypub.api/.ghost/activitypub/followers/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        next: 'https://activitypub.api/.ghost/activitypub/followers/index?cursor=1',
+                        orderedItems: [{
+                            type: 'Person'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/followers/index?cursor=1': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        orderedItems: [{
+                            type: 'Group'
+                        }]
+                    })
                 }
             });
 
@@ -408,6 +547,142 @@ describe('ActivityPubAPI', function () {
             const expected: Activity[] = [
                 {
                     type: 'Person'
+                },
+                {
+                    type: 'Group'
+                }
+            ];
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('getLiked', function () {
+        test('It passes the token to the liked endpoint', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/liked/index': {
+                    async assert(_resource, init) {
+                        const headers = new Headers(init?.headers);
+                        expect(headers.get('Authorization')).toContain('fake-token');
+                    },
+                    response: JSONResponse({
+                        type: 'Collection',
+                        orderedItems: []
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await api.getLiked();
+        });
+
+        test('Returns an empty array when the liked collection is empty', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/liked/index': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        first: 'https://activitypub.api/.ghost/activitypub/liked/index?cursor=0'
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/liked/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection'
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getLiked();
+            const expected: never[] = [];
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('Recursively retrieves all items and returns them when the liked collection is not empty', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/liked/index': {
+                    response:
+                     JSONResponse({
+                         type: 'OrderedCollection',
+                         first: 'https://activitypub.api/.ghost/activitypub/liked/index?cursor=0'
+                     })
+                },
+                'https://activitypub.api/.ghost/activitypub/liked/index?cursor=0': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        next: 'https://activitypub.api/.ghost/activitypub/liked/index?cursor=1',
+                        orderedItems: [{
+                            type: 'Create',
+                            object: {
+                                type: 'Note'
+                            }
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/liked/index?cursor=1': {
+                    response: JSONResponse({
+                        type: 'OrderedCollection',
+                        orderedItems: [{
+                            type: 'Create',
+                            object: {
+                                type: 'Article'
+                            }
+                        }]
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getLiked();
+            const expected: Activity[] = [
+                {
+                    type: 'Create',
+                    object: {
+                        type: 'Note'
+                    }
+                },
+                {
+                    type: 'Create',
+                    object: {
+                        type: 'Article'
+                    }
                 }
             ];
 
@@ -444,145 +719,10 @@ describe('ActivityPubAPI', function () {
         });
     });
 
-    describe('getAllActivities', function () {
-        test('It fetches all activities navigating pagination', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50': {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: 'next-cursor'
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&cursor=next-cursor': {
-                    response: JSONResponse({
-                        items: [{type: 'Announce', object: {type: 'Article'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities();
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}},
-                {type: 'Announce', object: {type: 'Article'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It fetches a user\'s own activities', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&includeOwn=true': {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities(true);
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It fetches activities with replies', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/activities/index?limit=50&includeReplies=true': {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities(false, true);
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It fetches filtered activities', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                [`https://activitypub.api/.ghost/activitypub/activities/index?limit=50&filter=%7B%22type%22%3A%5B%22Create%3ANote%22%5D%7D`]: {
-                    response: JSONResponse({
-                        items: [{type: 'Create', object: {type: 'Note'}}],
-                        nextCursor: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getAllActivities(false, false, {type: ['Create:Note']});
-            const expected: Activity[] = [
-                {type: 'Create', object: {type: 'Note'}}
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-    });
-
     describe('search', function () {
         test('It returns the results of the search', async function () {
+            const handle = '@foo@bar.baz';
+
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -591,11 +731,11 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                'https://activitypub.api/.ghost/activitypub/actions/search?query=%40foo%40bar.baz': {
+                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({
                         profiles: [
                             {
-                                handle: '@foo@bar.baz',
+                                handle,
                                 name: 'Foo Bar'
                             }
                         ]
@@ -610,14 +750,45 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.search('@foo@bar.baz');
+            const actual = await api.search(handle);
             const expected = {
                 profiles: [
                     {
-                        handle: '@foo@bar.baz',
+                        handle,
                         name: 'Foo Bar'
                     }
                 ]
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array when there are no profiles in the response', async function () {
+            const handle = '@foo@bar.baz';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.search(handle);
+            const expected = {
+                profiles: []
             };
 
             expect(actual).toEqual(expected);
@@ -859,7 +1030,7 @@ describe('ActivityPubAPI', function () {
     });
 
     describe('getFollowingForProfile', function () {
-        test('It returns a following arrayfor a profile', async function () {
+        test('It returns an array of following actors for a profile', async function () {
             const handle = '@foo@bar.baz';
 
             const fakeFetch = Fetch({
@@ -1122,6 +1293,43 @@ describe('ActivityPubAPI', function () {
             const actual = await api.getProfile(handle);
             const expected = {
                 handle,
+                name: 'Foo Bar'
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('getThread', function () {
+        test('It returns a thread', async function () {
+            const activityId = 'https://example.com/thread/abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/thread/${encodeURIComponent(activityId)}`]: {
+                    response: JSONResponse({
+                        id: activityId,
+                        name: 'Foo Bar'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getThread(activityId);
+            const expected = {
+                id: activityId,
                 name: 'Foo Bar'
             };
 

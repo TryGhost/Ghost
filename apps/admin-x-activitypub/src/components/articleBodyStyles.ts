@@ -204,7 +204,7 @@ a:hover {
     line-height: 1;
     color: var(--color-white);
     cursor: pointer;
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
     border: 0;
     border-radius: 100px;
 }
@@ -425,21 +425,6 @@ button.gh-form-input {
     flex-grow: 1;
 }
 
-.gh-canvas,
-.kg-width-full.kg-content-wide {
-    --main: min(var(--content-width, 720px), 100% - var(--container-gap) * 2);
-    --wide: minmax(0, calc((var(--container-width, 1200px) - var(--content-width, 720px)) / 2));
-    --full: minmax(var(--container-gap), 1fr);
-
-    display: grid;
-    grid-template-columns:
-        [full-start] var(--full)
-        [wide-start] var(--wide)
-        [main-start] var(--main) [main-end]
-        var(--wide) [wide-end]
-        var(--full) [full-end];
-}
-
 .gh-canvas > * {
     grid-column: main;
 }
@@ -533,7 +518,7 @@ button.gh-form-input {
 }
 
 .gh-navigation.has-accent-color .gh-navigation-actions {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .gh-navigation-members {
@@ -582,7 +567,7 @@ button.gh-form-input {
 /* 6.1. Navigation styles */
 
 .gh-navigation.has-accent-color {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .gh-navigation.has-accent-color .gh-button {
@@ -2008,7 +1993,7 @@ Search                         LOGO                    Login Subscribe
 }
 
 .gh-article-header {
-    margin: clamp(40px, 3.64vw + 25.45px, 72px) 0 40px;
+    margin: 24px 0;
 }
 
 .gh-article-tag {
@@ -2017,21 +2002,23 @@ Search                         LOGO                    Login Subscribe
     font-weight: 500;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    color: var(--ghost-accent-color);
+    color: rgb(29 78 216);
 }
 
 .gh-article-title {
-    font-size: calc(clamp(3.4rem, 1.36vw + 2.85rem, 4.6rem) * var(--factor, 1));
-    line-height: 1.1;
-    letter-spacing: -0.022em;
+    font-size: 2.9rem;
+    line-height: 1.2;
+    letter-spacing: -0.87px;
+    font-weight: 600;
+    text-wrap: pretty;
 }
 
 .gh-article-excerpt {
-    margin-top: clamp(12px, 0.45vw + 10.18px, 16px);
-    max-width: 720px;
-    font-size: clamp(1.5rem, 0.45vw + 1.32rem, 1.9rem);
-    line-height: 1.4;
-    letter-spacing: -0.018em;
+    margin-top: 16px;
+    font-size: 2.1rem;
+    line-height: 1.3;
+    letter-spacing: -0.63px;
+    text-wrap: pretty;
 }
 
 .gh-article-meta {
@@ -2135,7 +2122,7 @@ headings, text, images and lists. We deal with cards lower down. */
 .gh-content {
     font-size: var(--content-font-size, 1.7rem);
     letter-spacing: -0.01em;
-    padding-bottom: 48px;
+    overflow-x: hidden;
 }
 
 /* Default vertical spacing */
@@ -2201,7 +2188,7 @@ unless a heading is the very first element in the post content */
 }
 
 .gh-content a {
-    color: var(--ghost-accent-color);
+    color: rgb(29 78 216);
     text-decoration: underline;
 }
 
@@ -2387,7 +2374,7 @@ unless a heading is the very first element in the post content */
 
 blockquote:not([class]) {
     padding-left: 2rem;
-    border-left: 4px solid var(--ghost-accent-color);
+    border-left: 4px solid rgb(29 78 216);
 }
 
 blockquote.kg-blockquote-alt {
@@ -2507,7 +2494,7 @@ figcaption {
 }
 
 figcaption a {
-    color: var(--ghost-accent-color);
+    color: rgb(29 78 216);
     text-decoration: underline;
 }
 
@@ -2593,7 +2580,7 @@ figcaption a {
 }
 
 .author-template .gh-article-title {
-    font-size: 3.6rem;
+    font-size: 2.9rem;
 }
 
 .gh-author-meta {
@@ -2786,7 +2773,7 @@ figcaption a {
 /* 21.1 Footer styles */
 
 .gh-footer.has-accent-color {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .gh-footer.has-accent-color .gh-footer-bar {
@@ -3421,7 +3408,7 @@ figcaption a {
 }
 
 .kg-callout-card-accent {
-    background: var(--ghost-accent-color);
+    background: rgb(29 78 216);
     color: #fff;
 }
 
@@ -3477,7 +3464,7 @@ figcaption a {
 }
 
 .kg-audio-thumbnail.placeholder {
-    background: var(--ghost-accent-color);
+    background: rgb(29 78 216);
 }
 
 .kg-audio-thumbnail.placeholder svg {
@@ -3951,7 +3938,7 @@ figcaption a {
 }
 
 .kg-button-card a.kg-btn-accent {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
     color: #fff;
 }
 
@@ -4281,7 +4268,7 @@ p.kg-collection-card-post-excerpt {
 .kg-file-card-icon svg {
     width: 24px;
     height: 24px;
-    color: var(--ghost-accent-color);
+    color: rgb(29 78 216);
 }
 
 /* Size variations */
@@ -4404,7 +4391,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-header-card.kg-style-accent {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .kg-header-card.kg-style-image {
@@ -4487,7 +4474,7 @@ p.kg-collection-card-post-excerpt {
 
 .kg-header-card h2.kg-header-card-header a,
 .kg-header-card h3.kg-header-card-subheader a {
-    color: var(--ghost-accent-color);
+    color: rgb(29 78 216);
 }
 
 .kg-header-card.kg-style-accent h2.kg-header-card-header a,
@@ -4556,7 +4543,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-header-card.kg-style-light a.kg-header-card-button {
-    background: var(--ghost-accent-color);
+    background: rgb(29 78 216);
     color: #fff;
 }
 
@@ -4822,7 +4809,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-product-card a.kg-product-card-btn-accent {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
     color: #fff;
 }
 
@@ -4841,7 +4828,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-signup-card.kg-style-accent {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .kg-layout-split .kg-signup-card-content {
@@ -5068,7 +5055,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-signup-card-button.kg-style-accent {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .kg-signup-card h2 + .kg-signup-card-button,
@@ -5660,7 +5647,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-header-card.kg-style-accent.kg-v2 {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .kg-header-card-content {
@@ -5831,7 +5818,7 @@ p.kg-collection-card-post-excerpt {
 }
 
 .kg-header-card.kg-v2 .kg-header-card-button.kg-style-accent {
-    background-color: var(--ghost-accent-color);
+    background-color: rgb(29 78 216);
 }
 
 .kg-header-card.kg-v2 h2 + .kg-header-card-button,

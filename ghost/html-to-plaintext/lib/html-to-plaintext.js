@@ -35,6 +35,7 @@ const baseSettings = {
 let excerptConverter;
 let emailConverter;
 let commentConverter;
+let commentSnippetConverter;
 
 const loadConverters = () => {
     if (excerptConverter && emailConverter) {
@@ -78,9 +79,18 @@ const loadConverters = () => {
         ]
     });
 
+    const commentSnippetSettings = mergeSettings({
+        preserveNewlines: false,
+        ignoreHref: true,
+        selectors: [
+            {selector: 'blockquote', format: 'skip'}
+        ]
+    });
+
     excerptConverter = compile(excerptSettings);
     emailConverter = compile(emailSettings);
     commentConverter = compile(commentSettings);
+    commentSnippetConverter = compile(commentSnippetSettings);
 };
 
 module.exports.excerpt = (html) => {
@@ -99,4 +109,12 @@ module.exports.comment = (html) => {
     loadConverters();
 
     return commentConverter(html);
+};
+
+module.exports.commentSnippet = (html) => {
+    loadConverters();
+
+    return commentSnippetConverter(html)
+        .replace(/\n/g, ' ')
+        .replace(/\s+/g, ' ');
 };

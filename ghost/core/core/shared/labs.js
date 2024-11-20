@@ -16,6 +16,7 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'collections',
+    'i18n',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
@@ -26,15 +27,14 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'i18n',
     'activitypub',
     'stripeAutomaticTax',
     'webmentions',
-    'editorExcerpt'
+    'editorExcerpt',
+    'ActivityPub'
 ];
 
 const ALPHA_FEATURES = [
-    'ActivityPub',
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
@@ -45,7 +45,9 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
-    'commentImprovements'
+    'commentImprovements',
+    'staff2fa',
+    'customFonts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

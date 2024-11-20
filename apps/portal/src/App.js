@@ -56,7 +56,8 @@ export default class App extends React.Component {
             action: 'init:running',
             initStatus: 'running',
             lastPage: null,
-            customSiteUrl: props.customSiteUrl
+            customSiteUrl: props.customSiteUrl,
+            locale: props.locale
         };
     }
 
@@ -158,9 +159,9 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
-            const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
-
+            const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             const i18n = i18nLib(i18nLanguage, 'portal');
+            
             const state = {
                 site,
                 member,
@@ -171,8 +172,10 @@ export default class App extends React.Component {
                 pageData,
                 popupNotification,
                 t: i18n.t,
+                dir: i18n.dir() || 'ltr',
                 action: 'init:success',
-                initStatus: 'success'
+                initStatus: 'success',
+                locale: i18nLanguage
             };
 
             this.handleSignupQuery({site, pageQuery, member});
@@ -549,7 +552,6 @@ export default class App extends React.Component {
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
-
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {site, member} = await this.GhostApi.init();
@@ -770,12 +772,11 @@ export default class App extends React.Component {
     }
 
     /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path, useSite) {
+    getPageFromLinkPath(path) {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
-        const site = useSite ?? this.state.site ?? {};
 
         if (path === undefined || path === '') {
             return {
@@ -854,7 +855,7 @@ export default class App extends React.Component {
             return {
                 page: 'supportError'
             };
-        } else if (path === 'recommendations' && hasRecommendations({site})) {
+        } else if (path === 'recommendations') {
             return {
                 page: 'recommendations',
                 pageData: {
@@ -925,7 +926,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -942,6 +943,7 @@ export default class App extends React.Component {
             popupNotification,
             customSiteUrl,
             t,
+            dir,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }

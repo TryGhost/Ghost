@@ -1,5 +1,5 @@
 module.exports = {
-    registerHelpers(handlebars, labs) {
+    registerHelpers(handlebars, labs, thist) {
         handlebars.registerHelper('if', function (conditional, options) {
             if (conditional) {
                 return options.fn(this);
@@ -50,6 +50,10 @@ module.exports = {
             } else {
                 return options.inverse(this);
             }
+        });
+        handlebars.registerHelper('t', function (key, options) {
+            let hash = options?.hash;
+            return thist(key, hash || options || {});
         });
     }
 };

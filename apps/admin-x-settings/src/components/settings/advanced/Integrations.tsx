@@ -18,7 +18,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 interface IntegrationItemProps {
     icon?: React.ReactNode,
     title: string,
-    detail: string,
+    detail: string | React.ReactNode,
     action: () => void;
     onDelete?: () => void;
     active?: boolean;
@@ -40,7 +40,10 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 }) => {
     const {updateRoute} = useRouting();
 
-    const handleClick = () => {
+    const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
+        // Prevent the click event from bubbling up when clicking the delete button
+        e?.stopPropagation();
+        
         if (disabled) {
             updateRoute({route: 'pro', isExternal: true});
         } else {
@@ -48,8 +51,13 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         }
     };
 
+    const handleDelete = (e?: React.MouseEvent<HTMLElement>) => {
+        e?.stopPropagation(); 
+        onDelete?.();
+    };
+
     const buttons = custom ?
-        <Button color='red' label='Delete' link onClick={onDelete} />
+        <Button color='red' label='Delete' link onClick={handleDelete} />
         :
         (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
@@ -165,11 +173,13 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                 {integrations.map(integration => (
                     <IntegrationItem
                         action={() => updateRoute({route: `integrations/${integration.id}`})}
-                        detail={integration.description || 'No description'}
+                        detail={<div className="line-clamp-2 break-words">
+                            <span title={`${integration.name}: ${integration.description || 'No description'}`}>{integration.description || 'No description'}</span>
+                        </div>}
                         icon={
                             integration.icon_image ?
-                                <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
-                                <Icon className='w-8' name='integration' />
+                                <img className='h-8 w-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
+                                <Icon className='w-8 shrink-0' name='integration' />
                         }
                         title={integration.name}
                         custom

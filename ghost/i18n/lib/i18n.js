@@ -20,6 +20,7 @@ const SUPPORTED_LOCALES = [
     'fi', // Finnish
     'fr', // French
     'gd', // Gaelic (Scottish)
+    'he', // Hebrew
     'hi', // Hindi
     'hr', // Croatian
     'hu', // Hungarian
@@ -33,6 +34,7 @@ const SUPPORTED_LOCALES = [
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
     'no', // Norwegian
@@ -62,10 +64,17 @@ const SUPPORTED_LOCALES = [
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
+    let interpolation = {};
+    if (ns === 'newsletter') {
+        interpolation = {
+            prefix: '{',
+            suffix: '}'
+        };
+    }
     i18nextInstance.init({
         lng,
 
@@ -81,6 +90,9 @@ module.exports = (lng = 'en', ns = 'portal') => {
 
         ns: ns,
         defaultNS: ns,
+
+        // separators
+        interpolation,
 
         resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
             const res = require(`../locales/${locale}/${ns}.json`);

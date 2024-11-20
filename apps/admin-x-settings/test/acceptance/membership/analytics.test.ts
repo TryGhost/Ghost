@@ -18,10 +18,12 @@ test.describe('Analytics settings', async () => {
 
         const section = page.getByTestId('analytics');
 
-        await expect(section.getByLabel(/Newsletter opens/)).toBeChecked();
-        await expect(section.getByLabel(/Newsletter clicks/)).toBeChecked();
-        await expect(section.getByLabel(/Member sources/)).toBeChecked();
-        await expect(section.getByLabel(/Outbound link tagging/)).toBeChecked();
+        await expect(section).toBeVisible();
+
+        await expect(section.getByLabel('Newsletter opens')).toBeChecked();
+        await expect(section.getByLabel('Newsletter clicks')).toBeChecked();
+        await expect(section.getByLabel('Member sources')).toBeChecked();
+        await expect(section.getByLabel('Outbound link tagging')).toBeChecked();
 
         await section.getByLabel(/Newsletter opens/).uncheck();
         await section.getByLabel(/Newsletter clicks/).uncheck();

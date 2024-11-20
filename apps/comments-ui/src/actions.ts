@@ -1,19 +1,29 @@
-import {AddComment, Comment, CommentsOptions, EditableAppContext} from './AppContext';
+import {AddComment, Comment, CommentsOptions, EditableAppContext, OpenCommentForm} from './AppContext';
 import {AdminApi} from './utils/adminApi';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
-async function loadMoreComments({state, api, options}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions}): Promise<Partial<EditableAppContext>> {
+async function loadMoreComments({state, api, options, order}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions, order?:string}): Promise<Partial<EditableAppContext>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
     }
-    const data = await api.comments.browse({page, postId: options.postId});
+    const data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
 
     // Note: we store the comments from new to old, and show them in reverse order
     return {
         comments: [...state.comments, ...data.comments],
         pagination: data.meta.pagination
+    };
+}
+
+async function setOrder({data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
+    const data = await api.comments.browse({page: 1, postId: options.postId, order: order});
+
+    return {
+        comments: [...data.comments],
+        pagination: data.meta.pagination,
+        order
     };
 }
 
@@ -337,24 +347,56 @@ function closePopup() {
     };
 }
 
-function increaseSecundaryFormCount({state}: {state: EditableAppContext}) {
-    return {
-        secundaryFormCount: state.secundaryFormCount + 1
+async function openCommentForm({data: newForm, api, state}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext}) {
+    let otherStateChanges = {};
+
+    // When opening a reply form, we load in all of the replies for the parent comment so that
+    // the reply shown after posting appears in the correct place based on ordering
+    const topLevelCommentId = newForm.parent_id || newForm.id;
+    if (newForm.type === 'reply' && !state.openCommentForms.some(f => f.id === topLevelCommentId || f.parent_id === topLevelCommentId)) {
+        const comment = state.comments.find(c => c.id === topLevelCommentId);
+        const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}});
+        otherStateChanges = {...otherStateChanges, ...newCommentsState};
+    }
+
+    // We want to keep the number of displayed forms to a minimum so when opening a
+    // new form, we close any existing forms that are empty or have had no changes
+    const openFormsAfterAutoclose = state.openCommentForms.filter(form => form.hasUnsavedChanges);
+
+    // avoid multiple forms being open for the same id
+    // (e.g. if "Reply" is hit on two different replies, we don't want two forms open at the bottom of that comment thread)
+    const openFormIndexForId = openFormsAfterAutoclose.findIndex(form => form.id === newForm.id);
+    if (openFormIndexForId > -1) {
+        openFormsAfterAutoclose[openFormIndexForId] = newForm;
+
+        return {openCommentForms: openFormsAfterAutoclose, ...otherStateChanges};
+    } else {
+        return {openCommentForms: [...openFormsAfterAutoclose, newForm], ...otherStateChanges};
     };
 }
 
-function decreaseSecundaryFormCount({state}: {state: EditableAppContext}) {
-    return {
-        secundaryFormCount: state.secundaryFormCount - 1
-    };
+function setCommentFormHasUnsavedChanges({data: {id, hasUnsavedChanges}, state}: {data: {id: string, hasUnsavedChanges: boolean}, state: EditableAppContext}) {
+    const updatedForms = state.openCommentForms.map((f) => {
+        if (f.id === id) {
+            return {...f, hasUnsavedChanges};
+        } else {
+            return {...f};
+        };
+    });
+
+    return {openCommentForms: updatedForms};
 }
+
+function closeCommentForm({data: id, state}: {data: string, state: EditableAppContext}) {
+    return {openCommentForms: state.openCommentForms.filter(f => f.id !== id)};
+};
 
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
     closePopup,
-    increaseSecundaryFormCount,
-    decreaseSecundaryFormCount
+    closeCommentForm,
+    setCommentFormHasUnsavedChanges
 };
 
 export type SyncActionType = keyof typeof SyncActions;
@@ -372,7 +414,9 @@ export const Actions = {
     addReply,
     loadMoreComments,
     loadMoreReplies,
-    updateMember
+    updateMember,
+    setOrder,
+    openCommentForm
 };
 
 export type ActionType = keyof typeof Actions;
