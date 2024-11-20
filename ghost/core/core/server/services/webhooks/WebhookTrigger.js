@@ -27,9 +27,18 @@ class WebhookTrigger {
             const overLimit = await this.limitService.checkWouldGoOverLimit('customIntegrations');
 
             if (overLimit) {
-                logging.info(`Skipping all webhooks for event ${event}. The "customIntegrations" plan limit is enabled.`);
+                logging.info(`Skipping all non-internal webhooks for event ${event}. The "customIntegrations" plan limit is enabled.`);
+                const result = await this.models
+                    .Webhook
+                    .findAllByEvent(event, {
+                        context: {internal: true},
+                        withRelated: ['integration']
+                    });
+
                 return {
-                    models: []
+                    models: result?.models?.filter((model) => {
+                        return model.related('integration')?.get('type') === 'internal';
+                    }) || []
                 };
             }
         }
