@@ -18,6 +18,26 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         return t('Just now');
     }
 
+    // Up to an hour ago, show relative time
+    const secondsDiff = Math.round((now.getTime() - date.getTime()) / 1000);
+    if (secondsDiff < 60) {
+        return t('Just now');
+    }
+
+    const minutesDiff = Math.round(secondsDiff / 60);
+    if (minutesDiff === 1) {
+        return t('One min ago');
+    }
+
+    if (minutesDiff < 60) {
+        return t('{{amount}} mins ago', {amount: minutesDiff});
+    }
+
+    const hoursDiff = Math.round(minutesDiff / 60);
+    if (hoursDiff === 1) {
+        return t('One hour ago');
+    }
+
     // Check if dates are on different calendar days by comparing UTC dates
     const dateUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
     const nowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -30,7 +50,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     if (dayDiff > 1) {
         const day = date.getDate();
         const month = date.toLocaleString('en-us', {month: 'short'});
-        
+
         // If it's from a different year, include the year
         if (date.getFullYear() !== now.getFullYear()) {
             return `${day} ${month} ${date.getFullYear()}`;
@@ -39,27 +59,8 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
         return `${day} ${month}`;
     }
 
-    // If we're on the same calendar day, show relative time
-    let diff = Math.round((now.getTime() - date.getTime()) / 1000);
-    if (diff < 60) {
-        return t('Just now');
-    }
-
-    diff = Math.round(diff / 60);
-    if (diff === 1) {
-        return t('One min ago');
-    }
-
-    if (diff < 60) {
-        return t('{{amount}} mins ago', {amount: diff});
-    }
-
-    diff = Math.round(diff / 60);
-    if (diff === 1) {
-        return t('One hour ago');
-    }
-
-    return t('{{amount}} hrs ago', {amount: diff});
+    // We're not older than yesterday, so show relative hours
+    return t('{{amount}} hrs ago', {amount: hoursDiff});
 }
 
 export function formatExplicitTime(dateString: string): string {

@@ -1,4 +1,5 @@
 import * as helpers from './helpers';
+import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../test/utils/fixtures';
 
@@ -20,8 +21,13 @@ describe('formatNumber', function () {
     });
 });
 
-describe('Date/Time Formatting', () => {
+describe('formatRelativeTime', () => {
     let clock: sinon.SinonFakeTimers;
+
+    afterEach(() => {
+        clock?.restore();
+    });
+
     const t = (key: string, vars?: Record<string, string | number>) => {
         if (vars) {
             return key.replace('{{amount}}', vars.amount.toString());
@@ -29,79 +35,47 @@ describe('Date/Time Formatting', () => {
         return key;
     };
 
-    afterEach(() => {
-        clock?.restore();
+    function testFormatRelativeTime(humanDiff: string, duration: DurationInputObject, expected: string, now?: Date) {
+        it(`${humanDiff} = ${expected}`, function () {
+            if (now) {
+                clock = sinon.useFakeTimers(now);
+            } else {
+                clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+            }
+            const time = moment().subtract(duration);
+            expect(helpers.formatRelativeTime(time.toISOString(), t)).toEqual(expected);
+        });
+    }
+
+    it('handles invalid dates', function () {
+        expect(helpers.formatRelativeTime('invalid', t)).toEqual('Just now');
     });
 
-    describe('formatRelativeTime', () => {
-        beforeEach(() => {
-            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-        });
+    const testCases: Array<[string, DurationInputObject, string, Date?]> = [
+        ['3 seconds ago', {seconds: 3}, 'Just now'],
+        ['30 seconds ago', {seconds: 30}, 'Just now'],
+        ['59 seconds ago', {seconds: 59}, 'Just now'],
+        ['60 seconds ago', {seconds: 60}, 'One min ago'],
+        ['2 minutes ago', {minutes: 2}, '2 mins ago'],
+        ['59 minutes ago', {minutes: 59}, '59 mins ago'],
+        ['60 minutes ago', {minutes: 60}, 'One hour ago'],
+        ['89 minutes ago', {minutes: 89}, 'One hour ago'], // rounds to nearest hour
+        ['90 minutes ago', {minutes: 90}, '2 hrs ago'], // rounds to nearest hour
+        ['3 hours ago', {hours: 3}, '3 hrs ago'],
+        ['14 hours ago', {hours: 14}, '14 hrs ago'],
+        ['1 day ago', {days: 1}, 'Yesterday'],
+        ['yesterday < 1min ago', {seconds: 40}, 'Just now', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday < 1hr ago', {minutes: 40}, '40 mins ago', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday 1hr ago', {minutes: 60}, 'One hour ago', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday > 1hr < 2hrs ago', {minutes: 65}, 'One hour ago', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday > 2hrs ago', {hours: 2}, 'Yesterday', new Date('2024-02-15T00:00:10.000Z')],
+        ['1 month ago', {months: 1}, '15 Jan'],
+        ['1 year ago', {years: 1}, '15 Feb 2023']
+    ];
 
-        it('handles just now', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:57.000Z', t)).toBe('Just now');
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:30.000Z', t)).toBe('Just now');
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:01.000Z', t)).toBe('Just now');
-        });
-
-        it('handles one minute ago', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:00.000Z', t)).toBe('One min ago');
-        });
-
-        it('handles multiple minutes ago', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T14:30:00.000Z', t)).toBe('30 mins ago');
-        });
-
-        it('handles one hour ago', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T14:00:00.000Z', t)).toBe('One hour ago');
-        });
-
-        it('handles multiple hours ago', () => {
-            expect(helpers.formatRelativeTime('2024-02-15T12:00:00.000Z', t)).toBe('3 hrs ago');
-        });
-
-        it('handles yesterday', () => {
-            expect(helpers.formatRelativeTime('2024-02-14T15:00:00.000Z', t)).toBe('Yesterday');
-        });
-
-        it('handles date in current year', () => {
-            expect(helpers.formatRelativeTime('2024-01-15T15:00:00.000Z', t)).toBe('15 Jan');
-        });
-
-        it('handles date in different year', () => {
-            expect(helpers.formatRelativeTime('2023-02-15T15:00:00.000Z', t)).toBe('15 Feb 2023');
-        });
-    });
-
-    describe('formatRelativeTime transitions', () => {
-        it('transitions from just now to minutes', () => {
-            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-            expect(helpers.formatRelativeTime('2024-02-15T14:59:00.000Z', t)).toBe('One min ago');
-            expect(helpers.formatRelativeTime('2024-02-15T14:58:00.000Z', t)).toBe('2 mins ago');
-        });
-
-        it('transitions from minutes to hours at 60 minutes', () => {
-            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-            expect(helpers.formatRelativeTime('2024-02-15T14:01:00.000Z', t)).toBe('59 mins ago');
-            expect(helpers.formatRelativeTime('2024-02-15T14:00:00.000Z', t)).toBe('One hour ago');
-        });
-
-        it('transitions from hours to yesterday at calendar day change', () => {
-            clock = sinon.useFakeTimers(new Date('2024-02-15T00:30:00.000Z'));
-            expect(helpers.formatRelativeTime('2024-02-14T23:00:00.000Z', t)).toBe('Yesterday');
-            expect(helpers.formatRelativeTime('2024-02-15T00:00:00.000Z', t)).toBe('30 mins ago');
-        });
-
-        it('transitions from yesterday to date format', () => {
-            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-            expect(helpers.formatRelativeTime('2024-02-14T15:00:00.000Z', t)).toBe('Yesterday');
-            expect(helpers.formatRelativeTime('2024-02-13T15:00:00.000Z', t)).toBe('13 Feb');
-        });
-    
-        it('shows year for dates in previous years', () => {
-            clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-            expect(helpers.formatRelativeTime('2023-12-15T15:00:00.000Z', t)).toBe('15 Dec 2023');
-            expect(helpers.formatRelativeTime('2023-02-15T15:00:00.000Z', t)).toBe('15 Feb 2023');
+    describe('in UTC', function () {
+        testCases.forEach(([humanDiff, duration, expected, now]) => {
+            testFormatRelativeTime(humanDiff, duration, expected, now);
         });
     });
 });
