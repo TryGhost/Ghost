@@ -61,15 +61,19 @@ describe('Webhook Service', function () {
 
         it('does not trigger payload handler when there are hooks registered for an event, but the custom integrations limit is active', async function () {
             const webhookModel = {
-                get: sinon.stub()
+                get: sinon.stub(),
+                related: sinon.stub()
             };
 
             webhookModel.get
                 .withArgs('event').returns(WEBHOOK_EVENT)
                 .withArgs('target_url').returns(WEBHOOK_TARGET_URL);
 
+            webhookModel.related
+                .withArgs('integration').returns(null);
+
             models.Webhook.findAllByEvent
-                .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}, withRelated: ['integration']})
                 .resolves({models: [webhookModel]});
 
             limitService.isLimited.withArgs('customIntegrations').returns(true);
@@ -77,7 +81,7 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger(WEBHOOK_EVENT);
 
-            assert.equal(models.Webhook.findAllByEvent.called, false);
+            assert.equal(models.Webhook.findAllByEvent.called, true);
             assert.equal(payload.called, false);
             assert.equal(request.called, false);
         });
