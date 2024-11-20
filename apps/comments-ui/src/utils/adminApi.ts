@@ -4,7 +4,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
     const handlers: Record<string, (error: Error|undefined, result: any) => void> = {};
     const adminOrigin = new URL(adminUrl).origin;
 
-    const firstCommentCreatedAt: null | string = null;
+    let firstCommentCreatedAt: null | string = null;
 
     window.addEventListener('message', function (event) {
         if (event.origin !== adminOrigin) {
@@ -81,30 +81,12 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
             }
 
             const response = await callApi('browseComments', {postId, params: params.toString()});
-            // const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
-            // const response = makeRequest({
-            //     url,
-            //     method: 'GET',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     credentials: 'same-origin'
-            // }).then(function (res) {
-            //     if (res.ok) {
-            //         return res.json();
-            //     } else {
-            //         throw new Error('Failed to fetch comments');
-            //     }
-            // });
-
-            // if (!firstCommentCreatedAt) {
-            //     response.then((body:any) => {
-            //         const firstComment = body.comments[0];
-            //         if (firstComment) {
-            //             firstCommentCreatedAt = firstComment.created_at;
-            //         }
-            //     });
-            // }
+            if (!firstCommentCreatedAt) {
+                const firstComment = response.comments[0];
+                if (firstComment) {
+                    firstCommentCreatedAt = firstComment.created_at;
+                }
+            }
 
             return response;
         }
