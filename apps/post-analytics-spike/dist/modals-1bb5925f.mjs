@@ -1,6 +1,6 @@
-import { N as t, j as o } from "./index-0846be11.mjs";
+import { N as t, j as o } from "./index-94083cb9.mjs";
 const a = t.create(() => /* @__PURE__ */ o.jsx(o.Fragment, {})), s = { DemoModal: a };
 export {
   s as default
 };
-//# sourceMappingURL=modals-eeac580f.mjs.map
+//# sourceMappingURL=modals-1bb5925f.mjs.map
