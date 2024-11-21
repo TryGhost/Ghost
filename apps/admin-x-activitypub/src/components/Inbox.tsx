@@ -7,12 +7,14 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
 import ViewProfileModal from './global/ViewProfileModal';
+import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
-import {useActivitiesForUser, useSuggestedProfiles, useUserDataForUser} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
@@ -38,8 +40,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     const {updateRoute} = useRouting();
 
-    const {suggestedProfilesQuery} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
-    const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const {suggested, isLoadingSuggested} = useSuggestedProfiles();
 
     const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
         return !activity.object.inReplyTo;
