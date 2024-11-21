@@ -62,6 +62,26 @@ const SUPPORTED_LOCALES = [
     'ta' // Tamil
 ];
 
+function generateResources(locales, ns) {
+    return locales.reduce((acc, locale) => {
+        let res;
+        // add an extra fallback - this handles the case where we have a partial set of translations for some reason
+        // by falling back to the english translations
+        try {
+            res = require(`../locales/${locale}/${ns}.json`);
+        } catch (err) {
+            res = require(`../locales/en/${ns}.json`);
+        }
+
+        // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
+        // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
+        acc[locale] = {
+            [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
+        };
+        return acc;
+    }, {});
+}
+
 /**
  * @param {string} [lng]
  * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
@@ -75,6 +95,8 @@ module.exports = (lng = 'en', ns = 'portal') => {
             suffix: '}'
         };
     }
+
+    let resources = generateResources(SUPPORTED_LOCALES, ns);
     i18nextInstance.init({
         lng,
 
@@ -94,19 +116,11 @@ module.exports = (lng = 'en', ns = 'portal') => {
         // separators
         interpolation,
 
-        resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
-            const res = require(`../locales/${locale}/${ns}.json`);
-
-            // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
-            // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
-            acc[locale] = {
-                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
-            };
-            return acc;
-        }, {})
+        resources
     });
 
     return i18nextInstance;
 };
 
 module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
+module.exports.generateResources = generateResources;

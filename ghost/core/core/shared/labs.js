@@ -31,7 +31,8 @@ const BETA_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt',
-    'ActivityPub'
+    'ActivityPub',
+    'customFonts'
 ];
 
 const ALPHA_FEATURES = [

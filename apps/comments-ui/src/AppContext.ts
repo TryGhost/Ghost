@@ -1,6 +1,7 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
 import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
+import {AdminApi} from './utils/adminApi';
 import {Page} from './pages';
 
 export type Member = {
@@ -14,6 +15,8 @@ export type Member = {
 export type Comment = {
     id: string,
     post_id: string,
+    in_reply_to_id: string,
+    in_reply_to_snippet: string,
     replies: Comment[],
     status: string,
     liked: boolean,
@@ -30,6 +33,8 @@ export type Comment = {
 export type OpenCommentForm = {
     id: string,
     parent_id?: string,
+    in_reply_to_id?: string,
+    in_reply_to_snippet?: string,
     type: 'reply' | 'edit',
     hasUnsavedChanges: boolean
 }
@@ -75,7 +80,8 @@ export type EditableAppContext = {
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
-    order: string
+    order: string,
+    adminApi: AdminApi | null
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;

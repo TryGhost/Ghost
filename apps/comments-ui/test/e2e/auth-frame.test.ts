@@ -118,7 +118,7 @@ test.describe('Auth Frame', async () => {
 
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
-        await expect(secondComment).toHaveText('This comment has been hidden.');
+        await expect(secondComment).toContainText('This comment has been hidden.');
         await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
@@ -175,8 +175,65 @@ test.describe('Auth Frame', async () => {
 
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
-        await expect(secondComment).toHaveText('This comment has been hidden.');
+        await expect(secondComment).toContainText('This comment has been hidden.');
         await expect(secondComment).not.toContainText('This is comment 2');
+
+        // Check can show it again
+        await moreButtons.nth(1).click();
+        await moreButtons.nth(1).getByText('Show comment').click();
+        await expect(secondComment).toContainText('This is comment 2');
+    });
+
+    test('Hidden comment is displayed for admins - needs flags enabled', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 4</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 5</p>'
+        });
+
+        await mockAdminAuthFrame({
+            admin,
+            page
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            admin,
+            labs: {
+                commentImprovements: true
+            }
+        });
+
+        const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
+        await expect(iframeElement).toHaveCount(1);
+
+        // Check if more actions button is visible on each comment
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(5);
+
+        const moreButtons = await frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(5);
+
+        // Click the 2nd button
+        await moreButtons.nth(1).click();
+        await moreButtons.nth(1).getByText('Hide comment').click();
+
+        const secondComment = comments.nth(1);
+        // expect "hidden for members" message
+        await expect(secondComment).toContainText('Hidden for members');
 
         // Check can show it again
         await moreButtons.nth(1).click();
