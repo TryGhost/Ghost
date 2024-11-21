@@ -2,7 +2,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useContext, useState} from 'react';
 import {Toaster} from 'react-hot-toast';
-import {FetchKoenigLexical} from '../components/ui/HtmlEditor';
+import {FetchKoenigLexical} from '../components/ui/htmleditor';
 import {GlobalDirtyStateProvider} from '../hooks/useGlobalDirtyState';
 
 interface DesignSystemContextType {

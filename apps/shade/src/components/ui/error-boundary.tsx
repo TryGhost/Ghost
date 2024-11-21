@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import React, {ComponentType, ErrorInfo, ReactNode} from 'react';
-import Banner from './Banner';
+import Banner from './banner';
 
 export interface ErrorBoundaryProps {
     children: ReactNode;

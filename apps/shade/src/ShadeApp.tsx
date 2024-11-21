@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import {FetchKoenigLexical} from './components/ui/HtmlEditor';
+import {FetchKoenigLexical} from './components/ui/htmleditor';
 import DesignSystemProvider from './providers/DesignSystemProvider';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
