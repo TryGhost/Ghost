@@ -4,6 +4,7 @@ const tpl = require('@tryghost/tpl');
 const glob = require('tiny-glob');
 const path = require('path');
 const fs = require('fs').promises;
+const isWin = process.platform === 'win32';
 
 const messages = {
     badDestination: {
@@ -69,7 +70,11 @@ class Minifier {
     }
 
     async getMatchingFiles(src) {
-        return await glob(this.getFullSrc(src));
+        let fullSrc = this.getFullSrc(src);
+        if (isWin) { 
+            fullSrc = fullSrc.replace(/\\/g,'/');
+        }
+        return await glob(fullSrc);
     }
 
     async readFiles(files) {
