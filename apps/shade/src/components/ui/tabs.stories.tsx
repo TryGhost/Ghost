@@ -18,8 +18,10 @@ type Story = StoryObj<typeof Tabs>;
 
 export const Default: Story = {
     args: {
+        className: 'w-[400px]',
+        defaultValue: 'account',
         children: (
-            <Tabs className="w-[400px]" defaultValue="account">
+            <>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="account">Account</TabsTrigger>
                     <TabsTrigger value="password">Password</TabsTrigger>
@@ -30,7 +32,7 @@ export const Default: Story = {
                 <TabsContent value="password">
                     Password
                 </TabsContent>
-            </Tabs>
+            </>
         )
     }
 };

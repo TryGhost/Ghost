@@ -22,7 +22,7 @@ type Story = StoryObj<typeof DropdownMenu>;
 export const Default: Story = {
     args: {
         children: (
-            <DropdownMenu>
+            <>
                 <DropdownMenuTrigger>
                     <Button variant="outline">Open</Button>
                 </DropdownMenuTrigger>
@@ -34,7 +34,7 @@ export const Default: Story = {
                     <DropdownMenuItem>Team</DropdownMenuItem>
                     <DropdownMenuItem>Subscription</DropdownMenuItem>
                 </DropdownMenuContent>
-            </DropdownMenu>
+            </>
         )
     }
 };
