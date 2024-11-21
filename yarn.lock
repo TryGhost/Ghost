@@ -7817,10 +7817,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.3.tgz#dad18d1c119ebf705b9720417684efe00081f149"
-  integrity sha512-YrPm2m51/Ddqp+/9CclSv+tKqHkbv7iUu3BgiHJofGhs6ek0QQSpahgiBmJmi/o3R6V6DFbG7LT5qVEtkvMzKg==
+"@tryghost/timezone-data@0.4.4":
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.4.tgz#d24d90555bcca6e834b6d7976b2494285179fcdb"
+  integrity sha512-hDfswABYYPMUa4Lq0mfbwL9h5MllXkefbLQfEpCHD9RSDoj/AjrXLppHX67uGhGLykdsdxCwb2eaVClu+lDmHQ==
 
 "@tryghost/tpl@0.1.32":
   version "0.1.32"
