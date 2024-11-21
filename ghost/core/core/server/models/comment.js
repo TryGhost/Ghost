@@ -272,12 +272,22 @@ const Comment = ghostBookshelf.Model.extend({
     countRelations() {
         return {
             replies(modelOrCollection) {
-                modelOrCollection.query('columns', 'comments.*', (qb) => {
-                    qb.count('replies.id')
-                        .from('comments AS replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .as('count__replies');
-                });
+                if (labs.isSet('commentImprovements')) {
+                    modelOrCollection.query('columns', 'comments.*', (qb) => {
+                        qb.count('replies.id')
+                            .from('comments AS replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .whereNotIn('replies.status', ['hidden', 'deleted'])
+                            .as('count__replies');
+                    });
+                } else {
+                    modelOrCollection.query('columns', 'comments.*', (qb) => {
+                        qb.count('replies.id')
+                            .from('comments AS replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .as('count__replies');
+                    });
+                }
             },
             likes(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {

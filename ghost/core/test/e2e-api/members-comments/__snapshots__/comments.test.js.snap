@@ -1379,6 +1379,108 @@ Object {
 }
 `;
 
+exports[`Comments API when commenting enabled for all when authenticated hidden and deleted replies are not included in the count 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "status": "published",
+        },
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "status": "published",
+        },
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "status": "published",
+        },
+      ],
+      "status": "published",
+    },
+  ],
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated hidden and deleted replies are not included in the count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1504",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Comments API when commenting enabled for all when authenticated replies to replies can browse comments with replies to replies 1: [body] 1`] = `
 Object {
   "comments": Array [
