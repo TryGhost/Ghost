@@ -106,7 +106,6 @@ test.describe('Deleted and Hidden Content', async () => {
         await expect (frame.getByText('This comment has been removed')).toBeVisible();
     });
 
-    // the UI for this test is a bit off, since it's 
     test('hides replies thats hidden and deleted', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.addComment({
