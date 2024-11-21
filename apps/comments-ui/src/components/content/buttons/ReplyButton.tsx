@@ -6,6 +6,7 @@ type Props = {
     isReplying: boolean;
     openReplyForm: () => void;
 };
+
 const ReplyButton: React.FC<Props> = ({disabled, isReplying, openReplyForm}) => {
     const {member, t, dispatchAction, commentsEnabled} = useAppContext();
     const labs = useLabs();

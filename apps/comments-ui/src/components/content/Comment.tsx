@@ -189,9 +189,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
             <div className="mt-[-3px] flex items-start">
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
-                        {labs.commentImprovements && admin && comment.status !== 'deleted' ?
-                            <span dangerouslySetInnerHTML={{__html: comment.html}} data-testId="hidden-comment-html"></span> :
-                            notPublishedMessage}
+                        {notPublishedMessage}
                     </p>
                     {showMoreButton && (
                         <div className="mt-[4px]">

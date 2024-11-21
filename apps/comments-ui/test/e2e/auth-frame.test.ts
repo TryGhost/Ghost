@@ -184,7 +184,7 @@ test.describe('Auth Frame', async () => {
         await expect(secondComment).toContainText('This is comment 2');
     });
 
-    test('LABS - Hidden comment is displayed for admins', async ({page}) => {
+    test('Hidden comment is displayed for admins - needs flags enabled', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
@@ -232,10 +232,8 @@ test.describe('Auth Frame', async () => {
         await moreButtons.nth(1).getByText('Hide comment').click();
 
         const secondComment = comments.nth(1);
-        // check that there is a span with data-testid="hidden-comment-html" in the comment
-        const hiddenCommentHtml = await secondComment.locator('[data-testId="hidden-comment-html"]');
-        await expect(hiddenCommentHtml).toHaveCount(1);
-        expect(await hiddenCommentHtml.textContent()).toContain('This is comment 2');
+        // expect "hidden for members" message
+        await expect(secondComment).toContainText('Hidden for members');
 
         // Check can show it again
         await moreButtons.nth(1).click();
