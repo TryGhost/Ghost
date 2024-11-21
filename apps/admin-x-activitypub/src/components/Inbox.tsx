@@ -13,7 +13,7 @@ import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
-import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser, useUserDataForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
