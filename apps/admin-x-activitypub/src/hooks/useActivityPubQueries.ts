@@ -446,19 +446,17 @@ export function useNoteMutationForUser(handle: string) {
             const api = createActivityPubAPI(handle, siteUrl);
             return await api.note(content) as Activity;
         },
-        onSettled: (activity) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            queryClient.setQueryData([`outbox:${handle}`], (current: any) => {
-                if (!current) {
+        onSuccess: (activity: Activity) => {
+            queryClient.setQueryData([`outbox:${handle}`], (current?: Activity[]) => {
+                if (current === undefined) {
                     return current;
                 }
 
                 return [activity, ...current];
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            queryClient.setQueriesData([`activities:${handle}`], (current?: any) => {
-                if (!current) {
+            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+                if (current === undefined) {
                     return current;
                 }
 
