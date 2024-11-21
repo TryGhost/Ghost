@@ -391,22 +391,21 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-md px-4 py-6 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start'>
-                            <div className='z-10 mb-1 flex w-full min-w-0 items-center gap-1.5 text-base text-grey-700 group-hover/article:border-transparent'>
+                            <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-base text-grey-700 group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='2xs'/>
-                                <span className='min-w-0 truncate break-all font-medium text-grey-900' data-test-activity-heading>{author.name}</span>
-                                <span className='min-w-0 truncate'>{getUsername(author)}</span>
+                                <span className='min-w-0 truncate break-all font-medium text-grey-900' title={getUsername(author)} data-test-activity-heading>{author.name}</span>
                                 <span className='shrink-0 whitespace-nowrap before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
-                            <Heading className='mb-1 line-clamp-1 w-full max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
+                            <Heading className='mb-1 w-full max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
                                 {object.name ? object.name : (
                                     <span dangerouslySetInnerHTML={{
                                         __html: stripHtml(object.content)
                                     }}></span>
                                 )}
                             </Heading>
-                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full max-w-[600px] truncate text-base leading-normal text-grey-700'></div>
+                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-base leading-normal text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
                         <div className='invisible absolute right-4 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
