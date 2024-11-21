@@ -16,42 +16,38 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'collections',
+    'i18n',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm',
-    'recommendations',
-    'listUnsubscribeHeader',
-    'filterEmailDisabled',
-    'newEmailAddresses',
-    'portalImprovements',
-    'onboardingChecklist'
+    'newEmailAddresses'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'i18n',
     'activitypub',
-    'internalLinking',
     'stripeAutomaticTax',
-    'webmentions'
+    'webmentions',
+    'editorExcerpt',
+    'ActivityPub',
+    'customFonts'
 ];
 
 const ALPHA_FEATURES = [
-    'ActivityPub',
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
-    'websockets',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    'adminXDemo'
+    'adminXDemo',
+    'contentVisibility',
+    'commentImprovements',
+    'staff2fa'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

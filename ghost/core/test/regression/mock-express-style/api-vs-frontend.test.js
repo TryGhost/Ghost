@@ -1294,7 +1294,7 @@ describe('Frontend behavior tests', function () {
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
-                        response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
+                        response.headers['content-type'].should.eql('application/rss+xml; charset=UTF-8');
                     });
             });
 
@@ -1448,7 +1448,7 @@ describe('Frontend behavior tests', function () {
                 routes: {
                     '/podcast/rss/': {
                         templates: ['podcast/rss'],
-                        content_type: 'text/xml'
+                        content_type: 'application/rss+xml'
                     },
                     '/cooking/': {
                         controller: 'channel',
@@ -1560,7 +1560,7 @@ describe('Frontend behavior tests', function () {
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                     response.template.should.eql('podcast/rss');
-                    response.headers['content-type'].should.eql('text/xml; charset=utf-8');
+                    response.headers['content-type'].should.eql('application/rss+xml');
                     response.body.match(/<link>/g).length.should.eql(2);
                 });
         });

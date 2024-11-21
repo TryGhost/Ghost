@@ -1,26 +1,35 @@
 const assert = require('assert/strict');
 const fetch = require('node-fetch').default;
-const {agentProvider, mockManager, fixtureManager} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils');
 const jobService = require('../../core/server/services/jobs/job-service');
+const {anyGhostAgent, anyContentVersion, anyNumber, anyISODateTime, anyObjectId} = matchers;
+const membersEventsService = require('../../core/server/services/members-events');
 
 describe('Click Tracking', function () {
     let agent;
+    let ghostServer;
+    let webhookMockReceiver;
 
     before(async function () {
-        const {adminAgent} = await agentProvider.getAgentsWithFrontend();
-        agent = adminAgent;
-        await fixtureManager.init('newsletters', 'members:newsletters');
+        ({adminAgent: agent, ghostServer} = await agentProvider.getAgentsWithFrontend());
+        await fixtureManager.init('newsletters', 'members:newsletters', 'integrations');
         await agent.loginAsOwner();
     });
 
     beforeEach(function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
+        webhookMockReceiver = mockManager.mockWebhookRequests();
+        membersEventsService.clearLastSeenAtCache();
     });
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    after(async function () {
+        await ghostServer.stop();
     });
 
     it('Full test', async function () {
@@ -50,6 +59,14 @@ describe('Click Tracking', function () {
 
         // Wait for the newsletter to be sent
         await jobService.allSettled();
+
+        // Setup a webhook listener for member.edited events
+        const webhookURL = 'https://test-webhook-receiver.com/member-edited/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'member.edited',
+            url: webhookURL
+        });
 
         const {body: {links}} = await agent.get(
             `/links/?filter=${encodeURIComponent(`post_id:'${post.id}'`)}`
@@ -99,7 +116,7 @@ describe('Click Tracking', function () {
 
         const linkToClick = links[0];
         const memberToClickLink = members[0];
-
+        assert(memberToClickLink.last_seen_at === null);
         const urlOfLinkToClick = new URL(linkToClick.link.from);
 
         urlOfLinkToClick.searchParams.set('m', memberToClickLink.uuid);
@@ -124,5 +141,34 @@ describe('Click Tracking', function () {
 
         assert(clickEvent);
         assert(previousClickCount + 1 === clickCount);
+
+        // Ensure we updated the member's last_seen_at
+        const {body: {members: [memberWhoClicked]}} = await agent.get(
+            `/members/${memberToClickLink.id}`
+        );
+        assert(memberWhoClicked.last_seen_at !== null, 'last_seen_at should be set after a click');
+        assert(new Date(memberWhoClicked.last_seen_at).getTime() > 0, 'last_seen_at should be a valid date');
+        // Ensure we sent the webhook with the correct payload, including newsletters and labels
+        await webhookMockReceiver.receivedRequest();
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                member: {
+                    current: {
+                        created_at: anyISODateTime,
+                        id: anyObjectId,
+                        last_seen_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    },
+                    previous: {
+                        last_seen_at: null,
+                        updated_at: anyISODateTime
+                    }
+                }
+            });
     });
 });

@@ -115,7 +115,6 @@ if (sentryConfig && !sentryConfig.disabled) {
         release: 'ghost@' + version,
         environment: environment,
         maxValueLength: 1000,
-        includeLocalVariables: true,
         integrations: [
             Sentry.extraErrorDataIntegration()
         ],

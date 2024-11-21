@@ -18,7 +18,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
 
     const editor = useEditor({
         ...getEditorConfig(config)
-    });
+    }, [commentsCount]);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
@@ -27,7 +27,9 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             status: 'published',
             html
         });
-    }, [postId, dispatchAction]);
+    
+        editor?.commands.clearContent();
+    }, [postId, dispatchAction, editor]);
 
     // C keyboard shortcut to focus main form
     const formEl = useRef(null);
@@ -87,14 +89,14 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
                 <span className="hidden sm:inline">{t('Add comment')} </span><span className="sm:hidden">{t('Comment')}</span>
             </>
         ),
-        submitSize: 'large',
+        submitSize: 'large' as const,
         submit
     };
 
     const isOpen = editor?.isFocused ?? false;
 
     return (
-        <div ref={formEl} className='mt-[-4px]' data-testid="main-form">
+        <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
             <Form editor={editor} isOpen={isOpen} reduced={false} {...submitProps} />
         </div>
     );

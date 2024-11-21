@@ -9,16 +9,40 @@ class WebhookTrigger {
      * @param {Object} options
      * @param {Object} options.models - Ghost models
      * @param {Function} options.payload - Function to generate payload
+     * @param {import('../../services/limits')} options.limitService - Function to generate payload
      * @param {Object} [options.request] - HTTP request handling library
      */
-    constructor({models, payload, request}){
+    constructor({models, payload, request, limitService}){
         this.models = models;
         this.payload = payload;
 
         this.request = request ?? require('@tryghost/request');
+        this.limitService = limitService;
     }
 
-    getAll(event) {
+    async getAll(event) {
+        if (this.limitService.isLimited('customIntegrations')) {
+            // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
+            //       a concept of measuring if the limit has been surpassed
+            const overLimit = await this.limitService.checkWouldGoOverLimit('customIntegrations');
+
+            if (overLimit) {
+                logging.info(`Skipping all non-internal webhooks for event ${event}. The "customIntegrations" plan limit is enabled.`);
+                const result = await this.models
+                    .Webhook
+                    .findAllByEvent(event, {
+                        context: {internal: true},
+                        withRelated: ['integration']
+                    });
+
+                return {
+                    models: result?.models?.filter((model) => {
+                        return model.related('integration')?.get('type') === 'internal';
+                    }) || []
+                };
+            }
+        }
+
         return this.models
             .Webhook
             .findAllByEvent(event, {context: {internal: true}});
@@ -87,6 +111,7 @@ class WebhookTrigger {
             const reqPayload = JSON.stringify(hookPayload);
             const url = webhook.get('target_url');
             const secret = webhook.get('secret') || '';
+            const ts = Date.now();
 
             const headers = {
                 'Content-Length': Buffer.byteLength(reqPayload),
@@ -95,7 +120,7 @@ class WebhookTrigger {
             };
 
             if (secret !== '') {
-                headers['X-Ghost-Signature'] = `sha256=${crypto.createHmac('sha256', secret).update(reqPayload).digest('hex')}, t=${Date.now()}`;
+                headers['X-Ghost-Signature'] = `sha256=${crypto.createHmac('sha256', secret).update(`${reqPayload}${ts}`).digest('hex')}, t=${ts}`;
             }
 
             const opts = {

@@ -7,9 +7,9 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
-import {AdminApi, setupAdminAPI} from './utils/adminApi';
-import {AppContext, DispatchActionType, EditableAppContext} from './AppContext';
+import {AppContext, DispatchActionType, EditableAppContext, LabsContextType} from './AppContext';
 import {CommentsFrame} from './components/Frame';
+import {setupAdminAPI} from './utils/adminApi';
 import {useOptions} from './utils/options';
 
 type AppProps = {
@@ -25,8 +25,11 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         comments: [],
         pagination: null,
         commentCount: 0,
-        secundaryFormCount: 0,
-        popup: null
+        openCommentForms: [],
+        popup: null,
+        labs: {},
+        order: 'count__likes desc, created_at desc',
+        adminApi: null
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -39,7 +42,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         });
     }, [options]);
 
-    const [adminApi, setAdminApi] = useState<AdminApi|null>(null);
+    // const [adminApi, setAdminApi] = useState<AdminApi|null>(null);
 
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
@@ -59,7 +62,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             // because updates to state may be asynchronous
             // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
             setState((state) => {
-                return SyncActionHandler({action, data, state, api, adminApi: adminApi!, options});
+                return SyncActionHandler({action, data, state, api, adminApi: state.adminApi!, options});
             });
             return;
         }
@@ -68,14 +71,14 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         // without creating infinite rerenders because dispatchAction needs to change on every state change
         // So state shouldn't be a dependency of dispatchAction
         setState((state) => {
-            ActionHandler({action, data, state, api, adminApi: adminApi!, options}).then((updatedState) => {
+            ActionHandler({action, data, state, api, adminApi: state.adminApi!, options}).then((updatedState) => {
                 setState({...updatedState});
             }).catch(console.error); // eslint-disable-line no-console
 
             // No immediate changes
             return {};
         });
-    }, [api, adminApi, options]); // Do not add state or context as a dependency here -> infinite render loop
+    }, [api, options]); // Do not add state or context as a dependency here -> infinite render loop
 
     const i18n = useMemo(() => {
         return i18nLib(options.locale, 'comments');
@@ -85,11 +88,12 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         ...options,
         ...state,
         t: i18n.t,
-        dispatchAction: dispatchAction as DispatchActionType
+        dispatchAction: dispatchAction as DispatchActionType,
+        openFormCount: useMemo(() => state.openCommentForms.length, [state.openCommentForms])
     };
 
     const initAdminAuth = async () => {
-        if (adminApi || !options.adminUrl) {
+        if (state.adminApi || !options.adminUrl) {
             return;
         }
 
@@ -97,11 +101,21 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             const adminApi = setupAdminAPI({
                 adminUrl: options.adminUrl
             });
-            setAdminApi(adminApi);
 
             let admin = null;
             try {
                 admin = await adminApi.getUser();
+                if (admin && state.labs.commentImprovements) {
+                    // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
+                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order});
+                    setState({
+                        ...state,
+                        adminApi: adminApi,
+                        comments: adminComments.comments,
+                        pagination: adminComments.meta.pagination,
+                        commentCount: adminComments.meta.pagination.total
+                    });
+                }
             } catch (e) {
                 // Loading of admin failed. Could be not signed in, or a different error (not important)
                 // eslint-disable-next-line no-console
@@ -109,6 +123,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             }
 
             setState({
+                adminApi: adminApi,
                 admin
             });
         } catch (e) {
@@ -118,8 +133,14 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId});
+    const fetchComments = async (labs: LabsContextType) => {
+        let dataPromise;
+        if (labs?.commentImprovements) {
+            dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+        } else {
+            dataPromise = api.comments.browse({page: 1, postId: options.postId});
+        }
+
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -135,15 +156,17 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     const initSetup = async () => {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {member} = await api.init();
-            const {comments, pagination, count} = await fetchComments();
-
+            const {member, labs} = await api.init();
+            const {comments, pagination, count} = await fetchComments(labs);
+            const order = labs.commentImprovements ? 'count__likes desc, created_at desc' : 'created_at desc';
             const state = {
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
-                commentCount: count
+                commentCount: count,
+                order,
+                labs: labs
             };
 
             setState(state);

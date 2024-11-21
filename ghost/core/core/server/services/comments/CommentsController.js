@@ -51,13 +51,43 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
-        return this.service.getComments(frame.options);
+        return await this.service.getComments(frame.options);
+    }
+
+    async adminBrowse(frame) {
+        if (frame.options.post_id) {
+            if (frame.options.filter) {
+                frame.options.mongoTransformer = function (query) {
+                    return {
+                        $and: [
+                            {
+                                post_id: frame.options.post_id
+                            },
+                            query
+                        ]
+                    };
+                };
+            } else {
+                frame.options.filter = `post_id:${frame.options.post_id}`;
+            }
+        }
+        frame.options.isAdmin = true;
+        return await this.service.getAdminComments(frame.options);
     }
 
     /**
      * @param {Frame} frame
      */
     async replies(frame) {
+        return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+    }
+
+    /**
+     * @param {Frame} frame
+     */
+    async adminReplies(frame) {
+        frame.options.isAdmin = true;
+        frame.options.order = 'created_at asc'; // we always want to load replies from oldest to newest
         return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
     }
 
@@ -114,6 +144,7 @@ module.exports = class CommentsController {
         if (data.parent_id) {
             result = await this.service.replyToComment(
                 data.parent_id,
+                data.in_reply_to_id,
                 frame.options.context.member.id,
                 data.html,
                 frame.options

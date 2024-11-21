@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
@@ -133,7 +133,8 @@ DataGenerator.Content = {
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
             password: 'Sl1m3rson99',
-            profile_image: 'https://example.com/super_photo.jpg'
+            profile_image: 'https://example.com/super_photo.jpg',
+            paid_subscription_canceled_notification: true
         },
         {
             // admin
@@ -304,7 +305,8 @@ DataGenerator.Content = {
             name: 'Mr Egg',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(8, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -312,7 +314,8 @@ DataGenerator.Content = {
             email_open_rate: 50,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(7, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -321,7 +324,8 @@ DataGenerator.Content = {
             email_open_rate: 80,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(6, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -329,7 +333,8 @@ DataGenerator.Content = {
             name: 'Ray Stantz',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(5, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -337,7 +342,8 @@ DataGenerator.Content = {
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(4, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -345,7 +351,8 @@ DataGenerator.Content = {
             name: 'Winston Zeddemore',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(3, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -354,7 +361,8 @@ DataGenerator.Content = {
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
             status: 'paid',
             subscribed: false,
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(2, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -363,7 +371,8 @@ DataGenerator.Content = {
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
             status: 'paid',
             subscribed: false,
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(1, 'day').toDate()
         }
     ],
 
@@ -731,7 +740,7 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
             status: 'submitted',
-            email_count: 6, // match the number of email_recipients relations below
+            email_count: 0, // match the number of email_recipients relations below
             recipient_filter: 'all',
             subject: 'You got mailed!',
             html: '<p>Look! I\'m an email</p>',
@@ -1036,7 +1045,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             title: 'title',
             status: 'published',
             feature_image: null,
@@ -1106,7 +1115,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
             client_uri: 'http://localhost:9000',
@@ -1155,7 +1164,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
@@ -1298,7 +1307,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             expires: Date.now() + constants.ONE_DAY_MS
         });
     }
@@ -1308,7 +1317,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            token: uuid.v4(),
+            token: crypto.randomUUID(),
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),

@@ -38,14 +38,15 @@ class MrrStatsService {
      */
     async fetchAllDeltas() {
         const knex = this.knex;
+        const ninetyDaysAgo = moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
         const rows = await knex('members_paid_subscription_events')
             .select('currency')
             // In SQLite, DATE(created_at) would map to a string value, while DATE(created_at) would map to a JSDate object in MySQL
             // That is why we need the cast here (to have some consistency)
             .select(knex.raw('CAST(DATE(created_at) as CHAR) as date'))
             .select(knex.raw(`SUM(mrr_delta) as delta`))
-            .groupByRaw('CAST(DATE(created_at) as CHAR), currency')
-            .orderByRaw('CAST(DATE(created_at) as CHAR), currency');
+            .where('created_at', '>=', ninetyDaysAgo)
+            .groupByRaw('CAST(DATE(created_at) as CHAR), currency');
         return rows;
     }
 
@@ -59,6 +60,13 @@ class MrrStatsService {
         const totals = await this.getCurrentMrr();
 
         const rows = await this.fetchAllDeltas();
+
+        rows.sort((rowA, rowB) => {
+            const dateA = new Date(rowA.date);
+            const dateB = new Date(rowB.date);
+        
+            return dateA - dateB || rowA.currency.localeCompare(rowB.currency);
+        });
 
         // Get today in UTC (default timezone)
         const today = moment().format('YYYY-MM-DD');

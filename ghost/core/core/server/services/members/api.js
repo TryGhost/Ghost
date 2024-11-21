@@ -1,5 +1,6 @@
 const stripeService = require('../stripe');
 const settingsCache = require('../../../shared/settings-cache');
+const settingsHelpers = require('../../services/settings-helpers');
 const MembersApi = require('@tryghost/members-api');
 const logging = require('@tryghost/logging');
 const mail = require('../mail');
@@ -18,6 +19,7 @@ const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
 const {t} = require('../i18n');
+const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -234,7 +236,9 @@ function createApiInstance(config) {
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service,
         emailSuppressionList,
-        settingsCache
+        settingsCache,
+        sentry,
+        settingsHelpers
     });
 
     return membersApiInstance;

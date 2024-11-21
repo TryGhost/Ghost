@@ -53,4 +53,28 @@ describe('{{t}} helper', function () {
 
         rendered.should.eql('Top left Button');
     });
+
+    it('returns an empty string if translation key is an empty string', function () {
+        let rendered = t.call({}, '', {
+            hash: {}
+        });
+
+        rendered.should.eql('');
+    });
+
+    it('returns an empty string if translation key is missing', function () {
+        let rendered = t.call({}, undefined, {
+            hash: {}
+        });
+
+        rendered.should.eql('');
+    });
+
+    it('returns a translated string even if no options are passed', function () {
+        themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
+
+        let rendered = t.call({}, 'Top left Button');
+
+        rendered.should.eql('Left Button on Top');
+    });
 });

@@ -1,6 +1,7 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
 const ReferrersStatsService = require('../../lib/ReferrersStatsService');
+const {DateTime} = require('luxon');
 
 describe('ReferrersStatsService', function () {
     describe('getReferrerHistory', function () {
@@ -35,12 +36,13 @@ describe('ReferrersStatsService', function () {
         });
 
         async function insertEvents(sources) {
-            const {DateTime} = require('luxon');
             const signupInsert = [];
             const paidInsert = [];
 
+            const startDate = DateTime.now().minus({months: 1});
+            
             for (let index = 0; index < sources.length; index++) {
-                const day = DateTime.fromISO('1970-01-01').plus({days: index}).toISODate();
+                const day = startDate.plus({days: index}).toISODate();
                 if (index > 0) {
                     signupInsert.push({
                         referrer_source: sources[index],
@@ -64,13 +66,13 @@ describe('ReferrersStatsService', function () {
                     referrer_source: null,
                     referrer_medium: null,
                     referrer_url: null,
-                    created_at: '1970-01-09'
+                    created_at: startDate.plus({days: sources.length}).toISODate()
                 },
                 {
                     referrer_source: null,
                     referrer_medium: null,
                     referrer_url: null,
-                    created_at: '1970-01-09'
+                    created_at: startDate.plus({days: sources.length}).toISODate()
                 }
             ]);
 
@@ -80,13 +82,13 @@ describe('ReferrersStatsService', function () {
                     referrer_source: null,
                     referrer_medium: null,
                     referrer_url: null,
-                    created_at: '1970-01-09'
+                    created_at: startDate.plus({days: sources.length}).toISODate()
                 },
                 {
                     referrer_source: null,
                     referrer_medium: null,
                     referrer_url: null,
-                    created_at: '1970-01-09'
+                    created_at: startDate.plus({days: sources.length}).toISODate()
                 }
             ]);
             await db('members_created_events').insert(signupInsert);
@@ -105,13 +107,19 @@ describe('ReferrersStatsService', function () {
                 return result.date === date && result.source === source;
             };
 
-            // Is sorted by date
-            assert.deepEqual(results.data.map(result => result.date), ['1970-01-01', '1970-01-02', '1970-01-03', '1970-01-04', '1970-01-05', '1970-01-06', '1970-01-07', '1970-01-08', '1970-01-09', '1970-01-09']);
+            const startDate = DateTime.now().minus({months: 1});
 
-            const firstDayCounts = results.data.find(finder('Twitter', '1970-01-01'));
-            const secondDayCounts = results.data.find(finder('Ghost Newsletter', '1970-01-02'));
-            const thirdDayCounts = results.data.find(finder('Ghost Explore', '1970-01-03'));
-            const nullReferrerCounts = results.data.find(finder(null, '1970-01-09'));
+            const expectedDates = [];
+            for (let i = 0; i < 10; i++) {
+                expectedDates.push(startDate.plus({days: i}).toISODate());
+            }
+
+            assert.deepEqual(results.data.map(result => result.date), expectedDates);
+
+            const firstDayCounts = results.data.find(finder('Twitter', expectedDates[0]));
+            const secondDayCounts = results.data.find(finder('Ghost Newsletter', expectedDates[1]));
+            const thirdDayCounts = results.data.find(finder('Ghost Explore', expectedDates[2]));
+            const nullReferrerCounts = results.data.find(finder(null, expectedDates[9]));
 
             assert(firstDayCounts.signups === 0);
             assert(firstDayCounts.paid_conversions === 1);

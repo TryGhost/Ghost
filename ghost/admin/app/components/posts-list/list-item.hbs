@@ -32,7 +32,7 @@
                         </span>
                     {{/if}}
                 </p>
-                <p class="gh-content-entry-status">
+                <p class="gh-content-entry-status" data-test-editor-post-status>
                     <span class="published">
                         Published
                         {{#if @post.hasEmail}}
@@ -87,7 +87,7 @@
                         <span class="gh-content-entry-date">– Lexical</span>
                     {{/if}} --}}
                 </p>
-                <p class="gh-content-entry-status">
+                <p class="gh-content-entry-status" data-test-editor-post-status>
                     {{#if @post.isScheduled}}
                         <span class="scheduled">
                             Scheduled
@@ -95,10 +95,14 @@
                                 <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>
                                     {{#if @post.emailOnly}}
                                         to be sent
+                                        {{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}
                                     {{else}}
                                         to be published {{if @post.newsletter "and sent "}}
+                                        {{this.scheduledText}}
+                                        {{#if @post.newsletter}}
+                                            to {{humanize-recipient-filter @post.emailSegment}}
+                                        {{/if}}
                                     {{/if}}
-                                    {{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}
                                 </span>
                             {{/if}}
                         </span>

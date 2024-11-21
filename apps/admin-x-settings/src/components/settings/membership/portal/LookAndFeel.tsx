@@ -76,14 +76,14 @@ const LookAndFeel: React.FC<{
     return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalButton)}
+            direction='rtl'
             label='Show portal button'
-            labelStyle='heading'
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
             options={portalButtonOptions}
             selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
-            title='Portal button style'
+            title='Button style'
             onSelect={option => updateSetting('portal_button_style', option?.value || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ConfirmUnsavedChangesModal from '../components/modals/confirm-unsaved-changes';
 import {action} from '@ember/object';
@@ -77,6 +78,7 @@ export default class CollectionRoute extends AuthenticatedRoute {
 
     async confirmUnsavedChanges() {
         if (this.controller.model?.hasDirtyAttributes) {
+            Sentry.captureMessage('showing unsaved changes modal for collections route');
             this.confirmModal = this.modals
                 .open(ConfirmUnsavedChangesModal)
                 .finally(() => {

@@ -8,7 +8,9 @@ const messages = {
     emailRequired: 'Email is required.',
     badRequest: 'Bad Request.',
     notFound: 'Not Found.',
+    offerNotFound: 'This offer does not exist.',
     offerArchived: 'This offer is archived.',
+    tierNotFound: 'This tier does not exist.',
     tierArchived: 'This tier is archived.',
     existingSubscription: 'A subscription exists for this Member.',
     unableToCheckout: 'Unable to initiate checkout session',
@@ -38,6 +40,7 @@ module.exports = class RouterController {
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
      * @param {any} deps.newslettersService
+     * @param {any} deps.sentry
      */
     constructor({
         offersAPI,
@@ -52,7 +55,8 @@ module.exports = class RouterController {
         memberAttributionService,
         sendEmailWithMagicLink,
         labsService,
-        newslettersService
+        newslettersService,
+        sentry
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -67,6 +71,7 @@ module.exports = class RouterController {
         this._memberAttributionService = memberAttributionService;
         this.labsService = labsService;
         this._newslettersService = newslettersService;
+        this._sentry = sentry || undefined;
     }
 
     async ensureStripe(_req, res, next) {
@@ -78,6 +83,7 @@ module.exports = class RouterController {
             await this._stripeAPIService.ready();
             next();
         } catch (err) {
+            logging.error(err);
             res.writeHead(500);
             return res.end('There was an error configuring stripe');
         }
@@ -100,6 +106,7 @@ module.exports = class RouterController {
                 email = claims && claims.sub;
             }
         } catch (err) {
+            logging.error(err);
             res.writeHead(401);
             return res.end('Unauthorized');
         }
@@ -111,11 +118,18 @@ module.exports = class RouterController {
             return res.end('Bad Request.');
         }
 
+        const subscriptions = await member.related('stripeSubscriptions').fetch();
+
+        const activeSubscription = subscriptions.models.find((sub) => {
+            return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status'));
+        });
+
+        let currency = activeSubscription?.get('plan_currency') || undefined;
+
         let customer;
         if (!req.body.subscription_id) {
             customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
         } else {
-            const subscriptions = await member.related('stripeSubscriptions').fetch();
             const subscription = subscriptions.models.find((sub) => {
                 return sub.get('subscription_id') === req.body.subscription_id;
             });
@@ -126,11 +140,9 @@ module.exports = class RouterController {
                 });
                 return res.end(`Could not find subscription ${req.body.subscription_id}`);
             }
+            currency = subscription.get('plan_currency') || undefined;
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
-
-        const defaultTier = await this._tiersService.api.readDefaultTier();
-        const currency = defaultTier?.currency?.toLowerCase() || 'usd';
 
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
             successUrl: req.body.successUrl,
@@ -199,7 +211,6 @@ module.exports = class RouterController {
      * @returns
      */
     async _getSubscriptionCheckoutData(body) {
-        const ghostPriceId = body.priceId;
         const tierId = body.tierId;
         const offerId = body.offerId;
 
@@ -208,44 +219,69 @@ module.exports = class RouterController {
         let offer;
 
         // Validate basic input
-        if (!ghostPriceId && !offerId && !tierId && !cadence) {
+        if (!offerId && !tierId) {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected offerId or tierId, received none');
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected offerId or tierId, received none'
             });
         }
 
-        if (offerId && (ghostPriceId || (tierId && cadence))) {
+        if (offerId && tierId) {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected offerId or tierId, received both');
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
-            });
-        }
-
-        if (ghostPriceId && tierId && cadence) {
-            throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected offerId or tierId, received both'
             });
         }
 
         if (tierId && !cadence) {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected cadence to be "month" or "year", received ', cadence);
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected cadence to be "month" or "year", received ' + cadence
             });
         }
 
-        if (cadence && cadence !== 'month' && cadence !== 'year') {
+        if (tierId && cadence && cadence !== 'month' && cadence !== 'year') {
+            logging.error('[RouterController._getSubscriptionCheckoutData] Expected cadence to be "month" or "year", received ', cadence);
             throw new BadRequestError({
-                message: tpl(messages.badRequest)
+                message: tpl(messages.badRequest),
+                context: 'Expected cadence to be "month" or "year", received "' + cadence + '"'
             });
         }
 
         // Fetch tier and offer
         if (offerId) {
             offer = await this._offersAPI.getOffer({id: offerId});
+
+            if (!offer) {
+                throw new BadRequestError({
+                    message: tpl(messages.offerNotFound),
+                    context: 'Offer with id "' + offerId + '" not found'
+                });
+            }
+
             tier = await this._tiersService.api.read(offer.tier.id);
             cadence = offer.cadence;
-        } else {
+        } else if (tierId) {
             offer = null;
-            tier = await this._tiersService.api.read(tierId);
+
+            try {
+                // If the tierId is not a valid ID, the following line will throw
+                tier = await this._tiersService.api.read(tierId);
+
+                if (!tier) {
+                    throw undefined;
+                }
+            } catch (err) {
+                logging.error(err);
+                this._sentry?.captureException?.(err);
+                throw new BadRequestError({
+                    message: tpl(messages.tierNotFound),
+                    context: 'Tier with id "' + tierId + '" not found'
+                });
+            }
         }
 
         if (tier.status === 'archived') {
@@ -322,6 +358,8 @@ module.exports = class RouterController {
 
             return {url: paymentLink};
         } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
             throw new BadRequestError({
                 err,
                 message: tpl(messages.unableToCheckout)
@@ -352,6 +390,8 @@ module.exports = class RouterController {
 
             return {url: paymentLink};
         } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
             throw new BadRequestError({
                 err,
                 message: tpl(messages.unableToCheckout)
@@ -389,6 +429,8 @@ module.exports = class RouterController {
                         isAuthenticated = true;
                     }
                 } catch (err) {
+                    logging.error(err);
+                    this._sentry?.captureException?.(err);
                     throw new UnauthorizedError({err});
                 }
             } else if (req.body.customerEmail) {
@@ -441,7 +483,7 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, autoRedirect} = req.body;
+        const {email, honeypot, autoRedirect} = req.body;
         let {emailType, redirect} = req.body;
 
         let referer = req.get('referer');
@@ -461,6 +503,15 @@ module.exports = class RouterController {
             throw new errors.BadRequestError({
                 message: tpl(messages.emailRequired)
             });
+        }
+
+        if (honeypot) {
+            logging.warn('Honeypot field filled, this is likely a bot');
+
+            // Honeypot field is filled, this is a bot.
+            // Pretend that the email was sent successfully.
+            res.writeHead(201);
+            return res.end('Created.');
         }
 
         if (!emailType) {
@@ -554,6 +605,7 @@ module.exports = class RouterController {
                 res.writeHead(400);
                 return res.end('Bad Request.');
             }
+            logging.error(err);
 
             // Let the normal error middleware handle this error
             throw err;

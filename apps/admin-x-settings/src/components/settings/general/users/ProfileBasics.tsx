@@ -5,7 +5,7 @@ import {UserDetailProps} from '../UserDetailModal';
 import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearError, user, setUserData}) => {
+const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUserData}) => {
     const {currentUser} = useGlobalData();
 
     return (
@@ -16,9 +16,6 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearErr
                 maxLength={191}
                 title="Full name"
                 value={user.name}
-                onBlur={(e) => {
-                    validateField('name', e.target.value);
-                }}
                 onChange={(e) => {
                     setUserData({...user, name: e.target.value});
                 }}
@@ -30,16 +27,13 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearErr
                 maxLength={191}
                 title="Email"
                 value={user.email}
-                onBlur={(e) => {
-                    validateField('email', e.target.value);
-                }}
                 onChange={(e) => {
                     setUserData({...user, email: e.target.value});
                 }}
                 onKeyDown={() => clearError('email')}
             />
             <TextField
-                hint="https://example.com/author"
+                hint={`https://example.com/author/${user.slug}`}
                 maxLength={191}
                 title="Slug"
                 value={user.slug}

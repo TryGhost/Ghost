@@ -8,12 +8,11 @@ const DomainEvents = require('@tryghost/domain-events');
 const {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
+    PostsBulkUnscheduledEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
 } = require('@tryghost/post-events');
-const GhostNestApp = require('@tryghost/ghost');
-const {default: ObjectID} = require('bson-objectid');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -209,13 +208,6 @@ class PostsService {
             }
         }
 
-        if (this.isSet('ActivityPub')) {
-            if (model.previous('status') !== model.get('status') && model.get('status') === 'published') {
-                const activityService = await GhostNestApp.resolve('ActivityService');
-                await activityService.createArticleForPost(ObjectID.createFromHexString(model.id));
-            }
-        }
-
         if (typeof options?.eventHandler === 'function') {
             await options.eventHandler(this.getChanges(model), dto);
         }
@@ -252,6 +244,19 @@ class PostsService {
         if (data.action === 'unpublish') {
             const updateResult = await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
             DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
+
+            return updateResult;
+        }
+        if (data.action === 'unschedule') {
+            const updateResult = await this.#updatePosts({status: 'draft', published_at: null}, {filter: this.#mergeFilters('status:scheduled', options.filter), context: options.context, actionName: 'unscheduled'});
+            // makes sure `email_only` value is reverted for the unscheduled posts
+            await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
+                data: {email_only: false},
+                column: 'post_id',
+                transacting: options.transacting,
+                throwErrors: true
+            });
+            DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
 
             return updateResult;
         }

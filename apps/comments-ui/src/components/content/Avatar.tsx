@@ -1,16 +1,16 @@
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
 import {Comment, useAppContext} from '../../AppContext';
-import {getInitials} from '../../utils/helpers';
+import {getInitials, getMemberInitialsFromComment} from '../../utils/helpers';
 
 function getDimensionClasses() {
-    return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
+    return 'w-8 h-8';
 }
 
 export const BlankAvatar = () => {
     const dimensionClasses = getDimensionClasses();
     return (
         <figure className={`relative ${dimensionClasses}`}>
-            <div className={`flex items-center justify-center rounded-full bg-[rgba(0,0,0,0.085)] dark:bg-[rgba(255,255,255,0.15)] ${dimensionClasses}`}>
+            <div className={`flex items-center justify-center rounded-full bg-black/10 dark:bg-white/15 ${dimensionClasses}`}>
                 <AvatarIcon className="stroke-white opacity-80" />
             </div>
         </figure>
@@ -19,8 +19,10 @@ export const BlankAvatar = () => {
 
 type AvatarProps = {
     comment?: Comment;
+    isHidden?: boolean;
 };
 export const Avatar: React.FC<AvatarProps> = ({comment}) => {
+    // #TODO greyscale the avatar image when it's hidden
     const {member, avatarSaturation, t} = useAppContext();
     const dimensionClasses = getDimensionClasses();
 
@@ -64,19 +66,8 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         return `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
     };
 
-    const commentGetInitials = () => {
-        if (comment && !comment.member) {
-            return getInitials(t('Deleted member'));
-        }
-
-        const commentMember = (comment ? comment.member : member);
-
-        if (!commentMember || !commentMember.name) {
-            return getInitials(t('Anonymous'));
-        }
-        return getInitials(commentMember.name);
-    };
-
+    const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) ||
+        (member && getInitials(member.name || '')) || '';
     const commentMember = (comment ? comment.member : member);
 
     const bgColor = HSLtoString(generateHSL());
@@ -88,17 +79,17 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         <>
             {memberName ?
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} data-testid="avatar-background" style={avatarStyle}>
-                    <p className="font-sans text-lg font-semibold text-white">{ commentGetInitials() }</p>
+                    <p className="font-sans text-base font-semibold text-white">{memberInitials}</p>
                 </div>) :
-                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`} data-testid="avatar-background" >
-                    <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
+                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
+                    <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
-            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
+            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={commentMember.avatar_image} />}
         </>
     );
 
     return (
-        <figure className={`relative ${dimensionClasses}`}>
+        <figure className={`relative ${dimensionClasses}`} data-testid="avatar">
             {avatarEl}
         </figure>
     );

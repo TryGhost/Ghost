@@ -32,7 +32,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='absolute -bottom-1 -right-1 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -bottom-1 -right-1 z-10 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -77,7 +77,7 @@ const HistoryFilter: React.FC<{
 
     return (
         <div className='flex items-center gap-4'>
-            <Popover position='right' trigger={<Button color='outline' label='Filter' size='sm' />}>
+            <Popover position='end' trigger={<Button color='outline' label='Filter' size='sm' />}>
                 <div className='flex w-[220px] flex-col gap-8 p-5'>
                     <ToggleGroup>
                         <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />

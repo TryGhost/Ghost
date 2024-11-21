@@ -23,7 +23,6 @@ function extractTags(postAttrs, tags) {
     });
 }
 
-// TODO: handle authors filter
 export function getPosts({posts}, {queryParams}) {
     let {filter, page, limit} = queryParams;
 
@@ -31,15 +30,27 @@ export function getPosts({posts}, {queryParams}) {
     limit = +limit || 15;
 
     let statusFilter = extractFilterParam('status', filter);
+    let authorsFilter = extractFilterParam('authors', filter);
+    let visibilityFilter = extractFilterParam('visibility', filter);
 
     let collection = posts.all().filter((post) => {
         let matchesStatus = true;
+        let matchesAuthors = true;
+        let matchesVisibility = true;
 
         if (!isEmpty(statusFilter)) {
             matchesStatus = statusFilter.includes(post.status);
         }
 
-        return matchesStatus;
+        if (!isEmpty(authorsFilter)) {
+            matchesAuthors = authorsFilter.includes(post.authors.models[0].slug);
+        }
+
+        if (!isEmpty(visibilityFilter)) {
+            matchesVisibility = visibilityFilter.includes(post.visibility);
+        }
+
+        return matchesStatus && matchesAuthors && matchesVisibility;
     });
 
     return paginateModelCollection('posts', collection, page, limit);
@@ -56,10 +67,13 @@ export default function mockPosts(server) {
             attrs.slug = dasherize(attrs.title);
         }
 
+        if (attrs.title) {
+            attrs.title = attrs.title.trim();
+        }
+
         return posts.create(attrs);
     });
 
-    // TODO: handle authors filter
     server.get('/posts/', getPosts);
 
     server.get('/posts/:id/', function ({posts}, {params}) {
@@ -81,6 +95,10 @@ export default function mockPosts(server) {
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
 
+        if (attrs.title) {
+            attrs.title = attrs.title.trim();
+        }
+
         attrs.updatedAt = moment.utc().toDate();
 
         if (queryParams.newsletter) {
@@ -93,4 +111,60 @@ export default function mockPosts(server) {
     });
 
     server.del('/posts/:id/');
+
+    server.del('/posts/', function ({posts}, {queryParams}) {
+        let ids = extractFilterParam('id', queryParams.filter);
+
+        posts.find(ids).destroy();
+    });
+
+    server.post('/posts/:id/copy/', function ({posts}, {params}) {
+        let post = posts.find(params.id);
+        let attrs = post.attrs;
+
+        return posts.create(attrs);
+    });
+
+    server.put('/posts/bulk/', function ({posts, tags}, {queryParams, requestBody}) {
+        const bulk = JSON.parse(requestBody).bulk;
+        const action = bulk.action;
+        const ids = extractFilterParam('id', queryParams.filter);
+
+        if (action === 'addTag') {
+            // create tag so we have an id from the server
+            const newTags = bulk.meta.tags;
+
+            // check applied tags to see if any new ones should be created
+            newTags.forEach((tag) => {
+                if (!tag.id) {
+                    tags.create(tag);
+                }
+            });
+            // TODO: update the actual posts in the mock db if wanting to write tests where we navigate around (refresh model)
+            // const postsToUpdate = posts.find(ids);
+            // getting the posts is fine, but within this we CANNOT manipulate them (???) not even iterate with .forEach
+        }
+
+        if (action === 'access') {
+            const postsToUpdate = posts.find(ids);
+            postsToUpdate.models.forEach((post) => {
+                post.visibility = bulk.meta.visibility;
+                post.tierIds = bulk.meta.tiers.map(tier => tier.id);
+                post.save();
+            });
+        }
+
+        return {
+            bulk: {
+                meta: {
+                    errors: [],
+                    stats: {
+                        successful: ids.length,
+                        unsuccessful: 0
+                    },
+                    unsuccessfulData: []
+                }
+            }
+        };
+    });
 }

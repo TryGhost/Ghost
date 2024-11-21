@@ -37,7 +37,6 @@ export default function mockPages(server) {
         return pages.create(attrs);
     });
 
-    // TODO: handle authors filter
     server.get('/pages/', function ({pages}, {queryParams}) {
         let {filter, page, limit} = queryParams;
 

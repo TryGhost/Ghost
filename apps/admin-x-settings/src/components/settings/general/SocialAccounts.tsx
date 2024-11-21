@@ -31,7 +31,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <SettingGroupContent
             values={[
                 {
-                    heading: `URL of your publication's Facebook Page`,
+                    heading: `URL of your publication’s Facebook Page`,
                     key: 'facebook',
                     value: facebookUrl,
                     hideEmptyValue: true
@@ -53,7 +53,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 hint={errors.facebook}
                 inputRef={focusRef}
                 placeholder="https://www.facebook.com/ghost"
-                title={`URL of your publication's Facebook Page`}
+                title={`URL of your publication’s Facebook Page`}
                 value={facebookUrl}
                 onBlur={(e) => {
                     try {
@@ -76,7 +76,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <TextField
                 error={!!errors.twitter}
                 hint={errors.twitter}
-                placeholder="https://twitter.com/ghost"
+                placeholder="https://x.com/ghost"
                 title="URL of your X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {

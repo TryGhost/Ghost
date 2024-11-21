@@ -41,7 +41,7 @@
 
 //             enablePaidMembers(this.server);
 
-//             return await authenticateSession();
+//             await authenticateSession();
 //         });
 
 //         it('it renders, can be navigated, can edit offer', async function () {

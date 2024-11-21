@@ -90,7 +90,7 @@
 //             // add a suspended user
 //             suspendedUser = this.server.create('user', {email: 'suspended@example.com', roles: [adminRole], status: 'inactive'});
 
-//             return await authenticateSession();
+//             await authenticateSession();
 //         });
 
 //         it('it renders and navigates correctly', async function () {
@@ -913,7 +913,7 @@
 //             // add an expired invite
 //             this.server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf(), role: adminRole});
 
-//             return await authenticateSession();
+//             await authenticateSession();
 //         });
 
 //         describe('existing user', function () {
@@ -972,7 +972,7 @@
 //                 });
 //             });
 
-//             return await authenticateSession();
+//             await authenticateSession();
 //         });
 
 //         it('is redirected to user profile page', async function () {

@@ -2,6 +2,7 @@ import CustomHeader from './CustomHeader';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
+
 import {useState} from 'react';
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {
@@ -16,22 +17,19 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 maxLength={65535}
                 title="Location"
                 value={user.location || ''}
-                onBlur={(e) => {
-                    validateField('location', e.target.value);
-                }}
                 onChange={(e) => {
                     setUserData({...user, location: e.target.value});
                 }}
                 onKeyDown={() => clearError('location')} />
             <TextField
-                error={!!errors?.url}
-                hint={errors?.url || 'Have a website or blog other than this one? Link it!'}
+                error={!!errors?.website}
+                hint={errors?.website || 'Have a website or blog other than this one? Link it!'}
                 maxLength={2000}
                 title="Website"
                 value={user.website || ''}
-                onBlur={(e) => {
-                    validateField('url', e.target.value);
-                }}
+                // onBlur={(e) => {
+                //     validateField('url', e.target.value);
+                // }}
                 onChange={(e) => {
                     setUserData({...user, website: e.target.value});
                 }}
@@ -76,9 +74,6 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 maxLength={65535}
                 title="Bio"
                 value={user.bio || ''}
-                onBlur={(e) => {
-                    validateField('bio', e.target.value);
-                }}
                 onChange={(e) => {
                     setUserData({...user, bio: e.target.value});
                 }}

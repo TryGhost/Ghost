@@ -74,7 +74,7 @@ const InviteUserModal = NiceModal.create(() => {
     const roles = rolesQuery.data.roles;
     const assignableRoles = assignableRolesQuery.data.roles;
 
-    let okLabel = 'Send invitation now';
+    let okLabel = 'Send invitation';
     if (saveState === 'saving') {
         okLabel = 'Sending...';
     } else if (saveState === 'saved') {
@@ -123,7 +123,8 @@ const InviteUserModal = NiceModal.create(() => {
             setSaveState('saved');
 
             showToast({
-                message: `Invitation successfully sent to ${email}`,
+                title: `Invitation sent`,
+                message: `${email}`,
                 type: 'success'
             });
 
@@ -131,18 +132,19 @@ const InviteUserModal = NiceModal.create(() => {
             updateRoute('staff?tab=invited');
         } catch (e) {
             setSaveState('error');
-            let message = (<span><strong>Your invitation failed to send.</strong><br/>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
+            let title = 'Failed to send invitation';
+            let message = (<span>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
             if (e instanceof APIError) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let data = e.data as any; // we have unknown data types in the APIError/error classes
                 if (data?.errors?.[0]?.type === 'EmailError') {
-                    message = (<span><strong>Your invitation failed to send</strong><br/>Please check your Mailgun configuration. If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a></span>);
+                    message = (<span>Check your Mailgun configuration.</span>);
                 }
             }
             showToast({
+                title,
                 message,
-                type: 'neutral',
-                icon: 'warning'
+                type: 'error'
             });
             handleError(e, {withToast: false});
             return;
@@ -178,12 +180,17 @@ const InviteUserModal = NiceModal.create(() => {
         });
     });
 
+    if (!!errors.email) {
+        okLabel = 'Retry';
+    }
+
     return (
         <Modal
             afterClose={() => {
                 updateRoute('staff');
             }}
             cancelLabel=''
+            okColor={saveState === 'error' || !!errors.email ? 'red' : 'black'}
             okLabel={okLabel}
             testId='invite-user-modal'
             title='Invite a new staff user'

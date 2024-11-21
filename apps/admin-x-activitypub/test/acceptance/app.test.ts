@@ -5,6 +5,6 @@ test.describe('Demo', async () => {
     test('Renders the list page', async ({page}) => {
         await page.goto('/');
 
-        await expect(page.locator('body')).toContainText('ActivityPub Demo');
+        await expect(page.locator('body')).toContainText('ActivityPub Inbox');
     });
 });

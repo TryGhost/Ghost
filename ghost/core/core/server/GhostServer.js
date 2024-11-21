@@ -127,8 +127,8 @@ class GhostServer {
 
             // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
             process
-                .removeAllListeners('SIGINT').on('SIGINT', self.shutdown.bind(self))
-                .removeAllListeners('SIGTERM').on('SIGTERM', self.shutdown.bind(self));
+                .removeAllListeners('SIGINT').on('SIGINT', () => self.shutdown())
+                .removeAllListeners('SIGTERM').on('SIGTERM', () => self.shutdown());
         });
     }
 

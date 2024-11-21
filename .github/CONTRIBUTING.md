@@ -43,6 +43,7 @@ If your change is **user-facing** please prepend the first line of your commit w
 - ✨ Feature
 - 🎨 Improvement / change
 - 🐛 Bug Fix
+- 🌐 i18n (translation) submissions
 - 💡 Anything else flagged to users or whoever is writing release notes
 
 Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).

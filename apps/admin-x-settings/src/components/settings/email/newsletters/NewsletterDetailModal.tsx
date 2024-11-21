@@ -10,7 +10,7 @@ import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -106,8 +106,16 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
+    const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+    const activeNewsletters = newsletters.filter(n => n.status === 'active');
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -129,8 +137,8 @@ const Sidebar: React.FC<{
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
-                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
-                    <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
+                    <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
+                    <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
                 okColor: 'red',
@@ -140,7 +148,7 @@ const Sidebar: React.FC<{
                         modal?.remove();
                         showToast({
                             type: 'success',
-                            message: 'Newsletter archived successfully'
+                            message: 'Newsletter archived'
                         });
                     } catch (e) {
                         handleError(e);
@@ -173,7 +181,7 @@ const Sidebar: React.FC<{
                     modal?.remove();
                     showToast({
                         type: 'success',
-                        message: 'Newsletter reactivated successfully'
+                        message: 'Newsletter reactivated'
                     });
                 }
             });
@@ -251,29 +259,8 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                     />
                 </Form>
-                <Separator />
-                <div className='my-5 flex w-full items-start'>
-                    <span>
-                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
-                    </span>
-                    <Form marginBottom={false}>
-                        <Toggle
-                            checked={newsletter.show_badge}
-                            direction='rtl'
-                            label={
-                                <div className='flex flex-col gap-0.5'>
-                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
-                                </div>
-                            }
-                            labelStyle='value'
-                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
-                        />
-                    </Form>
-                </div>
-                <Separator />
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -437,18 +424,28 @@ const Sidebar: React.FC<{
                         value={newsletter.title_color}
                         onChange={color => updateNewsletter({title_color: color})}
                     />}
+                    <ToggleGroup gap='lg'>
+                        {newsletter.show_post_title_section &&
+                            <Toggle
+                                checked={newsletter.show_excerpt}
+                                direction="rtl"
+                                label="Post excerpt"
+                                onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
+                            />
+                        }
+                        <Toggle
+                            checked={newsletter.show_feature_image}
+                            direction="rtl"
+                            label='Feature image'
+                            onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
+                        />
+                    </ToggleGroup>
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         testId='body-font-select'
                         title='Body style'
                         onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                    />
-                    <Toggle
-                        checked={newsletter.show_feature_image}
-                        direction="rtl"
-                        label='Feature image'
-                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
@@ -460,12 +457,12 @@ const Sidebar: React.FC<{
                             label='Ask your readers for feedback'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
-                        <Toggle
+                        {commentsEnabled && <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
-                        />
+                        />}
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
@@ -488,6 +485,26 @@ const Sidebar: React.FC<{
                         onChange={html => updateNewsletter({footer_content: html})}
                     />
                 </Form>
+                <Separator />
+                <div className='my-5 flex w-full items-start'>
+                    <span>
+                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
+                    </span>
+                    <Form marginBottom={false}>
+                        <Toggle
+                            checked={newsletter.show_badge}
+                            direction='rtl'
+                            label={
+                                <div className='flex flex-col gap-0.5'>
+                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                </div>
+                            }
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
+                        />
+                    </Form>
+                </div>
             </>
         }
     ];
@@ -498,8 +515,8 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex flex-col'>
-            <div className='px-7 pb-7 pt-5'>
-                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+            <div className='px-7 pb-7 pt-0'>
+                <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </div>
     );
@@ -528,7 +545,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 showToast({
                     icon: 'email',
                     message: toastMessage,
-                    type: 'neutral'
+                    type: 'info'
                 });
             }
         },
@@ -537,17 +554,17 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
-                newErrors.sender_email = 'Invalid email';
+                newErrors.sender_email = 'Enter a valid email address';
             } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {
-                newErrors.sender_email = `Email must end with @${sendingDomain(config)}`;
+                newErrors.sender_email = `Email address must end with @${sendingDomain(config)}`;
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
-                newErrors.sender_reply_to = 'Invalid email';
+                newErrors.sender_reply_to = 'Enter a valid email address';
             }
 
             return newErrors;
@@ -581,12 +598,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };

@@ -1,7 +1,6 @@
 const ObjectID = require('bson-objectid').default;
 const {ValidationError} = require('@tryghost/errors');
 const MentionCreatedEvent = require('./MentionCreatedEvent');
-const cheerio = require('cheerio');
 
 module.exports = class Mention {
     /** @type {Array} */
@@ -34,7 +33,6 @@ module.exports = class Mention {
         // When an earlier mention is deleted, but then it gets verified again, we need to undelete it
         if (this.#deleted) {
             this.#deleted = false;
-            this.events.push(MentionCreatedEvent.create({mention: this}));
         }
     }
 
@@ -47,6 +45,7 @@ module.exports = class Mention {
 
         if (contentType.includes('text/html')) {
             try {
+                const cheerio = require('cheerio');
                 const $ = cheerio.load(html);
                 const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
                 this.#verified = hasTargetUrl;
