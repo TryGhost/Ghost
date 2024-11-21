@@ -37,11 +37,9 @@ async function setOrder({state, data: {order}, options, api}: {state: EditableAp
     };
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}}): Promise<Partial<EditableAppContext>> {
-    // const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
-
+async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
     let data;
-    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+    if (state.admin && state.adminApi && state.labs.commentImprovements && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
         data = await state.adminApi.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
     } else {
         data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
@@ -374,7 +372,8 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     const topLevelCommentId = newForm.parent_id || newForm.id;
     if (newForm.type === 'reply' && !state.openCommentForms.some(f => f.id === topLevelCommentId || f.parent_id === topLevelCommentId)) {
         const comment = state.comments.find(c => c.id === topLevelCommentId);
-        const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}});
+        // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
+        const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
         otherStateChanges = {...otherStateChanges, ...newCommentsState};
     }
 
