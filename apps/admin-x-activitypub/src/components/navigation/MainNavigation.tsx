@@ -16,24 +16,24 @@ const MainNavigation: React.FC<MainNavigationProps> = ({page}) => {
         queryClient.removeQueries({
             queryKey: ['activities:index']
         });
-        
+
         updateRoute(newRoute);
     };
 
     return (
         <MainHeader>
             <div className='col-[1/2] flex gap-8 px-8'>
-                <Button 
-                    className={`${page === 'inbox' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} 
-                    label='Inbox' 
-                    unstyled 
-                    onClick={() => handleRouteChange('inbox')} 
+                <Button
+                    className={`${page === 'inbox' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    label='Inbox'
+                    unstyled
+                    onClick={() => handleRouteChange('inbox')}
                 />
-                <Button 
-                    className={`${page === 'feed' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} 
-                    label='Feed' 
-                    unstyled 
-                    onClick={() => handleRouteChange('feed')} 
+                <Button
+                    className={`${page === 'feed' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    label='Feed'
+                    unstyled
+                    onClick={() => handleRouteChange('feed')}
                 />
                 <Button className={`${page === 'activities' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
                 <Button className={`${page === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />
