@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "14.3.1",
-    "@tryghost/phantom": "0.0.0",
+    "@tryghost/shade": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",

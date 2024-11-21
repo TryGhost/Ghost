@@ -2,7 +2,7 @@ import {DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {TopLevelFrameworkProps} from '../providers/FrameworkProvider';
-import {PhantomAppProps} from '@tryghost/phantom';
+import {ShadeAppProps} from '@tryghost/shade';
 
 export default function renderStandaloneApp<Props extends object>(
     App: React.ComponentType<Props & {
@@ -62,10 +62,10 @@ export default function renderStandaloneApp<Props extends object>(
     );
 }
 
-export function renderPhantomApp<Props extends object>(
+export function renderShadeApp<Props extends object>(
     App: React.ComponentType<Props & {
         framework: TopLevelFrameworkProps;
-        designSystem: PhantomAppProps;
+        designSystem: ShadeAppProps;
     }>,
     props: Props
 ) {

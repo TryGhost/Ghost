@@ -14,6 +14,6 @@ export {debounce} from './utils/debounce';
 // export {confirmIfDirty} from './utils/modals';
 export {formatUrl} from './utils/formatUrl';
 
-export {default as PhantomApp} from './PhantomApp';
-export type {PhantomAppProps} from './PhantomApp';
+export {default as ShadeApp} from './ShadeApp';
+export type {ShadeAppProps} from './ShadeApp';
 export {useFocusContext} from './providers/DesignSystemProvider';

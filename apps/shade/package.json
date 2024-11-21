@@ -1,8 +1,8 @@
 {
-  "name": "@tryghost/phantom",
+  "name": "@tryghost/shade",
   "type": "module",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/phantom",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/shade",
   "author": "Ghost Foundation",
   "private": true,
   "main": "es/index.js",

@@ -1,4 +1,4 @@
-import { GHDSHeading } from "@tryghost/phantom";
+import { GHDSHeading } from "@tryghost/shade";
 
 const MainContent = () => {
 

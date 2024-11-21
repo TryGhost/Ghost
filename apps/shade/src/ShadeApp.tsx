@@ -3,12 +3,12 @@ import React from 'react';
 import {FetchKoenigLexical} from './components/ui/HtmlEditor';
 import DesignSystemProvider from './providers/DesignSystemProvider';
 
-export interface PhantomAppProps extends React.HTMLProps<HTMLDivElement> {
+export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
     darkMode: boolean;
     fetchKoenigLexical: FetchKoenigLexical;
 }
 
-const PhantomApp: React.FC<PhantomAppProps> = ({darkMode, fetchKoenigLexical, className, children, ...props}) => {
+const ShadeApp: React.FC<ShadeAppProps> = ({darkMode, fetchKoenigLexical, className, children, ...props}) => {
     const appClassName = clsx(
         'admin-x-base',
         darkMode && 'dark',
@@ -24,4 +24,4 @@ const PhantomApp: React.FC<PhantomAppProps> = ({darkMode, fetchKoenigLexical, cl
     );
 };
 
-export default PhantomApp;
+export default ShadeApp;

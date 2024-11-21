@@ -1,1 +1,1 @@
-module.exports = require('@tryghost/phantom/postcss.config.cjs');
+module.exports = require('@tryghost/shade/postcss.config.cjs');
