@@ -29,7 +29,7 @@ const BetaFeatures: React.FC = () => {
                 title='Portal translation' />
             <LabItem
                 action={<FeatureToggle flag='customFonts' />}
-                detail={<>Enable new custom font settings. <a className='text-green' href="https://ghost.org/docs/themes" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                detail={<>Enable new custom font settings. <a className='text-green' href="https://ghost.org/docs/themes/custom-settings/#setting-up-support-for-custom-fonts" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Custom fonts' />
             <LabItem
                 action={<div className='flex flex-col items-end gap-1'>
