@@ -236,10 +236,39 @@ describe('Admin Comments API', function () {
 
             const hiddenComment = res.body.comments.find(comment => comment.status === 'hidden');
             assert.equal(hiddenComment.html, 'Comment 2');
-            // console.log(res.body);
-            // assert.equal(res.body.comments[0].html, 'Comment 2');
+        });
 
-            // assert.equal(res.body.comments[1].html, 'Comment 1');
+        it('includes hidden replies but not deleted replies in count', async function () {
+            const post = fixtureManager.get('posts', 1);
+            const {parent} = await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                post_id: post.id,
+                html: 'Comment 1',
+                status: 'published',
+                replies: [
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 1',
+                        status: 'hidden'
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 2',
+                        status: 'deleted'
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 3',
+                        status: 'published'
+                    }
+                ]
+            });
+
+            const res = await adminApi.get('/comments/post/' + post.id + '/');
+
+            const comment = res.body.comments.find(cmt => parent.id === cmt.id);
+
+            assert.equal(comment.replies_count, 2);
         });
     });
 });
