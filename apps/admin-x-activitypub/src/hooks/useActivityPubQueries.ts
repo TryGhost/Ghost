@@ -438,11 +438,43 @@ export function useThreadForUser(handle: string, id: string) {
 }
 
 export function useNoteMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
     return useMutation({
         async mutationFn({content}: {content: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
             return await api.note(content) as Activity;
+        },
+        onSettled: (activity) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            queryClient.setQueryData([`outbox:${handle}`], (current: any) => {
+                if (!current) {
+                    return current;
+                }
+
+                return [activity, ...current];
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            queryClient.setQueriesData([`activities:${handle}`], (current?: any) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
+                        if (index === 0) {
+                            return {
+                                ...page,
+                                data: [activity, ...page.data]
+                            };
+                        }
+                        return page;
+                    })
+                };
+            });
         }
     });
 }
