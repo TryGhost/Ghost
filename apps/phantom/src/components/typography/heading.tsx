@@ -32,7 +32,7 @@ export interface HeadingProps
 
 const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
     ({className, size = 'pagetitle', asChild = false, ...props}, ref) => {
-        const Comp = asChild ? Slot : `h${size}`;
+        const Comp = asChild ? Slot : (size === 'pagetitle' ? `h1` : `h${size}`);
         return (
             <Comp
                 ref={ref}

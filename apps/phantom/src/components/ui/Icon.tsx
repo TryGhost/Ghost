@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React from 'react';
 
-const icons: Record<string, {ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>}> = import.meta.glob('../assets/icons/*.svg', {eager: true});
+const icons: Record<string, {ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>}> = import.meta.glob('../../assets/icons/*.svg', {eager: true});
 
 export type IconSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'custom' | number;
 
@@ -28,7 +28,7 @@ export interface IconProps {
  * - all strokes must be paths and _NOT_ outlined objects. Stroke width should be set to 1.5px
  */
 const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = '', className = ''}) => {
-    const {ReactComponent: SvgComponent} = icons[`../assets/icons/${name}.svg`];
+    const {ReactComponent: SvgComponent} = icons[`../../assets/icons/${name}.svg`];
 
     let classes = '';
     let styles = {};

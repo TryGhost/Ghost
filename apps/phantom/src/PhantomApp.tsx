@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import {FetchKoenigLexical} from './global/form/HtmlEditor';
+import {FetchKoenigLexical} from './components/ui/HtmlEditor';
 import DesignSystemProvider from './providers/DesignSystemProvider';
 
 export interface PhantomAppProps extends React.HTMLProps<HTMLDivElement> {

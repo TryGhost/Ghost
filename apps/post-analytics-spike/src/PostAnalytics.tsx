@@ -1,4 +1,4 @@
-import { GHDSBreadcrumb, GHDSBreadcrumbItem, GHDSBreadcrumbList, GHDSBreadcrumbLink, GHDSHeading, GHDSBreadcrumbPage, GHDSBreadcrumbSeparator, GHDSButton, Icon } from "@tryghost/phantom";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Heading, Icon } from "@tryghost/phantom";
 
 const PostAnalytics = () => {
     return (
@@ -7,23 +7,23 @@ const PostAnalytics = () => {
 
             {/* Should this `header` become a component? DRY */}
             <header>
-                <GHDSBreadcrumb>
-                    <GHDSBreadcrumbList>
-                        <GHDSBreadcrumbItem>
-                            <GHDSBreadcrumbLink href="/posts/">Posts</GHDSBreadcrumbLink>
-                        </GHDSBreadcrumbItem>
-                        <GHDSBreadcrumbSeparator />
-                        <GHDSBreadcrumbPage>
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/posts/">Posts</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbPage>
                             Analytics
-                        </GHDSBreadcrumbPage>
-                    </GHDSBreadcrumbList>
-                </GHDSBreadcrumb>
-                <div className="flex items-start justify-between">
-                    <GHDSHeading size="pagetitle">Post analytics</GHDSHeading>
+                        </BreadcrumbPage>
+                    </BreadcrumbList>
+                </Breadcrumb>
+                <div className="flex items-start justify-between mt-2">
+                    <Heading size="pagetitle">Post analytics</Heading>
                     <div className="flex items-center mt-1 gap-2">
-                        <GHDSButton variant='outline'><Icon name="reload" /> Refresh</GHDSButton>
-                        <GHDSButton variant='outline'><Icon name="share" /> Share</GHDSButton>
-                        <GHDSButton variant='outline'><Icon name="ellipsis" /></GHDSButton>
+                        <Button variant='outline'><Icon name="reload" /> Refresh</Button>
+                        <Button variant='outline'><Icon name="share" /> Share</Button>
+                        <Button variant='outline'><Icon name="ellipsis" /></Button>
                     </div>
                 </div>
             </header>
