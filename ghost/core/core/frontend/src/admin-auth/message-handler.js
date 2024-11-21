@@ -36,6 +36,19 @@ window.addEventListener('message', async function (event) {
         }
     }
 
+    if (data.action === 'getReplies') {
+        try {
+            const {commentId, params} = data;
+            const res = await fetch(
+                adminUrl + `/comments/${commentId}/replies?${new URLSearchParams(params).toString()}`
+            );
+            const json = await res.json();
+            respond(null, json);
+        } catch (err) {
+            respond(err, null);
+        }
+    }
+
     if (data.action === 'getUser') {
         try {
             const res = await fetch(

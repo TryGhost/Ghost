@@ -38,7 +38,14 @@ async function setOrder({state, data: {order}, options, api}: {state: EditableAp
 }
 
 async function loadMoreReplies({state, api, data: {comment, limit}}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}}): Promise<Partial<EditableAppContext>> {
-    const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
+    // const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
+
+    let data;
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+        data = await state.adminApi.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
+    } else {
+        data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
+    }
 
     // Note: we store the comments from new to old, and show them in reverse order
     return {

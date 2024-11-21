@@ -89,6 +89,23 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
             }
 
             return response;
+        },
+        async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
+            const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
+
+            const params = new URLSearchParams();
+
+            if (limit) {
+                params.set('limit', limit.toString());
+            }
+
+            if (filter) {
+                params.set('filter', filter);
+            }
+
+            const response = await callApi('getReplies', {commentId, params});
+
+            return response;
         }
     };
 
