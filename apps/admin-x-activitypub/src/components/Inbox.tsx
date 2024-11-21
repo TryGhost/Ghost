@@ -10,7 +10,7 @@ import ViewProfileModal from './global/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Icon, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
 import {useActivitiesForUser, useSuggestedProfiles, useUserDataForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -92,7 +92,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             <div className=''>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-all hover:shadow-sm' label='What&apos;s new?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
+                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' label='What&apos;s new?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col`}>
                                             {activities.map((activity, index) => (
