@@ -1,5 +1,6 @@
 import {FrameLocator, expect, test} from '@playwright/test';
 import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
+import {buildReply} from '../utils/fixtures';
 
 test.describe('Autoclose forms', async () => {
     let mockedApi: MockedApi;
@@ -15,7 +16,7 @@ test.describe('Autoclose forms', async () => {
                 html: '<p>Reply 1.1</p>'
             }, {
                 html: '<p>Reply 1.2</p>'
-            }]
+            }].map(buildReply)
         });
         mockedApi.addComment({
             html: '<p>Comment 2</p>'
@@ -36,7 +37,7 @@ test.describe('Autoclose forms', async () => {
 
     test('autocloses open reply forms when opening another', async ({}) => {
         const comment1 = await frame.getByTestId('comment-component').nth(0);
-        await comment1.getByTestId('reply-button').click();
+        await comment1.getByTestId('reply-button').nth(1).click();
 
         await expect(frame.getByTestId('form')).toHaveCount(2);
 
@@ -48,7 +49,7 @@ test.describe('Autoclose forms', async () => {
 
     test('does not autoclose open reply form with unsaved changes', async ({}) => {
         const comment1 = await frame.getByTestId('comment-component').nth(0);
-        await comment1.getByTestId('reply-button').click();
+        await comment1.getByTestId('reply-button').nth(1).click();
 
         await expect(frame.getByTestId('form')).toHaveCount(2);
 
