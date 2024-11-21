@@ -3,6 +3,7 @@ import ActivityItem from './activities/ActivityItem';
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
+import NewPostModal from './modals/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
@@ -92,7 +93,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             <div className=''>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' label='What&apos;s new?' unstyled onClick={() => NiceModal.show('NewPostModal')} />
+                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' label='What&apos;s new?' unstyled onClick={() => NiceModal.show(NewPostModal)} />
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col`}>
                                             {activities.map((activity, index) => (
