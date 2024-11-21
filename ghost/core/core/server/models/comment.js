@@ -289,7 +289,6 @@ const Comment = ghostBookshelf.Model.extend({
                             .as('count__replies');
                     });
                 }
-
                 if (options.isAdmin && labs.isSet('commentImprovements')) {
                     modelOrCollection.query('columns', 'comments.*', (qb) => {
                         qb.count('replies.id')
