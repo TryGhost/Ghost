@@ -14,6 +14,7 @@ const dbFns = {
      * @property {string} [parent_id]
      * @property {string} [html='This is a comment']
      * @property {string} [status='published']
+     * @property {date} [created_at]
      */
     /**
      * @typedef {Object} AddCommentReplyData
@@ -55,7 +56,8 @@ const dbFns = {
                 member_id: reply.member_id,
                 parent_id: parent.get('id'),
                 html: reply.html || '<p>This is a reply</p>',
-                status: reply.status || 'published'
+                status: reply.status || 'published',
+                created_at: reply.created_at || new Date()
             });
             createdReplies.push(createdReply);
         }
@@ -454,6 +456,66 @@ describe('Admin Comments API', function () {
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 1);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
+        });
+
+        it.only('ensure replies are always ordered from oldest to newest', async function () {
+            const post = fixtureManager.get('posts', 1);
+            const {parent} = await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                post_id: post.id,
+                html: 'Comment 1',
+                status: 'published',
+                created_at: new Date('2021-01-01'),
+                replies: [
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 1',
+                        status: 'published',
+                        created_at: new Date('2022-01-01')
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 2',
+                        status: 'published',
+                        created_at: new Date('2022-01-02')
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 3',
+                        status: 'hidden',
+                        created_at: new Date('2022-01-03')
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 4',
+                        status: 'hidden',
+                        created_at: new Date('2022-01-04')
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 5',
+                        status: 'published',
+                        created_at: new Date('2022-01-05')
+                    },
+                    {
+                        member_id: fixtureManager.get('members', 0).id,
+                        html: 'Reply 6',
+                        status: 'published',
+                        created_at: new Date('2022-01-06')
+                    }
+                ]
+            });
+
+            const res = await adminApi.get('/comments/post/' + post.id + '/');
+            const item = res.body.comments.find(cmt => parent.id === cmt.id);
+            const lastReply = item.replies[item.replies.length - 1];
+            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=10&filter=${filter}`);
+            console.log(res2.body.comments);
+            assert.equal(res2.body.comments.length, 3);
+            assert.equal(res2.body.comments[0].html, 'Reply 4');
+            assert.equal(res2.body.comments[1].html, 'Reply 5');
+            assert.equal(res2.body.comments[2].html, 'Reply 6');
         });
     });
 });
