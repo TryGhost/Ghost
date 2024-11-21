@@ -39,7 +39,7 @@
     "@tryghost/kg-unsplash-selector": "0.2.6",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/nql": "0.12.7",
-    "@tryghost/timezone-data": "0.4.3",
+    "@tryghost/timezone-data": "0.4.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "validator": "7.2.0"
