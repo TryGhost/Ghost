@@ -96,4 +96,11 @@ describe('i18n', function () {
             assert.equal(t('Your subscription will renew on {date}.', {date: '8 Oct 2024'}), 'Votre abonnement sera renouvelé le 8 Oct 2024.');
         });
     });
+    describe('it gracefully falls back to en if a file is missing', function () {
+        it('should be able to translate a key that is missing in the locale', async function () {
+            const resources = i18n.generateResources(['xx'], 'portal');
+            const englishResources = i18n.generateResources(['en'], 'portal');
+            assert.deepEqual(resources.xx, englishResources.en);
+        });
+    });
 });
