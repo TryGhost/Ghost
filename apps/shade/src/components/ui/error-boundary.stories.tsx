@@ -2,7 +2,7 @@ import ErrorBoundary from './error-boundary';
 import type {Meta, StoryObj} from '@storybook/react';
 
 const meta = {
-    title: 'Global / Error Boundary',
+    title: 'Components / Error Boundary',
     component: ErrorBoundary,
     tags: ['autodocs']
 } satisfies Meta<typeof ErrorBoundary>;

@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import BoilerPlate from './Boilerplate';
+import BoilerPlate from './boilerplate';
 
 const meta = {
     title: 'Meta / Boilerplate',

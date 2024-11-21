@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {Heading} from './heading';
 
 const meta = {
-    title: 'GHDS 1.0 / Heading',
+    title: 'Typography / Heading',
     component: Heading,
     tags: ['autodocs']
 } satisfies Meta<typeof Heading>;

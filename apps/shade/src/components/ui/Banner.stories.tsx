@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import Banner from './banner';
 
 const meta = {
-    title: 'Global / Banner',
+    title: 'Components / Banner',
     component: Banner,
     tags: ['autodocs']
 } satisfies Meta<typeof Banner>;

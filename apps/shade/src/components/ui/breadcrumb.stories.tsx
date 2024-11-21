@@ -10,7 +10,7 @@ import {
 } from './breadcrumb';
 
 const meta = {
-    title: 'GHDS 1.0 / Breadcrumb',
+    title: 'Components / Breadcrumb',
     component: Breadcrumb,
     tags: ['autodocs']
 } satisfies Meta<typeof Breadcrumb>;

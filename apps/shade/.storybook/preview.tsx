@@ -59,7 +59,7 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				method: 'alphabetical',
-				order: ['GHDS 1.0', 'Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Global', ['Form', 'Chrome', 'Modal', 'Layout', ['View Container', 'Page Header', 'Page'], 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
+				order: ['Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Typography', 'Components', 'Meta'],
 			},
 		},
 		docs: {
@@ -76,7 +76,7 @@ const preview: Preview = {
 			let {scheme} = context.globals;
 
 			return (
-			<div className={`shade admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				// padding: '24px',
 				// width: 'unset',
 				height: 'unset',

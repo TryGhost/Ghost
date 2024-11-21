@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import Icon from './icon';
 
 const meta = {
-    title: 'Global / Icon',
+    title: 'Components / Icon',
     component: Icon,
     tags: ['autodocs']
 } satisfies Meta<typeof Icon>;
