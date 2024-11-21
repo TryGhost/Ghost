@@ -177,8 +177,15 @@ test.describe('Actions', async () => {
 
         await page.keyboard.type('This is a reply to a reply');
 
+        // give time for spinner to show
+        mockedApi.setDelay(100);
+
         const submitButton = parentComment.getByTestId('submit-form-button');
         await submitButton.click();
+
+        // Spinner is shown
+        await expect(frame.getByTestId('button-spinner')).toBeVisible();
+        await expect(frame.getByTestId('button-spinner')).not.toBeVisible();
 
         // Comment gets added and has correct contents
         await expect(frame.getByTestId('comment-component')).toHaveCount(3);

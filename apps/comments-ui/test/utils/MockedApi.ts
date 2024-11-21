@@ -13,6 +13,7 @@ export class MockedApi {
     member: any;
     settings: any;
     members: any[];
+    delay: number;
 
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
 
@@ -26,6 +27,11 @@ export class MockedApi {
         this.member = member;
         this.settings = settings;
         this.members = [];
+        this.delay = 0;
+    }
+
+    setDelay(delay: number) {
+        this.delay = delay;
     }
 
     addComment(overrides: any = {}) {
@@ -220,8 +226,15 @@ export class MockedApi {
         };
     }
 
+    async #delayResponse() {
+        await new Promise((resolve) => {
+            (setTimeout(resolve, this.delay));
+        });
+    }
+
     async listen({page, path}: {page: any, path: string}) {
         await page.route(`${path}/members/api/member/`, async (route) => {
+            await this.#delayResponse();
             if (!this.member) {
                 return await route.fulfill({
                     status: 401,
@@ -244,6 +257,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*`, async (route) => {
+            await this.#delayResponse();
             const payload = JSON.parse(route.request().postData());
 
             this.#lastCommentDate = new Date();
@@ -262,6 +276,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/post/*/*`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
 
             const p = parseInt(url.searchParams.get('page') ?? '1');
@@ -281,6 +296,7 @@ export class MockedApi {
 
         // LIKE a single comment
         await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
 
@@ -315,6 +331,7 @@ export class MockedApi {
 
         // GET a single comment
         await page.route(`${path}/members/api/comments/*/`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[1];
 
@@ -330,6 +347,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*/replies/*`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
 
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
@@ -347,6 +365,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/counts/*`, async (route) => {
+            await this.#delayResponse();
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(
@@ -358,6 +377,7 @@ export class MockedApi {
         // get settings from content api
 
         await page.route(`${path}/settings/*`, async (route) => {
+            await this.#delayResponse();
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.settings)
