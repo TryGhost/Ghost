@@ -335,6 +335,7 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateTitleScratch(title) {
+        console.log('updateTitleScratch', title);
         this.set('post.titleScratch', title);
         try {
             this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
@@ -593,6 +594,15 @@ export default class LexicalEditorController extends Controller {
     // _xSave tasks  that will also cancel the autosave task
     @task({group: 'saveTasks'})
     *saveTask(options = {}) {
+        console.log('saveTask');
+        console.log(`this.post.titleScratch: ${this.post.titleScratch}`);
+        console.log(`this.post.title: ${this.post.title}`);
+        console.log(`this.post.slug: ${this.post.slug}`);
+        if (this.post.status === 'draft' && this.post.titleScratch !== this.post.title) {
+            console.log(`title mismatch`);
+            yield this.generateSlugTask.perform();
+        }
+
         if (this.post.isDestroyed || this.post.isDestroying) {
             return;
         }
@@ -757,9 +767,19 @@ export default class LexicalEditorController extends Controller {
         if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
+        console.log(`beforeSaveTask`);
+
+        // Generate a slug if we don't have one or if the title has changed
+        if (!this.get('post.slug') || (this.post.status === 'draft' && this.post.titleScratch !== this.post.title)) {
+            console.log(`>title mismatch, generating slug`);
+            this.saveTitleTask.cancelAll();
+            yield this.generateSlugTask.perform();
+        }
 
         // TODO: There's no need for most of these scratch values.
         // Refactor so we're setting model attributes directly
+        console.log(`>this.post.title`, this.post.title);
+        console.log(`>this.post.titleScratch`, this.post.titleScratch);
         this.set('post.title', this.get('post.titleScratch'));
         this.set('post.customExcerpt', this.get('post.customExcerptScratch'));
         this.set('post.footerInjection', this.get('post.footerExcerptScratch'));
@@ -771,12 +791,6 @@ export default class LexicalEditorController extends Controller {
         this.set('post.twitterTitle', this.get('post.twitterTitleScratch'));
         this.set('post.twitterDescription', this.get('post.twitterDescriptionScratch'));
         this.set('post.emailSubject', this.get('post.emailSubjectScratch'));
-
-        if (!this.get('post.slug')) {
-            this.saveTitleTask.cancelAll();
-
-            yield this.generateSlugTask.perform();
-        }
     }
 
     /*
@@ -784,6 +798,7 @@ export default class LexicalEditorController extends Controller {
      */
     @task({group: 'saveTasks'})
     *updateSlugTask(_newSlug) {
+        console.log(`updateSlugTask`);
         let slug = this.get('post.slug');
         let newSlug, serverSlug;
 
@@ -968,8 +983,9 @@ export default class LexicalEditorController extends Controller {
 
         // Update the slug unless the slug looks to be a custom slug or the title is a default/has been cleared out
         if (
-            (currentSlug && slugify(currentTitle) !== currentSlug)
-            && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX))
+            ((currentSlug && slugify(currentTitle) !== currentSlug)
+            && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)))
+            // && !(currentSlug.startsWith('untitled'))
         ) {
             return;
         }
