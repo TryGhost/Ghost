@@ -763,6 +763,36 @@ describe('Comments API', function () {
                     });
             });
 
+            it('hidden replies are not included in the count', async function () {
+                await mockManager.mockLabsEnabled('commentImprovements');
+                const {parent} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id,
+                        status: 'hidden'
+                    })
+                });
+
+                const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
+
+                res.body.comments[0].count.replies.should.eql(0);
+            });
+
+            it('deleted replies are not included in the count', async function () {
+                await mockManager.mockLabsEnabled('commentImprovements');
+                const {parent} = await dbFns.addCommentWithReplies({
+                    member_id: fixtureManager.get('members', 0).id,
+                    replies: new Array(5).fill({
+                        member_id: fixtureManager.get('members', 1).id,
+                        status: 'deleted'
+                    })
+                });
+
+                const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
+
+                res.body.comments[0].count.replies.should.eql(0);
+            });
+
             it('Can reply to a comment with www domain', async function () {
                 // Test that the www. is stripped from the default
                 configUtils.set('url', 'http://www.domain.example/');
