@@ -436,3 +436,13 @@ export function useThreadForUser(handle: string, id: string) {
 
     return {threadQuery, addToThread};
 }
+
+export function useNoteMutationForUser(handle: string) {
+    return useMutation({
+        async mutationFn({content}: {content: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return await api.note(content) as Activity;
+        }
+    });
+}
