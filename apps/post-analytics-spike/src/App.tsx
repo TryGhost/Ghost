@@ -20,7 +20,11 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
         <FrameworkProvider {...framework}>
             <RoutingProvider basePath='post-analytics-spike' modals={modals}>
                 <ShadeApp className='post-analytics-spike' {...designSystem}>
-                    <PostAnalytics />
+
+                    {/* @TODO: should be a component */}
+                    <div className='max-w-[1280px] w-full mx-auto'>
+                        <PostAnalytics />
+                    </div>
                 </ShadeApp>
             </RoutingProvider>
         </FrameworkProvider>

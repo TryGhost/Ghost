@@ -12591,11 +12591,11 @@ const wb = (e, t, n, r) => {
   paths: {
     "demo-modal": "DemoModal"
   },
-  load: async () => import("./modals-8a9038c8.mjs")
-}, Tb = ({ framework: e, designSystem: t }) => /* @__PURE__ */ f.jsx(bb, { ...e, children: /* @__PURE__ */ f.jsx(Sb, { basePath: "post-analytics-spike", modals: xb, children: /* @__PURE__ */ f.jsx(jf, { className: "post-analytics-spike", ...t, children: /* @__PURE__ */ f.jsx(Ab, {}) }) }) });
+  load: async () => import("./modals-235335b0.mjs")
+}, Tb = ({ framework: e, designSystem: t }) => /* @__PURE__ */ f.jsx(bb, { ...e, children: /* @__PURE__ */ f.jsx(Sb, { basePath: "post-analytics-spike", modals: xb, children: /* @__PURE__ */ f.jsx(jf, { className: "post-analytics-spike", ...t, children: /* @__PURE__ */ f.jsx("div", { className: "max-w-[1280px] w-full mx-auto", children: /* @__PURE__ */ f.jsx(Ab, {}) }) }) }) });
 export {
   Tb as A,
   ka as N,
   f as j
 };
-//# sourceMappingURL=index-ae342ef9.mjs.map
+//# sourceMappingURL=index-052a2715.mjs.map
