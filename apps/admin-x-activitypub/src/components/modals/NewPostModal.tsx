@@ -3,20 +3,19 @@ import APAvatar from '../global/APAvatar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Modal, showToast} from '@tryghost/admin-x-design-system';
-import {useCallback, useMemo, useState} from 'react';
 import {useNoteMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
+import {useState} from 'react';
 
 const NewPostModal = NiceModal.create(() => {
     const modal = useModal();
     const {data: user} = useUserDataForUser('index');
-    const [content, setContent] = useState('');
     const noteMutation = useNoteMutationForUser('index');
 
-    const isDisabled = useMemo(() => {
-        return noteMutation.isLoading || !content.trim();
-    }, [noteMutation.isLoading, content]);
+    const [content, setContent] = useState('');
 
-    const handlePost = useCallback(async () => {
+    const isDisabled = noteMutation.isLoading || !content.trim();
+
+    const handlePost = async () => {
         const trimmedContent = content.trim();
         if (!trimmedContent) {
             return;
@@ -37,15 +36,15 @@ const NewPostModal = NiceModal.create(() => {
                 });
             }
         });
-    }, [content, modal, noteMutation]);
+    }
 
-    const handleCancel = useCallback(() => {
+    const handleCancel = () => {
         modal.remove();
-    }, [modal]);
+    };
 
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setContent(e.target.value);
-    }, []);
+    };
 
     return (
         <Modal
