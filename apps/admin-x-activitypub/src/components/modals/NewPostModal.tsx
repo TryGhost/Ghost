@@ -36,7 +36,7 @@ const NewPostModal = NiceModal.create(() => {
                 });
             }
         });
-    }
+    };
 
     const handleCancel = () => {
         modal.remove();
@@ -66,7 +66,7 @@ const NewPostModal = NiceModal.create(() => {
                             <FormPrimitive.Control asChild>
                                 <textarea
                                     autoFocus={true}
-                                    className='ap-textarea w-full resize-none p-2 text-[1.5rem]'
+                                    className='ap-textarea w-full resize-none bg-transparent p-2 text-[1.5rem]'
                                     disabled={noteMutation.isLoading}
                                     placeholder='What&apos;s new?'
                                     rows={3}
