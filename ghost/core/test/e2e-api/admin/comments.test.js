@@ -265,10 +265,8 @@ describe('Admin Comments API', function () {
             });
 
             const res = await adminApi.get('/comments/post/' + post.id + '/');
-
-            const comment = res.body.comments.find(cmt => parent.id === cmt.id);
-
-            assert.equal(comment.replies_count, 2);
+            const item = res.body.comments.find(cmt => parent.id === cmt.id);
+            assert.equal(item.count.replies, 2);
         });
     });
 });
