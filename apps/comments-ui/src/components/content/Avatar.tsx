@@ -19,7 +19,6 @@ export const BlankAvatar = () => {
 
 type AvatarProps = {
     comment?: Comment;
-    isHidden?: boolean;
 };
 export const Avatar: React.FC<AvatarProps> = ({comment}) => {
     // #TODO greyscale the avatar image when it's hidden

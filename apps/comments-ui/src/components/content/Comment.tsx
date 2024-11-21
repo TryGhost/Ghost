@@ -168,10 +168,10 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {t, labs, admin} = useAppContext();
+    const {openCommentForms, t, labs, admin} = useAppContext();
 
     const avatar = (labs.commentImprovements && admin && comment.status !== 'deleted') ?
-        <Avatar comment={comment} isHidden={true} /> :
+        <Avatar comment={comment} /> :
         <BlankAvatar />;
     const hasReplies = comment.replies && comment.replies.length > 0;
 
@@ -180,6 +180,12 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
         comment.status === 'deleted' ?
             t('This comment has been removed.') :
             '';
+
+    // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
+    // so we need to check for a match of either the comment id or the parent id
+    const openForm = openCommentForms.find(f => (f.id === comment.id || f.parent_id === comment.id) && f.type === 'reply');
+    // avoid displaying the reply form inside RepliesContainer
+    const displayReplyForm = openForm && (!openForm.parent_id || openForm.parent_id === comment.id);
 
     // Only show MoreButton for hidden (not deleted) comments when admin
     const showMoreButton = admin && comment.status === 'hidden';
@@ -199,6 +205,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
                 </div>
             </div>
             <RepliesContainer comment={comment} />
+            {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
 };
