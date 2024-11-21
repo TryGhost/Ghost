@@ -458,7 +458,7 @@ describe('Admin Comments API', function () {
             assert.equal(res2.body.comments[0].html, 'Reply 4');
         });
 
-        it.only('ensure replies are always ordered from oldest to newest', async function () {
+        it('ensure replies are always ordered from oldest to newest', async function () {
             const post = fixtureManager.get('posts', 1);
             const {parent} = await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
@@ -511,7 +511,6 @@ describe('Admin Comments API', function () {
             const lastReply = item.replies[item.replies.length - 1];
             const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=10&filter=${filter}`);
-            console.log(res2.body.comments);
             assert.equal(res2.body.comments.length, 3);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
             assert.equal(res2.body.comments[1].html, 'Reply 5');
