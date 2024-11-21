@@ -91,7 +91,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
             return response;
         },
         async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
-            const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
+            const filter = `id:>'${afterReplyId}'`;
 
             const params = new URLSearchParams();
 
@@ -103,7 +103,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
                 params.set('filter', filter);
             }
 
-            const response = await callApi('getReplies', {commentId, params});
+            const response = await callApi('getReplies', {commentId, params: params.toString()});
 
             return response;
         }

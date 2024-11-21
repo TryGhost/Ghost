@@ -27,7 +27,7 @@ window.addEventListener('message', async function (event) {
         try {
             const {postId, params} = data;
             const res = await fetch(
-                adminUrl + `/comments/post/${postId}?${new URLSearchParams(params).toString()}`
+                adminUrl + `/comments/post/${postId}/?${new URLSearchParams(params).toString()}`
             );
             const json = await res.json();
             respond(null, json);
@@ -40,7 +40,7 @@ window.addEventListener('message', async function (event) {
         try {
             const {commentId, params} = data;
             const res = await fetch(
-                adminUrl + `/comments/${commentId}/replies?${new URLSearchParams(params).toString()}`
+                adminUrl + `/comments/${commentId}/replies/?${new URLSearchParams(params).toString()}`
             );
             const json = await res.json();
             respond(null, json);
